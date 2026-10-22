@@ -1,0 +1,29 @@
+// Единое место для идентификаторов и версий.
+// Если Xcode пишет, что bundle ID или App Group заняты другим аккаунтом,
+// поменяйте только SP_BUNDLE_ID — остальные ID производятся от него.
+SP_BUNDLE_ID = SuperPooperApp
+SP_APP_GROUP = group.$(SP_BUNDLE_ID)
+
+MARKETING_VERSION = 0.0.0
+CURRENT_PROJECT_VERSION = 1
+
+// Минимальная iOS — 26.0. Строка с [sdk=…18*] срабатывает только в Xcode 16
+// (iOS 18 SDK), на котором собиралась и проверялась v0; в Xcode 26 она не действует.
+IPHONEOS_DEPLOYMENT_TARGET = 26.0
+IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator18*] = 18.0
+
+// Подпись: стиль Automatic, команда выбирается в Xcode (в репозитории её нет).
+CODE_SIGN_STYLE = Automatic
+
+SWIFT_VERSION = 5.0
+SWIFT_STRICT_CONCURRENCY = minimal
+SWIFT_EMIT_LOC_STRINGS = YES
+LOCALIZATION_PREFERS_STRING_CATALOGS = YES
+TARGETED_DEVICE_FAMILY = 1
+SDKROOT = iphoneos
+SUPPORTED_PLATFORMS = iphoneos iphonesimulator
+SUPPORTS_MACCATALYST = NO
+SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO
+SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO
+ENABLE_USER_SCRIPT_SANDBOXING = YES
+ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES
