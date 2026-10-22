@@ -1,0 +1,33 @@
+{
+  "vault": {
+    "tasksFolder": "TaskNotes/Tasks",
+    "taskTag": "🔫делишка",
+    "trashFolder": ".trash"
+  },
+  "sources": {
+    "anchorCalendarIDs": [],
+    "reminderListIDs": []
+  },
+  "day": {
+    "boundary": "04:00",
+    "energyHour": "14:00"
+  },
+  "pool": {
+    "visibleCount": 3
+  },
+  "timeline": {
+    "layout": "oneColumn",
+    "hoursBefore": 2,
+    "hoursAfter": 10,
+    "firstHalf": { "start": "06:00", "end": "14:00" },
+    "secondHalf": { "start": "14:00", "end": "22:00" },
+    "eventFontSize": 15,
+    "taskFontSize": 15
+  },
+  "notifications": {
+    "enabled": true
+  },
+  "onboarding": {
+    "completed": false
+  }
+}

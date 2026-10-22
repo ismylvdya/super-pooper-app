@@ -1,0 +1,15 @@
+{
+  "autoPromote": true,
+  "morningReviewAutoOpen": true,
+  "notifications": true,
+  "habitNotificationActions": true,
+  "reminders": true,
+  "eventLinks": true,
+  "widgetSnapshot": true,
+  "problemBadge": true,
+  "backups": true,
+  "haptics": true,
+  "syncBanner": true,
+  "archive": true,
+  "backgroundRefresh": true
+}

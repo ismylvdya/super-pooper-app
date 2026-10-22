@@ -1,0 +1,34 @@
+{
+  "fields": {
+    "tags": "tags",
+    "status": "status",
+    "priority": "priority",
+    "due": "due",
+    "timeEstimate": "time_estimate",
+    "previousTasks": "previous_task",
+    "previousEvent": "previous_event",
+    "nextEvent": "next_event",
+    "needEnergy": "need_energy",
+    "pleasant": "pleasant",
+    "recurrence": "recurrence",
+    "completeInstances": "complete_instances",
+    "partialInstances": "partial_instances",
+    "twiceInstances": "twice_instances",
+    "completedDate": "completed_date",
+    "dateCreated": "date_created",
+    "dateModified": "date_modified"
+  },
+  "statuses": {
+    "thisWeek": "this_week",
+    "halfYear": "half_year",
+    "someday": "someday",
+    "waiting": "waiting",
+    "done": "done",
+    "archived": "archived"
+  },
+  "priorities": {
+    "high": "high",
+    "normal": "none"
+  },
+  "dependencyRelType": "FINISHTOSTART"
+}
