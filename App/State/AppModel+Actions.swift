@@ -25,7 +25,7 @@ extension AppModel {
         case .unmark:
             await write(task, marking.changes(marking: task, as: nil))
         case .skipToday:
-            updateDayState { $0.skipped.append(name) }
+            updateDayState { if !$0.skipped.contains(name) { $0.skipped.append(name) } }
             await publishDerivedState()
         case .archive:
             await write(task, [.status(.archived)])

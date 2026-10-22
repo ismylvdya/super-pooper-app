@@ -6,7 +6,8 @@ import SwiftUI
 enum PreviewModel {
     static func make() -> (model: AppModel, router: Router, config: AppConfig)? {
         guard let config = try? AppConfig.load() else { return nil }
-        let store = JSONFileStore(directory: FileManager.default.temporaryDirectory.appendingPathComponent("SuperPooperPreview"))
+        let store = JSONFileStore(directory: FileManager.default.temporaryDirectory
+            .appendingPathComponent("SuperPooperPreview-\(UUID().uuidString)"))
         let services = AppServices(
             vault: FixedVaultLocation(url: store.directory), tasks: InMemoryTaskRepository(tasks: PreviewSamples.tasks),
             calendars: StaticCalendarRepository(), reminders: StaticRemindersRepository(), notifications: SilentNotifications(),
