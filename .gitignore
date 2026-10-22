@@ -1,0 +1,9 @@
+# Build products and caches (always inside the project)
+.build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcscmblueprint
+.DS_Store
+# Local renders of the test vault
+Fixtures/Rendered/
