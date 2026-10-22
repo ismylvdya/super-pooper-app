@@ -27,6 +27,7 @@ final class AppModel {
     private(set) var isSyncing = false
     private(set) var hasLoaded = false
     private(set) var settings: AppSettings
+    var access = SourceAccessState()
 
     init(config: AppConfig, services: AppServices, banners: BannerCenter, clock: Clock, calendar: Calendar) {
         self.config = config
