@@ -2,6 +2,8 @@ import Foundation
 
 /// iCloud Drive specifics behind a protocol, so tests can fake evicted files and conflicts.
 protocol UbiquityService: Sendable {
+    /// Whether the folder lives in iCloud Drive at all; local folders skip the (slow) iCloud checks.
+    func isUbiquitous(_ folder: URL) -> Bool
     /// `false` while the file is only a cloud placeholder.
     func isDownloaded(_ url: URL) -> Bool
     func startDownloading(_ url: URL) throws
@@ -10,9 +12,19 @@ protocol UbiquityService: Sendable {
     func resolveConflictsKeepingLatest(_ url: URL) throws -> Bool
 }
 
+extension UbiquityService {
+    func isUbiquitous(_ folder: URL) -> Bool { true }
+}
+
 /// Real iCloud Drive behaviour.
 struct ICloudUbiquityService: UbiquityService {
+    func isUbiquitous(_ folder: URL) -> Bool {
+        (try? folder.resourceValues(forKeys: [.isUbiquitousItemKey]).isUbiquitousItem) == true
+    }
+
     func isDownloaded(_ url: URL) -> Bool {
+        var url = url
+        url.removeCachedResourceValue(forKey: .ubiquitousItemDownloadingStatusKey)
         guard let values = try? url.resourceValues(forKeys: [.isUbiquitousItemKey, .ubiquitousItemDownloadingStatusKey]),
               values.isUbiquitousItem == true else { return true }
         return values.ubiquitousItemDownloadingStatus == .current || values.ubiquitousItemDownloadingStatus == .downloaded
@@ -22,8 +34,12 @@ struct ICloudUbiquityService: UbiquityService {
         try FileManager.default.startDownloadingUbiquitousItem(at: url)
     }
 
+    /// Asking `NSFileVersion` is slow, so the cheap resource flag is checked first.
     func resolveConflictsKeepingLatest(_ url: URL) throws -> Bool {
-        guard let conflicts = NSFileVersion.unresolvedConflictVersionsOfItem(at: url), !conflicts.isEmpty else { return false }
+        let keys: Set<URLResourceKey> = [.isUbiquitousItemKey, .ubiquitousItemHasUnresolvedConflictsKey]
+        guard let values = try? url.resourceValues(forKeys: keys), values.isUbiquitousItem == true,
+              values.ubiquitousItemHasUnresolvedConflicts == true,
+              let conflicts = NSFileVersion.unresolvedConflictVersionsOfItem(at: url), !conflicts.isEmpty else { return false }
         let current = NSFileVersion.currentVersionOfItem(at: url)
         let newest = conflicts.max { ($0.modificationDate ?? .distantPast) < ($1.modificationDate ?? .distantPast) }
         if let newest, (newest.modificationDate ?? .distantPast) > (current?.modificationDate ?? .distantPast) {

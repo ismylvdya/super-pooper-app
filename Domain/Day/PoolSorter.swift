@@ -51,9 +51,11 @@ struct PoolSorter: Sendable {
         return finalize(result, graph: graph)
     }
 
+    /// Done tasks go last; within each part a task never stands above its predecessors.
     private func finalize(_ items: [DayItem], graph: TaskGraph) -> [DayItem] {
         let open = TopologicalOrder.stable(items.filter { !$0.isDone }, graph: graph)
-        return open + items.filter(\.isDone)
+        let done = TopologicalOrder.stable(items.filter(\.isDone), graph: graph)
+        return open + done
     }
 
     private func key(_ criterion: PoolSortCriterion, _ task: TaskNote, _ context: DayContext) -> Double {

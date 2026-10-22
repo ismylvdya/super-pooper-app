@@ -11,6 +11,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		AA0000000000000000000C03 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA0000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA0000000000000000000601;
+			remoteInfo = SuperPooper;
+		};
 		AA0000000000000000000C01 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = AA0000000000000000000001 /* Project object */;
@@ -42,6 +49,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		AA0000000000000000000F04 /* SuperPooperUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SuperPooperUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA0000000000000000000F19 /* UITests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = UITests.xcconfig; sourceTree = "<group>"; };
 		AA0000000000000000000F01 /* SuperPooper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SuperPooper.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0000000000000000000F02 /* SuperPooperWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SuperPooperWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0000000000000000000F03 /* SuperPooperTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SuperPooperTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -56,6 +65,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		AA0000000000000000000815 /* UITests */ = {isa = PBXFileSystemSynchronizedRootGroup; path = UITests; sourceTree = "<group>"; };
 		AA0000000000000000000801 /* App */ = {isa = PBXFileSystemSynchronizedRootGroup; path = App; sourceTree = "<group>"; };
 		AA0000000000000000000802 /* Features */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Features; sourceTree = "<group>"; };
 		AA0000000000000000000803 /* Data */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Data; sourceTree = "<group>"; };
@@ -73,6 +83,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		AA0000000000000000000932 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AA0000000000000000000902 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -112,6 +129,7 @@
 				AA0000000000000000000810 /* Widgets */,
 				AA0000000000000000000804 /* Debug */,
 				AA0000000000000000000811 /* Tests */,
+				AA0000000000000000000815 /* UITests */,
 				AA0000000000000000000812 /* Fixtures */,
 				AA0000000000000000000813 /* docs */,
 				AA0000000000000000000814 /* scripts */,
@@ -126,6 +144,7 @@
 				AA0000000000000000000F12 /* App.xcconfig */,
 				AA0000000000000000000F13 /* Widgets.xcconfig */,
 				AA0000000000000000000F14 /* Tests.xcconfig */,
+				AA0000000000000000000F19 /* UITests.xcconfig */,
 				AA0000000000000000000F15 /* App-Info.plist */,
 				AA0000000000000000000F16 /* Widgets-Info.plist */,
 				AA0000000000000000000F17 /* SuperPooper.entitlements */,
@@ -140,6 +159,7 @@
 				AA0000000000000000000F01 /* SuperPooper.app */,
 				AA0000000000000000000F02 /* SuperPooperWidgets.appex */,
 				AA0000000000000000000F03 /* SuperPooperTests.xctest */,
+				AA0000000000000000000F04 /* SuperPooperUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -147,6 +167,29 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		AA0000000000000000000604 /* SuperPooperUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA0000000000000000000505 /* Build configuration list for PBXNativeTarget "SuperPooperUITests" */;
+			buildPhases = (
+				AA0000000000000000000931 /* Sources */,
+				AA0000000000000000000932 /* Frameworks */,
+				AA0000000000000000000933 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AA0000000000000000000D03 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				AA0000000000000000000815 /* UITests */,
+			);
+			name = SuperPooperUITests;
+			packageProductDependencies = (
+			);
+			productName = SuperPooperUITests;
+			productReference = AA0000000000000000000F04 /* SuperPooperUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		AA0000000000000000000601 /* SuperPooper */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = AA0000000000000000000502 /* Build configuration list for PBXNativeTarget "SuperPooper" */;
@@ -248,6 +291,10 @@
 						CreatedOnToolsVersion = 16.4;
 						TestTargetID = AA0000000000000000000601;
 					};
+					AA0000000000000000000604 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = AA0000000000000000000601;
+					};
 				};
 			};
 			buildConfigurationList = AA0000000000000000000501 /* Build configuration list for PBXProject "SuperPooper" */;
@@ -267,11 +314,19 @@
 				AA0000000000000000000601 /* SuperPooper */,
 				AA0000000000000000000602 /* SuperPooperWidgets */,
 				AA0000000000000000000603 /* SuperPooperTests */,
+				AA0000000000000000000604 /* SuperPooperUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		AA0000000000000000000933 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AA0000000000000000000903 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -296,6 +351,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		AA0000000000000000000931 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AA0000000000000000000901 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -320,6 +382,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		AA0000000000000000000D03 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AA0000000000000000000601 /* SuperPooper */;
+			targetProxy = AA0000000000000000000C03 /* PBXContainerItemProxy */;
+		};
 		AA0000000000000000000D01 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = AA0000000000000000000602 /* SuperPooperWidgets */;
@@ -333,6 +400,20 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		AA0000000000000000000E41 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AA0000000000000000000F19 /* UITests.xcconfig */;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		AA0000000000000000000E42 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AA0000000000000000000F19 /* UITests.xcconfig */;
+			buildSettings = {
+			};
+			name = Release;
+		};
 		AA0000000000000000000E01 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -491,6 +572,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		AA0000000000000000000505 /* Build configuration list for PBXNativeTarget "SuperPooperUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA0000000000000000000E41 /* Debug */,
+				AA0000000000000000000E42 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		AA0000000000000000000501 /* Build configuration list for PBXProject "SuperPooper" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

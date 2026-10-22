@@ -41,6 +41,17 @@
                ReferencedContainer = "container:SuperPooper.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "AA0000000000000000000604"
+               BuildableName = "SuperPooperUITests.xctest"
+               BlueprintName = "SuperPooperUITests"
+               ReferencedContainer = "container:SuperPooper.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

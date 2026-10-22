@@ -16,6 +16,7 @@ struct MorningReviewScreen: View {
                     ForEach(plan.pool) { item in
                         ReviewRow(item: item, today: plan.today)
                             .listRowBackground(tokens.color(.plateBackground))
+                            .accessibilityIdentifier("review:\(item.id)")
                     }
                     .onMove { source, destination in
                         var names = plan.pool.map(\.id)
@@ -25,6 +26,7 @@ struct MorningReviewScreen: View {
                     }
                 } footer: {
                     Text(model.dayState.manualOrder == nil ? "review.footer.auto" : "review.footer.manual")
+                        .accessibilityIdentifier("review.footer")
                 }
             }
             .environment(\.editMode, .constant(.active))

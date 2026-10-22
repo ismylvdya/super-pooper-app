@@ -35,7 +35,7 @@ struct PoolBlock: View {
                 }
             }
         }
-        .frame(idealWidth: tokens.size(.infoMaxWidth))
+        .frame(idealWidth: tokens.size(.poolWidth))
     }
 
     private var visibleCount: Int { max(model.settings.pool.visibleCount, 1) }

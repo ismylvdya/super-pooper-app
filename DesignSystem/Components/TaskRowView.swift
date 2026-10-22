@@ -44,6 +44,7 @@ struct TaskRowView: View {
             Button(action: onToggle) { glyph }
                 .buttonStyle(.plain)
                 .accessibilityLabel(Text(item.isDone ? "a11y.uncheck" : "a11y.check"))
+                .accessibilityIdentifier("check:\(item.task.name)")
         } else {
             glyph
         }
@@ -55,7 +56,9 @@ struct TaskRowView: View {
             .foregroundStyle(item.isDone ? tokens.color(.secondaryText) : tokens.color(.primaryText))
             .multilineTextAlignment(.leading)
         if let onOpen {
-            Button(action: onOpen) { text }.buttonStyle(.plain)
+            Button(action: onOpen) { text }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("title:\(item.task.name)")
         } else {
             text
         }

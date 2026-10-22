@@ -22,4 +22,5 @@ exec xcodebuild "$ACTION" \
   -destination "platform=iOS Simulator,id=$SIMULATOR_ID" \
   -derivedDataPath ./.build/DerivedData \
   -clonedSourcePackagesDirPath ./.build/SourcePackages \
+  -resultBundlePath "./.build/Results/$ACTION-$(date +%Y%m%d-%H%M%S).xcresult" \
   "$@"

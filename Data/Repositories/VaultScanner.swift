@@ -22,21 +22,24 @@ struct VaultScanner: Sendable {
                           modificationDates: [:])
         }
 
-        let notes = await downloadedNotes(from: files)
+        let isUbiquitous = ubiquity.isUbiquitous(folder)
+        let notes = isUbiquitous
+            ? await downloadedNotes(from: files)
+            : (ready: files.filter { $0.pathExtension == noteExtension }, missing: [URL]())
         var output = Output(result: VaultScanResult(tasks: [], fileProblems: [], conflictsResolved: []), modificationDates: [:])
         for url in notes.missing {
             output.result.fileProblems.append(.notDownloaded(file: url.deletingPathExtension().lastPathComponent))
         }
         for url in notes.ready.sorted(by: { $0.path < $1.path }) {
-            read(url, root: root, into: &output)
+            read(url, root: root, checkConflicts: isUbiquitous, into: &output)
         }
         return output
     }
 
-    private func read(_ url: URL, root: URL, into output: inout Output) {
+    private func read(_ url: URL, root: URL, checkConflicts: Bool, into output: inout Output) {
         let name = url.deletingPathExtension().lastPathComponent
         let relativePath = VaultPaths.relative(url, to: root)
-        if (try? ubiquity.resolveConflictsKeepingLatest(url)) == true {
+        if checkConflicts, (try? ubiquity.resolveConflictsKeepingLatest(url)) == true {
             output.result.conflictsResolved.append(name)
         }
         let file: NoteFile

@@ -16,7 +16,9 @@ struct TaskPropertiesSection: View {
                 .labelsHidden()
             }
             PlateRow(icon: .high, title: "taskPage.high", info: "info.taskPage.high") {
-                Toggle("taskPage.high", isOn: binding(\.isHighPriority, change: TaskFieldChange.highPriority)).labelsHidden()
+                Toggle("taskPage.high", isOn: binding(\.isHighPriority, change: TaskFieldChange.highPriority))
+                    .labelsHidden()
+                    .accessibilityIdentifier("taskPage.high")
             }
             DueEditor(task: task)
             PlateRow(icon: .estimate, title: "taskPage.estimate", info: "info.taskPage.estimate") {

@@ -1,6 +1,6 @@
 import Foundation
 
-/// The `previous_task` links between tasks, resolved by name, with cycles broken.
+/// The `previous_task` links between tasks, resolved by name, with cycles (a link to itself included) broken.
 struct TaskGraph: Sendable {
     let tasksByName: [String: TaskNote]
     /// Resolved predecessors per task (edges that closed a cycle are dropped).
@@ -15,13 +15,16 @@ struct TaskGraph: Sendable {
 
         var resolved: [String: [String]] = [:]
         var missing: [String: [String]] = [:]
+        var selfLinked = Set<String>()
         for task in tasks {
             for link in task.previousTasks {
                 guard let name = byName[link]?.name ?? byLowercased[link.lowercased()] else {
                     missing[task.name, default: []].append(link)
                     continue
                 }
-                if name != task.name, resolved[task.name, default: []].contains(name) == false {
+                if name == task.name {
+                    selfLinked.insert(name)
+                } else if resolved[task.name, default: []].contains(name) == false {
                     resolved[task.name, default: []].append(name)
                 }
             }
@@ -36,7 +39,7 @@ struct TaskGraph: Sendable {
         self.predecessors = acyclic
         self.successors = successors.mapValues { $0.sorted() }
         self.missingLinks = missing
-        self.cycleMembers = cycleMembers
+        self.cycleMembers = cycleMembers.union(selfLinked)
     }
 
     func predecessors(of name: String) -> [String] { predecessors[name] ?? [] }

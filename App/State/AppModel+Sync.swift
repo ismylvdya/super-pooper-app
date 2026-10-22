@@ -1,4 +1,5 @@
 import Foundation
+import os
 
 extension AppModel {
     /// Full sync: vault, auto-promotion, calendar and reminders, then widgets and notifications.
@@ -11,9 +12,11 @@ extension AppModel {
 
         let previousTasks = tasks
         var report = SyncReport()
+        let started = Date()
         if services.vault.hasVault {
             do {
                 let result = try await services.tasks.scan()
+                SyncLog.logger.info("vault scan: \(result.tasks.count) tasks in \(Date().timeIntervalSince(started), format: .fixed(precision: 2)) s")
                 setScanResult(result)
                 report.conflicts = result.conflictsResolved
                 if config.flags.autoPromote { report.promoted = await autoPromote() }
@@ -24,6 +27,7 @@ extension AppModel {
             setVaultState(.notSelected)
         }
         await refreshCalendarSources()
+        SyncLog.logger.info("sources ready after \(Date().timeIntervalSince(started), format: .fixed(precision: 2)) s")
 
         if hasLoaded {
             let diff = SyncReport(old: previousTasks, new: tasks)
@@ -136,4 +140,8 @@ extension AppModel {
             banners.show(Self.describe(error), style: .problem)
         }
     }
+}
+
+enum SyncLog {
+    static let logger = Logger(subsystem: "SuperPooper", category: "sync")
 }

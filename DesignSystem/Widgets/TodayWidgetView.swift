@@ -52,7 +52,7 @@ struct WidgetPoolBlock: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(idealWidth: tokens.size(.infoMaxWidth) / 2)
+        .frame(idealWidth: tokens.size(.poolWidth))
     }
 }
 

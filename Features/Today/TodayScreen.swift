@@ -52,6 +52,7 @@ struct TodayScreen: View {
             }
             Button("today.edit") { router.isReviewPresented = true }
                 .fontWeight(.semibold)
+                .accessibilityIdentifier("today.edit")
         }
     }
 }
