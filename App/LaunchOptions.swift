@@ -7,7 +7,8 @@ import Foundation
 /// - `-SPSkipOnboarding`: mark onboarding as done;
 /// - `-SPResetState`: forget app settings and day state before start;
 /// - `-SPTimeline oneColumn|twoColumns`: override the timeline layout;
-/// - `-SPOpen <superpooper://…>`: open a deep link after start.
+/// - `-SPOpen <superpooper://…>`: open a deep link after start;
+/// - `-SPProvisionalNotifications`: get quiet notification permission without the system prompt.
 struct LaunchOptions {
     var vaultPath: String?
     var seedDemo = false
@@ -16,6 +17,7 @@ struct LaunchOptions {
     var resetState = false
     var timelineLayout: AppSettings.TimelineLayout?
     var openURL: URL?
+    var provisionalNotifications = false
 
     static func current(_ arguments: [String] = ProcessInfo.processInfo.arguments) -> LaunchOptions {
         var options = LaunchOptions()
@@ -31,6 +33,7 @@ struct LaunchOptions {
         options.resetState = arguments.contains("-SPResetState")
         options.timelineLayout = value("-SPTimeline").flatMap(AppSettings.TimelineLayout.init(rawValue:))
         options.openURL = value("-SPOpen").flatMap(URL.init(string:))
+        options.provisionalNotifications = arguments.contains("-SPProvisionalNotifications")
         #endif
         return options
     }

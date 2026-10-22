@@ -10,7 +10,6 @@ extension AppModel {
         rollDayIfNeeded()
 
         let previousTasks = tasks
-        let previousProblemCount = problemCount
         var report = SyncReport()
         if services.vault.hasVault {
             do {
@@ -34,7 +33,10 @@ extension AppModel {
         }
         markLoaded()
         await publishDerivedState()
-        announceResult(report, announce: announce, newProblems: problemCount > previousProblemCount)
+        let problems = problemCount
+        let newProblems = problems > dayState.announcedProblems
+        updateDayState { $0.announcedProblems = problems }
+        announceResult(report, announce: announce, newProblems: newProblems)
     }
 
     func ensureLoaded() async {

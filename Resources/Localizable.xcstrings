@@ -1673,6 +1673,17 @@
         }
       }
     },
+    "settings.debug.notifications": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pending notifications"
+          }
+        }
+      }
+    },
     "settings.debug.seed": {
       "extractionState": "manual",
       "localizations": {
@@ -1680,6 +1691,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Seed demo data"
+          }
+        }
+      }
+    },
+    "settings.debug.widgets": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widget gallery"
           }
         }
       }
@@ -2439,6 +2461,105 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choose your vault"
+          }
+        }
+      }
+    },
+    "widget.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open SuperPooper once to load your day."
+          }
+        }
+      }
+    },
+    "widget.habit.configure": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose habit"
+          }
+        }
+      }
+    },
+    "widget.habit.description": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The days of one recurring task: Done, Partially and Twice."
+          }
+        }
+      }
+    },
+    "widget.habit.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open SuperPooper to load your habits."
+          }
+        }
+      }
+    },
+    "widget.habit.entity": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habit"
+          }
+        }
+      }
+    },
+    "widget.habit.name": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habit grid"
+          }
+        }
+      }
+    },
+    "widget.habit.parameter": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habit"
+          }
+        }
+      }
+    },
+    "widget.today.description": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The pool and the timeline of your day."
+          }
+        }
+      }
+    },
+    "widget.today.name": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today"
           }
         }
       }

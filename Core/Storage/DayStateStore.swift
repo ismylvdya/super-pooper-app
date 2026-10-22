@@ -7,6 +7,20 @@ struct DayState: Codable, Equatable, Sendable {
     var skipped: [String] = []
     var manualOrder: [String]?
     var reviewShown = false
+    /// How many data problems the banner already told about today.
+    var announcedProblems = 0
+
+    init(day: LocalDate) { self.day = day }
+
+    /// Fields added in later versions get their defaults when reading an older file.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        day = try container.decode(LocalDate.self, forKey: .day)
+        skipped = try container.decodeIfPresent([String].self, forKey: .skipped) ?? []
+        manualOrder = try container.decodeIfPresent([String].self, forKey: .manualOrder)
+        reviewShown = try container.decodeIfPresent(Bool.self, forKey: .reviewShown) ?? false
+        announcedProblems = try container.decodeIfPresent(Int.self, forKey: .announcedProblems) ?? 0
+    }
 }
 
 struct DayStateStore: Sendable {

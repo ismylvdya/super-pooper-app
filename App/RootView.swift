@@ -60,6 +60,10 @@ struct RootView: View {
         case .task(let name): TaskPageScreen(taskName: name)
         case .settings: SettingsScreen()
         case .archive: ArchiveScreen()
+        #if DEBUG
+        case .debugNotifications: NotificationsDebugScreen()
+        case .debugWidgets: WidgetGalleryScreen()
+        #endif
         }
     }
 

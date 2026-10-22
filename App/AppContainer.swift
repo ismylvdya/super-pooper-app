@@ -22,6 +22,14 @@ final class AppContainer {
         }
     }()
 
+    #if DEBUG
+    /// The app clock (honours `-SPNow`) for DEBUG screens.
+    static var sharedClockNow: Date {
+        guard case .success(let container) = shared else { return Date() }
+        return container.model.clock.now
+    }
+    #endif
+
     init(config: AppConfig, launch: LaunchOptions) {
         self.config = config
         self.launch = launch
@@ -87,6 +95,9 @@ final class AppContainer {
                     $0.sources.reminderListIDs = [sources.reminderListID]
                 }
             }
+        }
+        if launch.provisionalNotifications {
+            _ = try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .provisional])
         }
         #endif
         await model.sync(announce: false)

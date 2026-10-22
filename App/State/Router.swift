@@ -6,6 +6,10 @@ enum Route: Hashable {
     case task(String)
     case settings
     case archive
+    #if DEBUG
+    case debugNotifications
+    case debugWidgets
+    #endif
 }
 
 /// Navigation state; deep links (`superpooper://…`) and notifications go through it too.
@@ -29,19 +33,11 @@ final class Router {
         case "settings": path = [.settings]
         case "archive": path = [.settings, .archive]
         case "review": popToRoot(); isReviewPresented = true
+        #if DEBUG
+        case "debug-notifications": path = [.settings, .debugNotifications]
+        case "debug-widgets": path = [.settings, .debugWidgets]
+        #endif
         default: popToRoot()
         }
-    }
-}
-
-enum DeepLink {
-    static let scheme = "superpooper"
-
-    static func task(_ name: String) -> URL? {
-        var components = URLComponents()
-        components.scheme = scheme
-        components.host = "task"
-        components.path = "/" + name
-        return components.url
     }
 }

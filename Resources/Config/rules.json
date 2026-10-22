@@ -34,6 +34,7 @@
     "refreshMinutes": 15,
     "entryCount": 24,
     "habitGridWeeksSmall": 7,
-    "habitGridWeeksMedium": 16
+    "habitGridWeeksMedium": 16,
+    "timelineHours": 6
   }
 }

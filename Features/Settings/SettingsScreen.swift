@@ -116,6 +116,14 @@ struct DebugSettingsSection: View {
                 PlateRow(icon: .debugSeed, title: "settings.debug.seed")
             }
             .buttonStyle(.plain)
+            NavigationLink(value: Route.debugNotifications) {
+                PlateRow(icon: .notifications, title: "settings.debug.notifications")
+            }
+            .buttonStyle(.plain)
+            NavigationLink(value: Route.debugWidgets) {
+                PlateRow(icon: .timelineLayout, title: "settings.debug.widgets")
+            }
+            .buttonStyle(.plain)
         }
     }
 }

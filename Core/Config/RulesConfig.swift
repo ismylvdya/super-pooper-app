@@ -43,6 +43,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let entryCount: Int
         let habitGridWeeksSmall: Int
         let habitGridWeeksMedium: Int
+        /// Hours the one-column timeline shows in the Today widget.
+        let timelineHours: Int
     }
 
     let day: DayRules
