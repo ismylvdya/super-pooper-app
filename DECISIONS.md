@@ -6,6 +6,7 @@
 - строка `IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator18*] = 18.0` срабатывает только на SDK iOS 18 и позволила собрать и проверить v0 на iOS 18.6; в Xcode 26 она ничего не делает (её можно удалить);
 - код использует только API, доступные в iOS 18.0, без `#available`, чтобы при target 26.0 не было предупреждений «unnecessary check»; избегаются API, устаревшие в iOS 26 (например, `Text + Text`);
 - симулятор — «SuperPooper Test» на iPhone 16 Pro / iOS 18.6;
+- `LastUpgradeCheck` проекта и схемы выставлен в 2630 (Xcode 26.3), чтобы Xcode 26.3 не показывал предупреждение «Update to recommended settings»; Xcode 16.4 это значение не мешает;
 - **не проверено вживую:** сборка именно в Xcode 26.3 (Swift 6.2, iOS 26 SDK), внешний вид Liquid Glass. Риск — новые предупреждения SDK 26; чинятся точечно.
 
 ## D-002. Проект без XcodeGen
