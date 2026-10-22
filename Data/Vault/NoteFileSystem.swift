@@ -51,8 +51,12 @@ struct CoordinatedFileSystem: NoteFileSystem {
         return try result.get()
     }
 
+    /// Always read from disk: a URL caches resource values, and a stale date would make the app's
+    /// own previous write look like an edit made elsewhere.
     func modificationDate(of url: URL) -> Date? {
-        try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
+        var url = url
+        url.removeCachedResourceValue(forKey: .contentModificationDateKey)
+        return try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
     }
 
     func write(_ text: String, to url: URL) throws {
