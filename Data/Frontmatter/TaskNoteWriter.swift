@@ -2,6 +2,7 @@ import Foundation
 
 /// Writes field changes into frontmatter, one key per change, plus `date_modified`
 /// (formatted like TaskNotes: `2026-10-22T18:01:02.456+02:00`). Everything else stays untouched.
+/// List changes are deltas applied to the lists as they are in the file right now.
 struct TaskNoteWriter: Sendable {
     let mapping: FieldMapping
     let timeZone: TimeZone
@@ -18,8 +19,21 @@ struct TaskNoteWriter: Sendable {
                 set(keys.due, due.map { .scalar($0.rawValue, quoted: false) }, in: &document)
             case .timeEstimate(let minutes):
                 set(keys.timeEstimate, minutes.map(YAMLValue.int), in: &document)
-            case .previousTasks(let names):
-                setPreviousTasks(names, in: &document)
+            case .addPreviousTask(let name):
+                var entries = listItems(keys.previousTasks, in: document)
+                guard !entries.contains(where: { linkName($0)?.isSameNoteName(as: name) == true }) else { continue }
+                entries.append(newLink(to: name))
+                document.set(keys.previousTasks, to: .list(entries))
+            case .removePreviousTask(let name):
+                let entries = listItems(keys.previousTasks, in: document)
+                let kept = entries.filter { linkName($0)?.isSameNoteName(as: name) != true }
+                guard kept.count != entries.count else { continue }
+                set(keys.previousTasks, kept.isEmpty ? nil : .list(kept), in: &document)
+            case .renamePreviousTask(let old, let new):
+                let entries = listItems(keys.previousTasks, in: document)
+                let renamed = entries.map { linkName($0)?.isSameNoteName(as: old) == true ? relink($0, to: new) : $0 }
+                guard renamed != entries else { continue }
+                document.set(keys.previousTasks, to: .list(renamed))
             case .previousEvent(let link):
                 set(keys.previousEvent, link.map { .scalar($0.rawValue(timeZone: timeZone), quoted: true) }, in: &document)
             case .nextEvent(let link):
@@ -28,10 +42,10 @@ struct TaskNoteWriter: Sendable {
                 document.set(keys.needEnergy, to: .bool(value))
             case .pleasant(let value):
                 set(keys.pleasant, value.map(YAMLValue.bool), in: &document)
-            case .habitInstances(let instances):
-                setDates(instances.complete, key: keys.completeInstances, keepEmpty: true, in: &document)
-                setDates(instances.partial, key: keys.partialInstances, keepEmpty: false, in: &document)
-                setDates(instances.twice, key: keys.twiceInstances, keepEmpty: false, in: &document)
+            case .markInstance(let day, let mark):
+                setInstance(day, included: mark != nil, key: keys.completeInstances, keepEmpty: true, in: &document)
+                setInstance(day, included: mark == .partial, key: keys.partialInstances, keepEmpty: false, in: &document)
+                setInstance(day, included: mark == .twice, key: keys.twiceInstances, keepEmpty: false, in: &document)
             case .completedDate(let day):
                 set(keys.completedDate, day.map { .scalar($0.isoString, quoted: false) }, in: &document)
             }
@@ -43,40 +57,45 @@ struct TaskNoteWriter: Sendable {
         if let value { document.set(key, to: value) } else { document.remove(key) }
     }
 
-    /// Only lists that actually change are rewritten.
-    private func setDates(_ days: [LocalDate], key: String, keepEmpty: Bool, in document: inout FrontmatterDocument) {
-        let current = (try? document.value(for: key)).flatMap { $0 }.map(FieldValues.strings) ?? []
-        let wanted = days.map(\.isoString)
-        guard current != wanted || (days.isEmpty && !keepEmpty && document.keys.contains(key)) else { return }
-        if days.isEmpty, !keepEmpty {
+    /// The items of a list key as they are in the file (a single scalar counts as one item).
+    private func listItems(_ key: String, in document: FrontmatterDocument) -> [YAMLValue] {
+        guard let value = (try? document.value(for: key)).flatMap({ $0 }) else { return [] }
+        if case .null = value { return [] }
+        return value.list ?? [value]
+    }
+
+    /// Adds or removes one day; other entries (even ones the app can't read) stay as they are, and
+    /// a list that already has the right state is not rewritten.
+    private func setInstance(_ day: LocalDate, included: Bool, key: String, keepEmpty: Bool, in document: inout FrontmatterDocument) {
+        let items = listItems(key, in: document)
+        let isDay: (YAMLValue) -> Bool = { FieldValues.firstScalar($0).flatMap(LocalDate.init(isoString:)) == day }
+        let matches = items.filter(isDay).count
+        guard included ? matches != 1 : matches > 0 else { return }
+        var updated = items.filter { !isDay($0) }
+        if included { updated.append(.scalar(day.isoString, quoted: false)) }
+        if updated.isEmpty, !keepEmpty {
             document.remove(key)
         } else {
-            document.set(key, to: .list(days.map { .scalar($0.isoString, quoted: false) }))
+            document.set(key, to: .list(updated))
         }
     }
 
-    /// Kept entries stay exactly as they were (custom `reltype`, `gap`); new ones are written the
-    /// TaskNotes way: `{uid: "[[Name]]", reltype: FINISHTOSTART}`.
-    private func setPreviousTasks(_ names: [String], in document: inout FrontmatterDocument) {
-        let key = mapping.fields.previousTasks
-        guard !names.isEmpty else {
-            document.remove(key)
-            return
-        }
-        let existing = (try? document.value(for: key)).flatMap { $0 }.map { $0.list ?? [$0] } ?? []
-        var byName: [String: YAMLValue] = [:]
-        for entry in existing {
-            let uid = entry.value(for: "uid") ?? entry
-            if let name = FieldValues.firstScalar(uid).flatMap(WikiLink.noteName(from:)), byName[name] == nil {
-                byName[name] = entry
-            }
-        }
-        let entries = names.map { name in
-            byName[name] ?? .map([
-                YAMLMapEntry(key: "uid", value: .scalar(WikiLink.make(name), quoted: true)),
-                YAMLMapEntry(key: "reltype", value: .scalar(mapping.dependencyRelType, quoted: false)),
-            ])
-        }
-        document.set(key, to: .list(entries))
+    private func linkName(_ entry: YAMLValue) -> String? {
+        FieldValues.firstScalar(entry.value(for: "uid") ?? entry).flatMap(WikiLink.noteName(from:))
+    }
+
+    /// The TaskNotes way: `{uid: "[[Name]]", reltype: FINISHTOSTART}`.
+    private func newLink(to name: String) -> YAMLValue {
+        .map([
+            YAMLMapEntry(key: "uid", value: .scalar(WikiLink.make(name), quoted: true)),
+            YAMLMapEntry(key: "reltype", value: .scalar(mapping.dependencyRelType, quoted: false)),
+        ])
+    }
+
+    /// Keeps `reltype`, `gap` and anything else of an object entry; a plain-string entry is rewritten
+    /// as a TaskNotes object (links are always written as objects).
+    private func relink(_ entry: YAMLValue, to name: String) -> YAMLValue {
+        guard case .map(let fields) = entry else { return newLink(to: name) }
+        return .map(fields.map { $0.key == "uid" ? YAMLMapEntry(key: "uid", value: .scalar(WikiLink.make(name), quoted: true)) : $0 })
     }
 }

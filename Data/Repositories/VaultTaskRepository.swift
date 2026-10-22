@@ -40,7 +40,8 @@ actor VaultTaskRepository: TaskRepository {
         let settings = vaultSettings()
         let scanner = scanner(settings)
         let output = try await location.withRoot { root in await scanner.scan(root: root, tasksFolder: settings.tasksFolder) }
-        seenModification = output.modificationDates
+        // A write may have landed while the scan was reading; keep the newer date.
+        seenModification.merge(output.modificationDates) { current, scanned in max(current, scanned) }
         return output.result
     }
 
@@ -61,8 +62,10 @@ actor VaultTaskRepository: TaskRepository {
     func setBody(_ body: String, of task: TaskNote) async throws -> TaskWriteResult {
         try await edit(task) { document in
             self.writer.apply([], to: &document, now: self.clock.now)
-            let frontmatter = Array(document.text.utf8.dropLast(document.body.utf8.count))
-            return String(decoding: frontmatter + Array(body.utf8), as: UTF8.self)
+            var frontmatter = String(decoding: Array(document.text.utf8.dropLast(document.body.utf8.count)), as: UTF8.self)
+            // A closing `---` at the very end of the file has no line ending yet.
+            if !body.isEmpty, !frontmatter.hasSuffix("\n") { frontmatter += document.text.contains("\r\n") ? "\r\n" : "\n" }
+            return frontmatter + body
         }
     }
 
@@ -71,8 +74,7 @@ actor VaultTaskRepository: TaskRepository {
         let renamed: TaskNote = try await location.withRoot { root in
             let source = try existingURL(of: task, root: root)
             let target = source.deletingLastPathComponent().appendingPathComponent("\(newName).\(noteExtension)")
-            let siblings = (try? fileSystem.listFiles(in: source.deletingLastPathComponent())) ?? []
-            if siblings.contains(where: { $0.deletingPathExtension().lastPathComponent.lowercased() == newName.lowercased() && $0 != source }) {
+            if isTaken(newName, in: source.deletingLastPathComponent(), except: source) {
                 throw TaskRepositoryError.nameTaken(newName)
             }
             try fileSystem.move(source, to: target)
@@ -82,9 +84,10 @@ actor VaultTaskRepository: TaskRepository {
             seenModification[result.relativePath] = fileSystem.modificationDate(of: target)
             return result
         }
+        // A dependent that moved or vanished meanwhile must not undo the rename; its link then shows
+        // up as "linked task not found" after the rescan.
         for dependent in dependents {
-            let links = dependent.previousTasks.map { $0.lowercased() == task.name.lowercased() ? newName : $0 }
-            _ = try await apply([.previousTasks(links)], to: dependent)
+            _ = try? await apply([.renamePreviousTask(from: task.name, to: newName)], to: dependent)
         }
         return renamed
     }
@@ -96,7 +99,7 @@ actor VaultTaskRepository: TaskRepository {
             let trash = root.appendingPathComponent(trashFolder, isDirectory: true)
             var target = trash.appendingPathComponent(source.lastPathComponent)
             var counter = 1
-            while fileSystem.fileExists(target) {
+            while fileSystem.fileExists(target) || isTaken(target.deletingPathExtension().lastPathComponent, in: trash, except: nil) {
                 target = trash.appendingPathComponent("\(task.name) \(counter).\(noteExtension)")
                 counter += 1
             }
@@ -141,12 +144,28 @@ actor VaultTaskRepository: TaskRepository {
                 throw TaskRepositoryError.brokenFrontmatter(task.name)
             }
             let text = transform(&document)
+            // Never write a note that would no longer parse.
+            guard let updated = try? FrontmatterDocument(text: text) else { throw TaskRepositoryError.brokenFrontmatter(task.name) }
             try fileSystem.write(text, to: url)
             seenModification[task.relativePath] = fileSystem.modificationDate(of: url)
-            let updated = try FrontmatterDocument(text: text)
             return TaskWriteResult(task: reader.task(from: updated, name: task.name, relativePath: task.relativePath),
                                    hadConflict: hadConflict)
         }
+    }
+
+    /// Name check that also sees evicted iCloud files (`.Name.md.icloud`).
+    private func isTaken(_ name: String, in folder: URL, except: URL?) -> Bool {
+        let files = (try? fileSystem.listFiles(in: folder)) ?? []
+        let excluded = except.map(Self.comparablePath)
+        return files.contains { file in
+            guard excluded.map({ !Self.comparablePath(file).isSameNoteName(as: $0) }) ?? true else { return false }
+            let fileName = ICloudPlaceholder.realName(of: file.lastPathComponent) ?? file.lastPathComponent
+            return (fileName as NSString).deletingPathExtension.isSameNoteName(as: name)
+        }
+    }
+
+    private static func comparablePath(_ url: URL) -> String {
+        url.standardizedFileURL.resolvingSymlinksInPath().path
     }
 
     private func existingURL(of task: TaskNote, root: URL) throws -> URL {

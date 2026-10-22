@@ -50,12 +50,13 @@ struct NotificationPlanner: Sendable {
                     guard occurrence.occurs(task, on: day), instances.mark(on: day) == nil else { continue }
                     if day == context.today, skipped.contains(task.name) { continue }
                     result.append(PlannedNotification(id: "habit|\(task.name)|\(day.isoString)", kind: .habit,
-                                                      title: task.name, fireDate: context.date(day, time),
+                                                      title: task.name, fireDate: context.moment(time, onLogicalDay: day),
                                                       taskName: task.name, day: day))
                 }
             } else if task.status == .thisWeek {
                 result.append(PlannedNotification(id: "task|\(task.name)", kind: .task, title: task.name,
-                                                  fireDate: context.date(due.day, time), taskName: task.name, day: due.day))
+                                                  fireDate: context.date(due.day, time), taskName: task.name,
+                                                  day: context.logicalDay(of: due)))
             }
         }
 

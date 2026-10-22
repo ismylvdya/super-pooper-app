@@ -68,7 +68,7 @@ SuperPooper — iPhone-приложение-оболочка над тремя �
 Код: `Domain/Day/DayBuilder.swift` и соседи. Всё считается заново от «сейчас» (раз в минуту на экране, на каждую запись в виджете).
 
 ### 4.1. Граница дня
-`day.boundary` (по умолчанию 04:00): до неё ещё «вчера». `DayContext.today` — логическая дата.
+`day.boundary` (по умолчанию 04:00): до неё ещё «вчера». `DayContext.today` — логическая дата. Время до границы относится к концу логического дня: привычка в 00:30 стоит в конце сегодняшнего таймлайна (`DayContext.moment`), задача с `due` на 01:00 следующей даты — сегодняшняя (`DayContext.logicalDay`).
 
 ### 4.2. Что попадает в день
 - задачи `this_week` без `recurrence`;
@@ -155,7 +155,7 @@ date_modified: 2026-10-22T18:01:02.456+02:00         # обновляется п
 
 ## 6. Запись в файлы
 
-`Data/Repositories/VaultTaskRepository.swift`: чтение и запись через `NSFileCoordinator`, атомарно; меняется **только** нужный ключ (`Data/Frontmatter/FrontmatterDocument.swift` — свой редактор подмножества YAML, который Obsidian пишет) плюс `date_modified`.
+`Data/Repositories/VaultTaskRepository.swift`: чтение и запись через `NSFileCoordinator`, атомарно; меняется **только** нужный ключ (`Data/Frontmatter/FrontmatterDocument.swift` — свой редактор подмножества YAML, который Obsidian пишет) плюс `date_modified`. Списки (`*_instances`, `previous_task`) меняются **дельтами** по свежепрочитанному файлу: отметить один день, добавить/убрать/переименовать одну связь; записи, которые приложение не поняло, остаются. Текст, который не разбирается как frontmatter, не записывается никогда.
 
 - Конфликт Mac ↔ iPhone: если файл изменился с момента чтения или у iCloud есть конфликтные версии, правка применяется к **последней** версии файла (побеждает последняя правка), конфликтные версии разрешаются, сверху плашка «Task X was changed in two places, the latest version was kept».
 - Удаление — в `.trash` в корне vault (корзина Obsidian), после диалога и бэкапа.

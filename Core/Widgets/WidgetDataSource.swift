@@ -27,10 +27,8 @@ struct WidgetDataSource: Sendable {
     func plan(at date: Date) -> DayPlan {
         let context = context(at: date)
         guard let snapshot else { return .empty(today: context.today, now: date) }
-        let state = snapshot.dayState.day == context.today ? snapshot.dayState : DayState(day: context.today)
-        let inputs = DayInputs(tasks: snapshot.tasks, events: snapshot.events, reminders: snapshot.reminders,
-                               skipped: Set(state.skipped), manualOrder: state.manualOrder)
-        return DayBuilder(rules: config.rules.day, sortCriteria: config.sort.pool).build(inputs, context: context)
+        return DayPlanning.plan(config: config, tasks: snapshot.tasks, events: snapshot.events, reminders: snapshot.reminders,
+                                dayState: snapshot.dayState, context: context)
     }
 
     var habitNames: [String] {

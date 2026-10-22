@@ -29,8 +29,8 @@ struct NotificationPlannerTests {
     }
 
     @Test func markedDaysAreNotPlanned() {
-        let marked = vitamins.applying([.habitInstances(HabitInstances(
-            complete: [LocalDate("2026-10-21"), LocalDate("2026-10-23")], partial: [LocalDate("2026-10-23")], twice: []))])
+        let marked = vitamins.applying([.markInstance(day: LocalDate("2026-10-21"), mark: .done),
+                                        .markInstance(day: LocalDate("2026-10-23"), mark: .partial)])
         #expect(plan([marked], at: "08:00").map(\.day.isoString) == ["2026-10-22"] + days(24...27))
     }
 
@@ -99,7 +99,7 @@ struct NotificationPlannerTests {
         let valid = planner.stillValidToday(tasks: [vitamins, parcel, friday, water], reminders: [], skipped: ["Water at ten"], context: context)
         #expect(Set(valid.map(\.id)) == ["habit|Vitamins 💊|2026-10-21", "task|Parcel"])
 
-        let marked = vitamins.applying([.habitInstances(HabitInstances(complete: [LocalDate("2026-10-21")], partial: [], twice: []))])
+        let marked = vitamins.applying([.markInstance(day: LocalDate("2026-10-21"), mark: .done)])
         let doneParcel = parcel.applying([.status(.done), .completedDate(LocalDate("2026-10-21"))])
         #expect(planner.stillValidToday(tasks: [marked, doneParcel], reminders: [], skipped: [], context: context).isEmpty)
     }

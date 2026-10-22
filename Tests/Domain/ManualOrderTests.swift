@@ -47,7 +47,7 @@ struct ManualOrderTests {
     }
 
     @Test func theManualOrderCannotLiftATaskAboveItsPredecessor() {
-        let dependent = b.applying([.previousTasks(["A"])])
+        let dependent = b.applying([.addPreviousTask("A")])
         #expect(ordered(["B", "C", "A"], [a, dependent, c]) == ["C", "A", "B"])
     }
 

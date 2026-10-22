@@ -53,14 +53,12 @@ struct TaskLinksSection: View {
         }
     }
 
+    /// The link is always stored in the later task's `previous_task`.
     private func add(_ name: String, side: Side) {
         Task {
             switch side {
-            case .previous:
-                await model.update(task.name, [.previousTasks(task.previousTasks + [name])])
-            case .next:
-                guard let other = model.task(named: name) else { return }
-                await model.update(name, [.previousTasks(other.previousTasks + [task.name])])
+            case .previous: await model.update(task.name, [.addPreviousTask(name)])
+            case .next: await model.update(name, [.addPreviousTask(task.name)])
             }
         }
     }
@@ -68,11 +66,8 @@ struct TaskLinksSection: View {
     private func remove(_ name: String, side: Side) {
         Task {
             switch side {
-            case .previous:
-                await model.update(task.name, [.previousTasks(task.previousTasks.filter { $0 != name })])
-            case .next:
-                guard let other = model.task(named: name) else { return }
-                await model.update(name, [.previousTasks(other.previousTasks.filter { $0 != task.name })])
+            case .previous: await model.update(task.name, [.removePreviousTask(name)])
+            case .next: await model.update(name, [.removePreviousTask(task.name)])
             }
         }
     }

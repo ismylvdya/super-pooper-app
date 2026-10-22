@@ -65,4 +65,23 @@ struct AppModelTests {
         model.resetOrder()
         #expect(model.plan(at: model.clock.now).pool.map(\.id) == auto)
     }
+
+    /// A notification left over from yesterday must not mark today.
+    @Test func notificationActionForAnotherDayIsIgnored() async throws {
+        let model = try makeModel()
+        let today = model.context().today
+        await model.perform(.done, on: "Выпить воды 💧", day: today.adding(days: -1))
+        #expect(model.task(named: "Выпить воды 💧")?.completeInstances.contains(today) == false)
+        await model.perform(.done, on: "Выпить воды 💧", day: today)
+        #expect(model.task(named: "Выпить воды 💧")?.completeInstances.contains(today) == true)
+    }
+
+    @Test func overlappingSyncsRunOnce() async throws {
+        let model = try makeModel()
+        async let first: Void = model.sync(announce: false)
+        async let second: Void = model.sync(announce: false)
+        _ = await (first, second)
+        #expect(model.hasLoaded)
+        #expect(model.runningSync == nil)
+    }
 }

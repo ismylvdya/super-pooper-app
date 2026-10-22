@@ -29,6 +29,17 @@ struct DayContext: Sendable {
 
     func date(_ day: LocalDate, _ time: LocalTime) -> Date { day.startDate(in: calendar, offset: time) }
 
+    /// The moment of `time` within logical `day`: times before the boundary are after midnight.
+    func moment(_ time: LocalTime, onLogicalDay day: LocalDate) -> Date {
+        time < boundary ? date(day.adding(days: 1), time) : date(day, time)
+    }
+
+    /// The logical day a dated task belongs to (`due` 01:00 on the 24th → the 23rd with a 04:00 boundary).
+    func logicalDay(of due: TaskDue) -> LocalDate {
+        guard let time = due.time, time < boundary else { return due.day }
+        return due.day.adding(days: -1)
+    }
+
     func with(now: Date) -> DayContext {
         DayContext(now: now, calendar: calendar, boundary: boundary, energyHour: energyHour)
     }

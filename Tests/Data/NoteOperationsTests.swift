@@ -10,7 +10,7 @@ struct NoteOperationsTests {
     @Test func aNewPreviousTaskIsWrittenAsATaskNotesObject() async throws {
         let note = try await SandboxNote("Повесить зеркало")
         let original = try note.text()
-        try await note.apply([.previousTasks(["Собрать шкаф", "Купить батарейки 🔋"])])
+        try await note.apply([.addPreviousTask("Купить батарейки 🔋")])
         expectSameBytes(try note.text(), try original
             .replacingOnce("    reltype: FINISHTOSTART\n",
                            with: "    reltype: FINISHTOSTART\n  - uid: \"[[Купить батарейки 🔋]]\"\n    reltype: FINISHTOSTART\n")
@@ -24,18 +24,18 @@ struct NoteOperationsTests {
         let note = try await SandboxNote("Связи разных видов", sandbox: sandbox)
         #expect(note.task.previousTasks == ["Найти отвёртку", "Собрать шкаф", "Купить батарейки 🔋"])
 
-        try await note.apply([.previousTasks(note.task.previousTasks + ["Повесить зеркало"])])
+        try await note.apply([.addPreviousTask("Повесить зеркало")])
         expectSameBytes(try note.text(), try Self.mixedLinks
             .replacingOnce("  - Купить батарейки 🔋\n",
                            with: "  - Купить батарейки 🔋\n  - uid: \"[[Повесить зеркало]]\"\n    reltype: FINISHTOSTART\n")
             .replacingOnce("date_modified: 2026-10-20T09:12:44.123+02:00", with: "date_modified: \(sandbox.nowStamp)"))
 
-        try await note.apply([.previousTasks(["Найти отвёртку", "Купить батарейки 🔋"])])
+        try await note.apply([.removePreviousTask("Собрать шкаф"), .removePreviousTask("Повесить зеркало")])
         expectSameBytes(try note.text(), try Self.mixedLinks
             .replacingOnce("  - \"[[Собрать шкаф]]\"\n", with: "")
             .replacingOnce("date_modified: 2026-10-20T09:12:44.123+02:00", with: "date_modified: \(sandbox.nowStamp)"))
 
-        try await note.apply([.previousTasks([])])
+        try await note.apply([.removePreviousTask("Найти отвёртку"), .removePreviousTask("купить БАТАРЕЙКИ 🔋")])
         let withoutLinks = try #require(Self.mixedLinks.components(separatedBy: "previous_task:").first)
             + "date_modified: \(sandbox.nowStamp)\n---\nТело заметки\n"
         expectSameBytes(try note.text(), withoutLinks)

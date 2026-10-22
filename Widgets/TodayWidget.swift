@@ -45,7 +45,7 @@ struct TodayWidgetEntryView: View {
         Group {
             if let source = entry.source, source.snapshot != nil {
                 TodayWidgetView(plan: source.plan(at: entry.date), settings: source.settings, layout: source.config.todayLayout,
-                                calendar: source.calendar, maxTimelineHours: source.config.rules.widgets.timelineHours)
+                                context: source.context(at: entry.date), maxTimelineHours: source.config.rules.widgets.timelineHours)
             } else {
                 Text("widget.empty").font(tokens.font(.widgetCaption)).foregroundStyle(tokens.color(.secondaryText)).padding()
             }

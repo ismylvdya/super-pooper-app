@@ -29,11 +29,11 @@ struct HabitGridProvider: AppIntentTimelineProvider {
         HabitGridEntry(date: Date(), habitName: configuration.habit?.id, source: WidgetDataSource.load())
     }
 
-    /// The grid only changes when the app writes a new snapshot (it reloads widgets) or the day ends.
+    /// The grid only changes when the app writes a new snapshot (it reloads widgets) or the logical day ends.
     func timeline(for configuration: SelectHabitIntent, in context: Context) async -> Timeline<HabitGridEntry> {
         let entry = await snapshot(for: configuration, in: context)
-        let nextDay = Calendar.current.startOfDay(for: Date()).addingTimeInterval(26 * 3600)
-        return Timeline(entries: [entry], policy: .after(nextDay))
+        let dayEnd = entry.source?.context(at: entry.date).dayEnd ?? Date().addingTimeInterval(3600)
+        return Timeline(entries: [entry], policy: .after(dayEnd))
     }
 }
 

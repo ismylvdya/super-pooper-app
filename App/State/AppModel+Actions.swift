@@ -11,8 +11,11 @@ extension AppModel {
         await write(task, TaskMarking(today: context().today).changes(toggling: task))
     }
 
-    func perform(_ action: ActionID, on name: String) async {
+    /// `day` comes from notifications: an action on yesterday's notification is ignored
+    /// (v0 has no marks for past days).
+    func perform(_ action: ActionID, on name: String, day: LocalDate? = nil) async {
         guard let task = task(named: name) else { return }
+        if let day, day != context().today { return }
         let marking = TaskMarking(today: context().today)
         switch action {
         case .done, .partial, .twice:
@@ -28,8 +31,9 @@ extension AppModel {
             updateDayState { if !$0.skipped.contains(name) { $0.skipped.append(name) } }
             await publishDerivedState()
         case .archive:
-            await write(task, [.status(.archived)])
-            banners.show(L10n.format("banner.archived", name), style: .success)
+            if await write(task, [.status(.archived)]) {
+                banners.show(L10n.format("banner.archived", name), style: .success)
+            }
         case .restoreThisWeek:
             await write(task, [.status(.thisWeek)])
         case .restoreHalfYear:
@@ -46,15 +50,19 @@ extension AppModel {
         await write(task, changes)
     }
 
-    func write(_ task: TaskNote, _ changes: [TaskFieldChange]) async {
-        guard !changes.isEmpty else { return }
+    @discardableResult
+    func write(_ task: TaskNote, _ changes: [TaskFieldChange]) async -> Bool {
+        guard !changes.isEmpty else { return true }
         do {
             let result = try await services.tasks.apply(changes, to: task)
+            noteWrite(result.task)
             replace(result.task)
             if result.hadConflict { banners.show(L10n.format("banner.conflict", task.name), style: .problem) }
             await publishDerivedState()
+            return true
         } catch {
             banners.show(Self.describe(error), style: .problem)
+            return false
         }
     }
 
@@ -76,18 +84,19 @@ extension AppModel {
         guard let task = task(named: name) else { return false }
         let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed != name else { return true }
-        let dependents = tasks.filter { $0.previousTasks.contains { $0.lowercased() == name.lowercased() } }
+        let dependents = tasks.filter { $0.previousTasks.contains { $0.isSameNoteName(as: name) } }
+        var renamed = false
         do {
             if config.flags.backups { try await services.tasks.backup([task] + dependents, reason: "rename") }
             _ = try await services.tasks.rename(task, to: trimmed, dependents: dependents)
-            let result = try await services.tasks.scan()
-            setScanResult(result)
-            await publishDerivedState()
-            return true
+            renamed = true
         } catch {
             banners.show(Self.describe(error), style: .problem)
-            return false
         }
+        // Whatever happened, the files are the truth: re-read them.
+        if let result = try? await services.tasks.scan() { setScanResult(result) }
+        await publishDerivedState()
+        return renamed
     }
 
     func body(of name: String) async -> String? {
@@ -99,6 +108,7 @@ extension AppModel {
         guard let task = task(named: name) else { return }
         do {
             let result = try await services.tasks.setBody(body, of: task)
+            noteWrite(result.task)
             replace(result.task)
             if result.hadConflict { banners.show(L10n.format("banner.conflict", task.name), style: .problem) }
         } catch {

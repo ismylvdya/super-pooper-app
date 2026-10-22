@@ -4,8 +4,19 @@ import os
 extension AppModel {
     /// Full sync: vault, auto-promotion, calendar and reminders, then widgets and notifications.
     /// `announce` shows a banner with what changed (pull-to-refresh).
+    /// A second call while a sync runs waits for that sync instead of starting another one.
     func sync(announce: Bool) async {
-        guard !isSyncing else { return }
+        if let running = runningSync {
+            await running.value
+            return
+        }
+        let task = Task { await performSync(announce: announce) }
+        runningSync = task
+        await task.value
+        runningSync = nil
+    }
+
+    private func performSync(announce: Bool) async {
         setSyncing(true)
         defer { setSyncing(false) }
         rollDayIfNeeded()
@@ -14,6 +25,8 @@ extension AppModel {
         var report = SyncReport()
         let started = Date()
         if services.vault.hasVault {
+            beginTrackingWrites()
+            defer { endTrackingWrites() }
             do {
                 let result = try await services.tasks.scan()
                 SyncLog.logger.info("vault scan: \(result.tasks.count) tasks in \(Date().timeIntervalSince(started), format: .fixed(precision: 2)) s")

@@ -14,7 +14,7 @@ struct WidgetGalleryScreen: View {
                     let now = AppContainer.sharedClockNow
                     widget(width: 338, height: 354) {
                         TodayWidgetView(plan: source.plan(at: now), settings: source.settings, layout: source.config.todayLayout,
-                                        calendar: source.calendar, maxTimelineHours: source.config.rules.widgets.timelineHours)
+                                        context: source.context(at: now), maxTimelineHours: source.config.rules.widgets.timelineHours)
                     }
                     if let habit = source.habit(named: "Медитация 🧘") {
                         HStack(spacing: 20) {

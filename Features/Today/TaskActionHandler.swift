@@ -8,6 +8,8 @@ struct TaskActionHandler {
     let router: Router
     let openURL: OpenURLAction
     let requestConfirmation: (PendingAction) -> Void
+    /// The page showing the task closes itself after a delete.
+    var afterDelete: (() -> Void)?
 
     func handle(_ action: ActionDefinition, taskName: String) {
         if action.needsConfirmation {
@@ -28,7 +30,7 @@ struct TaskActionHandler {
         case .delete:
             Task {
                 await model.perform(.delete, on: taskName)
-                if router.path.last == .task(taskName) { router.popToRoot() }
+                if model.task(named: taskName) == nil { afterDelete?() }
             }
         default:
             Task { await model.perform(action.id, on: taskName) }

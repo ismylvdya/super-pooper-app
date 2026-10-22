@@ -28,6 +28,9 @@ final class AppModel {
     private(set) var hasLoaded = false
     private(set) var settings: AppSettings
     var access = SourceAccessState()
+    /// Paths written while a scan was running; their scanned copies are stale.
+    @ObservationIgnored private var writtenDuringSync: Set<String>?
+    @ObservationIgnored var runningSync: Task<Void, Never>?
 
     init(config: AppConfig, services: AppServices, banners: BannerCenter, clock: Clock, calendar: Calendar) {
         self.config = config
@@ -49,11 +52,8 @@ final class AppModel {
     }
 
     func plan(at date: Date) -> DayPlan {
-        let context = context(at: date)
-        let state = dayState.day == context.today ? dayState : DayState(day: context.today)
-        let inputs = DayInputs(tasks: config.flags.eventLinks ? tasks : tasks.map(\.withoutEventLinks), events: events,
-                               reminders: reminders, skipped: Set(state.skipped), manualOrder: state.manualOrder)
-        return DayBuilder(rules: config.rules.day, sortCriteria: config.sort.pool).build(inputs, context: context)
+        DayPlanning.plan(config: config, tasks: tasks, events: events, reminders: reminders, dayState: dayState,
+                         context: context(at: date))
     }
 
     func task(named name: String) -> TaskNote? { tasks.first { $0.name == name } }
@@ -107,10 +107,17 @@ final class AppModel {
     }
 
     func setScanResult(_ result: VaultScanResult) {
-        tasks = result.tasks
+        let freshlyWritten = writtenDuringSync ?? []
+        tasks = result.tasks.map { scanned in
+            freshlyWritten.contains(scanned.relativePath) ? (tasks.first { $0.relativePath == scanned.relativePath } ?? scanned) : scanned
+        }
         fileProblems = result.fileProblems
         vaultState = .ready
     }
+
+    func beginTrackingWrites() { writtenDuringSync = [] }
+    func endTrackingWrites() { writtenDuringSync = nil }
+    func noteWrite(_ task: TaskNote) { writtenDuringSync?.insert(task.relativePath) }
 
     func setVaultState(_ state: VaultState) {
         vaultState = state
@@ -127,13 +134,4 @@ final class AppModel {
 
     func setSyncing(_ value: Bool) { isSyncing = value }
     func markLoaded() { hasLoaded = true }
-}
-
-private extension TaskNote {
-    var withoutEventLinks: TaskNote {
-        var copy = self
-        copy.previousEvent = nil
-        copy.nextEvent = nil
-        return copy
-    }
 }

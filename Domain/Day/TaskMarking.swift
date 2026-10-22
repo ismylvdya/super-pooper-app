@@ -9,8 +9,7 @@ struct TaskMarking: Sendable {
     func changes(marking task: TaskNote, as mark: HabitMark?) -> [TaskFieldChange] {
         if task.isRecurring {
             let current = HabitInstances(task: task)
-            let updated = current.setting(mark, on: today)
-            return updated == current ? [] : [.habitInstances(updated)]
+            return current.setting(mark, on: today) == current ? [] : [.markInstance(day: today, mark: mark)]
         }
         if mark != nil {
             return task.status == .done ? [] : [.status(.done), .completedDate(today)]

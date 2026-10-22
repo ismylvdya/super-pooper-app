@@ -85,10 +85,10 @@ struct DayBuilder: Sendable {
         return task.status == .done ? .marked(.done) : .open
     }
 
-    /// Recurring tasks take the time of day from `due`; others need `due` today with a time.
+    /// Recurring tasks take the time of day from `due`; others need `due` on today's logical day.
     private func timeOfDay(of task: TaskNote, context: DayContext) -> LocalTime? {
         guard let due = task.due, let time = due.time else { return nil }
-        return task.isRecurring || due.day == context.today ? time : nil
+        return task.isRecurring || context.logicalDay(of: due) == context.today ? time : nil
     }
 
     private func overlapsToday(_ event: CalendarEvent, _ context: DayContext) -> Bool {
@@ -149,7 +149,7 @@ struct DayBuilder: Sendable {
         }
         for item in timed {
             guard let time = timeOfDay(of: item.task, context: context) else { continue }
-            let start = context.date(context.today, time)
+            let start = context.moment(time, onLogicalDay: context.today)
             let end = start.addingTimeInterval(Double(rules.estimate(of: item.task)) * 60)
             entries.append(TimelineSlot(content: .task(item), start: start, end: end, isPast: item.isDone))
         }

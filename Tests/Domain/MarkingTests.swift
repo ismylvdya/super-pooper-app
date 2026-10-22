@@ -65,7 +65,7 @@ struct MarkingTests {
     @Test func recurringTasksNeverGetStatusOrCompletedDate() {
         for mark in HabitMark.allCases {
             for change in marking.changes(marking: habit, as: mark) {
-                guard case .habitInstances = change else {
+                guard case .markInstance = change else {
                     Issue.record("Unexpected change \(change) for \(mark)")
                     continue
                 }

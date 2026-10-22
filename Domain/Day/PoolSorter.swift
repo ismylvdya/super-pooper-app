@@ -63,7 +63,7 @@ struct PoolSorter: Sendable {
         case .habitsFirst:
             return task.isRecurring && task.due?.time == nil ? 0 : 1
         case .dueToday:
-            return task.due?.day == context.today ? 0 : 1
+            return task.due.map(context.logicalDay(of:)) == context.today ? 0 : 1
         case .highPriority:
             return task.isHighPriority ? 0 : 1
         case .nearestDueThisWeek:

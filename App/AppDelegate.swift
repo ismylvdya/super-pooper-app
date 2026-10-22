@@ -18,10 +18,11 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 
     /// Tapping or dismissing does nothing to the data: the item simply stays in the day.
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
+        let info = response.notification.request.content.userInfo
         guard let action = ActionID(rawValue: response.actionIdentifier),
-              let taskName = response.notification.request.content.userInfo[NotificationPayload.taskKey] as? String,
-              !taskName.isEmpty else { return }
-        await MainActor.run { BackgroundRefresh.performAction(action, taskName: taskName) }
+              let taskName = info[NotificationPayload.taskKey] as? String, !taskName.isEmpty else { return }
+        let day = (info[NotificationPayload.dayKey] as? String).flatMap(LocalDate.init(isoString:))
+        await MainActor.run { BackgroundRefresh.performAction(action, taskName: taskName, day: day) }
         await BackgroundRefresh.waitForPendingWork()
     }
 }
@@ -45,11 +46,14 @@ enum BackgroundRefresh {
         schedule()
     }
 
-    static func performAction(_ action: ActionID, taskName: String) {
+    /// Actions run one after another; each waits for the first load of the vault.
+    static func performAction(_ action: ActionID, taskName: String, day: LocalDate?) {
         guard case .success(let container) = AppContainer.shared else { return }
+        let previous = pending
         pending = Task {
+            await previous?.value
             await container.model.ensureLoaded()
-            await container.model.perform(action, on: taskName)
+            await container.model.perform(action, on: taskName, day: day)
         }
     }
 

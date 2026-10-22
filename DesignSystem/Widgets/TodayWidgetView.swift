@@ -7,7 +7,7 @@ struct TodayWidgetView: View {
     let plan: DayPlan
     let settings: AppSettings
     let layout: ScreenLayout
-    let calendar: Calendar
+    let context: DayContext
     let maxTimelineHours: Int
 
     var body: some View {
@@ -22,7 +22,7 @@ struct TodayWidgetView: View {
             ScreenLayoutView(layout: layout) { id in
                 switch id {
                 case "pool": WidgetPoolBlock(plan: plan, visibleCount: settings.pool.visibleCount)
-                case "timeline": WidgetTimelineBlock(plan: plan, settings: settings.timeline, calendar: calendar,
+                case "timeline": WidgetTimelineBlock(plan: plan, settings: settings.timeline, context: context,
                                                      maxHours: maxTimelineHours)
                 default: EmptyView()
                 }
@@ -61,7 +61,7 @@ struct WidgetTimelineBlock: View {
     @Environment(\.tokens) private var tokens
     let plan: DayPlan
     let settings: AppSettings.Timeline
-    let calendar: Calendar
+    let context: DayContext
     let maxHours: Int
 
     var body: some View {
@@ -72,13 +72,11 @@ struct WidgetTimelineBlock: View {
             case .oneColumn:
                 let before = min(settings.hoursBefore, 1)
                 let window = TimelineWindow.rolling(now: plan.now, hoursBefore: before,
-                                                    hoursAfter: max(min(settings.hoursAfter, maxHours - before), 1), calendar: calendar)
+                                                    hoursAfter: max(min(settings.hoursAfter, maxHours - before), 1), calendar: context.calendar)
                 DayTimelineView(slots: plan.timeline, window: window, now: plan.now,
                                 hourHeight: geometry.size.height / CGFloat(window.duration / 3600), style: style, taskContent: row)
             case .twoColumns:
-                HalvesTimeline(plan: plan, settings: settings,
-                               context: DayContext(now: plan.now, calendar: calendar, boundary: .midnight, energyHour: .midnight),
-                               height: geometry.size.height, taskContent: row)
+                HalvesTimeline(plan: plan, settings: settings, context: context, height: geometry.size.height, taskContent: row)
             }
         }
     }
