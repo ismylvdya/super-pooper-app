@@ -1,0 +1,12 @@
+#include "Shared.xcconfig"
+
+PRODUCT_NAME = SuperPooperWidgets
+PRODUCT_BUNDLE_IDENTIFIER = $(SP_BUNDLE_ID).Widgets
+INFOPLIST_FILE = Config/Widgets-Info.plist
+GENERATE_INFOPLIST_FILE = YES
+INFOPLIST_KEY_CFBundleDisplayName = SuperPooper
+CODE_SIGN_ENTITLEMENTS = Config/SuperPooperWidgets.entitlements
+SKIP_INSTALL = YES
+APPLICATION_EXTENSION_API_ONLY = YES
+ENABLE_PREVIEWS = YES
+LD_RUNPATH_SEARCH_PATHS = $(inherited) @executable_path/Frameworks @executable_path/../../Frameworks

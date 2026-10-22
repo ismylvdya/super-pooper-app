@@ -1,0 +1,12 @@
+{
+  "pool": [
+    "habitsFirst",
+    "dueToday",
+    "highPriority",
+    "nearestDueThisWeek",
+    "energyBeforeEnergyHour",
+    "unpleasantFirst",
+    "shortFirst",
+    "olderFirst"
+  ]
+}

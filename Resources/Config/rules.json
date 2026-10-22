@@ -1,0 +1,40 @@
+{
+  "day": {
+    "defaultEstimateMinutes": 15,
+    "reminderMinutes": 15,
+    "autoPromoteFrom": ["half_year", "someday"]
+  },
+  "timeEstimates": [
+    { "minutes": 2, "label": "estimate.2min" },
+    { "minutes": 15, "label": "estimate.15min" },
+    { "minutes": 60, "label": "estimate.1h" },
+    { "minutes": 240, "label": "estimate.dohuya" }
+  ],
+  "notifications": {
+    "limit": 60,
+    "horizonDays": 7
+  },
+  "eventLinks": {
+    "resolveDaysBefore": 2,
+    "resolveDaysAfter": 14,
+    "pickerDaysAhead": 7
+  },
+  "vault": {
+    "downloadTimeoutSeconds": 20,
+    "noteExtension": "md"
+  },
+  "backups": {
+    "keepCount": 20
+  },
+  "timeline": {
+    "refreshSeconds": 60,
+    "maxHoursAfter": 18
+  },
+  "widgets": {
+    "refreshMinutes": 15,
+    "entryCount": 24,
+    "habitGridWeeksSmall": 7,
+    "habitGridWeeksMedium": 16,
+    "timelineHours": 6
+  }
+}

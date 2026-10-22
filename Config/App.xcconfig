@@ -1,0 +1,18 @@
+#include "Shared.xcconfig"
+
+PRODUCT_NAME = SuperPooper
+PRODUCT_BUNDLE_IDENTIFIER = $(SP_BUNDLE_ID)
+INFOPLIST_FILE = Config/App-Info.plist
+GENERATE_INFOPLIST_FILE = YES
+INFOPLIST_KEY_CFBundleDisplayName = SuperPooper
+INFOPLIST_KEY_UILaunchScreen_Generation = YES
+INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait
+INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES
+INFOPLIST_KEY_LSApplicationCategoryType = public.app-category.productivity
+INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = SuperPooper shows your anchor calendar events on the Today timeline.
+INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = SuperPooper shows timed reminders from the lists you choose.
+CODE_SIGN_ENTITLEMENTS = Config/SuperPooper.entitlements
+ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon
+ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO
+ENABLE_PREVIEWS = YES
+LD_RUNPATH_SEARCH_PATHS = $(inherited) @executable_path/Frameworks

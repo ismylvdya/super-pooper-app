@@ -1,0 +1,6 @@
+#include "Shared.xcconfig"
+
+PRODUCT_NAME = SuperPooperUITests
+PRODUCT_BUNDLE_IDENTIFIER = $(SP_BUNDLE_ID).UITests
+GENERATE_INFOPLIST_FILE = YES
+TEST_TARGET_NAME = SuperPooper

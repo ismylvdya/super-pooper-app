@@ -1,0 +1,623 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AA0000000000000000000B01 /* SuperPooperWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000F02 /* SuperPooperWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		AA0000000000000000000C03 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA0000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA0000000000000000000601;
+			remoteInfo = SuperPooper;
+		};
+		AA0000000000000000000C01 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA0000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA0000000000000000000602;
+			remoteInfo = SuperPooperWidgets;
+		};
+		AA0000000000000000000C02 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA0000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA0000000000000000000601;
+			remoteInfo = SuperPooper;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		AA0000000000000000000904 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				AA0000000000000000000B01 /* SuperPooperWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		AA0000000000000000000F04 /* SuperPooperUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SuperPooperUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA0000000000000000000F19 /* UITests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = UITests.xcconfig; sourceTree = "<group>"; };
+		AA0000000000000000000F01 /* SuperPooper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SuperPooper.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA0000000000000000000F02 /* SuperPooperWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SuperPooperWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA0000000000000000000F03 /* SuperPooperTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SuperPooperTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA0000000000000000000F11 /* Shared.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Shared.xcconfig; sourceTree = "<group>"; };
+		AA0000000000000000000F12 /* App.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = App.xcconfig; sourceTree = "<group>"; };
+		AA0000000000000000000F13 /* Widgets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Widgets.xcconfig; sourceTree = "<group>"; };
+		AA0000000000000000000F14 /* Tests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Tests.xcconfig; sourceTree = "<group>"; };
+		AA0000000000000000000F15 /* App-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "App-Info.plist"; sourceTree = "<group>"; };
+		AA0000000000000000000F16 /* Widgets-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Widgets-Info.plist"; sourceTree = "<group>"; };
+		AA0000000000000000000F17 /* SuperPooper.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SuperPooper.entitlements; sourceTree = "<group>"; };
+		AA0000000000000000000F18 /* SuperPooperWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SuperPooperWidgets.entitlements; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		AA0000000000000000000815 /* UITests */ = {isa = PBXFileSystemSynchronizedRootGroup; path = UITests; sourceTree = "<group>"; };
+		AA0000000000000000000801 /* App */ = {isa = PBXFileSystemSynchronizedRootGroup; path = App; sourceTree = "<group>"; };
+		AA0000000000000000000802 /* Features */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Features; sourceTree = "<group>"; };
+		AA0000000000000000000803 /* Data */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Data; sourceTree = "<group>"; };
+		AA0000000000000000000804 /* Debug */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Debug; sourceTree = "<group>"; };
+		AA0000000000000000000805 /* AppResources */ = {isa = PBXFileSystemSynchronizedRootGroup; path = AppResources; sourceTree = "<group>"; };
+		AA0000000000000000000806 /* Domain */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Domain; sourceTree = "<group>"; };
+		AA0000000000000000000807 /* Core */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Core; sourceTree = "<group>"; };
+		AA0000000000000000000808 /* DesignSystem */ = {isa = PBXFileSystemSynchronizedRootGroup; path = DesignSystem; sourceTree = "<group>"; };
+		AA0000000000000000000809 /* Resources */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Resources; sourceTree = "<group>"; };
+		AA0000000000000000000810 /* Widgets */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Widgets; sourceTree = "<group>"; };
+		AA0000000000000000000811 /* Tests */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Tests; sourceTree = "<group>"; };
+		AA0000000000000000000812 /* Fixtures */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Fixtures; sourceTree = "<group>"; };
+		AA0000000000000000000813 /* docs */ = {isa = PBXFileSystemSynchronizedRootGroup; path = docs; sourceTree = "<group>"; };
+		AA0000000000000000000814 /* scripts */ = {isa = PBXFileSystemSynchronizedRootGroup; path = scripts; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AA0000000000000000000932 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA0000000000000000000902 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA0000000000000000000912 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA0000000000000000000922 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AA0000000000000000000701 = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000702 /* Config */,
+				AA0000000000000000000801 /* App */,
+				AA0000000000000000000802 /* Features */,
+				AA0000000000000000000808 /* DesignSystem */,
+				AA0000000000000000000806 /* Domain */,
+				AA0000000000000000000803 /* Data */,
+				AA0000000000000000000807 /* Core */,
+				AA0000000000000000000809 /* Resources */,
+				AA0000000000000000000805 /* AppResources */,
+				AA0000000000000000000810 /* Widgets */,
+				AA0000000000000000000804 /* Debug */,
+				AA0000000000000000000811 /* Tests */,
+				AA0000000000000000000815 /* UITests */,
+				AA0000000000000000000812 /* Fixtures */,
+				AA0000000000000000000813 /* docs */,
+				AA0000000000000000000814 /* scripts */,
+				AA0000000000000000000703 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000702 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000F11 /* Shared.xcconfig */,
+				AA0000000000000000000F12 /* App.xcconfig */,
+				AA0000000000000000000F13 /* Widgets.xcconfig */,
+				AA0000000000000000000F14 /* Tests.xcconfig */,
+				AA0000000000000000000F19 /* UITests.xcconfig */,
+				AA0000000000000000000F15 /* App-Info.plist */,
+				AA0000000000000000000F16 /* Widgets-Info.plist */,
+				AA0000000000000000000F17 /* SuperPooper.entitlements */,
+				AA0000000000000000000F18 /* SuperPooperWidgets.entitlements */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000703 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000F01 /* SuperPooper.app */,
+				AA0000000000000000000F02 /* SuperPooperWidgets.appex */,
+				AA0000000000000000000F03 /* SuperPooperTests.xctest */,
+				AA0000000000000000000F04 /* SuperPooperUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AA0000000000000000000604 /* SuperPooperUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA0000000000000000000505 /* Build configuration list for PBXNativeTarget "SuperPooperUITests" */;
+			buildPhases = (
+				AA0000000000000000000931 /* Sources */,
+				AA0000000000000000000932 /* Frameworks */,
+				AA0000000000000000000933 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AA0000000000000000000D03 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				AA0000000000000000000815 /* UITests */,
+			);
+			name = SuperPooperUITests;
+			packageProductDependencies = (
+			);
+			productName = SuperPooperUITests;
+			productReference = AA0000000000000000000F04 /* SuperPooperUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		AA0000000000000000000601 /* SuperPooper */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA0000000000000000000502 /* Build configuration list for PBXNativeTarget "SuperPooper" */;
+			buildPhases = (
+				AA0000000000000000000901 /* Sources */,
+				AA0000000000000000000902 /* Frameworks */,
+				AA0000000000000000000903 /* Resources */,
+				AA0000000000000000000904 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AA0000000000000000000D01 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				AA0000000000000000000801 /* App */,
+				AA0000000000000000000802 /* Features */,
+				AA0000000000000000000803 /* Data */,
+				AA0000000000000000000804 /* Debug */,
+				AA0000000000000000000805 /* AppResources */,
+				AA0000000000000000000806 /* Domain */,
+				AA0000000000000000000807 /* Core */,
+				AA0000000000000000000808 /* DesignSystem */,
+				AA0000000000000000000809 /* Resources */,
+			);
+			name = SuperPooper;
+			packageProductDependencies = (
+			);
+			productName = SuperPooper;
+			productReference = AA0000000000000000000F01 /* SuperPooper.app */;
+			productType = "com.apple.product-type.application";
+		};
+		AA0000000000000000000602 /* SuperPooperWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA0000000000000000000503 /* Build configuration list for PBXNativeTarget "SuperPooperWidgets" */;
+			buildPhases = (
+				AA0000000000000000000911 /* Sources */,
+				AA0000000000000000000912 /* Frameworks */,
+				AA0000000000000000000913 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				AA0000000000000000000806 /* Domain */,
+				AA0000000000000000000807 /* Core */,
+				AA0000000000000000000808 /* DesignSystem */,
+				AA0000000000000000000809 /* Resources */,
+				AA0000000000000000000810 /* Widgets */,
+			);
+			name = SuperPooperWidgets;
+			packageProductDependencies = (
+			);
+			productName = SuperPooperWidgets;
+			productReference = AA0000000000000000000F02 /* SuperPooperWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		AA0000000000000000000603 /* SuperPooperTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA0000000000000000000504 /* Build configuration list for PBXNativeTarget "SuperPooperTests" */;
+			buildPhases = (
+				AA0000000000000000000921 /* Sources */,
+				AA0000000000000000000922 /* Frameworks */,
+				AA0000000000000000000923 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AA0000000000000000000D02 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				AA0000000000000000000811 /* Tests */,
+			);
+			name = SuperPooperTests;
+			packageProductDependencies = (
+			);
+			productName = SuperPooperTests;
+			productReference = AA0000000000000000000F03 /* SuperPooperTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AA0000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2630;
+				LastUpgradeCheck = 2630;
+				TargetAttributes = {
+					AA0000000000000000000601 = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					AA0000000000000000000602 = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					AA0000000000000000000603 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = AA0000000000000000000601;
+					};
+					AA0000000000000000000604 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = AA0000000000000000000601;
+					};
+				};
+			};
+			buildConfigurationList = AA0000000000000000000501 /* Build configuration list for PBXProject "SuperPooper" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = AA0000000000000000000701;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = AA0000000000000000000703 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AA0000000000000000000601 /* SuperPooper */,
+				AA0000000000000000000602 /* SuperPooperWidgets */,
+				AA0000000000000000000603 /* SuperPooperTests */,
+				AA0000000000000000000604 /* SuperPooperUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AA0000000000000000000933 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA0000000000000000000903 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA0000000000000000000913 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA0000000000000000000923 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AA0000000000000000000931 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA0000000000000000000901 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA0000000000000000000911 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA0000000000000000000921 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		AA0000000000000000000D03 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AA0000000000000000000601 /* SuperPooper */;
+			targetProxy = AA0000000000000000000C03 /* PBXContainerItemProxy */;
+		};
+		AA0000000000000000000D01 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AA0000000000000000000602 /* SuperPooperWidgets */;
+			targetProxy = AA0000000000000000000C01 /* PBXContainerItemProxy */;
+		};
+		AA0000000000000000000D02 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AA0000000000000000000601 /* SuperPooper */;
+			targetProxy = AA0000000000000000000C02 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		AA0000000000000000000E41 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AA0000000000000000000F19 /* UITests.xcconfig */;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		AA0000000000000000000E42 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AA0000000000000000000F19 /* UITests.xcconfig */;
+			buildSettings = {
+			};
+			name = Release;
+		};
+		AA0000000000000000000E01 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		AA0000000000000000000E02 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		AA0000000000000000000E11 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AA0000000000000000000F12 /* App.xcconfig */;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		AA0000000000000000000E12 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AA0000000000000000000F12 /* App.xcconfig */;
+			buildSettings = {
+			};
+			name = Release;
+		};
+		AA0000000000000000000E21 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AA0000000000000000000F13 /* Widgets.xcconfig */;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		AA0000000000000000000E22 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AA0000000000000000000F13 /* Widgets.xcconfig */;
+			buildSettings = {
+			};
+			name = Release;
+		};
+		AA0000000000000000000E31 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AA0000000000000000000F14 /* Tests.xcconfig */;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		AA0000000000000000000E32 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AA0000000000000000000F14 /* Tests.xcconfig */;
+			buildSettings = {
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AA0000000000000000000505 /* Build configuration list for PBXNativeTarget "SuperPooperUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA0000000000000000000E41 /* Debug */,
+				AA0000000000000000000E42 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA0000000000000000000501 /* Build configuration list for PBXProject "SuperPooper" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA0000000000000000000E01 /* Debug */,
+				AA0000000000000000000E02 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA0000000000000000000502 /* Build configuration list for PBXNativeTarget "SuperPooper" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA0000000000000000000E11 /* Debug */,
+				AA0000000000000000000E12 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA0000000000000000000503 /* Build configuration list for PBXNativeTarget "SuperPooperWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA0000000000000000000E21 /* Debug */,
+				AA0000000000000000000E22 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA0000000000000000000504 /* Build configuration list for PBXNativeTarget "SuperPooperTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA0000000000000000000E31 /* Debug */,
+				AA0000000000000000000E32 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = AA0000000000000000000001 /* Project object */;
+}
