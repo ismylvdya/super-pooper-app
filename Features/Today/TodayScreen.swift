@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Main screen: blocks from `today.layout.json` (pool and timeline by default), refreshed every
-/// minute so "now" and chains move; pull down anywhere to sync everything.
+/// minute so "now" and chains move. Pull-to-refresh (full sync) is set for every page in `RootView`.
 struct TodayScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
@@ -24,7 +24,6 @@ struct TodayScreen: View {
             .padding(.horizontal, tokens.space(.screenHorizontal))
         }
         .background(tokens.color(.screenBackground))
-        .refreshable { await model.sync(announce: true) }
         .toolbar { toolbar }
         .navigationBarTitleDisplayMode(.inline)
         .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }

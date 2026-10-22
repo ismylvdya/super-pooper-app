@@ -30,6 +30,7 @@ struct ProblemsSheet: View {
                 }
             }
             .overlay { if lines.isEmpty { Text("problems.none").foregroundStyle(tokens.color(.secondaryText)) } }
+            .bannerHost()
             .navigationTitle(Text("problems.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("common.done") { dismiss() } } }

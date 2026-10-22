@@ -13,16 +13,17 @@ struct RootView: View {
             if model.settings.onboarding.completed {
                 NavigationStack(path: $router.path) {
                     home(model)
-                        .navigationDestination(for: Route.self, destination: destination)
+                        .bannerHost()
+                        .navigationDestination(for: Route.self) { destination($0).bannerHost() }
                 }
                 .sheet(isPresented: $router.isReviewPresented) { MorningReviewScreen() }
                 .sheet(isPresented: $router.isProblemsPresented) { ProblemsSheet() }
+                .refreshable { await model.sync(announce: true) }
             } else {
                 OnboardingFlow()
             }
         }
         .tint(container.config.tokens.color(.accent))
-        .overlay(alignment: .top) { BannerOverlay() }
         .environment(model)
         .environment(container.router)
         .environment(container.banners)
@@ -75,6 +76,14 @@ struct RootView: View {
               container.launch.openURL == nil else { return }
         model.updateDayState { $0.reviewShown = true }
         container.router.isReviewPresented = true
+    }
+}
+
+extension View {
+    /// Shows the banner at the top of this page's content (below the navigation bar, so it
+    /// never covers bar buttons). Every page and sheet hosts it; the same banner dismisses once.
+    func bannerHost() -> some View {
+        overlay(alignment: .top) { BannerOverlay() }
     }
 }
 

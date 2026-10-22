@@ -30,6 +30,7 @@ struct MorningReviewScreen: View {
                 }
             }
             .environment(\.editMode, .constant(.active))
+            .bannerHost()
             .navigationTitle(Text("review.title"))
             .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(for: Route.self) { route in

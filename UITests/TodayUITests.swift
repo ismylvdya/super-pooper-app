@@ -9,16 +9,26 @@ final class TodayUITests: XCTestCase {
     override func setUp() {
         continueAfterFailure = false
         app = XCUIApplication()
-        app.launchArguments = ["-SPVaultPath", "TestVault", "-SPSkipOnboarding", "-SPNow", "11:30", "-SPResetState"]
+        app.launchArguments = ["-SPVaultPath", "TestVault", "-SPSkipOnboarding", "-SPNow", "11:30", "-SPResetState", "-SPSeedDemo"]
     }
 
-    /// `-SPResetState` clears the day state, so the morning review opens by itself first.
+    /// `-SPResetState` clears the day state, so the morning review opens by itself first;
+    /// `-SPSeedDemo` brings back the demo calendar the event-linked tasks need.
     private func launch() {
         app.launch()
         let review = app.navigationBars["Morning review"]
         if review.waitForExistence(timeout: 8) {
             review.buttons["Done"].tap()
             XCTAssertTrue(review.waitForNonExistence(timeout: 5))
+        }
+    }
+
+    /// Banners sit over the navigation bar for a few seconds; swipe them away like a user would.
+    private func dismissBanners() {
+        for _ in 0..<3 {
+            let banner = app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'problems' OR label BEGINSWITH 'Synced'")).firstMatch
+            guard banner.waitForExistence(timeout: 2) else { return }
+            banner.swipeUp()
         }
     }
 
@@ -61,7 +71,10 @@ final class TodayUITests: XCTestCase {
 
     func testMorningReviewDragFixesManualOrder() {
         launch()
-        app.buttons["today.edit"].tap()
+        let edit = app.buttons["today.edit"]
+        XCTAssertTrue(edit.waitForExistence(timeout: 5))
+        dismissBanners()
+        edit.tap()
         XCTAssertTrue(app.navigationBars["Morning review"].waitForExistence(timeout: 5))
         let first = app.cells.element(boundBy: 0)
         let third = app.cells.element(boundBy: 2)
@@ -74,5 +87,13 @@ final class TodayUITests: XCTestCase {
         reset.tap()
         let auto = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isEnabled == false"), object: reset)
         XCTAssertEqual(XCTWaiter().wait(for: [auto], timeout: 5), .completed)
+    }
+
+    func testPullToRefreshShowsSyncBanner() {
+        launch()
+        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.6))
+        start.press(forDuration: 0.1, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.95)))
+        let banner = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Synced'")).firstMatch
+        XCTAssertTrue(banner.waitForExistence(timeout: 10))
     }
 }
