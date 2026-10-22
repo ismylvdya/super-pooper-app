@@ -10,6 +10,8 @@ iPhone-приложение для дня, дел и привычек повер
 
 Версия: **v0** (0.0.0, сборка 1).
 
+Скриншоты (симулятор, тестовый vault, 11:30): [Today](docs/screenshots/today.png) · [две половины дня](docs/screenshots/today-two-halves.png) · [тёмная тема](docs/screenshots/today-dark.png) · [страница задачи](docs/screenshots/task-page.png) · [утренний разбор](docs/screenshots/morning-review.png) · [настройки](docs/screenshots/settings.png) · [виджеты](docs/screenshots/widgets.png).
+
 ## Как открыть и запустить
 1. Открыть `SuperPooper.xcodeproj` в Xcode 26.3.
 2. В Signing & Capabilities выбрать свою команду у таргетов `SuperPooper` и `SuperPooperWidgets`.
