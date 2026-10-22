@@ -28,9 +28,15 @@ struct SourcesSettingsSection: View {
             }
             .buttonStyle(.plain)
             .disabled(model.access.reminders != .granted || !model.config.flags.reminders)
-            accessRow(.calendars, "settings.access.calendar", model.access.calendars) { await model.requestCalendarAccess() }
-            accessRow(.reminderLists, "settings.access.reminders", model.access.reminders) { await model.requestRemindersAccess() }
-            accessRow(.notifications, "settings.access.notifications", model.access.notifications) { await model.requestNotificationAccess() }
+            accessRow(.calendars, "settings.access.calendar", "info.settings.access.calendar", model.access.calendars) {
+                await model.requestCalendarAccess()
+            }
+            accessRow(.reminderLists, "settings.access.reminders", "info.settings.access.reminders", model.access.reminders) {
+                await model.requestRemindersAccess()
+            }
+            accessRow(.notifications, "settings.access.notifications", "info.settings.access.notifications", model.access.notifications) {
+                await model.requestNotificationAccess()
+            }
         }
         .vaultPicker(isPresented: $isPickingVault)
     }
@@ -42,9 +48,9 @@ struct SourcesSettingsSection: View {
         }
     }
 
-    private func accessRow(_ icon: Icon, _ title: LocalizedStringKey, _ access: SourceAccess,
+    private func accessRow(_ icon: Icon, _ title: LocalizedStringKey, _ info: LocalizedStringKey, _ access: SourceAccess,
                            request: @escaping () async -> Void) -> some View {
-        PlateRow(icon: icon, title: title) {
+        PlateRow(icon: icon, title: title, info: info) {
             switch access {
             case .granted:
                 Image(systemName: icons[.permissionGranted]).foregroundStyle(tokens.color(.pleasant))

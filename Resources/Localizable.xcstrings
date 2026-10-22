@@ -562,6 +562,39 @@
         }
       }
     },
+    "info.settings.access.calendar": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Full access to read Calendar. The app never creates or changes events."
+          }
+        }
+      }
+    },
+    "info.settings.access.notifications": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Local notifications for timed habits, timed tasks and reminders."
+          }
+        }
+      }
+    },
+    "info.settings.access.reminders": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Full access to read Reminders. The app never creates or changes reminders."
+          }
+        }
+      }
+    },
     "info.settings.archive": {
       "extractionState": "manual",
       "localizations": {
