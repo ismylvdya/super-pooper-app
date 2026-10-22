@@ -83,7 +83,7 @@ actor VaultTaskRepository: TaskRepository {
             return result
         }
         for dependent in dependents {
-            let links = dependent.previousTasks.map { $0 == task.name ? newName : $0 }
+            let links = dependent.previousTasks.map { $0.lowercased() == task.name.lowercased() ? newName : $0 }
             _ = try await apply([.previousTasks(links)], to: dependent)
         }
         return renamed

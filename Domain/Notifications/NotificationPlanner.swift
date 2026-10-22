@@ -18,7 +18,7 @@ struct PlannedNotification: Hashable, Sendable {
     let day: LocalDate
 }
 
-/// Decides which notifications should be pending: timed habits and tasks, and timed reminders.
+/// Decides which notifications should be pending: timed habits, timed tasks of this week and timed reminders.
 /// Anything whose time has passed is never planned (better skipped than late).
 struct NotificationPlanner: Sendable {
     let horizonDays: Int
@@ -53,7 +53,7 @@ struct NotificationPlanner: Sendable {
                                                       title: task.name, fireDate: context.date(day, time),
                                                       taskName: task.name, day: day))
                 }
-            } else if !task.status.isCompleted {
+            } else if task.status == .thisWeek {
                 result.append(PlannedNotification(id: "task|\(task.name)", kind: .task, title: task.name,
                                                   fireDate: context.date(due.day, time), taskName: task.name, day: due.day))
             }

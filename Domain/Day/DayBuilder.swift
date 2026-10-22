@@ -31,10 +31,14 @@ struct DayBuilder: Sendable {
         for task in inputs.tasks {
             let previousEvent = task.previousEvent.flatMap(resolver.resolve)
             let nextEvent = task.nextEvent.flatMap(resolver.resolve)
-            let taskProblems = self.problems(of: task, graph: graph, previousEvent: previousEvent, nextEvent: nextEvent)
-            problems += taskProblems.map { PlanProblem(taskName: task.name, problem: $0) }
+            let inDay = isInDay(task, occurrence: occurrence, skipped: inputs.skipped, context: context)
+            let taskProblems = self.problems(of: task, graph: graph, previousEvent: previousEvent, nextEvent: nextEvent,
+                                             checkEvents: inDay)
+            if inDay || task.isRecurring || !task.status.isCompleted {
+                problems += taskProblems.map { PlanProblem(taskName: task.name, problem: $0) }
+            }
 
-            guard isInDay(task, occurrence: occurrence, skipped: inputs.skipped, context: context) else { continue }
+            guard inDay else { continue }
             let state = self.state(of: task, today: context.today)
             items.append(DayItem(task: task, state: state,
                                  blockers: blocking.blockers(for: task, previousEvent: previousEvent),
@@ -91,10 +95,14 @@ struct DayBuilder: Sendable {
         event.start < context.dayEnd && event.end > context.dayStart
     }
 
-    private func problems(of task: TaskNote, graph: TaskGraph, previousEvent: CalendarEvent?, nextEvent: CalendarEvent?) -> [TaskProblem] {
+    /// Problems of done/archived tasks are not reported (see `build`); event links are checked only
+    /// for tasks in the day, since only today's events are looked up around it.
+    private func problems(of task: TaskNote, graph: TaskGraph, previousEvent: CalendarEvent?, nextEvent: CalendarEvent?,
+                          checkEvents: Bool) -> [TaskProblem] {
         var result = task.problems
         result += (graph.missingLinks[task.name] ?? []).map(TaskProblem.linkedTaskNotFound)
         if graph.cycleMembers.contains(task.name) { result.append(.dependencyCycle) }
+        guard checkEvents else { return result }
         if let link = task.previousEvent, previousEvent == nil { result.append(.eventNotFound(link.title)) }
         if let link = task.nextEvent, nextEvent == nil { result.append(.eventNotFound(link.title)) }
         return result

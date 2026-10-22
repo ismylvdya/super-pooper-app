@@ -52,11 +52,18 @@ struct NotificationPlannerTests {
 
     @Test func aTaskWithATimeInTheFutureIsPlannedOnce() throws {
         let parcel = makeTask("Pick up parcel") { $0.due = TaskDue("2026-10-21T16:00") }
-        let friday = makeTask("Friday call", status: .halfYear) { $0.due = TaskDue("2026-10-23T10:00") }
+        let friday = makeTask("Friday call") { $0.due = TaskDue("2026-10-23T10:00") }
         let planned = plan([friday, parcel], at: "13:25")
         #expect(planned.map(\.id) == ["task|Pick up parcel", "task|Friday call"])
         let first = try #require(planned.first)
         #expect(first.kind == .task && first.day == LocalDate("2026-10-21") && clockTime(first.fireDate) == "16:00")
+    }
+
+    /// Only tasks of this week notify; backlog tasks get here through auto-promotion first.
+    @Test func timedTasksOutsideThisWeekAreNotPlanned() {
+        let backlog = makeTask("Backlog", status: .halfYear) { $0.due = TaskDue("2026-10-23T10:00") }
+        let waiting = makeTask("Waiting", status: .waiting) { $0.due = TaskDue("2026-10-22T10:00") }
+        #expect(plan([backlog, waiting], at: "08:00").isEmpty)
     }
 
     @Test func pastAndCompletedTasksAreNotPlanned() {

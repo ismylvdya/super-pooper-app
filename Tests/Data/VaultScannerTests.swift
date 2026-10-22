@@ -74,8 +74,8 @@ struct VaultScannerTests {
 
     @Test func linksAreReadAsObjectsAndAsPlainStrings() async throws {
         let tasks = try await tasksByName()
-        #expect(tasks["Утро: душ 🚿"]?.previousTasks == ["Утро: зарядка 🤸"])
-        #expect(tasks["Утро: завтрак 🥣"]?.previousTasks == ["Утро: душ 🚿"])
+        #expect(tasks["Утро — душ 🚿"]?.previousTasks == ["Утро — зарядка 🤸"])
+        #expect(tasks["Утро — завтрак 🥣"]?.previousTasks == ["Утро — душ 🚿"])
         #expect(tasks["Связь без скобок"]?.previousTasks == ["Найти отвёртку"])
         #expect(tasks["Связь на несуществующую"]?.previousTasks == ["Несуществующая задача"])
         let notes = try #require(tasks["Записать итоги разговора"])
@@ -126,7 +126,7 @@ struct VaultScannerTests {
         "Оплатить интернет", "Повесить зеркало", "Подготовить вопросы папе", "Позвонить в банк", "Полить цветы 🌱",
         "Помыть окна", "Посмотреть сериал 🍿", "Разобрать почту", "Распечатать вопросы", "Связь без скобок",
         "Связь на несуществующую", "Сдать отчёт", "Собрать шкаф", "Старая сделанная задача", "Стирка 🧺",
-        "Сходить к стоматологу", "Утро: душ 🚿", "Утро: завтрак 🥣", "Утро: зарядка 🤸", "Цикл А", "Цикл Б",
+        "Сходить к стоматологу", "Утро — душ 🚿", "Утро — завтрак 🥣", "Утро — зарядка 🤸", "Цикл А", "Цикл Б",
     ]
 
     private func scannedTasks() async throws -> [TaskNote] {

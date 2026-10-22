@@ -82,25 +82,25 @@ struct BlockingTests {
     // MARK: - Morning routine
 
     @Test func aMorningRoutineUnlocksStepByStep() {
-        let workout = makeHabit("Утро: зарядка 🤸")
-        let shower = makeHabit("Утро: душ 🚿") { $0.previousTasks = ["Утро: зарядка 🤸"] }
-        let breakfast = makeHabit("Утро: завтрак 🥣") { $0.previousTasks = ["Утро: душ 🚿"] }
+        let workout = makeHabit("Утро — зарядка 🤸")
+        let shower = makeHabit("Утро — душ 🚿") { $0.previousTasks = ["Утро — зарядка 🤸"] }
+        let breakfast = makeHabit("Утро — завтрак 🥣") { $0.previousTasks = ["Утро — душ 🚿"] }
         var tasks = [breakfast, shower, workout]
 
         var plan = DayScenario(tasks: tasks).build()
-        #expect(plan.poolNames == ["Утро: зарядка 🤸", "Утро: душ 🚿", "Утро: завтрак 🥣"])
+        #expect(plan.poolNames == ["Утро — зарядка 🤸", "Утро — душ 🚿", "Утро — завтрак 🥣"])
         #expect(plan.pool.map(\.isBlocked) == [false, true, true])
-        #expect(plan.item(named: "Утро: завтрак 🥣")?.blockers == [.task("Утро: душ 🚿")])
+        #expect(plan.item(named: "Утро — завтрак 🥣")?.blockers == [.task("Утро — душ 🚿")])
 
         tasks[2] = markedToday(workout)
         plan = DayScenario(tasks: tasks).build()
-        #expect(plan.item(named: "Утро: душ 🚿")?.isBlocked == false)
-        #expect(plan.item(named: "Утро: завтрак 🥣")?.isBlocked == true)
+        #expect(plan.item(named: "Утро — душ 🚿")?.isBlocked == false)
+        #expect(plan.item(named: "Утро — завтрак 🥣")?.isBlocked == true)
 
         tasks[1] = markedToday(shower)
         plan = DayScenario(tasks: tasks).build()
-        #expect(plan.item(named: "Утро: завтрак 🥣")?.isBlocked == false)
-        #expect(plan.poolNames == ["Утро: завтрак 🥣", "Утро: зарядка 🤸", "Утро: душ 🚿"])
+        #expect(plan.item(named: "Утро — завтрак 🥣")?.isBlocked == false)
+        #expect(plan.poolNames == ["Утро — завтрак 🥣", "Утро — зарядка 🤸", "Утро — душ 🚿"])
     }
 
     // MARK: - Events and cycles

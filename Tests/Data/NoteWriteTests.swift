@@ -105,7 +105,7 @@ struct NoteWriteTests {
     }
 
     @Test func anEmptyCompleteListIsFilledInPlaceAndEmptiedBackToBrackets() async throws {
-        let note = try await SandboxNote("Утро: зарядка 🤸")
+        let note = try await SandboxNote("Утро — зарядка 🤸")
         let original = try note.text()
         let modified = "date_modified: 2026-10-20T09:12:44.123+02:00\n"
         let written = "date_modified: \(note.sandbox.nowStamp)\n"

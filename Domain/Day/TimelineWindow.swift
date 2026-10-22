@@ -13,7 +13,8 @@ struct TimelineWindow: Hashable, Sendable {
     static func rolling(now: Date, hoursBefore: Int, hoursAfter: Int, calendar: Calendar) -> TimelineWindow {
         let start = calendar.dateInterval(of: .hour, for: now.addingTimeInterval(-Double(hoursBefore) * 3600))?.start ?? now
         let endBase = now.addingTimeInterval(Double(hoursAfter) * 3600)
-        let end = calendar.dateInterval(of: .hour, for: endBase)?.end ?? endBase
+        let hour = calendar.dateInterval(of: .hour, for: endBase)
+        let end = hour.map { $0.start == endBase ? endBase : $0.end } ?? endBase
         return TimelineWindow(start: start, end: end)
     }
 

@@ -76,7 +76,7 @@ extension AppModel {
         guard let task = task(named: name) else { return false }
         let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed != name else { return true }
-        let dependents = tasks.filter { $0.previousTasks.contains(name) }
+        let dependents = tasks.filter { $0.previousTasks.contains { $0.lowercased() == name.lowercased() } }
         do {
             if config.flags.backups { try await services.tasks.backup([task] + dependents, reason: "rename") }
             _ = try await services.tasks.rename(task, to: trimmed, dependents: dependents)

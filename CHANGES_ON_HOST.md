@@ -5,6 +5,11 @@
 | Симулятор «SuperPooper Test» (iPhone 16 Pro, iOS 18.6), UDID `2FBD90F8-CD4A-4263-8F32-88DDE7718872` | `~/Library/Developer/CoreSimulator/Devices/2FBD90F8-…` | `xcrun simctl delete 2FBD90F8-CD4A-4263-8F32-88DDE7718872` |
 | Логи Xcode/xcodebuild и временные result bundle | `~/Library/Logs`, `/var/folders/…` (системные временные папки) | не требуется, система чистит сама |
 
+| Приложение UI-тестов `SuperPooperUITests-Runner` и само SuperPooper | внутри симулятора «SuperPooper Test» | удаляются вместе с симулятором |
+| Кэш манифестов SwiftPM от вспомогательных `swift build`/`swift test` (агенты гоняли чистую логику в scratch-пакетах в `.build/`) | `~/Library/Caches/org.swift.swiftpm` | можно удалить папку целиком — это кэш, Xcode пересоздаст |
+| Временные папки тестов (первые прогоны) — перенесены в Корзину | Корзина | очистить Корзину или ничего не делать |
+
+- Один из агентов для сверки RRULE с эталоном читал (только чтение) `~/dev/tasknotes/node_modules` через символическую ссылку внутри `.build/` — вне проекта ничего не изменено.
 - Homebrew-пакеты не устанавливались (XcodeGen не нужен: проект написан вручную).
 - Глобальный git-конфиг, `~/.zshrc`, `~/.claude` не менялись. Git-авторство задано только в локальном конфиге репозитория.
 - Исходники TaskNotes и пакет `@tasknotes/model` скачаны только для чтения в `.build/` внутри проекта (удаляется вместе с `.build/`).

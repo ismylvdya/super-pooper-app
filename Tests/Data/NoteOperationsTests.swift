@@ -137,12 +137,12 @@ struct NoteOperationsTests {
     @Test func obsidianLinkOpensTheNoteInTheVault() async throws {
         let sandbox = try VaultSandbox.make()
         let repository = sandbox.repository()
-        let task = try #require(try await repository.scan().tasks.first { $0.name == "Утро: душ 🚿" })
+        let task = try #require(try await repository.scan().tasks.first { $0.name == "Утро — душ 🚿" })
         let url = try #require(await repository.obsidianURL(for: task))
         let components = try #require(URLComponents(url: url, resolvingAgainstBaseURL: false))
         #expect(components.scheme == "obsidian" && components.host == "open")
         #expect(components.queryItems == [URLQueryItem(name: "vault", value: "Vault"),
-                                          URLQueryItem(name: "file", value: "TaskNotes/Tasks/Утро: душ 🚿")])
+                                          URLQueryItem(name: "file", value: "TaskNotes/Tasks/Утро — душ 🚿")])
     }
 
     // MARK: - Helpers
