@@ -129,6 +129,20 @@ struct VaultScannerTests {
         "Сходить к стоматологу", "Утро — душ 🚿", "Утро — завтрак 🥣", "Утро — зарядка 🤸", "Цикл А", "Цикл Б",
     ]
 
+    /// File systems may return names decomposed (NFD); names and links must come out composed (NFC),
+    /// byte-for-byte as Obsidian writes them.
+    @Test func namesAndLinksAreComposedUnicode() async throws {
+        let tasks = try await scannedTasks()
+        for task in tasks {
+            #expect(Array(task.name.unicodeScalars) == Array(task.name.precomposedStringWithCanonicalMapping.unicodeScalars))
+            for link in task.previousTasks {
+                #expect(Array(link.unicodeScalars) == Array(link.precomposedStringWithCanonicalMapping.unicodeScalars))
+            }
+        }
+        #expect(WikiLink.make("Найти отвёртку".decomposedStringWithCanonicalMapping).utf8.count
+                == WikiLink.make("Найти отвёртку").utf8.count)
+    }
+
     private func scannedTasks() async throws -> [TaskNote] {
         try await VaultSandbox.make().scan().tasks
     }

@@ -35,6 +35,7 @@ struct TaskLinksSection: View {
         PlateRow(icon: icon, title: title) {
             Button { picking = side } label: { Image(systemName: icons[.add]) }
                 .accessibilityLabel(Text("taskPage.addLink"))
+                .accessibilityIdentifier("link.add.\(side.rawValue)")
         }
         ForEach(names, id: \.self) { name in
             HStack {
@@ -108,6 +109,7 @@ struct TaskEventsSection: View {
         PlateRow(icon: icon, title: title) {
             Button { picking = field } label: { Image(systemName: icons[link == nil ? .add : .chevron]) }
                 .accessibilityLabel(Text("taskPage.pickEvent"))
+                .accessibilityIdentifier("event.pick.\(field.rawValue)")
         }
         if let link {
             let resolved = EventLinkResolver(events: model.events, calendar: model.calendar).resolve(link)

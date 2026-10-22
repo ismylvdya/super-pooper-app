@@ -23,4 +23,14 @@ struct TaskMarking: Sendable {
         let isMarked = task.isRecurring ? HabitInstances(task: task).mark(on: today) != nil : task.status == .done
         return changes(marking: task, as: isMarked ? nil : .done)
     }
+
+    /// A status change from the task page or the review: entering `done` sets `completed_date`
+    /// (as TaskNotes does), leaving it removes the date. Recurring tasks only change the status.
+    func changes(setting status: TaskStatus, on task: TaskNote) -> [TaskFieldChange] {
+        guard status != task.status else { return [] }
+        var result: [TaskFieldChange] = [.status(status)]
+        guard !task.isRecurring else { return result }
+        if status == .done { result.append(.completedDate(today)) } else if task.status == .done { result.append(.completedDate(nil)) }
+        return result
+    }
 }

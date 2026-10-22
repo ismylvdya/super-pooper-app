@@ -29,6 +29,7 @@ final class TodayUITests: XCTestCase {
             let banner = app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'problems' OR label BEGINSWITH 'Synced'")).firstMatch
             guard banner.waitForExistence(timeout: 2) else { return }
             banner.swipeUp()
+            XCTAssertTrue(banner.waitForNonExistence(timeout: 3), "a swipe up must dismiss the banner")
         }
     }
 
@@ -46,15 +47,21 @@ final class TodayUITests: XCTestCase {
         XCTAssertTrue(app.buttons["check:Подготовить вопросы папе"].wait(for: \.label, toEqual: "Mark as not done", timeout: 5))
     }
 
+    /// "Выпить воды" is the first pool row (habits without time go first), so it is always on screen.
     func testLongPressHabitOffersPartiallyTwiceSkip() {
         launch()
-        let row = app.buttons["title:Витамины 💊"]
+        dismissBanners()
+        let row = app.buttons["check:Выпить воды 💧"]
         XCTAssertTrue(row.waitForExistence(timeout: 10))
         row.press(forDuration: 1.2)
         XCTAssertTrue(app.buttons["Partially"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["Twice"].exists)
         XCTAssertTrue(app.buttons["Skip today"].exists)
         app.buttons["Partially"].tap()
+        // Marked habits move to the end of the pool; wait for that so the write finishes.
+        let marked = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false OR label == 'Mark as not done'"),
+                                               object: app.buttons["check:Выпить воды 💧"])
+        XCTAssertEqual(XCTWaiter().wait(for: [marked], timeout: 5), .completed)
     }
 
     func testTaskPageEditsHighPriority() {

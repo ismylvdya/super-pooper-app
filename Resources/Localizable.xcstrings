@@ -12,6 +12,17 @@
         }
       }
     },
+    "a11y.dismiss": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dismiss"
+          }
+        }
+      }
+    },
     "a11y.info": {
       "extractionState": "manual",
       "localizations": {
@@ -2461,6 +2472,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choose your vault"
+          }
+        }
+      }
+    },
+    "vault.error.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Can’t open the vault"
           }
         }
       }

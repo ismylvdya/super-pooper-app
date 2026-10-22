@@ -29,6 +29,7 @@ struct TaskPageScreen: View {
                         Image(systemName: icons[.more])
                     }
                     .accessibilityLabel(Text("taskPage.more"))
+                    .accessibilityIdentifier("taskPage.more")
                 }
             }
             .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
@@ -54,6 +55,7 @@ struct TaskTitleSection: View {
             PlateRow(icon: .title, title: "taskPage.name.field") {
                 TextField("taskPage.name.field", text: $draft)
                     .multilineTextAlignment(.trailing)
+                    .accessibilityIdentifier("taskPage.name")
                     .submitLabel(.done)
                     .onSubmit(commit)
             }

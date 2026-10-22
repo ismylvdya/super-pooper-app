@@ -36,8 +36,9 @@ struct VaultScanner: Sendable {
         return output
     }
 
+    /// File systems may hand names back decomposed (NFD); Obsidian and our links use NFC.
     private func read(_ url: URL, root: URL, checkConflicts: Bool, into output: inout Output) {
-        let name = url.deletingPathExtension().lastPathComponent
+        let name = url.deletingPathExtension().lastPathComponent.precomposedStringWithCanonicalMapping
         let relativePath = VaultPaths.relative(url, to: root)
         if checkConflicts, (try? ubiquity.resolveConflictsKeepingLatest(url)) == true {
             output.result.conflictsResolved.append(name)

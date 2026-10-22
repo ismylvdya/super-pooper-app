@@ -27,16 +27,28 @@ struct BannerView: View {
         .padding(.horizontal, tokens.space(.screenHorizontal))
         .padding(.top, tokens.space(.bannerTop))
         .offset(y: min(dragOffset, 0))
-        .onTapGesture { withAnimation(tokens.animation) { isExpanded.toggle() } }
-        .gesture(DragGesture(minimumDistance: 8)
-            .onChanged { dragOffset = $0.translation.height }
-            .onEnded { value in
-                if value.translation.height < -20 { onDismiss() } else { withAnimation(tokens.animation) { dragOffset = 0 } }
-            })
+        .contentShape(Rectangle())
+        .gesture(tapOrSwipe)
         .task(id: text) {
             try? await Task.sleep(for: .seconds(tokens.duration(.bannerAutoHide)))
             if !Task.isCancelled { onDismiss() }
         }
         .accessibilityAddTraits(.isStaticText)
+        .accessibilityAction(named: Text("a11y.dismiss")) { onDismiss() }
+    }
+
+    /// One gesture for both: a short touch toggles the full text, a move up dismisses.
+    private var tapOrSwipe: some Gesture {
+        DragGesture(minimumDistance: 0)
+            .onChanged { dragOffset = $0.translation.height }
+            .onEnded { value in
+                let distance = value.translation.height
+                if distance < -20 || value.predictedEndTranslation.height < -60 {
+                    onDismiss()
+                } else {
+                    if abs(distance) < 6, abs(value.translation.width) < 6 { isExpanded.toggle() }
+                    withAnimation(tokens.animation) { dragOffset = 0 }
+                }
+            }
     }
 }

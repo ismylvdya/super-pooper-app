@@ -9,7 +9,13 @@ struct TaskPropertiesSection: View {
     var body: some View {
         PlateSection(header: "taskPage.properties", info: "info.taskPage.properties") {
             PlateRow(icon: .status, title: "taskPage.status", info: "info.taskPage.status") {
-                Picker("taskPage.status", selection: binding(\.status, change: TaskFieldChange.status)) {
+                Picker("taskPage.status", selection: Binding(
+                    get: { task.status },
+                    set: { status in
+                        let changes = TaskMarking(today: model.context().today).changes(setting: status, on: task)
+                        Task { await model.update(task.name, changes) }
+                    }
+                )) {
                     ForEach(TaskStatus.known, id: \.self) { Text(StatusText.title($0)).tag($0) }
                     if case .other(let raw) = task.status { Text(verbatim: raw).tag(task.status) }
                 }

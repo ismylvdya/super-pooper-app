@@ -48,11 +48,15 @@ struct RootView: View {
         .onOpenURL { container.router.handle($0) }
     }
 
+    /// Reading `vaultState` keeps this view observing it, so choosing a vault switches to Today.
     @ViewBuilder private func home(_ model: AppModel) -> some View {
-        if model.services.vault.hasVault {
+        switch model.vaultState {
+        case .failed(let message):
+            NoVaultScreen(message: message)
+        case .notSelected where !model.services.vault.hasVault:
+            NoVaultScreen(message: nil)
+        default:
             TodayScreen()
-        } else {
-            NoVaultScreen()
         }
     }
 
@@ -122,13 +126,14 @@ struct BannerOverlay: View {
     }
 }
 
-/// Without a vault the app explains itself and offers the folder picker.
+/// Without a vault (or when it can't be opened) the app explains itself and offers the picker.
 struct NoVaultScreen: View {
-    @Environment(AppModel.self) private var model
+    let message: String?
     @State private var isPickerPresented = false
 
     var body: some View {
-        EmptyStateView(icon: .emptyVault, title: "vault.empty.title", message: "vault.empty.message",
+        EmptyStateView(icon: .emptyVault, title: message == nil ? "vault.empty.title" : "vault.error.title",
+                       message: message.map { LocalizedStringKey($0) } ?? "vault.empty.message",
                        actionTitle: "vault.choose") { isPickerPresented = true }
             .vaultPicker(isPresented: $isPickerPresented)
     }

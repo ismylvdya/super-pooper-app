@@ -122,3 +122,23 @@ struct MarkingTests {
         }
     }
 }
+
+struct StatusChangeTests {
+    private let today = LocalDate(year: 2026, month: 10, day: 21)!
+
+    @Test func settingDoneAddsCompletedDateAndLeavingRemovesIt() {
+        let open = TaskNote(name: "Task", relativePath: "Task.md", status: .thisWeek)
+        #expect(TaskMarking(today: today).changes(setting: .done, on: open) == [.status(.done), .completedDate(today)])
+        var done = open
+        done.status = .done
+        done.completedDate = today
+        #expect(TaskMarking(today: today).changes(setting: .halfYear, on: done) == [.status(.halfYear), .completedDate(nil)])
+        #expect(TaskMarking(today: today).changes(setting: .done, on: done).isEmpty)
+    }
+
+    @Test func recurringTasksOnlyChangeStatus() {
+        var habit = TaskNote(name: "Habit", relativePath: "Habit.md", status: .halfYear)
+        habit.recurrenceRaw = "FREQ=DAILY"
+        #expect(TaskMarking(today: today).changes(setting: .done, on: habit) == [.status(.done)])
+    }
+}

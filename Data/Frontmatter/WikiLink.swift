@@ -15,9 +15,9 @@ enum WikiLink {
         text = String(text.split(separator: "#", maxSplits: 1, omittingEmptySubsequences: false).first ?? "")
         if let slash = text.lastIndex(of: "/") { text = String(text[text.index(after: slash)...]) }
         if text.lowercased().hasSuffix(".md") { text = String(text.dropLast(3)) }
-        text = text.trimmingCharacters(in: .whitespaces)
+        text = text.trimmingCharacters(in: .whitespaces).precomposedStringWithCanonicalMapping
         return text.isEmpty ? nil : text
     }
 
-    static func make(_ name: String) -> String { "[[\(name)]]" }
+    static func make(_ name: String) -> String { "[[\(name.precomposedStringWithCanonicalMapping)]]" }
 }

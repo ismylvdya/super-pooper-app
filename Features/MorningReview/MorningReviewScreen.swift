@@ -131,7 +131,10 @@ struct ReviewRow: View {
     private var statusChip: some View {
         Menu {
             ForEach(TaskStatus.known.filter { $0 != .done }, id: \.self) { status in
-                Button(StatusText.title(status)) { Task { await model.update(task.name, [.status(status)]) } }
+                Button(StatusText.title(status)) {
+                    let changes = TaskMarking(today: today).changes(setting: status, on: task)
+                    Task { await model.update(task.name, changes) }
+                }
             }
         } label: {
             Chip(icon: .status, text: StatusText.title(task.status))
