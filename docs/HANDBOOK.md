@@ -179,10 +179,11 @@ date_modified: 2026-10-22T18:01:02.456+02:00         # обновляется п
   ```bash
   scripts/xcb.sh test -only-testing:SuperPooperTests
   ```
-- UI-тесты (тапы, меню, страница задачи, перетаскивание в разборе) — сначала положить vault в симулятор:
+- UI-тесты (тапы, меню, страница задачи, переименование/архив/удаление, пикеры, перетаскивание в разборе, pull-to-refresh) — сначала положить свежий vault в симулятор, после — проверить, что файлы изменились ровно как нужно:
   ```bash
-  scripts/sim.sh load-vault && scripts/xcb.sh test -only-testing:SuperPooperUITests
+  scripts/sim.sh load-vault && scripts/xcb.sh test -only-testing:SuperPooperUITests && scripts/check-vault-after-ui-tests.sh
   ```
+- Тесты состояния приложения (`Tests/App`) работают на in-memory сервисах из `Debug/PreviewModel.swift` — тех же, что у превью экранов.
 - Добавить случай в фикстуры: новый `.md` в `Fixtures/TestVault/TaskNotes/Tasks/`, при необходимости — проверка в `Tests/Data`.
 
 ## 9. Запуск в симуляторе с тестовыми данными
