@@ -46,7 +46,7 @@ struct WidgetPoolBlock: View {
             VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
                 ForEach(plan.pool.prefix(count)) { item in
                     TaskRowView(item: item, today: plan.today, titleFont: tokens.font(.widgetTitle), showsDetails: false,
-                                isCompact: true)
+                                isCompact: true, togglesWithIntent: true)
                         .taskPlate()
                 }
                 if plan.pool.count > count {
@@ -97,6 +97,7 @@ struct WidgetTimelineBlock: View {
     }
 
     private func row(_ item: DayItem, _ slot: TimelineSlot) -> some View {
-        TaskRowView(item: item, today: plan.today, titleFont: tokens.font(.widgetCaption), showsDetails: false, isCompact: true)
+        TaskRowView(item: item, today: plan.today, titleFont: tokens.font(.widgetCaption), showsDetails: false, titleLineLimit: 2,
+                    togglesWithIntent: true)
     }
 }

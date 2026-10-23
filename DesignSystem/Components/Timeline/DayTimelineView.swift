@@ -93,7 +93,7 @@ struct DayTimelineView<TaskContent: View>: View {
                     Text(mark.formatted(.dateTime.hour()))
                         .font(tokens.font(.timelineHour))
                         .foregroundStyle(tokens.color(.tertiaryText))
-                        .frame(width: labelWidth - 4, alignment: .trailing)
+                        .frame(width: labelWidth - 4, alignment: .leading)
                 }
                 Rectangle().fill(tokens.color(.timelineGrid)).frame(height: 0.5)
             }

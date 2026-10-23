@@ -124,7 +124,7 @@ extension AppModel {
             banners.show(L10n.format("banner.promoted", L10n.list(report.promoted)), style: .success)
         }
         if announce, config.flags.syncBanner {
-            banners.show(report.summary)
+            banners.show(report.summary, style: .synced)
         }
         if newProblems, config.flags.problemBadge {
             banners.show(L10n.format("banner.problems", problemCount), style: .problem)

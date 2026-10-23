@@ -33,9 +33,6 @@ struct MorningReviewScreen: View {
             .bannerHost()
             .navigationTitle(Text("review.title"))
             .navigationBarTitleDisplayMode(.inline)
-            .navigationDestination(for: Route.self) { route in
-                if case .task(let name) = route { TaskPageScreen(taskName: name) }
-            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("review.reset") {
@@ -52,7 +49,7 @@ struct MorningReviewScreen: View {
     }
 }
 
-/// One table row: title (opens the page) and editable chips: High, date, estimate, energy,
+/// One table row: title and editable chips: High, date, estimate, energy,
 /// pleasant, status, links.
 struct ReviewRow: View {
     @Environment(AppModel.self) private var model
@@ -66,21 +63,18 @@ struct ReviewRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
-            NavigationLink(value: Route.task(task.name)) {
-                HStack(spacing: tokens.space(.chipGap)) {
-                    if item.isHabit { Image(systemName: icons[.habit]).foregroundStyle(tokens.color(.habit)) }
-                    Text(task.name).foregroundStyle(item.isDone ? tokens.color(.secondaryText) : tokens.color(.primaryText))
-                    if item.isBlocked { Image(systemName: icons[.blocked]).foregroundStyle(tokens.color(.secondaryText)) }
-                }
+            HStack(spacing: tokens.space(.chipGap)) {
+                if item.isHabit { Image(systemName: icons[.habit]).foregroundStyle(tokens.color(.habit)) }
+                Text(task.name).foregroundStyle(item.isDone ? tokens.color(.secondaryText) : tokens.color(.primaryText))
+                if item.isBlocked { Image(systemName: icons[.blocked]).foregroundStyle(tokens.color(.secondaryText)) }
             }
             ChipFlow(spacing: tokens.space(.chipGap)) {
                 toggleChip(.high, isOn: task.isHighPriority, tint: tokens.color(.high)) { [.highPriority(!task.isHighPriority)] }
                 dueChip
                 estimateChip
                 toggleChip(.energy, isOn: task.needEnergy, tint: tokens.color(.energy)) { [.needEnergy(!task.needEnergy)] }
-                toggleChip(task.pleasant == false ? .unpleasant : .pleasant, isOn: task.pleasant != nil,
-                           tint: task.pleasant == false ? tokens.color(.unpleasant) : tokens.color(.pleasant)) {
-                    [.pleasant(task.pleasant == false ? true : false)]
+                toggleChip(.pleasant, isOn: task.pleasant == true, tint: tokens.color(.heart)) {
+                    [.pleasant(task.pleasant != true)]
                 }
                 if !task.isRecurring { statusChip }
                 if !task.previousTasks.isEmpty || item.isBlocked {

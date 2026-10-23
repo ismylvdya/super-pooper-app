@@ -3,7 +3,7 @@ import Foundation
 /// Names of every SF Symbol used outside the action registry (`icons.json`).
 enum Icon: String, CaseIterable, Sendable {
     case settings, review, more, info, problem, sync
-    case energy, pleasant, unpleasant, high, due, time, estimate, blocked
+    case energy, pleasant, high, due, time, estimate, blocked
     case previousTasks, nextTasks, previousEvent, nextEvent, event, reminder, habit
     case vault, calendars, reminderLists, notifications
     case dayBoundary, energyHour, timelineLayout, hoursAfter, hoursBefore, halves, fontSize, poolCount

@@ -39,22 +39,22 @@ SP_BUNDLE_ID = SuperPooperApp
 2. Папка задач и тег берутся из настроек по умолчанию (`TaskNotes/Tasks`, `🔫делишка`) — как в вашем `data.json`.
 3. Всё это потом доступно в Settings → Sources.
 
-## 5. Сборка `.ipa` для AltStore
-Самый простой способ — скрипт (после того как в Xcode выбрана ваша команда):
+## 5. Готовый `.ipa` для AltStore
+Готовый файл лежит в репозитории: **`dist/SuperPooper.ipa`**. Он подписан ad-hoc: без сертификата, без Team ID, без provisioning profile, без путей машины сборки, так что ничьего Apple ID в нём нет. При установке AltStore (или SideStore) переподписывает приложение **и** расширение виджетов Apple ID того, кто ставит. Внутри — entitlement App Group, AltStore заменит её на группу своего аккаунта.
+
+Варианты установки:
+- **Файлом:** перенести `dist/SuperPooper.ipa` на iPhone (AirDrop / «Файлы»), в AltStore → My Apps → «+» → выбрать файл.
+- **Через GitHub-источник AltStore:** залить репозиторий на GitHub, в `dist/altstore-source.json` заменить `GITHUB_USER/GITHUB_REPO` на свои, закоммитить. В AltStore → Sources → «+» → `https://raw.githubusercontent.com/<user>/<repo>/master/dist/altstore-source.json`. Новые версии: пересобрать `.ipa`, поднять `version`/`buildVersion`/`date` в JSON, закоммитить.
+
+Пересобрать `.ipa` (Apple ID не нужен):
 ```bash
 scripts/make-ipa.sh
 ```
-Он делает Release-сборку для устройства (`generic/platform=iOS`), кладёт `SuperPooper.app` в `Payload/`, архивирует и переименовывает в `.build/SuperPooper.ipa`. Вручную то же самое:
-1. Xcode: схема `SuperPooper`, устройство «Any iOS Device (arm64)», Product → Build (Release: Product → Scheme → Edit Scheme → Run → Build Configuration → Release, или используйте скрипт).
-2. Найдите `SuperPooper.app` (Product → Show Build Folder in Finder → `Products/Release-iphoneos`).
-3. Создайте папку `Payload`, положите в неё `SuperPooper.app`, сожмите `Payload` в zip и переименуйте `Payload.zip` → `SuperPooper.ipa`.
+Скрипт делает Release-сборку для устройства без подписи, подписывает ad-hoc с entitlements и проверяет, что в бинарниках нет путей машины, Team ID и профилей. Если проверка находит след, скрипт падает.
 
-Перенесите `.ipa` на iPhone (AirDrop / «Файлы») и откройте в AltStore («My Apps» → «+»). AltStore сам переподписывает приложение **и расширение виджетов** вашим Apple ID.
+> `.ipa` v0 собран в Xcode 16.4 (iOS 18.5 SDK) с минимальной iOS 18.0 — он работает и на iOS 26. После сборки в Xcode 26.3 скрипт сам соберёт под iOS 26.0.
 
-Учтите лимиты бесплатного аккаунта:
-- до 3 активных приложений через AltStore;
-- **до 10 App ID за 7 дней** — SuperPooper занимает **2** (приложение + виджеты);
-- AltStore на бесплатном аккаунте меняет ID App Group (добавляет ваш Team ID) и записывает новый ID в `Info.plist` под ключом `ALTAppGroups`. Приложение и виджет сначала ищут группу по этому ключу (`Core/Storage/AppGroupContainer.swift`). Вживую это не проверено. Если виджет пишет «Open SuperPooper once…», хотя приложение открывалось, — проверьте в AltStore, что у приложения включены App Groups, и переустановите.
+Лимиты бесплатного аккаунта: до 3 активных приложений через AltStore; **до 10 App ID за 7 дней** — SuperPooper занимает 2 (приложение + виджеты). App Group AltStore записывает в `Info.plist` под ключом `ALTAppGroups`; приложение и виджет ищут группу сначала там.
 
 ## 6. Переподпись раз в неделю
 Подпись бесплатного аккаунта живёт 7 дней. AltStore продлевает её сам («Refresh All» вручную или автоматически), когда телефон и Mac с AltServer в одной Wi-Fi-сети. Если подпись истекла, приложение не запустится, но **данные не пострадают**: задачи лежат в Obsidian, события — в Calendar. После переустановки придётся заново выбрать папку vault и календари, а снимок для виджетов пересоберётся при первом открытии.

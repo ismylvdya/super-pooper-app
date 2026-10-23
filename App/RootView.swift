@@ -111,7 +111,7 @@ struct BannerOverlay: View {
 
     private func icon(_ style: BannerCenter.Banner.Style) -> Icon {
         switch style {
-        case .info: .sync
+        case .info, .synced: .sync
         case .success: .markDone
         case .problem: .problem
         }
@@ -120,7 +120,7 @@ struct BannerOverlay: View {
     private func tint(_ style: BannerCenter.Banner.Style) -> Color {
         switch style {
         case .info: tokens.color(.accent)
-        case .success: tokens.color(.pleasant)
+        case .synced, .success: tokens.color(.pleasant)
         case .problem: tokens.color(.problem)
         }
     }

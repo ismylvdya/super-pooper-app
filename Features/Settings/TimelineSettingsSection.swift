@@ -116,7 +116,8 @@ struct TimelinePreview: View {
     }
 
     private func row(_ item: DayItem, _ slot: TimelineSlot) -> some View {
-        TaskRowView(item: item, today: plan.today, titleFont: .system(size: settings.timeline.taskFontSize), isCompact: true)
+        TaskRowView(item: item, today: plan.today, titleFont: .system(size: settings.timeline.taskFontSize), showsDetails: false,
+                    titleLineLimit: 2)
     }
 
     private var plan: DayPlan { model.plan(at: model.clock.now) }

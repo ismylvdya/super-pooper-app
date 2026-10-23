@@ -22,7 +22,7 @@ struct MarkGlyph: View {
                     Image(systemName: icons[.blocked])
                         .font(.system(size: (size ?? tokens.size(.checkbox)) * 0.4))
                         .foregroundStyle(tokens.color(.secondaryText))
-                        .offset(x: 3, y: 3)
+                        .offset(x: tokens.size(.badgeOffset), y: tokens.size(.badgeOffset))
                 }
             }
             .padding(3)
