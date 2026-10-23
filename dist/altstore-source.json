@@ -1,5 +1,5 @@
 {
-  "name": "SuperPooper",
+  "name": "SuperPooperApp",
   "subtitle": "Day, tasks and habits over Obsidian",
   "description": "Personal source for SuperPooper.",
   "iconURL": "https://raw.githubusercontent.com/ismylvdya/super-pooper-app/main/design/icon/AppIcon-light.png",
@@ -9,7 +9,7 @@
   "sourceURL": "https://raw.githubusercontent.com/ismylvdya/super-pooper-app/main/dist/altstore-source.json",
   "apps": [
     {
-      "name": "SuperPooper",
+      "name": "SuperPooperApp",
       "bundleIdentifier": "SuperPooperApp",
       "developerName": "chumbulev",
       "subtitle": "Day, tasks and habits",

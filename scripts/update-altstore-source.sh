@@ -19,7 +19,7 @@ ipa = os.environ["IPA"]
 data = open(ipa, "rb").read()
 icon = f"{base}/design/icon/AppIcon-light.png"
 source = {
-    "name": "SuperPooper",
+    "name": "SuperPooperApp",
     "subtitle": "Day, tasks and habits over Obsidian",
     "description": "Personal source for SuperPooper.",
     "iconURL": icon,
@@ -28,7 +28,7 @@ source = {
     "identifier": f"{get('SP_BUNDLE_ID')}.source",
     "sourceURL": f"{base}/dist/altstore-source.json",
     "apps": [{
-        "name": "SuperPooper",
+        "name": "SuperPooperApp",
         "bundleIdentifier": get("SP_BUNDLE_ID"),
         "developerName": "chumbulev",
         "subtitle": "Day, tasks and habits",
