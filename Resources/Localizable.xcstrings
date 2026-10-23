@@ -353,6 +353,17 @@
         }
       }
     },
+    "banner.wholeVault": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SuperPooper can see your whole vault. Choose only the TaskNotes folder in Settings → Tasks → TaskNotes folder."
+          }
+        }
+      }
+    },
     "color.accent": {
       "extractionState": "manual",
       "localizations": {
@@ -1530,6 +1541,17 @@
         }
       }
     },
+    "info.settings.obsidian.vault": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For “Open in Obsidian”: the vault's name and where the TaskNotes folder is inside it. Empty = the chosen folder's parent and the folder's own name."
+          }
+        }
+      }
+    },
     "info.settings.pastOpacity": {
       "extractionState": "manual",
       "localizations": {
@@ -1679,7 +1701,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The Obsidian vault folder in iCloud Drive. Tasks are read from the TaskNotes tasks folder inside it."
+            "value": "The TaskNotes folder inside your Obsidian vault in iCloud Drive. The app sees only this folder, not the rest of the vault. Tasks are read from its Tasks folder."
           }
         }
       }
@@ -2064,7 +2086,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choose the Obsidian vault folder in iCloud Drive. Tasks stay there — the app has no database of its own."
+            "value": "Choose the TaskNotes folder inside your Obsidian vault in iCloud Drive. The app sees only this folder; tasks stay there, there is no database of its own."
           }
         }
       }
@@ -2075,7 +2097,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Your vault"
+            "value": "Your TaskNotes folder"
           }
         }
       }
@@ -3334,6 +3356,39 @@
         }
       }
     },
+    "settings.obsidian.auto": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatic"
+          }
+        }
+      }
+    },
+    "settings.obsidian.prefix": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Folder in the vault"
+          }
+        }
+      }
+    },
+    "settings.obsidian.vault": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Obsidian vault"
+          }
+        }
+      }
+    },
     "settings.pastOpacity": {
       "extractionState": "manual",
       "localizations": {
@@ -3714,7 +3769,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vault folder"
+            "value": "TaskNotes folder"
           }
         }
       }
@@ -3726,6 +3781,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choose…"
+          }
+        }
+      }
+    },
+    "settings.vault.wholeVault": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The app has access to the whole vault. Choose the TaskNotes folder inside it instead."
           }
         }
       }
@@ -4495,7 +4561,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choose vault folder"
+            "value": "Choose TaskNotes folder"
           }
         }
       }
@@ -4506,7 +4572,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "SuperPooper reads tasks from your Obsidian vault in iCloud Drive. Pick the vault folder to start."
+            "value": "SuperPooper reads tasks and habits from the TaskNotes folder of your Obsidian vault in iCloud Drive. Pick that folder (not the whole vault) to start."
           }
         }
       }
@@ -4517,7 +4583,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choose your vault"
+            "value": "Choose the TaskNotes folder"
           }
         }
       }

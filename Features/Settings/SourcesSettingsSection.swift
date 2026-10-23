@@ -14,6 +14,12 @@ struct SourcesSettingsSection: View {
                 Button(model.vaultName ?? L10n.string("settings.vault.choose")) { isPickingVault = true }
                     .lineLimit(1)
             }
+            if model.vaultIsWholeVault {
+                Label("settings.vault.wholeVault", systemImage: icons[.problem])
+                    .font(tokens.font(.hint))
+                    .foregroundStyle(tokens.color(.warning))
+            }
+            ObsidianLinkRows()
             NavigationLink { SourcePickerScreen(kind: .calendars) } label: {
                 PlateRow(icon: .calendars, title: "settings.calendars", info: "info.settings.calendars") {
                     count(model.settings.sources.anchorCalendarIDs.count)
@@ -121,5 +127,31 @@ struct SourcePickerScreen: View {
             if ids.contains(id) { ids.removeAll { $0 == id } } else { ids.append(id) }
             if kind == .calendars { settings.sources.anchorCalendarIDs = ids } else { settings.sources.reminderListIDs = ids }
         }
+    }
+}
+
+/// Where "Open in Obsidian" points: the vault name and the TaskNotes folder's path inside it.
+/// Empty fields use the chosen folder's parent and the folder's own name.
+private struct ObsidianLinkRows: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        PlateRow(icon: .obsidian, title: "settings.obsidian.vault", info: "info.settings.obsidian.vault") {
+            TextField("settings.obsidian.auto", text: binding(\.obsidianVault))
+                .multilineTextAlignment(.trailing)
+                .autocorrectionDisabled()
+                .textInputAutocapitalization(.never)
+        }
+        PlateRow(icon: nil, title: "settings.obsidian.prefix", indent: true) {
+            TextField("settings.obsidian.auto", text: binding(\.obsidianPathPrefix))
+                .multilineTextAlignment(.trailing)
+                .autocorrectionDisabled()
+                .textInputAutocapitalization(.never)
+        }
+    }
+
+    private func binding(_ keyPath: WritableKeyPath<AppSettings.Vault, String>) -> Binding<String> {
+        Binding(get: { model.settings.vault[keyPath: keyPath] },
+                set: { value in model.updateSettings { $0.vault[keyPath: keyPath] = value } })
     }
 }

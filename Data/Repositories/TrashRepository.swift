@@ -49,7 +49,8 @@ struct VaultTrashRepository: TrashRepository {
         let settings = vaultSettings()
         return try await location.withRoot { root in
             let source = root.appendingPathComponent(note.relativePath)
-            let folder = root.appendingPathComponent(settings.tasksFolder, isDirectory: true)
+            let folder = root.appendingPathComponent(VaultPaths.tasksFolder(settings.tasksFolder, in: root, exists: fileSystem.fileExists),
+                                                     isDirectory: true)
             var name = note.name
             var counter = 2
             while fileSystem.fileExists(folder.appendingPathComponent("\(name).\(noteExtension)")) {

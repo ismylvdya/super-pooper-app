@@ -53,3 +53,41 @@ struct WriteConflictTests {
         #expect(result.task.timeEstimate == 2)
     }
 }
+
+/// The app may be given the TaskNotes folder itself instead of the whole vault.
+@Suite("TaskNotes folder access")
+struct TaskNotesFolderTests {
+    private let folder = URL(fileURLWithPath: "/iCloud/Vault/TaskNotes", isDirectory: true)
+
+    @Test func theTasksFolderIsFoundFromTheTaskNotesFolder() {
+        #expect(VaultPaths.tasksFolder("TaskNotes/Tasks", in: folder, exists: { _ in false }) == "Tasks")
+        #expect(VaultPaths.tasksFolder("TaskNotes/Tasks", in: folder, exists: { _ in true }) == "TaskNotes/Tasks")
+        let vault = URL(fileURLWithPath: "/iCloud/Vault", isDirectory: true)
+        #expect(VaultPaths.tasksFolder("TaskNotes/Tasks", in: vault, exists: { _ in false }) == "TaskNotes/Tasks")
+    }
+
+    @Test func obsidianLinksPointIntoTheVault() {
+        let url = VaultPaths.obsidianURL(relativePath: "Tasks/Купить молоко.md", root: folder, isWholeVault: false,
+                                         vaultName: "", pathPrefix: "", noteExtension: "md")
+        let items = URLComponents(url: url!, resolvingAgainstBaseURL: false)?.queryItems
+        #expect(items == [URLQueryItem(name: "vault", value: "Vault"), URLQueryItem(name: "file", value: "TaskNotes/Tasks/Купить молоко")])
+        let custom = VaultPaths.obsidianURL(relativePath: "Tasks/A.md", root: folder, isWholeVault: false,
+                                            vaultName: "Main", pathPrefix: "Work/TaskNotes", noteExtension: "md")
+        #expect(URLComponents(url: custom!, resolvingAgainstBaseURL: false)?.queryItems?.last?.value == "Work/TaskNotes/Tasks/A")
+    }
+
+    @Test func aWholeVaultKeepsItsOwnPaths() async throws {
+        let sandbox = try VaultSandbox.make()
+        #expect(VaultPaths.isWholeVault(sandbox.vault, exists: { FileManager.default.fileExists(atPath: $0.path) }))
+        let note = try await SandboxNote("Купить молоко", sandbox: sandbox)
+        #expect(note.task.relativePath == "TaskNotes/Tasks/Купить молоко.md")
+    }
+
+    @Test func scanningTheTaskNotesFolderFindsTheTasks() async throws {
+        let sandbox = try VaultSandbox.make()
+        let root = sandbox.vault.appendingPathComponent("TaskNotes", isDirectory: true)
+        let output = await sandbox.scanner().scan(root: root, tasksFolder: "TaskNotes/Tasks")
+        #expect(output.result.tasks.contains { $0.relativePath == "Tasks/Купить молоко.md" })
+        #expect(output.result.fileProblems.allSatisfy { if case .tasksFolderMissing = $0 { false } else { true } })
+    }
+}

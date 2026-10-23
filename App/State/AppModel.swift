@@ -23,6 +23,8 @@ final class AppModel {
     private(set) var events: [CalendarEvent] = []
     private(set) var reminders: [ReminderItem] = []
     private(set) var trashedNotes: [TrashedNote] = []
+    /// The chosen folder is a whole Obsidian vault: the app asks to pick only the TaskNotes folder.
+    var vaultIsWholeVault = false
     var dayState: DayState
     private(set) var vaultState: VaultState = .notSelected
     private(set) var isSyncing = false

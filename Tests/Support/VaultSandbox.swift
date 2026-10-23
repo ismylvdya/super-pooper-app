@@ -31,13 +31,16 @@ struct VaultSandbox {
         return FileManager.default.temporaryDirectory
     }
 
-    /// Renders `Fixtures/TestVault` for `today` (a Wednesday by default) into a new temporary folder.
+    /// Renders `Fixtures/TestVault` for `today` (a Wednesday by default) into a new temporary folder,
+    /// as a whole Obsidian vault (with `.obsidian`).
     static func make(today: String = TestCalendar.wednesday) throws -> VaultSandbox {
         let folder = baseFolder.appendingPathComponent("SuperPooperTests-\(UUID().uuidString)", isDirectory: true)
         let sandbox = VaultSandbox(folder: folder, today: today)
         let day = LocalDate(today)
         let renderer = TestVaultRenderer(year: day.year, month: day.month, day: day.day, timeZone: TestCalendar.timeZone)
         try renderer.renderVault(from: TestPaths.testVault, to: sandbox.vault)
+        try FileManager.default.createDirectory(at: sandbox.vault.appendingPathComponent(".obsidian", isDirectory: true),
+                                                withIntermediateDirectories: true)
         return sandbox
     }
 

@@ -47,4 +47,6 @@ protocol TaskRepository: Sendable {
     func create(named name: String, status: TaskStatus) async throws -> TaskNote
     func backup(_ tasks: [TaskNote], reason: String) async throws
     func obsidianURL(for task: TaskNote) async -> URL?
+    /// The chosen folder is a whole vault (older setups) instead of the TaskNotes folder.
+    func isWholeVault() async -> Bool
 }

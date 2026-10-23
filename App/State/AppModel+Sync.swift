@@ -31,6 +31,7 @@ extension AppModel {
                 let result = try await services.tasks.scan()
                 SyncLog.logger.info("vault scan: \(result.tasks.count) tasks in \(Date().timeIntervalSince(started), format: .fixed(precision: 2)) s")
                 setScanResult(result)
+                vaultIsWholeVault = await services.tasks.isWholeVault()
                 report.conflicts = result.conflictsResolved
                 if config.flags.autoPromote { report.promoted = await autoPromote() }
             } catch {
@@ -158,6 +159,7 @@ extension AppModel {
         do {
             try services.vault.select(url)
             await sync(announce: true)
+            if vaultIsWholeVault { banners.show(L10n.string("banner.wholeVault"), style: .warning) }
         } catch {
             SyncLog.logger.error("vault selection failed: \(String(describing: error), privacy: .public)")
             banners.show(Self.describe(error), style: .problem)

@@ -115,7 +115,8 @@ actor VaultTaskRepository: TaskRepository {
         let reader = readerFactory(settings)
         let text = writer.newNote(tag: settings.taskTag, status: status, now: clock.now)
         return try await location.withRoot { root in
-            let folder = root.appendingPathComponent(settings.tasksFolder, isDirectory: true)
+            let folder = root.appendingPathComponent(VaultPaths.tasksFolder(settings.tasksFolder, in: root, exists: fileSystem.fileExists),
+                                                     isDirectory: true)
             var finalName = name
             var counter = 2
             while isTaken(finalName, in: folder, except: nil) {
@@ -138,14 +139,17 @@ actor VaultTaskRepository: TaskRepository {
     }
 
     func obsidianURL(for task: TaskNote) async -> URL? {
-        try? await location.withRoot { root in
-            var components = URLComponents()
-            components.scheme = "obsidian"
-            components.host = "open"
-            let file = task.relativePath.hasSuffix(".\(noteExtension)") ? String(task.relativePath.dropLast(noteExtension.count + 1)) : task.relativePath
-            components.queryItems = [URLQueryItem(name: "vault", value: root.lastPathComponent), URLQueryItem(name: "file", value: file)]
-            return components.url
+        let settings = vaultSettings()
+        return try? await location.withRoot { root in
+            VaultPaths.obsidianURL(relativePath: task.relativePath, root: root,
+                                   isWholeVault: VaultPaths.isWholeVault(root, exists: fileSystem.fileExists),
+                                   vaultName: settings.obsidianVault, pathPrefix: settings.obsidianPathPrefix,
+                                   noteExtension: noteExtension)
         }
+    }
+
+    func isWholeVault() async -> Bool {
+        (try? await location.withRoot { root in VaultPaths.isWholeVault(root, exists: fileSystem.fileExists) }) ?? false
     }
 
     // MARK: - Editing

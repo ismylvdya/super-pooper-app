@@ -80,6 +80,7 @@ actor InMemoryTaskRepository: TaskRepository {
         return task
     }
     func obsidianURL(for task: TaskNote) async -> URL? { nil }
+    func isWholeVault() async -> Bool { false }
 }
 
 struct StaticCalendarRepository: CalendarRepository {
