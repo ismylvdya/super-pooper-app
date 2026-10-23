@@ -7,11 +7,9 @@ import SwiftUI
 struct MorningReviewScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
-    @Environment(\.dismiss) private var dismiss
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
     @State private var path: [Route] = []
-    @State private var isNewTaskPresented = false
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -37,9 +35,12 @@ struct MorningReviewScreen: View {
             .environment(\.editMode, .constant(.active))
             .bannerHost()
             .navigationDestination(for: Route.self) { route in
-                if case .task(let name) = route { TaskPageScreen(taskName: name).bannerHost() }
+                switch route {
+                case .task(let name): TaskPageScreen(taskName: name).bannerHost()
+                case .newTask: NewNoteScreen(kind: .task).bannerHost()
+                default: EmptyView()
+                }
             }
-            .newTaskPrompt(isPresented: $isNewTaskPresented) { path.append(.task($0)) }
             .navigationTitle(Text("review.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -50,13 +51,12 @@ struct MorningReviewScreen: View {
                     }
                     .disabled(model.dayState.manualOrder == nil)
                 }
-                ToolbarItemGroup(placement: .confirmationAction) {
-                    Button { isNewTaskPresented = true } label: {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button { path.append(.newTask) } label: {
                         Image(systemName: icons[.newTask])
                     }
                     .accessibilityLabel(Text("task.new.add"))
                     .accessibilityIdentifier("task.new")
-                    Button("common.done") { dismiss() }.fontWeight(.semibold)
                 }
             }
         }

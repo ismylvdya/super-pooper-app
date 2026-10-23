@@ -22,7 +22,7 @@ struct SettingsStore: Sendable {
 extension AppSettings {
     /// Only used if even the bundled defaults are unreadable (the app then shows the config error).
     static let fallback = AppSettings(
-        vault: .init(tasksFolder: "TaskNotes/Tasks", taskTag: "", trashFolder: ".trash"),
+        vault: .init(tasksFolder: "TaskNotes/Tasks", taskTag: "", trashFolder: ".trash", obsidianVault: "", obsidianPathPrefix: ""),
         today: .init(arrangement: .sideBySide, widgetArrangement: .sideBySide),
         sources: .init(anchorCalendarIDs: [], reminderListIDs: []),
         day: .init(boundary: .midnight, energyHour: .midnight),
@@ -34,6 +34,9 @@ extension AppSettings {
                         eventFontSize: 15, taskFontSize: 15),
         notifications: .init(enabled: false),
         onboarding: .init(completed: false),
+        habits: .init(order: [], showInTodayByDefault: false),
+        clock: .init(timeZone: "Europe/Moscow", prefix: ""),
+        appearance: .init(pastOpacity: 0.2),
         colors: [:]
     )
 }

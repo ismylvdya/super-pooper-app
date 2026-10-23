@@ -53,5 +53,21 @@
   "emptyVault": "folder.badge.questionmark",
   "debugSeed": "wand.and.stars",
   "permissionGranted": "checkmark.circle.fill",
-  "permissionMissing": "exclamationmark.circle"
+  "permissionMissing": "exclamationmark.circle",
+  "tabToday": "sun.max",
+  "tabHabits": "square.grid.3x3.fill",
+  "tabClock": "clock",
+  "tabSettings": "gearshape",
+  "today": "sun.max",
+  "harmful": "nosign",
+  "timeOfDay": "sunrise",
+  "goal": "target",
+  "trash": "trash",
+  "restore": "arrow.uturn.backward",
+  "links": "link",
+  "opacity": "circle.lefthalf.filled",
+  "obsidian": "diamond",
+  "habitSettings": "square.grid.3x3",
+  "taskSettings": "checklist",
+  "clockSettings": "clock"
 }

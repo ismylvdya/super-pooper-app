@@ -40,18 +40,25 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let refreshSeconds: Double
         /// Upper bound for the hours shown in the one-column layout.
         let maxHoursAfter: Int
-        /// Length of an event created by long-pressing the timeline, and the grid its start snaps to.
-        let newEventMinutes: Int
-        let newEventSnapMinutes: Int
     }
 
     struct Widgets: Codable, Hashable, Sendable {
         let refreshMinutes: Int
         let entryCount: Int
+        /// Weeks in the habit widget.
         let habitGridWeeksSmall: Int
-        let habitGridWeeksMedium: Int
         /// Hours the one-column timeline shows in the Today widget.
         let timelineHours: Int
+    }
+
+    struct Habits: Codable, Hashable, Sendable {
+        /// The habit page grid shows at least this many weeks, and reaches back to the start plus `historyExtraWeeks`.
+        let historyMinimumWeeks: Int
+        let historyExtraWeeks: Int
+        /// Values a rule starts with when it is switched on.
+        let defaultAllowedSkips: Int
+        let defaultWeeklyGoal: Int
+        let maxAllowedSkips: Int
     }
 
     let day: DayRules
@@ -62,6 +69,7 @@ struct RulesConfig: Codable, Hashable, Sendable {
     let backups: Backups
     let timeline: Timeline
     let widgets: Widgets
+    let habits: Habits
 }
 
 /// Order of the pool sort criteria (`sort.json`).

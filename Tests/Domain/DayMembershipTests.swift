@@ -40,7 +40,8 @@ struct DayMembershipTests {
 
     // MARK: - Recurring tasks
 
-    @Test(arguments: [TaskStatus.thisWeek, .halfYear, .someday, .waiting, .done, .archived])
+    /// Any status but `archived`: archiving takes a recurring task out of the day (see `ArchivedNotesTests`).
+    @Test(arguments: [TaskStatus.thisWeek, .halfYear, .someday, .waiting, .done, .habit])
     func recurringTasksFollowTheirRuleRegardlessOfStatus(status: TaskStatus) {
         let daily = makeHabit("Daily", status: status)
         let saturdays = makeHabit("Saturdays", rule: "DTSTART:20260905;FREQ=WEEKLY;BYDAY=SA", status: status)

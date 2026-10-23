@@ -41,11 +41,26 @@ struct TaskNoteReader: Sendable {
         task.partialInstances = fields.dates(keys.partialInstances)
         task.twiceInstances = fields.dates(keys.twiceInstances)
         task.reminderTimes = fields.times(keys.reminderTimes)
+        task.habit = habitOptions(&fields)
         task.completedDate = fields.parsed(keys.completedDate, LocalDate.init(isoString:))
         task.dateCreated = fields.timestamp(keys.dateCreated, calendar: calendar)
         task.dateModified = fields.timestamp(keys.dateModified, calendar: calendar)
         task.problems = fields.problems
         return task
+    }
+
+    private func habitOptions(_ fields: inout FieldReader) -> HabitOptions {
+        let keys = mapping.fields
+        var options = HabitOptions()
+        options.color = fields.string(keys.habitColor).flatMap { $0.isEmpty ? nil : $0 }
+        options.harmful = fields.bool(keys.harmful) ?? false
+        options.showInToday = fields.bool(keys.showInToday) ?? true
+        options.timeOfDay = fields.parsed(keys.timeOfDay, mapping.timeOfDay(fromRaw:))
+        options.twiceADay = fields.bool(keys.twiceADay) ?? false
+        options.twiceCountsDouble = fields.bool(keys.twiceCountsDouble) ?? false
+        options.weeklyGoal = fields.int(keys.weeklyGoal)
+        options.allowedSkips = fields.int(keys.allowedSkips)
+        return options
     }
 
     private func normalizedTag(_ tag: String) -> String {

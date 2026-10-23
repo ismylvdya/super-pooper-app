@@ -122,6 +122,17 @@
         }
       }
     },
+    "action.restoreHabit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back to habits"
+          }
+        }
+      }
+    },
     "action.restoreHalfYear": {
       "extractionState": "manual",
       "localizations": {
@@ -221,6 +232,39 @@
         }
       }
     },
+    "banner.conflictMerged": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” was also changed elsewhere; your edit was applied on top."
+          }
+        }
+      }
+    },
+    "banner.conflictSameKey": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%1$@” changed elsewhere too: %2$@ kept the newer value."
+          }
+        }
+      }
+    },
+    "banner.created": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Created “%@”."
+          }
+        }
+      }
+    },
     "banner.deleted": {
       "extractionState": "manual",
       "localizations": {
@@ -228,6 +272,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Moved “%@” to trash."
+          }
+        }
+      }
+    },
+    "banner.deletedForever": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” deleted for good."
           }
         }
       }
@@ -276,6 +331,17 @@
         }
       }
     },
+    "banner.restored": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restored “%@”."
+          }
+        }
+      }
+    },
     "banner.sync.changes": {
       "extractionState": "manual",
       "localizations": {
@@ -294,6 +360,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Synced. Everything is up to date."
+          }
+        }
+      }
+    },
+    "clock.offset": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ h from here"
+          }
+        }
+      }
+    },
+    "clock.sameTime": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Same time as here"
           }
         }
       }
@@ -349,6 +437,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "High priority"
+          }
+        }
+      }
+    },
+    "color.missed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Missed days"
           }
         }
       }
@@ -738,6 +837,600 @@
         }
       }
     },
+    "habitPage.color": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color"
+          }
+        }
+      }
+    },
+    "habitPage.description": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Description"
+          }
+        }
+      }
+    },
+    "habitPage.goal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Goal"
+          }
+        }
+      }
+    },
+    "habitPage.goal.allowedSkips": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allowed skips in a row"
+          }
+        }
+      }
+    },
+    "habitPage.goal.none": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None"
+          }
+        }
+      }
+    },
+    "habitPage.goal.rule": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Missed days"
+          }
+        }
+      }
+    },
+    "habitPage.goal.skips": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allowed skips"
+          }
+        }
+      }
+    },
+    "habitPage.goal.timesAWeek": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Times a week"
+          }
+        }
+      }
+    },
+    "habitPage.goal.weekly": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekly goal"
+          }
+        }
+      }
+    },
+    "habitPage.harmful": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Harmful habit"
+          }
+        }
+      }
+    },
+    "habitPage.history": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "History"
+          }
+        }
+      }
+    },
+    "habitPage.history.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap a day to mark it, long press for Partially or Twice."
+          }
+        }
+      }
+    },
+    "habitPage.name.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habit name"
+          }
+        }
+      }
+    },
+    "habitPage.options": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habit"
+          }
+        }
+      }
+    },
+    "habitPage.showInToday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show in Today"
+          }
+        }
+      }
+    },
+    "habitPage.stats": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Statistics"
+          }
+        }
+      }
+    },
+    "habitPage.stats.allTime": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "all time"
+          }
+        }
+      }
+    },
+    "habitPage.stats.byMonth": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "By month"
+          }
+        }
+      }
+    },
+    "habitPage.stats.byWeekday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "By weekday"
+          }
+        }
+      }
+    },
+    "habitPage.stats.current": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "current streak"
+          }
+        }
+      }
+    },
+    "habitPage.stats.days": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld d"
+          }
+        }
+      }
+    },
+    "habitPage.stats.done": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "done"
+          }
+        }
+      }
+    },
+    "habitPage.stats.last30": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "30 days"
+          }
+        }
+      }
+    },
+    "habitPage.stats.last7": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "7 days"
+          }
+        }
+      }
+    },
+    "habitPage.stats.longest": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "longest streak"
+          }
+        }
+      }
+    },
+    "habitPage.stats.partial": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "partially"
+          }
+        }
+      }
+    },
+    "habitPage.stats.twice": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "twice"
+          }
+        }
+      }
+    },
+    "habitPage.stats.weeks": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld wk"
+          }
+        }
+      }
+    },
+    "habitPage.timeOfDay": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Part of the day"
+          }
+        }
+      }
+    },
+    "habitPage.timeOfDay.any": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Any time"
+          }
+        }
+      }
+    },
+    "habitPage.timeOfDay.day": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day"
+          }
+        }
+      }
+    },
+    "habitPage.timeOfDay.evening": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Evening"
+          }
+        }
+      }
+    },
+    "habitPage.timeOfDay.morning": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Morning"
+          }
+        }
+      }
+    },
+    "habitPage.twiceADay": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Twice a day"
+          }
+        }
+      }
+    },
+    "habitPage.twiceCountsDouble": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Twice counts as 2"
+          }
+        }
+      }
+    },
+    "habits.archive": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archive (%lld)"
+          }
+        }
+      }
+    },
+    "habits.archive.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habit archive"
+          }
+        }
+      }
+    },
+    "habits.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No habits yet. Tap + to create one."
+          }
+        }
+      }
+    },
+    "habits.markToday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mark today"
+          }
+        }
+      }
+    },
+    "habits.new": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New habit"
+          }
+        }
+      }
+    },
+    "habits.new.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The habit is created when you go back, if it has a name."
+          }
+        }
+      }
+    },
+    "habits.reorder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reorder"
+          }
+        }
+      }
+    },
+    "habits.week.count": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ this week"
+          }
+        }
+      }
+    },
+    "habits.week.goal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@/%2$lld this week"
+          }
+        }
+      }
+    },
+    "habits.week.harmful": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ times this week"
+          }
+        }
+      }
+    },
+    "info.habitPage.goal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How days without a mark count. Allowed skips: up to N unmarked days in a row are fine, longer runs turn red. Weekly goal: N marks a week; days are never missed, only the week's total counts."
+          }
+        }
+      }
+    },
+    "info.habitPage.harmful": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A habit you want to get rid of: a mark means it happened. Streaks and shares count the clean days, and there are no missed days."
+          }
+        }
+      }
+    },
+    "info.habitPage.history": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every week back to the habit's start, newest at the bottom. Tap a day to cycle Done (and Twice), long press to choose. Marks are written into the note, also for past days."
+          }
+        }
+      }
+    },
+    "info.habitPage.options": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color, whether the habit shows up on Today, the part of the day it belongs to, and the Twice mark."
+          }
+        }
+      }
+    },
+    "info.habitPage.showInToday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On: the habit is in Today's pool (or on the timeline at its reminder times). Off: it stays only here in Habits, where you mark it yourself. Reminders work either way."
+          }
+        }
+      }
+    },
+    "info.habitPage.stats": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Streaks count scheduled days in a row that are marked (weeks that reached the goal for a weekly goal). Shares are marks over what the scheduled days could give; Partially counts as half, today only once it is marked."
+          }
+        }
+      }
+    },
+    "info.habitPage.stats.harmful": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For a harmful habit streaks and shares count the clean days: scheduled days without a mark."
+          }
+        }
+      }
+    },
+    "info.habitPage.timeOfDay": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Morning habits rise to the top of the pool in the morning, evening ones in the evening; in other parts of the day they go down."
+          }
+        }
+      }
+    },
+    "info.habitPage.twiceADay": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adds the Twice mark: a tap goes none → Done → Twice → none. With two reminders a day the second Done from a notification counts as Twice."
+          }
+        }
+      }
+    },
     "info.recurrenceEditor": {
       "extractionState": "manual",
       "localizations": {
@@ -815,6 +1508,17 @@
         }
       }
     },
+    "info.settings.clock": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Clock tab and the Lock Screen widget show the time in this zone. The text before the time is shown only in the widget; invisible characters can be typed as \\u{2800} or U+2800."
+          }
+        }
+      }
+    },
     "info.settings.colors": {
       "extractionState": "manual",
       "localizations": {
@@ -848,6 +1552,17 @@
         }
       }
     },
+    "info.settings.habits.partsOfDay": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Where the morning ends and the evening starts, for sorting habits by part of the day. Set in rules.json."
+          }
+        }
+      }
+    },
     "info.settings.notifications": {
       "extractionState": "manual",
       "localizations": {
@@ -855,6 +1570,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Local notifications with actions right in them: Done, Partially, Twice, Skip today."
+          }
+        }
+      }
+    },
+    "info.settings.pastOpacity": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How see-through done tasks and past events are in the pool, on the timeline and in the widget."
           }
         }
       }
@@ -2278,6 +3004,17 @@
         }
       }
     },
+    "settings.appearance": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done and past"
+          }
+        }
+      }
+    },
     "settings.calendars": {
       "extractionState": "manual",
       "localizations": {
@@ -2296,6 +3033,61 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pick the calendars with fixed events only."
+          }
+        }
+      }
+    },
+    "settings.clock": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clock"
+          }
+        }
+      }
+    },
+    "settings.clock.prefix": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Text before the time"
+          }
+        }
+      }
+    },
+    "settings.clock.prefix.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "e.g. 🇷🇺"
+          }
+        }
+      }
+    },
+    "settings.clock.preview": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lock Screen: %@"
+          }
+        }
+      }
+    },
+    "settings.clock.zone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time zone"
           }
         }
       }
@@ -2443,6 +3235,94 @@
         }
       }
     },
+    "settings.habits": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habits"
+          }
+        }
+      }
+    },
+    "settings.habits.colors": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Colors"
+          }
+        }
+      }
+    },
+    "settings.habits.colors.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A habit can also have its own color on its page."
+          }
+        }
+      }
+    },
+    "settings.habits.from": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "from %@"
+          }
+        }
+      }
+    },
+    "settings.habits.new": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New habits"
+          }
+        }
+      }
+    },
+    "settings.habits.new.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Whether a new habit shows up on Today right away. You can change it on each habit's page."
+          }
+        }
+      }
+    },
+    "settings.habits.partsOfDay": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parts of the day"
+          }
+        }
+      }
+    },
+    "settings.habits.until": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "until %@"
+          }
+        }
+      }
+    },
     "settings.hours": {
       "extractionState": "manual",
       "localizations": {
@@ -2483,6 +3363,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "Only timed habits, timed tasks and reminders notify. Nothing is sent late."
+          }
+        }
+      }
+    },
+    "settings.pastOpacity": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opacity"
+          }
+        }
+      }
+    },
+    "settings.pastOpacity.sampleEvent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Past event"
+          }
+        }
+      }
+    },
+    "settings.pastOpacity.sampleTask": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done task"
           }
         }
       }
@@ -2571,6 +3484,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "The app has no task database of its own: tasks live in Obsidian, events in Calendar, reminders in Reminders."
+          }
+        }
+      }
+    },
+    "settings.tasks": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tasks"
           }
         }
       }
@@ -2949,6 +3873,50 @@
         }
       }
     },
+    "tab.clock": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clock"
+          }
+        }
+      }
+    },
+    "tab.habits": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habits"
+          }
+        }
+      }
+    },
+    "tab.settings": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
+          }
+        }
+      }
+    },
+    "tab.today": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today"
+          }
+        }
+      }
+    },
     "task.new.add": {
       "extractionState": "manual",
       "localizations": {
@@ -2967,6 +3935,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Create"
+          }
+        }
+      }
+    },
+    "task.new.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The task is created when you go back, if it has a name."
           }
         }
       }
@@ -3466,6 +4445,83 @@
         }
       }
     },
+    "trash.delete": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete for good"
+          }
+        }
+      }
+    },
+    "trash.delete.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” will be deleted from the vault for good. This can't be undone."
+          }
+        }
+      }
+    },
+    "trash.delete.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete for good?"
+          }
+        }
+      }
+    },
+    "trash.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The trash is empty."
+          }
+        }
+      }
+    },
+    "trash.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes deleted in the app. Tap one to read it; ↩︎ puts it back into the tasks folder."
+          }
+        }
+      }
+    },
+    "trash.restore": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore"
+          }
+        }
+      }
+    },
+    "trash.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trash"
+          }
+        }
+      }
+    },
     "vault.choose": {
       "extractionState": "manual",
       "localizations": {
@@ -3538,7 +4594,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The days of one recurring task: Done, Partially and Twice."
+            "value": "One habit: today's button and the last weeks."
           }
         }
       }
@@ -3565,13 +4621,24 @@
         }
       }
     },
+    "widget.habit.mark": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mark habit today"
+          }
+        }
+      }
+    },
     "widget.habit.name": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Habit grid"
+            "value": "Habit"
           }
         }
       }

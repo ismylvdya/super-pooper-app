@@ -9,10 +9,13 @@ enum PreviewModel {
         guard let config = try? AppConfig.load() else { return nil }
         let store = JSONFileStore(directory: FileManager.default.temporaryDirectory
             .appendingPathComponent("SuperPooperPreview-\(UUID().uuidString)"))
+        let settingsStore = SettingsStore(store: store, defaults: config.defaultSettings)
         let services = AppServices(
             vault: FixedVaultLocation(url: store.directory), tasks: InMemoryTaskRepository(tasks: PreviewSamples.tasks),
+            trash: VaultTrashRepository(location: FixedVaultLocation(url: store.directory), fileSystem: CoordinatedFileSystem(),
+                                        noteExtension: config.rules.vault.noteExtension, vaultSettings: { settingsStore.load().vault }),
             calendars: StaticCalendarRepository(), reminders: StaticRemindersRepository(), notifications: SilentNotifications(),
-            settingsStore: SettingsStore(store: store, defaults: config.defaultSettings), dayStateStore: DayStateStore(store: store),
+            settingsStore: settingsStore, dayStateStore: DayStateStore(store: store),
             snapshotStore: SnapshotStore(store: store), widgets: NoWidgets())
         let model = AppModel(config: config, services: services, banners: BannerCenter(),
                              clock: FixedClock(now: PreviewSamples.context.now), calendar: PreviewSamples.calendar)
@@ -84,7 +87,6 @@ struct StaticCalendarRepository: CalendarRepository {
     func requestAccess() async -> Bool { true }
     func calendars() -> [SourceCollection] { [SourceCollection(id: "demo", title: "Demo", colorHex: "#30B0C7", sourceTitle: "iCloud")] }
     func events(from start: Date, to end: Date, calendarIDs: [String]) -> [CalendarEvent] { PreviewSamples.events }
-    func addEvent(title: String, start: Date, end: Date, calendarID: String?) throws {}
     func delete(_ event: CalendarEvent) throws {}
 }
 

@@ -13,6 +13,14 @@ struct CalendarEvent: Identifiable, Hashable, Codable, Sendable {
 
     /// Recurring instances share `eventIdentifier`; the start makes them unique.
     var id: String { "\(eventIdentifier)@\(start.timeIntervalSince1970)" }
+
+    /// All-day events live on calendar days, not on the shifted logical day: the day must lie
+    /// between the first day and the day of the last moment (the end is exclusive).
+    func covers(_ day: LocalDate, calendar: Calendar) -> Bool {
+        let first = LocalDate(start, in: calendar)
+        let last = LocalDate(max(end.addingTimeInterval(-1), start), in: calendar)
+        return first <= day && day <= last
+    }
 }
 
 /// A "remember at X" reminder from a selected Reminders list (read-only).

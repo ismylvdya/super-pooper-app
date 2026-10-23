@@ -11,6 +11,8 @@ final class BannerCenter {
             case synced
             case info
             case success
+            /// Something needs attention but nothing failed (e.g. a note changed in two places).
+            case warning
             case problem
         }
 

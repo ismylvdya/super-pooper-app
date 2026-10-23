@@ -1,10 +1,9 @@
 import SwiftUI
 
-/// Untimed tasks of the day. Above the timeline it shows N rows (setting); beside it, it takes
-/// the full height. The "+K more" counter follows scrolling: it counts rows below the visible ones.
+/// Untimed tasks of the day. Above the timeline it shows N rows (setting) and a "+K more" counter
+/// that follows scrolling; beside it, it takes the full height and has no counter.
 struct PoolBlock: View {
     @Environment(AppModel.self) private var model
-    @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
     let plan: DayPlan
@@ -26,7 +25,6 @@ struct PoolBlock: View {
                 list
                     .frame(height: fillsHeight ? nil : visibleHeight)
                     .frame(maxHeight: fillsHeight ? .infinity : nil)
-                    .overlay(alignment: .bottom) { if fillsHeight { counter.padding(.bottom, bottomInset) } }
                 if !fillsHeight { counter }
             }
         }
@@ -48,11 +46,10 @@ struct PoolBlock: View {
                 }
             }
         }
-        .contentMargins(.bottom, bottomInset + (fillsHeight ? tokens.size(.poolCounter) : 0), for: .scrollContent)
+        .contentMargins(.bottom, bottomInset, for: .scrollContent)
         .scrollBounceBehavior(.always)
         .scrollIndicators(.hidden)
-        // Pulling the pool down opens the morning review (the edit table), like a refresh would.
-        .pullAction(.edit) { router.isReviewPresented = true }
+        .refreshable { await model.sync(announce: true) }
         .edgeFades(bottomExtension: bottomInset)
     }
 
@@ -94,7 +91,7 @@ struct PoolRow: View {
     let handler: TaskActionHandler
 
     var body: some View {
-        PoolRowContent(item: item, today: today, isCompact: isCompact, handler: handler).taskPlate()
+        PoolRowContent(item: item, today: today, isCompact: isCompact, handler: handler).taskPlate(isDone: item.isDone)
     }
 }
 

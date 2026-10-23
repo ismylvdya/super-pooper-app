@@ -52,6 +52,6 @@ struct TodayWidgetEntryView: View {
         }
         .containerBackground(tokens.color(.screenBackground), for: .widget)
         .widgetURL(DeepLink.today)
-        .environment(\.tokens, entry.source.map { $0.config.tokens.overridingColors($0.settings.colors) } ?? tokens)
+        .environment(\.tokens, entry.source.map { $0.config.tokens.applying($0.settings) } ?? tokens)
     }
 }

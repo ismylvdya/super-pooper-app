@@ -21,6 +21,14 @@ struct DesignTokens: Decodable, Sendable {
 
     var animation: Animation { .easeInOut(duration: duration(.animation)) }
 
+    /// The user's appearance settings over the bundled tokens: colors and the opacity of done/past items.
+    func applying(_ settings: AppSettings) -> DesignTokens {
+        let colored = overridingColors(settings.colors)
+        return DesignTokens(spacing: spacing, radius: radius, size: size,
+                            opacity: colored.opacity.replacing([.past: min(max(settings.appearance.pastOpacity, 0.05), 1)]),
+                            duration: duration, font: font, color: colored.color)
+    }
+
     /// User color choices (settings) over the bundled palette; unknown names and bad hex are ignored.
     func overridingColors(_ hexByName: [String: String]) -> DesignTokens {
         var overrides: [ColorToken: ColorSpec] = [:]
@@ -125,10 +133,16 @@ extension UIColor {
         self.init(red: r, green: g, blue: b, alpha: a)
     }
 
+    /// `#RRGGBB` in sRGB. Colors from the system picker may be Display P3 / extended range, whose
+    /// components fall outside 0…1; they are converted and clamped, so the text always parses back.
     var hexString: String {
-        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
-        getRed(&r, green: &g, blue: &b, alpha: &a)
-        return String(format: "#%02X%02X%02X", Int(r * 255), Int(g * 255), Int(b * 255))
+        let srgb = CGColorSpace(name: CGColorSpace.sRGB).flatMap {
+            cgColor.converted(to: $0, intent: .defaultIntent, options: nil)
+        }
+        let components = srgb?.components ?? cgColor.components ?? [0, 0, 0]
+        let rgb = components.count >= 3 ? Array(components.prefix(3)) : Array(repeating: components.first ?? 0, count: 3)
+        let bytes = rgb.map { Int((min(max($0, 0), 1) * 255).rounded()) }
+        return String(format: "#%02X%02X%02X", bytes[0], bytes[1], bytes[2])
     }
 }
 

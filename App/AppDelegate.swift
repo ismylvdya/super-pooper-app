@@ -14,6 +14,11 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
                 guard case .success(let container) = AppContainer.shared else { return }
                 await container.model.sync(announce: false)
             }
+            AppActionBridge.habitTapHandler = { name in
+                guard case .success(let container) = AppContainer.shared else { return }
+                await container.model.ensureLoaded()
+                await container.model.cycleHabit(name, on: container.model.context().today)
+            }
         }
         return true
     }
@@ -71,7 +76,7 @@ enum BackgroundRefresh {
         pending = Task {
             await previous?.value
             await container.model.ensureLoaded()
-            await container.model.perform(action, on: taskName, day: day)
+            await container.model.performNotificationAction(action, on: taskName, day: day)
         }
     }
 

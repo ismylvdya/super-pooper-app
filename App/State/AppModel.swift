@@ -22,6 +22,7 @@ final class AppModel {
     private(set) var fileProblems: [FileProblem] = []
     private(set) var events: [CalendarEvent] = []
     private(set) var reminders: [ReminderItem] = []
+    private(set) var trashedNotes: [TrashedNote] = []
     var dayState: DayState
     private(set) var vaultState: VaultState = .notSelected
     private(set) var isSyncing = false
@@ -59,7 +60,7 @@ final class AppModel {
     func task(named name: String) -> TaskNote? { tasks.first { $0.name == name } }
 
     var archivedTasks: [TaskNote] {
-        tasks.filter { $0.status == .archived }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+        tasks.filter { $0.isArchived && !$0.isHabit }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
 
     func updateDayState(_ change: (inout DayState) -> Void) {
@@ -133,5 +134,6 @@ final class AppModel {
     }
 
     func setSyncing(_ value: Bool) { isSyncing = value }
+    func setTrash(_ notes: [TrashedNote]) { trashedNotes = notes }
     func markLoaded() { hasLoaded = true }
 }

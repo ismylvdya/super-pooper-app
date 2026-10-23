@@ -52,6 +52,22 @@ struct TaskNoteWriter: Sendable {
                 set(keys.recurrence, raw.map { .scalar($0, quoted: false) }, in: &document)
             case .reminderTimes(let times):
                 set(keys.reminderTimes, times.isEmpty ? nil : .list(times.sorted().map { .string($0.string) }), in: &document)
+            case .habitColor(let hex):
+                set(keys.habitColor, hex.map { .scalar($0, quoted: true) }, in: &document)
+            case .harmful(let value):
+                set(keys.harmful, value ? .bool(true) : nil, in: &document)
+            case .showInToday(let value):
+                document.set(keys.showInToday, to: .bool(value))
+            case .timeOfDay(let value):
+                set(keys.timeOfDay, value.map { .string(mapping.raw($0)) }, in: &document)
+            case .twiceADay(let value):
+                set(keys.twiceADay, value ? .bool(true) : nil, in: &document)
+            case .twiceCountsDouble(let value):
+                set(keys.twiceCountsDouble, value ? .bool(true) : nil, in: &document)
+            case .weeklyGoal(let value):
+                set(keys.weeklyGoal, value.map(YAMLValue.int), in: &document)
+            case .allowedSkips(let value):
+                set(keys.allowedSkips, value.map(YAMLValue.int), in: &document)
             }
         }
         document.set(keys.dateModified, to: .scalar(ISO8601.formatWithMilliseconds(now, timeZone: timeZone), quoted: false))

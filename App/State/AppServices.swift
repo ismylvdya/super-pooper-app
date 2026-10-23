@@ -5,6 +5,7 @@ import WidgetKit
 struct AppServices {
     let vault: VaultLocating
     let tasks: TaskRepository
+    let trash: TrashRepository
     let calendars: CalendarRepository
     let reminders: RemindersRepository
     let notifications: NotificationScheduling

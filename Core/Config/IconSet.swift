@@ -10,6 +10,8 @@ enum Icon: String, CaseIterable, Sendable {
     case archive, delete, edit, version, search, resetOrder, add, newTask, colors, remove, chevron, status, note, title, recurrence
     case checkboxOpen, markDone, markPartial, markTwice
     case emptyVault, debugSeed, permissionGranted, permissionMissing
+    case tabToday, tabHabits, tabClock, tabSettings
+    case today, harmful, timeOfDay, goal, trash, restore, links, opacity, obsidian, habitSettings, taskSettings, clockSettings
 }
 
 typealias IconSet = TokenTable<Icon, String>

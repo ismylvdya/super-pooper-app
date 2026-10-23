@@ -4,6 +4,8 @@ import Foundation
 enum PoolSortCriterion: String, Codable, CaseIterable, Sendable {
     /// Recurring tasks without a time go first.
     case habitsFirst
+    /// Habits of the current part of the day go up, habits of another part go down.
+    case habitTimeOfDay
     /// `due` today (with or without time) beats everything below.
     case dueToday
     case highPriority
@@ -62,6 +64,9 @@ struct PoolSorter: Sendable {
         switch criterion {
         case .habitsFirst:
             return task.isHabit && task.habitTimes.isEmpty ? 0 : 1
+        case .habitTimeOfDay:
+            guard task.isHabit, let part = task.habit.timeOfDay else { return 1 }
+            return part == rules.partOfDay(context) ? 0 : 2
         case .dueToday:
             return !task.isHabit && task.due.map(context.logicalDay(of:)) == context.today ? 0 : 1
         case .highPriority:

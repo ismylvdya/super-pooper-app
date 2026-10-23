@@ -17,7 +17,15 @@
     "completedDate": "completed_date",
     "dateCreated": "date_created",
     "dateModified": "date_modified",
-    "reminderTimes": "reminder_times"
+    "reminderTimes": "reminder_times",
+    "habitColor": "habit_color",
+    "harmful": "harmful",
+    "showInToday": "show_in_today",
+    "timeOfDay": "time_of_day",
+    "twiceADay": "twice_a_day",
+    "twiceCountsDouble": "twice_counts_double",
+    "weeklyGoal": "weekly_goal",
+    "allowedSkips": "allowed_skips"
   },
   "statuses": {
     "thisWeek": "this_week",
@@ -32,5 +40,10 @@
     "high": "high",
     "normal": "none"
   },
-  "dependencyRelType": "FINISHTOSTART"
+  "dependencyRelType": "FINISHTOSTART",
+  "timesOfDay": {
+    "morning": "morning",
+    "day": "day",
+    "evening": "evening"
+  }
 }

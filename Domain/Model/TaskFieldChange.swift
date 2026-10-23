@@ -21,6 +21,14 @@ enum TaskFieldChange: Hashable, Sendable {
     /// The raw recurrence rule, or `nil` to remove it.
     case recurrence(String?)
     case reminderTimes([LocalTime])
+    case habitColor(String?)
+    case harmful(Bool)
+    case showInToday(Bool)
+    case timeOfDay(HabitTimeOfDay?)
+    case twiceADay(Bool)
+    case twiceCountsDouble(Bool)
+    case weeklyGoal(Int?)
+    case allowedSkips(Int?)
 }
 
 extension TaskNote {
@@ -53,6 +61,14 @@ extension TaskNote {
                 task.recurrenceRaw = raw
                 task.recurrence = raw.flatMap { try? RecurrenceRule.parse($0).get() }
             case .reminderTimes(let times): task.reminderTimes = times.sorted()
+            case .habitColor(let value): task.habit.color = value
+            case .harmful(let value): task.habit.harmful = value
+            case .showInToday(let value): task.habit.showInToday = value
+            case .timeOfDay(let value): task.habit.timeOfDay = value
+            case .twiceADay(let value): task.habit.twiceADay = value
+            case .twiceCountsDouble(let value): task.habit.twiceCountsDouble = value
+            case .weeklyGoal(let value): task.habit.weeklyGoal = value
+            case .allowedSkips(let value): task.habit.allowedSkips = value
             }
         }
         return task

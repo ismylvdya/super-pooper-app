@@ -22,6 +22,21 @@ struct FieldMapping: Codable, Hashable, Sendable {
         let dateCreated: String
         let dateModified: String
         let reminderTimes: String
+        let habitColor: String
+        let harmful: String
+        let showInToday: String
+        let timeOfDay: String
+        let twiceADay: String
+        let twiceCountsDouble: String
+        let weeklyGoal: String
+        let allowedSkips: String
+    }
+
+    /// Raw values of `time_of_day`.
+    struct TimesOfDay: Codable, Hashable, Sendable {
+        let morning: String
+        let day: String
+        let evening: String
     }
 
     struct Statuses: Codable, Hashable, Sendable {
@@ -42,6 +57,7 @@ struct FieldMapping: Codable, Hashable, Sendable {
     let fields: Fields
     let statuses: Statuses
     let priorities: Priorities
+    let timesOfDay: TimesOfDay
     /// `reltype` written into new `previous_task` entries.
     let dependencyRelType: String
 
@@ -55,6 +71,23 @@ struct FieldMapping: Codable, Hashable, Sendable {
         case statuses.archived: .archived
         case statuses.habit: .habit
         default: .other(raw)
+        }
+    }
+
+    func timeOfDay(fromRaw raw: String) -> HabitTimeOfDay? {
+        switch raw {
+        case timesOfDay.morning: .morning
+        case timesOfDay.day: .day
+        case timesOfDay.evening: .evening
+        default: nil
+        }
+    }
+
+    func raw(_ timeOfDay: HabitTimeOfDay) -> String {
+        switch timeOfDay {
+        case .morning: timesOfDay.morning
+        case .day: timesOfDay.day
+        case .evening: timesOfDay.evening
         }
     }
 

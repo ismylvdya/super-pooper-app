@@ -1,44 +1,74 @@
 import Foundation
 import Observation
 
-/// Pushed pages of the main navigation stack.
+/// The tabs of the app, in tab bar order.
+enum AppTab: String, CaseIterable, Hashable {
+    case today
+    case habits
+    case clock
+    case settings
+}
+
+/// Pushed pages of the tabs' navigation stacks.
 enum Route: Hashable {
     case task(String)
-    case settings
+    case newTask
+    case newHabit
     case search
+    case taskSettings
+    case habitSettings
     case archive
+    case habitArchive
+    case trash
     #if DEBUG
     case debugNotifications
     case debugWidgets
     #endif
 }
 
-/// Navigation state; deep links (`superpooper://…`) and notifications go through it too.
+/// Navigation state: the selected tab and one stack per tab. Deep links (`superpooper://…`) and
+/// notifications go through it too.
 @MainActor
 @Observable
 final class Router {
-    var path: [Route] = []
+    var tab: AppTab = .today
+    var paths: [AppTab: [Route]] = [:]
     var isReviewPresented = false
     var isProblemsPresented = false
+
+    /// The stack of the selected tab.
+    var path: [Route] {
+        get { paths[tab] ?? [] }
+        set { paths[tab] = newValue }
+    }
 
     func open(_ route: Route) { path.append(route) }
     func popToRoot() { path.removeAll() }
 
-    /// `superpooper://task/<name>`, `superpooper://settings`, `superpooper://review`, `superpooper://archive`.
+    func show(_ tab: AppTab, _ routes: [Route] = []) {
+        self.tab = tab
+        paths[tab] = routes
+    }
+
+    /// `superpooper://task/<name>`, `superpooper://habit/<name>`, `superpooper://habits`, `superpooper://settings`,
+    /// `superpooper://review`, `superpooper://archive`, `superpooper://trash`, `superpooper://clock`.
     func handle(_ url: URL) {
         guard url.scheme == DeepLink.scheme else { return }
+        let name = url.path().removingPercentEncoding.map { String($0.dropFirst()) } ?? ""
         switch url.host() {
-        case "task":
-            let name = url.path().removingPercentEncoding.map { String($0.dropFirst()) } ?? ""
-            if !name.isEmpty { path = [.task(name)] }
-        case "settings": path = [.settings]
-        case "archive": path = [.settings, .archive]
-        case "review": popToRoot(); isReviewPresented = true
+        case "task": if !name.isEmpty { show(.today, [.task(name)]) }
+        case "habit": show(.habits, name.isEmpty ? [] : [.task(name)])
+        case "habits": show(.habits)
+        case "clock": show(.clock)
+        case "settings": show(.settings)
+        case "archive": show(.settings, [.taskSettings, .archive])
+        case "trash": show(.settings, [.trash])
+        case "review": show(.today); isReviewPresented = true
         #if DEBUG
-        case "debug-notifications": path = [.settings, .debugNotifications]
-        case "debug-widgets": path = [.settings, .debugWidgets]
+        case "debug-notifications": show(.settings, [.debugNotifications])
+        case "debug-widgets": show(.settings, [.debugWidgets])
         #endif
-        default: popToRoot()
+        default: show(.today)
         }
     }
 }

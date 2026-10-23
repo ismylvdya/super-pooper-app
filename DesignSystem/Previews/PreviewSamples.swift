@@ -67,7 +67,8 @@ enum PreviewSamples {
     }
 
     static var plan: DayPlan {
-        let rules = DayRules(defaultEstimateMinutes: 15, reminderMinutes: 15, autoPromoteFrom: [])
+        let rules = DayRules(defaultEstimateMinutes: 15, reminderMinutes: 15, autoPromoteFrom: [],
+                             morningEnds: LocalTime(hour: 12, minute: 0)!, eveningStarts: LocalTime(hour: 18, minute: 0)!)
         let inputs = DayInputs(tasks: tasks, events: events, reminders: reminders, skipped: [], manualOrder: nil)
         return DayBuilder(rules: rules, sortCriteria: PoolSortCriterion.allCases).build(inputs, context: context)
     }

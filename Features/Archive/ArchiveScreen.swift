@@ -7,6 +7,7 @@ struct ArchiveScreen: View {
     @Environment(Router.self) private var router
     @Environment(\.openURL) private var openURL
     @Environment(\.tokens) private var tokens
+    @Environment(\.icons) private var icons
     @State private var pendingAction: PendingAction?
 
     var body: some View {
@@ -21,7 +22,7 @@ struct ArchiveScreen: View {
                         Menu {
                             ActionMenuContent(menu: .archiveRow, item: nil) { handler.handle($0, taskName: task.name) }
                         } label: {
-                            Image(systemName: "ellipsis").padding(.horizontal, 4)
+                            Image(systemName: icons[.more]).padding(.horizontal, 4)
                         }
                     }
                     .contextMenu {

@@ -41,7 +41,7 @@ struct WidgetPoolBlock: View {
                 ForEach(plan.pool.prefix(count)) { item in
                     TaskRowView(item: item, today: plan.today, titleFont: tokens.font(.widgetTitle), showsDetails: false,
                                 isCompact: true)
-                        .taskPlate()
+                        .taskPlate(isDone: item.isDone)
                 }
                 if plan.pool.count > count {
                     Text(L10n.format("pool.more", plan.pool.count - count))

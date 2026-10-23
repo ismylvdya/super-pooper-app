@@ -6,8 +6,6 @@ struct TimelineBlock: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
     @Environment(\.openURL) private var openURL
-    @State private var newEventStart: Date?
-    @State private var newEventTitle = ""
     @State private var eventToDelete: CalendarEvent?
     let plan: DayPlan
     let handler: TaskActionHandler
@@ -60,7 +58,7 @@ struct TimelineBlock: View {
         }
     }
 
-    /// The block with the dialogs for the two timeline edits: add an event, delete an event.
+    /// The block with the dialog for the one timeline edit: deleting an event (events are created in Calendar).
     var body: some View {
         VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
             if !plan.allDayEvents.isEmpty {
@@ -68,15 +66,6 @@ struct TimelineBlock: View {
             }
             content.frame(maxHeight: .infinity)
         }
-            .alert("event.new.title", isPresented: Binding(get: { newEventStart != nil }, set: { if !$0 { newEventStart = nil } })) {
-                TextField("event.new.placeholder", text: $newEventTitle)
-                Button("event.new.create") {
-                    let title = newEventTitle.trimmingCharacters(in: .whitespacesAndNewlines)
-                    if let start = newEventStart, !title.isEmpty { Task { await model.addEvent(title: title, start: start) } }
-                    newEventTitle = ""
-                }
-                Button("common.cancel", role: .cancel) { newEventTitle = "" }
-            }
             .alert("event.delete.title", isPresented: Binding(get: { eventToDelete != nil }, set: { if !$0 { eventToDelete = nil } }),
                    presenting: eventToDelete) { event in
                 Button("action.deleteEvent", role: .destructive) { Task { await model.deleteEvent(event) } }
@@ -97,11 +86,6 @@ struct TimelineBlock: View {
             if let url = URL(string: remindersURL + reminder.id) { openURL(url) }
         }
         style.onEventDelete = { eventToDelete = $0 }
-        style.onCreateAt = { date in
-            Haptics.play(.medium)
-            let snap = Double(model.config.rules.timeline.newEventSnapMinutes) * 60
-            newEventStart = Date(timeIntervalSinceReferenceDate: (date.timeIntervalSinceReferenceDate / snap).rounded() * snap)
-        }
         style.onReminderToggle = { reminder in
             Haptics.play(.light)
             Task { await model.toggleReminder(reminder) }

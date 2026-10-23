@@ -16,16 +16,11 @@ struct WidgetGalleryScreen: View {
                         TodayWidgetView(plan: source.plan(at: now), settings: source.settings, layout: source.config.todayLayout(for: source.settings.today.arrangement),
                                         context: source.context(at: now), maxTimelineHours: source.config.rules.widgets.timelineHours)
                     }
-                    if let habit = source.habit(named: "Медитация 🧘") {
-                        HStack(spacing: 20) {
-                            widget(width: 158, height: 158) {
-                                HabitGridView(title: habit.name, grid: HabitGrid(task: habit, weekCount: source.config.rules.widgets.habitGridWeeksSmall,
-                                                                                 today: source.context(at: now).today, calendar: source.calendar))
-                            }
-                        }
-                        widget(width: 338, height: 158) {
-                            HabitGridView(title: habit.name, grid: HabitGrid(task: habit, weekCount: source.config.rules.widgets.habitGridWeeksMedium,
-                                                                             today: source.context(at: now).today, calendar: source.calendar))
+                    if let habit = source.habits.first {
+                        let today = source.context(at: now).today
+                        widget(width: 158, height: 158) {
+                            HabitWidgetView(habit: habit, grid: HabitGrid(task: habit, weekCount: source.config.rules.widgets.habitGridWeeksSmall,
+                                                                          today: today, calendar: source.calendar), today: today)
                         }
                     }
                 } else {

@@ -2,7 +2,9 @@
   "vault": {
     "tasksFolder": "TaskNotes/Tasks",
     "taskTag": "🔫делишка",
-    "trashFolder": ".trash"
+    "trashFolder": ".trash",
+    "obsidianVault": "",
+    "obsidianPathPrefix": ""
   },
   "today": {
     "arrangement": "sideBySide",
@@ -22,11 +24,20 @@
   "timeline": {
     "layout": "oneColumn",
     "range": "aroundNow",
-    "wholeDay": { "start": "07:00", "end": "23:00" },
+    "wholeDay": {
+      "start": "07:00",
+      "end": "23:00"
+    },
     "hoursBefore": 2,
     "hoursAfter": 10,
-    "firstHalf": { "start": "06:00", "end": "14:00" },
-    "secondHalf": { "start": "14:00", "end": "22:00" },
+    "firstHalf": {
+      "start": "06:00",
+      "end": "14:00"
+    },
+    "secondHalf": {
+      "start": "14:00",
+      "end": "22:00"
+    },
     "eventFontSize": 15,
     "taskFontSize": 17
   },
@@ -36,5 +47,16 @@
   "onboarding": {
     "completed": false
   },
-  "colors": {}
+  "colors": {},
+  "habits": {
+    "order": [],
+    "showInTodayByDefault": false
+  },
+  "clock": {
+    "timeZone": "Europe/Moscow",
+    "prefix": ""
+  },
+  "appearance": {
+    "pastOpacity": 0.2
+  }
 }

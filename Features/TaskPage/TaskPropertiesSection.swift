@@ -4,7 +4,9 @@ import SwiftUI
 struct TaskPropertiesSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.rules) private var rules
-    let task: TaskNote
+    let editor: TaskEditor
+
+    private var task: TaskNote { editor.task }
 
     var body: some View {
         PlateSection(header: "taskPage.properties", info: "info.taskPage.properties") {
@@ -21,7 +23,7 @@ struct TaskPropertiesSection: View {
             PlateRow(icon: .pleasant, title: "taskPage.pleasant", info: "info.taskPage.pleasant") {
                 Toggle("taskPage.pleasant", isOn: Binding(
                     get: { task.pleasant ?? false },
-                    set: { value in Task { await model.update(task.name, [.pleasant(value)]) } }
+                    set: { value in editor.apply([.pleasant(value)]) }
                 )).labelsHidden()
             }
         }
@@ -33,8 +35,7 @@ struct TaskPropertiesSection: View {
             Picker("taskPage.status", selection: Binding(
                 get: { task.status },
                 set: { status in
-                    let changes = TaskMarking(today: model.context().today).changes(setting: status, on: task)
-                    Task { await model.update(task.name, changes) }
+                    editor.apply(TaskMarking(today: model.context().today).changes(setting: status, on: task))
                 }
             )) {
                 ForEach(TaskStatus.known, id: \.self) { Text(StatusText.title($0)).tag($0) }
@@ -47,24 +48,26 @@ struct TaskPropertiesSection: View {
                 .labelsHidden()
                 .accessibilityIdentifier("taskPage.high")
         }
-        DueEditor(task: task)
+        DueEditor(editor: editor)
     }
 
     private func binding<Value>(_ keyPath: KeyPath<TaskNote, Value>, change: @escaping (Value) -> TaskFieldChange) -> Binding<Value> {
         Binding(get: { task[keyPath: keyPath] },
-                set: { value in Task { await model.update(task.name, [change(value)]) } })
+                set: { value in editor.apply([change(value)]) })
     }
 
     private var estimateBinding: Binding<Int> {
         Binding(get: { rules.day.estimate(of: task) },
-                set: { minutes in Task { await model.update(task.name, [.timeEstimate(minutes)]) } })
+                set: { minutes in editor.apply([.timeEstimate(minutes)]) })
     }
 }
 
 /// The task date: a toggle; when on, a date and (child) an optional time.
 struct DueEditor: View {
     @Environment(AppModel.self) private var model
-    let task: TaskNote
+    let editor: TaskEditor
+
+    private var task: TaskNote { editor.task }
 
     var body: some View {
         PlateRow(icon: .due, title: "taskPage.due", info: "info.taskPage.due") {
@@ -103,7 +106,7 @@ struct DueEditor: View {
     }
 
     private func save(_ due: TaskDue?) {
-        Task { await model.update(task.name, [.due(due)]) }
+        editor.apply([.due(due)])
     }
 }
 

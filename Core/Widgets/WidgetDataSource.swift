@@ -34,12 +34,14 @@ struct WidgetDataSource: Sendable {
                                 dayState: snapshot.dayState, context: context)
     }
 
-    var habitNames: [String] {
-        (snapshot?.tasks ?? []).filter(\.isHabit).map(\.name).sorted()
+    /// Active habits in the user's list order.
+    var habits: [TaskNote] {
+        HabitOrder.sorted((snapshot?.tasks ?? []).filter { $0.isHabit && !$0.isArchived }, order: settings.habits.order)
     }
 
+    var habitNames: [String] { habits.map(\.name) }
+
     func habit(named name: String?) -> TaskNote? {
-        let habits = (snapshot?.tasks ?? []).filter(\.isHabit)
-        return habits.first { $0.name == name } ?? habits.sorted { $0.name < $1.name }.first
+        habits.first { $0.name == name } ?? habits.first
     }
 }

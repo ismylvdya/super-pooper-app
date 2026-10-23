@@ -1,28 +1,67 @@
 import SwiftUI
 
-/// Settings as grouped plates (manifest): Sources, Day, Timeline (with live preview), Pool,
-/// Notifications, Archive (only when not empty), then build version and credits.
+/// The Settings tab: two entries (tasks and habits), the trash, the clock, then build version and credits.
 struct SettingsScreen: View {
     @Environment(AppModel.self) private var model
-    @Environment(\.tokens) private var tokens
 
     var body: some View {
-        PageScaffold(title: L10n.string("settings.title")) {
-            SourcesSettingsSection()
-            DaySettingsSection()
-            TodaySettingsSection()
-            TimelineSettingsSection()
-            PoolSettingsSection()
-            AccentSettingsSection()
-            ColorSettingsSection()
-            NotificationSettingsSection()
-            if model.config.flags.archive, !model.archivedTasks.isEmpty { ArchiveSettingsSection() }
+        PageScaffold(title: L10n.string("settings.title"), isNested: false) {
+            PlateSection(header: nil) {
+                SettingsLink(route: .taskSettings, icon: .taskSettings, title: "settings.tasks")
+                SettingsLink(route: .habitSettings, icon: .habitSettings, title: "settings.habits")
+            }
+            PlateSection(header: nil) {
+                SettingsLink(route: .trash, icon: .trash, title: "trash.title", value: model.trashCount.map(String.init))
+            }
+            ClockSettingsSection()
             #if DEBUG
             DebugSettingsSection()
             #endif
             SettingsFooter()
         }
         .task { await model.refreshAccess() }
+        .task { await model.refreshTrash() }
+    }
+}
+
+/// Settings of the tasks side: sources, day, Today, timeline, pool, appearance, notifications, archive.
+struct TaskSettingsScreen: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        PageScaffold(title: L10n.string("settings.tasks")) {
+            SourcesSettingsSection()
+            DaySettingsSection()
+            TodaySettingsSection()
+            TimelineSettingsSection()
+            PoolSettingsSection()
+            AppearanceSettingsSection()
+            AccentSettingsSection()
+            ColorSettingsSection()
+            NotificationSettingsSection()
+            if model.config.flags.archive, !model.archivedTasks.isEmpty { ArchiveSettingsSection() }
+        }
+        .task { await model.refreshAccess() }
+    }
+}
+
+/// A plate row that pushes a page.
+struct SettingsLink: View {
+    @Environment(\.icons) private var icons
+    let route: Route
+    let icon: Icon
+    let title: LocalizedStringKey
+    var value: String?
+
+    var body: some View {
+        NavigationLink(value: route) {
+            PlateRow(icon: icon, title: title) {
+                if let value { Text(verbatim: value).foregroundStyle(.secondary) }
+                Image(systemName: icons[.chevron]).foregroundStyle(.tertiary)
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("settings.link.\(String(describing: route))")
     }
 }
 
@@ -85,17 +124,10 @@ struct NotificationSettingsSection: View {
 
 struct ArchiveSettingsSection: View {
     @Environment(AppModel.self) private var model
-    @Environment(\.icons) private var icons
 
     var body: some View {
         PlateSection(header: nil) {
-            NavigationLink(value: Route.archive) {
-                PlateRow(icon: .archive, title: "archive.title", info: "info.settings.archive") {
-                    Text(verbatim: "\(model.archivedTasks.count)").foregroundStyle(.secondary)
-                    Image(systemName: icons[.chevron]).foregroundStyle(.tertiary)
-                }
-            }
-            .buttonStyle(.plain)
+            SettingsLink(route: .archive, icon: .archive, title: "archive.title", value: "\(model.archivedTasks.count)")
         }
     }
 }

@@ -26,6 +26,7 @@ struct TimelineEventBlock: View {
         .background(color.opacity(tokens.opacity(.eventFill)),
                     in: RoundedRectangle(cornerRadius: tokens.radius(.timelineItem), style: .continuous))
         .clipShape(RoundedRectangle(cornerRadius: tokens.radius(.timelineItem), style: .continuous))
+        .opacity(slot.isPast ? tokens.opacity(.past) : 1)
     }
 }
 
@@ -98,6 +99,7 @@ private struct SlotPlate: ViewModifier {
             .padding(.horizontal, tokens.space(.plateInner) / 2)
             .background(isPast ? tokens.color(.past).opacity(tokens.opacity(.eventFill)) : tokens.color(.plateBackground), in: shape)
             .clipShape(shape)
+            .opacity(isPast ? tokens.opacity(.past) : 1)
     }
 }
 

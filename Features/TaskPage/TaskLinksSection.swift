@@ -78,7 +78,9 @@ struct TaskEventsSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.icons) private var icons
     @Environment(\.tokens) private var tokens
-    let task: TaskNote
+    let editor: TaskEditor
+
+    private var task: TaskNote { editor.task }
     @State private var picking: Field?
 
     enum Field: String, Identifiable {
@@ -95,7 +97,7 @@ struct TaskEventsSection: View {
         .sheet(item: $picking) { field in
             EventPickerScreen { event in
                 let link = EventLink(eventIdentifier: event.eventIdentifier, title: event.title, start: event.start)
-                Task { await model.update(task.name, [field == .previous ? .previousEvent(link) : .nextEvent(link)]) }
+                editor.apply([field == .previous ? .previousEvent(link) : .nextEvent(link)])
             }
         }
     }
@@ -119,7 +121,7 @@ struct TaskEventsSection: View {
                 }
                 Spacer()
                 Button {
-                    Task { await model.update(task.name, [field == .previous ? .previousEvent(nil) : .nextEvent(nil)]) }
+                    editor.apply([field == .previous ? .previousEvent(nil) : .nextEvent(nil)])
                 } label: {
                     Image(systemName: icons[.remove]).foregroundStyle(tokens.color(.destructive))
                 }

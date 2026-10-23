@@ -62,8 +62,9 @@ import SwiftUI
 #Preview("Habit grid") {
     let context = PreviewSamples.context
     let habit = PreviewSamples.tasks[0]
-    return HabitGridView(title: habit.name, grid: HabitGrid(task: habit, weekCount: 10, today: context.today, calendar: context.calendar))
-        .frame(width: 338, height: 158)
+    return HabitWidgetView(habit: habit, grid: HabitGrid(task: habit, weekCount: 4, today: context.today, calendar: context.calendar),
+                           today: context.today)
+        .frame(width: 158, height: 158)
 }
 
 #Preview("Today widget") {

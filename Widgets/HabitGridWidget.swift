@@ -1,7 +1,8 @@
 import SwiftUI
 import WidgetKit
 
-/// Small/medium widget with the day grid of one recurring task (chosen in the widget settings).
+/// Small widget of one habit (chosen in the widget settings): today's button and the last weeks.
+/// Tapping outside the button opens the habit's page.
 struct HabitGridWidget: Widget {
     var body: some WidgetConfiguration {
         AppIntentConfiguration(kind: "SuperPooperHabitGrid", intent: SelectHabitIntent.self, provider: HabitGridProvider()) { entry in
@@ -9,7 +10,7 @@ struct HabitGridWidget: Widget {
         }
         .configurationDisplayName("widget.habit.name")
         .description("widget.habit.description")
-        .supportedFamilies([.systemSmall, .systemMedium])
+        .supportedFamilies([.systemSmall])
         .contentMarginsDisabled()
     }
 }
@@ -39,22 +40,23 @@ struct HabitGridProvider: AppIntentTimelineProvider {
 
 struct HabitGridEntryView: View {
     @Environment(\.tokens) private var tokens
-    @Environment(\.widgetFamily) private var family
     let entry: HabitGridEntry
 
     var body: some View {
+        let habit = entry.source?.habit(named: entry.habitName)
         Group {
-            if let source = entry.source, let habit = source.habit(named: entry.habitName) {
-                let rules = source.config.rules.widgets
-                HabitGridView(title: habit.name,
-                              grid: HabitGrid(task: habit, weekCount: family == .systemSmall ? rules.habitGridWeeksSmall : rules.habitGridWeeksMedium,
-                                              today: source.context(at: entry.date).today, calendar: source.calendar))
+            if let source = entry.source, let habit {
+                let today = source.context(at: entry.date).today
+                HabitWidgetView(habit: habit,
+                                grid: HabitGrid(task: habit, weekCount: source.config.rules.widgets.habitGridWeeksSmall,
+                                                today: today, calendar: source.calendar),
+                                today: today)
             } else {
                 Text("widget.habit.empty").font(tokens.font(.widgetCaption)).foregroundStyle(tokens.color(.secondaryText)).padding()
             }
         }
         .containerBackground(tokens.color(.plateBackground), for: .widget)
-        .widgetURL(DeepLink.today)
-        .environment(\.tokens, entry.source.map { $0.config.tokens.overridingColors($0.settings.colors) } ?? tokens)
+        .widgetURL(habit.flatMap { DeepLink.habit($0.name) } ?? DeepLink.habits)
+        .environment(\.tokens, entry.source.map { $0.config.tokens.applying($0.settings) } ?? tokens)
     }
 }

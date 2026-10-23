@@ -16,7 +16,6 @@ struct DayTimelineView<TaskContent: View>: View {
         GeometryReader { geometry in
             let itemsWidth = max(geometry.size.width - labelWidth, 0)
             ZStack(alignment: .topLeading) {
-                createLayer
                 hourGrid(width: geometry.size.width)
                 ForEach(placed(width: itemsWidth)) { item in
                     block(for: item.slot)
@@ -28,24 +27,6 @@ struct DayTimelineView<TaskContent: View>: View {
             }
         }
         .frame(height: max(totalHeight, contentBottom))
-    }
-
-    /// Long press on an empty spot starts a new event at that time (blocks above it handle their own touches).
-    @ViewBuilder private var createLayer: some View {
-        if let onCreateAt = style.onCreateAt {
-            Color.clear
-                .contentShape(Rectangle())
-                .gesture(LongPressGesture(minimumDuration: 0.5)
-                    .sequenced(before: DragGesture(minimumDistance: 0))
-                    .onEnded { value in
-                        guard case .second(true, let drag?) = value else { return }
-                        onCreateAt(date(atY: drag.location.y))
-                    })
-        }
-    }
-
-    private func date(atY y: CGFloat) -> Date {
-        window.start.addingTimeInterval(Double(y / hourHeight) * 3600)
     }
 
     private var contentBottom: CGFloat { CGFloat(placed(width: 1).map(\.frame.maxY).max() ?? 0) }
@@ -169,9 +150,8 @@ struct TimelineStyle {
     var showsHourLabels = true
     /// Tap on an event (the app opens Calendar on that day).
     var onEventTap: ((CalendarEvent) -> Void)?
-    /// Long-press menu of an event (asks first) and long press on an empty spot (a new event at that time).
+    /// Long-press menu of an event (asks first).
     var onEventDelete: ((CalendarEvent) -> Void)?
-    var onCreateAt: ((Date) -> Void)?
     /// Reminder long-press menu (completes it in Reminders) and tap (opens it in Reminders).
     var onReminderToggle: ((ReminderItem) -> Void)?
     var onReminderTap: ((ReminderItem) -> Void)?

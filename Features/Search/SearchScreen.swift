@@ -24,7 +24,10 @@ struct SearchScreen: View {
                 Section("search.tasks") {
                     ForEach(tasks) { task in
                         Button { router.open(.task(task.name)) } label: {
-                            HStack {
+                            HStack(spacing: tokens.space(.iconTextGap)) {
+                                if let emoji = TagEmoji.leading(of: model.settings.vault.taskTag) {
+                                    Text(verbatim: emoji).font(tokens.font(.caption))
+                                }
                                 Text(task.name).foregroundStyle(tokens.color(.primaryText))
                                 Spacer()
                                 Text(StatusText.title(task.status)).font(tokens.font(.caption)).foregroundStyle(tokens.color(.secondaryText))
@@ -38,7 +41,8 @@ struct SearchScreen: View {
                 Section("search.events") {
                     ForEach(events) { event in
                         Button { open(event) } label: {
-                            HStack {
+                            HStack(spacing: tokens.space(.iconTextGap)) {
+                                SourceDot(hex: event.colorHex)
                                 Text(event.title).foregroundStyle(tokens.color(.primaryText))
                                 Spacer()
                                 Text(event.start.formatted(date: .abbreviated, time: event.isAllDay ? .omitted : .shortened))
@@ -78,3 +82,4 @@ enum SearchMatcher {
         return events.filter { $0.title.localizedCaseInsensitiveContains(query) }.sorted { $0.start < $1.start }
     }
 }
+

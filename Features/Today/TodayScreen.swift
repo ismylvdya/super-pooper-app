@@ -1,7 +1,8 @@
 import SwiftUI
 
 /// Main screen: blocks from the arrangement's layout (`layouts/today-*.layout.json`), refreshed every
-/// minute so "now" and chains move. Pull-to-refresh (full sync) lives only in the timeline; the pool has the pencil pull.
+/// minute so "now" and chains move. The pool and the timeline both pull to refresh (full sync).
+/// Top left: the morning review (edit the pool) and the problems badge; top right: search.
 struct TodayScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
@@ -9,7 +10,6 @@ struct TodayScreen: View {
     @Environment(\.icons) private var icons
     @Environment(\.openURL) private var openURL
     @State private var pendingAction: PendingAction?
-    @State private var isNewTaskPresented = false
 
     var body: some View {
         GeometryReader { geometry in
@@ -30,7 +30,6 @@ struct TodayScreen: View {
         .toolbar { toolbar }
         .navigationBarTitleDisplayMode(.inline)
         .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
-        .newTaskPrompt(isPresented: $isNewTaskPresented) { router.open(.task($0)) }
     }
 
     /// Blocks along a horizontal axis all reach the bottom; along a vertical one only the last does.
@@ -44,9 +43,10 @@ struct TodayScreen: View {
 
     @ToolbarContentBuilder private var toolbar: some ToolbarContent {
         ToolbarItemGroup(placement: .topBarLeading) {
-            Button { router.open(.settings) } label: { Image(systemName: icons[.settings]) }
+            Button { router.isReviewPresented = true } label: { Image(systemName: icons[.edit]) }
                 .tint(.primary)
-                .accessibilityLabel(Text("settings.title"))
+                .accessibilityLabel(Text("review.title"))
+                .accessibilityIdentifier("today.review")
             if model.config.flags.problemBadge, model.problemCount > 0 {
                 Button { router.isProblemsPresented = true } label: {
                     HStack(spacing: 4) {
@@ -59,12 +59,6 @@ struct TodayScreen: View {
             }
         }
         ToolbarItemGroup(placement: .topBarTrailing) {
-            Button { isNewTaskPresented = true } label: {
-                Image(systemName: icons[.newTask])
-            }
-            .tint(.primary)
-            .accessibilityLabel(Text("task.new.add"))
-            .accessibilityIdentifier("task.new")
             Button { router.open(.search) } label: { Image(systemName: icons[.search]) }
                 .tint(.primary)
                 .accessibilityLabel(Text("search.title"))

@@ -14,6 +14,7 @@ enum ActionID: String, Codable, CaseIterable, Sendable {
     case openInObsidian
     case restoreThisWeek
     case restoreHalfYear
+    case restoreHabit
 }
 
 enum HapticStyle: String, Codable, Sendable {
@@ -30,6 +31,8 @@ enum ActionMenu: String, Codable, CaseIterable, Sendable {
     case taskNotification
     case reminderNotification
     case archiveRow
+    case habitPage
+    case habitArchiveRow
 }
 
 struct ActionDefinition: Codable, Hashable, Sendable {

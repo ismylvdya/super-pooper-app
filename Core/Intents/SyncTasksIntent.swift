@@ -18,9 +18,14 @@ struct SyncTasksIntent: AppIntent {
 @MainActor
 enum AppActionBridge {
     static var syncHandler: (() async -> Void)?
+    static var habitTapHandler: ((String) async -> Void)?
 
     static func sync() async {
         await syncHandler?()
+    }
+
+    static func tapHabit(_ name: String) async {
+        await habitTapHandler?(name)
     }
 }
 

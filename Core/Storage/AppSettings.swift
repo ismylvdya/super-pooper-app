@@ -7,6 +7,10 @@ struct AppSettings: Codable, Equatable, Sendable {
         var tasksFolder: String
         var taskTag: String
         var trashFolder: String
+        /// The Obsidian vault the TaskNotes folder belongs to and the folder's path inside it, for
+        /// "Open in Obsidian" links (the app itself only sees the chosen folder).
+        var obsidianVault: String
+        var obsidianPathPrefix: String
     }
 
     struct Sources: Codable, Equatable, Sendable {
@@ -74,6 +78,25 @@ struct AppSettings: Codable, Equatable, Sendable {
         var completed: Bool
     }
 
+    struct Habits: Codable, Equatable, Sendable {
+        /// The user's order of the habit list (names); habits not in it follow alphabetically.
+        var order: [String]
+        /// "Show in Today" of a newly created habit.
+        var showInTodayByDefault: Bool
+    }
+
+    struct Clock: Codable, Equatable, Sendable {
+        /// IANA time zone shown by the Clock tab and the Lock Screen widget.
+        var timeZone: String
+        /// Text before the time in the Lock Screen widget.
+        var prefix: String
+    }
+
+    struct Appearance: Codable, Equatable, Sendable {
+        /// Opacity of done tasks and past events in the pool, the timeline and the widget.
+        var pastOpacity: Double
+    }
+
     var vault: Vault
     var today: Today
     var sources: Sources
@@ -82,6 +105,9 @@ struct AppSettings: Codable, Equatable, Sendable {
     var timeline: Timeline
     var notifications: Notifications
     var onboarding: Onboarding
+    var habits: Habits
+    var clock: Clock
+    var appearance: Appearance
     /// Color overrides by token name (`task`, `habit`, `past`, …) as `#RRGGBB`; empty = tokens.json.
     var colors: [String: String]
 }

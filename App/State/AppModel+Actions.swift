@@ -7,19 +7,18 @@ extension AppModel {
         await write(task, TaskMarking(today: context().today).changes(toggling: task))
     }
 
-    /// `day` comes from notifications: an action on yesterday's notification is ignored
-    /// (v0 has no marks for past days).
+    /// `day`: a habit mark for that day (habit page, notifications); `nil` = today.
     func perform(_ action: ActionID, on name: String, day: LocalDate? = nil) async {
         guard let task = task(named: name) else { return }
-        if let day, day != context().today { return }
         let marking = TaskMarking(today: context().today)
         switch action {
         case .done, .partial, .twice:
             let mark: HabitMark = action == .partial ? .partial : action == .twice ? .twice : .done
-            await write(task, marking.changes(marking: task, as: mark))
+            await write(task, marking.changes(marking: task, as: mark, on: day))
         case .unmark:
-            await write(task, marking.changes(marking: task, as: nil))
+            await write(task, marking.changes(marking: task, as: nil, on: day))
         case .skipToday:
+            guard day == nil || day == context().today else { return }
             updateDayState { if !$0.skipped.contains(name) { $0.skipped.append(name) } }
             await publishDerivedState()
         case .archive:
@@ -30,6 +29,8 @@ extension AppModel {
             await write(task, [.status(.thisWeek)])
         case .restoreHalfYear:
             await write(task, [.status(.halfYear)])
+        case .restoreHabit:
+            await write(task, [.status(.habit)])
         case .delete:
             await delete(task)
         case .open, .openInObsidian:
@@ -89,19 +90,6 @@ extension AppModel {
         if let result = try? await services.tasks.scan() { setScanResult(result) }
         await publishDerivedState()
         return renamed
-    }
-
-    /// Creates a new this-week task note in the vault and returns its name (made unique if taken).
-    func createTask(named name: String) async -> String? {
-        do {
-            let task = try await services.tasks.create(named: name, status: .thisWeek)
-            replace(task)
-            await publishDerivedState()
-            return task.name
-        } catch {
-            banners.show(Self.describe(error), style: .problem)
-            return nil
-        }
     }
 
     func body(of name: String) async -> String? {

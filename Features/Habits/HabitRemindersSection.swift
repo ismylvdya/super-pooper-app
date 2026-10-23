@@ -1,36 +1,13 @@
 import SwiftUI
 
-/// The switch at the very top of the page: a one-off task or a repeating habit.
-struct TaskKindSection: View {
-    @Environment(AppModel.self) private var model
-    let task: TaskNote
-
-    var body: some View {
-        PlateSection(header: "taskKind.header", info: "info.taskKind") {
-            Picker("taskKind.header", selection: Binding(
-                get: { task.isHabit ? TaskKind.habit : .task },
-                set: { kind in
-                    let changes = kind.changes(for: task, today: model.context().today)
-                    guard !changes.isEmpty else { return }
-                    Haptics.play(.light)
-                    Task { await model.update(task.name, changes) }
-                }
-            )) {
-                Text("taskKind.task").tag(TaskKind.task)
-                Text("taskKind.habit").tag(TaskKind.habit)
-            }
-            .pickerStyle(.segmented)
-            .accessibilityIdentifier("taskPage.kind")
-        }
-    }
-}
-
 /// A habit's reminders: none (any time of the day), one, or several (e.g. for "twice a day").
 struct HabitRemindersSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.icons) private var icons
     @Environment(\.tokens) private var tokens
-    let task: TaskNote
+    let editor: TaskEditor
+
+    private var task: TaskNote { editor.task }
 
     var body: some View {
         PlateSection(header: "taskPage.reminders", info: "info.taskPage.reminders", hint: times.isEmpty ? "taskPage.reminders.none" : nil) {
@@ -74,6 +51,6 @@ struct HabitRemindersSection: View {
     }
 
     private func save(_ updated: [LocalTime]) {
-        Task { await model.update(task.name, [.reminderTimes(updated), .due(nil)]) }
+        editor.apply(task.due == nil ? [.reminderTimes(updated)] : [.reminderTimes(updated), .due(nil)])
     }
 }

@@ -1,25 +1,137 @@
 {
   "actions": [
-    { "id": "done", "title": "action.done", "icon": "checkmark.circle", "destructive": false, "haptic": "light" },
-    { "id": "partial", "title": "action.partial", "icon": "circle.lefthalf.filled", "destructive": false, "haptic": "light" },
-    { "id": "twice", "title": "action.twice", "icon": "2.circle", "destructive": false, "haptic": "light" },
-    { "id": "skipToday", "title": "action.skipToday", "icon": "forward.end", "destructive": false, "haptic": "light" },
-    { "id": "unmark", "title": "action.unmark", "icon": "arrow.uturn.backward.circle", "destructive": false, "haptic": "light" },
-    { "id": "open", "title": "action.open", "icon": "doc.text", "destructive": false, "haptic": "none" },
-    { "id": "archive", "title": "action.archive", "icon": "archivebox", "destructive": false, "haptic": "medium" },
-    { "id": "delete", "title": "action.delete", "icon": "trash", "destructive": true, "haptic": "medium",
-      "confirmTitle": "confirm.delete.title", "confirmMessage": "confirm.delete.message" },
-    { "id": "openInObsidian", "title": "action.openInObsidian", "icon": "arrow.up.forward.app", "destructive": false, "haptic": "none" },
-    { "id": "restoreThisWeek", "title": "action.restoreThisWeek", "icon": "arrow.uturn.up.circle", "destructive": false, "haptic": "light" },
-    { "id": "restoreHalfYear", "title": "action.restoreHalfYear", "icon": "tray.and.arrow.up", "destructive": false, "haptic": "light" }
+    {
+      "id": "done",
+      "title": "action.done",
+      "icon": "checkmark.circle",
+      "destructive": false,
+      "haptic": "light"
+    },
+    {
+      "id": "partial",
+      "title": "action.partial",
+      "icon": "circle.lefthalf.filled",
+      "destructive": false,
+      "haptic": "light"
+    },
+    {
+      "id": "twice",
+      "title": "action.twice",
+      "icon": "2.circle",
+      "destructive": false,
+      "haptic": "light"
+    },
+    {
+      "id": "skipToday",
+      "title": "action.skipToday",
+      "icon": "forward.end",
+      "destructive": false,
+      "haptic": "light"
+    },
+    {
+      "id": "unmark",
+      "title": "action.unmark",
+      "icon": "arrow.uturn.backward.circle",
+      "destructive": false,
+      "haptic": "light"
+    },
+    {
+      "id": "open",
+      "title": "action.open",
+      "icon": "doc.text",
+      "destructive": false,
+      "haptic": "none"
+    },
+    {
+      "id": "archive",
+      "title": "action.archive",
+      "icon": "archivebox",
+      "destructive": false,
+      "haptic": "medium"
+    },
+    {
+      "id": "delete",
+      "title": "action.delete",
+      "icon": "trash",
+      "destructive": true,
+      "haptic": "medium",
+      "confirmTitle": "confirm.delete.title",
+      "confirmMessage": "confirm.delete.message"
+    },
+    {
+      "id": "openInObsidian",
+      "title": "action.openInObsidian",
+      "icon": "arrow.up.forward.app",
+      "destructive": false,
+      "haptic": "none"
+    },
+    {
+      "id": "restoreThisWeek",
+      "title": "action.restoreThisWeek",
+      "icon": "arrow.uturn.up.circle",
+      "destructive": false,
+      "haptic": "light"
+    },
+    {
+      "id": "restoreHalfYear",
+      "title": "action.restoreHalfYear",
+      "icon": "tray.and.arrow.up",
+      "destructive": false,
+      "haptic": "light"
+    },
+    {
+      "id": "restoreHabit",
+      "title": "action.restoreHabit",
+      "icon": "arrow.uturn.up.circle",
+      "destructive": false,
+      "haptic": "light"
+    }
   ],
   "menus": {
-    "habitContext": ["done", "partial", "twice", "skipToday", "unmark", "open"],
-    "taskContext": ["done", "unmark", "open", "archive", "delete"],
-    "taskPage": ["archive", "delete", "openInObsidian"],
-    "habitNotification": ["done", "partial", "twice", "skipToday"],
-    "taskNotification": ["done"],
-    "reminderNotification": ["done"],
-    "archiveRow": ["restoreThisWeek", "restoreHalfYear", "delete"]
+    "habitContext": [
+      "done",
+      "partial",
+      "twice",
+      "skipToday",
+      "unmark",
+      "open"
+    ],
+    "taskContext": [
+      "done",
+      "unmark",
+      "open",
+      "archive",
+      "delete"
+    ],
+    "taskPage": [
+      "archive",
+      "delete",
+      "openInObsidian"
+    ],
+    "habitNotification": [
+      "done",
+      "partial",
+      "skipToday"
+    ],
+    "taskNotification": [
+      "done"
+    ],
+    "reminderNotification": [
+      "done"
+    ],
+    "archiveRow": [
+      "restoreThisWeek",
+      "restoreHalfYear",
+      "delete"
+    ],
+    "habitPage": [
+      "archive",
+      "delete",
+      "openInObsidian"
+    ],
+    "habitArchiveRow": [
+      "restoreHabit",
+      "delete"
+    ]
   }
 }

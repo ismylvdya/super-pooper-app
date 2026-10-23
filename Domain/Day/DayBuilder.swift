@@ -34,7 +34,7 @@ struct DayBuilder: Sendable {
             let inDay = isInDay(task, occurrence: occurrence, skipped: inputs.skipped, context: context)
             let taskProblems = self.problems(of: task, graph: graph, previousEvent: previousEvent, nextEvent: nextEvent,
                                              checkEvents: inDay)
-            if inDay || task.isHabit || !task.status.isCompleted {
+            if inDay || (task.isHabit && !task.isArchived) || !task.status.isCompleted {
                 problems += taskProblems.map { PlanProblem(taskName: task.name, problem: $0) }
             }
 
@@ -65,7 +65,8 @@ struct DayBuilder: Sendable {
         }
         timeline.sort { $0.start != $1.start ? $0.start < $1.start : $0.end > $1.end }
 
-        let allDay = inputs.events.filter { $0.isAllDay && overlapsToday($0, context) }.sorted { $0.title < $1.title }
+        let allDay = inputs.events.filter { $0.isAllDay && $0.covers(context.today, calendar: context.calendar) }
+            .sorted { $0.title < $1.title }
         return DayPlan(today: context.today, now: context.now, pool: pool, timeline: timeline, problems: problems, allDayEvents: allDay)
     }
 
@@ -73,7 +74,7 @@ struct DayBuilder: Sendable {
 
     private func isInDay(_ task: TaskNote, occurrence: TaskOccurrence, skipped: Set<String>, context: DayContext) -> Bool {
         if task.isHabit {
-            guard !skipped.contains(task.name) else { return false }
+            guard task.isInTodayHabits, !skipped.contains(task.name) else { return false }
             return occurrence.occurs(task, on: context.today) || HabitInstances(task: task).mark(on: context.today) != nil
         }
         return task.status == .thisWeek || (task.status == .done && task.completedDate == context.today)

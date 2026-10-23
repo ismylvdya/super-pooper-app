@@ -26,7 +26,7 @@ struct ColorSettingsSection: View {
         let samples = Array(plan.pool.prefix(2)) + Array(plan.pool.filter(\.isHabit).prefix(1))
         VStack(spacing: tokens.space(.poolRowGap)) {
             ForEach(samples) { item in
-                TaskRowView(item: item, today: plan.today, isCompact: true).taskPlate()
+                TaskRowView(item: item, today: plan.today, isCompact: true).taskPlate(isDone: item.isDone)
             }
         }
         .padding(tokens.space(.chipGap))

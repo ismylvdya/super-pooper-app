@@ -11,15 +11,21 @@ struct RootView: View {
         let model = container.model
         Group {
             if model.settings.onboarding.completed {
-                NavigationStack(path: $router.path) {
-                    home(model)
-                        .bannerHost()
-                        .navigationDestination(for: Route.self) { route in
-                            destination(route).bannerHost().refreshable { await model.sync(announce: true) }
+                TabView(selection: $router.tab) {
+                    ForEach(AppTab.allCases, id: \.self) { tab in
+                        NavigationStack(path: Binding(get: { router.paths[tab] ?? [] }, set: { router.paths[tab] = $0 })) {
+                            root(tab, model: model)
+                                .bannerHost()
+                                .navigationDestination(for: Route.self) { route in
+                                    destination(route).bannerHost().refreshable { await model.sync(announce: true) }
+                                }
                         }
+                        .tabItem { Label(LocalizedStringKey("tab.\(tab.rawValue)"), systemImage: container.config.icons[tab.icon]) }
+                        .tag(tab)
+                    }
                 }
-                .sheet(isPresented: $router.isReviewPresented) { MorningReviewScreen() }
-                .sheet(isPresented: $router.isProblemsPresented) { ProblemsSheet() }
+                .sheet(isPresented: $router.isReviewPresented) { MorningReviewScreen().tint(tokens.color(.accent)) }
+                .sheet(isPresented: $router.isProblemsPresented) { ProblemsSheet().tint(tokens.color(.accent)) }
             } else {
                 OnboardingFlow()
             }
@@ -50,9 +56,18 @@ struct RootView: View {
         .onOpenURL { container.router.handle($0) }
     }
 
+    @ViewBuilder private func root(_ tab: AppTab, model: AppModel) -> some View {
+        switch tab {
+        case .today: home(model)
+        case .habits: HabitsScreen()
+        case .clock: ClockScreen()
+        case .settings: SettingsScreen()
+        }
+    }
+
     /// Reading `vaultState` keeps this view observing it, so choosing a vault switches to Today.
     /// Bundled tokens with the user's color choices.
-    private var tokens: DesignTokens { container.config.tokens.overridingColors(container.model.settings.colors) }
+    private var tokens: DesignTokens { container.config.tokens.applying(container.model.settings) }
 
     @ViewBuilder private func home(_ model: AppModel) -> some View {
         switch model.vaultState {
@@ -68,9 +83,14 @@ struct RootView: View {
     @ViewBuilder private func destination(_ route: Route) -> some View {
         switch route {
         case .task(let name): TaskPageScreen(taskName: name)
-        case .settings: SettingsScreen()
+        case .newTask: NewNoteScreen(kind: .task)
+        case .newHabit: NewNoteScreen(kind: .habit)
         case .search: SearchScreen()
+        case .taskSettings: TaskSettingsScreen()
+        case .habitSettings: HabitSettingsScreen()
         case .archive: ArchiveScreen()
+        case .habitArchive: HabitArchiveScreen()
+        case .trash: TrashScreen()
         #if DEBUG
         case .debugNotifications: NotificationsDebugScreen()
         case .debugWidgets: WidgetGalleryScreen()
@@ -86,6 +106,17 @@ struct RootView: View {
               container.launch.openURL == nil else { return }
         model.updateDayState { $0.reviewShown = true }
         container.router.isReviewPresented = true
+    }
+}
+
+extension AppTab {
+    var icon: Icon {
+        switch self {
+        case .today: .tabToday
+        case .habits: .tabHabits
+        case .clock: .tabClock
+        case .settings: .tabSettings
+        }
     }
 }
 
@@ -119,15 +150,16 @@ struct BannerOverlay: View {
         switch style {
         case .info, .synced: .sync
         case .success: .markDone
-        case .problem: .problem
+        case .warning, .problem: .problem
         }
     }
 
+    /// Good and neutral news is green, warnings yellow, errors red; never the accent color.
     private func tint(_ style: BannerCenter.Banner.Style) -> Color {
         switch style {
-        case .info: tokens.color(.accent)
-        case .synced, .success: tokens.color(.pleasant)
-        case .problem: tokens.color(.problem)
+        case .info, .synced, .success: tokens.color(.success)
+        case .warning: tokens.color(.warning)
+        case .problem: tokens.color(.error)
         }
     }
 }

@@ -21,6 +21,8 @@ protocol NoteFileSystem: Sendable {
     func move(_ url: URL, to destination: URL) throws
     func copy(_ url: URL, to destination: URL) throws
     func fileExists(_ url: URL) -> Bool
+    /// Deletes a file for good (only the trash screen does this, after the user confirms).
+    func remove(_ url: URL) throws
 }
 
 /// `NSFileCoordinator`-based implementation with atomic writes.
@@ -97,6 +99,16 @@ struct CoordinatedFileSystem: NoteFileSystem {
     }
 
     func fileExists(_ url: URL) -> Bool { FileManager.default.fileExists(atPath: url.path) }
+
+    func remove(_ url: URL) throws {
+        var result: Result<Void, Error> = .success(())
+        try coordinate { coordinator, errorPointer in
+            coordinator.coordinate(writingItemAt: url, options: .forDeleting, error: errorPointer) { target in
+                result = Result { try FileManager.default.removeItem(at: target) }
+            }
+        }
+        try result.get()
+    }
 
     private func coordinate(_ body: (NSFileCoordinator, NSErrorPointer) -> Void) throws {
         var error: NSError?

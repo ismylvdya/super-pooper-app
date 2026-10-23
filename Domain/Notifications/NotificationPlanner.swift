@@ -45,6 +45,7 @@ struct NotificationPlanner: Sendable {
 
         for task in tasks {
             if task.isHabit {
+                guard !task.isArchived else { continue }
                 let instances = HabitInstances(task: task)
                 for offset in 0..<horizonDays {
                     let day = context.today.adding(days: offset)

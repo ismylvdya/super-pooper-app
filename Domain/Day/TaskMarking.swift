@@ -6,10 +6,12 @@ import Foundation
 struct TaskMarking: Sendable {
     let today: LocalDate
 
-    func changes(marking task: TaskNote, as mark: HabitMark?) -> [TaskFieldChange] {
+    /// `day` matters for habits only (marks for past days); a regular task is simply done or not.
+    func changes(marking task: TaskNote, as mark: HabitMark?, on day: LocalDate? = nil) -> [TaskFieldChange] {
         if task.isHabit {
+            let day = day ?? today
             let current = HabitInstances(task: task)
-            return current.setting(mark, on: today) == current ? [] : [.markInstance(day: today, mark: mark)]
+            return current.setting(mark, on: day) == current ? [] : [.markInstance(day: day, mark: mark)]
         }
         if mark != nil {
             return task.status == .done ? [] : [.status(.done), .completedDate(today)]

@@ -2,13 +2,30 @@
   "day": {
     "defaultEstimateMinutes": 15,
     "reminderMinutes": 15,
-    "autoPromoteFrom": ["half_year", "someday"]
+    "autoPromoteFrom": [
+      "half_year",
+      "someday"
+    ],
+    "morningEnds": "12:00",
+    "eveningStarts": "18:00"
   },
   "timeEstimates": [
-    { "minutes": 2, "label": "estimate.2min" },
-    { "minutes": 15, "label": "estimate.15min" },
-    { "minutes": 60, "label": "estimate.1h" },
-    { "minutes": 240, "label": "estimate.dohuya" }
+    {
+      "minutes": 2,
+      "label": "estimate.2min"
+    },
+    {
+      "minutes": 15,
+      "label": "estimate.15min"
+    },
+    {
+      "minutes": 60,
+      "label": "estimate.1h"
+    },
+    {
+      "minutes": 240,
+      "label": "estimate.dohuya"
+    }
   ],
   "notifications": {
     "limit": 60,
@@ -30,15 +47,19 @@
   },
   "timeline": {
     "refreshSeconds": 60,
-    "maxHoursAfter": 18,
-    "newEventMinutes": 60,
-    "newEventSnapMinutes": 15
+    "maxHoursAfter": 18
   },
   "widgets": {
     "refreshMinutes": 15,
     "entryCount": 24,
-    "habitGridWeeksSmall": 7,
-    "habitGridWeeksMedium": 16,
+    "habitGridWeeksSmall": 4,
     "timelineHours": 6
+  },
+  "habits": {
+    "historyMinimumWeeks": 6,
+    "historyExtraWeeks": 0,
+    "defaultAllowedSkips": 1,
+    "defaultWeeklyGoal": 3,
+    "maxAllowedSkips": 14
   }
 }

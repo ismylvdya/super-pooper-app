@@ -5,8 +5,10 @@ import SwiftUI
 struct RecurrenceEditorSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
-    let task: TaskNote
+    let editor: TaskEditor
     @State private var draft: RecurrenceDraft?
+
+    private var task: TaskNote { editor.task }
 
     var body: some View {
         let draft = self.draft ?? initialDraft
@@ -117,7 +119,7 @@ struct RecurrenceEditorSection: View {
         draft = updated
         let raw = updated.raw
         guard raw != task.recurrenceRaw else { return }
-        Task { await model.update(task.name, [.recurrence(raw)]) }
+        editor.apply([.recurrence(raw)])
     }
 
     private func monthlyChoices(_ draft: RecurrenceDraft) -> [RecurrenceDraft.MonthlyDay] {

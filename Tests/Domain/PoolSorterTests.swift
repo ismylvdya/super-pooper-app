@@ -9,7 +9,7 @@ struct PoolSorterTests {
     private let morning = TestCalendar.context(TestCalendar.wednesday, "10:00")
 
     @Test func configListsTheSpecCriteriaInSpecOrder() {
-        #expect(TestConfig.sort.pool == [.habitsFirst, .dueToday, .highPriority, .nearestDueThisWeek,
+        #expect(TestConfig.sort.pool == [.habitsFirst, .habitTimeOfDay, .dueToday, .highPriority, .nearestDueThisWeek,
                                          .energyBeforeEnergyHour, .unpleasantFirst, .shortFirst, .olderFirst])
     }
 
@@ -169,7 +169,7 @@ struct PoolSorterTests {
         return makeTask("Rest", created: "2026-01-01") { task in
             for lower in below {
                 switch lower {
-                case .habitsFirst: break
+                case .habitsFirst, .habitTimeOfDay: break
                 case .dueToday: task.due = TaskDue("2026-10-21")
                 case .highPriority: task.isHighPriority = true
                 case .nearestDueThisWeek: if task.due == nil { task.due = TaskDue("2026-10-22") }

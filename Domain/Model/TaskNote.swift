@@ -25,6 +25,7 @@ struct TaskNote: Identifiable, Hashable, Codable, Sendable {
     var twiceInstances: [LocalDate] = []
     /// Habit reminders, several per day (`reminder_times`, `HH:mm`).
     var reminderTimes: [LocalTime] = []
+    var habit = HabitOptions()
     var completedDate: LocalDate?
     var dateCreated: Date?
     var dateModified: Date?
@@ -33,6 +34,9 @@ struct TaskNote: Identifiable, Hashable, Codable, Sendable {
     var id: String { name }
     /// A habit is marked by `status: habit`; a note that only has a recurrence is read as one too.
     var isHabit: Bool { status == .habit || recurrenceRaw != nil }
+    var isArchived: Bool { status == .archived }
+    /// Habits that are not archived, and only those switched on for Today, take part in the day.
+    var isInTodayHabits: Bool { isHabit && !isArchived && habit.showInToday }
     /// Times of day a habit is planned at: its reminders, or the time of an older-style `due`.
     var habitTimes: [LocalTime] {
         if !reminderTimes.isEmpty { return reminderTimes }

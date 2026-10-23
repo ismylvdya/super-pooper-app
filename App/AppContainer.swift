@@ -68,6 +68,8 @@ final class AppContainer {
         }
         let services = AppServices(
             vault: vaultLocation, tasks: tasks,
+            trash: VaultTrashRepository(location: vaultLocation, fileSystem: fileSystem, noteExtension: config.rules.vault.noteExtension,
+                                        vaultSettings: { settingsStore.load().vault }),
             calendars: EventKitCalendarRepository(eventKit: eventKit),
             reminders: EventKitRemindersRepository(eventKit: eventKit, calendar: calendar),
             notifications: notifications, settingsStore: settingsStore,
