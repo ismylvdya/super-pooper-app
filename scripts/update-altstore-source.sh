@@ -30,7 +30,7 @@ source = {
     "apps": [{
         "name": "SuperPooperApp",
         "bundleIdentifier": get("SP_BUNDLE_ID"),
-        "developerName": "chumbulev",
+        "developerName": "ismylvdya",
         "subtitle": "Day, tasks and habits",
         "localizedDescription": "Day, tasks and habits on top of Obsidian TaskNotes, Apple Calendar and Reminders.",
         "iconURL": icon,
