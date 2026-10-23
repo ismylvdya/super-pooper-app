@@ -1,30 +1,42 @@
 {
   "name": "SuperPooper",
+  "subtitle": "Day, tasks and habits over Obsidian",
+  "description": "Personal source for SuperPooper.",
+  "iconURL": "https://raw.githubusercontent.com/ismylvdya/super-pooper-app/main/design/icon/AppIcon-light.png",
+  "website": "https://github.com/ismylvdya/super-pooper-app",
+  "tintColor": "#FF2D55",
   "identifier": "SuperPooperApp.source",
-  "sourceURL": "https://raw.githubusercontent.com/GITHUB_USER/GITHUB_REPO/master/dist/altstore-source.json",
+  "sourceURL": "https://raw.githubusercontent.com/ismylvdya/super-pooper-app/main/dist/altstore-source.json",
   "apps": [
     {
       "name": "SuperPooper",
       "bundleIdentifier": "SuperPooperApp",
       "developerName": "chumbulev",
+      "subtitle": "Day, tasks and habits",
       "localizedDescription": "Day, tasks and habits on top of Obsidian TaskNotes, Apple Calendar and Reminders.",
-      "iconURL": "https://raw.githubusercontent.com/GITHUB_USER/GITHUB_REPO/master/design/icon/AppIcon-light.png",
+      "iconURL": "https://raw.githubusercontent.com/ismylvdya/super-pooper-app/main/design/icon/AppIcon-light.png",
+      "tintColor": "#FF2D55",
       "versions": [
         {
           "version": "0.0.0",
           "buildVersion": "1",
           "date": "2026-10-23",
-          "downloadURL": "https://raw.githubusercontent.com/GITHUB_USER/GITHUB_REPO/master/dist/SuperPooper.ipa",
+          "downloadURL": "https://raw.githubusercontent.com/ismylvdya/super-pooper-app/main/dist/SuperPooper.ipa",
+          "size": 1829302,
+          "sha256": "74da61400837702219111c149665fb976054f8b1ae4550f2891dac490cae33f3",
           "minOSVersion": "18.0"
         }
       ],
       "appPermissions": {
-        "entitlements": ["com.apple.security.application-groups"],
+        "entitlements": [
+          "com.apple.security.application-groups"
+        ],
         "privacy": {
           "NSCalendarsFullAccessUsageDescription": "SuperPooper shows your anchor calendar events on the Today timeline.",
           "NSRemindersFullAccessUsageDescription": "SuperPooper shows timed reminders from the lists you choose."
         }
       }
     }
-  ]
+  ],
+  "news": []
 }

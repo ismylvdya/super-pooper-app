@@ -44,7 +44,8 @@ SP_BUNDLE_ID = SuperPooperApp
 
 Варианты установки:
 - **Файлом:** перенести `dist/SuperPooper.ipa` на iPhone (AirDrop / «Файлы»), в AltStore → My Apps → «+» → выбрать файл.
-- **Через GitHub-источник AltStore:** залить репозиторий на GitHub, в `dist/altstore-source.json` заменить `GITHUB_USER/GITHUB_REPO` на свои, закоммитить. В AltStore → Sources → «+» → `https://raw.githubusercontent.com/<user>/<repo>/master/dist/altstore-source.json`. Новые версии: пересобрать `.ipa`, поднять `version`/`buildVersion`/`date` в JSON, закоммитить.
+- **Через GitHub-источник AltStore:** репозиторий `ismylvdya/super-pooper-app`. В AltStore → Sources → «+» → `https://raw.githubusercontent.com/ismylvdya/super-pooper-app/main/dist/altstore-source.json`. AltStore сам видит новые версии и обновляет. Иконка приложения и иконка источника — `design/icon/AppIcon-light.png`.
+- **Новая версия:** поднять `MARKETING_VERSION`/`CURRENT_PROJECT_VERSION` в `Config/Shared.xcconfig`, запустить `scripts/make-ipa.sh` (он сам вызывает `scripts/update-altstore-source.sh` — версия, дата, размер, sha256, ссылки), закоммитить `dist/` и запушить в `main`.
 
 Пересобрать `.ipa` (Apple ID не нужен):
 ```bash

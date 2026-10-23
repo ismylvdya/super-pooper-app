@@ -39,4 +39,5 @@ for BIN in "$APP/SuperPooper" "$APP/PlugIns/SuperPooperWidgets.appex/SuperPooper
 done
 [ -z "$(find "$APP" -name '*.mobileprovision')" ] || { echo "Ошибка: в .ipa есть provisioning profile" >&2; exit 1; }
 
+scripts/update-altstore-source.sh
 echo "Готово: dist/SuperPooper.ipa ($(du -h dist/SuperPooper.ipa | cut -f1))"
