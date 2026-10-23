@@ -7,6 +7,7 @@ struct TimelineBlock: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.openURL) private var openURL
     @State private var eventToDelete: CalendarEvent?
+    @State private var highlightedSlot: String?
     let plan: DayPlan
     let handler: TaskActionHandler
     /// Space under the block that belongs to the home indicator (the timeline scrolls under it).
@@ -86,6 +87,11 @@ struct TimelineBlock: View {
             if let url = URL(string: remindersURL + reminder.id) { openURL(url) }
         }
         style.onEventDelete = { eventToDelete = $0 }
+        style.highlightedSlot = highlightedSlot
+        style.onLinkTap = { slot in
+            Haptics.play(.light)
+            withAnimation(tokens.animation) { highlightedSlot = highlightedSlot == slot.id ? nil : slot.id }
+        }
         style.onReminderToggle = { reminder in
             Haptics.play(.light)
             Task { await model.toggleReminder(reminder) }

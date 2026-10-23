@@ -13,12 +13,18 @@ struct DayTimelineView<TaskContent: View>: View {
     @ViewBuilder let taskContent: (DayItem, TimelineSlot) -> TaskContent
 
     var body: some View {
+        let links = TimelineLinks(slots: slots)
+        let highlighted = style.highlightedSlot.map(links.connected(to:))
         GeometryReader { geometry in
             let itemsWidth = max(geometry.size.width - labelWidth, 0)
             ZStack(alignment: .topLeading) {
                 hourGrid(width: geometry.size.width)
                 ForEach(placed(width: itemsWidth)) { item in
                     block(for: item.slot)
+                        .overlay(alignment: .topTrailing) {
+                            if links.isLinked(item.slot.id) { linkBadge(item.slot, isOn: style.highlightedSlot == item.slot.id) }
+                        }
+                        .opacity(highlighted.map { $0.contains(item.slot.id) ? 1 : tokens.opacity(.unlinked) } ?? 1)
                         .frame(width: max(item.frame.width - tokens.space(.timelineItemGap), 0),
                                height: max(item.frame.height - tokens.space(.timelineItemGap), 0), alignment: .topLeading)
                         .offset(x: labelWidth + item.frame.minX, y: item.frame.minY)
@@ -100,6 +106,21 @@ struct DayTimelineView<TaskContent: View>: View {
         }
     }
 
+    /// A small link mark; tapping it highlights everything linked to the block (widgets only show it).
+    @ViewBuilder private func linkBadge(_ slot: TimelineSlot, isOn: Bool) -> some View {
+        let mark = Image(systemName: icons[.links])
+            .font(.system(size: tokens.size(.linkBadge), weight: .bold))
+            .foregroundStyle(isOn ? tokens.color(.accent) : tokens.color(.secondaryText))
+            .padding(tokens.space(.chipVertical))
+        if let onLinkTap = style.onLinkTap {
+            Button { onLinkTap(slot) } label: { mark.contentShape(Rectangle()) }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text("timeline.links"))
+        } else {
+            mark
+        }
+    }
+
     private func hourGrid(width: CGFloat) -> some View {
         ForEach(hourMarks, id: \.self) { mark in
             HStack(alignment: .center, spacing: 4) {
@@ -155,6 +176,9 @@ struct TimelineStyle {
     /// Reminder long-press menu (completes it in Reminders) and tap (opens it in Reminders).
     var onReminderToggle: ((ReminderItem) -> Void)?
     var onReminderTap: ((ReminderItem) -> Void)?
+    /// The block whose links are highlighted (the rest dims), and the tap on a block's link mark.
+    var highlightedSlot: String?
+    var onLinkTap: ((TimelineSlot) -> Void)?
     /// Dense widget timelines: plates with minimal vertical padding.
     var compactPlates = false
 }

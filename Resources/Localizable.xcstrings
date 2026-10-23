@@ -4412,6 +4412,17 @@
         }
       }
     },
+    "timeline.links": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show linked blocks"
+          }
+        }
+      }
+    },
     "today.edit": {
       "extractionState": "manual",
       "localizations": {
