@@ -24,38 +24,31 @@ struct TodayWidgetView: View {
     }
 }
 
-/// Pool rows on plates, as in the app, and a counter of the rest. `visibleCount` nil = as many
-/// rows as fit the full height (side-by-side arrangement).
+/// Pool rows on plates, as in the app. Above the timeline: `visibleCount` rows and a counter of the rest.
+/// Beside it (`visibleCount` nil): rows down to the bottom of the widget, the last one cut, no counter.
 struct WidgetPoolBlock: View {
     @Environment(\.tokens) private var tokens
     let plan: DayPlan
     let visibleCount: Int?
 
     var body: some View {
-        GeometryReader { geometry in
-            // n rows take n·row + (n − 1)·gap; the counter line goes below them.
-            let fitting = Int((geometry.size.height - tokens.size(.poolCounter) + tokens.space(.chipGap))
-                / (tokens.size(.widgetRowHeight) + tokens.space(.chipGap)))
-            let count = max(visibleCount ?? fitting, 1)
-            VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
-                ForEach(plan.pool.prefix(count)) { item in
-                    TaskRowView(item: item, today: plan.today, titleFont: tokens.font(.widgetTitle), showsDetails: false,
-                                isCompact: true)
-                        .taskPlate(isDone: item.isDone)
-                }
-                if plan.pool.count > count {
-                    Text(L10n.format("pool.more", plan.pool.count - count))
-                        .font(tokens.font(.widgetCaption))
-                        .foregroundStyle(tokens.color(.secondaryText))
-                } else if plan.pool.isEmpty {
-                    Text("pool.empty").font(tokens.font(.widgetCaption)).foregroundStyle(tokens.color(.secondaryText))
-                }
+        VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
+            ForEach(visibleCount.map { Array(plan.pool.prefix($0)) } ?? plan.pool) { item in
+                TaskRowView(item: item, today: plan.today, titleFont: tokens.font(.widgetTitle), showsDetails: false,
+                            isCompact: true)
+                    .taskPlate(isDone: item.isDone)
             }
-            .frame(maxWidth: .infinity, alignment: .topLeading)
+            if let visibleCount, plan.pool.count > visibleCount {
+                Text(L10n.format("pool.more", plan.pool.count - visibleCount))
+                    .font(tokens.font(.widgetCaption))
+                    .foregroundStyle(tokens.color(.secondaryText))
+            } else if plan.pool.isEmpty {
+                Text("pool.empty").font(tokens.font(.widgetCaption)).foregroundStyle(tokens.color(.secondaryText))
+            }
         }
-        .frame(idealWidth: tokens.size(.poolWidth), idealHeight: visibleCount.map {
-            CGFloat($0) * (tokens.size(.widgetRowHeight) + tokens.space(.chipGap)) + tokens.size(.poolCounter)
-        })
+        .frame(maxWidth: .infinity, maxHeight: visibleCount == nil ? .infinity : nil, alignment: .topLeading)
+        .clipped()
+        .frame(idealWidth: tokens.size(.poolWidth))
     }
 }
 
@@ -68,6 +61,15 @@ struct WidgetTimelineBlock: View {
     let maxHours: Int
 
     var body: some View {
+        VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
+            if !plan.allDayEvents.isEmpty {
+                AllDayStrip(events: plan.allDayEvents, font: tokens.font(.widgetCaption), onTap: nil)
+            }
+            scaledTimeline
+        }
+    }
+
+    private var scaledTimeline: some View {
         GeometryReader { geometry in
             let timeline = settings.timeline
             switch settings.timelineMode {

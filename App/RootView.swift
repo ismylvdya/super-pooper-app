@@ -5,6 +5,7 @@ import SwiftUI
 struct RootView: View {
     let container: AppContainer
     @Environment(\.scenePhase) private var scenePhase
+    @State private var screenHeight: CGFloat = 800
 
     var body: some View {
         @Bindable var router = container.router
@@ -20,7 +21,7 @@ struct RootView: View {
                                     destination(route).bannerHost().refreshable { await model.sync(announce: true) }
                                 }
                         }
-                        .tabItem { Label(LocalizedStringKey("tab.\(tab.rawValue)"), systemImage: container.config.icons[tab.icon]) }
+                        .tabItem { Label(LocalizedStringKey(String("tab.") + tab.rawValue), systemImage: container.config.icons[tab.icon]) }
                         .tag(tab)
                     }
                 }
@@ -31,6 +32,8 @@ struct RootView: View {
             }
         }
         .tint(tokens.color(.accent))
+        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { screenHeight = $0 }
+        .environment(\.screenHeight, screenHeight)
         .environment(model)
         .environment(container.router)
         .environment(container.banners)

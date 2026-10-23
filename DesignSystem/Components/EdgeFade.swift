@@ -31,25 +31,33 @@ extension View {
     }
 }
 
+/// Both edges fade the same way: the same gradient, faded in by how far the content reaches past
+/// the edge (over one fade length), so neither edge pops in.
 private struct ScrollEdgeFades: ViewModifier {
+    @Environment(\.tokens) private var tokens
     let color: Color?
     let bottomExtension: CGFloat
     @State private var edges = ScrollEdges()
 
     struct ScrollEdges: Equatable {
-        var top = false
-        var bottom = false
+        /// Content hidden above and below the visible area, in points.
+        var above: CGFloat = 0
+        var below: CGFloat = 0
     }
 
     func body(content: Content) -> some View {
+        let length = tokens.size(.fadeHeight)
         content
             .onScrollGeometryChange(for: ScrollEdges.self) { geometry in
-                ScrollEdges(top: geometry.contentOffset.y > geometry.contentInsets.top * -1 + 1,
-                            bottom: geometry.contentOffset.y + geometry.containerSize.height < geometry.contentSize.height - 1)
+                ScrollEdges(above: max(geometry.contentOffset.y + geometry.contentInsets.top, 0),
+                            below: max(geometry.contentSize.height + geometry.contentInsets.bottom
+                                       - geometry.contentOffset.y - geometry.containerSize.height, 0))
             } action: { _, new in edges = new }
-            .overlay(alignment: .top) { if edges.top { EdgeFade(edge: .top, color: color) } }
+            .overlay(alignment: .top) {
+                EdgeFade(edge: .top, color: color).opacity(min(edges.above / length, 1))
+            }
             .overlay(alignment: .bottom) {
-                if edges.bottom { EdgeFade(edge: .bottom, color: color, overhang: bottomExtension) }
+                EdgeFade(edge: .bottom, color: color, overhang: bottomExtension).opacity(min(edges.below / length, 1))
             }
     }
 }

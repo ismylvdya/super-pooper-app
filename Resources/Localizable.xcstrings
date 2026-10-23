@@ -4566,6 +4566,28 @@
         }
       }
     },
+    "widget.clock.description": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The time in the zone from Settings → Clock, with your text before it."
+          }
+        }
+      }
+    },
+    "widget.clock.name": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clock"
+          }
+        }
+      }
+    },
     "widget.empty": {
       "extractionState": "manual",
       "localizations": {

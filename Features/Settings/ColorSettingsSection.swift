@@ -14,7 +14,7 @@ struct ColorSettingsSection: View {
         PlateSection(header: "settings.colors", info: "info.settings.colors", hint: "settings.colors.hint") {
             preview
             ForEach(Self.editable, id: \.self) { token in
-                PlateRow(icon: nil, title: LocalizedStringKey("color.\(token.rawValue)")) {
+                PlateRow(icon: nil, title: LocalizedStringKey(String("color.") + token.rawValue)) {
                     ColorField(token: token)
                 }
             }

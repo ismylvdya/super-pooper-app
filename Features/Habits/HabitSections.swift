@@ -89,7 +89,7 @@ struct HabitOptionsSection: View {
                     set: { editor.apply([.timeOfDay($0)]) }
                 )) {
                     Text("habitPage.timeOfDay.any").tag(HabitTimeOfDay?.none)
-                    ForEach(HabitTimeOfDay.allCases, id: \.self) { Text(LocalizedStringKey("habitPage.timeOfDay.\($0.rawValue)")).tag(HabitTimeOfDay?.some($0)) }
+                    ForEach(HabitTimeOfDay.allCases, id: \.self) { Text(LocalizedStringKey(String("habitPage.timeOfDay.") + $0.rawValue)).tag(HabitTimeOfDay?.some($0)) }
                 }
                 .labelsHidden()
             }

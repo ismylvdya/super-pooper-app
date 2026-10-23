@@ -57,7 +57,27 @@ struct PlateRow<Trailing: View>: View {
     var indent = false
     @ViewBuilder let trailing: Trailing
 
+    /// One line when the title and the control fit side by side; on narrow screens (iPhone mini) the
+    /// control moves under the title instead of squeezing either of them.
     var body: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: tokens.space(.iconTextGap)) {
+                label.fixedSize()
+                Spacer(minLength: tokens.space(.chipGap))
+                trailing.fixedSize()
+            }
+            VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
+                label
+                HStack {
+                    Spacer(minLength: 0)
+                    trailing
+                }
+            }
+        }
+        .padding(.leading, indent ? tokens.space(.childIndent) : 0)
+    }
+
+    private var label: some View {
         HStack(spacing: tokens.space(.iconTextGap)) {
             if let icon {
                 Image(systemName: icons[icon])
@@ -68,10 +88,7 @@ struct PlateRow<Trailing: View>: View {
                 Text(title).foregroundStyle(tint ?? tokens.color(.primaryText))
                 if let info { InfoButton(text: info, tint: tint ?? tokens.color(.primaryText)) }
             }
-            Spacer(minLength: tokens.space(.chipGap))
-            trailing
         }
-        .padding(.leading, indent ? tokens.space(.childIndent) : 0)
     }
 }
 

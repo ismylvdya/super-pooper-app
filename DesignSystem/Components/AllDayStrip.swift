@@ -10,19 +10,24 @@ struct AllDayStrip: View {
     var body: some View {
         ChipFlow(spacing: tokens.space(.chipGap)) {
             ForEach(events) { event in
-                Button { onTap?(event) } label: {
-                    HStack(spacing: 4) {
-                        Circle().fill(Color(hex: event.colorHex)).frame(width: tokens.size(.problemDot), height: tokens.size(.problemDot))
-                        Text(event.title).font(font ?? tokens.font(.chip)).lineLimit(1)
-                    }
-                    .foregroundStyle(tokens.color(.eventText))
-                    .padding(.horizontal, tokens.space(.chipHorizontal))
-                    .padding(.vertical, tokens.space(.chipVertical))
-                    .background(Color(hex: event.colorHex).opacity(tokens.opacity(.eventFill)), in: Capsule())
+                if let onTap {
+                    Button { onTap(event) } label: { capsule(event) }.buttonStyle(.plain)
+                } else {
+                    capsule(event)
                 }
-                .buttonStyle(.plain)
-                .disabled(onTap == nil)
             }
         }
+    }
+
+    /// Widgets have no buttons here: the capsule is plain there.
+    private func capsule(_ event: CalendarEvent) -> some View {
+        HStack(spacing: 4) {
+            Circle().fill(Color(hex: event.colorHex)).frame(width: tokens.size(.problemDot), height: tokens.size(.problemDot))
+            Text(event.title).font(font ?? tokens.font(.chip)).lineLimit(1)
+        }
+        .foregroundStyle(tokens.color(.eventText))
+        .padding(.horizontal, tokens.space(.chipHorizontal))
+        .padding(.vertical, tokens.space(.chipVertical))
+        .background(Color(hex: event.colorHex).opacity(tokens.opacity(.eventFill)), in: Capsule())
     }
 }
