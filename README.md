@@ -24,7 +24,7 @@ iPhone-приложение для дня, дел и привычек повер
 
 | Чтобы изменить… | Правь |
 |---|---|
-| Раскладку Today (пул сверху/слева, доли места) | `layouts/today.layout.json` (`axis`, `blocks`) |
+| Раскладки Today (пул сверху / слева, доли места) | `layouts/today-stacked.layout.json`, `layouts/today-side-by-side.layout.json` (`axis`, `blocks`) |
 | Отступы, скругления, размеры, шрифты, цвета (светлые/тёмные), длительности | `tokens.json` |
 | Иконки | `icons.json`; иконки действий — `actions.json` |
 | Действия, подтверждения, вибрации, состав меню и кнопок уведомлений | `actions.json` |

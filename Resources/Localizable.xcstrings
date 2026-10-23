@@ -683,6 +683,17 @@
         }
       }
     },
+    "info.settings.timeline.dayRange": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start and end of the day shown by the whole-day timeline. An end earlier than the start means after midnight."
+          }
+        }
+      }
+    },
     "info.settings.timeline.eventFont": {
       "extractionState": "manual",
       "localizations": {
@@ -738,6 +749,17 @@
         }
       }
     },
+    "info.settings.timeline.range": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hours around now in a column that scrolls, or the whole day from its start to its end fitted into one column."
+          }
+        }
+      }
+    },
     "info.settings.timeline.taskFont": {
       "extractionState": "manual",
       "localizations": {
@@ -745,6 +767,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Text size of tasks on the timeline."
+          }
+        }
+      }
+    },
+    "info.settings.today.arrangement": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The pool above the timeline, or the pool on the left and the timeline on the right. The Today widget follows the same choice."
           }
         }
       }
@@ -1816,6 +1849,17 @@
         }
       }
     },
+    "settings.pool.hint.sideBySide": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Side by side, the pool uses the full height, so the number of visible tasks doesn’t apply."
+          }
+        }
+      }
+    },
     "settings.pool.visible": {
       "extractionState": "manual",
       "localizations": {
@@ -1878,6 +1922,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Timeline"
+          }
+        }
+      }
+    },
+    "settings.timeline.aroundNow": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Around now"
+          }
+        }
+      }
+    },
+    "settings.timeline.dayRange": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day"
           }
         }
       }
@@ -1970,6 +2036,17 @@
         }
       }
     },
+    "settings.timeline.range": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Range"
+          }
+        }
+      }
+    },
     "settings.timeline.secondHalf": {
       "extractionState": "manual",
       "localizations": {
@@ -2003,6 +2080,17 @@
         }
       }
     },
+    "settings.timeline.wholeDay": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Whole day"
+          }
+        }
+      }
+    },
     "settings.title": {
       "extractionState": "manual",
       "localizations": {
@@ -2010,6 +2098,61 @@
           "stringUnit": {
             "state": "translated",
             "value": "Settings"
+          }
+        }
+      }
+    },
+    "settings.today": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today screen"
+          }
+        }
+      }
+    },
+    "settings.today.arrangement": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Layout"
+          }
+        }
+      }
+    },
+    "settings.today.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Side by side, the pool and the timeline both use the full height of the screen."
+          }
+        }
+      }
+    },
+    "settings.today.sideBySide": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Side by side"
+          }
+        }
+      }
+    },
+    "settings.today.stacked": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pool on top"
           }
         }
       }

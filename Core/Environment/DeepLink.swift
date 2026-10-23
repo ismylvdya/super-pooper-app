@@ -3,6 +3,8 @@ import Foundation
 /// URLs the app opens (`superpooper://…`), used by widgets and notifications too.
 enum DeepLink {
     static let scheme = "superpooper"
+    /// Any tap on a widget opens Today.
+    static let today = URL(string: "\(scheme)://today")
 
     static func task(_ name: String) -> URL? {
         var components = URLComponents()

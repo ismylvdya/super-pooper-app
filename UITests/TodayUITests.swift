@@ -36,6 +36,7 @@ final class TodayUITests: XCTestCase {
     /// Timed items stay in place on the timeline after checking, so their state is easy to see.
     func testTapChecksHabitAndTask() {
         launch()
+        dismissBanners()
         let habit = app.buttons["check:Витамины 💊"]
         XCTAssertTrue(habit.waitForExistence(timeout: 10))
         habit.tap()
@@ -66,6 +67,7 @@ final class TodayUITests: XCTestCase {
 
     func testTaskPageEditsHighPriority() {
         launch()
+        dismissBanners()
         let title = app.buttons["title:Распечатать вопросы"]
         XCTAssertTrue(title.waitForExistence(timeout: 10))
         title.tap()

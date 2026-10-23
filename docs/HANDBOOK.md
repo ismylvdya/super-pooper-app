@@ -47,7 +47,7 @@ SuperPooper — iPhone-приложение-оболочка над тремя �
 
 | Чтобы изменить… | Правь |
 |---|---|
-| Раскладку Today (пул сверху/слева, доли места, порядок блоков) | `layouts/today.layout.json`: `axis` (`vertical`/`horizontal`), `blocks` (`size`: `fit` или `fill` + `weight`), `spacing` (имя токена). Тот же файл — у виджета Today |
+| Раскладку Today (пул сверху/слева, доли места, порядок блоков) | `layouts/today-stacked.layout.json` (пул сверху) и `layouts/today-side-by-side.layout.json` (пул слева): `axis` (`vertical`/`horizontal`), `blocks` (`size`: `fit` или `fill` + `weight`), `spacing` (имя токена). Какой из них используется — настройка Settings → Today screen; те же файлы — у виджета Today |
 | Отступы, скругления, размеры, прозрачности, длительности, шрифты, цвета (светлые и тёмные) | `tokens.json`. Новый токен = ключ в JSON + `case` в `DesignSystem/Tokens/TokenKeys.swift` |
 | Иконки SF Symbols вне действий | `icons.json` (+ `case` в `Core/Config/IconSet.swift` для нового) |
 | Действия (название, иконка, вибрация, подтверждение) и состав меню/уведомлений | `actions.json` (`actions` и `menus`) |
@@ -59,7 +59,7 @@ SuperPooper — iPhone-приложение-оболочка над тремя �
 | Тексты интерфейса, уведомлений, виджетов | `Resources/Localizable.xcstrings` (ключи вида `settings.day.boundary`) |
 | Bundle ID / App Group / версию | `Config/Shared.xcconfig` (`SP_BUNDLE_ID`, `MARKETING_VERSION`, `CURRENT_PROJECT_VERSION`) |
 
-Пример из манифеста: «пул сверху, таймлайн снизу» → «пул слева, таймлайн справа» = заменить `"axis": "vertical"` на `"axis": "horizontal"` в `today.layout.json` (проверено, см. `PROGRESS.md`).
+Пример из манифеста: «пул сверху, таймлайн снизу» → «пул слева, таймлайн справа» = заменить `"axis": "vertical"` на `"axis": "horizontal"` в `today-stacked.layout.json` (проверено, см. `PROGRESS.md`). Пользователь переключает раскладки в настройках, не трогая конфиги.
 
 Пользовательские настройки хранятся в App Group (`settings.json`) и при чтении **накладываются на `defaults.json`**: новые поля из новой версии сразу получают значения по умолчанию.
 

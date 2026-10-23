@@ -7,6 +7,7 @@ struct HalvesTimeline<TaskContent: View>: View {
     let settings: AppSettings.Timeline
     let context: DayContext
     let height: CGFloat
+    var style: TimelineStyle?
     @ViewBuilder let taskContent: (DayItem, TimelineSlot) -> TaskContent
 
     var body: some View {
@@ -19,7 +20,7 @@ struct HalvesTimeline<TaskContent: View>: View {
         HStack(alignment: .top, spacing: tokens.space(.blockGap)) {
             ForEach(windows, id: \.self) { window in
                 DayTimelineView(slots: plan.timeline, window: window, now: plan.now, hourHeight: hourHeight,
-                                style: TimelineStyle.make(settings, tokens: tokens), taskContent: taskContent)
+                                style: style ?? TimelineStyle.make(settings, tokens: tokens), taskContent: taskContent)
             }
         }
     }
@@ -27,9 +28,11 @@ struct HalvesTimeline<TaskContent: View>: View {
 
 extension TimelineStyle {
     static func make(_ settings: AppSettings.Timeline, tokens: DesignTokens) -> TimelineStyle {
-        TimelineStyle(eventFont: .system(size: settings.eventFontSize),
-                      taskFont: .system(size: settings.taskFontSize),
-                      minimumItemHeight: max(UIFont.systemFont(ofSize: settings.taskFontSize).lineHeight,
-                                             tokens.size(.checkbox) + 6) + tokens.space(.timelineItemPadding))
+        let titleLine = max(UIFont.systemFont(ofSize: settings.taskFontSize).lineHeight, tokens.size(.checkbox) + 6)
+        let chipLine = tokens.uiFont(.chip).lineHeight + tokens.space(.chipVertical) * 2
+        return TimelineStyle(eventFont: .system(size: settings.eventFontSize),
+                             taskFont: .system(size: settings.taskFontSize),
+                             minimumItemHeight: titleLine + tokens.space(.timelineItemPadding),
+                             minimumTaskHeight: titleLine + tokens.space(.chipGap) + chipLine + tokens.space(.rowVertical))
     }
 }

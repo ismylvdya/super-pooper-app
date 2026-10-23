@@ -13,7 +13,7 @@ struct WidgetGalleryScreen: View {
                 if let source {
                     let now = AppContainer.sharedClockNow
                     widget(width: 338, height: 354) {
-                        TodayWidgetView(plan: source.plan(at: now), settings: source.settings, layout: source.config.todayLayout,
+                        TodayWidgetView(plan: source.plan(at: now), settings: source.settings, layout: source.config.todayLayout(for: source.settings.today.arrangement),
                                         context: source.context(at: now), maxTimelineHours: source.config.rules.widgets.timelineHours)
                     }
                     if let habit = source.habit(named: "Медитация 🧘") {
@@ -41,7 +41,7 @@ struct WidgetGalleryScreen: View {
     private func widget<Content: View>(width: CGFloat, height: CGFloat, @ViewBuilder content: () -> Content) -> some View {
         content()
             .frame(width: width, height: height)
-            .background(tokens.color(.plateBackground))
+            .background(tokens.color(width > 300 && height > 300 ? .screenBackground : .plateBackground))
             .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
     }
 }

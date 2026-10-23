@@ -7,6 +7,7 @@ import Foundation
 /// - `-SPSkipOnboarding`: mark onboarding as done;
 /// - `-SPResetState`: forget app settings and day state before start;
 /// - `-SPTimeline oneColumn|twoColumns`: override the timeline layout;
+/// - `-SPArrangement stacked|sideBySide`: override the Today arrangement;
 /// - `-SPOpen <superpooper://…>`: open a deep link after start;
 /// - `-SPProvisionalNotifications`: get quiet notification permission without the system prompt.
 struct LaunchOptions {
@@ -16,6 +17,7 @@ struct LaunchOptions {
     var skipOnboarding = false
     var resetState = false
     var timelineLayout: AppSettings.TimelineLayout?
+    var arrangement: AppSettings.TodayArrangement?
     var openURL: URL?
     var provisionalNotifications = false
 
@@ -32,6 +34,7 @@ struct LaunchOptions {
         options.skipOnboarding = arguments.contains("-SPSkipOnboarding")
         options.resetState = arguments.contains("-SPResetState")
         options.timelineLayout = value("-SPTimeline").flatMap(AppSettings.TimelineLayout.init(rawValue:))
+        options.arrangement = value("-SPArrangement").flatMap(AppSettings.TodayArrangement.init(rawValue:))
         options.openURL = value("-SPOpen").flatMap(URL.init(string:))
         options.provisionalNotifications = arguments.contains("-SPProvisionalNotifications")
         #endif

@@ -9,8 +9,10 @@ struct TaskRowView: View {
     let item: DayItem
     let today: LocalDate
     var titleFont: Font?
-    /// Chips and the "After: …" line; the timeline hides them to stay compact.
+    /// Chips and the "After: …" line; widgets hide them to stay compact.
     var showsDetails = true
+    /// Narrow columns: one title line and one chip line that dissolves on the right.
+    var isCompact = false
     var onToggle: (() -> Void)?
     var onOpen: (() -> Void)?
 
@@ -20,11 +22,21 @@ struct TaskRowView: View {
             VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
                 title
                 if showsDetails, !chips.isEmpty {
-                    ChipFlow(spacing: tokens.space(.chipGap)) {
-                        ForEach(chips) { chip in Chip(icon: chip.icon, text: chip.text, tint: chip.tint) }
+                    if isCompact {
+                        // An overlay never widens the row: chips that don't fit dissolve on the right.
+                        Color.clear
+                            .frame(maxWidth: .infinity)
+                            .frame(height: tokens.uiFont(.chip).lineHeight + tokens.space(.chipVertical) * 2)
+                            .overlay(alignment: .leading) {
+                                HStack(spacing: tokens.space(.chipGap)) { chipViews }.fixedSize()
+                            }
+                            .clipped()
+                            .mask(TrailingFadeMask(width: tokens.size(.fadeHeight)))
+                    } else {
+                        ChipFlow(spacing: tokens.space(.chipGap)) { chipViews }
                     }
                 }
-                if showsDetails, item.isBlocked {
+                if showsDetails, !isCompact, item.isBlocked {
                     Label(L10n.format("row.after", blockerNames), systemImage: icons[.blocked])
                         .font(tokens.font(.caption))
                         .foregroundStyle(tokens.color(.secondaryText))
@@ -37,6 +49,10 @@ struct TaskRowView: View {
     }
 
     private var color: Color { tokens.color(item.isHabit ? .habit : .task) }
+
+    private var chipViews: some View {
+        ForEach(chips) { chip in Chip(icon: chip.icon, text: chip.text, tint: chip.tint) }
+    }
 
     @ViewBuilder private var checkbox: some View {
         let glyph = MarkGlyph(state: item.state, color: item.isDone ? tokens.color(.past) : color, isBlocked: item.isBlocked)
@@ -55,6 +71,7 @@ struct TaskRowView: View {
             .font(titleFont ?? tokens.font(.taskTitle))
             .foregroundStyle(item.isDone ? tokens.color(.secondaryText) : tokens.color(.primaryText))
             .multilineTextAlignment(.leading)
+            .lineLimit(isCompact ? 1 : nil)
         if let onOpen {
             Button(action: onOpen) { text }
                 .buttonStyle(.plain)
@@ -136,5 +153,35 @@ enum DueText {
         let calendar = Calendar(identifier: .gregorian)
         let date = calendar.date(from: DateComponents(year: day.year, month: day.month, day: day.day)) ?? Date()
         return date.formatted(.dateTime.month(.abbreviated).day())
+    }
+}
+
+/// Opaque on the left, transparent over the last `width` points: content dissolves at the edge.
+struct TrailingFadeMask: View {
+    let width: CGFloat
+
+    var body: some View {
+        HStack(spacing: 0) {
+            Rectangle()
+            LinearGradient(colors: [.black, .clear], startPoint: .leading, endPoint: .trailing).frame(width: width)
+        }
+    }
+}
+
+extension View {
+    /// The plate a task row sits on (pool, timeline, widgets).
+    func taskPlate() -> some View {
+        modifier(TaskPlate())
+    }
+}
+
+private struct TaskPlate: ViewModifier {
+    @Environment(\.tokens) private var tokens
+
+    func body(content: Content) -> some View {
+        content
+            .padding(.vertical, tokens.space(.rowVertical) / 2)
+            .padding(.horizontal, tokens.space(.plateInner) / 2)
+            .background(tokens.color(.plateBackground), in: RoundedRectangle(cornerRadius: tokens.radius(.poolRow), style: .continuous))
     }
 }

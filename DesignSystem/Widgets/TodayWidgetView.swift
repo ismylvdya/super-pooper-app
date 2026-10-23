@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// The Today widget body: pool and timeline in the same layout as the app (`today.layout.json`),
-/// built from the same row and timeline components. Read-only.
+/// The Today widget body: title above, then pool and timeline in the app's arrangement
+/// (`layouts/today-*.layout.json`), built from the same row and timeline components. Read-only.
 struct TodayWidgetView: View {
     @Environment(\.tokens) private var tokens
     let plan: DayPlan
@@ -21,9 +21,8 @@ struct TodayWidgetView: View {
             }
             ScreenLayoutView(layout: layout) { id in
                 switch id {
-                case "pool": WidgetPoolBlock(plan: plan, visibleCount: settings.pool.visibleCount)
-                case "timeline": WidgetTimelineBlock(plan: plan, settings: settings.timeline, context: context,
-                                                     maxHours: maxTimelineHours)
+                case "pool": WidgetPoolBlock(plan: plan, visibleCount: settings.poolUsesVisibleCount ? settings.pool.visibleCount : nil)
+                case "timeline": WidgetTimelineBlock(plan: plan, settings: settings, context: context, maxHours: maxTimelineHours)
                 default: EmptyView()
                 }
             }
@@ -32,27 +31,37 @@ struct TodayWidgetView: View {
     }
 }
 
-/// The first N pool rows and a counter of the rest.
+/// Pool rows on plates, as in the app, and a counter of the rest. `visibleCount` nil = as many
+/// rows as fit the full height (side-by-side arrangement).
 struct WidgetPoolBlock: View {
     @Environment(\.tokens) private var tokens
     let plan: DayPlan
-    let visibleCount: Int
+    let visibleCount: Int?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
-            ForEach(plan.pool.prefix(visibleCount)) { item in
-                TaskRowView(item: item, today: plan.today, titleFont: tokens.font(.widgetTitle), showsDetails: false)
+        GeometryReader { geometry in
+            let fitting = Int((geometry.size.height - tokens.size(.poolCounter))
+                / (tokens.size(.widgetRowHeight) + tokens.space(.chipGap)))
+            let count = max(visibleCount ?? fitting, 1)
+            VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
+                ForEach(plan.pool.prefix(count)) { item in
+                    TaskRowView(item: item, today: plan.today, titleFont: tokens.font(.widgetTitle), showsDetails: false,
+                                isCompact: true)
+                        .taskPlate()
+                }
+                if plan.pool.count > count {
+                    Text(L10n.format("pool.more", plan.pool.count - count))
+                        .font(tokens.font(.widgetCaption))
+                        .foregroundStyle(tokens.color(.secondaryText))
+                } else if plan.pool.isEmpty {
+                    Text("pool.empty").font(tokens.font(.widgetCaption)).foregroundStyle(tokens.color(.secondaryText))
+                }
             }
-            if plan.pool.count > visibleCount {
-                Text(L10n.format("pool.more", plan.pool.count - visibleCount))
-                    .font(tokens.font(.widgetCaption))
-                    .foregroundStyle(tokens.color(.secondaryText))
-            } else if plan.pool.isEmpty {
-                Text("pool.empty").font(tokens.font(.widgetCaption)).foregroundStyle(tokens.color(.secondaryText))
-            }
+            .frame(maxWidth: .infinity, alignment: .topLeading)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(idealWidth: tokens.size(.poolWidth))
+        .frame(idealWidth: tokens.size(.poolWidth), idealHeight: visibleCount.map {
+            CGFloat($0) * (tokens.size(.widgetRowHeight) + tokens.space(.chipGap)) + tokens.size(.poolCounter)
+        })
     }
 }
 
@@ -60,7 +69,7 @@ struct WidgetPoolBlock: View {
 struct WidgetTimelineBlock: View {
     @Environment(\.tokens) private var tokens
     let plan: DayPlan
-    let settings: AppSettings.Timeline
+    let settings: AppSettings
     let context: DayContext
     let maxHours: Int
 
@@ -68,20 +77,26 @@ struct WidgetTimelineBlock: View {
         GeometryReader { geometry in
             let style = TimelineStyle(eventFont: tokens.font(.widgetCaption), taskFont: tokens.font(.widgetCaption),
                                       minimumItemHeight: tokens.size(.checkbox))
-            switch settings.layout {
-            case .oneColumn:
-                let before = min(settings.hoursBefore, 1)
+            let timeline = settings.timeline
+            switch settings.timelineMode {
+            case .aroundNow:
+                let before = min(timeline.hoursBefore, 1)
                 let window = TimelineWindow.rolling(now: plan.now, hoursBefore: before,
-                                                    hoursAfter: max(min(settings.hoursAfter, maxHours - before), 1), calendar: context.calendar)
+                                                    hoursAfter: max(min(timeline.hoursAfter, maxHours - before), 1), calendar: context.calendar)
                 DayTimelineView(slots: plan.timeline, window: window, now: plan.now,
                                 hourHeight: geometry.size.height / CGFloat(window.duration / 3600), style: style, taskContent: row)
-            case .twoColumns:
-                HalvesTimeline(plan: plan, settings: settings, context: context, height: geometry.size.height, taskContent: row)
+            case .wholeDay:
+                let window = TimelineWindow.fixed(start: timeline.wholeDay.start, end: timeline.wholeDay.end, context: context)
+                DayTimelineView(slots: plan.timeline, window: window, now: plan.now,
+                                hourHeight: geometry.size.height / CGFloat(max(window.duration, 3600) / 3600), style: style, taskContent: row)
+            case .halves:
+                HalvesTimeline(plan: plan, settings: timeline, context: context, height: geometry.size.height, style: style,
+                               taskContent: row)
             }
         }
     }
 
     private func row(_ item: DayItem, _ slot: TimelineSlot) -> some View {
-        TaskRowView(item: item, today: plan.today, titleFont: tokens.font(.widgetCaption), showsDetails: false)
+        TaskRowView(item: item, today: plan.today, titleFont: tokens.font(.widgetCaption), showsDetails: false, isCompact: true)
     }
 }

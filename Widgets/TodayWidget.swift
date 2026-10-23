@@ -44,13 +44,13 @@ struct TodayWidgetEntryView: View {
     var body: some View {
         Group {
             if let source = entry.source, source.snapshot != nil {
-                TodayWidgetView(plan: source.plan(at: entry.date), settings: source.settings, layout: source.config.todayLayout,
+                TodayWidgetView(plan: source.plan(at: entry.date), settings: source.settings, layout: source.config.todayLayout(for: source.settings.today.arrangement),
                                 context: source.context(at: entry.date), maxTimelineHours: source.config.rules.widgets.timelineHours)
             } else {
                 Text("widget.empty").font(tokens.font(.widgetCaption)).foregroundStyle(tokens.color(.secondaryText)).padding()
             }
         }
-        .containerBackground(tokens.color(.plateBackground), for: .widget)
-        .widgetURL(URL(string: "\(DeepLink.scheme)://today"))
+        .containerBackground(tokens.color(.screenBackground), for: .widget)
+        .widgetURL(DeepLink.today)
     }
 }

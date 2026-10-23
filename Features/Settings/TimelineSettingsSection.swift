@@ -1,27 +1,39 @@
 import SwiftUI
 
-/// Timeline layout with a live preview: one rolling column (hours before/after) or two fixed
-/// halves of the day (their bounds), plus font sizes of events and tasks.
+/// Timeline settings with a live preview. Stacked arrangement: one rolling column (hours
+/// before/after) or two fixed halves; side by side: hours around now or the whole day.
+/// Plus font sizes of events and tasks.
 struct TimelineSettingsSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
 
     var body: some View {
-        let settings = model.settings.timeline
         PlateSection(header: "settings.timeline", info: "info.settings.timeline", hint: "settings.timeline.hint") {
-            TimelinePreview(settings: settings)
-            PlateRow(icon: .timelineLayout, title: "settings.timeline.layout", info: "info.settings.timeline.layout") {}
-            Picker("settings.timeline.layout", selection: binding(\.layout)) {
-                Text("settings.timeline.oneColumn").tag(AppSettings.TimelineLayout.oneColumn)
-                Text("settings.timeline.twoColumns").tag(AppSettings.TimelineLayout.twoColumns)
+            TimelinePreview(settings: model.settings)
+            switch model.settings.today.arrangement {
+            case .stacked:
+                PlateRow(icon: .timelineLayout, title: "settings.timeline.layout", info: "info.settings.timeline.layout") {}
+                Picker("settings.timeline.layout", selection: binding(\.layout)) {
+                    Text("settings.timeline.oneColumn").tag(AppSettings.TimelineLayout.oneColumn)
+                    Text("settings.timeline.twoColumns").tag(AppSettings.TimelineLayout.twoColumns)
+                }
+                .pickerStyle(.segmented)
+            case .sideBySide:
+                PlateRow(icon: .timelineLayout, title: "settings.timeline.range", info: "info.settings.timeline.range") {}
+                Picker("settings.timeline.range", selection: binding(\.range)) {
+                    Text("settings.timeline.aroundNow").tag(AppSettings.TimelineRange.aroundNow)
+                    Text("settings.timeline.wholeDay").tag(AppSettings.TimelineRange.wholeDay)
+                }
+                .pickerStyle(.segmented)
             }
-            .pickerStyle(.segmented)
-            switch settings.layout {
-            case .oneColumn:
+            switch model.settings.timelineMode {
+            case .aroundNow:
                 stepper(.hoursBefore, "settings.timeline.hoursBefore", "info.settings.timeline.hoursBefore", \.hoursBefore, 0...6)
                 stepper(.hoursAfter, "settings.timeline.hoursAfter", "info.settings.timeline.hoursAfter", \.hoursAfter,
                         1...model.config.rules.timeline.maxHoursAfter)
-            case .twoColumns:
+            case .wholeDay:
+                halfRow("settings.timeline.dayRange", \.wholeDay, info: "info.settings.timeline.dayRange")
+            case .halves:
                 halfRow("settings.timeline.firstHalf", \.firstHalf)
                 halfRow("settings.timeline.secondHalf", \.secondHalf)
             }
@@ -45,8 +57,9 @@ struct TimelineSettingsSection: View {
         }
     }
 
-    private func halfRow(_ title: LocalizedStringKey, _ keyPath: WritableKeyPath<AppSettings.Timeline, AppSettings.TimeRange>) -> some View {
-        PlateRow(icon: .halves, title: title, info: "info.settings.timeline.halves", indent: true) {
+    private func halfRow(_ title: LocalizedStringKey, _ keyPath: WritableKeyPath<AppSettings.Timeline, AppSettings.TimeRange>,
+                         info: LocalizedStringKey = "info.settings.timeline.halves") -> some View {
+        PlateRow(icon: .halves, title: title, info: info, indent: true) {
             HStack(spacing: 4) {
                 TimeField(time: binding(keyPath.appending(path: \.start)))
                 Text(verbatim: "–")
@@ -70,31 +83,41 @@ struct TimelineSettingsSection: View {
 struct TimelinePreview: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
-    let settings: AppSettings.Timeline
+    let settings: AppSettings
 
     var body: some View {
         let plan = model.plan(at: model.clock.now)
-        let style = TimelineStyle.make(settings, tokens: tokens)
+        let timeline = settings.timeline
+        let style = TimelineStyle.make(timeline, tokens: tokens)
+        let height: CGFloat = 220
         Group {
-            switch settings.layout {
-            case .oneColumn:
+            switch settings.timelineMode {
+            case .aroundNow:
                 ScrollView {
                     DayTimelineView(slots: plan.timeline,
-                                    window: TimelineWindow.rolling(now: plan.now, hoursBefore: settings.hoursBefore,
-                                                                   hoursAfter: settings.hoursAfter, calendar: model.calendar),
-                                    now: plan.now, hourHeight: tokens.size(.hourHeight) * 0.6, style: style) { item, _ in
-                        TaskRowView(item: item, today: plan.today, titleFont: style.taskFont, showsDetails: false)
-                    }
+                                    window: TimelineWindow.rolling(now: plan.now, hoursBefore: timeline.hoursBefore,
+                                                                   hoursAfter: timeline.hoursAfter, calendar: model.calendar),
+                                    now: plan.now, hourHeight: tokens.size(.hourHeight) * 0.6, style: style, taskContent: row)
                 }
-            case .twoColumns:
-                HalvesTimeline(plan: plan, settings: settings, context: model.context(at: plan.now), height: 200) { item, _ in
-                    TaskRowView(item: item, today: plan.today, titleFont: style.taskFont, showsDetails: false)
-                }
+            case .wholeDay:
+                let window = TimelineWindow.fixed(start: timeline.wholeDay.start, end: timeline.wholeDay.end,
+                                                  context: model.context(at: plan.now))
+                DayTimelineView(slots: plan.timeline, window: window, now: plan.now,
+                                hourHeight: height / CGFloat(max(window.duration, 3600) / 3600), style: style, taskContent: row)
+            case .halves:
+                HalvesTimeline(plan: plan, settings: timeline, context: model.context(at: plan.now), height: height - 20,
+                               taskContent: row)
             }
         }
-        .frame(height: 220)
+        .frame(height: height)
         .allowsHitTesting(false)
         .clipShape(RoundedRectangle(cornerRadius: tokens.radius(.timelineItem), style: .continuous))
         .accessibilityLabel(Text("settings.timeline.preview"))
     }
+
+    private func row(_ item: DayItem, _ slot: TimelineSlot) -> some View {
+        TaskRowView(item: item, today: plan.today, titleFont: .system(size: settings.timeline.taskFontSize), isCompact: true)
+    }
+
+    private var plan: DayPlan { model.plan(at: model.clock.now) }
 }

@@ -6,7 +6,8 @@ struct AppConfig: Sendable {
         static let tokens = "tokens.json"
         static let icons = "icons.json"
         static let actions = "actions.json"
-        static let todayLayout = "today.layout.json"
+        static let todayStacked = "today-stacked.layout.json"
+        static let todaySideBySide = "today-side-by-side.layout.json"
         static let sort = "sort.json"
         static let fieldMapping = "field-mapping.json"
         static let flags = "feature-flags.json"
@@ -17,7 +18,9 @@ struct AppConfig: Sendable {
     let tokens: DesignTokens
     let icons: IconSet
     let actions: ActionRegistry
-    let todayLayout: ScreenLayout
+    /// Today layouts per arrangement (`layouts/today-*.layout.json`).
+    let todayStacked: ScreenLayout
+    let todaySideBySide: ScreenLayout
     let sort: SortConfig
     let fieldMapping: FieldMapping
     let flags: FeatureFlags
@@ -35,12 +38,20 @@ struct AppConfig: Sendable {
             tokens: try loader.load(DesignTokens.self, from: File.tokens),
             icons: try loader.load(IconSet.self, from: File.icons),
             actions: actions,
-            todayLayout: try loader.load(ScreenLayout.self, from: File.todayLayout),
+            todayStacked: try loader.load(ScreenLayout.self, from: File.todayStacked),
+            todaySideBySide: try loader.load(ScreenLayout.self, from: File.todaySideBySide),
             sort: try loader.load(SortConfig.self, from: File.sort),
             fieldMapping: try loader.load(FieldMapping.self, from: File.fieldMapping),
             flags: try loader.load(FeatureFlags.self, from: File.flags),
             rules: try loader.load(RulesConfig.self, from: File.rules),
             defaultSettings: defaults
         )
+    }
+
+    func todayLayout(for arrangement: AppSettings.TodayArrangement) -> ScreenLayout {
+        switch arrangement {
+        case .stacked: todayStacked
+        case .sideBySide: todaySideBySide
+        }
     }
 }

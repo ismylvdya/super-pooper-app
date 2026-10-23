@@ -54,6 +54,6 @@ struct HabitGridEntryView: View {
             }
         }
         .containerBackground(tokens.color(.plateBackground), for: .widget)
-        .widgetURL(entry.habitName.flatMap(DeepLink.task) ?? URL(string: "\(DeepLink.scheme)://today"))
+        .widgetURL(DeepLink.today)
     }
 }

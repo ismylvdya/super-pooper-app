@@ -10,6 +10,7 @@ struct SettingsScreen: View {
         PageScaffold(title: L10n.string("settings.title")) {
             SourcesSettingsSection()
             DaySettingsSection()
+            TodaySettingsSection()
             TimelineSettingsSection()
             PoolSettingsSection()
             NotificationSettingsSection()
@@ -45,9 +46,11 @@ extension Bundle {
 
 struct PoolSettingsSection: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.tokens) private var tokens
 
     var body: some View {
-        PlateSection(header: "settings.pool", hint: "settings.pool.hint") {
+        let isActive = model.settings.poolUsesVisibleCount
+        PlateSection(header: "settings.pool", hint: isActive ? "settings.pool.hint" : "settings.pool.hint.sideBySide") {
             PlateRow(icon: .poolCount, title: "settings.pool.visible", info: "info.settings.pool.visible") {
                 Stepper(value: Binding(get: { model.settings.pool.visibleCount },
                                        set: { value in model.updateSettings { $0.pool.visibleCount = value } }), in: 1...10) {
@@ -55,6 +58,8 @@ struct PoolSettingsSection: View {
                 }
                 .fixedSize()
             }
+            .disabled(!isActive)
+            .opacity(isActive ? 1 : tokens.opacity(.blocked))
         }
     }
 }

@@ -4,6 +4,9 @@
     "taskTag": "🔫делишка",
     "trashFolder": ".trash"
   },
+  "today": {
+    "arrangement": "sideBySide"
+  },
   "sources": {
     "anchorCalendarIDs": [],
     "reminderListIDs": []
@@ -17,12 +20,14 @@
   },
   "timeline": {
     "layout": "oneColumn",
+    "range": "aroundNow",
+    "wholeDay": { "start": "07:00", "end": "23:00" },
     "hoursBefore": 2,
     "hoursAfter": 10,
     "firstHalf": { "start": "06:00", "end": "14:00" },
     "secondHalf": { "start": "14:00", "end": "22:00" },
     "eventFontSize": 15,
-    "taskFontSize": 15
+    "taskFontSize": 17
   },
   "notifications": {
     "enabled": true
