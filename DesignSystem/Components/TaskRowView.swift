@@ -1,3 +1,4 @@
+import AppIntents
 import SwiftUI
 
 /// One task or habit row: checkbox, title, property chips and what blocks it.
@@ -13,7 +14,11 @@ struct TaskRowView: View {
     var showsDetails = true
     /// Narrow columns: one title line and one chip line that dissolves on the right.
     var isCompact = false
+    /// Title lines; nil = compact rows get one line, others wrap freely.
+    var titleLineLimit: Int?
     var onToggle: (() -> Void)?
+    /// Widgets: the checkbox runs `ToggleTaskIntent` (the rest of the widget opens the app).
+    var togglesWithIntent = false
     var onOpen: (() -> Void)?
 
     var body: some View {
@@ -56,7 +61,11 @@ struct TaskRowView: View {
 
     @ViewBuilder private var checkbox: some View {
         let glyph = MarkGlyph(state: item.state, color: item.isDone ? tokens.color(.past) : color, isBlocked: item.isBlocked)
-        if let onToggle {
+        if togglesWithIntent {
+            Button(intent: ToggleTaskIntent(taskName: item.task.name)) { glyph }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text(item.isDone ? "a11y.uncheck" : "a11y.check"))
+        } else if let onToggle {
             Button(action: onToggle) { glyph }
                 .buttonStyle(.plain)
                 .accessibilityLabel(Text(item.isDone ? "a11y.uncheck" : "a11y.check"))
@@ -71,7 +80,7 @@ struct TaskRowView: View {
             .font(titleFont ?? tokens.font(.taskTitle))
             .foregroundStyle(item.isDone ? tokens.color(.secondaryText) : tokens.color(.primaryText))
             .multilineTextAlignment(.leading)
-            .lineLimit(isCompact ? 1 : nil)
+            .lineLimit(titleLineLimit ?? (isCompact ? 1 : nil))
         if let onOpen {
             Button(action: onOpen) { text }
                 .buttonStyle(.plain)
@@ -115,7 +124,7 @@ struct RowChip: Identifiable {
         }
         result.append(RowChip(id: "estimate", icon: nil, text: EstimateText.label(task.timeEstimate, rules: rules), tint: nil))
         if task.needEnergy { result.append(RowChip(id: "energy", icon: .energy, text: nil, tint: tokens.color(.energy))) }
-        if task.pleasant == false { result.append(RowChip(id: "unpleasant", icon: .unpleasant, text: nil, tint: tokens.color(.unpleasant))) }
+        if task.pleasant == true { result.append(RowChip(id: "pleasant", icon: .pleasant, text: nil, tint: tokens.color(.heart))) }
         return result
     }
 }

@@ -99,10 +99,13 @@ struct PoolRowContent: View {
     let today: LocalDate
     var isCompact = true
     var titleFont: Font?
+    var showsDetails = true
+    var titleLineLimit: Int?
     let handler: TaskActionHandler
 
     var body: some View {
-        TaskRowView(item: item, today: today, titleFont: titleFont, isCompact: isCompact,
+        TaskRowView(item: item, today: today, titleFont: titleFont, showsDetails: showsDetails, isCompact: isCompact,
+                    titleLineLimit: titleLineLimit,
                     onToggle: { handler.toggle(item.id) },
                     onOpen: { handler.run(ActionRegistryLookup.open, taskName: item.id) })
             .contextMenu {

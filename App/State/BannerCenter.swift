@@ -7,6 +7,8 @@ import Observation
 final class BannerCenter {
     struct Banner: Identifiable, Equatable {
         enum Style: Equatable {
+            /// Sync finished.
+            case synced
             case info
             case success
             case problem

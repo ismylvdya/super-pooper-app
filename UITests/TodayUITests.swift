@@ -100,8 +100,9 @@ final class TodayUITests: XCTestCase {
 
     func testPullToRefreshShowsSyncBanner() {
         launch()
-        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.6))
-        start.press(forDuration: 0.1, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.95)))
+        dismissBanners()
+        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.5))
+        start.press(forDuration: 0.1, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.95)))
         let banner = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Synced'")).firstMatch
         XCTAssertTrue(banner.waitForExistence(timeout: 10))
     }

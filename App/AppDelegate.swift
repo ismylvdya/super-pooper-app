@@ -8,6 +8,13 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         UNUserNotificationCenter.current().delegate = self
+        MainActor.assumeIsolated {
+            WidgetActionBridge.toggleHandler = { taskName in
+                guard case .success(let container) = AppContainer.shared else { return }
+                await container.model.ensureLoaded()
+                await container.model.toggle(taskName)
+            }
+        }
         return true
     }
 

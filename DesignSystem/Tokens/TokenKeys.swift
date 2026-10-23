@@ -13,7 +13,7 @@ enum RadiusToken: String, CaseIterable, Sendable {
 }
 
 enum SizeToken: String, CaseIterable, Sendable {
-    case iconColumn, checkbox, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, navTitleStep
+    case badgeOffset, iconColumn, checkbox, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, navTitleStep
     case problemDot, sourceDot, habitCell, fadeHeight, bannerLines, poolRowEstimate, poolCounter, poolWidth, widgetRowHeight
 }
 
@@ -31,7 +31,7 @@ enum FontToken: String, CaseIterable, Sendable {
 }
 
 enum ColorToken: String, CaseIterable, Sendable {
-    case accent, task, habit, high, energy, pleasant, unpleasant, nowLine, problem, partial, twice
+    case accent, task, habit, high, energy, pleasant, heart, nowLine, problem, partial, twice
     case past, screenBackground, plateBackground, chipBackground, primaryText, secondaryText, tertiaryText
     case separator, bannerBackground, infoText, destructive, habitEmpty, eventText, timelineGrid
 }

@@ -69,9 +69,9 @@ struct TimelineBlock: View {
                                calendar: model.calendar)
     }
 
-    /// The same row as in the pool (compact: one title line, chips dissolving on the right).
+    /// The same row as in the pool, without chips: the title gets up to two lines.
     private func taskRow(_ item: DayItem, _ slot: TimelineSlot) -> some View {
-        PoolRowContent(item: item, today: plan.today, titleFont: .system(size: model.settings.timeline.taskFontSize),
-                       handler: handler)
+        PoolRowContent(item: item, today: plan.today, isCompact: false, titleFont: .system(size: model.settings.timeline.taskFontSize),
+                       showsDetails: false, titleLineLimit: 2, handler: handler)
     }
 }

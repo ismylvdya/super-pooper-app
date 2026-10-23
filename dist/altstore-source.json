@@ -1,0 +1,30 @@
+{
+  "name": "SuperPooper",
+  "identifier": "SuperPooperApp.source",
+  "sourceURL": "https://raw.githubusercontent.com/GITHUB_USER/GITHUB_REPO/master/dist/altstore-source.json",
+  "apps": [
+    {
+      "name": "SuperPooper",
+      "bundleIdentifier": "SuperPooperApp",
+      "developerName": "chumbulev",
+      "localizedDescription": "Day, tasks and habits on top of Obsidian TaskNotes, Apple Calendar and Reminders.",
+      "iconURL": "https://raw.githubusercontent.com/GITHUB_USER/GITHUB_REPO/master/design/icon/AppIcon-light.png",
+      "versions": [
+        {
+          "version": "0.0.0",
+          "buildVersion": "1",
+          "date": "2026-10-23",
+          "downloadURL": "https://raw.githubusercontent.com/GITHUB_USER/GITHUB_REPO/master/dist/SuperPooper.ipa",
+          "minOSVersion": "18.0"
+        }
+      ],
+      "appPermissions": {
+        "entitlements": ["com.apple.security.application-groups"],
+        "privacy": {
+          "NSCalendarsFullAccessUsageDescription": "SuperPooper shows your anchor calendar events on the Today timeline.",
+          "NSRemindersFullAccessUsageDescription": "SuperPooper shows timed reminders from the lists you choose."
+        }
+      }
+    }
+  ]
+}

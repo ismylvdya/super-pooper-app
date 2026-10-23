@@ -2460,7 +2460,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Before event"
+            "value": "Next event"
           }
         }
       }
@@ -2526,7 +2526,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "After event"
+            "value": "Previous event"
           }
         }
       }
@@ -2758,6 +2758,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Today"
+          }
+        }
+      }
+    },
+    "widget.toggle.task": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Task"
+          }
+        }
+      }
+    },
+    "widget.toggle.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check off task"
           }
         }
       }
