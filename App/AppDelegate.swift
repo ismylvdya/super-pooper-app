@@ -66,6 +66,7 @@ enum BackgroundRefresh {
     static func run() async {
         guard case .success(let container) = AppContainer.shared else { return }
         await container.model.sync(announce: false)
+        await container.model.waitForNotifications()
         schedule()
     }
 

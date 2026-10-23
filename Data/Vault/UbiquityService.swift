@@ -18,11 +18,18 @@ extension UbiquityService {
 
 /// Real iCloud Drive behaviour.
 struct ICloudUbiquityService: UbiquityService {
+    /// The app's own container is never iCloud; asking the file provider about it can block (simulator).
+    private func isInAppContainer(_ url: URL) -> Bool {
+        url.standardizedFileURL.path.hasPrefix(URL(fileURLWithPath: NSHomeDirectory()).standardizedFileURL.path + "/")
+    }
+
     func isUbiquitous(_ folder: URL) -> Bool {
-        (try? folder.resourceValues(forKeys: [.isUbiquitousItemKey]).isUbiquitousItem) == true
+        guard !isInAppContainer(folder) else { return false }
+        return (try? folder.resourceValues(forKeys: [.isUbiquitousItemKey]).isUbiquitousItem) == true
     }
 
     func isDownloaded(_ url: URL) -> Bool {
+        guard !isInAppContainer(url) else { return true }
         var url = url
         url.removeCachedResourceValue(forKey: .ubiquitousItemDownloadingStatusKey)
         guard let values = try? url.resourceValues(forKeys: [.isUbiquitousItemKey, .ubiquitousItemDownloadingStatusKey]),
@@ -36,6 +43,7 @@ struct ICloudUbiquityService: UbiquityService {
 
     /// Asking `NSFileVersion` is slow, so the cheap resource flag is checked first.
     func resolveConflictsKeepingLatest(_ url: URL) throws -> Bool {
+        guard !isInAppContainer(url) else { return false }
         let keys: Set<URLResourceKey> = [.isUbiquitousItemKey, .ubiquitousItemHasUnresolvedConflictsKey]
         guard let values = try? url.resourceValues(forKeys: keys), values.isUbiquitousItem == true,
               values.ubiquitousItemHasUnresolvedConflicts == true,

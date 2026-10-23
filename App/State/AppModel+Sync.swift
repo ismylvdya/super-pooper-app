@@ -84,7 +84,15 @@ extension AppModel {
             try? services.snapshotStore.save(snapshot)
         }
         services.widgets.reloadAll()
-        await rescheduleNotifications(context: context)
+        // The notification center can be slow to answer (or not answer at all in a broken simulator);
+        // a sync never waits for it. The newest plan replaces one still being scheduled.
+        notificationTask?.cancel()
+        notificationTask = Task { await rescheduleNotifications(context: context) }
+    }
+
+    /// Background refresh waits for the notification schedule before the app is suspended.
+    func waitForNotifications() async {
+        await notificationTask?.value
     }
 
     func rescheduleNotifications(context: DayContext) async {
@@ -146,10 +154,12 @@ extension AppModel {
 
 extension AppModel {
     func selectVault(_ url: URL) async {
+        SyncLog.logger.info("vault selected: \(url.path, privacy: .public)")
         do {
             try services.vault.select(url)
             await sync(announce: true)
         } catch {
+            SyncLog.logger.error("vault selection failed: \(String(describing: error), privacy: .public)")
             banners.show(Self.describe(error), style: .problem)
         }
     }

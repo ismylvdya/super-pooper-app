@@ -16,3 +16,7 @@ ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon
 ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO
 ENABLE_PREVIEWS = YES
 LD_RUNPATH_SEARCH_PATHS = $(inherited) @executable_path/Frameworks
+// Debug only: the app's Documents (where `sim.sh load-vault` puts TestVault) show up in Files,
+// so the vault picker can choose it in the simulator.
+INFOPLIST_KEY_UIFileSharingEnabled[config=Debug] = YES
+INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace[config=Debug] = YES

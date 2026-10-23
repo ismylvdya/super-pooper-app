@@ -4566,6 +4566,17 @@
         }
       }
     },
+    "vault.useTestVault": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use test vault (Debug)"
+          }
+        }
+      }
+    },
     "widget.clock.description": {
       "extractionState": "manual",
       "localizations": {

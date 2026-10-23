@@ -32,6 +32,7 @@ final class AppModel {
     /// Paths written while a scan was running; their scanned copies are stale.
     @ObservationIgnored private var writtenDuringSync: Set<String>?
     @ObservationIgnored var runningSync: Task<Void, Never>?
+    @ObservationIgnored var notificationTask: Task<Void, Never>?
 
     init(config: AppConfig, services: AppServices, banners: BannerCenter, clock: Clock, calendar: Calendar) {
         self.config = config
