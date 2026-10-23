@@ -33,3 +33,23 @@ struct HabitNoteTests {
         #expect(try note.text().contains("show_in_today: true"))
     }
 }
+
+/// An edit that lands on a file changed elsewhere since the app read it.
+@Suite("Write conflicts")
+struct WriteConflictTests {
+    @Test func aDifferentKeyChangedElsewhereMergesSilently() async throws {
+        let note = try await SandboxNote("Купить молоко")
+        try note.sandbox.write(try note.text().replacingOnce("time_estimate: 15", with: "time_estimate: 60"), to: note.task.name)
+        let result = try await note.apply([.highPriority(true)])
+        #expect(result.hadConflict && result.clashingKeys.isEmpty)
+        #expect(result.task.timeEstimate == 60 && result.task.isHighPriority)
+    }
+
+    @Test func theSameKeyChangedElsewhereIsReported() async throws {
+        let note = try await SandboxNote("Купить молоко")
+        try note.sandbox.write(try note.text().replacingOnce("time_estimate: 15", with: "time_estimate: 60"), to: note.task.name)
+        let result = try await note.apply([.timeEstimate(2)])
+        #expect(result.clashingKeys == ["time_estimate"])
+        #expect(result.task.timeEstimate == 2)
+    }
+}

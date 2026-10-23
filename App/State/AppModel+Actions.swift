@@ -50,13 +50,19 @@ extension AppModel {
             let result = try await services.tasks.apply(changes, to: task)
             noteWrite(result.task)
             replace(result.task)
-            if result.hadConflict { banners.show(L10n.format("banner.conflict", task.name), style: .problem) }
+            reportClashes(result, name: task.name)
             await publishDerivedState()
             return true
         } catch {
             banners.show(Self.describe(error), style: .problem)
             return false
         }
+    }
+
+    /// Merged edits are silent; a key changed both here and elsewhere gets a yellow banner.
+    private func reportClashes(_ result: TaskWriteResult, name: String) {
+        guard !result.clashingKeys.isEmpty else { return }
+        banners.show(L10n.format("banner.conflictSameKey", name, L10n.list(result.clashingKeys)), style: .warning)
     }
 
     func delete(_ task: TaskNote) async {
@@ -103,7 +109,7 @@ extension AppModel {
             let result = try await services.tasks.setBody(body, of: task)
             noteWrite(result.task)
             replace(result.task)
-            if result.hadConflict { banners.show(L10n.format("banner.conflict", task.name), style: .problem) }
+            reportClashes(result, name: task.name)
         } catch {
             banners.show(Self.describe(error), style: .problem)
         }

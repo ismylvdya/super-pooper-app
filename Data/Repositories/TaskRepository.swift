@@ -20,6 +20,8 @@ struct TaskWriteResult: Sendable {
     /// The file changed elsewhere since it was read (or had iCloud conflicts); the edit was
     /// applied to the latest version.
     let hadConflict: Bool
+    /// Keys this edit wrote that had also been changed elsewhere to something else (the edit won).
+    var clashingKeys: [String] = []
 }
 
 enum TaskRepositoryError: Error, Equatable, Sendable {

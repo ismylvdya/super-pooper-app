@@ -7,6 +7,7 @@ actor VaultTaskRepository: TaskRepository {
     private let fileSystem: NoteFileSystem
     private let scanner: @Sendable (AppSettings.Vault) -> VaultScanner
     private let writer: TaskNoteWriter
+    private let mapping: FieldMapping
     private let readerFactory: @Sendable (AppSettings.Vault) -> TaskNoteReader
     private let vaultSettings: @Sendable () -> AppSettings.Vault
     private let backups: BackupService
@@ -22,6 +23,7 @@ actor VaultTaskRepository: TaskRepository {
         self.fileSystem = fileSystem
         self.ubiquity = ubiquity
         self.writer = TaskNoteWriter(mapping: mapping, timeZone: calendar.timeZone)
+        self.mapping = mapping
         let readerFactory: @Sendable (AppSettings.Vault) -> TaskNoteReader = {
             TaskNoteReader(mapping: mapping, taskTag: $0.taskTag, calendar: calendar)
         }
@@ -46,7 +48,7 @@ actor VaultTaskRepository: TaskRepository {
     }
 
     func apply(_ changes: [TaskFieldChange], to task: TaskNote) async throws -> TaskWriteResult {
-        try await edit(task) { document in
+        try await edit(task, changes: changes) { document in
             self.writer.apply(changes, to: &document, now: self.clock.now)
             return document.text
         }
@@ -149,7 +151,10 @@ actor VaultTaskRepository: TaskRepository {
     // MARK: - Editing
 
     /// Reads the latest version, lets `transform` produce the new text, writes it atomically.
-    private func edit(_ task: TaskNote, transform: @escaping (inout FrontmatterDocument) -> String) async throws -> TaskWriteResult {
+    /// Before writing, the file is compared with what the app saw: if it changed meanwhile, the edit lands on
+    /// the latest version, and keys of `changes` that were changed there too are reported.
+    private func edit(_ task: TaskNote, changes: [TaskFieldChange] = [],
+                      transform: @escaping (inout FrontmatterDocument) -> String) async throws -> TaskWriteResult {
         let reader = readerFactory(vaultSettings())
         return try await location.withRoot { root in
             let url = try existingURL(of: task, root: root)
@@ -165,13 +170,17 @@ actor VaultTaskRepository: TaskRepository {
             } catch {
                 throw TaskRepositoryError.brokenFrontmatter(task.name)
             }
+            let clashing = hadConflict
+                ? WriteConflict.keys(changes, seen: task, latest: reader.task(from: document, name: task.name, relativePath: task.relativePath),
+                                     mapping: mapping)
+                : []
             let text = transform(&document)
             // Never write a note that would no longer parse.
             guard let updated = try? FrontmatterDocument(text: text) else { throw TaskRepositoryError.brokenFrontmatter(task.name) }
             try fileSystem.write(text, to: url)
             seenModification[task.relativePath] = fileSystem.modificationDate(of: url)
             return TaskWriteResult(task: reader.task(from: updated, name: task.name, relativePath: task.relativePath),
-                                   hadConflict: hadConflict)
+                                   hadConflict: hadConflict, clashingKeys: clashing)
         }
     }
 

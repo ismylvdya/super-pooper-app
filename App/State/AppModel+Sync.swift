@@ -118,7 +118,7 @@ extension AppModel {
 
     private func announceResult(_ report: SyncReport, announce: Bool, newProblems: Bool) {
         for name in report.conflicts {
-            banners.show(L10n.format("banner.conflict", name), style: .problem)
+            banners.show(L10n.format("banner.conflict", name), style: .warning)
         }
         if !report.promoted.isEmpty {
             banners.show(L10n.format("banner.promoted", L10n.list(report.promoted)), style: .success)

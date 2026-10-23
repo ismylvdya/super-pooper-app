@@ -232,24 +232,13 @@
         }
       }
     },
-    "banner.conflictMerged": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "“%@” was also changed elsewhere; your edit was applied on top."
-          }
-        }
-      }
-    },
     "banner.conflictSameKey": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "“%1$@” changed elsewhere too: %2$@ kept the newer value."
+            "value": "“%1$@” was also changed elsewhere: %2$@ now has your value."
           }
         }
       }
