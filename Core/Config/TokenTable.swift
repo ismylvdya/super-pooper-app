@@ -8,6 +8,11 @@ where Key.RawValue == String {
 
     init(_ values: [Key: Value]) { self.values = values }
 
+    /// The same table with some values replaced.
+    func replacing(_ overrides: [Key: Value]) -> TokenTable {
+        TokenTable(values.merging(overrides) { _, new in new })
+    }
+
     subscript(key: Key) -> Value {
         guard let value = values[key] else { preconditionFailure("TokenTable was validated on decode: \(key.rawValue)") }
         return value

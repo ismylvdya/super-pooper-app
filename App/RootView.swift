@@ -23,11 +23,12 @@ struct RootView: View {
                 OnboardingFlow()
             }
         }
-        .tint(container.config.tokens.color(.accent))
+        .tint(tokens.color(.accent))
         .environment(model)
         .environment(container.router)
         .environment(container.banners)
         .appConfig(container.config)
+        .environment(\.tokens, tokens)
         .task {
             await container.start()
             openReviewIfNeeded()
@@ -49,6 +50,9 @@ struct RootView: View {
     }
 
     /// Reading `vaultState` keeps this view observing it, so choosing a vault switches to Today.
+    /// Bundled tokens with the user's color choices.
+    private var tokens: DesignTokens { container.config.tokens.overridingColors(container.model.settings.colors) }
+
     @ViewBuilder private func home(_ model: AppModel) -> some View {
         switch model.vaultState {
         case .failed(let message):

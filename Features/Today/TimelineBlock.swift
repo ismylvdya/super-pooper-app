@@ -60,6 +60,14 @@ struct TimelineBlock: View {
         style.onEventTap = { event in
             if let url = URL(string: "\(prefix)\(Int(event.start.timeIntervalSinceReferenceDate))") { openURL(url) }
         }
+        let remindersURL = model.config.rules.eventLinks.remindersAppURL
+        style.onReminderTap = { reminder in
+            if let url = URL(string: remindersURL + reminder.id) { openURL(url) }
+        }
+        style.onReminderToggle = { reminder in
+            Haptics.play(.light)
+            Task { await model.toggleReminder(reminder) }
+        }
         return style
     }
 

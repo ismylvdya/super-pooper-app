@@ -15,7 +15,7 @@ import SwiftUI
         MarkGlyph(state: .marked(.done), color: .purple)
         MarkGlyph(state: .marked(.partial), color: .purple)
         MarkGlyph(state: .marked(.twice), color: .purple)
-        MarkGlyph(state: .open, color: .blue, isBlocked: true)
+        MarkGlyph(state: .open, color: .blue, showsLock: true)
     }
 }
 

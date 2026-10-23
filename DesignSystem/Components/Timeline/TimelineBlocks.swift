@@ -29,42 +29,74 @@ struct TimelineEventBlock: View {
     }
 }
 
-/// A reminder: read-only, with the list's color dot.
+/// A reminder looks like a task: checkbox in the list color on a plate; done/past ones are grey.
 struct TimelineReminderBlock: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
     let reminder: ReminderItem
     let slot: TimelineSlot
     let font: Font
+    var checkboxSize: CGFloat?
+    var isCompact = false
+    var onToggle: ((ReminderItem) -> Void)?
+    var onOpen: ((ReminderItem) -> Void)?
 
     var body: some View {
-        HStack(spacing: tokens.space(.timelineItemPadding)) {
-            SourceDot(hex: slot.isPast ? tokens.color(.past).hexValue : reminder.colorHex)
-            Image(systemName: icons[.reminder]).font(tokens.font(.caption))
-            Text(reminder.title).font(font).lineLimit(1)
+        HStack(alignment: .top, spacing: tokens.space(.iconTextGap)) {
+            Button { onToggle?(reminder) } label: {
+                MarkGlyph(state: reminder.isCompleted ? .marked(.done) : .open,
+                          color: slot.isPast ? tokens.color(.past) : Color(hex: reminder.colorHex), size: checkboxSize)
+            }
+            .buttonStyle(.plain)
+            .disabled(onToggle == nil)
+            .accessibilityLabel(Text(reminder.isCompleted ? "a11y.uncheck" : "a11y.check"))
+            Text(reminder.title)
+                .font(font)
+                .lineLimit(isCompact ? 1 : 2)
+                .foregroundStyle(slot.isPast ? tokens.color(.secondaryText) : tokens.color(.primaryText))
             Spacer(minLength: 0)
-            Text(reminder.due.formatted(date: .omitted, time: .shortened)).font(tokens.font(.caption))
+            Image(systemName: icons[.reminder]).font(tokens.font(.caption)).foregroundStyle(tokens.color(.secondaryText))
         }
-        .foregroundStyle(slot.isPast ? tokens.color(.secondaryText) : tokens.color(.primaryText))
-        .padding(.horizontal, tokens.space(.timelineItemPadding))
-        .frame(maxHeight: .infinity, alignment: .top)
-        .padding(.top, tokens.space(.timelineItemPadding) / 2)
-        .background(tokens.color(.chipBackground), in: RoundedRectangle(cornerRadius: tokens.radius(.timelineItem), style: .continuous))
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .contentShape(Rectangle())
+        .onTapGesture { onOpen?(reminder) }
+        .slotPlate(isPast: slot.isPast, isCompact: isCompact)
     }
 }
 
-/// A task on the timeline looks exactly like a pool row: the same row on the same plate.
+/// A task on the timeline looks exactly like a pool row; done ones turn grey like past events.
 struct TimelineTaskBlock<Content: View>: View {
-    @Environment(\.tokens) private var tokens
     let item: DayItem
     let isPast: Bool
+    var isCompact = false
     @ViewBuilder let content: Content
 
     var body: some View {
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .taskPlate()
-            .clipShape(RoundedRectangle(cornerRadius: tokens.radius(.poolRow), style: .continuous))
+            .slotPlate(isPast: isPast, isCompact: isCompact)
+    }
+}
+
+extension View {
+    /// The pool-row plate; for past items the grey tint of finished events.
+    func slotPlate(isPast: Bool, isCompact: Bool = false) -> some View {
+        modifier(SlotPlate(isPast: isPast, isCompact: isCompact))
+    }
+}
+
+private struct SlotPlate: ViewModifier {
+    @Environment(\.tokens) private var tokens
+    let isPast: Bool
+    let isCompact: Bool
+
+    func body(content: Content) -> some View {
+        let shape = RoundedRectangle(cornerRadius: tokens.radius(isCompact ? .widgetItem : .poolRow), style: .continuous)
+        content
+            .padding(.vertical, isCompact ? tokens.space(.timelineItemGap) : tokens.space(.rowVertical) / 2)
+            .padding(.horizontal, tokens.space(.plateInner) / 2)
+            .background(isPast ? tokens.color(.past).opacity(tokens.opacity(.eventFill)) : tokens.color(.plateBackground), in: shape)
+            .clipShape(shape)
     }
 }
 

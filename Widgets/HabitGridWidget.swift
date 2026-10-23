@@ -55,5 +55,6 @@ struct HabitGridEntryView: View {
         }
         .containerBackground(tokens.color(.plateBackground), for: .widget)
         .widgetURL(DeepLink.today)
+        .environment(\.tokens, entry.source.map { $0.config.tokens.overridingColors($0.settings.colors) } ?? tokens)
     }
 }

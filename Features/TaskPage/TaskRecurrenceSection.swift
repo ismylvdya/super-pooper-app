@@ -19,7 +19,6 @@ struct TaskRecurrenceSection: View {
                     }
                 }
                 .pickerStyle(.segmented)
-                .disabled(item.isBlocked)
                 if !item.isDone {
                     Button {
                         Task { await model.perform(.skipToday, on: task.name) }

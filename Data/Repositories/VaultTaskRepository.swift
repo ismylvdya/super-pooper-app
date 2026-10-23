@@ -107,6 +107,28 @@ actor VaultTaskRepository: TaskRepository {
         }
     }
 
+    func create(named name: String, status: TaskStatus) async throws -> TaskNote {
+        try NoteNameRules.validate(name)
+        let settings = vaultSettings()
+        let reader = readerFactory(settings)
+        let text = writer.newNote(tag: settings.taskTag, status: status, now: clock.now)
+        return try await location.withRoot { root in
+            let folder = root.appendingPathComponent(settings.tasksFolder, isDirectory: true)
+            var finalName = name
+            var counter = 2
+            while isTaken(finalName, in: folder, except: nil) {
+                finalName = "\(name) \(counter)"
+                counter += 1
+            }
+            let url = folder.appendingPathComponent("\(finalName).\(noteExtension)")
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            try fileSystem.write(text, to: url)
+            let relativePath = VaultPaths.relative(url, to: root)
+            seenModification[relativePath] = fileSystem.modificationDate(of: url)
+            return reader.task(from: try FrontmatterDocument(text: text), name: finalName, relativePath: relativePath)
+        }
+    }
+
     func backup(_ tasks: [TaskNote], reason: String) async throws {
         try await location.withRoot { root in
             _ = try backups.backup(tasks.map { root.appendingPathComponent($0.relativePath) }, reason: reason)

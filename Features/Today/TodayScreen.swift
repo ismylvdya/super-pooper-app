@@ -44,11 +44,9 @@ struct TodayScreen: View {
         ToolbarItem(placement: .principal) {
             Text("today.title").font(tokens.font(.pageTitle)).accessibilityAddTraits(.isHeader)
         }
-        ToolbarItem(placement: .topBarLeading) {
+        ToolbarItemGroup(placement: .topBarLeading) {
             Button { router.open(.settings) } label: { Image(systemName: icons[.settings]) }
                 .accessibilityLabel(Text("settings.title"))
-        }
-        ToolbarItemGroup(placement: .topBarTrailing) {
             if model.config.flags.problemBadge, model.problemCount > 0 {
                 Button { router.isProblemsPresented = true } label: {
                     HStack(spacing: 4) {
@@ -59,6 +57,19 @@ struct TodayScreen: View {
                 }
                 .accessibilityLabel(Text("problems.title"))
             }
+        }
+        ToolbarItemGroup(placement: .topBarTrailing) {
+            Button {
+                Task {
+                    guard let name = await model.createTask() else { return }
+                    router.focusNameOf = name
+                    router.open(.task(name))
+                }
+            } label: {
+                Image(systemName: icons[.newTask])
+            }
+            .accessibilityLabel(Text("task.new.add"))
+            .accessibilityIdentifier("task.new")
             Button("today.edit") { router.isReviewPresented = true }
                 .fontWeight(.semibold)
                 .accessibilityIdentifier("today.edit")

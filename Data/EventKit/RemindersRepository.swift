@@ -1,13 +1,14 @@
 import EventKit
 import UIKit
 
-/// Read-only access to "remember at X" reminders. The inbox list is never touched:
-/// only lists chosen in settings are read.
+/// "Remember at X" reminders: read, and checked off from the timeline. The inbox list is never
+/// touched: only lists chosen in settings are used.
 protocol RemindersRepository: Sendable {
     var access: SourceAccess { get }
     func requestAccess() async -> Bool
     func lists() -> [SourceCollection]
     func reminders(from start: Date, to end: Date, listIDs: [String]) async -> [ReminderItem]
+    func setCompleted(_ completed: Bool, reminderID: String) throws
 }
 
 struct EventKitRemindersRepository: RemindersRepository {
@@ -17,6 +18,12 @@ struct EventKitRemindersRepository: RemindersRepository {
     var access: SourceAccess { eventKit.access(for: .reminder) }
 
     func requestAccess() async -> Bool { await eventKit.requestAccess(for: .reminder) }
+
+    func setCompleted(_ completed: Bool, reminderID: String) throws {
+        guard let reminder = eventKit.store.calendarItem(withIdentifier: reminderID) as? EKReminder else { return }
+        reminder.isCompleted = completed
+        try eventKit.store.save(reminder, commit: true)
+    }
 
     func lists() -> [SourceCollection] {
         guard access == .granted else { return [] }

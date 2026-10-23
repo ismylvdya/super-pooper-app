@@ -36,6 +36,8 @@
   "search": "magnifyingglass",
   "resetOrder": "arrow.counterclockwise",
   "add": "plus.circle.fill",
+  "newTask": "plus",
+  "colors": "paintpalette",
   "remove": "minus.circle.fill",
   "chevron": "chevron.right",
   "status": "circle.dashed.inset.filled",

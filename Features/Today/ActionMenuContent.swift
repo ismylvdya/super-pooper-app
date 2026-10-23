@@ -22,9 +22,9 @@ struct ActionMenuContent: View {
     private func isAvailable(_ action: ActionDefinition) -> Bool {
         guard let item else { return true }
         switch action.id {
-        case .done: return item.state != .marked(.done) && !item.isBlocked
-        case .partial: return item.state != .marked(.partial) && !item.isBlocked
-        case .twice: return item.state != .marked(.twice) && !item.isBlocked
+        case .done: return item.state != .marked(.done)
+        case .partial: return item.state != .marked(.partial)
+        case .twice: return item.state != .marked(.twice)
         case .unmark: return item.isDone
         case .skipToday: return item.isHabit && !item.isDone
         default: return true

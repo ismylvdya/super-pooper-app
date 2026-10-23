@@ -19,6 +19,8 @@ struct TaskRowView: View {
     var onToggle: (() -> Void)?
     /// Widgets: the checkbox runs `ToggleTaskIntent` (the rest of the widget opens the app).
     var togglesWithIntent = false
+    /// Smaller checkbox for dense widget timelines.
+    var checkboxSize: CGFloat?
     var onOpen: (() -> Void)?
 
     var body: some View {
@@ -51,6 +53,8 @@ struct TaskRowView: View {
         }
         .opacity(item.isBlocked ? tokens.opacity(.blocked) : 1)
         .contentShape(Rectangle())
+        // Everything except the checkbox opens the task (chips included).
+        .onTapGesture { onOpen?() }
     }
 
     private var color: Color { tokens.color(item.isHabit ? .habit : .task) }
@@ -60,7 +64,8 @@ struct TaskRowView: View {
     }
 
     @ViewBuilder private var checkbox: some View {
-        let glyph = MarkGlyph(state: item.state, color: item.isDone ? tokens.color(.past) : color, isBlocked: item.isBlocked)
+        let glyph = MarkGlyph(state: item.state, color: item.isDone ? tokens.color(.past) : color, showsLock: item.isBlocked,
+                              size: checkboxSize)
         if togglesWithIntent {
             Button(intent: ToggleTaskIntent(taskName: item.task.name)) { glyph }
                 .buttonStyle(.plain)
