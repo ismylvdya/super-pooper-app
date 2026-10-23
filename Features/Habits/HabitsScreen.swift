@@ -1,17 +1,21 @@
 import SwiftUI
 
 /// The Habits tab: every active habit with today's mark (tap cycles, long press picks), its week
-/// progress, a page per habit; "+" creates a habit, Edit reorders, the archive is at the bottom.
+/// progress, a page per habit; "+" creates a habit, rows reorder by dragging, the archive is at the bottom.
 struct HabitsScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
-    @State private var editMode: EditMode = .inactive
 
     var body: some View {
         let today = model.context().today
         List {
+            Text("tab.habits")
+                .font(tokens.font(.pageTitle))
+                .frame(maxWidth: .infinity)
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets())
             if model.habits.isEmpty {
                 Text("habits.empty").font(tokens.font(.hint)).foregroundStyle(tokens.color(.secondaryText))
                     .listRowBackground(Color.clear)
@@ -39,17 +43,9 @@ struct HabitsScreen: View {
         }
         .scrollContentBackground(.hidden)
         .background(tokens.color(.screenBackground))
-        .environment(\.editMode, $editMode)
         .refreshable { await model.sync(announce: true) }
-        .navigationTitle(Text("tab.habits"))
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button(editMode.isEditing ? "common.done" : "habits.reorder") {
-                    withAnimation { editMode = editMode.isEditing ? .inactive : .active }
-                }
-                .tint(.primary)
-                .disabled(model.habits.count < 2)
-            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button { router.open(.newHabit) } label: { Image(systemName: icons[.newTask]) }
                     .tint(.primary)

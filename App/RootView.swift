@@ -63,7 +63,6 @@ struct RootView: View {
         switch tab {
         case .today: home(model)
         case .habits: HabitsScreen()
-        case .clock: ClockScreen()
         case .settings: SettingsScreen()
         }
     }
@@ -117,7 +116,6 @@ extension AppTab {
         switch self {
         case .today: .tabToday
         case .habits: .tabHabits
-        case .clock: .tabClock
         case .settings: .tabSettings
         }
     }

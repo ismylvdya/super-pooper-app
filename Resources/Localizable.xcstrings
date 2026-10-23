@@ -353,28 +353,6 @@
         }
       }
     },
-    "clock.offset": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ h from here"
-          }
-        }
-      }
-    },
-    "clock.sameTime": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Same time as here"
-          }
-        }
-      }
-    },
     "color.accent": {
       "extractionState": "manual",
       "localizations": {
@@ -1272,18 +1250,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The habit is created when you go back, if it has a name."
-          }
-        }
-      }
-    },
-    "habits.reorder": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reorder"
+            "value": "The habit is created when you go back. Without a name it is called “Unnamed”; if nothing was set, nothing is created."
           }
         }
       }
@@ -1911,6 +1878,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sync Tasks"
+          }
+        }
+      }
+    },
+    "note.unnamed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unnamed"
           }
         }
       }
@@ -3862,17 +3840,6 @@
         }
       }
     },
-    "tab.clock": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Clock"
-          }
-        }
-      }
-    },
     "tab.habits": {
       "extractionState": "manual",
       "localizations": {
@@ -3934,7 +3901,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The task is created when you go back, if it has a name."
+            "value": "The task is created when you go back. Without a name it is called “Unnamed”; if nothing was set, nothing is created."
           }
         }
       }

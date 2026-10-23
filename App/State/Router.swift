@@ -5,7 +5,6 @@ import Observation
 enum AppTab: String, CaseIterable, Hashable {
     case today
     case habits
-    case clock
     case settings
 }
 
@@ -59,8 +58,7 @@ final class Router {
         case "task": if !name.isEmpty { show(.today, [.task(name)]) }
         case "habit": show(.habits, name.isEmpty ? [] : [.task(name)])
         case "habits": show(.habits)
-        case "clock": show(.clock)
-        case "settings": show(.settings)
+        case "settings", "clock": show(.settings)
         case "archive": show(.settings, [.taskSettings, .archive])
         case "trash": show(.settings, [.trash])
         case "review": show(.today); isReviewPresented = true

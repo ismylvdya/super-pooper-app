@@ -56,7 +56,6 @@
   "permissionMissing": "exclamationmark.circle",
   "tabToday": "sun.max",
   "tabHabits": "square.grid.3x3.fill",
-  "tabClock": "clock",
   "tabSettings": "gearshape",
   "today": "sun.max",
   "harmful": "nosign",
@@ -69,5 +68,10 @@
   "obsidian": "diamond",
   "habitSettings": "square.grid.3x3",
   "taskSettings": "checklist",
-  "clockSettings": "clock"
+  "clockSettings": "clock",
+  "habitOpen": "circle",
+  "habitDone": "circle.fill",
+  "habitPartial": "smallcircle.filled.circle",
+  "habitTwice": "circle.inset.filled",
+  "habitNotScheduled": "circle.dotted"
 }

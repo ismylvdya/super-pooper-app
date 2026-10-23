@@ -47,8 +47,9 @@ extension HabitGridView where Menu == EmptyView {
     }
 }
 
-/// One day of a habit: Done is filled with the habit color, Partially is pale with a half mark,
-/// Twice has an inner square, missed days are tinted, an unmarked today is outlined.
+/// One day of a habit as a round checkbox, the same in the list, the grid and the widget (SF Symbols
+/// from icons.json): open = ring, Done = filled, Partially = ring with a dot, Twice = filled with an
+/// outer ring; missed days are rings in the "missed" color, unscheduled days dotted rings.
 struct HabitDayCell: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
@@ -57,39 +58,37 @@ struct HabitDayCell: View {
     var isToday = false
 
     var body: some View {
-        GeometryReader { geometry in
-            let side = min(geometry.size.width, geometry.size.height)
-            let shape = RoundedRectangle(cornerRadius: side * tokens.size(.habitCellRadiusRatio), style: .continuous)
-            ZStack {
-                switch cell {
-                case .done:
-                    shape.fill(color)
-                case .partial:
-                    shape.fill(color.opacity(tokens.opacity(.partialFill)))
-                    Image(systemName: icons[.markPartial])
-                        .resizable().scaledToFit()
-                        .foregroundStyle(color)
-                        .frame(width: side * 0.5, height: side * 0.5)
-                case .twice:
-                    shape.fill(color)
-                    RoundedRectangle(cornerRadius: side * tokens.size(.habitCellRadiusRatio) / 2, style: .continuous)
-                        .fill(.black.opacity(tokens.opacity(.twiceInner)))
-                        .frame(width: side * 0.45, height: side * 0.45)
-                case .open:
-                    shape.fill(color.opacity(tokens.opacity(.habitEmpty)))
-                case .missed:
-                    shape.fill(tokens.color(.missed).opacity(tokens.opacity(.missedFill)))
-                case .notScheduled:
-                    shape.strokeBorder(color.opacity(tokens.opacity(.habitEmpty)), lineWidth: 1)
-                case .future:
-                    Color.clear
-                }
-                if isToday, cell == .open || cell == .missed {
-                    shape.strokeBorder(color, lineWidth: max(side * 0.08, 1.5))
-                }
+        Group {
+            if let icon {
+                Image(systemName: icons[icon])
+                    .resizable()
+                    .scaledToFit()
+                    .fontWeight(isToday ? .semibold : .regular)
+                    .foregroundStyle(tint)
+            } else {
+                Color.clear
             }
-            .frame(width: side, height: side)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .aspectRatio(1, contentMode: .fit)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private var icon: Icon? {
+        switch cell {
+        case .open, .missed: .habitOpen
+        case .done: .habitDone
+        case .partial: .habitPartial
+        case .twice: .habitTwice
+        case .notScheduled: .habitNotScheduled
+        case .future: nil
+        }
+    }
+
+    private var tint: Color {
+        switch cell {
+        case .missed: tokens.color(.missed)
+        case .notScheduled: color.opacity(tokens.opacity(.habitEmpty))
+        default: color
         }
     }
 }
