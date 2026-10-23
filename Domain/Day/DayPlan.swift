@@ -13,11 +13,13 @@ struct TimelineSlot: Identifiable, Hashable, Sendable {
     let end: Date
     /// Finished events and done tasks are drawn greyed out.
     let isPast: Bool
+    /// Which of a habit's several times of day this block is (it keeps the ids of the blocks apart).
+    var time: LocalTime? = nil
 
     var id: String {
         switch content {
         case .event(let event): "event:\(event.id)"
-        case .task(let item): "task:\(item.id)"
+        case .task(let item): "task:\(item.id)" + (time.map { "@\($0.string)" } ?? "")
         case .reminder(let reminder): "reminder:\(reminder.id)"
         }
     }
@@ -36,6 +38,8 @@ struct DayPlan: Sendable {
     let pool: [DayItem]
     let timeline: [TimelineSlot]
     let problems: [PlanProblem]
+    /// All-day events of today: they have no place on the hour grid and sit in a strip above it.
+    var allDayEvents: [CalendarEvent] = []
 
     static func empty(today: LocalDate, now: Date) -> DayPlan {
         DayPlan(today: today, now: now, pool: [], timeline: [], problems: [])

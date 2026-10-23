@@ -28,6 +28,7 @@ enum ActionMenu: String, Codable, CaseIterable, Sendable {
     case taskPage
     case habitNotification
     case taskNotification
+    case reminderNotification
     case archiveRow
 }
 

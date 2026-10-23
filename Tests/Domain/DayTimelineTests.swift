@@ -84,6 +84,22 @@ struct DayTimelineTests {
         #expect(plan.poolNames.isEmpty)
     }
 
+    @Test func whatComesBeforeATaskThatIsBeforeAnEventIsOnTheTimelineToo() {
+        let anchor = makeTask("Get a haircut") { $0.nextEvent = eventLink(to: call); $0.previousTasks = ["Buy shampoo"] }
+        let earlier = makeTask("Buy shampoo")
+        let plan = DayScenario(tasks: [anchor, earlier], events: [call]).build()
+        #expect(plan.timelineTaskNames == ["Buy shampoo", "Get a haircut"])
+        #expect(plan.poolNames.isEmpty)
+    }
+
+    @Test func aPredecessorOfATaskAfterAnEventStaysInThePool() {
+        let anchor = makeTask("Write notes") { $0.previousEvent = eventLink(to: call); $0.previousTasks = ["Find pen"] }
+        let earlier = makeTask("Find pen")
+        let plan = DayScenario(tasks: [anchor, earlier], events: [call]).build()
+        #expect(plan.timelineTaskNames == ["Write notes"])
+        #expect(plan.poolNames == ["Find pen"])
+    }
+
     @Test func tasksLinkedOnlyToEachOtherStayInThePool() {
         let first = makeTask("Find screwdriver")
         let second = makeTask("Assemble wardrobe") { $0.previousTasks = ["Find screwdriver"] }

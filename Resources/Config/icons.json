@@ -32,6 +32,8 @@
   "fontSize": "textformat.size",
   "poolCount": "tray.full",
   "archive": "archivebox",
+  "delete": "trash",
+  "edit": "pencil",
   "version": "number",
   "search": "magnifyingglass",
   "resetOrder": "arrow.counterclockwise",

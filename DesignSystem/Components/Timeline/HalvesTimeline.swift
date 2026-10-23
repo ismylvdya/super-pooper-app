@@ -28,11 +28,11 @@ struct HalvesTimeline<TaskContent: View>: View {
 
 extension TimelineStyle {
     static func make(_ settings: AppSettings.Timeline, tokens: DesignTokens) -> TimelineStyle {
-        let titleLine = max(UIFont.systemFont(ofSize: settings.taskFontSize).lineHeight, tokens.size(.checkbox) + 6)
+        let titleLine = UIFont.systemFont(ofSize: settings.taskFontSize).lineHeight + 6
         return TimelineStyle(eventFont: .system(size: settings.eventFontSize),
                              taskFont: .system(size: settings.taskFontSize),
                              minimumItemHeight: titleLine + tokens.space(.timelineItemPadding),
-                             // As high as the checkbox row plus the plate padding: equal space above and below.
+                             // As high as the title row plus the plate padding: equal space above and below.
                              minimumTaskHeight: titleLine + tokens.space(.rowVertical))
     }
 }

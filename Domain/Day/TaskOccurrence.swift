@@ -7,7 +7,7 @@ struct TaskOccurrence: Sendable {
     /// Unknown rules count as "every day" (TaskNotes shows such tasks everywhere too);
     /// the problem badge comes from the parser.
     func occurs(_ task: TaskNote, on day: LocalDate) -> Bool {
-        guard task.isRecurring else { return false }
+        guard task.isHabit else { return false }
         guard let schedule = schedule(of: task, fallbackDay: day) else { return true }
         return schedule.occurs(on: day)
     }

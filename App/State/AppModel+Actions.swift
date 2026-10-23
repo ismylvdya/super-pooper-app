@@ -91,10 +91,10 @@ extension AppModel {
         return renamed
     }
 
-    /// Creates a new this-week task note in the vault (unique "New task" name) and returns its name.
-    func createTask() async -> String? {
+    /// Creates a new this-week task note in the vault and returns its name (made unique if taken).
+    func createTask(named name: String) async -> String? {
         do {
-            let task = try await services.tasks.create(named: L10n.string("task.new.name"), status: .thisWeek)
+            let task = try await services.tasks.create(named: name, status: .thisWeek)
             replace(task)
             await publishDerivedState()
             return task.name

@@ -6,12 +6,15 @@ struct TimelineBlock: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
     @Environment(\.openURL) private var openURL
+    @State private var newEventStart: Date?
+    @State private var newEventTitle = ""
+    @State private var eventToDelete: CalendarEvent?
     let plan: DayPlan
     let handler: TaskActionHandler
     /// Space under the block that belongs to the home indicator (the timeline scrolls under it).
     let bottomInset: CGFloat
 
-    var body: some View {
+    @ViewBuilder private var content: some View {
         let settings = model.settings.timeline
         switch model.settings.timelineMode {
         case .aroundNow:
@@ -22,6 +25,7 @@ struct TimelineBlock: View {
             }
             .contentMargins(.bottom, bottomInset, for: .scrollContent)
             .scrollIndicators(.hidden)
+            .refreshable { await model.sync(announce: true) }
             .edgeFades(bottomExtension: bottomInset)
         case .wholeDay:
             GeometryReader { geometry in
@@ -37,6 +41,7 @@ struct TimelineBlock: View {
                 .contentMargins(.bottom, bottomInset, for: .scrollContent)
                 .scrollBounceBehavior(.always)
                 .scrollIndicators(.hidden)
+                .refreshable { await model.sync(announce: true) }
                 .edgeFades(bottomExtension: bottomInset)
             }
         case .halves:
@@ -50,8 +55,35 @@ struct TimelineBlock: View {
                 .contentMargins(.bottom, bottomInset, for: .scrollContent)
                 .scrollBounceBehavior(.always)
                 .scrollIndicators(.hidden)
+                .refreshable { await model.sync(announce: true) }
             }
         }
+    }
+
+    /// The block with the dialogs for the two timeline edits: add an event, delete an event.
+    var body: some View {
+        VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
+            if !plan.allDayEvents.isEmpty {
+                AllDayStrip(events: plan.allDayEvents, font: .system(size: model.settings.timeline.eventFontSize - 2), onTap: style.onEventTap)
+            }
+            content.frame(maxHeight: .infinity)
+        }
+            .alert("event.new.title", isPresented: Binding(get: { newEventStart != nil }, set: { if !$0 { newEventStart = nil } })) {
+                TextField("event.new.placeholder", text: $newEventTitle)
+                Button("event.new.create") {
+                    let title = newEventTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if let start = newEventStart, !title.isEmpty { Task { await model.addEvent(title: title, start: start) } }
+                    newEventTitle = ""
+                }
+                Button("common.cancel", role: .cancel) { newEventTitle = "" }
+            }
+            .alert("event.delete.title", isPresented: Binding(get: { eventToDelete != nil }, set: { if !$0 { eventToDelete = nil } }),
+                   presenting: eventToDelete) { event in
+                Button("action.deleteEvent", role: .destructive) { Task { await model.deleteEvent(event) } }
+                Button("common.cancel", role: .cancel) {}
+            } message: { event in
+                Text(L10n.format("event.delete.message", event.title))
+            }
     }
 
     private var style: TimelineStyle {
@@ -63,6 +95,12 @@ struct TimelineBlock: View {
         let remindersURL = model.config.rules.eventLinks.remindersAppURL
         style.onReminderTap = { reminder in
             if let url = URL(string: remindersURL + reminder.id) { openURL(url) }
+        }
+        style.onEventDelete = { eventToDelete = $0 }
+        style.onCreateAt = { date in
+            Haptics.play(.medium)
+            let snap = Double(model.config.rules.timeline.newEventSnapMinutes) * 60
+            newEventStart = Date(timeIntervalSinceReferenceDate: (date.timeIntervalSinceReferenceDate / snap).rounded() * snap)
         }
         style.onReminderToggle = { reminder in
             Haptics.play(.light)

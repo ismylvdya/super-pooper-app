@@ -27,7 +27,7 @@ struct DayItem: Identifiable, Hashable, Sendable {
     let problems: [TaskProblem]
 
     var id: String { task.name }
-    var isHabit: Bool { task.isRecurring }
+    var isHabit: Bool { task.isHabit }
     var isDone: Bool { state.isDone }
     var isBlocked: Bool { !isDone && !blockers.isEmpty }
 }

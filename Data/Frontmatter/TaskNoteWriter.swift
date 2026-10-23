@@ -48,6 +48,10 @@ struct TaskNoteWriter: Sendable {
                 setInstance(day, included: mark == .twice, key: keys.twiceInstances, keepEmpty: false, in: &document)
             case .completedDate(let day):
                 set(keys.completedDate, day.map { .scalar($0.isoString, quoted: false) }, in: &document)
+            case .recurrence(let raw):
+                set(keys.recurrence, raw.map { .scalar($0, quoted: false) }, in: &document)
+            case .reminderTimes(let times):
+                set(keys.reminderTimes, times.isEmpty ? nil : .list(times.sorted().map { .string($0.string) }), in: &document)
             }
         }
         document.set(keys.dateModified, to: .scalar(ISO8601.formatWithMilliseconds(now, timeZone: timeZone), quoted: false))

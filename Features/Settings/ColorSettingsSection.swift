@@ -8,7 +8,7 @@ struct ColorSettingsSection: View {
     @Environment(\.icons) private var icons
 
     /// The colors offered here (token names in tokens.json).
-    static let editable: [ColorToken] = [.task, .habit, .past, .accent, .high, .energy, .heart, .nowLine, .twice, .problem]
+    static let editable: [ColorToken] = [.task, .habit, .past, .high, .energy, .heart, .nowLine, .twice, .problem]
 
     var body: some View {
         PlateSection(header: "settings.colors", info: "info.settings.colors", hint: "settings.colors.hint") {
@@ -37,7 +37,7 @@ struct ColorSettingsSection: View {
 }
 
 /// Hex text field + system color circle + reset for one color token.
-private struct ColorField: View {
+struct ColorField: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
@@ -77,5 +77,16 @@ private struct ColorField: View {
         guard UIColor(hex: text) != nil else { return }
         hex = text
         model.updateSettings { $0.colors[token.rawValue] = text }
+    }
+}
+
+/// The accent color of the app (switches, pickers, links) on its own; the buttons in the bars stay black.
+struct AccentSettingsSection: View {
+    var body: some View {
+        PlateSection(header: "settings.accent", info: "info.settings.accent", hint: "settings.accent.hint") {
+            PlateRow(icon: .colors, title: "color.accent") {
+                ColorField(token: .accent)
+            }
+        }
     }
 }

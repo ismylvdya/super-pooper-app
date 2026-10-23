@@ -11,6 +11,7 @@ struct MorningReviewScreen: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
     @State private var path: [Route] = []
+    @State private var isNewTaskPresented = false
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -38,6 +39,7 @@ struct MorningReviewScreen: View {
             .navigationDestination(for: Route.self) { route in
                 if case .task(let name) = route { TaskPageScreen(taskName: name).bannerHost() }
             }
+            .newTaskPrompt(isPresented: $isNewTaskPresented) { path.append(.task($0)) }
             .navigationTitle(Text("review.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -49,13 +51,7 @@ struct MorningReviewScreen: View {
                     .disabled(model.dayState.manualOrder == nil)
                 }
                 ToolbarItemGroup(placement: .confirmationAction) {
-                    Button {
-                        Task {
-                            guard let name = await model.createTask() else { return }
-                            router.focusNameOf = name
-                            path.append(.task(name))
-                        }
-                    } label: {
+                    Button { isNewTaskPresented = true } label: {
                         Image(systemName: icons[.newTask])
                     }
                     .accessibilityLabel(Text("task.new.add"))
@@ -96,7 +92,7 @@ struct ReviewRow: View {
                 toggleChip(.pleasant, isOn: task.pleasant == true, tint: tokens.color(.heart)) {
                     [.pleasant(task.pleasant != true)]
                 }
-                if !task.isRecurring { statusChip }
+                if !task.isHabit { statusChip }
                 if !task.previousTasks.isEmpty || item.isBlocked {
                     Chip(icon: .previousTasks, text: "\(task.previousTasks.count)")
                 }

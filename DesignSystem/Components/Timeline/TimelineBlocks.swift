@@ -29,37 +29,38 @@ struct TimelineEventBlock: View {
     }
 }
 
-/// A reminder looks like a task: checkbox in the list color on a plate; done/past ones are grey.
+/// A reminder looks like a task: title on a plate; done/past ones are grey. Long press completes it.
 struct TimelineReminderBlock: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
     let reminder: ReminderItem
     let slot: TimelineSlot
     let font: Font
-    var checkboxSize: CGFloat?
     var isCompact = false
     var onToggle: ((ReminderItem) -> Void)?
     var onOpen: ((ReminderItem) -> Void)?
 
     var body: some View {
         HStack(alignment: .top, spacing: tokens.space(.iconTextGap)) {
-            Button { onToggle?(reminder) } label: {
-                MarkGlyph(state: reminder.isCompleted ? .marked(.done) : .open,
-                          color: slot.isPast ? tokens.color(.past) : Color(hex: reminder.colorHex), size: checkboxSize)
-            }
-            .buttonStyle(.plain)
-            .disabled(onToggle == nil)
-            .accessibilityLabel(Text(reminder.isCompleted ? "a11y.uncheck" : "a11y.check"))
             Text(reminder.title)
                 .font(font)
                 .lineLimit(isCompact ? 1 : 2)
                 .foregroundStyle(slot.isPast ? tokens.color(.secondaryText) : tokens.color(.primaryText))
             Spacer(minLength: 0)
-            Image(systemName: icons[.reminder]).font(tokens.font(.caption)).foregroundStyle(tokens.color(.secondaryText))
+            Image(systemName: icons[.reminder]).font(tokens.font(.caption))
+                .foregroundStyle(slot.isPast ? tokens.color(.past) : Color(hex: reminder.colorHex))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .contentShape(Rectangle())
         .onTapGesture { onOpen?(reminder) }
+        .contextMenu {
+            if let onToggle {
+                Button { onToggle(reminder) } label: {
+                    Label(LocalizedStringKey(reminder.isCompleted ? "action.unmark" : "action.done"),
+                          systemImage: icons[reminder.isCompleted ? .remove : .markDone])
+                }
+            }
+        }
         .slotPlate(isPast: slot.isPast, isCompact: isCompact)
     }
 }

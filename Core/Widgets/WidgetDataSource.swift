@@ -14,8 +14,11 @@ struct WidgetDataSource: Sendable {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = .current
         calendar.firstWeekday = 2
+        // Everything in the widget reads `today.arrangement`, so it gets the widget's own one there.
+        var settings = SettingsStore(store: store, defaults: config.defaultSettings).load()
+        settings.today.arrangement = settings.today.widgetArrangement
         return WidgetDataSource(config: config,
-                                settings: SettingsStore(store: store, defaults: config.defaultSettings).load(),
+                                settings: settings,
                                 snapshot: SnapshotStore(store: store).load(),
                                 calendar: calendar)
     }
@@ -32,11 +35,11 @@ struct WidgetDataSource: Sendable {
     }
 
     var habitNames: [String] {
-        (snapshot?.tasks ?? []).filter(\.isRecurring).map(\.name).sorted()
+        (snapshot?.tasks ?? []).filter(\.isHabit).map(\.name).sorted()
     }
 
     func habit(named name: String?) -> TaskNote? {
-        let habits = (snapshot?.tasks ?? []).filter(\.isRecurring)
+        let habits = (snapshot?.tasks ?? []).filter(\.isHabit)
         return habits.first { $0.name == name } ?? habits.sorted { $0.name < $1.name }.first
     }
 }

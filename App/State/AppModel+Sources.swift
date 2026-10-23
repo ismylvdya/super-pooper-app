@@ -36,10 +36,39 @@ extension AppModel {
     func availableReminderLists() -> [SourceCollection] { services.reminders.lists() }
     var vaultName: String? { services.vault.displayName }
 
+    /// Completes a reminder by id (the "Complete" button of its notification).
+    func completeReminder(id: String) async {
+        guard let reminder = reminders.first(where: { $0.id == id }) else { return }
+        guard !reminder.isCompleted else { return }
+        await toggleReminder(reminder)
+    }
+
     /// Checks a reminder off (or back on) in Reminders, then refreshes everything that shows it.
     func toggleReminder(_ reminder: ReminderItem) async {
         do {
             try services.reminders.setCompleted(!reminder.isCompleted, reminderID: reminder.id)
+        } catch {
+            banners.show(Self.describe(error), style: .problem)
+        }
+        await refreshCalendarSources()
+        await publishDerivedState()
+    }
+
+    /// Adds a calendar event from the timeline (into the first anchor calendar, one hour by default).
+    func addEvent(title: String, start: Date) async {
+        let end = start.addingTimeInterval(Double(config.rules.timeline.newEventMinutes) * 60)
+        do {
+            try services.calendars.addEvent(title: title, start: start, end: end, calendarID: settings.sources.anchorCalendarIDs.first)
+        } catch {
+            banners.show(Self.describe(error), style: .problem)
+        }
+        await refreshCalendarSources()
+        await publishDerivedState()
+    }
+
+    func deleteEvent(_ event: CalendarEvent) async {
+        do {
+            try services.calendars.delete(event)
         } catch {
             banners.show(Self.describe(error), style: .problem)
         }

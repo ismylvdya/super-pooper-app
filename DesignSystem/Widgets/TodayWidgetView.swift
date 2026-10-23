@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The Today widget body: title above, then pool and timeline in the app's arrangement
+/// The Today widget body: pool and timeline in the app's arrangement
 /// (`layouts/today-*.layout.json`), built from the same row and timeline components. Read-only.
 struct TodayWidgetView: View {
     @Environment(\.tokens) private var tokens
@@ -12,13 +12,6 @@ struct TodayWidgetView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
-            HStack {
-                Text("today.title").font(tokens.font(.widgetTitle))
-                Spacer()
-                Text(plan.now.formatted(.dateTime.weekday(.abbreviated).day()))
-                    .font(tokens.font(.widgetCaption))
-                    .foregroundStyle(tokens.color(.secondaryText))
-            }
             ScreenLayoutView(layout: layout) { id in
                 switch id {
                 case "pool": WidgetPoolBlock(plan: plan, visibleCount: settings.poolUsesVisibleCount ? settings.pool.visibleCount : nil)
@@ -47,7 +40,7 @@ struct WidgetPoolBlock: View {
             VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
                 ForEach(plan.pool.prefix(count)) { item in
                     TaskRowView(item: item, today: plan.today, titleFont: tokens.font(.widgetTitle), showsDetails: false,
-                                isCompact: true, togglesWithIntent: true)
+                                isCompact: true)
                         .taskPlate()
                 }
                 if plan.pool.count > count {
@@ -99,24 +92,17 @@ struct WidgetTimelineBlock: View {
     }
 
     /// Blocks are at least half an hour high in the current scale, so more hours = smaller blocks
-    /// and nothing overlaps; the checkbox shrinks with them.
+    /// and nothing overlaps.
     private func style(hourHeight: CGFloat) -> TimelineStyle {
         // Half an hour in the current scale, but never less than one line of text.
         let minimum = max(hourHeight / 2, tokens.uiFont(.widgetCaption).lineHeight + tokens.space(.timelineItemGap) * 2)
         var style = TimelineStyle(eventFont: tokens.font(.widgetCaption), taskFont: tokens.font(.widgetCaption),
                                   minimumItemHeight: minimum, minimumTaskHeight: minimum)
-        style.checkboxSize = checkbox(hourHeight: hourHeight)
         style.compactPlates = true
         return style
     }
 
-    private func checkbox(hourHeight: CGFloat) -> CGFloat {
-        let minimum = max(hourHeight / 2, tokens.uiFont(.widgetCaption).lineHeight + tokens.space(.timelineItemGap) * 2)
-        return min(max(minimum - tokens.space(.timelineItemGap) * 2 - 6, tokens.size(.problemDot)), tokens.size(.checkbox))
-    }
-
     private func row(_ item: DayItem, hourHeight: CGFloat) -> some View {
-        TaskRowView(item: item, today: plan.today, titleFont: tokens.font(.widgetCaption), showsDetails: false, titleLineLimit: 1,
-                    togglesWithIntent: true, checkboxSize: checkbox(hourHeight: hourHeight))
+        TaskRowView(item: item, today: plan.today, titleFont: tokens.font(.widgetCaption), showsDetails: false, titleLineLimit: 1)
     }
 }

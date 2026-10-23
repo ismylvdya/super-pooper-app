@@ -4,7 +4,7 @@ import SwiftUI
 #Preview("Task rows") {
     let plan = PreviewSamples.plan
     return VStack(alignment: .leading, spacing: 12) {
-        ForEach(plan.pool) { TaskRowView(item: $0, today: plan.today, onToggle: {}, onOpen: {}) }
+        ForEach(plan.pool) { TaskRowView(item: $0, today: plan.today, onOpen: {}) }
     }
     .padding()
 }

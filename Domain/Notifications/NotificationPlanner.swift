@@ -16,6 +16,8 @@ struct PlannedNotification: Hashable, Sendable {
     let taskName: String?
     /// The day the notification belongs to (habit marks are written for this day).
     let day: LocalDate
+    /// The Reminders item a reminder notification completes.
+    var reminderID: String? = nil
 }
 
 /// Decides which notifications should be pending: timed habits, timed tasks of this week and timed reminders.
@@ -42,18 +44,19 @@ struct NotificationPlanner: Sendable {
         var result: [PlannedNotification] = []
 
         for task in tasks {
-            guard let due = task.due, let time = due.time else { continue }
-            if task.isRecurring {
+            if task.isHabit {
                 let instances = HabitInstances(task: task)
                 for offset in 0..<horizonDays {
                     let day = context.today.adding(days: offset)
                     guard occurrence.occurs(task, on: day), instances.mark(on: day) == nil else { continue }
                     if day == context.today, skipped.contains(task.name) { continue }
-                    result.append(PlannedNotification(id: "habit|\(task.name)|\(day.isoString)", kind: .habit,
-                                                      title: task.name, fireDate: context.moment(time, onLogicalDay: day),
-                                                      taskName: task.name, day: day))
+                    for time in task.habitTimes {
+                        result.append(PlannedNotification(id: "habit|\(task.name)|\(day.isoString)|\(time.string)", kind: .habit,
+                                                          title: task.name, fireDate: context.moment(time, onLogicalDay: day),
+                                                          taskName: task.name, day: day))
+                    }
                 }
-            } else if task.status == .thisWeek {
+            } else if task.status == .thisWeek, let due = task.due, let time = due.time {
                 result.append(PlannedNotification(id: "task|\(task.name)", kind: .task, title: task.name,
                                                   fireDate: context.date(due.day, time), taskName: task.name,
                                                   day: context.logicalDay(of: due)))
@@ -63,7 +66,7 @@ struct NotificationPlanner: Sendable {
         for reminder in reminders where !reminder.isCompleted {
             result.append(PlannedNotification(id: "reminder|\(reminder.id)|\(reminder.due.timeIntervalSince1970)", kind: .reminder,
                                               title: reminder.title, fireDate: reminder.due, taskName: nil,
-                                              day: LocalDate(reminder.due, in: context.calendar)))
+                                              day: LocalDate(reminder.due, in: context.calendar), reminderID: reminder.id))
         }
 
         return result.sorted { $0.fireDate < $1.fireDate }

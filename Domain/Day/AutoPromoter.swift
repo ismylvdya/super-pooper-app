@@ -7,7 +7,7 @@ struct AutoPromoter: Sendable {
 
     func candidates(in tasks: [TaskNote], context: DayContext) -> [TaskNote] {
         tasks.filter { task in
-            guard !task.isRecurring, promotableStatuses.contains(task.status), let day = task.due?.day else { return false }
+            guard !task.isHabit, promotableStatuses.contains(task.status), let day = task.due?.day else { return false }
             return day >= context.today && day <= context.weekEnd
         }
     }

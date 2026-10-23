@@ -21,7 +21,7 @@ struct BlockingEvaluator: Sendable {
     /// or when it has no instance today at all.
     func isSatisfied(_ name: String) -> Bool {
         guard let task = graph.tasksByName[name] else { return true }
-        guard task.isRecurring else { return task.status.isCompleted }
+        guard task.isHabit else { return task.status.isCompleted }
         if skipped.contains(name) { return true }
         if HabitInstances(task: task).mark(on: context.today) != nil { return true }
         return !occurrence.occurs(task, on: context.today)

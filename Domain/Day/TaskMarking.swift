@@ -7,7 +7,7 @@ struct TaskMarking: Sendable {
     let today: LocalDate
 
     func changes(marking task: TaskNote, as mark: HabitMark?) -> [TaskFieldChange] {
-        if task.isRecurring {
+        if task.isHabit {
             let current = HabitInstances(task: task)
             return current.setting(mark, on: today) == current ? [] : [.markInstance(day: today, mark: mark)]
         }
@@ -19,7 +19,7 @@ struct TaskMarking: Sendable {
 
     /// Tap: open → done, done → open.
     func changes(toggling task: TaskNote) -> [TaskFieldChange] {
-        let isMarked = task.isRecurring ? HabitInstances(task: task).mark(on: today) != nil : task.status == .done
+        let isMarked = task.isHabit ? HabitInstances(task: task).mark(on: today) != nil : task.status == .done
         return changes(marking: task, as: isMarked ? nil : .done)
     }
 
@@ -28,7 +28,7 @@ struct TaskMarking: Sendable {
     func changes(setting status: TaskStatus, on task: TaskNote) -> [TaskFieldChange] {
         guard status != task.status else { return [] }
         var result: [TaskFieldChange] = [.status(status)]
-        guard !task.isRecurring else { return result }
+        guard !task.isHabit else { return result }
         if status == .done { result.append(.completedDate(today)) } else if task.status == .done { result.append(.completedDate(nil)) }
         return result
     }

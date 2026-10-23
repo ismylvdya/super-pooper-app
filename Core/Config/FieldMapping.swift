@@ -21,6 +21,7 @@ struct FieldMapping: Codable, Hashable, Sendable {
         let completedDate: String
         let dateCreated: String
         let dateModified: String
+        let reminderTimes: String
     }
 
     struct Statuses: Codable, Hashable, Sendable {
@@ -30,6 +31,7 @@ struct FieldMapping: Codable, Hashable, Sendable {
         let waiting: String
         let done: String
         let archived: String
+        let habit: String
     }
 
     struct Priorities: Codable, Hashable, Sendable {
@@ -51,6 +53,7 @@ struct FieldMapping: Codable, Hashable, Sendable {
         case statuses.waiting: .waiting
         case statuses.done: .done
         case statuses.archived: .archived
+        case statuses.habit: .habit
         default: .other(raw)
         }
     }
@@ -63,6 +66,7 @@ struct FieldMapping: Codable, Hashable, Sendable {
         case .waiting: statuses.waiting
         case .done: statuses.done
         case .archived: statuses.archived
+        case .habit: statuses.habit
         case .other(let raw): raw
         }
     }

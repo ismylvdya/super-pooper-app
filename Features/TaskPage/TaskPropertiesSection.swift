@@ -8,25 +8,7 @@ struct TaskPropertiesSection: View {
 
     var body: some View {
         PlateSection(header: "taskPage.properties", info: "info.taskPage.properties") {
-            PlateRow(icon: .status, title: "taskPage.status", info: "info.taskPage.status") {
-                Picker("taskPage.status", selection: Binding(
-                    get: { task.status },
-                    set: { status in
-                        let changes = TaskMarking(today: model.context().today).changes(setting: status, on: task)
-                        Task { await model.update(task.name, changes) }
-                    }
-                )) {
-                    ForEach(TaskStatus.known, id: \.self) { Text(StatusText.title($0)).tag($0) }
-                    if case .other(let raw) = task.status { Text(verbatim: raw).tag(task.status) }
-                }
-                .labelsHidden()
-            }
-            PlateRow(icon: .high, title: "taskPage.high", info: "info.taskPage.high") {
-                Toggle("taskPage.high", isOn: binding(\.isHighPriority, change: TaskFieldChange.highPriority))
-                    .labelsHidden()
-                    .accessibilityIdentifier("taskPage.high")
-            }
-            DueEditor(task: task)
+            if !task.isHabit { taskOnlyRows }
             PlateRow(icon: .estimate, title: "taskPage.estimate", info: "info.taskPage.estimate") {
                 Picker("taskPage.estimate", selection: estimateBinding) {
                     ForEach(rules.timeEstimates, id: \.minutes) { Text(LocalizedStringKey($0.label)).tag($0.minutes) }
@@ -43,6 +25,29 @@ struct TaskPropertiesSection: View {
                 )).labelsHidden()
             }
         }
+    }
+
+    /// Status, High and the date make no sense for a habit: it is always active and repeats by its own rule.
+    @ViewBuilder private var taskOnlyRows: some View {
+        PlateRow(icon: .status, title: "taskPage.status", info: "info.taskPage.status") {
+            Picker("taskPage.status", selection: Binding(
+                get: { task.status },
+                set: { status in
+                    let changes = TaskMarking(today: model.context().today).changes(setting: status, on: task)
+                    Task { await model.update(task.name, changes) }
+                }
+            )) {
+                ForEach(TaskStatus.known, id: \.self) { Text(StatusText.title($0)).tag($0) }
+                if case .other(let raw) = task.status { Text(verbatim: raw).tag(task.status) }
+            }
+            .labelsHidden()
+        }
+        PlateRow(icon: .high, title: "taskPage.high", info: "info.taskPage.high") {
+            Toggle("taskPage.high", isOn: binding(\.isHighPriority, change: TaskFieldChange.highPriority))
+                .labelsHidden()
+                .accessibilityIdentifier("taskPage.high")
+        }
+        DueEditor(task: task)
     }
 
     private func binding<Value>(_ keyPath: KeyPath<TaskNote, Value>, change: @escaping (Value) -> TaskFieldChange) -> Binding<Value> {
@@ -111,6 +116,7 @@ enum StatusText {
         case .waiting: L10n.string("status.waiting")
         case .done: L10n.string("status.done")
         case .archived: L10n.string("status.archived")
+        case .habit: L10n.string("status.habit")
         case .other(let raw): raw
         }
     }

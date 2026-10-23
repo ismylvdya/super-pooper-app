@@ -9,8 +9,7 @@ struct TaskRecurrenceSection: View {
     let item: DayItem?
 
     var body: some View {
-        PlateSection(header: "taskPage.recurrence", info: "info.taskPage.recurrence") {
-            PlateRow(icon: .recurrence, title: LocalizedStringKey(RecurrenceText.describe(task))) {}
+        PlateSection(header: "taskPage.todayMark.header", info: "info.taskPage.recurrence") {
             if let item {
                 Picker("taskPage.todayMark", selection: markBinding(item)) {
                     Text("taskPage.mark.none").tag(HabitMark?.none)

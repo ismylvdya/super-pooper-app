@@ -15,10 +15,11 @@
   ],
   "menus": {
     "habitContext": ["done", "partial", "twice", "skipToday", "unmark", "open"],
-    "taskContext": ["open", "archive", "delete"],
+    "taskContext": ["done", "unmark", "open", "archive", "delete"],
     "taskPage": ["archive", "delete", "openInObsidian"],
     "habitNotification": ["done", "partial", "twice", "skipToday"],
     "taskNotification": ["done"],
+    "reminderNotification": ["done"],
     "archiveRow": ["restoreThisWeek", "restoreHalfYear", "delete"]
   }
 }

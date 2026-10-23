@@ -109,7 +109,9 @@ SuperPooper — iPhone-приложение-оболочка над тремя �
 При открытии и pull-to-refresh задачи `half_year`/`someday` без `recurrence` с `due` с сегодня по воскресенье получают `this_week` (перед этим — бэкап). Список статусов — `rules.json` → `day.autoPromoteFrom`. Статусы приложение никогда не понижает.
 
 ### 4.7. Привычки
-- Привычка = задача с `recurrence` (RRULE TaskNotes). Время дня — из `due`, если там есть время.
+- Привычка = заметка со `status: habit` (читается как привычка и любая заметка с `recurrence`). Дни задаёт только `recurrence` (RRULE TaskNotes); без правила — каждый день. `due` у привычки не учитывается ни в днях, ни в сортировке пула.
+- Время дня — `reminder_times` (список `HH:mm`, можно несколько, например для «дважды в день»); старый `due` со временем читается как единственное напоминание. Каждое время — свой блок таймлайна и своё уведомление; без напоминаний привычка стоит в пуле.
+- Переключатель «Task / Habit» вверху страницы задачи (`Domain/Model/TaskKind.swift`): в привычку — `status: habit`, `recurrence` (по умолчанию ежедневно), время из `due` уходит в `reminder_times`; обратно в дело — `status: this_week`, `recurrence` и `reminder_times` убираются, отметки остаются. Правило правится редактором как в Apple Calendar (`Domain/Recurrence/RecurrenceDraft.swift`).
 - Тап = Done; долгое нажатие и уведомление — Partially, Twice, Skip today.
 - Done → дата в `complete_instances`; Partially → в `complete_instances` и `partial_instances`; Twice → в `complete_instances` и `twice_instances`. Снятие — убирает из всех трёх.
 - Skip today в заметку не пишется (только `day-state.json` до конца дня).
@@ -127,7 +129,7 @@ SuperPooper — iPhone-приложение-оболочка над тремя �
 ---
 tags:
   - 🔫делишка
-status: this_week            # this_week | half_year | someday | waiting | done | archived
+status: this_week            # this_week | half_year | someday | waiting | done | archived | habit
 priority: high               # high | none
 due: 2026-10-23T16:00        # YYYY-MM-DD или YYYY-MM-DDTHH:mm (локальное время)
 time_estimate: 15            # минуты: 2 | 15 | 60 | 240; пусто = 15
@@ -138,7 +140,10 @@ previous_event: "8A1F…:A2B3…|Call with dad|2026-10-23T19:00:00+02:00"   # п
 next_event: "…"              # до события (тот же формат)
 need_energy: true
 pleasant: false
-recurrence: DTSTART:20261001T090000Z;FREQ=DAILY     # есть поле → привычка/периодическое дело
+recurrence: DTSTART:20261001T000000Z;FREQ=DAILY     # правило привычки
+reminder_times:              # привычка: времена дня, несколько можно
+  - "09:00"
+  - "21:00"
 complete_instances: [ ... ]  # дни с любой отметкой
 partial_instances: [ ... ]   # дни с Partially (они же есть в complete_instances)
 twice_instances: [ ... ]     # дни с Twice (они же есть в complete_instances)

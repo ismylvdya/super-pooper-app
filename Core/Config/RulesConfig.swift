@@ -40,6 +40,9 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let refreshSeconds: Double
         /// Upper bound for the hours shown in the one-column layout.
         let maxHoursAfter: Int
+        /// Length of an event created by long-pressing the timeline, and the grid its start snaps to.
+        let newEventMinutes: Int
+        let newEventSnapMinutes: Int
     }
 
     struct Widgets: Codable, Hashable, Sendable {

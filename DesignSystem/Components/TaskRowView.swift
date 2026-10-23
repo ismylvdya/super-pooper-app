@@ -1,7 +1,7 @@
-import AppIntents
 import SwiftUI
 
-/// One task or habit row: checkbox, title, property chips and what blocks it.
+/// One task or habit row: title, property chips and what blocks it. Tasks are marked from the long-press menu,
+/// so there is no checkbox; a marked row is grey and ends with its mark.
 /// The same view is used in the pool, on the timeline and in widgets.
 struct TaskRowView: View {
     @Environment(\.tokens) private var tokens
@@ -16,16 +16,10 @@ struct TaskRowView: View {
     var isCompact = false
     /// Title lines; nil = compact rows get one line, others wrap freely.
     var titleLineLimit: Int?
-    var onToggle: (() -> Void)?
-    /// Widgets: the checkbox runs `ToggleTaskIntent` (the rest of the widget opens the app).
-    var togglesWithIntent = false
-    /// Smaller checkbox for dense widget timelines.
-    var checkboxSize: CGFloat?
     var onOpen: (() -> Void)?
 
     var body: some View {
         HStack(alignment: .top, spacing: tokens.space(.iconTextGap)) {
-            checkbox
             VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
                 title
                 if showsDetails, !chips.isEmpty {
@@ -50,34 +44,16 @@ struct TaskRowView: View {
                 }
             }
             Spacer(minLength: 0)
+            if item.isDone { MarkGlyph(state: item.state, color: tokens.color(.past), size: tokens.size(.doneMark)) }
         }
         .opacity(item.isBlocked ? tokens.opacity(.blocked) : 1)
         .contentShape(Rectangle())
-        // Everything except the checkbox opens the task (chips included).
+        // Anywhere on the row opens the task (chips included).
         .onTapGesture { onOpen?() }
     }
 
-    private var color: Color { tokens.color(item.isHabit ? .habit : .task) }
-
     private var chipViews: some View {
         ForEach(chips) { chip in Chip(icon: chip.icon, text: chip.text, tint: chip.tint) }
-    }
-
-    @ViewBuilder private var checkbox: some View {
-        let glyph = MarkGlyph(state: item.state, color: item.isDone ? tokens.color(.past) : color, showsLock: item.isBlocked,
-                              size: checkboxSize)
-        if togglesWithIntent {
-            Button(intent: ToggleTaskIntent(taskName: item.task.name)) { glyph }
-                .buttonStyle(.plain)
-                .accessibilityLabel(Text(item.isDone ? "a11y.uncheck" : "a11y.check"))
-        } else if let onToggle {
-            Button(action: onToggle) { glyph }
-                .buttonStyle(.plain)
-                .accessibilityLabel(Text(item.isDone ? "a11y.uncheck" : "a11y.check"))
-                .accessibilityIdentifier("check:\(item.task.name)")
-        } else {
-            glyph
-        }
     }
 
     @ViewBuilder private var title: some View {
@@ -121,11 +97,11 @@ struct RowChip: Identifiable {
         var result: [RowChip] = []
         if !item.problems.isEmpty { result.append(RowChip(id: "problem", icon: .problem, text: nil, tint: tokens.color(.problem))) }
         if task.isHighPriority { result.append(RowChip(id: "high", icon: .high, text: nil, tint: tokens.color(.high))) }
-        if task.isRecurring { result.append(RowChip(id: "habit", icon: .habit, text: nil, tint: tokens.color(.habit))) }
-        if let due = task.due, !task.isRecurring, due.day != today || due.time != nil {
+        if task.isHabit { result.append(RowChip(id: "habit", icon: .habit, text: nil, tint: tokens.color(.habit))) }
+        if let due = task.due, !task.isHabit, due.day != today || due.time != nil {
             result.append(RowChip(id: "due", icon: .due, text: DueText.format(due, today: today), tint: nil))
-        } else if task.isRecurring, let time = task.due?.time {
-            result.append(RowChip(id: "due", icon: .time, text: time.string, tint: nil))
+        } else if task.isHabit, !task.habitTimes.isEmpty {
+            result.append(RowChip(id: "due", icon: .time, text: task.habitTimes.map(\.string).joined(separator: " "), tint: nil))
         }
         result.append(RowChip(id: "estimate", icon: nil, text: EstimateText.label(task.timeEstimate, rules: rules), tint: nil))
         if task.needEnergy { result.append(RowChip(id: "energy", icon: .energy, text: nil, tint: tokens.color(.energy))) }

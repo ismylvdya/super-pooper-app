@@ -14,11 +14,12 @@ struct RootView: View {
                 NavigationStack(path: $router.path) {
                     home(model)
                         .bannerHost()
-                        .navigationDestination(for: Route.self) { destination($0).bannerHost() }
+                        .navigationDestination(for: Route.self) { route in
+                            destination(route).bannerHost().refreshable { await model.sync(announce: true) }
+                        }
                 }
                 .sheet(isPresented: $router.isReviewPresented) { MorningReviewScreen() }
                 .sheet(isPresented: $router.isProblemsPresented) { ProblemsSheet() }
-                .refreshable { await model.sync(announce: true) }
             } else {
                 OnboardingFlow()
             }
@@ -68,6 +69,7 @@ struct RootView: View {
         switch route {
         case .task(let name): TaskPageScreen(taskName: name)
         case .settings: SettingsScreen()
+        case .search: SearchScreen()
         case .archive: ArchiveScreen()
         #if DEBUG
         case .debugNotifications: NotificationsDebugScreen()

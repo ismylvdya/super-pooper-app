@@ -20,12 +20,18 @@ struct TaskPageScreen: View {
         if let task = model.task(named: currentName) {
             let item = model.plan(at: model.clock.now).item(named: currentName)
             PageScaffold(title: task.name) {
+                TaskKindSection(task: task)
                 TaskTitleSection(task: task) { renamedTo = $0 }
-                TaskPropertiesSection(task: task)
-                if task.isRecurring { TaskRecurrenceSection(task: task, item: item) }
-                TaskLinksSection(task: task)
-                TaskEventsSection(task: task)
-                TaskNoteSection(taskName: task.name)
+                if task.isHabit {
+                    RecurrenceEditorSection(task: task)
+                    HabitRemindersSection(task: task)
+                    TaskRecurrenceSection(task: task, item: item)
+                } else {
+                    TaskPropertiesSection(task: task)
+                    TaskLinksSection(task: task)
+                    TaskEventsSection(task: task)
+                    TaskNoteSection(taskName: task.name)
+                }
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -34,6 +40,7 @@ struct TaskPageScreen: View {
                     } label: {
                         Image(systemName: icons[.more])
                     }
+                    .tint(.primary)
                     .accessibilityLabel(Text("taskPage.more"))
                     .accessibilityIdentifier("taskPage.more")
                 }
@@ -74,11 +81,6 @@ struct TaskTitleSection: View {
         }
         .onAppear {
             draft = task.name
-            if router.focusNameOf == task.name {
-                router.focusNameOf = nil
-                draft = ""
-                isEditingName = true
-            }
         }
         .onChange(of: task.name) { _, name in draft = name }
         .onChange(of: isEditingName) { _, editing in if !editing { commit() } }

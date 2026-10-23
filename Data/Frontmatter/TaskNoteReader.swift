@@ -40,6 +40,7 @@ struct TaskNoteReader: Sendable {
         task.completeInstances = fields.dates(keys.completeInstances)
         task.partialInstances = fields.dates(keys.partialInstances)
         task.twiceInstances = fields.dates(keys.twiceInstances)
+        task.reminderTimes = fields.times(keys.reminderTimes)
         task.completedDate = fields.parsed(keys.completedDate, LocalDate.init(isoString:))
         task.dateCreated = fields.timestamp(keys.dateCreated, calendar: calendar)
         task.dateModified = fields.timestamp(keys.dateModified, calendar: calendar)
@@ -123,6 +124,19 @@ private struct FieldReader {
             }
         }
         return result
+    }
+
+    mutating func times(_ key: String) -> [LocalTime] {
+        guard let value = value(key) else { return [] }
+        var result: [LocalTime] = []
+        for text in FieldValues.strings(value) {
+            if let time = LocalTime(string: text) {
+                if !result.contains(time) { result.append(time) }
+            } else {
+                problems.append(.invalidField(key: key, value: text))
+            }
+        }
+        return result.sorted()
     }
 
     mutating func timestamp(_ key: String, calendar: Calendar) -> Date? {

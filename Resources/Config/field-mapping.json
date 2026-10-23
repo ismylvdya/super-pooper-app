@@ -16,7 +16,8 @@
     "twiceInstances": "twice_instances",
     "completedDate": "completed_date",
     "dateCreated": "date_created",
-    "dateModified": "date_modified"
+    "dateModified": "date_modified",
+    "reminderTimes": "reminder_times"
   },
   "statuses": {
     "thisWeek": "this_week",
@@ -24,7 +25,8 @@
     "someday": "someday",
     "waiting": "waiting",
     "done": "done",
-    "archived": "archived"
+    "archived": "archived",
+    "habit": "habit"
   },
   "priorities": {
     "high": "high",

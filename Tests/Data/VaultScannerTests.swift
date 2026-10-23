@@ -29,7 +29,7 @@ struct VaultScannerTests {
         #expect(withProblems.map(\.name) == ["Неизвестное правило"])
         let unknown = try #require(withProblems.first)
         #expect(unknown.problems == [.unknownRecurrence("FREQ=HOURLY;INTERVAL=2")])
-        #expect(unknown.isRecurring && unknown.recurrence == nil)
+        #expect(unknown.isHabit && unknown.recurrence == nil)
     }
 
     @Test func missingLinksAndCyclesBecomePlanProblems() async throws {

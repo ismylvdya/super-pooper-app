@@ -1,19 +1,27 @@
 import SwiftUI
 
-/// Where the pool and the timeline sit on Today, with a live schematic preview.
+/// Where the pool and the timeline sit on Today and in the widget (each has its own), with live schematic previews.
 struct TodaySettingsSection: View {
     @Environment(AppModel.self) private var model
-    @Environment(\.tokens) private var tokens
 
     var body: some View {
-        PlateSection(header: "settings.today", hint: "settings.today.hint") {
-            ArrangementPreview(arrangement: model.settings.today.arrangement)
-            PlateRow(icon: .timelineLayout, title: "settings.today.arrangement", info: "info.settings.today.arrangement") {}
+        arrangementSection(header: "settings.today", hint: "settings.today.hint", info: "info.settings.today.arrangement",
+                           keyPath: \.arrangement)
+        arrangementSection(header: "settings.widget", hint: "settings.widget.hint", info: "info.settings.widget.arrangement",
+                           keyPath: \.widgetArrangement)
+    }
+
+    private func arrangementSection(header: LocalizedStringKey, hint: LocalizedStringKey, info: LocalizedStringKey,
+                                    keyPath: WritableKeyPath<AppSettings.Today, AppSettings.TodayArrangement>) -> some View {
+        let current = model.settings.today[keyPath: keyPath]
+        return PlateSection(header: header, hint: hint) {
+            ArrangementPreview(arrangement: current)
+            PlateRow(icon: .timelineLayout, title: "settings.today.arrangement", info: info) {}
             Picker("settings.today.arrangement", selection: Binding(
-                get: { model.settings.today.arrangement },
+                get: { current },
                 set: { value in
                     Haptics.play(.light)
-                    model.updateSettings { $0.today.arrangement = value }
+                    model.updateSettings { $0.today[keyPath: keyPath] = value }
                 }
             )) {
                 Text("settings.today.stacked").tag(AppSettings.TodayArrangement.stacked)

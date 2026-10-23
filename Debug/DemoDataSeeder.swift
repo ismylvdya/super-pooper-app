@@ -28,6 +28,7 @@ struct DemoDataSeeder {
             let today = LocalDate(clock.now, in: calendar)
             try addEvent("Morning sync", today, "10:00", "10:30", calendar: eventCalendar, store: store)
             try addEvent("Call with dad", today, "19:00", "20:00", calendar: eventCalendar, store: store)
+            try addEvent("Day off", today, "00:00", "23:59", calendar: eventCalendar, store: store, allDay: true)
             try addEvent("Lunch", today, "13:00", "13:45", calendar: eventCalendar, store: store, recurring: true)
 
             let list = try makeCalendar(.reminder, title: Self.title, color: .systemOrange, in: store)
@@ -66,12 +67,13 @@ struct DemoDataSeeder {
     }
 
     private func addEvent(_ title: String, _ day: LocalDate, _ start: String, _ end: String,
-                          calendar eventCalendar: EKCalendar, store: EKEventStore, recurring: Bool = false) throws {
+                          calendar eventCalendar: EKCalendar, store: EKEventStore, recurring: Bool = false, allDay: Bool = false) throws {
         let event = EKEvent(eventStore: store)
         event.title = title
         event.calendar = eventCalendar
         event.startDate = date(day, start)
         event.endDate = date(day, end)
+        event.isAllDay = allDay
         if recurring { event.addRecurrenceRule(EKRecurrenceRule(recurrenceWith: .daily, interval: 1, end: nil)) }
         try store.save(event, span: .futureEvents, commit: false)
     }

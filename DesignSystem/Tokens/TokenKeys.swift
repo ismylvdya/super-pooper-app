@@ -13,7 +13,7 @@ enum RadiusToken: String, CaseIterable, Sendable {
 }
 
 enum SizeToken: String, CaseIterable, Sendable {
-    case badgeOffset, iconColumn, checkbox, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, navTitleStep
+    case badgeOffset, iconColumn, checkbox, doneMark, pullThreshold, pullIcon, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, navTitleStep
     case problemDot, sourceDot, habitCell, fadeHeight, bannerLines, poolRowEstimate, poolCounter, poolWidth, widgetRowHeight
 }
 

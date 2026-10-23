@@ -4,8 +4,19 @@ import Foundation
 enum RecurrenceText {
     static func describe(_ task: TaskNote) -> String {
         guard let rule = task.recurrence else { return L10n.format("recurrence.unknown", task.recurrenceRaw ?? "") }
+        var text = describe(rule)
+        if !task.habitTimes.isEmpty { text += L10n.format("recurrence.at", task.habitTimes.map(\.string).joined(separator: ", ")) }
+        return text
+    }
+
+    /// The rule the editor is building, in words.
+    static func describe(_ draft: RecurrenceDraft) -> String {
+        guard case .success(let rule) = RecurrenceRule.parse(draft.raw) else { return "" }
+        return describe(rule)
+    }
+
+    private static func describe(_ rule: RecurrenceRule) -> String {
         var text = base(rule)
-        if let time = task.due?.time { text += L10n.format("recurrence.at", time.string) }
         if let count = rule.count { text += L10n.format("recurrence.count", count) }
         if let until = rule.untilDate { text += L10n.format("recurrence.until", until.isoString) }
         return text

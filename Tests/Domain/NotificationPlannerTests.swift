@@ -17,7 +17,7 @@ struct NotificationPlannerTests {
 
     @Test func aTimedHabitGetsOneNotificationPerDayOfTheHorizon() {
         let planned = plan([vitamins], at: "08:00")
-        #expect(planned.map(\.id) == days(21...27).map { "habit|Vitamins 💊|\($0)" })
+        #expect(planned.map(\.id) == days(21...27).map { "habit|Vitamins 💊|\($0)|09:00" })
         #expect(planned.map { clockTime($0.fireDate) } == Array(repeating: "09:00", count: 7))
         #expect(planned.map(\.day.isoString) == days(21...27))
         #expect(planned.allSatisfy { $0.kind == .habit && $0.taskName == "Vitamins 💊" && $0.title == "Vitamins 💊" })
@@ -97,7 +97,7 @@ struct NotificationPlannerTests {
         let water = makeHabit("Water at ten", time: "10:00")
         let context = TestCalendar.context(TestCalendar.wednesday, "13:25")
         let valid = planner.stillValidToday(tasks: [vitamins, parcel, friday, water], reminders: [], skipped: ["Water at ten"], context: context)
-        #expect(Set(valid.map(\.id)) == ["habit|Vitamins 💊|2026-10-21", "task|Parcel"])
+        #expect(Set(valid.map(\.id)) == ["habit|Vitamins 💊|2026-10-21|09:00", "task|Parcel"])
 
         let marked = vitamins.applying([.markInstance(day: LocalDate("2026-10-21"), mark: .done)])
         let doneParcel = parcel.applying([.status(.done), .completedDate(LocalDate("2026-10-21"))])

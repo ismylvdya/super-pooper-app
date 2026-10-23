@@ -4,7 +4,9 @@ import SwiftUI
 /// the full height. The "+K more" counter follows scrolling: it counts rows below the visible ones.
 struct PoolBlock: View {
     @Environment(AppModel.self) private var model
+    @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
+    @Environment(\.icons) private var icons
     let plan: DayPlan
     let handler: TaskActionHandler
     /// Space under the block that belongs to the home indicator (the list scrolls under it).
@@ -49,6 +51,8 @@ struct PoolBlock: View {
         .contentMargins(.bottom, bottomInset + (fillsHeight ? tokens.size(.poolCounter) : 0), for: .scrollContent)
         .scrollBounceBehavior(.always)
         .scrollIndicators(.hidden)
+        // Pulling the pool down opens the morning review (the edit table), like a refresh would.
+        .pullAction(.edit) { router.isReviewPresented = true }
         .edgeFades(bottomExtension: bottomInset)
     }
 
@@ -107,7 +111,6 @@ struct PoolRowContent: View {
     var body: some View {
         TaskRowView(item: item, today: today, titleFont: titleFont, showsDetails: showsDetails, isCompact: isCompact,
                     titleLineLimit: titleLineLimit,
-                    onToggle: { handler.toggle(item.id) },
                     onOpen: { handler.run(ActionRegistryLookup.open, taskName: item.id) })
             .contextMenu {
                 ActionMenuContent(menu: item.isHabit ? .habitContext : .taskContext, item: item) {

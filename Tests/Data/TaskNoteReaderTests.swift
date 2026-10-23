@@ -44,7 +44,7 @@ struct TaskNoteReaderTests {
         let task = try read("")
         #expect(task.status == .other(""))
         #expect(!task.isHighPriority && task.due == nil && task.timeEstimate == nil)
-        #expect(!task.needEnergy && task.pleasant == nil && !task.isRecurring)
+        #expect(!task.needEnergy && task.pleasant == nil && !task.isHabit)
         #expect(task.previousTasks.isEmpty && task.completeInstances.isEmpty && task.problems.isEmpty)
     }
 
@@ -93,5 +93,45 @@ struct TaskNoteReaderTests {
     private func read(_ frontmatter: String) throws -> TaskNote {
         let text = "---\ntags:\n  - 🔫делишка\n\(frontmatter)\n---\n"
         return reader.task(from: try FrontmatterDocument(text: text), name: "Задача", relativePath: "TaskNotes/Tasks/Задача.md")
+    }
+}
+
+@Suite("Habit fields")
+struct HabitFieldTests {
+    private let mapping = TestConfig.mapping
+    private let reader = TaskNoteReader(mapping: TestConfig.mapping, taskTag: TestConfig.defaults.vault.taskTag,
+                                        calendar: TestCalendar.calendar)
+
+    private func document(_ frontmatter: String) throws -> FrontmatterDocument {
+        try FrontmatterDocument(text: "---\ntags:\n  - 🔫делишка\n\(frontmatter)\n---\n")
+    }
+
+    @Test func statusHabitAndSeveralReminderTimesAreRead() throws {
+        let task = reader.task(from: try document("status: habit\nreminder_times:\n  - \"21:00\"\n  - \"09:00\""),
+                               name: "Pills", relativePath: "TaskNotes/Tasks/Pills.md")
+        #expect(task.status == .habit && task.isHabit)
+        #expect(task.reminderTimes == [LocalTime(hour: 9, minute: 0)!, LocalTime(hour: 21, minute: 0)!])
+        #expect(task.problems.isEmpty)
+    }
+
+    @Test func aBadReminderTimeBecomesAProblem() throws {
+        let task = reader.task(from: try document("reminder_times: [\"9am\"]"), name: "Pills", relativePath: "x.md")
+        #expect(task.problems == [.invalidField(key: "reminder_times", value: "9am")])
+    }
+
+    @Test func recurrenceAndRemindersAreWrittenAndRemoved() throws {
+        var doc = try document("status: this_week")
+        let writer = TaskNoteWriter(mapping: mapping, timeZone: TestCalendar.timeZone)
+        writer.apply([.status(.habit), .recurrence("DTSTART:20261023T000000Z;FREQ=DAILY"),
+                      .reminderTimes([LocalTime(hour: 21, minute: 0)!, LocalTime(hour: 9, minute: 0)!])],
+                     to: &doc, now: TestCalendar.date("2026-10-23", "09:00"))
+        let task = reader.task(from: doc, name: "Pills", relativePath: "x.md")
+        #expect(task.status == .habit)
+        #expect(task.recurrenceRaw == "DTSTART:20261023T000000Z;FREQ=DAILY")
+        #expect(task.reminderTimes.map(\.string) == ["09:00", "21:00"])
+
+        writer.apply([.status(.thisWeek), .recurrence(nil), .reminderTimes([])], to: &doc, now: TestCalendar.date("2026-10-23", "10:00"))
+        let back = reader.task(from: doc, name: "Pills", relativePath: "x.md")
+        #expect(!back.isHabit && back.reminderTimes.isEmpty)
     }
 }

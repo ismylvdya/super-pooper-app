@@ -13,6 +13,7 @@ struct SettingsScreen: View {
             TodaySettingsSection()
             TimelineSettingsSection()
             PoolSettingsSection()
+            AccentSettingsSection()
             ColorSettingsSection()
             NotificationSettingsSection()
             if model.config.flags.archive, !model.archivedTasks.isEmpty { ArchiveSettingsSection() }

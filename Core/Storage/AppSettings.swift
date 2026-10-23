@@ -33,6 +33,8 @@ struct AppSettings: Codable, Equatable, Sendable {
 
     struct Today: Codable, Equatable, Sendable {
         var arrangement: TodayArrangement
+        /// The widget's own arrangement (vertical or horizontal), independent from the app's.
+        var widgetArrangement: TodayArrangement
     }
 
     /// Stacked arrangement: one rolling column or two fixed halves.

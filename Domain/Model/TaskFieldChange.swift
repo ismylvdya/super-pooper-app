@@ -18,6 +18,9 @@ enum TaskFieldChange: Hashable, Sendable {
     /// Exactly one mark (or none) for `day` in the three instance lists.
     case markInstance(day: LocalDate, mark: HabitMark?)
     case completedDate(LocalDate?)
+    /// The raw recurrence rule, or `nil` to remove it.
+    case recurrence(String?)
+    case reminderTimes([LocalTime])
 }
 
 extension TaskNote {
@@ -46,6 +49,10 @@ extension TaskNote {
                 task.partialInstances = instances.partial
                 task.twiceInstances = instances.twice
             case .completedDate(let value): task.completedDate = value
+            case .recurrence(let raw):
+                task.recurrenceRaw = raw
+                task.recurrence = raw.flatMap { try? RecurrenceRule.parse($0).get() }
+            case .reminderTimes(let times): task.reminderTimes = times.sorted()
             }
         }
         return task

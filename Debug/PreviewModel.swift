@@ -1,5 +1,6 @@
 #if DEBUG
 import SwiftUI
+@preconcurrency import UserNotifications
 
 /// An app model on in-memory sample data for SwiftUI previews of whole screens.
 @MainActor
@@ -83,6 +84,8 @@ struct StaticCalendarRepository: CalendarRepository {
     func requestAccess() async -> Bool { true }
     func calendars() -> [SourceCollection] { [SourceCollection(id: "demo", title: "Demo", colorHex: "#30B0C7", sourceTitle: "iCloud")] }
     func events(from start: Date, to end: Date, calendarIDs: [String]) -> [CalendarEvent] { PreviewSamples.events }
+    func addEvent(title: String, start: Date, end: Date, calendarID: String?) throws {}
+    func delete(_ event: CalendarEvent) throws {}
 }
 
 struct StaticRemindersRepository: RemindersRepository {
@@ -99,6 +102,7 @@ struct SilentNotifications: NotificationScheduling {
     func registerCategories(_ registry: ActionRegistry, habitActionsEnabled: Bool) {}
     func sync(planned: [PlannedNotification], stillValid: [PlannedNotification]) async {}
     func removeAll() async {}
+    func restore(_ notification: UNNotification) async {}
 }
 
 struct NoWidgets: WidgetReloading {

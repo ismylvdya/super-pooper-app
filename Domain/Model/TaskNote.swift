@@ -23,13 +23,21 @@ struct TaskNote: Identifiable, Hashable, Codable, Sendable {
     var completeInstances: [LocalDate] = []
     var partialInstances: [LocalDate] = []
     var twiceInstances: [LocalDate] = []
+    /// Habit reminders, several per day (`reminder_times`, `HH:mm`).
+    var reminderTimes: [LocalTime] = []
     var completedDate: LocalDate?
     var dateCreated: Date?
     var dateModified: Date?
     var problems: [TaskProblem] = []
 
     var id: String { name }
-    var isRecurring: Bool { recurrenceRaw != nil }
+    /// A habit is marked by `status: habit`; a note that only has a recurrence is read as one too.
+    var isHabit: Bool { status == .habit || recurrenceRaw != nil }
+    /// Times of day a habit is planned at: its reminders, or the time of an older-style `due`.
+    var habitTimes: [LocalTime] {
+        if !reminderTimes.isEmpty { return reminderTimes }
+        return due?.time.map { [$0] } ?? []
+    }
 }
 
 /// A data issue found in a single note (shown as a badge, never as a push).

@@ -9,6 +9,8 @@ protocol NotificationScheduling: Sendable {
     /// done or moved (not in `stillValid`, i.e. today's plan including past times) are removed.
     func sync(planned: [PlannedNotification], stillValid: [PlannedNotification]) async
     func removeAll() async
+    /// Puts a notification the user swiped away or tapped back into Notification Center (silently).
+    func restore(_ notification: UNNotification) async
 }
 
 /// `userInfo` keys and category ids shared with the notification delegate.
@@ -17,6 +19,7 @@ enum NotificationPayload {
     static let kindKey = "kind"
     static let taskKey = "task"
     static let dayKey = "day"
+    static let reminderKey = "reminder"
     static let habitCategory = "habit"
     static let taskCategory = "task"
     static let reminderCategory = "reminder"
@@ -48,15 +51,16 @@ struct UserNotificationScheduler: NotificationScheduling {
                                      options: definition.destructive ? [.destructive] : [],
                                      icon: UNNotificationActionIcon(systemImageName: definition.icon))
             }
-            return UNNotificationCategory(identifier: id, actions: actions, intentIdentifiers: [], options: [])
+            return UNNotificationCategory(identifier: id, actions: actions, intentIdentifiers: [], options: [.customDismissAction])
         }
         let habit = habitActionsEnabled
             ? category(NotificationPayload.habitCategory, .habitNotification)
-            : UNNotificationCategory(identifier: NotificationPayload.habitCategory, actions: [], intentIdentifiers: [], options: [])
+            : UNNotificationCategory(identifier: NotificationPayload.habitCategory, actions: [], intentIdentifiers: [],
+                                     options: [.customDismissAction])
         center.setNotificationCategories([
             habit,
             category(NotificationPayload.taskCategory, .taskNotification),
-            UNNotificationCategory(identifier: NotificationPayload.reminderCategory, actions: [], intentIdentifiers: [], options: []),
+            category(NotificationPayload.reminderCategory, .reminderNotification),
         ])
     }
 
@@ -82,6 +86,15 @@ struct UserNotificationScheduler: NotificationScheduling {
         center.removePendingNotificationRequests(withIdentifiers: pending)
     }
 
+    func restore(_ notification: UNNotification) async {
+        let original = notification.request
+        guard original.identifier.hasPrefix(NotificationPayload.prefix) else { return }
+        let content = (original.content.mutableCopy() as? UNMutableNotificationContent) ?? UNMutableNotificationContent()
+        content.sound = nil
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        try? await center.add(UNNotificationRequest(identifier: original.identifier, content: content, trigger: trigger))
+    }
+
     /// The fire time is part of the identifier, so a moved task gets a fresh notification.
     private func identifier(for notification: PlannedNotification) -> String {
         "\(NotificationPayload.prefix)\(notification.id)@\(Int(notification.fireDate.timeIntervalSince1970))"
@@ -101,6 +114,7 @@ struct UserNotificationScheduler: NotificationScheduling {
             NotificationPayload.kindKey: notification.kind.rawValue,
             NotificationPayload.taskKey: notification.taskName ?? "",
             NotificationPayload.dayKey: notification.day.isoString,
+            NotificationPayload.reminderKey: notification.reminderID ?? "",
         ]
         let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: notification.fireDate)
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)

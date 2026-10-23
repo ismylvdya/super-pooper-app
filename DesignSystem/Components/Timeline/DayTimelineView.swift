@@ -4,6 +4,7 @@ import SwiftUI
 /// Shared by the Today screen, the settings preview and the widget.
 struct DayTimelineView<TaskContent: View>: View {
     @Environment(\.tokens) private var tokens
+    @Environment(\.icons) private var icons
     let slots: [TimelineSlot]
     let window: TimelineWindow
     let now: Date
@@ -15,6 +16,7 @@ struct DayTimelineView<TaskContent: View>: View {
         GeometryReader { geometry in
             let itemsWidth = max(geometry.size.width - labelWidth, 0)
             ZStack(alignment: .topLeading) {
+                createLayer
                 hourGrid(width: geometry.size.width)
                 ForEach(placed(width: itemsWidth)) { item in
                     block(for: item.slot)
@@ -26,6 +28,24 @@ struct DayTimelineView<TaskContent: View>: View {
             }
         }
         .frame(height: max(totalHeight, contentBottom))
+    }
+
+    /// Long press on an empty spot starts a new event at that time (blocks above it handle their own touches).
+    @ViewBuilder private var createLayer: some View {
+        if let onCreateAt = style.onCreateAt {
+            Color.clear
+                .contentShape(Rectangle())
+                .gesture(LongPressGesture(minimumDuration: 0.5)
+                    .sequenced(before: DragGesture(minimumDistance: 0))
+                    .onEnded { value in
+                        guard case .second(true, let drag?) = value else { return }
+                        onCreateAt(date(atY: drag.location.y))
+                    })
+        }
+    }
+
+    private func date(atY y: CGFloat) -> Date {
+        window.start.addingTimeInterval(Double(y / hourHeight) * 3600)
     }
 
     private var contentBottom: CGFloat { CGFloat(placed(width: 1).map(\.frame.maxY).max() ?? 0) }
@@ -81,12 +101,19 @@ struct DayTimelineView<TaskContent: View>: View {
             if let onEventTap = style.onEventTap {
                 Button { onEventTap(event) } label: { TimelineEventBlock(event: event, slot: slot, font: style.eventFont) }
                     .buttonStyle(.plain)
+                    .contextMenu {
+                        if let onEventDelete = style.onEventDelete {
+                            Button(role: .destructive) { onEventDelete(event) } label: {
+                                Label(LocalizedStringKey("action.deleteEvent"), systemImage: icons[.delete])
+                            }
+                        }
+                    }
             } else {
                 TimelineEventBlock(event: event, slot: slot, font: style.eventFont)
             }
         case .reminder(let reminder):
             TimelineReminderBlock(reminder: reminder, slot: slot, font: style.taskFont,
-                                  checkboxSize: style.checkboxSize, isCompact: style.compactPlates,
+                                  isCompact: style.compactPlates,
                                   onToggle: style.onReminderToggle, onOpen: style.onReminderTap)
         case .task(let item): TimelineTaskBlock(item: item, isPast: slot.isPast, isCompact: style.compactPlates) { taskContent(item, slot) }
         }
@@ -142,11 +169,12 @@ struct TimelineStyle {
     var showsHourLabels = true
     /// Tap on an event (the app opens Calendar on that day).
     var onEventTap: ((CalendarEvent) -> Void)?
-    /// Reminder checkbox (completes it in Reminders) and tap elsewhere (opens it in Reminders).
+    /// Long-press menu of an event (asks first) and long press on an empty spot (a new event at that time).
+    var onEventDelete: ((CalendarEvent) -> Void)?
+    var onCreateAt: ((Date) -> Void)?
+    /// Reminder long-press menu (completes it in Reminders) and tap (opens it in Reminders).
     var onReminderToggle: ((ReminderItem) -> Void)?
     var onReminderTap: ((ReminderItem) -> Void)?
-    /// Checkbox size of reminder blocks (nil = the normal checkbox).
-    var checkboxSize: CGFloat?
     /// Dense widget timelines: plates with minimal vertical padding.
     var compactPlates = false
 }

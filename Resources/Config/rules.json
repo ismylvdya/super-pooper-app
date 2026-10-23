@@ -30,7 +30,9 @@
   },
   "timeline": {
     "refreshSeconds": 60,
-    "maxHoursAfter": 18
+    "maxHoursAfter": 18,
+    "newEventMinutes": 60,
+    "newEventSnapMinutes": 15
   },
   "widgets": {
     "refreshMinutes": 15,

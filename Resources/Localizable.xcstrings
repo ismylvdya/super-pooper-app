@@ -67,6 +67,17 @@
         }
       }
     },
+    "action.deleteEvent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete event"
+          }
+        }
+      }
+    },
     "action.done": {
       "extractionState": "manual",
       "localizations": {
@@ -672,6 +683,83 @@
         }
       }
     },
+    "event.delete.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” will be deleted from Calendar."
+          }
+        }
+      }
+    },
+    "event.delete.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete event?"
+          }
+        }
+      }
+    },
+    "event.new.create": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create"
+          }
+        }
+      }
+    },
+    "event.new.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Title"
+          }
+        }
+      }
+    },
+    "event.new.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New event"
+          }
+        }
+      }
+    },
+    "info.recurrenceEditor": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Like Apple Calendar: every day, week, month or year, on chosen weekdays or a day of the month. The rule is written to the note as a TaskNotes recurrence."
+          }
+        }
+      }
+    },
+    "info.settings.accent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The color of switches, pickers and highlights. The buttons in the top bars always stay black."
+          }
+        }
+      }
+    },
     "info.settings.access.calendar": {
       "extractionState": "manual",
       "localizations": {
@@ -914,6 +1002,28 @@
         }
       }
     },
+    "info.settings.widget.arrangement": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stacked: the pool above the timeline. Side by side: the pool and the timeline next to each other. Only the widget changes."
+          }
+        }
+      }
+    },
+    "info.taskKind": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A task is done once and has a status and an optional date. A habit repeats by a rule, has no status or date, and can have reminders during the day."
+          }
+        }
+      }
+    },
     "info.taskPage.due": {
       "extractionState": "manual",
       "localizations": {
@@ -1035,6 +1145,17 @@
         }
       }
     },
+    "info.taskPage.reminders": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Times of day the habit is planned at. Each one is a block on the timeline and a notification. Add two or more for a habit you do twice a day. No reminders = it stays in the pool."
+          }
+        }
+      }
+    },
     "info.taskPage.status": {
       "extractionState": "manual",
       "localizations": {
@@ -1053,6 +1174,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "A task with a time is placed on the timeline and gets a notification."
+          }
+        }
+      }
+    },
+    "intent.sync.description": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Re-reads the vault, Calendar and Reminders and updates widgets and notifications."
+          }
+        }
+      }
+    },
+    "intent.sync.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync Tasks"
           }
         }
       }
@@ -1328,6 +1471,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choose task"
+          }
+        }
+      }
+    },
+    "pool.edit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit the pool"
           }
         }
       }
@@ -1640,6 +1794,270 @@
         }
       }
     },
+    "recurrenceEditor.dayNumber": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.dayOfMonth": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day of the month"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.end.count": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "After N times"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.end.never": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Never"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.end.until": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On date"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.endCount": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeats"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.endDate": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End date"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.ends": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ends"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.every": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every %lld %@"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.freq.daily": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daily"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.freq.monthly": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Monthly"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.freq.weekly": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekly"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.freq.yearly": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yearly"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.frequency": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeat"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.header": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeats"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.interval": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interval"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.lastDay": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last day"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.monthlyDay": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.starts": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starts"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.times": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld times"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.unit.days": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "days"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.unit.months": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "months"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.unit.weeks": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "weeks"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.unit.years": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "years"
+          }
+        }
+      }
+    },
     "review.due.clear": {
       "extractionState": "manual",
       "localizations": {
@@ -1713,6 +2131,94 @@
           "stringUnit": {
             "state": "translated",
             "value": "After: %@"
+          }
+        }
+      }
+    },
+    "search.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing found."
+          }
+        }
+      }
+    },
+    "search.events": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Events"
+          }
+        }
+      }
+    },
+    "search.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type a name to find a task or an event."
+          }
+        }
+      }
+    },
+    "search.prompt": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tasks and events"
+          }
+        }
+      }
+    },
+    "search.tasks": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tasks"
+          }
+        }
+      }
+    },
+    "search.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search"
+          }
+        }
+      }
+    },
+    "settings.accent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accent color"
+          }
+        }
+      }
+    },
+    "settings.accent.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empty = the color from the app."
           }
         }
       }
@@ -2344,6 +2850,28 @@
         }
       }
     },
+    "settings.widget": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widget layout"
+          }
+        }
+      }
+    },
+    "settings.widget.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The widget keeps its own layout, independent from the app's."
+          }
+        }
+      }
+    },
     "status.archived": {
       "extractionState": "manual",
       "localizations": {
@@ -2366,13 +2894,24 @@
         }
       }
     },
+    "status.habit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habit"
+          }
+        }
+      }
+    },
     "status.halfYear": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Half year"
+            "value": "Nearest months"
           }
         }
       }
@@ -2421,6 +2960,17 @@
         }
       }
     },
+    "task.new.create": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create"
+          }
+        }
+      }
+    },
     "task.new.name": {
       "extractionState": "manual",
       "localizations": {
@@ -2428,6 +2978,61 @@
           "stringUnit": {
             "state": "translated",
             "value": "New task"
+          }
+        }
+      }
+    },
+    "task.new.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
+          }
+        }
+      }
+    },
+    "task.new.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New task"
+          }
+        }
+      }
+    },
+    "taskKind.habit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habit"
+          }
+        }
+      }
+    },
+    "taskKind.header": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type"
+          }
+        }
+      }
+    },
+    "taskKind.task": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Task"
           }
         }
       }
@@ -2740,6 +3345,61 @@
         }
       }
     },
+    "taskPage.reminders": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reminders"
+          }
+        }
+      }
+    },
+    "taskPage.reminders.add": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add reminder"
+          }
+        }
+      }
+    },
+    "taskPage.reminders.none": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No reminders: the habit stays in the pool all day."
+          }
+        }
+      }
+    },
+    "taskPage.reminders.remove": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove reminder"
+          }
+        }
+      }
+    },
+    "taskPage.reminders.time": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time"
+          }
+        }
+      }
+    },
     "taskPage.removeLink": {
       "extractionState": "manual",
       "localizations": {
@@ -2763,6 +3423,17 @@
       }
     },
     "taskPage.todayMark": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today"
+          }
+        }
+      }
+    },
+    "taskPage.todayMark.header": {
       "extractionState": "manual",
       "localizations": {
         "en": {
