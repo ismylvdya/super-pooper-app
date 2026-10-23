@@ -98,4 +98,19 @@ struct TaskNoteWriter: Sendable {
         guard case .map(let fields) = entry else { return newLink(to: name) }
         return .map(fields.map { $0.key == "uid" ? YAMLMapEntry(key: "uid", value: .scalar(WikiLink.make(name), quoted: true)) : $0 })
     }
+
+    /// The frontmatter of a brand-new task note, in TaskNotes field order; the body is empty.
+    func newNote(tag: String, status: TaskStatus, now: Date) -> String {
+        let keys = mapping.fields
+        let stamp = YAMLValue.scalar(ISO8601.formatWithMilliseconds(now, timeZone: timeZone), quoted: false)
+        let entries: [(String, YAMLValue)] = [
+            (keys.tags, .list([.string(tag)])),
+            (keys.status, .string(mapping.raw(status))),
+            (keys.priority, .string(mapping.priorities.normal)),
+            (keys.dateCreated, stamp),
+            (keys.dateModified, stamp),
+        ]
+        let lines = entries.flatMap { YAMLSerializer.lines(key: $0.0, value: $0.1) }
+        return (["---"] + lines + ["---"]).joined(separator: "\n") + "\n"
+    }
 }

@@ -34,5 +34,6 @@
   },
   "onboarding": {
     "completed": false
-  }
+  },
+  "colors": {}
 }

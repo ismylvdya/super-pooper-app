@@ -68,7 +68,10 @@ struct DayTimelineView<TaskContent: View>: View {
     }
 
     private func minimumHeight(of slot: TimelineSlot) -> CGFloat {
-        if case .task = slot.content { return style.minimumTaskHeight ?? style.minimumItemHeight }
+        switch slot.content {
+        case .task, .reminder: return style.minimumTaskHeight ?? style.minimumItemHeight
+        case .event: break
+        }
         return style.minimumItemHeight
     }
 
@@ -81,8 +84,11 @@ struct DayTimelineView<TaskContent: View>: View {
             } else {
                 TimelineEventBlock(event: event, slot: slot, font: style.eventFont)
             }
-        case .reminder(let reminder): TimelineReminderBlock(reminder: reminder, slot: slot, font: style.eventFont)
-        case .task(let item): TimelineTaskBlock(item: item, isPast: slot.isPast) { taskContent(item, slot) }
+        case .reminder(let reminder):
+            TimelineReminderBlock(reminder: reminder, slot: slot, font: style.taskFont,
+                                  checkboxSize: style.checkboxSize, isCompact: style.compactPlates,
+                                  onToggle: style.onReminderToggle, onOpen: style.onReminderTap)
+        case .task(let item): TimelineTaskBlock(item: item, isPast: slot.isPast, isCompact: style.compactPlates) { taskContent(item, slot) }
         }
     }
 
@@ -136,4 +142,11 @@ struct TimelineStyle {
     var showsHourLabels = true
     /// Tap on an event (the app opens Calendar on that day).
     var onEventTap: ((CalendarEvent) -> Void)?
+    /// Reminder checkbox (completes it in Reminders) and tap elsewhere (opens it in Reminders).
+    var onReminderToggle: ((ReminderItem) -> Void)?
+    var onReminderTap: ((ReminderItem) -> Void)?
+    /// Checkbox size of reminder blocks (nil = the normal checkbox).
+    var checkboxSize: CGFloat?
+    /// Dense widget timelines: plates with minimal vertical padding.
+    var compactPlates = false
 }

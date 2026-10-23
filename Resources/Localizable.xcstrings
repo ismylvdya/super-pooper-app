@@ -287,6 +287,116 @@
         }
       }
     },
+    "color.accent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accent"
+          }
+        }
+      }
+    },
+    "color.energy": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Needs energy"
+          }
+        }
+      }
+    },
+    "color.habit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habits"
+          }
+        }
+      }
+    },
+    "color.heart": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pleasant"
+          }
+        }
+      }
+    },
+    "color.high": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "High priority"
+          }
+        }
+      }
+    },
+    "color.nowLine": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Now line"
+          }
+        }
+      }
+    },
+    "color.past": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done and past"
+          }
+        }
+      }
+    },
+    "color.problem": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Problems"
+          }
+        }
+      }
+    },
+    "color.task": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tasks"
+          }
+        }
+      }
+    },
+    "color.twice": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Twice"
+          }
+        }
+      }
+    },
     "common.cancel": {
       "extractionState": "manual",
       "localizations": {
@@ -613,6 +723,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Events from these calendars are shown on the timeline and can be linked to tasks. Calendar sends their notifications itself."
+          }
+        }
+      }
+    },
+    "info.settings.colors": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Colors of checkboxes, icons and marks. Each color applies in light and dark appearance, in the app and in widgets."
           }
         }
       }
@@ -1525,18 +1646,18 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "No date"
+            "value": "Remove date"
           }
         }
       }
     },
-    "review.due.weekEnd": {
+    "review.due.exact": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This Sunday"
+            "value": "Date and time…"
           }
         }
       }
@@ -1669,6 +1790,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pick the calendars with fixed events only."
+          }
+        }
+      }
+    },
+    "settings.colors": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Colors"
+          }
+        }
+      }
+    },
+    "settings.colors.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leave a field empty to use the built-in color."
+          }
+        }
+      }
+    },
+    "settings.colors.reset": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use the built-in color"
           }
         }
       }
@@ -2252,6 +2406,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Waiting"
+          }
+        }
+      }
+    },
+    "task.new.add": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New task"
+          }
+        }
+      }
+    },
+    "task.new.name": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New task"
           }
         }
       }

@@ -80,6 +80,8 @@ struct AppSettings: Codable, Equatable, Sendable {
     var timeline: Timeline
     var notifications: Notifications
     var onboarding: Onboarding
+    /// Color overrides by token name (`task`, `habit`, `past`, …) as `#RRGGBB`; empty = tokens.json.
+    var colors: [String: String]
 }
 
 /// What the timeline shows, given the arrangement and its settings.
@@ -102,4 +104,15 @@ extension AppSettings {
 
     /// The pool shows a fixed number of rows only when it sits above the timeline.
     var poolUsesVisibleCount: Bool { today.arrangement == .stacked }
+}
+
+extension AppSettings.Timeline {
+    /// Length of the longer half of the day, in hours (two-halves layout scale).
+    var halvesLongestHours: Double {
+        func hours(_ range: AppSettings.TimeRange) -> Double {
+            let minutes = range.end.minutesSinceMidnight - range.start.minutesSinceMidnight
+            return Double(minutes > 0 ? minutes : minutes + 24 * 60) / 60
+        }
+        return max(hours(firstHalf), hours(secondHalf))
+    }
 }

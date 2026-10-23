@@ -69,6 +69,12 @@ actor InMemoryTaskRepository: TaskRepository {
 
     func moveToTrash(_ task: TaskNote) async throws { tasks.removeAll { $0.name == task.name } }
     func backup(_ tasks: [TaskNote], reason: String) async throws {}
+
+    func create(named name: String, status: TaskStatus) async throws -> TaskNote {
+        let task = TaskNote(name: name, relativePath: "TaskNotes/Tasks/\(name).md", status: status)
+        tasks.append(task)
+        return task
+    }
     func obsidianURL(for task: TaskNote) async -> URL? { nil }
 }
 
@@ -84,6 +90,7 @@ struct StaticRemindersRepository: RemindersRepository {
     func requestAccess() async -> Bool { true }
     func lists() -> [SourceCollection] { [SourceCollection(id: "list", title: "Remember", colorHex: "#FF9500", sourceTitle: "iCloud")] }
     func reminders(from start: Date, to end: Date, listIDs: [String]) async -> [ReminderItem] { PreviewSamples.reminders }
+    func setCompleted(_ completed: Bool, reminderID: String) throws {}
 }
 
 struct SilentNotifications: NotificationScheduling {

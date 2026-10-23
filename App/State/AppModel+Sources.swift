@@ -35,4 +35,15 @@ extension AppModel {
     func availableCalendars() -> [SourceCollection] { services.calendars.calendars() }
     func availableReminderLists() -> [SourceCollection] { services.reminders.lists() }
     var vaultName: String? { services.vault.displayName }
+
+    /// Checks a reminder off (or back on) in Reminders, then refreshes everything that shows it.
+    func toggleReminder(_ reminder: ReminderItem) async {
+        do {
+            try services.reminders.setCompleted(!reminder.isCompleted, reminderID: reminder.id)
+        } catch {
+            banners.show(Self.describe(error), style: .problem)
+        }
+        await refreshCalendarSources()
+        await publishDerivedState()
+    }
 }

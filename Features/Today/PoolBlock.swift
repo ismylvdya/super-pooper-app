@@ -48,6 +48,7 @@ struct PoolBlock: View {
         }
         .contentMargins(.bottom, bottomInset + (fillsHeight ? tokens.size(.poolCounter) : 0), for: .scrollContent)
         .scrollBounceBehavior(.always)
+        .scrollIndicators(.hidden)
         .edgeFades(bottomExtension: bottomInset)
     }
 

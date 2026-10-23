@@ -30,7 +30,7 @@ enum TaskRepositoryError: Error, Equatable, Sendable {
     case nameTaken(String)
 }
 
-/// Reads and edits TaskNotes notes. The app never creates notes.
+/// Reads, edits and creates TaskNotes notes.
 protocol TaskRepository: Sendable {
     func scan() async throws -> VaultScanResult
     func apply(_ changes: [TaskFieldChange], to task: TaskNote) async throws -> TaskWriteResult
@@ -40,6 +40,9 @@ protocol TaskRepository: Sendable {
     func rename(_ task: TaskNote, to newName: String, dependents: [TaskNote]) async throws -> TaskNote
     /// Moves the note to the vault's `.trash` folder (Obsidian's trash).
     func moveToTrash(_ task: TaskNote) async throws
+    /// A new note in the tasks folder, written the way TaskNotes writes it. The name is made unique
+    /// (`Name`, `Name 2`, …).
+    func create(named name: String, status: TaskStatus) async throws -> TaskNote
     func backup(_ tasks: [TaskNote], reason: String) async throws
     func obsidianURL(for task: TaskNote) async -> URL?
 }

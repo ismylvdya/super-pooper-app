@@ -18,7 +18,8 @@
     "resolveDaysBefore": 2,
     "resolveDaysAfter": 14,
     "pickerDaysAhead": 7,
-    "calendarAppURL": "calshow:"
+    "calendarAppURL": "calshow:",
+    "remindersAppURL": "x-apple-reminderkit://REMCDReminder/"
   },
   "vault": {
     "downloadTimeoutSeconds": 20,

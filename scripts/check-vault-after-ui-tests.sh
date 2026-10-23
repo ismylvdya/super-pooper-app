@@ -19,5 +19,7 @@ check "archive → status: archived"                   "grep -q '^status: archiv
 check "delete → moved to .trash"                     "[ -f \"$VAULT/.trash/Посмотреть сериал 🍿.md\" ] && [ ! -f \"$TASKS/Посмотреть сериал 🍿.md\" ]"
 check "picker → previous_task link written"          "grep -qF 'uid: \"[[Найти отвёртку]]\"' \"$TASKS/Помыть окна.md\""
 check "event picker → previous_event written"        "grep -q '^previous_event: \".*|Call with dad|' \"$TASKS/Сходить к стоматологу.md\""
+check "plus on Today → new this_week note"            "grep -q '^status: this_week' \"$TASKS/Купить хлеб.md\" && grep -q 'делишка' \"$TASKS/Купить хлеб.md\""
+check "plus in review → new this_week note"           "grep -q '^status: this_week' \"$TASKS/Позвонить врачу.md\""
 check "unknown keys and body untouched"              "grep -q '^  nested: значение' \"$TASKS/Длинная заметка с незнакомыми ключами.md\""
 exit $FAILED

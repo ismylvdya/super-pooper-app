@@ -22,6 +22,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let pickerDaysAhead: Int
         /// URL prefix that opens Apple Calendar on a date (seconds since 2001 are appended).
         let calendarAppURL: String
+        /// URL prefix that opens a reminder in Apple Reminders (its identifier is appended).
+        let remindersAppURL: String
     }
 
     struct Vault: Codable, Hashable, Sendable {

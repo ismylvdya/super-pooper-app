@@ -20,6 +20,18 @@ struct DesignTokens: Decodable, Sendable {
     func color(_ token: ColorToken) -> Color { color[token].color }
 
     var animation: Animation { .easeInOut(duration: duration(.animation)) }
+
+    /// User color choices (settings) over the bundled palette; unknown names and bad hex are ignored.
+    func overridingColors(_ hexByName: [String: String]) -> DesignTokens {
+        var overrides: [ColorToken: ColorSpec] = [:]
+        for (name, hex) in hexByName {
+            guard let token = ColorToken(rawValue: name), UIColor(hex: hex) != nil else { continue }
+            overrides[token] = ColorSpec(light: hex, dark: hex, system: nil)
+        }
+        guard !overrides.isEmpty else { return self }
+        return DesignTokens(spacing: spacing, radius: radius, size: size, opacity: opacity, duration: duration,
+                            font: font, color: color.replacing(overrides))
+    }
 }
 
 /// `{"style": "title3", "weight": "bold", "design": "rounded"}` or `{"size": 34, …}`.
@@ -70,6 +82,12 @@ struct FontSpec: Decodable, Sendable {
 
 /// `{"light": "#RRGGBB", "dark": "#RRGGBB"}` (each color picked per theme) or `{"system": "label"}`.
 struct ColorSpec: Decodable, Sendable {
+    init(light: String?, dark: String?, system: String?) {
+        self.light = light
+        self.dark = dark
+        self.system = system
+    }
+
     let light: String?
     let dark: String?
     let system: String?

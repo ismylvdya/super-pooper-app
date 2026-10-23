@@ -32,7 +32,7 @@ extension TimelineStyle {
         return TimelineStyle(eventFont: .system(size: settings.eventFontSize),
                              taskFont: .system(size: settings.taskFontSize),
                              minimumItemHeight: titleLine + tokens.space(.timelineItemPadding),
-                             minimumTaskHeight: max(titleLine, UIFont.systemFont(ofSize: settings.taskFontSize).lineHeight * 2)
-                                 + tokens.space(.rowVertical))
+                             // As high as the checkbox row plus the plate padding: equal space above and below.
+                             minimumTaskHeight: titleLine + tokens.space(.rowVertical))
     }
 }

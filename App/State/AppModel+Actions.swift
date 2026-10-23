@@ -1,13 +1,9 @@
 import Foundation
 
 extension AppModel {
-    /// Tap on a task: check it off or un-check it. Blocked tasks only explain what holds them.
+    /// Tap on a task: check it off or un-check it. Links only order tasks; they never prevent a check.
     func toggle(_ name: String) async {
         guard let task = task(named: name) else { return }
-        if let item = plan(at: clock.now).item(named: name), item.isBlocked {
-            banners.show(L10n.format("banner.blocked", describe(item.blockers)), style: .problem)
-            return
-        }
         await write(task, TaskMarking(today: context().today).changes(toggling: task))
     }
 
@@ -19,10 +15,6 @@ extension AppModel {
         let marking = TaskMarking(today: context().today)
         switch action {
         case .done, .partial, .twice:
-            if let item = plan(at: clock.now).item(named: name), item.isBlocked {
-                banners.show(L10n.format("banner.blocked", describe(item.blockers)), style: .problem)
-                return
-            }
             let mark: HabitMark = action == .partial ? .partial : action == .twice ? .twice : .done
             await write(task, marking.changes(marking: task, as: mark))
         case .unmark:
@@ -97,6 +89,19 @@ extension AppModel {
         if let result = try? await services.tasks.scan() { setScanResult(result) }
         await publishDerivedState()
         return renamed
+    }
+
+    /// Creates a new this-week task note in the vault (unique "New task" name) and returns its name.
+    func createTask() async -> String? {
+        do {
+            let task = try await services.tasks.create(named: L10n.string("task.new.name"), status: .thisWeek)
+            replace(task)
+            await publishDerivedState()
+            return task.name
+        } catch {
+            banners.show(Self.describe(error), style: .problem)
+            return nil
+        }
     }
 
     func body(of name: String) async -> String? {

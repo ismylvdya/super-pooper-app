@@ -29,11 +29,12 @@ struct AppModelTests {
         #expect(model.task(named: "Выпить воды 💧") == before)
     }
 
-    @Test func blockedTaskIsNotCheckedAndExplains() async throws {
+    /// Links order tasks but never prevent checking one off.
+    @Test func aTaskAfterAnUnfinishedOneCanStillBeChecked() async throws {
         let model = try makeModel()
+        #expect(model.plan(at: model.clock.now).item(named: "Повесить полку")?.isBlocked == true)
         await model.toggle("Повесить полку")
-        #expect(model.task(named: "Повесить полку")?.status == .thisWeek)
-        #expect(model.banners.current?.text.contains("Позвонить в банк") == true)
+        #expect(model.task(named: "Повесить полку")?.status == .done)
     }
 
     @Test func toggleChecksAndUnchecksARegularTask() async throws {

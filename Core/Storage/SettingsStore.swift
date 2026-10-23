@@ -33,6 +33,7 @@ extension AppSettings {
                         secondHalf: .init(start: .midnight, end: .midnight),
                         eventFontSize: 15, taskFontSize: 15),
         notifications: .init(enabled: false),
-        onboarding: .init(completed: false)
+        onboarding: .init(completed: false),
+        colors: [:]
     )
 }

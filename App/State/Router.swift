@@ -19,6 +19,8 @@ final class Router {
     var path: [Route] = []
     var isReviewPresented = false
     var isProblemsPresented = false
+    /// A freshly created task: its page starts with the name field focused.
+    var focusNameOf: String?
 
     func open(_ route: Route) { path.append(route) }
     func popToRoot() { path.removeAll() }
