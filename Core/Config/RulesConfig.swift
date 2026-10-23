@@ -20,6 +20,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let resolveDaysAfter: Int
         /// How many days ahead the event picker lists.
         let pickerDaysAhead: Int
+        /// URL prefix that opens Apple Calendar on a date (seconds since 2001 are appended).
+        let calendarAppURL: String
     }
 
     struct Vault: Codable, Hashable, Sendable {

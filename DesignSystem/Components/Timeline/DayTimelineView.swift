@@ -52,7 +52,7 @@ struct DayTimelineView<TaskContent: View>: View {
         var extents: [(start: Double, end: Double)] = []
         for (index, slot) in visible.enumerated() {
             var top = y(max(slot.start, window.start))
-            let height = max(y(min(slot.end, window.end)) - top, style.minimumItemHeight)
+            let height = max(y(min(slot.end, window.end)) - top, minimumHeight(of: slot))
             for earlier in visible.indices where earlier < index && visible[earlier].end <= slot.start {
                 top = max(top, CGFloat(extents[earlier].end))
             }
@@ -67,9 +67,20 @@ struct DayTimelineView<TaskContent: View>: View {
         }
     }
 
+    private func minimumHeight(of slot: TimelineSlot) -> CGFloat {
+        if case .task = slot.content { return style.minimumTaskHeight ?? style.minimumItemHeight }
+        return style.minimumItemHeight
+    }
+
     @ViewBuilder private func block(for slot: TimelineSlot) -> some View {
         switch slot.content {
-        case .event(let event): TimelineEventBlock(event: event, slot: slot, font: style.eventFont)
+        case .event(let event):
+            if let onEventTap = style.onEventTap {
+                Button { onEventTap(event) } label: { TimelineEventBlock(event: event, slot: slot, font: style.eventFont) }
+                    .buttonStyle(.plain)
+            } else {
+                TimelineEventBlock(event: event, slot: slot, font: style.eventFont)
+            }
         case .reminder(let reminder): TimelineReminderBlock(reminder: reminder, slot: slot, font: style.eventFont)
         case .task(let item): TimelineTaskBlock(item: item, isPast: slot.isPast) { taskContent(item, slot) }
         }
@@ -120,5 +131,9 @@ struct TimelineStyle {
     var taskFont: Font
     /// At least one line of normal text.
     var minimumItemHeight: CGFloat
+    /// Tasks get at least their title and chip lines (short tasks still show two lines).
+    var minimumTaskHeight: CGFloat?
     var showsHourLabels = true
+    /// Tap on an event (the app opens Calendar on that day).
+    var onEventTap: ((CalendarEvent) -> Void)?
 }

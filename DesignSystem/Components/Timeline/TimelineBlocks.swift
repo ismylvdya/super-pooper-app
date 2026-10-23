@@ -53,7 +53,7 @@ struct TimelineReminderBlock: View {
     }
 }
 
-/// A task on the timeline: the same row as in the pool on a light tint of its color.
+/// A task on the timeline looks exactly like a pool row: the same row on the same plate.
 struct TimelineTaskBlock<Content: View>: View {
     @Environment(\.tokens) private var tokens
     let item: DayItem
@@ -62,16 +62,9 @@ struct TimelineTaskBlock<Content: View>: View {
 
     var body: some View {
         content
-            .padding(.horizontal, tokens.space(.timelineItemPadding))
-            .padding(.vertical, tokens.space(.timelineItemPadding) / 2)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .background(tint.opacity(tokens.opacity(.taskFill)),
-                        in: RoundedRectangle(cornerRadius: tokens.radius(.timelineItem), style: .continuous))
-            .clipShape(RoundedRectangle(cornerRadius: tokens.radius(.timelineItem), style: .continuous))
-    }
-
-    private var tint: Color {
-        isPast ? tokens.color(.past) : tokens.color(item.isHabit ? .habit : .task)
+            .taskPlate()
+            .clipShape(RoundedRectangle(cornerRadius: tokens.radius(.poolRow), style: .continuous))
     }
 }
 

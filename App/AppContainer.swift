@@ -83,6 +83,7 @@ final class AppContainer {
 
         if launch.skipOnboarding { model.updateSettings { $0.onboarding.completed = true } }
         if let layout = launch.timelineLayout { model.updateSettings { $0.timeline.layout = layout } }
+        if let arrangement = launch.arrangement { model.updateSettings { $0.today.arrangement = arrangement } }
     }
 
     /// First sync after launch (DEBUG: optionally seeds demo calendar data first).

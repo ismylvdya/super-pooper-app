@@ -17,7 +17,8 @@
   "eventLinks": {
     "resolveDaysBefore": 2,
     "resolveDaysAfter": 14,
-    "pickerDaysAhead": 7
+    "pickerDaysAhead": 7,
+    "calendarAppURL": "calshow:"
   },
   "vault": {
     "downloadTimeoutSeconds": 20,

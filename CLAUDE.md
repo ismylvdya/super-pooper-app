@@ -14,7 +14,7 @@ scripts/make-ipa.sh                                     # .ipa для AltStore
 
 ## Правила проекта
 - **Архитектура — главное требование.** Экраны → `AppModel` → `Domain` (чистые функции) → репозитории → источники. Экран не читает файлы и не зовёт EventKit.
-- **Конфиги вместо хардкода.** Числа, цвета, шрифты — `Resources/Config/tokens.json`; иконки — `icons.json`; действия и меню — `actions.json`; раскладка Today — `layouts/today.layout.json`; сортировка — `sort.json`; поля TaskNotes — `field-mapping.json`; флаги — `feature-flags.json`; правила — `rules.json`; умолчания настроек — `defaults.json`; тексты — `Localizable.xcstrings`. Особые случаи через `if` по имени/id запрещены.
+- **Конфиги вместо хардкода.** Числа, цвета, шрифты — `Resources/Config/tokens.json`; иконки — `icons.json`; действия и меню — `actions.json`; раскладки Today — `layouts/today-*.layout.json`; сортировка — `sort.json`; поля TaskNotes — `field-mapping.json`; флаги — `feature-flags.json`; правила — `rules.json`; умолчания настроек — `defaults.json`; тексты — `Localizable.xcstrings`. Особые случаи через `if` по имени/id запрещены.
 - Один файл — одна ответственность, ~300 строк максимум. Без копипаста. Логика покрыта unit-тестами.
 - Интерфейс и комментарии в коде — по-английски; документация — по-русски.
 - Время — только из `Clock`, не `Date()` в логике. Swift 5 language mode.

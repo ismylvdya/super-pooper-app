@@ -1,0 +1,8 @@
+{
+  "axis": "horizontal",
+  "spacing": "blockGap",
+  "blocks": [
+    { "block": "pool", "size": "fill", "weight": 0.48 },
+    { "block": "timeline", "size": "fill", "weight": 0.52 }
+  ]
+}

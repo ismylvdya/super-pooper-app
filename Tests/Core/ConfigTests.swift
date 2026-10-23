@@ -6,7 +6,9 @@ import Testing
 struct ConfigTests {
     @Test func bundledConfigsLoad() throws {
         let config = try AppConfig.load(bundle: Bundle(for: BundleToken.self).appHostBundle)
-        #expect(config.todayLayout.blocks.map(\.block) == ["pool", "timeline"])
+        #expect(config.todayStacked.blocks.map(\.block) == ["pool", "timeline"])
+        #expect(config.todayStacked.axis == .vertical)
+        #expect(config.todaySideBySide.axis == .horizontal)
         #expect(config.sort.pool == PoolSortCriterion.allCases)
         #expect(config.rules.timeEstimates.map(\.minutes) == [2, 15, 60, 240])
         #expect(config.fieldMapping.fields.previousTasks == "previous_task")
