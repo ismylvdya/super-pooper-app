@@ -11,8 +11,8 @@ enum FileProblem: Hashable, Sendable {
 struct VaultScanResult: Sendable {
     var tasks: [TaskNote]
     var fileProblems: [FileProblem]
-    /// Tasks whose iCloud conflict versions were resolved during the scan.
-    var conflictsResolved: [String]
+    /// Notes with iCloud conflict versions waiting for the user to pick one (names).
+    var conflicted: [String]
 }
 
 struct TaskWriteResult: Sendable {
@@ -47,6 +47,9 @@ protocol TaskRepository: Sendable {
     func create(named name: String, status: TaskStatus) async throws -> TaskNote
     func backup(_ tasks: [TaskNote], reason: String) async throws
     func obsidianURL(for task: TaskNote) async -> URL?
+    /// iCloud conflict versions of a note, and keeping the one the user picked.
+    func versions(of task: TaskNote) async throws -> [NoteVersion]
+    func keep(_ versionID: String, of task: TaskNote) async throws
     /// The chosen folder is a whole vault (older setups) instead of the TaskNotes folder.
     func isWholeVault() async -> Bool
 }

@@ -148,6 +148,18 @@ actor VaultTaskRepository: TaskRepository {
         }
     }
 
+    func versions(of task: TaskNote) async throws -> [NoteVersion] {
+        try await location.withRoot { root in try ubiquity.versions(of: try existingURL(of: task, root: root)) }
+    }
+
+    func keep(_ versionID: String, of task: TaskNote) async throws {
+        try await location.withRoot { root in
+            let url = try existingURL(of: task, root: root)
+            try ubiquity.keep(versionID, of: url)
+            seenModification[task.relativePath] = fileSystem.modificationDate(of: url)
+        }
+    }
+
     func isWholeVault() async -> Bool {
         (try? await location.withRoot { root in VaultPaths.isWholeVault(root, exists: fileSystem.fileExists) }) ?? false
     }
@@ -162,7 +174,8 @@ actor VaultTaskRepository: TaskRepository {
         let reader = readerFactory(vaultSettings())
         return try await location.withRoot { root in
             let url = try existingURL(of: task, root: root)
-            var hadConflict = (try? ubiquity.resolveConflictsKeepingLatest(url)) ?? false
+            // iCloud conflict versions stay for the user to resolve; the edit goes into the current file.
+            var hadConflict = ubiquity.hasConflicts(url)
             if let seen = seenModification[task.relativePath], let current = fileSystem.modificationDate(of: url),
                abs(current.timeIntervalSince(seen)) > 0.001 {
                 hadConflict = true

@@ -13,7 +13,7 @@ struct VaultScannerTests {
         #expect(result.tasks.count == 36)
         #expect(Set(result.tasks.map(\.name)) == Self.taskNames)
         #expect(!result.tasks.contains { $0.name == "Просто заметка без тега" })
-        #expect(result.conflictsResolved.isEmpty)
+        #expect(result.conflicted.isEmpty)
         #expect(result.fileProblems.count == 1)
         guard case .brokenYAML(let file, _) = try #require(result.fileProblems.first) else {
             Issue.record("Expected a broken YAML problem, got \(result.fileProblems)")

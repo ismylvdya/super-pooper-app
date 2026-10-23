@@ -47,7 +47,7 @@ struct ICloudTests {
         #expect(ubiquity.downloadRequests.isEmpty)
     }
 
-    @Test func resolvedConflictVersionsAreReported() async throws {
+    @Test func conflictVersionsAreReportedNotResolved() async throws {
         let sandbox = try VaultSandbox.make()
         let ubiquity = FakeUbiquityService()
         ubiquity.conflict("Сдать отчёт.md")
@@ -55,7 +55,7 @@ struct ICloudTests {
 
         let result = await sandbox.scan(ubiquity: ubiquity)
 
-        #expect(Set(result.conflictsResolved) == ["Сдать отчёт", "Медитация 🧘"])
+        #expect(Set(result.conflicted) == ["Сдать отчёт", "Медитация 🧘"])
         #expect(result.tasks.count == 36)
     }
 
@@ -69,7 +69,7 @@ struct ICloudTests {
         let result = await sandbox.scan(ubiquity: ubiquity, downloadTimeout: 5)
 
         #expect(result.tasks.count == 36)
-        #expect(result.conflictsResolved.isEmpty && ubiquity.conflictChecks.isEmpty)
+        #expect(result.conflicted.isEmpty && ubiquity.conflictChecks.isEmpty)
         #expect(ubiquity.downloadRequests.isEmpty)
         #expect(result.fileProblems.count == 1)
     }
@@ -106,6 +106,30 @@ struct ICloudTests {
         let result = try await note.apply([.highPriority(true)])
         #expect(result.hadConflict)
         #expect(try note.text().contains("priority: high\n"))
+    }
+
+    @Test func theUserKeepsTheVersionTheyPick() async throws {
+        let ubiquity = FakeUbiquityService()
+        let note = try await SandboxNote("Найти отвёртку", ubiquity: ubiquity)
+        let fromMac = try note.text().replacingOnce("priority: none\n", with: "priority: high\n")
+        ubiquity.conflict("Найти отвёртку.md", versions: [fromMac])
+
+        let versions = try await note.repository.versions(of: note.task)
+        #expect(versions.count == 2 && versions[0].isCurrent && versions[1].text == fromMac)
+
+        try await note.repository.keep(versions[1].id, of: note.task)
+        #expect(try note.text() == fromMac)
+        #expect(!ubiquity.hasConflicts(note.sandbox.url(of: note.task.name)))
+    }
+
+    @Test func keepingTheCurrentVersionLeavesTheFile() async throws {
+        let ubiquity = FakeUbiquityService()
+        let note = try await SandboxNote("Найти отвёртку", ubiquity: ubiquity)
+        let before = try note.text()
+        ubiquity.conflict("Найти отвёртку.md")
+        try await note.repository.keep("current", of: note.task)
+        #expect(try note.text() == before)
+        #expect(!ubiquity.hasConflicts(note.sandbox.url(of: note.task.name)))
     }
 
     /// Simulates an edit synced from another device: new content and a later modification date.

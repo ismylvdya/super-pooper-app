@@ -93,6 +93,8 @@ struct RootView: View {
         case .archive: ArchiveScreen()
         case .habitArchive: HabitArchiveScreen()
         case .trash: TrashScreen()
+        case .conflicts: ConflictsScreen()
+        case .conflict(let name): ConflictVersionsScreen(noteName: name)
         #if DEBUG
         case .debugNotifications: NotificationsDebugScreen()
         case .debugWidgets: WidgetGalleryScreen()
@@ -132,14 +134,15 @@ extension View {
 /// Renders the current banner from the banner center.
 struct BannerOverlay: View {
     @Environment(BannerCenter.self) private var banners
+    @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
 
     var body: some View {
         ZStack {
             if let banner = banners.current {
-                BannerView(text: banner.text, icon: icon(banner.style), tint: tint(banner.style)) {
+                BannerView(text: banner.text, icon: icon(banner.style), tint: tint(banner.style), onDismiss: {
                     withAnimation(.easeInOut(duration: tokens.duration(.bannerAnimation))) { banners.dismiss(banner.id) }
-                }
+                }, onTap: banner.opens.map { route in { router.show(.settings, [route]) } })
                 .id(banner.id)
                 .transition(.move(edge: .top).combined(with: .opacity))
             }

@@ -19,13 +19,15 @@ final class BannerCenter {
         let id = UUID()
         let text: String
         let style: Style
+        /// Tapping the banner opens this page (in the Settings tab) instead of expanding the text.
+        var opens: Route?
     }
 
     private(set) var current: Banner?
     private var queue: [Banner] = []
 
-    func show(_ text: String, style: Banner.Style = .info) {
-        let banner = Banner(text: text, style: style)
+    func show(_ text: String, style: Banner.Style = .info, opens: Route? = nil) {
+        let banner = Banner(text: text, style: style, opens: opens)
         if current == nil { current = banner } else { queue.append(banner) }
     }
 

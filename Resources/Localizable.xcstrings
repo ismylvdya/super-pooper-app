@@ -227,7 +227,18 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Task %@ was changed in two places, the latest version was kept"
+            "value": "Version conflict in %@. Tap to choose which version to keep."
+          }
+        }
+      }
+    },
+    "banner.conflictResolved": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kept the chosen version of “%@”."
           }
         }
       }
@@ -591,6 +602,116 @@
           "stringUnit": {
             "state": "translated",
             "value": "Delete task?"
+          }
+        }
+      }
+    },
+    "conflicts.current": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On this iPhone"
+          }
+        }
+      }
+    },
+    "conflicts.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No conflicts."
+          }
+        }
+      }
+    },
+    "conflicts.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud has more than one version of these notes. Open a note and keep the version you want; the app never chooses for you."
+          }
+        }
+      }
+    },
+    "conflicts.keep": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep this version"
+          }
+        }
+      }
+    },
+    "conflicts.keep.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The other versions are removed (a backup is made first)."
+          }
+        }
+      }
+    },
+    "conflicts.keep.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep this version?"
+          }
+        }
+      }
+    },
+    "conflicts.other": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From %@"
+          }
+        }
+      }
+    },
+    "conflicts.saved": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved %@"
+          }
+        }
+      }
+    },
+    "conflicts.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version conflicts"
+          }
+        }
+      }
+    },
+    "conflicts.unknownDevice": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "another device"
           }
         }
       }

@@ -32,7 +32,7 @@ extension AppModel {
                 SyncLog.logger.info("vault scan: \(result.tasks.count) tasks in \(Date().timeIntervalSince(started), format: .fixed(precision: 2)) s")
                 setScanResult(result)
                 vaultIsWholeVault = await services.tasks.isWholeVault()
-                report.conflicts = result.conflictsResolved
+                report.conflicts = result.conflicted
                 if config.flags.autoPromote { report.promoted = await autoPromote() }
             } catch {
                 setVaultState(.failed(Self.describe(error)))
@@ -126,8 +126,8 @@ extension AppModel {
     }
 
     private func announceResult(_ report: SyncReport, announce: Bool, newProblems: Bool) {
-        for name in report.conflicts {
-            banners.show(L10n.format("banner.conflict", name), style: .warning)
+        if !report.conflicts.isEmpty {
+            banners.show(L10n.format("banner.conflict", L10n.list(report.conflicts)), style: .warning, opens: .conflicts)
         }
         if !report.promoted.isEmpty {
             banners.show(L10n.format("banner.promoted", L10n.list(report.promoted)), style: .success)

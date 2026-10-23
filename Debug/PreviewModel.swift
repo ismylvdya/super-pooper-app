@@ -19,7 +19,7 @@ enum PreviewModel {
             snapshotStore: SnapshotStore(store: store), widgets: NoWidgets())
         let model = AppModel(config: config, services: services, banners: BannerCenter(),
                              clock: FixedClock(now: PreviewSamples.context.now), calendar: PreviewSamples.calendar)
-        model.setScanResult(VaultScanResult(tasks: PreviewSamples.tasks, fileProblems: [], conflictsResolved: []))
+        model.setScanResult(VaultScanResult(tasks: PreviewSamples.tasks, fileProblems: [], conflicted: []))
         model.setSources(events: PreviewSamples.events, reminders: PreviewSamples.reminders)
         return (model, Router(), config)
     }
@@ -49,7 +49,7 @@ actor InMemoryTaskRepository: TaskRepository {
 
     init(tasks: [TaskNote]) { self.tasks = tasks }
 
-    func scan() async throws -> VaultScanResult { VaultScanResult(tasks: tasks, fileProblems: [], conflictsResolved: []) }
+    func scan() async throws -> VaultScanResult { VaultScanResult(tasks: tasks, fileProblems: [], conflicted: []) }
 
     func apply(_ changes: [TaskFieldChange], to task: TaskNote) async throws -> TaskWriteResult {
         let updated = task.applying(changes)
@@ -81,6 +81,8 @@ actor InMemoryTaskRepository: TaskRepository {
     }
     func obsidianURL(for task: TaskNote) async -> URL? { nil }
     func isWholeVault() async -> Bool { false }
+    func versions(of task: TaskNote) async throws -> [NoteVersion] { [] }
+    func keep(_ versionID: String, of task: TaskNote) async throws {}
 }
 
 struct StaticCalendarRepository: CalendarRepository {

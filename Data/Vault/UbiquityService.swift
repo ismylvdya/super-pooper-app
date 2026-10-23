@@ -7,9 +7,23 @@ protocol UbiquityService: Sendable {
     /// `false` while the file is only a cloud placeholder.
     func isDownloaded(_ url: URL) -> Bool
     func startDownloading(_ url: URL) throws
-    /// iCloud conflict versions; keeps the most recent one as the file. Returns `true` if
-    /// there were conflicts.
-    func resolveConflictsKeepingLatest(_ url: URL) throws -> Bool
+    /// Whether iCloud holds conflicting versions of the file. The app never picks one by itself.
+    func hasConflicts(_ url: URL) -> Bool
+    /// The file as it is now plus every conflicting version, for the user to compare.
+    func versions(of url: URL) throws -> [NoteVersion]
+    /// Makes `versionID` the file and drops the other versions.
+    func keep(_ versionID: String, of url: URL) throws
+}
+
+/// One version of a note in an iCloud conflict.
+struct NoteVersion: Identifiable, Hashable, Sendable {
+    let id: String
+    /// The file as this device has it right now.
+    let isCurrent: Bool
+    let modified: Date?
+    /// The device that saved it, when iCloud knows.
+    let device: String?
+    let text: String
 }
 
 extension UbiquityService {
@@ -42,21 +56,37 @@ struct ICloudUbiquityService: UbiquityService {
     }
 
     /// Asking `NSFileVersion` is slow, so the cheap resource flag is checked first.
-    func resolveConflictsKeepingLatest(_ url: URL) throws -> Bool {
+    func hasConflicts(_ url: URL) -> Bool {
         guard !isInAppContainer(url) else { return false }
         let keys: Set<URLResourceKey> = [.isUbiquitousItemKey, .ubiquitousItemHasUnresolvedConflictsKey]
-        guard let values = try? url.resourceValues(forKeys: keys), values.isUbiquitousItem == true,
-              values.ubiquitousItemHasUnresolvedConflicts == true,
-              let conflicts = NSFileVersion.unresolvedConflictVersionsOfItem(at: url), !conflicts.isEmpty else { return false }
-        let current = NSFileVersion.currentVersionOfItem(at: url)
-        let newest = conflicts.max { ($0.modificationDate ?? .distantPast) < ($1.modificationDate ?? .distantPast) }
-        if let newest, (newest.modificationDate ?? .distantPast) > (current?.modificationDate ?? .distantPast) {
-            try newest.replaceItem(at: url, options: [])
+        guard let values = try? url.resourceValues(forKeys: keys), values.isUbiquitousItem == true else { return false }
+        return values.ubiquitousItemHasUnresolvedConflicts == true
+    }
+
+    func versions(of url: URL) throws -> [NoteVersion] {
+        var result: [NoteVersion] = []
+        if let current = NSFileVersion.currentVersionOfItem(at: url) {
+            result.append(NoteVersion(id: Self.currentID, isCurrent: true, modified: current.modificationDate,
+                                      device: current.localizedNameOfSavingComputer, text: try String(contentsOf: url, encoding: .utf8)))
+        }
+        for version in NSFileVersion.unresolvedConflictVersionsOfItem(at: url) ?? [] {
+            result.append(NoteVersion(id: version.url.path, isCurrent: false, modified: version.modificationDate,
+                                      device: version.localizedNameOfSavingComputer,
+                                      text: (try? String(contentsOf: version.url, encoding: .utf8)) ?? ""))
+        }
+        return result
+    }
+
+    func keep(_ versionID: String, of url: URL) throws {
+        let conflicts = NSFileVersion.unresolvedConflictVersionsOfItem(at: url) ?? []
+        if versionID != Self.currentID, let chosen = conflicts.first(where: { $0.url.path == versionID }) {
+            try chosen.replaceItem(at: url, options: [])
         }
         for version in conflicts { version.isResolved = true }
         try NSFileVersion.removeOtherVersionsOfItem(at: url)
-        return true
     }
+
+    private static let currentID = "current"
 }
 
 /// Placeholder files of evicted items look like `.Name.md.icloud`.

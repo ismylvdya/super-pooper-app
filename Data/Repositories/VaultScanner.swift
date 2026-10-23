@@ -1,7 +1,7 @@
 import Foundation
 
 /// Finds task notes in the tasks folder: asks iCloud for evicted files, waits for them (with a
-/// timeout), resolves conflict versions and parses frontmatter. Nothing here throws on bad notes;
+/// timeout), notes iCloud conflict versions (the user resolves them) and parses frontmatter. Nothing here throws on bad notes;
 /// they become file problems.
 struct VaultScanner: Sendable {
     let fileSystem: NoteFileSystem
@@ -19,7 +19,7 @@ struct VaultScanner: Sendable {
         let tasksFolder = VaultPaths.tasksFolder(setting, in: root, exists: fileSystem.fileExists)
         let folder = root.appendingPathComponent(tasksFolder, isDirectory: true)
         guard fileSystem.fileExists(folder), let files = try? fileSystem.listFiles(in: folder) else {
-            return Output(result: VaultScanResult(tasks: [], fileProblems: [.tasksFolderMissing(tasksFolder)], conflictsResolved: []),
+            return Output(result: VaultScanResult(tasks: [], fileProblems: [.tasksFolderMissing(tasksFolder)], conflicted: []),
                           modificationDates: [:])
         }
 
@@ -27,7 +27,7 @@ struct VaultScanner: Sendable {
         let notes = isUbiquitous
             ? await downloadedNotes(from: files)
             : (ready: files.filter { $0.pathExtension == noteExtension }, missing: [URL]())
-        var output = Output(result: VaultScanResult(tasks: [], fileProblems: [], conflictsResolved: []), modificationDates: [:])
+        var output = Output(result: VaultScanResult(tasks: [], fileProblems: [], conflicted: []), modificationDates: [:])
         for url in notes.missing {
             output.result.fileProblems.append(.notDownloaded(file: url.deletingPathExtension().lastPathComponent))
         }
@@ -41,8 +41,8 @@ struct VaultScanner: Sendable {
     private func read(_ url: URL, root: URL, checkConflicts: Bool, into output: inout Output) {
         let name = url.deletingPathExtension().lastPathComponent.precomposedStringWithCanonicalMapping
         let relativePath = VaultPaths.relative(url, to: root)
-        if checkConflicts, (try? ubiquity.resolveConflictsKeepingLatest(url)) == true {
-            output.result.conflictsResolved.append(name)
+        if checkConflicts, ubiquity.hasConflicts(url) {
+            output.result.conflicted.append(name)
         }
         let file: NoteFile
         do {

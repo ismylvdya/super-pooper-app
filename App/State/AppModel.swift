@@ -23,6 +23,8 @@ final class AppModel {
     private(set) var events: [CalendarEvent] = []
     private(set) var reminders: [ReminderItem] = []
     private(set) var trashedNotes: [TrashedNote] = []
+    /// Notes with iCloud conflict versions the user has not resolved yet.
+    private(set) var conflictedNotes: [String] = []
     /// The chosen folder is a whole Obsidian vault: the app asks to pick only the TaskNotes folder.
     var vaultIsWholeVault = false
     var dayState: DayState
@@ -116,6 +118,7 @@ final class AppModel {
             freshlyWritten.contains(scanned.relativePath) ? (tasks.first { $0.relativePath == scanned.relativePath } ?? scanned) : scanned
         }
         fileProblems = result.fileProblems
+        conflictedNotes = result.conflicted
         vaultState = .ready
     }
 

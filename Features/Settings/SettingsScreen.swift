@@ -11,6 +11,9 @@ struct SettingsScreen: View {
                 SettingsLink(route: .habitSettings, icon: .habitSettings, title: "settings.habits")
             }
             PlateSection(header: nil) {
+                if !model.conflictedNotes.isEmpty {
+                    SettingsLink(route: .conflicts, icon: .problem, title: "conflicts.title", value: "\(model.conflictedNotes.count)")
+                }
                 SettingsLink(route: .trash, icon: .trash, title: "trash.title", value: model.trashCount.map(String.init))
             }
             ClockSettingsSection()

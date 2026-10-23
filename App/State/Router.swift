@@ -19,6 +19,8 @@ enum Route: Hashable {
     case archive
     case habitArchive
     case trash
+    case conflicts
+    case conflict(String)
     #if DEBUG
     case debugNotifications
     case debugWidgets

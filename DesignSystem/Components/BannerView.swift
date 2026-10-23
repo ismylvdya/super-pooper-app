@@ -9,6 +9,8 @@ struct BannerView: View {
     let icon: Icon?
     let tint: Color
     let onDismiss: () -> Void
+    /// When set, a tap runs it (and dismisses) instead of expanding the text.
+    var onTap: (() -> Void)?
     @State private var isExpanded = false
     @State private var dragOffset: CGFloat = 0
 
@@ -46,7 +48,14 @@ struct BannerView: View {
                 if distance < -20 || value.predictedEndTranslation.height < -60 {
                     onDismiss()
                 } else {
-                    if abs(distance) < 6, abs(value.translation.width) < 6 { isExpanded.toggle() }
+                    if abs(distance) < 6, abs(value.translation.width) < 6 {
+                        if let onTap {
+                            onTap()
+                            onDismiss()
+                        } else {
+                            isExpanded.toggle()
+                        }
+                    }
                     withAnimation(tokens.animation) { dragOffset = 0 }
                 }
             }

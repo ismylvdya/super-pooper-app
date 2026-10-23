@@ -91,7 +91,7 @@ final class FakeUbiquityService: UbiquityService, @unchecked Sendable {
     private var isLocal = false
     private var evicted: Set<String> = []
     private var downloads: [String: String] = [:]
-    private var conflicts: Set<String> = []
+    private var conflicts: [String: [String]] = [:]
     private var requests: [String] = []
     private var checks: [String] = []
 
@@ -113,8 +113,9 @@ final class FakeUbiquityService: UbiquityService, @unchecked Sendable {
         }
     }
 
-    func conflict(_ fileName: String) {
-        lock.withLock { _ = conflicts.insert(fileName) }
+    /// The file gets conflicting versions with these texts.
+    func conflict(_ fileName: String, versions: [String] = ["---\nstatus: done\n---\n"]) {
+        lock.withLock { conflicts[fileName] = versions }
     }
 
     func isUbiquitous(_ folder: URL) -> Bool {
@@ -135,10 +136,23 @@ final class FakeUbiquityService: UbiquityService, @unchecked Sendable {
         lock.withLock { _ = evicted.remove(url.lastPathComponent) }
     }
 
-    func resolveConflictsKeepingLatest(_ url: URL) throws -> Bool {
+    func hasConflicts(_ url: URL) -> Bool {
         lock.withLock {
             checks.append(url.lastPathComponent)
-            return conflicts.remove(url.lastPathComponent) != nil
+            return conflicts[url.lastPathComponent] != nil
+        }
+    }
+
+    func versions(of url: URL) throws -> [NoteVersion] {
+        let others = lock.withLock { conflicts[url.lastPathComponent] ?? [] }
+        let current = NoteVersion(id: "current", isCurrent: true, modified: nil, device: nil, text: try String(contentsOf: url, encoding: .utf8))
+        return [current] + others.enumerated().map { NoteVersion(id: "v\($0.offset)", isCurrent: false, modified: nil, device: "Mac", text: $0.element) }
+    }
+
+    func keep(_ versionID: String, of url: URL) throws {
+        let others = lock.withLock { conflicts.removeValue(forKey: url.lastPathComponent) ?? [] }
+        if versionID.hasPrefix("v"), let index = Int(versionID.dropFirst()), others.indices.contains(index) {
+            try Data(others[index].utf8).write(to: url, options: .atomic)
         }
     }
 }
