@@ -35,7 +35,8 @@ rm -f dist/SuperPooper.ipa
 # Никаких следов машины сборки и чужого Apple ID: подпись ad-hoc, без Team ID и профилей, без путей.
 for BIN in "$APP/SuperPooper" "$APP/PlugIns/SuperPooperWidgets.appex/SuperPooperWidgets"; do
   if grep -a -q "$HOME" "$BIN"; then echo "Ошибка: в $BIN есть путь машины сборки" >&2; exit 1; fi
-  codesign -dv "$BIN" 2>&1 | grep -q "TeamIdentifier=not set" || { echo "Ошибка: в $BIN есть Team ID" >&2; exit 1; }
+  # Без пайпа: с pipefail `grep -q` обрывает вывод codesign и проверка ложно падает.
+  [[ "$(codesign -dv "$BIN" 2>&1)" == *"TeamIdentifier=not set"* ]] || { echo "Ошибка: в $BIN есть Team ID" >&2; exit 1; }
 done
 [ -z "$(find "$APP" -name '*.mobileprovision')" ] || { echo "Ошибка: в .ipa есть provisioning profile" >&2; exit 1; }
 

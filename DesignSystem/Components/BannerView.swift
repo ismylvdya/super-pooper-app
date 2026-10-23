@@ -35,7 +35,9 @@ struct BannerView: View {
             try? await Task.sleep(for: .seconds(tokens.duration(.bannerAutoHide)))
             if !Task.isCancelled { onDismiss() }
         }
+        .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isStaticText)
+        .accessibilityIdentifier("banner")
         .accessibilityAction(named: Text("a11y.dismiss")) { onDismiss() }
     }
 

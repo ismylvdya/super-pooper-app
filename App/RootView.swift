@@ -16,9 +16,9 @@ struct RootView: View {
                     ForEach(AppTab.allCases, id: \.self) { tab in
                         NavigationStack(path: Binding(get: { router.paths[tab] ?? [] }, set: { router.paths[tab] = $0 })) {
                             root(tab, model: model)
-                                .bannerHost()
+                                .bannerHost(tab: tab)
                                 .navigationDestination(for: Route.self) { route in
-                                    destination(route).bannerHost().refreshable { await model.sync(announce: true) }
+                                    destination(route).bannerHost(tab: tab).refreshable { await model.sync(announce: true) }
                                 }
                         }
                         .tabItem { Label(LocalizedStringKey(String("tab.") + tab.rawValue), systemImage: container.config.icons[tab.icon]) }
@@ -126,8 +126,9 @@ extension AppTab {
 extension View {
     /// Shows the banner at the top of this page's content (below the navigation bar, so it
     /// never covers bar buttons). Every page and sheet hosts it; the same banner dismisses once.
-    func bannerHost() -> some View {
-        overlay(alignment: .top) { BannerOverlay() }
+    /// Pages of a tab show it only while their tab is selected (all tabs stay alive in the tab view).
+    func bannerHost(tab: AppTab? = nil) -> some View {
+        overlay(alignment: .top) { BannerOverlay(tab: tab) }
     }
 }
 
@@ -135,11 +136,12 @@ extension View {
 struct BannerOverlay: View {
     @Environment(BannerCenter.self) private var banners
     @Environment(Router.self) private var router
+    var tab: AppTab?
     @Environment(\.tokens) private var tokens
 
     var body: some View {
         ZStack {
-            if let banner = banners.current {
+            if let banner = banners.current, tab == nil || tab == router.tab {
                 BannerView(text: banner.text, icon: icon(banner.style), tint: tint(banner.style), onDismiss: {
                     withAnimation(.easeInOut(duration: tokens.duration(.bannerAnimation))) { banners.dismiss(banner.id) }
                 }, onTap: banner.opens.map { route in { router.show(.settings, [route]) } })

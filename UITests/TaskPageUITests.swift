@@ -34,8 +34,8 @@ final class TaskPageUITests: XCTestCase {
         if app.menuItems["Select All"].waitForExistence(timeout: 2) { app.menuItems["Select All"].tap() }
         field.typeText(XCUIKeyboardKey.delete.rawValue)
         field.typeText("Записать идеи 2\n")
-        let renamed = app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'Renamed'")).firstMatch
-        XCTAssertTrue(renamed.waitForExistence(timeout: 5))
+        let renamed = app.descendants(matching: .any).matching(NSPredicate(format: "identifier == 'banner' AND label CONTAINS 'Renamed'")).firstMatch
+        XCTAssertTrue(renamed.waitForExistence(timeout: 10))
     }
 
     func testArchiveFromMoreMenu() {

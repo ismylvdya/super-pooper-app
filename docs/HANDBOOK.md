@@ -8,28 +8,28 @@ SuperPooper — iPhone-приложение-оболочка над тремя �
 
 | Что | Где живёт | Что делает приложение |
 |---|---|---|
-| Задачи, привычки, периодические дела | `.md`-заметки TaskNotes в vault Obsidian (iCloud Drive) | читает, точечно правит frontmatter и текст; новых заметок не создаёт |
+| Задачи, привычки, периодические дела | `.md`-заметки TaskNotes в папке `TaskNotes` vault Obsidian (iCloud Drive); приложению выдаётся доступ только к этой папке | читает, точечно правит frontmatter и текст, создаёт новые дела (утренний разбор) и привычки (вкладка Habits) |
 | Жёсткие события («якоря») | Apple Calendar, календари выбраны в настройках | только читает, показывает на таймлайне |
 | «Вспомнить в X» | Apple Reminders, листы выбраны в настройках | только читает, шлёт своё уведомление |
 | Inbox | отдельный лист Reminders | **не трогает** |
 | Ручной порядок пула, Skip today | App Group, только на сегодня | потеря не страшна |
 | Настройки, снимок для виджетов, бэкапы | App Group (JSON) | общие с виджетами; можно стереть |
 
-Главный экран Today: сверху **пул** — дела дня без времени (просрочиться не могут), ниже **таймлайн** с линией «сейчас»: события, всё со временем и цепочки дел, привязанные к событиям. Без streak'ов, без почасового планирования.
+Вкладки: **Today** · **Habits** · **Settings** (внутри: Tasks, Habits, Version conflicts, Trash, Clock). Главный экран Today: сверху **пул** — дела дня без времени (просрочиться не могут), ниже **таймлайн** с линией «сейчас»: события, всё со временем и цепочки дел, привязанные к событиям. Без streak'ов, без почасового планирования.
 
 ## 2. Карта папок
 
 | Папка | Что внутри | В каких таргетах |
 |---|---|---|
 | `App/` | точка входа, composition root (`AppContainer`), `RootView`, состояние приложения `State/` (`AppModel` + расширения по темам, `Router`, `BannerCenter`), делегат уведомлений и background refresh | приложение |
-| `Features/` | экраны: `Today/`, `TaskPage/`, `Pickers/`, `MorningReview/`, `Settings/`, `Onboarding/`, `Archive/`, `Common/` | приложение |
+| `Features/` | экраны: `Today/`, `Habits/` (список, страница привычки, история, статистика), `TaskPage/`, `Pickers/`, `MorningReview/`, `Settings/` (корень, Tasks, Habits, Clock), `Conflicts/`, `Trash/`, `Onboarding/`, `Archive/`, `Common/` (черновик новой заметки, `TaskEditor`) | приложение |
 | `DesignSystem/` | токены (`Tokens/`), общие компоненты (`Components/`: плашки, чипы, строка задачи, таймлайн, баннер), вью виджетов (`Widgets/`), превью (`Previews/`) | приложение + виджеты |
-| `Domain/` | чистая логика без SwiftUI/EventKit: модели, день (`Day/`), RRULE (`Recurrence/`), план уведомлений | приложение + виджеты |
+| `Domain/` | чистая логика без SwiftUI/EventKit: модели, день (`Day/`), привычки (`Habits/`: отметки, история, сетка, статистика, порядок), RRULE (`Recurrence/`), часы (`Clock/`), план уведомлений | приложение + виджеты |
 | `Data/` | vault (bookmark, iCloud, координированные файлы, бэкапы), frontmatter (чтение и точечная запись YAML), репозитории, EventKit, уведомления | приложение |
 | `Core/` | загрузка конфигов (`Config/`), хранилище App Group (`Storage/`), часы, тексты, deep links (`Environment/`), App Intent выбора привычки (`Intents/`), источник данных виджетов (`Widgets/`) | приложение + виджеты |
 | `Resources/` | конфиги `Config/*.json`, `Localizable.xcstrings` | приложение + виджеты |
 | `AppResources/` | `Assets.xcassets` (иконка) | приложение |
-| `Widgets/` | WidgetKit: Today (Large) и Habit grid (Small/Medium) | виджеты |
+| `Widgets/` | WidgetKit: Today (Large), Habit (Small: кнопка «сегодня» + 4 недели), Clock (экран блокировки) | виджеты |
 | `Debug/` | только DEBUG: демо-данные календаря, экран уведомлений, галерея виджетов, модель для превью | приложение |
 | `Tests/` | unit-тесты (Swift Testing), `Support/TestVaultRenderer.swift` | тесты |
 | `UITests/` | UI-тесты ключевых сценариев (XCTest) | UI-тесты |
@@ -109,10 +109,14 @@ SuperPooper — iPhone-приложение-оболочка над тремя �
 При открытии и pull-to-refresh задачи `half_year`/`someday` без `recurrence` с `due` с сегодня по воскресенье получают `this_week` (перед этим — бэкап). Список статусов — `rules.json` → `day.autoPromoteFrom`. Статусы приложение никогда не понижает.
 
 ### 4.7. Привычки
+- **Вкладка Habits**: список активных привычек (порядок — перетаскиванием, хранится в настройках `habits.order`), круглая кнопка дня (тап — Done → Twice → снять, долгое нажатие — меню), строка «N/цель this week», «+» — новая привычка, внизу архив привычек. Страница привычки: имя, история (недели до старта привычки, любой день отмечается), статистика, Color / Show in Today / Harmful / Part of the day / Twice a day, правило пропусков (Allowed skips или Weekly goal), повторение, напоминания, описание (= тело заметки).
+- Чекбоксы привычек везде одинаковые (SF Symbols, `icons.json` → `habitOpen/Done/Partial/Twice/NotScheduled`).
+- В Today попадает только привычка с `show_in_today` (нет ключа = да) и не в архиве. Уведомления приходят независимо от этого флага.
+- Статистика (`Domain/Habits/HabitStats.swift`): серии, доли за 7/30 дней и всё время, счётчики, по дням недели и месяцам. Правила подсчёта — `DECISIONS.md` D-031.
 - Привычка = заметка со `status: habit` (читается как привычка и любая заметка с `recurrence`). Дни задаёт только `recurrence` (RRULE TaskNotes); без правила — каждый день. `due` у привычки не учитывается ни в днях, ни в сортировке пула.
 - Время дня — `reminder_times` (список `HH:mm`, можно несколько, например для «дважды в день»); старый `due` со временем читается как единственное напоминание. Каждое время — свой блок таймлайна и своё уведомление; без напоминаний привычка стоит в пуле.
-- Переключатель «Task / Habit» вверху страницы задачи (`Domain/Model/TaskKind.swift`): в привычку — `status: habit`, `recurrence` (по умолчанию ежедневно), время из `due` уходит в `reminder_times`; обратно в дело — `status: this_week`, `recurrence` и `reminder_times` убираются, отметки остаются. Правило правится редактором как в Apple Calendar (`Domain/Recurrence/RecurrenceDraft.swift`).
-- Тап = Done; долгое нажатие и уведомление — Partially, Twice, Skip today.
+- Дело и привычку нельзя превратить друг в друга. Правило правится редактором как в Apple Calendar (`Domain/Recurrence/RecurrenceDraft.swift`).
+- В пуле: долгое нажатие — Done, Partially, Twice, Skip today. Уведомление — Done, Partially, Skip today; второй Done за день при двух напоминаниях = Twice.
 - Done → дата в `complete_instances`; Partially → в `complete_instances` и `partial_instances`; Twice → в `complete_instances` и `twice_instances`. Снятие — убирает из всех трёх.
 - Skip today в заметку не пишется (только `day-state.json` до конца дня).
 - `due` у привычек приложение **не двигает** (в отличие от TaskNotes, который при отметке переносит scheduled на следующий экземпляр) — см. DECISIONS.
@@ -123,7 +127,7 @@ SuperPooper — iPhone-приложение-оболочка над тремя �
 ## 5. Формат заметки (для Claude-скилла)
 
 - **Название задачи = имя файла** без `.md`. Поля `title` нет.
-- Папка задач — `TaskNotes/Tasks` (настройка), признак задачи — тег `🔫делишка` в `tags`.
+- Папка задач — `TaskNotes/Tasks` (настройка, от корня vault; если приложению выбрана сама папка `TaskNotes`, используется `Tasks` внутри неё), признак задачи — тег `🔫делишка` в `tags`.
 
 ```yaml
 ---
@@ -144,6 +148,14 @@ recurrence: DTSTART:20261001T000000Z;FREQ=DAILY     # правило привы�
 reminder_times:              # привычка: времена дня, несколько можно
   - "09:00"
   - "21:00"
+show_in_today: false        # привычка: показывать в Today (нет ключа = да)
+habit_color: "#34C759"      # привычка: свой цвет
+harmful: true               # привычка: вредная (нет ключа = нет)
+time_of_day: morning        # привычка: morning | day | evening (нет ключа = любое время)
+twice_a_day: true           # привычка: есть отметка Twice
+twice_counts_double: true   # привычка: Twice = 2 в цели и долях
+weekly_goal: 5              # привычка: цель N раз в неделю
+allowed_skips: 1            # привычка: допустимые пропуски подряд (если нет weekly_goal)
 complete_instances: [ ... ]  # дни с любой отметкой
 partial_instances: [ ... ]   # дни с Partially (они же есть в complete_instances)
 twice_instances: [ ... ]     # дни с Twice (они же есть в complete_instances)
@@ -162,8 +174,9 @@ date_modified: 2026-10-22T18:01:02.456+02:00         # обновляется п
 
 `Data/Repositories/VaultTaskRepository.swift`: чтение и запись через `NSFileCoordinator`, атомарно; меняется **только** нужный ключ (`Data/Frontmatter/FrontmatterDocument.swift` — свой редактор подмножества YAML, который Obsidian пишет) плюс `date_modified`. Списки (`*_instances`, `previous_task`) меняются **дельтами** по свежепрочитанному файлу: отметить один день, добавить/убрать/переименовать одну связь; записи, которые приложение не поняло, остаются. Текст, который не разбирается как frontmatter, не записывается никогда.
 
-- Конфликт Mac ↔ iPhone: если файл изменился с момента чтения или у iCloud есть конфликтные версии, правка применяется к **последней** версии файла (побеждает последняя правка), конфликтные версии разрешаются, сверху плашка «Task X was changed in two places, the latest version was kept».
-- Удаление — в `.trash` в корне vault (корзина Obsidian), после диалога и бэкапа.
+- Файл изменили с момента чтения (Mac, Claude-скилл): правка применяется к свежей версии, меняя только свои ключи; если тот же ключ изменён и там, сверху жёлтая плашка (`WriteConflict`).
+- **Конфликтные версии iCloud приложение само не разрешает.** После синка — жёлтая плашка «Version conflict in …»; тап открывает Settings → Version conflicts → заметка: все версии с устройством и временем, полный текст, «Keep this version» (перед этим бэкап). Пока конфликт не разрешён, правки ложатся в текущую версию файла.
+- Удаление — в `.trash` в выбранной папке (обычно `TaskNotes/.trash`), после диалога и бэкапа. Экран Settings → Trash: просмотр, восстановление в папку задач, удаление навсегда с подтверждением.
 - Переименование — файл + `previous_task` у задач, которые на неё ссылаются (после бэкапа). Ссылки в тексте других заметок не переписываются.
 - Бэкапы: App Group → `SuperPooper/Backups/<время>-<причина>/`, хранится `rules.json → backups.keepCount` последних.
 
@@ -201,15 +214,17 @@ scripts/sim.sh launch -SPVaultPath TestVault -SPSeedDemo -SPSkipOnboarding -SPNo
 scripts/sim.sh screenshot .build/shot.png
 ```
 
-DEBUG-аргументы (в Release их нет): `-SPVaultPath`, `-SPSeedDemo` (календарь «SuperPooper Test» с событиями 10:00, «Call with dad» 19:00–20:00, повторяющимся «Lunch», лист с напоминанием на 15:00 и лист «Inbox», который приложение игнорирует), `-SPNow HH:mm`, `-SPSkipOnboarding`, `-SPResetState`, `-SPTimeline oneColumn|twoColumns`, `-SPOpen superpooper://…`, `-SPProvisionalNotifications`. Deep links: `superpooper://task/<имя>`, `…://settings`, `…://review`, `…://archive`, DEBUG: `…://debug-notifications`, `…://debug-widgets`. Тестовый vault также можно выбрать вручную: «Файлы» → «На iPhone» → SuperPooper → TestVault.
+DEBUG-аргументы (в Release их нет): `-SPVaultPath`, `-SPSeedDemo` (календарь «SuperPooper Test» с событиями 10:00, «Call with dad» 19:00–20:00, повторяющимся «Lunch», лист с напоминанием на 15:00 и лист «Inbox», который приложение игнорирует), `-SPNow HH:mm`, `-SPSkipOnboarding`, `-SPResetState`, `-SPTimeline oneColumn|twoColumns`, `-SPOpen superpooper://…`, `-SPProvisionalNotifications`. Deep links: `superpooper://task/<имя>`, `…://settings`, `…://review`, `…://archive`, DEBUG: `…://debug-notifications`, `…://debug-widgets`. Тестовый vault также можно выбрать вручную: на экране выбора папки в Debug-сборке есть кнопка «Use test vault (Debug)»; или «Файлы» → «На iPhone» → SuperPooper → TestVault (в Debug Documents видны в «Файлах»). Если пикер или «На iPhone» в симуляторе не открываются — это зависла служба файлов симулятора: перезапустить симулятор. Симулятор для глаз — «SuperPooper Mini» (iPhone 13 mini, 360 pt): `SP_SIMULATOR="SuperPooper Mini" scripts/sim.sh …`.
 
 ## 10. Частые поломки
 
 | Симптом | Причина | Что делать |
 |---|---|---|
-| «Can’t open the vault folder anymore» | bookmark устарел (переименовали/переместили папку, переустановка) | Settings → Sources → Vault folder → выбрать заново |
+| «Can’t open the vault folder anymore» | bookmark устарел (переименовали/переместили папку, переустановка) | Settings → Tasks → Sources → TaskNotes folder → выбрать заново |
+| Жёлтое «The app has access to the whole vault» | выбран весь vault, а не папка `TaskNotes` (старая настройка) | выбрать папку `TaskNotes` заново |
+| Плашка «Version conflict in …» | iCloud хранит две версии заметки | тапнуть плашку и выбрать версию |
 | Задача пропала, в проблемах «Not downloaded from iCloud yet» | файл выгружен с телефона, не скачался за таймаут | открыть «Файлы», дождаться iCloud, потянуть вниз; таймаут — `rules.json → vault.downloadTimeoutSeconds` |
-| Плашка «changed in two places» | правка на Mac и iPhone одновременно | ничего: сохранена последняя версия; бэкап — в App Group |
+| Жёлтая плашка «was also changed elsewhere» | один ключ правили на Mac и iPhone | проверить значение: записана правка с iPhone; бэкап — в App Group |
 | Заметка не видна, «Broken YAML» | ошибка в frontmatter (незакрытая кавычка/скобка, табы) | исправить в Obsidian; приложение такие заметки пропускает |
 | Событий нет на таймлайне | нет доступа к Calendar или не выбраны календари | Settings → Sources: Calendar access, Anchor calendars |
 | «Event not found» у задачи | событие удалили/перенесли на другой день | выбрать событие заново на странице задачи |

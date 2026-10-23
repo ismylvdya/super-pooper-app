@@ -74,7 +74,6 @@ struct HabitRow: View {
                 }
             }
         }
-        .accessibilityIdentifier("habit:\(habit.name)")
     }
 }
 

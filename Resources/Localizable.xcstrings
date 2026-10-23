@@ -210,17 +210,6 @@
         }
       }
     },
-    "banner.blocked": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Blocked by %@"
-          }
-        }
-      }
-    },
     "banner.conflict": {
       "extractionState": "manual",
       "localizations": {
@@ -903,39 +892,6 @@
         }
       }
     },
-    "event.new.create": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Create"
-          }
-        }
-      }
-    },
-    "event.new.placeholder": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Title"
-          }
-        }
-      }
-    },
-    "event.new.title": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "New event"
-          }
-        }
-      }
-    },
     "habitPage.color": {
       "extractionState": "manual",
       "localizations": {
@@ -1574,17 +1530,6 @@
         }
       }
     },
-    "info.settings.archive": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tasks you archived. From here they can go back to This week or Half year."
-          }
-        }
-      }
-    },
     "info.settings.calendars": {
       "extractionState": "manual",
       "localizations": {
@@ -1838,17 +1783,6 @@
         }
       }
     },
-    "info.taskKind": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A task is done once and has a status and an optional date. A habit repeats by a rule, has no status or date, and can have reminders during the day."
-          }
-        }
-      }
-    },
     "info.taskPage.due": {
       "extractionState": "manual",
       "localizations": {
@@ -1955,17 +1889,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Properties are stored in the note’s frontmatter, exactly where TaskNotes keeps them."
-          }
-        }
-      }
-    },
-    "info.taskPage.recurrence": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The repeat rule comes from TaskNotes. Marks for today: Done, Partially or Twice. Skip today hides the habit until tomorrow and is not written to the note."
           }
         }
       }
@@ -2307,17 +2230,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choose task"
-          }
-        }
-      }
-    },
-    "pool.edit": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Edit the pool"
           }
         }
       }
@@ -4071,17 +3983,6 @@
         }
       }
     },
-    "task.new.create": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Create"
-          }
-        }
-      }
-    },
     "task.new.hint": {
       "extractionState": "manual",
       "localizations": {
@@ -4093,28 +3994,6 @@
         }
       }
     },
-    "task.new.name": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "New task"
-          }
-        }
-      }
-    },
-    "task.new.placeholder": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Name"
-          }
-        }
-      }
-    },
     "task.new.title": {
       "extractionState": "manual",
       "localizations": {
@@ -4122,39 +4001,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "New task"
-          }
-        }
-      }
-    },
-    "taskKind.habit": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Habit"
-          }
-        }
-      }
-    },
-    "taskKind.header": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Type"
-          }
-        }
-      }
-    },
-    "taskKind.task": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Task"
           }
         }
       }
@@ -4291,17 +4137,6 @@
         }
       }
     },
-    "taskPage.mark.none": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "—"
-          }
-        }
-      }
-    },
     "taskPage.missing.message": {
       "extractionState": "manual",
       "localizations": {
@@ -4379,17 +4214,6 @@
         }
       }
     },
-    "taskPage.notToday": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No instance today."
-          }
-        }
-      }
-    },
     "taskPage.note": {
       "extractionState": "manual",
       "localizations": {
@@ -4452,17 +4276,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Properties"
-          }
-        }
-      }
-    },
-    "taskPage.recurrence": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Repeats"
           }
         }
       }
@@ -4544,28 +4357,6 @@
         }
       }
     },
-    "taskPage.todayMark": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Today"
-          }
-        }
-      }
-    },
-    "taskPage.todayMark.header": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Today"
-          }
-        }
-      }
-    },
     "timeline.links": {
       "extractionState": "manual",
       "localizations": {
@@ -4584,17 +4375,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Edit"
-          }
-        }
-      }
-    },
-    "today.title": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Today"
           }
         }
       }
@@ -4859,28 +4639,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Today"
-          }
-        }
-      }
-    },
-    "widget.toggle.task": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Task"
-          }
-        }
-      }
-    },
-    "widget.toggle.title": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Check off task"
           }
         }
       }
