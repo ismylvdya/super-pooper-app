@@ -15,6 +15,7 @@ enum ActionID: String, Codable, CaseIterable, Sendable {
     case restoreThisWeek
     case restoreHalfYear
     case restoreHabit
+    case routines
 }
 
 enum HapticStyle: String, Codable, Sendable {

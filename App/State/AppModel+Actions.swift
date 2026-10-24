@@ -33,7 +33,7 @@ extension AppModel {
             await write(task, [.status(.habit)])
         case .delete:
             await delete(task)
-        case .open, .openInObsidian:
+        case .open, .openInObsidian, .routines:
             break
         }
     }
@@ -121,6 +121,24 @@ extension AppModel {
     }
 
     // MARK: - Pool order
+
+    /// The morning review takes a task out of today; it stays this week and is back tomorrow.
+    func postpone(_ name: String) {
+        Haptics.play(.light)
+        updateDayState { if !$0.postponed.contains(name) { $0.postponed.append(name) } }
+        Task { await publishDerivedState() }
+    }
+
+    func unpostpone(_ name: String) {
+        Haptics.play(.light)
+        updateDayState { $0.postponed.removeAll { $0 == name } }
+        Task { await publishDerivedState() }
+    }
+
+    var postponedTasks: [TaskNote] {
+        let names = dayState.day == context().today ? dayState.postponed : []
+        return names.compactMap(task(named:))
+    }
 
     func setManualOrder(_ names: [String]) {
         updateDayState { $0.manualOrder = names }

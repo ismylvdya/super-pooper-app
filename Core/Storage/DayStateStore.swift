@@ -9,6 +9,8 @@ struct DayState: Codable, Equatable, Sendable {
     var reviewShown = false
     /// How many data problems the banner already told about today.
     var announcedProblems = 0
+    /// Tasks swiped out of today in the morning review (they come back in tomorrow's review).
+    var postponed: [String] = []
 
     init(day: LocalDate) { self.day = day }
 
@@ -20,6 +22,7 @@ struct DayState: Codable, Equatable, Sendable {
         manualOrder = try container.decodeIfPresent([String].self, forKey: .manualOrder)
         reviewShown = try container.decodeIfPresent(Bool.self, forKey: .reviewShown) ?? false
         announcedProblems = try container.decodeIfPresent(Int.self, forKey: .announcedProblems) ?? 0
+        postponed = try container.decodeIfPresent([String].self, forKey: .postponed) ?? []
     }
 }
 

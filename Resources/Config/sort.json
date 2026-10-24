@@ -1,7 +1,9 @@
 {
   "pool": [
+    "morningRoutine",
     "habitsFirst",
     "habitTimeOfDay",
+    "routineOrder",
     "dueToday",
     "highPriority",
     "nearestDueThisWeek",

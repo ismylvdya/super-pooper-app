@@ -26,7 +26,7 @@ extension AppSettings {
         today: .init(arrangement: .sideBySide, widgetArrangement: .sideBySide),
         sources: .init(anchorCalendarIDs: [], reminderListIDs: []),
         day: .init(boundary: .midnight, energyHour: .midnight),
-        pool: .init(visibleCount: 3),
+        pool: .init(visibleCount: 3, criteria: []),
         timeline: .init(layout: .oneColumn, range: .aroundNow,
                         wholeDay: .init(start: .midnight, end: .midnight), hoursBefore: 2, hoursAfter: 8,
                         firstHalf: .init(start: .midnight, end: .midnight),
@@ -34,7 +34,7 @@ extension AppSettings {
                         eventFontSize: 15, taskFontSize: 15, bellSize: 11, bellOpacity: 0.45),
         notifications: .init(enabled: false),
         onboarding: .init(completed: false),
-        habits: .init(order: [], showInTodayByDefault: false),
+        habits: .init(order: [], showInTodayByDefault: false, morningRoutine: [], eveningRoutine: []),
         clock: .init(timeZone: "Europe/Moscow", prefix: ""),
         appearance: .init(pastOpacity: 0.2),
         colors: [:]

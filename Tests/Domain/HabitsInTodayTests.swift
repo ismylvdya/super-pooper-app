@@ -67,7 +67,8 @@ struct HabitsInTodayTests {
 
     // MARK: - Part of the day
 
-    @Test(arguments: [("08:00", ["Morning", "Any", "Evening"]), ("14:00", ["Any", "Evening", "Morning"]), ("20:00", ["Evening", "Any", "Morning"])])
+    /// The morning routine stays on top all day; the rest follows the current part of the day.
+    @Test(arguments: [("08:00", ["Morning", "Any", "Evening"]), ("14:00", ["Morning", "Any", "Evening"]), ("20:00", ["Morning", "Evening", "Any"])])
     func habitsOfTheCurrentPartGoUp(time: String, expected: [String]) {
         let tasks = [habit("Any"), habit("Evening") { $0.habit.timeOfDay = .evening }, habit("Morning") { $0.habit.timeOfDay = .morning }]
         let names = DayScenario(tasks: tasks).build(at: TestCalendar.context(TestCalendar.wednesday, time)).poolNames
@@ -96,5 +97,38 @@ struct HabitsInTodayTests {
         #expect(trip.covers(LocalDate("2026-10-22"), calendar: TestCalendar.calendar))
         #expect(!trip.covers(LocalDate("2026-10-23"), calendar: TestCalendar.calendar))
         #expect(!trip.covers(LocalDate("2026-10-19"), calendar: TestCalendar.calendar))
+    }
+}
+
+/// Routines, the user's pool order and postponed tasks.
+@Suite("Routines and pool order")
+struct RoutineOrderTests {
+    private func habit(_ name: String, _ part: HabitTimeOfDay?) -> TaskNote {
+        makeHabit(name, status: .habit) { $0.habit.timeOfDay = part }
+    }
+
+    @Test func theMorningRoutineIsFirstAllDayLong() {
+        let tasks = [makeTask("High") { $0.isHighPriority = true }, habit("Evening", .evening), habit("Morning", .morning)]
+        let names = DayScenario(tasks: tasks).build(at: TestCalendar.context(TestCalendar.wednesday, "20:00")).poolNames
+        #expect(names.first == "Morning")
+    }
+
+    @Test func routinesFollowTheUsersOrder() {
+        var scenario = DayScenario(tasks: [habit("A stretch", .morning), habit("B shower", .morning), habit("C coffee", .morning)])
+        scenario.routines = HabitRoutines(morning: ["C coffee", "A stretch"])
+        #expect(scenario.build().poolNames == ["C coffee", "A stretch", "B shower"])
+    }
+
+    @Test func postponedTasksLeaveToday() {
+        var scenario = DayScenario(tasks: [makeTask("Later"), makeTask("Now")])
+        scenario.postponed = ["Later"]
+        #expect(scenario.build().poolNames == ["Now"])
+    }
+
+    @Test func extraLinesGrowWithTheEstimate() {
+        let pool = TestConfig.rules.pool
+        #expect(pool.extraLines(forEstimate: 15) == 0)
+        #expect(pool.extraLines(forEstimate: 60) == 1)
+        #expect(pool.extraLines(forEstimate: 240) == 2)
     }
 }

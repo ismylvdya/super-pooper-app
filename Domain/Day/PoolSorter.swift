@@ -2,10 +2,14 @@ import Foundation
 
 /// Pool ordering criteria, compared one after another (order comes from `sort.json`).
 enum PoolSortCriterion: String, Codable, CaseIterable, Sendable {
+    /// The morning routine (habits of the morning) goes above everything.
+    case morningRoutine
     /// Recurring tasks without a time go first.
     case habitsFirst
     /// Habits of the current part of the day go up, habits of another part go down.
     case habitTimeOfDay
+    /// Within the morning and evening routines, the user's routine order.
+    case routineOrder
     /// `due` today (with or without time) beats everything below.
     case dueToday
     case highPriority
@@ -25,6 +29,7 @@ enum PoolSortCriterion: String, Codable, CaseIterable, Sendable {
 struct PoolSorter: Sendable {
     let criteria: [PoolSortCriterion]
     let rules: DayRules
+    var routines = HabitRoutines()
 
     func sorted(_ items: [DayItem], graph: TaskGraph, context: DayContext) -> [DayItem] {
         let auto = items.sorted { lhs, rhs in
@@ -62,6 +67,10 @@ struct PoolSorter: Sendable {
 
     private func key(_ criterion: PoolSortCriterion, _ task: TaskNote, _ context: DayContext) -> Double {
         switch criterion {
+        case .morningRoutine:
+            return task.isHabit && task.habit.timeOfDay == .morning ? 0 : 1
+        case .routineOrder:
+            return routines.position(of: task).map(Double.init) ?? 10_000
         case .habitsFirst:
             return task.isHabit && task.habitTimes.isEmpty ? 0 : 1
         case .habitTimeOfDay:

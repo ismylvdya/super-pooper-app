@@ -32,6 +32,12 @@ struct HabitsScreen: View {
                     model.moveHabits(names)
                 }
             }
+            Section {
+                NavigationLink(value: Route.routines) {
+                    Label("routines.title", systemImage: icons[.timeOfDay])
+                }
+                .listRowBackground(tokens.color(.plateBackground))
+            }
 
         }
         .scrollContentBackground(.hidden)

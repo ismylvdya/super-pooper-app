@@ -58,7 +58,7 @@ final class AppModel {
     }
 
     func plan(at date: Date) -> DayPlan {
-        DayPlanning.plan(config: config, tasks: tasks, events: events, reminders: reminders, dayState: dayState,
+        DayPlanning.plan(config: config, settings: settings, tasks: tasks, events: events, reminders: reminders, dayState: dayState,
                          context: context(at: date))
     }
 

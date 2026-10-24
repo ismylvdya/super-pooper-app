@@ -155,6 +155,17 @@
         }
       }
     },
+    "action.routines": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Routine order"
+          }
+        }
+      }
+    },
     "action.skipToday": {
       "extractionState": "manual",
       "localizations": {
@@ -2806,6 +2817,17 @@
         }
       }
     },
+    "review.backToToday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today"
+          }
+        }
+      }
+    },
     "review.due.clear": {
       "extractionState": "manual",
       "localizations": {
@@ -2850,6 +2872,39 @@
         }
       }
     },
+    "review.postpone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not today"
+          }
+        }
+      }
+    },
+    "review.postponed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Postponed"
+          }
+        }
+      }
+    },
+    "review.postponed.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not in today's pool; they stay this week and show up in tomorrow's review. Swipe left to bring one back."
+          }
+        }
+      }
+    },
     "review.reset": {
       "extractionState": "manual",
       "localizations": {
@@ -2868,6 +2923,61 @@
           "stringUnit": {
             "state": "translated",
             "value": "Morning review"
+          }
+        }
+      }
+    },
+    "routines.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No habits here yet. Set a habit's part of the day to add it."
+          }
+        }
+      }
+    },
+    "routines.evening": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Evening routine"
+          }
+        }
+      }
+    },
+    "routines.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag to change the order. The pool shows the routine in this order; the morning routine comes first in the pool."
+          }
+        }
+      }
+    },
+    "routines.morning": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Morning routine"
+          }
+        }
+      }
+    },
+    "routines.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Routines"
           }
         }
       }
@@ -3858,6 +3968,281 @@
           "stringUnit": {
             "state": "translated",
             "value": "The widget keeps its own layout, independent from the app's."
+          }
+        }
+      }
+    },
+    "sort.dueToday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Date today"
+          }
+        }
+      }
+    },
+    "sort.dueToday.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tasks dated today."
+          }
+        }
+      }
+    },
+    "sort.energyBeforeEnergyHour": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Energy"
+          }
+        }
+      }
+    },
+    "sort.energyBeforeEnergyHour.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tasks that need energy go up before the energy hour and down after it."
+          }
+        }
+      }
+    },
+    "sort.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag the rules: the higher one decides first. A task never goes above the tasks it depends on, and done tasks go last."
+          }
+        }
+      }
+    },
+    "sort.habitTimeOfDay": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Part of the day"
+          }
+        }
+      }
+    },
+    "sort.habitTimeOfDay.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habits of the current part of the day go up, others down."
+          }
+        }
+      }
+    },
+    "sort.habitsFirst": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habits first"
+          }
+        }
+      }
+    },
+    "sort.habitsFirst.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habits without a time go before tasks."
+          }
+        }
+      }
+    },
+    "sort.highPriority": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "High priority"
+          }
+        }
+      }
+    },
+    "sort.highPriority.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tasks with High."
+          }
+        }
+      }
+    },
+    "sort.morningRoutine": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Morning routine first"
+          }
+        }
+      }
+    },
+    "sort.morningRoutine.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habits of the morning go above everything."
+          }
+        }
+      }
+    },
+    "sort.nearestDueThisWeek": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nearest date"
+          }
+        }
+      }
+    },
+    "sort.nearestDueThisWeek.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The nearest date within this week first."
+          }
+        }
+      }
+    },
+    "sort.olderFirst": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Older first"
+          }
+        }
+      }
+    },
+    "sort.olderFirst.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tasks created earlier go earlier."
+          }
+        }
+      }
+    },
+    "sort.reset": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset to default"
+          }
+        }
+      }
+    },
+    "sort.routineOrder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Routine order"
+          }
+        }
+      }
+    },
+    "sort.routineOrder.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The order you set in Habits → Routines."
+          }
+        }
+      }
+    },
+    "sort.shortFirst": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Short first"
+          }
+        }
+      }
+    },
+    "sort.shortFirst.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A shorter estimate goes earlier."
+          }
+        }
+      }
+    },
+    "sort.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pool order"
+          }
+        }
+      }
+    },
+    "sort.unpleasantFirst": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unpleasant first"
+          }
+        }
+      }
+    },
+    "sort.unpleasantFirst.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tasks marked not pleasant go earlier."
           }
         }
       }

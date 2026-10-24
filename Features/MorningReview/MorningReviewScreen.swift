@@ -4,6 +4,8 @@ import SwiftUI
 /// rows reorder by dragging. Until the first drag the order follows the automatic sort after every
 /// edit; after it the manual order is kept for today. "Reset to auto" brings the sort back.
 /// Tapping a row (outside its chips) opens the task page; "+" creates a new this-week task.
+/// Swiping a row left takes it out of today: it stays this week and waits in "Postponed" at the bottom
+/// (and in tomorrow's review); swiping it there brings it back.
 struct MorningReviewScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
@@ -20,6 +22,12 @@ struct MorningReviewScreen: View {
                         ReviewRow(item: item, today: plan.today) { path.append(.task(item.id)) }
                             .listRowBackground(tokens.color(.plateBackground))
                             .accessibilityIdentifier("review:\(item.id)")
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                Button { model.postpone(item.id) } label: {
+                                    Label("review.postpone", systemImage: icons[.postpone])
+                                }
+                                .tint(tokens.color(.secondaryText))
+                            }
                     }
                     .onMove { source, destination in
                         var names = plan.pool.map(\.id)
@@ -31,8 +39,28 @@ struct MorningReviewScreen: View {
                     Text(model.dayState.manualOrder == nil ? "review.footer.auto" : "review.footer.manual")
                         .accessibilityIdentifier("review.footer")
                 }
+                if !model.postponedTasks.isEmpty {
+                    Section {
+                        ForEach(model.postponedTasks, id: \.name) { task in
+                            ReviewRow(item: DayItem(task: task, state: .open, blockers: [], problems: []), today: plan.today) {
+                                path.append(.task(task.name))
+                            }
+                            .listRowBackground(tokens.color(.plateBackground))
+                            .opacity(tokens.opacity(.blocked))
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                Button { model.unpostpone(task.name) } label: {
+                                    Label("review.backToToday", systemImage: icons[.restore])
+                                }
+                                .tint(tokens.color(.success))
+                            }
+                        }
+                    } header: {
+                        Text("review.postponed")
+                    } footer: {
+                        Text("review.postponed.hint")
+                    }
+                }
             }
-            .environment(\.editMode, .constant(.active))
             .bannerHost()
             .navigationDestination(for: Route.self) { route in
                 switch route {
@@ -100,6 +128,9 @@ struct ReviewRow: View {
         }
         .padding(.vertical, 4)
         .frame(maxWidth: .infinity, alignment: .leading)
+        .overlay(alignment: .trailing) {
+            Image(systemName: icons[.chevron]).foregroundStyle(tokens.color(.tertiaryText))
+        }
         .contentShape(Rectangle())
         .onTapGesture(perform: onOpen)
     }

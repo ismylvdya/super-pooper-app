@@ -85,6 +85,13 @@
       "icon": "arrow.uturn.up.circle",
       "destructive": false,
       "haptic": "light"
+    },
+    {
+      "id": "routines",
+      "title": "action.routines",
+      "icon": "sunrise",
+      "destructive": false,
+      "haptic": "none"
     }
   ],
   "menus": {
@@ -94,7 +101,8 @@
       "twice",
       "skipToday",
       "unmark",
-      "open"
+      "open",
+      "routines"
     ],
     "taskContext": [
       "done",

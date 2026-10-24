@@ -11,6 +11,9 @@ struct DayInputs: Sendable {
     var skipped: Set<String>
     /// The user's pool order for today, if they dragged something.
     var manualOrder: [String]?
+    var routines = HabitRoutines()
+    /// Tasks the morning review moved out of today (they stay this week).
+    var postponed: Set<String> = []
 }
 
 /// Decides what is in today, what goes to the pool and what goes to the timeline.
@@ -23,7 +26,7 @@ struct DayBuilder: Sendable {
         let occurrence = TaskOccurrence(calendar: context.calendar)
         let resolver = EventLinkResolver(events: inputs.events, calendar: context.calendar)
         let blocking = BlockingEvaluator(graph: graph, occurrence: occurrence, skipped: inputs.skipped, context: context)
-        let sorter = PoolSorter(criteria: sortCriteria, rules: rules)
+        let sorter = PoolSorter(criteria: sortCriteria, rules: rules, routines: inputs.routines)
 
         var items: [DayItem] = []
         var anchors: [String: TimelineChain.Anchor] = [:]
@@ -32,6 +35,7 @@ struct DayBuilder: Sendable {
             let previousEvent = task.previousEvent.flatMap(resolver.resolve)
             let nextEvent = task.nextEvent.flatMap(resolver.resolve)
             let inDay = isInDay(task, occurrence: occurrence, skipped: inputs.skipped, context: context)
+                && !inputs.postponed.contains(task.name)
             let taskProblems = self.problems(of: task, graph: graph, previousEvent: previousEvent, nextEvent: nextEvent,
                                              checkEvents: inDay)
             if inDay || (task.isHabit && !task.isArchived) || !task.status.isCompleted {

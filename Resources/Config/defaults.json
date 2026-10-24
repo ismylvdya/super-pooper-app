@@ -19,7 +19,8 @@
     "energyHour": "14:00"
   },
   "pool": {
-    "visibleCount": 3
+    "visibleCount": 3,
+    "criteria": []
   },
   "timeline": {
     "layout": "oneColumn",
@@ -52,7 +53,9 @@
   "colors": {},
   "habits": {
     "order": [],
-    "showInTodayByDefault": false
+    "showInTodayByDefault": false,
+    "morningRoutine": [],
+    "eveningRoutine": []
   },
   "clock": {
     "timeZone": "Europe/Moscow",

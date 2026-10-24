@@ -18,6 +18,8 @@ enum Route: Hashable {
     case habitSettings
     case archive
     case trash
+    case routines
+    case poolOrder
     case conflicts
     case conflict(String)
     #if DEBUG

@@ -25,6 +25,8 @@ struct AppSettings: Codable, Equatable, Sendable {
 
     struct Pool: Codable, Equatable, Sendable {
         var visibleCount: Int
+        /// The user's order of the pool rules (raw names); empty = `sort.json`.
+        var criteria: [String]
     }
 
     /// Where the pool and the timeline sit on Today.
@@ -86,6 +88,9 @@ struct AppSettings: Codable, Equatable, Sendable {
         var order: [String]
         /// "Show in Today" of a newly created habit.
         var showInTodayByDefault: Bool
+        /// The order of the morning and evening routines in the pool (habit names).
+        var morningRoutine: [String]
+        var eveningRoutine: [String]
     }
 
     struct Clock: Codable, Equatable, Sendable {

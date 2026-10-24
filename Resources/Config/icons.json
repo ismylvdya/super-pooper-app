@@ -70,5 +70,6 @@
   "taskSettings": "checklist",
   "clockSettings": "clock",
   "bell": "bell",
-  "olderWeeks": "arrow.up"
+  "olderWeeks": "arrow.up",
+  "postpone": "moon.zzz"
 }
