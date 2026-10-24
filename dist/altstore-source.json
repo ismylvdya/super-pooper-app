@@ -18,12 +18,12 @@
       "tintColor": "#FF2D55",
       "versions": [
         {
-          "version": "0.3.3",
-          "buildVersion": "7",
+          "version": "0.3.4",
+          "buildVersion": "8",
           "date": "2026-10-24",
           "downloadURL": "https://raw.githubusercontent.com/ismylvdya/super-pooper-app/main/dist/SuperPooper.ipa",
-          "size": 2628048,
-          "sha256": "fb680dd7654e366bfda54d51647be65097b9fc2d8f8182418e45e64d5127d577",
+          "size": 2627854,
+          "sha256": "4f0db75b7226b7e3300723d83e4d66c9c7d760866262e062b3976d267e1740f6",
           "minOSVersion": "18.0"
         }
       ],
