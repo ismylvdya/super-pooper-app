@@ -31,6 +31,17 @@
 			</array>
 		</dict>
 	</array>
+	<key>UIApplicationShortcutItems</key>
+	<array>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>new-task</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>New task</string>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>plus</string>
+		</dict>
+	</array>
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string>SuperPooper shows your anchor calendar events on the Today timeline.</string>
 	<key>NSRemindersFullAccessUsageDescription</key>

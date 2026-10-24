@@ -6,13 +6,15 @@ struct TodaySettingsSection: View {
 
     var body: some View {
         arrangementSection(header: "settings.today", hint: "settings.today.hint", info: "info.settings.today.arrangement",
-                           keyPath: \.arrangement)
+                           keyPath: \.arrangement, options: AppSettings.TodayArrangement.allCases)
+        // The widget has no pages.
         arrangementSection(header: "settings.widget", hint: "settings.widget.hint", info: "info.settings.widget.arrangement",
-                           keyPath: \.widgetArrangement)
+                           keyPath: \.widgetArrangement, options: [.stacked, .sideBySide])
     }
 
     private func arrangementSection(header: LocalizedStringKey, hint: LocalizedStringKey, info: LocalizedStringKey,
-                                    keyPath: WritableKeyPath<AppSettings.Today, AppSettings.TodayArrangement>) -> some View {
+                                    keyPath: WritableKeyPath<AppSettings.Today, AppSettings.TodayArrangement>,
+                                    options: [AppSettings.TodayArrangement]) -> some View {
         let current = model.settings.today[keyPath: keyPath]
         return PlateSection(header: header, hint: hint) {
             ArrangementPreview(arrangement: current)
@@ -24,10 +26,19 @@ struct TodaySettingsSection: View {
                     model.updateSettings { $0.today[keyPath: keyPath] = value }
                 }
             )) {
-                Text("settings.today.stacked").tag(AppSettings.TodayArrangement.stacked)
-                Text("settings.today.sideBySide").tag(AppSettings.TodayArrangement.sideBySide)
+                ForEach(options, id: \.self) { option in
+                    Text(Self.title(option)).tag(option)
+                }
             }
             .pickerStyle(.segmented)
+        }
+    }
+
+    private static func title(_ arrangement: AppSettings.TodayArrangement) -> LocalizedStringKey {
+        switch arrangement {
+        case .stacked: "settings.today.stacked"
+        case .sideBySide: "settings.today.sideBySide"
+        case .paged: "settings.today.paged"
         }
     }
 }
@@ -54,7 +65,7 @@ struct ArrangementPreview: View {
             ForEach(0..<3, id: \.self) { _ in
                 RoundedRectangle(cornerRadius: 4, style: .continuous).fill(tokens.color(.plateBackground)).frame(height: 16)
             }
-            if arrangement == .sideBySide { Spacer(minLength: 0) }
+            if arrangement != .stacked { Spacer(minLength: 0) }
         }
         .frame(idealWidth: 80)
     }

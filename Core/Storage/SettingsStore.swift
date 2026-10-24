@@ -23,7 +23,7 @@ extension AppSettings {
     /// Only used if even the bundled defaults are unreadable (the app then shows the config error).
     static let fallback = AppSettings(
         vault: .init(tasksFolder: "TaskNotes/Tasks", taskTag: "", trashFolder: ".trash", obsidianVault: "", obsidianPathPrefix: ""),
-        today: .init(arrangement: .sideBySide, widgetArrangement: .sideBySide),
+        today: .init(arrangement: .paged, widgetArrangement: .sideBySide),
         sources: .init(anchorCalendarIDs: [], reminderListIDs: []),
         day: .init(boundary: .midnight, energyHour: .midnight),
         pool: .init(visibleCount: 3, criteria: []),

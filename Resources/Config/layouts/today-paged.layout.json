@@ -1,0 +1,10 @@
+{
+  "axis": "horizontal",
+  "spacing": "screenHorizontal",
+  "paged": true,
+  "peek": "pagePeek",
+  "blocks": [
+    { "block": "pool", "size": "fill", "weight": 1 },
+    { "block": "timeline", "size": "fill", "weight": 1 }
+  ]
+}

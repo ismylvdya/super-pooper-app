@@ -35,6 +35,11 @@ struct AppSettings: Codable, Equatable, Sendable {
         case stacked
         /// Pool on the left, timeline on the right; both use the full height.
         case sideBySide
+        /// The pool and the timeline as two full-screen pages; each shows the edge of the other (app only).
+        case paged
+
+        /// What the widget can show: it has no pages, so it gets the side-by-side arrangement instead.
+        var forWidget: TodayArrangement { self == .paged ? .sideBySide : self }
     }
 
     struct Today: Codable, Equatable, Sendable {
@@ -136,7 +141,7 @@ extension AppSettings {
     var timelineMode: TimelineMode {
         switch today.arrangement {
         case .stacked: timeline.layout == .twoColumns ? .halves : .aroundNow
-        case .sideBySide: timeline.range == .wholeDay ? .wholeDay : .aroundNow
+        case .sideBySide, .paged: timeline.range == .wholeDay ? .wholeDay : .aroundNow
         }
     }
 

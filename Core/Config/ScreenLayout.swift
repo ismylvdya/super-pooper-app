@@ -25,4 +25,10 @@ struct ScreenLayout: Codable, Hashable, Sendable {
     /// Design-token name of the gap between blocks (see `tokens.json` → `spacing`).
     let spacing: String
     let blocks: [Slot]
+    /// Each block is a page of the full width, one shown at a time (horizontal axis); `peek` is the size
+    /// token of how much of the neighbouring page stays visible at the edge.
+    var paged: Bool? = nil
+    var peek: String? = nil
+
+    var isPaged: Bool { paged == true }
 }

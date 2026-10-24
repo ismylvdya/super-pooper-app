@@ -46,16 +46,28 @@ struct WeightedStack: Layout {
     }
 }
 
-/// Renders a `ScreenLayout`: asks the registry for each block by id.
+/// Renders a `ScreenLayout`: asks the registry for each block by id. A paged layout shows `page`
+/// (the first one in previews), moved by `pageDrag`; `onTurn` makes its visible edge turn the page.
 struct ScreenLayoutView<Block: View>: View {
     @Environment(\.tokens) private var tokens
     let layout: ScreenLayout
+    var page = 0
+    var pageDrag: CGFloat = 0
+    var onTurn: ((Int) -> Void)?
     @ViewBuilder let block: (String) -> Block
 
     var body: some View {
-        WeightedStack(axis: layout.axis, spacing: spacing, slots: layout.blocks) {
-            ForEach(layout.blocks, id: \.block) { slot in block(slot.block) }
+        if layout.isPaged {
+            PagedStack(slots: layout.blocks, spacing: spacing, peek: peek, page: page, drag: pageDrag, onTurn: onTurn, block: block)
+        } else {
+            WeightedStack(axis: layout.axis, spacing: spacing, slots: layout.blocks) {
+                ForEach(layout.blocks, id: \.block) { slot in block(slot.block) }
+            }
         }
+    }
+
+    private var peek: CGFloat {
+        layout.peek.flatMap(SizeToken.init(rawValue:)).map(tokens.size) ?? 0
     }
 
     private var spacing: CGFloat {

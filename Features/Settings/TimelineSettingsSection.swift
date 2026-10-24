@@ -18,7 +18,7 @@ struct TimelineSettingsSection: View {
                     Text("settings.timeline.twoColumns").tag(AppSettings.TimelineLayout.twoColumns)
                 }
                 .pickerStyle(.segmented)
-            case .sideBySide:
+            case .sideBySide, .paged:
                 PlateRow(icon: .timelineLayout, title: "settings.timeline.range", info: "info.settings.timeline.range") {}
                 Picker("settings.timeline.range", selection: binding(\.range)) {
                     Text("settings.timeline.aroundNow").tag(AppSettings.TimelineRange.aroundNow)

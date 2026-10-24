@@ -53,7 +53,8 @@ final class Router {
     }
 
     /// `superpooper://task/<name>`, `superpooper://habit/<name>`, `superpooper://habits`, `superpooper://settings`,
-    /// `superpooper://review`, `superpooper://archive`, `superpooper://trash`, `superpooper://clock`.
+    /// `superpooper://review`, `superpooper://archive`, `superpooper://trash`, `superpooper://clock`,
+    /// `superpooper://new-task` (also the Home Screen quick action).
     func handle(_ url: URL) {
         guard url.scheme == DeepLink.scheme else { return }
         let name = url.path().removingPercentEncoding.map { String($0.dropFirst()) } ?? ""
@@ -65,6 +66,7 @@ final class Router {
         case "archive": show(.settings, [.archive])
         case "trash": show(.settings, [.trash])
         case "review": show(.today); isReviewPresented = true
+        case "new-task": isReviewPresented = false; show(.today, [.newTask])
         #if DEBUG
         case "debug-notifications": show(.settings, [.debugNotifications])
         case "debug-widgets": show(.settings, [.debugWidgets])

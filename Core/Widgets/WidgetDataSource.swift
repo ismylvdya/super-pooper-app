@@ -16,7 +16,7 @@ struct WidgetDataSource: Sendable {
         calendar.firstWeekday = 2
         // Everything in the widget reads `today.arrangement`, so it gets the widget's own one there.
         var settings = SettingsStore(store: store, defaults: config.defaultSettings).load()
-        settings.today.arrangement = settings.today.widgetArrangement
+        settings.today.arrangement = settings.today.widgetArrangement.forWidget
         return WidgetDataSource(config: config,
                                 settings: settings,
                                 snapshot: SnapshotStore(store: store).load(),
