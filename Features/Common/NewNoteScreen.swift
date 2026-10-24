@@ -17,8 +17,12 @@ struct NewNoteScreen: View {
     var body: some View {
         let current = draft ?? initialDraft
         let editor = TaskEditor.draft(Binding(get: { draft ?? initialDraft }, set: { draft = $0 }))
-        PageScaffold(title: name.isEmpty ? L10n.string(kind == .task ? "task.new.title" : "habits.new") : name) {
-            NameField(text: $name, placeholder: kind == .task ? "taskPage.name.field" : "habitPage.name.placeholder")
+        let placeholder: LocalizedStringKey = kind == .task ? "task.new.title" : "habits.new"
+        // The name is typed right in the title, as on the note's page.
+        PageScaffold(title: name.isEmpty ? L10n.string(kind == .task ? "task.new.title" : "habits.new") : name,
+                     titleView: AnyView(TextField(placeholder, text: $name, axis: .vertical)
+                        .multilineTextAlignment(.center)
+                        .accessibilityIdentifier("taskPage.name"))) {
             switch kind {
             case .task: TaskSections(editor: editor)
             case .habit: HabitSections(editor: editor)

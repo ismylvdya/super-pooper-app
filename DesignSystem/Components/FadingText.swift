@@ -10,9 +10,12 @@ struct FadingText: View {
     let lineHeight: CGFloat
     var lines = 1
     var reserve: CGFloat = 0
+    @State private var width: CGFloat = .infinity
 
     var body: some View {
         let fade = tokens.size(.titleFade)
+        // A narrow column would break words letter by letter: one fading line there.
+        let lines = width < tokens.size(.wrapMinWidth) ? 1 : self.lines
         Group {
             if lines <= 1 {
                 // An overlay never widens the layout: the line keeps its natural width and is cut by the frame.
@@ -40,6 +43,7 @@ struct FadingText: View {
                 }
             }
         }
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         .padding(.trailing, reserve)
         .accessibilityLabel(Text(text))
     }

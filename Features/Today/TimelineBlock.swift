@@ -16,6 +16,7 @@ struct TimelineBlock: View {
     @State private var zoom: CGFloat = 1
     @GestureState private var pinch: CGFloat = 1
     @State private var position = ScrollPosition(edge: .top)
+    @State private var pull: CGFloat = 0
 
     /// The whole logical day is always there to scroll through; the settings only choose what is shown
     /// first (hours around now, or the day range fitted to the height). Pinch zooms. Leaving Today
@@ -37,15 +38,16 @@ struct TimelineBlock: View {
                 let hourHeight = base * min(max(zoom * pinch, tokens.size(.timelineZoomMin)), tokens.size(.timelineZoomMax))
                 let stripHeight = plan.allDayEvents.isEmpty ? 0 : allDayHeight
                 ScrollView {
-                    VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
-                        if !plan.allDayEvents.isEmpty { allDayStrip }
-                        DayTimelineView(slots: plan.timeline, window: day, now: plan.now,
-                                        hourHeight: hourHeight, style: style, taskContent: taskRow)
-                    }
-                    .padding(.vertical, tokens.space(.groupGap) / 2)
+                    DayTimelineView(slots: plan.timeline, window: day, now: plan.now,
+                                    hourHeight: hourHeight, style: style, taskContent: taskRow)
+                        .padding(.vertical, tokens.space(.groupGap) / 2)
                 }
                 .scrollPosition($position)
+                .contentMargins(.top, stripHeight, for: .scrollContent)
                 .contentMargins(.bottom, bottomInset, for: .scrollContent)
+                .onScrollGeometryChange(for: CGFloat.self) { max(0, -($0.contentOffset.y + $0.contentInsets.top)) } action: { _, new in
+                    pull = new
+                }
                 .scrollBounceBehavior(.always)
                 .scrollIndicators(.hidden)
                 .refreshable { await model.sync(announce: true) }
@@ -58,10 +60,19 @@ struct TimelineBlock: View {
                             zoom = min(max(zoom * value.magnification, tokens.size(.timelineZoomMin)), tokens.size(.timelineZoomMax))
                         }
                 )
+                // All-day events stay put over the hours; they move down only with a pull to refresh.
+                .overlay(alignment: .top) {
+                    if !plan.allDayEvents.isEmpty {
+                        allDayStrip
+                            .padding(.bottom, tokens.space(.chipGap))
+                            .background(tokens.color(.screenBackground))
+                            .offset(y: pull)
+                    }
+                }
                 .onAppear {
                     zoom = 1
-                    let offset = CGFloat(shown.start.timeIntervalSince(day.start) / 3600) * base + stripHeight
-                    position.scrollTo(y: max(offset, 0))
+                    let offset = CGFloat(shown.start.timeIntervalSince(day.start) / 3600) * base
+                    position.scrollTo(y: max(offset - stripHeight, 0))
                 }
             }
         case .halves:
@@ -91,7 +102,7 @@ struct TimelineBlock: View {
 
     private var allDayHeight: CGFloat {
         let line = UIFont.systemFont(ofSize: model.settings.timeline.eventFontSize - 2).lineHeight + tokens.space(.chipVertical) * 2
-        return CGFloat(plan.allDayEvents.count) * (line + tokens.space(.chipGap))
+        return CGFloat(plan.allDayEvents.count) * (line + tokens.space(.chipGap)) + tokens.space(.chipGap)
     }
 
     /// The block with the dialog for the one timeline edit: deleting an event (events are created in Calendar).

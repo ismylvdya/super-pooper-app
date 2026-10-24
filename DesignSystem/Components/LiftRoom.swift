@@ -12,7 +12,10 @@ private struct LiftRoom: ViewModifier {
     @Environment(\.tokens) private var tokens
 
     func body(content: Content) -> some View {
+        // Sideways the rows (and their lift shadow) may cover the screen margin; at the top the first row
+        // starts a shadow's height down, so its shadow fits too.
         content
+            .contentMargins(.top, tokens.space(.liftShadow), for: .scrollContent)
             .scrollClipDisabled()
             .mask(Rectangle().padding(.horizontal, -tokens.space(.screenHorizontal)))
     }

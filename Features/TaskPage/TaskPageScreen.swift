@@ -19,11 +19,10 @@ struct TaskPageScreen: View {
     var body: some View {
         if let task = model.task(named: currentName) {
             let editor = TaskEditor.note(task, model: model)
-            PageScaffold(title: task.name, titleView: task.isHabit ? AnyView(HeaderNameField(task: task) { renamedTo = $0 }) : nil) {
+            PageScaffold(title: task.name, titleView: AnyView(HeaderNameField(task: task) { renamedTo = $0 })) {
                 if task.isHabit {
                     HabitSections(editor: editor)
                 } else {
-                    TaskTitleSection(task: task) { renamedTo = $0 }
                     TaskSections(editor: editor)
                     TaskNoteSection(taskName: task.name)
                 }
@@ -70,7 +69,7 @@ struct HeaderNameField: View {
     @State private var isRenaming = false
 
     var body: some View {
-        TextField("habitPage.name.placeholder", text: $draft, axis: .vertical)
+        TextField(task.isHabit ? "habitPage.name.placeholder" : "taskPage.name.field", text: $draft, axis: .vertical)
             .multilineTextAlignment(.center)
             .submitLabel(.done)
             .focused($isEditing)
@@ -105,64 +104,6 @@ struct HeaderNameField: View {
             } else {
                 draft = task.name
             }
-        }
-    }
-}
-
-/// The note name = file name; committing a new name renames the file. The field is leading-aligned
-/// so a trailing space stays visible while typing; spaces at the ends are trimmed only on commit.
-struct TaskTitleSection: View {
-    @Environment(AppModel.self) private var model
-    @Environment(Router.self) private var router
-    let task: TaskNote
-    let onRenamed: (String) -> Void
-    @State private var draft = ""
-    @FocusState private var isEditingName: Bool
-    /// Return and losing focus both commit; only one rename may run.
-    @State private var isRenaming = false
-
-    var body: some View {
-        NameField(text: $draft, placeholder: task.isHabit ? "habitPage.name.placeholder" : "taskPage.name.field")
-            .focused($isEditingName)
-            .onSubmit(commit)
-            .onAppear { draft = task.name }
-            .onChange(of: task.name) { _, name in if !isEditingName { draft = name } }
-            .onChange(of: isEditingName) { _, editing in if !editing { commit() } }
-    }
-
-    private func commit() {
-        guard !isRenaming else { return }
-        let newName = draft.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !newName.isEmpty, newName != task.name else {
-            draft = task.name
-            return
-        }
-        isRenaming = true
-        Task {
-            defer { isRenaming = false }
-            if await model.rename(task.name, to: newName) {
-                onRenamed(newName)
-                if let index = router.path.lastIndex(of: .task(task.name)) { router.path[index] = .task(newName) }
-                model.banners.show(L10n.format("banner.renamed", newName), style: .success)
-            } else {
-                draft = task.name
-            }
-        }
-    }
-}
-
-/// The name of a note as a plate with a full-width text field.
-struct NameField: View {
-    @Environment(\.tokens) private var tokens
-    @Binding var text: String
-    let placeholder: LocalizedStringKey
-
-    var body: some View {
-        PlateSection(header: "taskPage.name", info: "info.taskPage.name") {
-            TextField(placeholder, text: $text)
-                .font(tokens.font(.nameField))
-                .submitLabel(.done)
-                .accessibilityIdentifier("taskPage.name")
         }
     }
 }

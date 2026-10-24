@@ -29,8 +29,8 @@ struct DayTimelineView<TaskContent: View>: View {
                                 if isLinked { linkBadge(item.slot, isOn: style.highlightedSlot == item.slot.id) }
                                 if item.slot.alerts { AlertBell() }
                             }
-                            .padding(.top, tokens.space(.bellInset))
-                            .padding(.trailing, tokens.space(.bellInset))
+                            .padding(.top, cornerInset)
+                            .padding(.trailing, cornerInset)
                         }
                         .opacity(highlighted.map { $0.contains(item.slot.id) ? 1 : tokens.opacity(.unlinked) } ?? 1)
                         .frame(width: max(item.frame.width - tokens.space(.timelineItemGap), 0),
@@ -41,6 +41,11 @@ struct DayTimelineView<TaskContent: View>: View {
             }
         }
         .frame(height: max(totalHeight, contentBottom))
+    }
+
+    /// Dense widget plates: the bell sits as far from the right edge as from the top and bottom of a one-line block.
+    private var cornerInset: CGFloat {
+        style.compactPlates ? max((style.minimumItemHeight - tokens.space(.timelineItemGap) - bell.size) / 2, 1) : tokens.space(.bellInset)
     }
 
     /// Room the title leaves at the top right for the link mark and the bell.

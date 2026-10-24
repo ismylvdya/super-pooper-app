@@ -18,7 +18,7 @@ struct ActionMenuContent: View {
             } label: {
                 // Habit menus show the habit marks, as the habit notifications do.
                 if menu.isHabitMenu, let mark = HabitMarkIcon.icon(for: action.id) {
-                    Label { Text(LocalizedStringKey(action.title)) } icon: { Image(icons[mark]) }
+                    Label { Text(LocalizedStringKey(action.title)) } icon: { Image(icons[mark]).renderingMode(.template) }
                 } else {
                     Label(LocalizedStringKey(action.title), systemImage: action.icon)
                 }

@@ -23,6 +23,8 @@ struct HabitsScreen: View {
             Section {
                 ForEach(model.habits, id: \.name) { habit in
                     HabitRow(habit: habit, today: today)
+                        // The row fills its cell, so a long press lifts the whole plate.
+                        .listRowInsets(EdgeInsets())
                         .listRowBackground(tokens.color(.plateBackground))
                 }
                 .onMove { source, destination in
@@ -73,8 +75,12 @@ struct HabitRow: View {
                 }
             }
         }
+        .padding(.horizontal, tokens.space(.listRowInset))
+        .padding(.vertical, tokens.space(.rowVertical) / 2)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(tokens.color(.plateBackground))
         // A long press lifts the whole row and offers today's marks.
-        .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: tokens.radius(.poolRow), style: .continuous))
+        .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: tokens.radius(.plate), style: .continuous))
         .contextMenu { HabitDayMenu(habit: habit, day: today) }
     }
 }
@@ -119,13 +125,13 @@ struct HabitDayMenu: View {
         }
         let unmark = actions.definition(.unmark)
         Button { set(nil) } label: {
-            Label { Text(LocalizedStringKey(unmark.title)) } icon: { Image(icons[HabitMarkIcon.icon(for: nil)]) }
+            Label { Text(LocalizedStringKey(unmark.title)) } icon: { Image(icons[HabitMarkIcon.icon(for: nil)]).renderingMode(.template) }
         }
         .disabled(current == nil)
         ForEach(marks, id: \.self) { mark in
             let action = actions.definition(Self.actionID(mark))
             Button { set(mark) } label: {
-                Label { Text(LocalizedStringKey(action.title)) } icon: { Image(icons[HabitMarkIcon.icon(for: mark)]) }
+                Label { Text(LocalizedStringKey(action.title)) } icon: { Image(icons[HabitMarkIcon.icon(for: mark)]).renderingMode(.template) }
             }
             .disabled(current == mark)
         }
