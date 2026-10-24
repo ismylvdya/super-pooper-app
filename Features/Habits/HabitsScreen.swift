@@ -87,9 +87,11 @@ struct HabitDayButton: View {
     var body: some View {
         let grid = HabitGrid(task: habit, weekCount: 1, today: day, calendar: model.calendar)
         let cell = grid.weeks.last?.first { $0.date == day }?.cell ?? .open
-        HabitDayCell(cell: cell == .notScheduled ? .open : cell, color: tokens.habitColor(habit), isToday: true)
-            .frame(width: tokens.size(.habitDayButton), height: tokens.size(.habitDayButton))
-            .contentShape(Rectangle())
+        let metrics = HabitDotMetrics(dot: tokens.size(.habitDot), ringRatio: tokens.size(.habitRingRatio))
+        let inset = cell == .twice ? 0 : 2 * metrics.ring
+        HabitDayCell(cell: cell, color: tokens.habitColor(habit), metrics: metrics)
+            .contentShape(Circle().inset(by: inset))
+            .contentShape(.contextMenuPreview, Circle().inset(by: inset))
             .onTapGesture {
                 Haptics.play(.light)
                 Task { await model.cycleHabit(habit.name, on: day) }
@@ -101,24 +103,33 @@ struct HabitDayButton: View {
     }
 }
 
-/// Long-press menu of a habit's day: the date, then Done / Partially / Twice (twice-a-day habits) / Clear.
+/// Long-press menu of a habit's day: Done / Partially / Twice (twice-a-day habits) / Unmark, with the
+/// habit marks as icons. In the history the day is named ("17 Sep 2026"); in the list it is always today.
 struct HabitDayMenu: View {
     @Environment(AppModel.self) private var model
     @Environment(\.actions) private var actions
+    @Environment(\.tokens) private var tokens
     let habit: TaskNote
     let day: LocalDate
+    var showsDate = false
 
     var body: some View {
         let current = HabitInstances(task: habit).mark(on: day)
-        Text(day.startDate(in: model.calendar).formatted(date: .complete, time: .omitted))
+        if showsDate {
+            Text(day.startDate(in: model.calendar).formatted(.dateTime.day().month(.abbreviated).year()))
+        }
         ForEach(marks, id: \.self) { mark in
             let action = actions.definition(Self.actionID(mark))
-            Button { set(mark) } label: { Label(LocalizedStringKey(action.title), systemImage: action.icon) }
-                .disabled(current == mark)
+            Button { set(mark) } label: {
+                Label { Text(LocalizedStringKey(action.title)) } icon: { HabitMarkImage.image(mark, tokens: tokens) }
+            }
+            .disabled(current == mark)
         }
         if current != nil {
             let action = actions.definition(.unmark)
-            Button { set(nil) } label: { Label(LocalizedStringKey(action.title), systemImage: action.icon) }
+            Button { set(nil) } label: {
+                Label { Text(LocalizedStringKey(action.title)) } icon: { HabitMarkImage.image(HabitMark?.none, tokens: tokens) }
+            }
         }
     }
 

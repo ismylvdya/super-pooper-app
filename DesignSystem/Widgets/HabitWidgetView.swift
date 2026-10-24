@@ -10,8 +10,15 @@ struct HabitWidgetView: View {
     let today: LocalDate
 
     var body: some View {
+        GeometryReader { geometry in
+            content(metrics: HabitDotMetrics.fitting(width: geometry.size.width - tokens.space(.widgetPadding) * 2,
+                                                     ringRatio: tokens.size(.habitRingRatio)))
+        }
+    }
+
+    private func content(metrics: HabitDotMetrics) -> some View {
         let color = tokens.habitColor(habit)
-        VStack(alignment: .leading, spacing: tokens.space(.habitCellGap) * 2) {
+        return VStack(alignment: .leading, spacing: tokens.space(.habitCellGap) * 2) {
             HStack(alignment: .top, spacing: tokens.space(.chipGap)) {
                 Text(habit.name)
                     .font(tokens.font(.widgetTitle))
@@ -20,19 +27,17 @@ struct HabitWidgetView: View {
                     .minimumScaleFactor(0.7)
                 Spacer(minLength: 0)
                 Button(intent: MarkHabitTodayIntent(habitName: habit.name)) {
-                    HabitDayCell(cell: todayCell, color: color, isToday: true)
-                        .frame(width: tokens.size(.habitDayButton), height: tokens.size(.habitDayButton))
+                    HabitDayCell(cell: todayCell, color: color, metrics: metrics)
                 }
                 .buttonStyle(.plain)
             }
             Spacer(minLength: 0)
-            HabitGridView(grid: grid, color: color, today: today, fadesTop: true)
+            HabitGridView(grid: grid, color: color, metrics: metrics, fadesTop: true)
         }
         .padding(tokens.space(.widgetPadding))
     }
 
     private var todayCell: HabitCell {
-        let cell = grid.weeks.last?.first { $0.date == today }?.cell ?? .open
-        return cell == .notScheduled ? .open : cell
+        grid.weeks.last?.first { $0.date == today }?.cell ?? .open
     }
 }

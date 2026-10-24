@@ -55,6 +55,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         /// The habit page grid shows at least this many weeks, and reaches back to the start plus `historyExtraWeeks`.
         let historyMinimumWeeks: Int
         let historyExtraWeeks: Int
+        /// Weeks one pull at the top of the history adds.
+        let historyPullWeeks: Int
         /// Values a rule starts with when it is switched on.
         let defaultAllowedSkips: Int
         let defaultWeeklyGoal: Int

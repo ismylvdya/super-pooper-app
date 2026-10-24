@@ -6,16 +6,23 @@ struct TaskNoteSection: View {
     @Environment(\.tokens) private var tokens
     let taskName: String
     var header: LocalizedStringKey = "taskPage.note"
+    /// One line when empty, growing with the text (habit descriptions).
+    var isCompact = false
     @State private var text = ""
     @State private var loaded: String?
     @State private var saveTask: Task<Void, Never>?
 
     var body: some View {
         PlateSection(header: header, info: "info.taskPage.note") {
-            TextEditor(text: $text)
-                .font(tokens.font(.noteEditor))
-                .frame(minHeight: 160)
-                .scrollContentBackground(.hidden)
+            if isCompact {
+                TextField("habitPage.description.placeholder", text: $text, axis: .vertical)
+                    .font(tokens.font(.rowTitle))
+            } else {
+                TextEditor(text: $text)
+                    .font(tokens.font(.noteEditor))
+                    .frame(minHeight: 160)
+                    .scrollContentBackground(.hidden)
+            }
         }
         .task(id: taskName) {
             let body = await model.body(of: taskName) ?? ""

@@ -6,13 +6,17 @@ struct PageScaffold<Content: View>: View {
     @Environment(\.tokens) private var tokens
     let title: String
     var isNested = true
+    /// Replaces the large title (an editable name, for example); the bar title still shows `title`.
+    var titleView: AnyView?
     @ViewBuilder let content: Content
     @State private var isLargeTitleVisible = true
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: tokens.space(.groupGap)) {
-                Text(title)
+                Group {
+                    if let titleView { titleView } else { Text(title) }
+                }
                     .font(tokens.font(.pageTitle))
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)

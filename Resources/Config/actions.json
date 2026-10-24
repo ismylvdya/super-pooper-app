@@ -10,14 +10,14 @@
     {
       "id": "partial",
       "title": "action.partial",
-      "icon": "circle.lefthalf.filled",
+      "icon": "smallcircle.filled.circle",
       "destructive": false,
       "haptic": "light"
     },
     {
       "id": "twice",
       "title": "action.twice",
-      "icon": "2.circle",
+      "icon": "circle.inset.filled",
       "destructive": false,
       "haptic": "light"
     },

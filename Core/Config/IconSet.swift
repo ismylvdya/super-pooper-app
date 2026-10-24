@@ -11,8 +11,7 @@ enum Icon: String, CaseIterable, Sendable {
     case checkboxOpen, markDone, markPartial, markTwice
     case emptyVault, debugSeed, permissionGranted, permissionMissing
     case tabToday, tabHabits, tabSettings
-    case bell
-    case habitOpen, habitDone, habitPartial, habitTwice, habitNotScheduled
+    case bell, olderWeeks
     case today, harmful, timeOfDay, goal, trash, restore, links, opacity, obsidian, habitSettings, taskSettings, clockSettings
 }
 

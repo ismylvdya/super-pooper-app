@@ -19,14 +19,14 @@ struct TaskPageScreen: View {
     var body: some View {
         if let task = model.task(named: currentName) {
             let editor = TaskEditor.note(task, model: model)
-            PageScaffold(title: task.name) {
-                TaskTitleSection(task: task) { renamedTo = $0 }
+            PageScaffold(title: task.name, titleView: task.isHabit ? AnyView(HeaderNameField(task: task) { renamedTo = $0 }) : nil) {
                 if task.isHabit {
                     HabitSections(editor: editor)
                 } else {
+                    TaskTitleSection(task: task) { renamedTo = $0 }
                     TaskSections(editor: editor)
+                    TaskNoteSection(taskName: task.name)
                 }
-                TaskNoteSection(taskName: task.name, header: task.isHabit ? "habitPage.description" : "taskPage.note")
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -60,6 +60,56 @@ struct TaskSections: View {
         TaskPropertiesSection(editor: editor)
         if !editor.isDraft { TaskLinksSection(task: editor.task) }
         TaskEventsSection(editor: editor)
+    }
+}
+
+/// A habit's name edited right in the page title (as in the old Habits app): tap the title, type, Return.
+struct HeaderNameField: View {
+    @Environment(AppModel.self) private var model
+    @Environment(Router.self) private var router
+    let task: TaskNote
+    let onRenamed: (String) -> Void
+    @State private var draft = ""
+    @FocusState private var isEditing: Bool
+    @State private var isRenaming = false
+
+    var body: some View {
+        TextField("habitPage.name.placeholder", text: $draft, axis: .vertical)
+            .multilineTextAlignment(.center)
+            .submitLabel(.done)
+            .focused($isEditing)
+            .onSubmit { commit() }
+            .onChange(of: draft) { _, value in
+                // Return in a vertical field inserts a newline: treat it as "done".
+                if value.contains("\n") {
+                    draft = value.replacingOccurrences(of: "\n", with: "")
+                    isEditing = false
+                }
+            }
+            .onAppear { draft = task.name }
+            .onChange(of: task.name) { _, name in if !isEditing { draft = name } }
+            .onChange(of: isEditing) { _, editing in if !editing { commit() } }
+            .accessibilityIdentifier("taskPage.name")
+    }
+
+    private func commit() {
+        guard !isRenaming else { return }
+        let newName = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !newName.isEmpty, newName != task.name else {
+            draft = task.name
+            return
+        }
+        isRenaming = true
+        Task {
+            defer { isRenaming = false }
+            if await model.rename(task.name, to: newName) {
+                onRenamed(newName)
+                if let index = router.path.lastIndex(of: .task(task.name)) { router.path[index] = .task(newName) }
+                model.banners.show(L10n.format("banner.renamed", newName), style: .success)
+            } else {
+                draft = task.name
+            }
+        }
     }
 }
 

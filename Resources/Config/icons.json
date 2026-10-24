@@ -69,10 +69,6 @@
   "habitSettings": "square.grid.3x3",
   "taskSettings": "checklist",
   "clockSettings": "clock",
-  "habitOpen": "circle",
-  "habitDone": "circle.fill",
-  "habitPartial": "smallcircle.filled.circle",
-  "habitTwice": "circle.inset.filled",
-  "habitNotScheduled": "circle.dotted",
-  "bell": "bell"
+  "bell": "bell",
+  "olderWeeks": "arrow.up"
 }

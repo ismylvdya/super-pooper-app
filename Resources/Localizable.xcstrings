@@ -914,6 +914,17 @@
         }
       }
     },
+    "habitPage.description.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Why, how, notes…"
+          }
+        }
+      }
+    },
     "habitPage.goal": {
       "extractionState": "manual",
       "localizations": {

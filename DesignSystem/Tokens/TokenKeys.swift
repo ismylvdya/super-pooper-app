@@ -15,7 +15,7 @@ enum RadiusToken: String, CaseIterable, Sendable {
 enum SizeToken: String, CaseIterable, Sendable {
     case badgeOffset, iconColumn, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, navTitleStep
     case problemDot, sourceDot, habitCell, fadeHeight, bannerLines, poolRowEstimate, poolCounter, poolWidth, widgetRowHeight
-    case habitDayButton, habitHistoryMaxHeight, habitStatsBar, infoMaxHeightRatio, linkBadge, titleFade, hourDigitsWidth
+    case habitDot, habitRingRatio, habitPartialDot, habitMenuDot, habitHistoryMaxHeight, habitStatsBar, infoMaxHeightRatio, linkBadge, titleFade, hourDigitsWidth, pullThreshold, pullIcon
 }
 
 enum OpacityToken: String, CaseIterable, Sendable {

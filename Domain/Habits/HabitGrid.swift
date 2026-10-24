@@ -36,9 +36,9 @@ struct HabitGrid: Sendable {
         }
     }
 
-    /// Enough weeks to reach back to the habit's start (plus `extraWeeks`), but at least `minimumWeeks`.
+    /// Enough weeks to reach back to the first marked day (plus `extraWeeks`), but at least `minimumWeeks`.
     static func weekCount(for task: TaskNote, today: LocalDate, calendar: Calendar, minimumWeeks: Int, extraWeeks: Int) -> Int {
-        let start = HabitHistory(task: task, calendar: calendar).start(today: today)
+        let start = HabitInstances(task: task).complete.min() ?? today
         let startMonday = start.adding(days: -(start.weekday.rawValue - 1))
         let weeks = startMonday.days(until: today) / 7 + 1
         return max(minimumWeeks, weeks + extraWeeks)

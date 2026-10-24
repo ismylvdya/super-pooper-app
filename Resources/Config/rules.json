@@ -60,6 +60,7 @@
     "historyExtraWeeks": 0,
     "defaultAllowedSkips": 1,
     "defaultWeeklyGoal": 3,
-    "maxAllowedSkips": 14
+    "maxAllowedSkips": 14,
+    "historyPullWeeks": 4
   }
 }
