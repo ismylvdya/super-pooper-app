@@ -80,7 +80,7 @@ struct HabitRow: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(tokens.color(.plateBackground))
         // A long press lifts the whole row and offers today's marks.
-        .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: tokens.radius(.plate), style: .continuous))
+        .contentShape(.contextMenuPreview, Rectangle())
         .contextMenu { HabitDayMenu(habit: habit, day: today) }
     }
 }

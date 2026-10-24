@@ -15,7 +15,8 @@ struct FadingText: View {
     var body: some View {
         let fade = tokens.size(.titleFade)
         // A narrow column would break words letter by letter: one fading line there.
-        let lines = width < tokens.size(.wrapMinWidth) ? 1 : self.lines
+        let isNarrow = width < tokens.size(.wrapMinWidth)
+        let lines = isNarrow ? 1 : self.lines
         Group {
             if lines <= 1 {
                 // An overlay never widens the layout: the line keeps its natural width and is cut by the frame.
@@ -43,8 +44,11 @@ struct FadingText: View {
                 }
             }
         }
+        // In a narrow column every letter counts: the line runs a few letters on under the corner icons
+        // and into the plate's padding before it fades.
+        .padding(.trailing, isNarrow ? reserve - tokens.size(.narrowFadeShift) : reserve)
+        // Measured outside the padding, so the shift above never feeds back into the width.
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
-        .padding(.trailing, reserve)
         .accessibilityLabel(Text(text))
     }
 }
