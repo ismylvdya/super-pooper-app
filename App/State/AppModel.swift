@@ -37,6 +37,7 @@ final class AppModel {
     @ObservationIgnored private var writtenDuringSync: Set<String>?
     @ObservationIgnored var runningSync: Task<Void, Never>?
     @ObservationIgnored var notificationTask: Task<Void, Never>?
+    @ObservationIgnored var settingsNoteWrite: Task<Void, Never>?
 
     init(config: AppConfig, services: AppServices, banners: BannerCenter, clock: Clock, calendar: Calendar) {
         self.config = config
@@ -93,7 +94,28 @@ final class AppModel {
         change(&settings)
         guard settings != old else { return }
         try? services.settingsStore.save(settings)
+        if SyncedSettings(old) != SyncedSettings(settings) { scheduleSettingsNoteWrite() }
         Task { await settingsDidChange(from: old) }
+    }
+
+    /// Settings changed in the vault note (another device, Obsidian) come in without being written back.
+    func applySettingsNote(_ json: Data) {
+        let old = settings
+        let merged = SyncedSettings.merged(note: json, over: settings)
+        guard merged != old else { return }
+        settings = merged
+        try? services.settingsStore.save(settings)
+        Task { await settingsDidChange(from: old) }
+    }
+
+    /// Writes the vault note shortly after the last change (sliders send many).
+    private func scheduleSettingsNoteWrite() {
+        settingsNoteWrite?.cancel()
+        settingsNoteWrite = Task {
+            try? await Task.sleep(for: .seconds(1))
+            guard !Task.isCancelled, let json = try? JSONEncoder.store.encode(SyncedSettings(settings)) else { return }
+            try? await services.settingsNote.write(json)
+        }
     }
 
     private func settingsDidChange(from old: AppSettings) async {

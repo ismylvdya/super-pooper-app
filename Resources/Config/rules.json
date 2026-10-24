@@ -40,7 +40,8 @@
   },
   "vault": {
     "downloadTimeoutSeconds": 20,
-    "noteExtension": "md"
+    "noteExtension": "md",
+    "settingsNote": "SuperPooper Settings.md"
   },
   "backups": {
     "keepCount": 20

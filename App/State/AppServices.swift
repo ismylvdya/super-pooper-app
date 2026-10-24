@@ -6,6 +6,7 @@ struct AppServices {
     let vault: VaultLocating
     let tasks: TaskRepository
     let trash: TrashRepository
+    let settingsNote: SettingsNoteRepository
     let calendars: CalendarRepository
     let reminders: RemindersRepository
     let notifications: NotificationScheduling

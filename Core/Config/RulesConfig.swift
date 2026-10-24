@@ -29,6 +29,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
     struct Vault: Codable, Hashable, Sendable {
         let downloadTimeoutSeconds: Double
         let noteExtension: String
+        /// The note with the app's settings, next to the tasks folder.
+        let settingsNote: String
     }
 
     struct Backups: Codable, Hashable, Sendable {

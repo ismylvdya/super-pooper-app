@@ -32,6 +32,12 @@ extension AppModel {
                 SyncLog.logger.info("vault scan: \(result.tasks.count) tasks in \(Date().timeIntervalSince(started), format: .fixed(precision: 2)) s")
                 setScanResult(result)
                 vaultIsWholeVault = await services.tasks.isWholeVault()
+                // The vault's settings note wins over this device; the first time, this device writes it.
+                if let json = await services.settingsNote.read() {
+                    applySettingsNote(json)
+                } else if let json = try? JSONEncoder.store.encode(SyncedSettings(settings)) {
+                    try? await services.settingsNote.write(json)
+                }
                 report.conflicts = result.conflicted
                 if config.flags.autoPromote { report.promoted = await autoPromote() }
             } catch {

@@ -14,6 +14,8 @@ enum PreviewModel {
             vault: FixedVaultLocation(url: store.directory), tasks: InMemoryTaskRepository(tasks: PreviewSamples.tasks),
             trash: VaultTrashRepository(location: FixedVaultLocation(url: store.directory), fileSystem: CoordinatedFileSystem(),
                                         noteExtension: config.rules.vault.noteExtension, vaultSettings: { settingsStore.load().vault }),
+            settingsNote: VaultSettingsNote(location: FixedVaultLocation(url: store.directory), fileSystem: CoordinatedFileSystem(),
+                                            fileName: config.rules.vault.settingsNote, vaultSettings: { settingsStore.load().vault }),
             calendars: StaticCalendarRepository(), reminders: StaticRemindersRepository(), notifications: SilentNotifications(),
             settingsStore: settingsStore, dayStateStore: DayStateStore(store: store),
             snapshotStore: SnapshotStore(store: store), widgets: NoWidgets())

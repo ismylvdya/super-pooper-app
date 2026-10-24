@@ -70,6 +70,8 @@ final class AppContainer {
             vault: vaultLocation, tasks: tasks,
             trash: VaultTrashRepository(location: vaultLocation, fileSystem: fileSystem, noteExtension: config.rules.vault.noteExtension,
                                         vaultSettings: { settingsStore.load().vault }),
+            settingsNote: VaultSettingsNote(location: vaultLocation, fileSystem: fileSystem, fileName: config.rules.vault.settingsNote,
+                                            vaultSettings: { settingsStore.load().vault }),
             calendars: EventKitCalendarRepository(eventKit: eventKit),
             reminders: EventKitRemindersRepository(eventKit: eventKit, calendar: calendar),
             notifications: notifications, settingsStore: settingsStore,

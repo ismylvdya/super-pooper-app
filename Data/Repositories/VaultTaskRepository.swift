@@ -54,15 +54,18 @@ actor VaultTaskRepository: TaskRepository {
         }
     }
 
+    /// The text of the note without the app's ```SuperPooperApp block.
     func body(of task: TaskNote) async throws -> String {
         try await location.withRoot { root in
             let file = try fileSystem.read(try existingURL(of: task, root: root))
-            return try FrontmatterDocument(text: file.text).body
+            return AppBlock.split(try FrontmatterDocument(text: file.text).body).visible
         }
     }
 
-    func setBody(_ body: String, of task: TaskNote) async throws -> TaskWriteResult {
+    /// Replaces the text of the note; the app's block (if any) stays right after the frontmatter.
+    func setBody(_ visible: String, of task: TaskNote) async throws -> TaskWriteResult {
         try await edit(task) { document in
+            let body = AppBlock.join(block: AppBlock.split(document.body).block, visible: visible)
             self.writer.apply([], to: &document, now: self.clock.now)
             var frontmatter = String(decoding: Array(document.text.utf8.dropLast(document.body.utf8.count)), as: UTF8.self)
             // A closing `---` at the very end of the file has no line ending yet.
