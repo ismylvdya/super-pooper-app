@@ -14,6 +14,8 @@ struct DayInputs: Sendable {
     var routines = HabitRoutines()
     /// Tasks the morning review moved out of today (they stay this week).
     var postponed: Set<String> = []
+    /// Which kinds of entries the timeline shows; hidden timed tasks and habits stay in the pool.
+    var timelineFilter = TimelineFilter()
 }
 
 /// Decides what is in today, what goes to the pool and what goes to the timeline.
@@ -54,15 +56,18 @@ struct DayBuilder: Sendable {
             }
         }
 
-        let timed = items.filter { !timesOfDay(of: $0.task, context: context).isEmpty }
+        let timed = items.filter { inputs.timelineFilter.shows($0) && !timesOfDay(of: $0.task, context: context).isEmpty }
+        let shownTimed = timed.filter { !$0.isFinished }
         let timedNames = Set(timed.map(\.id))
         let chainAnchors = propagate(anchors, through: items.filter { !timedNames.contains($0.id) }, graph: graph)
-        let poolItems = items.filter { !timedNames.contains($0.id) && chainAnchors[$0.id] == nil }
+        // Done today: it leaves the pool and the timeline instead of staying greyed out.
+        let poolItems = items.filter { !$0.isFinished && !timedNames.contains($0.id) && chainAnchors[$0.id] == nil }
 
         let pool = inputs.manualOrder.map { sorter.applyingManualOrder($0, to: poolItems, graph: graph, context: context) }
             ?? sorter.sorted(poolItems, graph: graph, context: context)
 
-        var timeline = fixedEntries(timed: timed, events: inputs.events, reminders: inputs.reminders, context: context)
+        var timeline = fixedEntries(timed: shownTimed, events: inputs.timelineFilter.events ? inputs.events : [],
+                                    reminders: inputs.timelineFilter.reminders ? inputs.reminders : [], context: context)
         let chainLayout = ChainLayout(rules: rules)
         for chain in chains(items: items, anchors: chainAnchors, sorter: sorter, graph: graph, context: context) {
             timeline += chainLayout.entries(for: chain, now: context.now)
@@ -166,13 +171,12 @@ struct DayBuilder: Sendable {
             for time in timesOfDay(of: item.task, context: context) {
                 let start = context.moment(time, onLogicalDay: context.today)
                 let end = start.addingTimeInterval(Double(rules.estimate(of: item.task)) * 60)
-                entries.append(TimelineSlot(content: .task(item), start: start, end: end, isPast: item.isDone, time: time, alerts: true))
+                entries.append(TimelineSlot(content: .task(item), start: start, end: end, isPast: false, time: time, alerts: true))
             }
         }
-        for reminder in reminders where context.contains(reminder.due) {
+        for reminder in reminders where context.contains(reminder.due) && !reminder.isCompleted {
             let end = reminder.due.addingTimeInterval(Double(rules.reminderMinutes) * 60)
-            entries.append(TimelineSlot(content: .reminder(reminder), start: reminder.due, end: end,
-                                         isPast: reminder.isCompleted || end <= context.now, alerts: true))
+            entries.append(TimelineSlot(content: .reminder(reminder), start: reminder.due, end: end, isPast: false, alerts: true))
         }
         return entries
     }

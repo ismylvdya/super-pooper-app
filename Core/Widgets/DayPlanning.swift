@@ -10,7 +10,7 @@ enum DayPlanning {
         let inputs = DayInputs(tasks: usableTasks, events: events, reminders: reminders,
                                skipped: Set(state.skipped), manualOrder: state.manualOrder,
                                routines: HabitRoutines(morning: settings.habits.morningRoutine, evening: settings.habits.eveningRoutine),
-                               postponed: Set(state.postponed))
+                               postponed: Set(state.postponed), timelineFilter: settings.timeline.shown)
         return DayBuilder(rules: config.rules.day, sortCriteria: sortCriteria(config: config, settings: settings))
             .build(inputs, context: context)
     }
@@ -25,7 +25,7 @@ enum DayPlanning {
         let day = context.today.adding(days: dayOffset)
         let dayContext = context.with(now: OtherDay.moment(of: day, context: context, anchor: config.rules.timeline.otherDayAnchor))
         let inputs = DayInputs(tasks: OtherDay.tasks(tasks, on: day, context: dayContext), events: events, reminders: reminders,
-                               skipped: [], manualOrder: nil)
+                               skipped: [], manualOrder: nil, timelineFilter: settings.timeline.shown)
         var result = DayBuilder(rules: config.rules.day, sortCriteria: sortCriteria(config: config, settings: settings))
             .build(inputs, context: dayContext)
         result.isToday = false

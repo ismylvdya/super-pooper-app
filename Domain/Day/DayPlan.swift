@@ -11,7 +11,7 @@ struct TimelineSlot: Identifiable, Hashable, Sendable {
     let content: TimelineContent
     let start: Date
     let end: Date
-    /// Finished events and done tasks are drawn greyed out.
+    /// Finished events are drawn greyed out (done tasks and reminders leave the timeline).
     let isPast: Bool
     /// Which of a habit's several times of day this block is (it keeps the ids of the blocks apart).
     var time: LocalTime? = nil

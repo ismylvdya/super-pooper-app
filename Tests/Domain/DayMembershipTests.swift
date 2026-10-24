@@ -18,24 +18,15 @@ struct DayMembershipTests {
         #expect(DayScenario(tasks: [task]).build().dayNames.isEmpty)
     }
 
-    @Test func aTaskDoneTodayStaysVisibleAsDone() throws {
+    @Test func aTaskDoneTodayLeavesTheDay() {
         let task = makeTask("Done today", status: .done) { $0.completedDate = LocalDate("2026-10-21") }
-        let item = try #require(DayScenario(tasks: [task]).build().item(named: "Done today"))
-        #expect(item.isDone)
-        #expect(item.state == .marked(.done))
+        #expect(DayScenario(tasks: [task]).build().dayNames.isEmpty)
     }
 
     @Test func aTaskDoneEarlierOrWithoutCompletionDateIsHidden() {
         let yesterday = makeTask("Done yesterday", status: .done) { $0.completedDate = LocalDate("2026-10-20") }
         let undated = makeTask("Done undated", status: .done)
         #expect(DayScenario(tasks: [yesterday, undated]).build().dayNames.isEmpty)
-    }
-
-    @Test func doneTodayIsStillVisibleAfterMidnightUntilTheDayBoundary() {
-        let task = makeTask("Done Wednesday", status: .done) { $0.completedDate = LocalDate("2026-10-21") }
-        let scenario = DayScenario(tasks: [task])
-        #expect(scenario.build(at: TestCalendar.context("2026-10-22", "03:59")).poolNames == ["Done Wednesday"])
-        #expect(scenario.build(at: TestCalendar.context("2026-10-22", "04:00")).poolNames.isEmpty)
     }
 
     // MARK: - Recurring tasks
@@ -62,15 +53,25 @@ struct DayMembershipTests {
         #expect(scenario.build().dayNames.isEmpty)
     }
 
-    @Test func aMarkedHabitIsShownWithItsMark() throws {
+    @Test func aHabitMarkedTodayLeavesTheDay() {
         let habit = makeHabit("Meditation") { task in
             task.completeInstances = [LocalDate("2026-10-20"), LocalDate("2026-10-21")]
             task.partialInstances = [LocalDate("2026-10-21")]
             task.twiceInstances = [LocalDate("2026-10-20")]
         }
-        let item = try #require(DayScenario(tasks: [habit]).build().item(named: "Meditation"))
-        #expect(item.state == .marked(.partial))
-        #expect(item.isDone)
+        #expect(DayScenario(tasks: [habit]).build().dayNames.isEmpty)
+    }
+
+    @Test func aTwiceADayHabitStaysUntilItsSecondMark() throws {
+        let once = makeHabit("Brush teeth") { task in
+            task.habit.twiceADay = true
+            task.completeInstances = [LocalDate("2026-10-21")]
+        }
+        let item = try #require(DayScenario(tasks: [once]).build().item(named: "Brush teeth"))
+        #expect(item.state == .marked(.done))
+        var twice = once
+        twice.twiceInstances = [LocalDate("2026-10-21")]
+        #expect(DayScenario(tasks: [twice]).build().dayNames.isEmpty)
     }
 
     @Test func anUnknownRuleIsVisibleWithAProblem() throws {

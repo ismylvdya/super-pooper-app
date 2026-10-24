@@ -22,10 +22,9 @@ struct TimelineLayoutTests {
         #expect(layout(.after(call), [open("A", 15)], now: late).map(\.label) == ["A 20:40–20:55"])
     }
 
-    @Test func doneItemsAreStackedRightBeforeTheOriginInChainOrder() {
+    @Test func doneItemsLeaveTheChain() {
         let slots = layout(.before(call), [done("Done 1", 15), done("Done 2", 30), open("Open", 15)])
-        #expect(slots.map(\.label) == ["Done 1 12:40–12:55", "Done 2 12:55–13:25", "Open 13:25–13:40"])
-        #expect(slots.map(\.isPast) == [true, true, false])
+        #expect(slots.map(\.label) == ["Open 13:25–13:40"])
     }
 
     // MARK: - ColumnAssigner

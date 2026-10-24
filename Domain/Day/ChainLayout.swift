@@ -14,8 +14,7 @@ struct TimelineChain: Sendable {
     let items: [DayItem]
 }
 
-/// Places chain tasks one after another. Open tasks follow the cursor (so they slide along
-/// with "now" during the day); done ones are stacked right before it.
+/// Places the open chain tasks one after another from the cursor, so they slide along with "now" during the day.
 struct ChainLayout: Sendable {
     let rules: DayRules
 
@@ -28,19 +27,12 @@ struct ChainLayout: Sendable {
 
         var entries: [TimelineSlot] = []
         var cursor = origin
-        for item in chain.items where !item.isDone {
+        for item in chain.items where !item.isFinished {
             let end = cursor.addingTimeInterval(duration(of: item))
             entries.append(TimelineSlot(content: .task(item), start: cursor, end: end, isPast: false))
             cursor = end
         }
-
-        var backCursor = origin
-        for item in chain.items.reversed() where item.isDone {
-            let start = backCursor.addingTimeInterval(-duration(of: item))
-            entries.append(TimelineSlot(content: .task(item), start: start, end: backCursor, isPast: true))
-            backCursor = start
-        }
-        return entries.sorted { $0.start < $1.start }
+        return entries
     }
 
     private func duration(of item: DayItem) -> TimeInterval {

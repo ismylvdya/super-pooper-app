@@ -727,6 +727,17 @@
         }
       }
     },
+    "day.today": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today"
+          }
+        }
+      }
+    },
     "day.tomorrow": {
       "extractionState": "manual",
       "localizations": {
@@ -1779,6 +1790,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hours around now in a column that scrolls, or the whole day from its start to its end fitted into one column."
+          }
+        }
+      }
+    },
+    "info.settings.timeline.shown": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What the timeline shows. Hidden tasks with a time and habits with reminders go to the pool instead; hidden events and reminders are not shown at all. Notifications keep working."
           }
         }
       }
@@ -3847,6 +3869,50 @@
           "stringUnit": {
             "state": "translated",
             "value": "Second half"
+          }
+        }
+      }
+    },
+    "settings.timeline.showEvents": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Events"
+          }
+        }
+      }
+    },
+    "settings.timeline.showHabits": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habits with reminders"
+          }
+        }
+      }
+    },
+    "settings.timeline.showReminders": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reminders"
+          }
+        }
+      }
+    },
+    "settings.timeline.showTasks": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tasks with a time"
           }
         }
       }

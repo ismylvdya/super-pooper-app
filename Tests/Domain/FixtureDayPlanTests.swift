@@ -20,9 +20,9 @@ struct FixtureDayPlanTests {
             "Оплатить интернет", "Позвонить в банк", "Сдать отчёт", "Разобрать почту", "Помыть окна",
             "Сходить к стоматологу", "Купить батарейки 🔋", "Длинная заметка с незнакомыми ключами", "Найти отвёртку",
             "Записать идеи", "Связь без скобок", "Связь на несуществующую", "Цикл Б", "Цикл А", "Собрать шкаф",
-            "Повесить зеркало", "Посмотреть сериал 🍿", "Купить молоко",
+            "Повесить зеркало", "Посмотреть сериал 🍿",
         ])
-        #expect(plan.pool.last?.isDone == true)
+        #expect(plan.pool.allSatisfy { !$0.isDone })
     }
 
     @Test func afterTheEnergyHourEnergyTasksGoDown() async throws {
@@ -42,7 +42,7 @@ struct FixtureDayPlanTests {
         let hidden: Set<String> = ["Архивная задача", "Ждать ответа от арендодателя", "Выучить испанский", "Обновить резюме",
                                    "Старая сделанная задача", "Стирка 🧺"]
         #expect(plan.dayNames.isDisjoint(with: hidden))
-        #expect(plan.dayNames.count == 30)
+        #expect(plan.dayNames.count == 29)
     }
 
     @Test func timelineHoldsTimedTasksChainsEventsAndReminders() async throws {

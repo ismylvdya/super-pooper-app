@@ -171,7 +171,7 @@ struct DayTimelineTests {
         #expect(plan.timeline.map { clockTime($0.end) } == ["10:15", "15:15", "20:00"])
     }
 
-    @Test func pastEventsAndDoneTasksAreGreyedOut() throws {
+    @Test func onlyPastEventsAreGreyedOutWhileDoneEntriesLeave() throws {
         let morning = makeEvent("Standup", from: "10:00", to: "10:15")
         let doneTimed = makeHabit("Vitamins", time: "09:00") { $0.completeInstances = [LocalDate("2026-10-21")] }
         let openTimed = makeTask("Missed at noon") { $0.due = TaskDue("2026-10-21T12:00") }
@@ -182,12 +182,12 @@ struct DayTimelineTests {
 
         #expect(plan.eventSlot("Standup")?.isPast == true)
         #expect(plan.eventSlot("Call with dad")?.isPast == false)
-        #expect(plan.slot("Vitamins")?.isPast == true)
+        #expect(plan.slot("Vitamins") == nil)
+        #expect(plan.slot("Prepared") == nil)
         #expect(plan.slot("Missed at noon")?.isPast == false)
-        let done = try #require(plan.slot("Prepared"))
         let open = try #require(plan.slot("To print"))
-        #expect(done.isPast && !open.isPast)
-        #expect((clockTime(done.start), clockTime(done.end), clockTime(open.start)) == ("13:10", "13:25", "13:25"))
-        #expect(plan.timeline.filter { if case .reminder = $0.content { return $0.isPast } else { return false } }.count == 2)
+        #expect(!open.isPast && clockTime(open.start) == "13:25")
+        let reminderSlots = plan.timeline.filter { if case .reminder = $0.content { return true } else { return false } }
+        #expect(reminderSlots.count == 1 && !reminderSlots[0].isPast)
     }
 }

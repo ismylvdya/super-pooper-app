@@ -73,6 +73,8 @@ struct AppSettings: Codable, Equatable, Sendable {
         /// The bell of blocks that will alert: size in points and opacity.
         var bellSize: Double
         var bellOpacity: Double
+        /// Which kinds of entries the timeline shows.
+        var shown: TimelineFilter
     }
 
     struct Notifications: Codable, Equatable, Sendable {

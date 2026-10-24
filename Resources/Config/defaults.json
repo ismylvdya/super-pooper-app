@@ -42,7 +42,13 @@
     "eventFontSize": 15,
     "taskFontSize": 17,
     "bellSize": 11,
-    "bellOpacity": 0.45
+    "bellOpacity": 0.45,
+    "shown": {
+      "events": true,
+      "reminders": true,
+      "tasks": true,
+      "habits": true
+    }
   },
   "notifications": {
     "enabled": true

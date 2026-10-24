@@ -51,9 +51,9 @@ struct ManualOrderTests {
         #expect(ordered(["B", "C", "A"], [a, dependent, c]) == ["C", "A", "B"])
     }
 
-    @Test func doneTasksStayLastEvenWhenDraggedUp() {
+    @Test func doneTasksLeaveThePoolEvenWhenDraggedUp() {
         let doneC = makeTask("C", status: .done) { $0.completedDate = LocalDate("2026-10-21") }
-        #expect(ordered(["C", "A", "B"], [a, b, doneC]) == ["A", "B", "C"])
+        #expect(ordered(["C", "A", "B"], [a, b, doneC]) == ["A", "B"])
     }
 
     @Test func resetToAutoRestoresTheSortedOrder() {

@@ -32,10 +32,9 @@ struct BlockingTests {
         #expect(plan.problems(of: "Linked to nothing") == [.linkedTaskNotFound("Несуществующая задача")])
     }
 
-    @Test func aDoneTaskIsNeverShownAsBlocked() throws {
+    @Test func aDoneTaskLeavesTheDayInsteadOfShowingBlocked() {
         let done = assemble.applying([.status(.done), .completedDate(LocalDate("2026-10-21"))])
-        let item = try #require(DayScenario(tasks: [makeTask("Find screwdriver"), done]).build().item(named: "Assemble wardrobe"))
-        #expect(!item.isBlocked)
+        #expect(DayScenario(tasks: [makeTask("Find screwdriver"), done]).build().item(named: "Assemble wardrobe") == nil)
     }
 
     // MARK: - Recurring predecessors
@@ -100,7 +99,7 @@ struct BlockingTests {
         tasks[1] = markedToday(shower)
         plan = DayScenario(tasks: tasks).build()
         #expect(plan.item(named: "Утро — завтрак 🥣")?.isBlocked == false)
-        #expect(plan.poolNames == ["Утро — завтрак 🥣", "Утро — зарядка 🤸", "Утро — душ 🚿"])
+        #expect(plan.poolNames == ["Утро — завтрак 🥣"])
     }
 
     // MARK: - Events and cycles
