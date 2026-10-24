@@ -12,6 +12,8 @@ enum Icon: String, CaseIterable, Sendable {
     case emptyVault, debugSeed, permissionGranted, permissionMissing
     case tabToday, tabHabits, tabSettings
     case bell, olderWeeks, postpone
+    /// Asset catalog template images (not SF Symbols): the habit marks, shared by menus and notifications.
+    case habitMarkOpen, habitMarkDone, habitMarkPartial, habitMarkTwice
     case today, harmful, timeOfDay, goal, trash, restore, links, opacity, obsidian, habitSettings, taskSettings, clockSettings
 }
 

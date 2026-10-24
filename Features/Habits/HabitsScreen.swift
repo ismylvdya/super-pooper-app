@@ -107,7 +107,7 @@ struct HabitDayButton: View {
 struct HabitDayMenu: View {
     @Environment(AppModel.self) private var model
     @Environment(\.actions) private var actions
-    @Environment(\.tokens) private var tokens
+    @Environment(\.icons) private var icons
     let habit: TaskNote
     let day: LocalDate
     var showsDate = false
@@ -120,14 +120,14 @@ struct HabitDayMenu: View {
         ForEach(marks, id: \.self) { mark in
             let action = actions.definition(Self.actionID(mark))
             Button { set(mark) } label: {
-                Label { Text(LocalizedStringKey(action.title)) } icon: { HabitMarkImage.image(mark, tokens: tokens) }
+                Label { Text(LocalizedStringKey(action.title)) } icon: { Image(icons[HabitMarkIcon.icon(for: mark)]) }
             }
             .disabled(current == mark)
         }
         if current != nil {
             let action = actions.definition(.unmark)
             Button { set(nil) } label: {
-                Label { Text(LocalizedStringKey(action.title)) } icon: { HabitMarkImage.image(HabitMark?.none, tokens: tokens) }
+                Label { Text(LocalizedStringKey(action.title)) } icon: { Image(icons[HabitMarkIcon.icon(for: nil)]) }
             }
         }
     }

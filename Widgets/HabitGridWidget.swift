@@ -19,6 +19,7 @@ struct HabitGridEntry: TimelineEntry {
     let date: Date
     let habitName: String?
     let source: WidgetDataSource?
+    var options = HabitWidgetOptions()
 }
 
 struct HabitGridProvider: AppIntentTimelineProvider {
@@ -27,7 +28,9 @@ struct HabitGridProvider: AppIntentTimelineProvider {
     }
 
     func snapshot(for configuration: SelectHabitIntent, in context: Context) async -> HabitGridEntry {
-        HabitGridEntry(date: Date(), habitName: configuration.habit?.id, source: WidgetDataSource.load())
+        HabitGridEntry(date: Date(), habitName: configuration.habit?.id, source: WidgetDataSource.load(),
+                       options: HabitWidgetOptions(titleSize: configuration.titleSize.points, wrapTitle: configuration.wrapTitle,
+                                                   breakWords: configuration.breakWords, weeks: configuration.weeks))
     }
 
     /// The grid only changes when the app writes a new snapshot (it reloads widgets) or the logical day ends.
@@ -48,9 +51,8 @@ struct HabitGridEntryView: View {
             if let source = entry.source, let habit {
                 let today = source.context(at: entry.date).today
                 HabitWidgetView(habit: habit,
-                                grid: HabitGrid(task: habit, weekCount: source.config.rules.widgets.habitGridWeeksSmall,
-                                                today: today, calendar: source.calendar),
-                                today: today)
+                                grid: HabitGrid(task: habit, weekCount: entry.options.weeks, today: today, calendar: source.calendar),
+                                today: today, options: entry.options)
             } else {
                 Text("widget.habit.empty").font(tokens.font(.widgetCaption)).foregroundStyle(tokens.color(.secondaryText)).padding()
             }

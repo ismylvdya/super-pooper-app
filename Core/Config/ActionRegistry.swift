@@ -36,6 +36,11 @@ enum ActionMenu: String, Codable, CaseIterable, Sendable {
     case habitArchiveRow
 }
 
+extension ActionMenu {
+    /// Menus about a habit's day: their mark actions use the habit mark images.
+    var isHabitMenu: Bool { self == .habitContext || self == .habitNotification }
+}
+
 struct ActionDefinition: Codable, Hashable, Sendable {
     let id: ActionID
     /// String Catalog key.

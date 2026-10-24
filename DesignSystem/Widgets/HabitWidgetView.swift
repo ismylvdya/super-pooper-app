@@ -8,6 +8,7 @@ struct HabitWidgetView: View {
     let habit: TaskNote
     let grid: HabitGrid
     let today: LocalDate
+    var options = HabitWidgetOptions()
 
     var body: some View {
         GeometryReader { geometry in
@@ -20,11 +21,9 @@ struct HabitWidgetView: View {
         let color = tokens.habitColor(habit)
         return VStack(alignment: .leading, spacing: tokens.space(.habitCellGap) * 2) {
             HStack(alignment: .top, spacing: tokens.space(.chipGap)) {
-                Text(habit.name)
-                    .font(tokens.font(.widgetTitle))
+                HabitWidgetTitle(text: habit.name, size: options.titleSize ?? Double(tokens.uiFont(.widgetTitle).pointSize),
+                                 wrap: options.wrapTitle, breakWords: options.breakWords)
                     .foregroundStyle(color)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.7)
                 Spacer(minLength: 0)
                 Button(intent: MarkHabitTodayIntent(habitName: habit.name)) {
                     HabitDayCell(cell: todayCell, color: color, metrics: metrics)
@@ -39,5 +38,41 @@ struct HabitWidgetView: View {
 
     private var todayCell: HabitCell {
         grid.weeks.last?.first { $0.date == today }?.cell ?? .open
+    }
+}
+
+/// The widget title: one line that fades out; with "Wrap Title" a title that does not fit goes to two
+/// lines a third smaller, by words or (with "Break Words") by letters with a hyphen.
+struct HabitWidgetTitle: View {
+    let text: String
+    let size: Double
+    var wrap = false
+    var breakWords = false
+
+    var body: some View {
+        let font = Font.system(size: size, weight: .semibold, design: .rounded)
+        let small = size * 2 / 3
+        let smallFont = Font.system(size: small, weight: .semibold, design: .rounded)
+        let smallLine = UIFont.systemFont(ofSize: small, weight: .semibold).lineHeight
+        if wrap {
+            ViewThatFits(in: .horizontal) {
+                Text(text).font(font).lineLimit(1).fixedSize()
+                if breakWords {
+                    GeometryReader { geometry in
+                        let lines = HyphenSplit.split(text, width: geometry.size.width,
+                                                      font: UIFont.systemFont(ofSize: small, weight: .semibold))
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text(lines.first).font(smallFont).lineLimit(1)
+                            FadingText(text: lines.rest, font: smallFont, lineHeight: smallLine)
+                        }
+                    }
+                    .frame(height: smallLine * 2)
+                } else {
+                    FadingText(text: text, font: smallFont, lineHeight: smallLine, lines: 2)
+                }
+            }
+        } else {
+            FadingText(text: text, font: font, lineHeight: UIFont.systemFont(ofSize: size, weight: .semibold).lineHeight)
+        }
     }
 }

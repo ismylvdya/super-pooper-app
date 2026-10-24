@@ -114,23 +114,26 @@ struct HabitDayCell: View {
     }
 }
 
-/// The marks as template images for menus (they take the menu's text color).
-@MainActor
-enum HabitMarkImage {
-    static func image(_ cell: HabitCell, tokens: DesignTokens) -> Image {
-        let metrics = HabitDotMetrics(dot: tokens.size(.habitMenuDot), ringRatio: tokens.size(.habitRingRatio))
-        let renderer = ImageRenderer(content: HabitDayCell(cell: cell, color: .black, metrics: metrics).environment(\.tokens, tokens))
-        renderer.scale = 3
-        guard let image = renderer.uiImage else { return Image(systemName: "circle") }
-        return Image(uiImage: image.withRenderingMode(.alwaysTemplate))
+/// The habit marks as template images from the asset catalog (they take the menu's text color). The same
+/// images are the icons of the habit notification buttons.
+enum HabitMarkIcon {
+    static func icon(for mark: HabitMark?) -> Icon {
+        switch mark {
+        case nil: .habitMarkOpen
+        case .done: .habitMarkDone
+        case .partial: .habitMarkPartial
+        case .twice: .habitMarkTwice
+        }
     }
 
-    static func image(_ mark: HabitMark?, tokens: DesignTokens) -> Image {
-        switch mark {
-        case nil: image(.open, tokens: tokens)
-        case .done: image(.done, tokens: tokens)
-        case .partial: image(.partial, tokens: tokens)
-        case .twice: image(.twice, tokens: tokens)
+    /// The habit mark an action stands for, if it is one.
+    static func icon(for action: ActionID) -> Icon? {
+        switch action {
+        case .done: .habitMarkDone
+        case .partial: .habitMarkPartial
+        case .twice: .habitMarkTwice
+        case .unmark: .habitMarkOpen
+        default: nil
         }
     }
 }

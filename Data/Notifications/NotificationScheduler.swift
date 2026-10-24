@@ -27,6 +27,7 @@ enum NotificationPayload {
 
 struct UserNotificationScheduler: NotificationScheduling {
     let calendar: Calendar
+    let icons: IconSet
     let bodyText: @Sendable (PlannedNotification.Kind) -> String
 
     private var center: UNUserNotificationCenter { .current() }
@@ -46,10 +47,14 @@ struct UserNotificationScheduler: NotificationScheduling {
     func registerCategories(_ registry: ActionRegistry, habitActionsEnabled: Bool) {
         func category(_ id: String, _ menu: ActionMenu) -> UNNotificationCategory {
             let actions = registry.actions(in: menu).map { definition in
-                UNNotificationAction(identifier: definition.id.rawValue,
-                                     title: String(localized: String.LocalizationValue(definition.title)),
-                                     options: definition.destructive ? [.destructive] : [],
-                                     icon: UNNotificationActionIcon(systemImageName: definition.icon))
+                // Habit buttons get the same mark images as the app's habit menus.
+                let icon = menu.isHabitMenu
+                    ? HabitMarkIcon.icon(for: definition.id).map { UNNotificationActionIcon(templateImageName: icons[$0]) }
+                    : nil
+                return UNNotificationAction(identifier: definition.id.rawValue,
+                                            title: String(localized: String.LocalizationValue(definition.title)),
+                                            options: definition.destructive ? [.destructive] : [],
+                                            icon: icon ?? UNNotificationActionIcon(systemImageName: definition.icon))
             }
             return UNNotificationCategory(identifier: id, actions: actions, intentIdentifiers: [], options: [.customDismissAction])
         }

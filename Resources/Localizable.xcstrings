@@ -4940,6 +4940,28 @@
         }
       }
     },
+    "widget.habit.breakWords": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Break Words"
+          }
+        }
+      }
+    },
+    "widget.habit.breakWords.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "With Wrap Title: break by letters with a hyphen, not by words"
+          }
+        }
+      }
+    },
     "widget.habit.configure": {
       "extractionState": "manual",
       "localizations": {
@@ -5013,6 +5035,61 @@
           "stringUnit": {
             "state": "translated",
             "value": "Habit"
+          }
+        }
+      }
+    },
+    "widget.habit.titleSize": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Title font"
+          }
+        }
+      }
+    },
+    "widget.habit.titleSize.default": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Default"
+          }
+        }
+      }
+    },
+    "widget.habit.weeks": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weeks"
+          }
+        }
+      }
+    },
+    "widget.habit.wrapTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wrap Title"
+          }
+        }
+      }
+    },
+    "widget.habit.wrapTitle.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off: one line, the end fades out"
           }
         }
       }

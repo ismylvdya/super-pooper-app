@@ -59,7 +59,7 @@ final class AppContainer {
                                         vaultSettings: { settingsStore.load().vault })
         let eventKit = EventKitAccess()
         self.eventKit = eventKit
-        let notifications = UserNotificationScheduler(calendar: calendar) { kind in
+        let notifications = UserNotificationScheduler(calendar: calendar, icons: config.icons) { kind in
             switch kind {
             case .habit: L10n.string("notification.habit.body")
             case .task: L10n.string("notification.task.body")

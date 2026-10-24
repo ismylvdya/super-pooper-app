@@ -71,5 +71,9 @@
   "clockSettings": "clock",
   "bell": "bell",
   "olderWeeks": "arrow.up",
-  "postpone": "moon.zzz"
+  "postpone": "moon.zzz",
+  "habitMarkOpen": "HabitMarkOpen",
+  "habitMarkDone": "HabitMarkDone",
+  "habitMarkPartial": "HabitMarkPartial",
+  "habitMarkTwice": "HabitMarkTwice"
 }

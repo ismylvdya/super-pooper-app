@@ -4,6 +4,7 @@ import SwiftUI
 /// for the item's current state are shown.
 struct ActionMenuContent: View {
     @Environment(\.actions) private var actions
+    @Environment(\.icons) private var icons
     let menu: ActionMenu
     let item: DayItem?
     let perform: (ActionDefinition) -> Void
@@ -14,7 +15,12 @@ struct ActionMenuContent: View {
                 Haptics.play(action.haptic)
                 perform(action)
             } label: {
-                Label(LocalizedStringKey(action.title), systemImage: action.icon)
+                // Habit menus show the habit marks, as the habit notifications do.
+                if menu.isHabitMenu, let mark = HabitMarkIcon.icon(for: action.id) {
+                    Label { Text(LocalizedStringKey(action.title)) } icon: { Image(icons[mark]) }
+                } else {
+                    Label(LocalizedStringKey(action.title), systemImage: action.icon)
+                }
             }
         }
     }
