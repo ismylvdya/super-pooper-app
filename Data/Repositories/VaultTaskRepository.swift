@@ -67,10 +67,7 @@ actor VaultTaskRepository: TaskRepository {
         try await edit(task) { document in
             let body = AppBlock.join(block: AppBlock.split(document.body).block, visible: visible)
             self.writer.apply([], to: &document, now: self.clock.now)
-            var frontmatter = String(decoding: Array(document.text.utf8.dropLast(document.body.utf8.count)), as: UTF8.self)
-            // A closing `---` at the very end of the file has no line ending yet.
-            if !body.isEmpty, !frontmatter.hasSuffix("\n") { frontmatter += document.text.contains("\r\n") ? "\r\n" : "\n" }
-            return frontmatter + body
+            return document.text(withBody: body)
         }
     }
 
@@ -92,7 +89,8 @@ actor VaultTaskRepository: TaskRepository {
         // A dependent that moved or vanished meanwhile must not undo the rename; its link then shows
         // up as "linked task not found" after the rescan.
         for dependent in dependents {
-            _ = try? await apply([.renamePreviousTask(from: task.name, to: newName)], to: dependent)
+            _ = try? await apply([.renamePreviousTask(from: task.name, to: newName), .renameProject(from: task.name, to: newName)],
+                                 to: dependent)
         }
         return renamed
     }

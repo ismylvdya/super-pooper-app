@@ -107,6 +107,8 @@ struct VaultScannerTests {
         var expected = TaskNote(name: "Длинная заметка с незнакомыми ключами",
                                 relativePath: "TaskNotes/Tasks/Длинная заметка с незнакомыми ключами.md", status: .thisWeek)
         expected.timeEstimate = 15
+        // `projects` is read: it makes the note a TaskNotes subtask of «Ремонт».
+        expected.projects = ["Ремонт"]
         try expectSame(task, expected, created: "2026-10-06", modified: "2026-10-19")
     }
 

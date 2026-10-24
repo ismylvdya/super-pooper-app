@@ -35,7 +35,7 @@ enum WriteConflict {
         case .twiceCountsDouble: return (keys.twiceCountsDouble, { $0.habit.twiceCountsDouble })
         case .weeklyGoal: return (keys.weeklyGoal, { $0.habit.weeklyGoal })
         case .allowedSkips: return (keys.allowedSkips, { $0.habit.allowedSkips })
-        case .addPreviousTask, .removePreviousTask, .renamePreviousTask, .markInstance: return nil
+        case .addPreviousTask, .removePreviousTask, .renamePreviousTask, .addProject, .renameProject, .markInstance: return nil
         }
     }
 }

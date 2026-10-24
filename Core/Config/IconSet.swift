@@ -15,6 +15,7 @@ enum Icon: String, CaseIterable, Sendable {
     /// Asset catalog template images (not SF Symbols): the habit marks, shared by menus and notifications.
     case habitMarkOpen, habitMarkDone, habitMarkPartial, habitMarkTwice
     case today, harmful, timeOfDay, goal, trash, restore, links, opacity, obsidian, habitSettings, taskSettings, clockSettings
+    case tomorrow, subtask, addSubtask
 }
 
 typealias IconSet = TokenTable<Icon, String>

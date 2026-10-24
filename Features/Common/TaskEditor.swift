@@ -5,26 +5,33 @@ import SwiftUI
 @MainActor
 struct TaskEditor {
     let task: TaskNote
-    let isDraft: Bool
+    /// The draft itself (its text and subtasks), nil for an existing note.
+    let draft: Binding<NoteDraft>?
     let apply: ([TaskFieldChange]) -> Void
 
+    var isDraft: Bool { draft != nil }
+
     static func note(_ task: TaskNote, model: AppModel) -> TaskEditor {
-        TaskEditor(task: task, isDraft: false) { changes in
+        TaskEditor(task: task, draft: nil) { changes in
             Task { await model.update(task.name, changes) }
         }
     }
 
     static func draft(_ draft: Binding<NoteDraft>) -> TaskEditor {
-        TaskEditor(task: draft.wrappedValue.note, isDraft: true) { changes in
+        TaskEditor(task: draft.wrappedValue.note, draft: draft) { changes in
             draft.wrappedValue.apply(changes)
         }
     }
 }
 
-/// A note that does not exist yet: its fields and the changes that will be written when it is created.
+/// A note that does not exist yet: its fields, the changes that will be written when it is created,
+/// its text and the subtasks created with it.
 struct NoteDraft: Equatable {
     var note: TaskNote
     private(set) var changes: [TaskFieldChange] = []
+    var body = ""
+    /// Names of the subtasks; empty entries are the "add a subtask" field and are skipped.
+    var subtasks: [String] = []
 
     init(status: TaskStatus, changes: [TaskFieldChange] = []) {
         note = TaskNote(name: "", relativePath: "", status: status)

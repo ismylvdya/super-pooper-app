@@ -26,6 +26,7 @@ struct TaskNoteReader: Sendable {
         task.due = fields.parsed(keys.due, TaskDue.init(rawValue:))
         task.timeEstimate = fields.int(keys.timeEstimate)
         task.previousTasks = fields.links(keys.previousTasks)
+        task.projects = fields.links(keys.projects)
         task.previousEvent = fields.parsed(keys.previousEvent, EventLink.init(rawValue:))
         task.nextEvent = fields.parsed(keys.nextEvent, EventLink.init(rawValue:))
         task.needEnergy = fields.bool(keys.needEnergy) ?? false

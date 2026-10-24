@@ -1822,7 +1822,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The pool above the timeline, or the pool on the left and the timeline on the right. The Today widget follows the same choice."
+            "value": "Stacked: the pool above the timeline. Side by side: the pool on the left, the timeline on the right. Pages: the pool and the timeline each take the whole screen and a swipe turns between them; the edge of the other one stays visible. Drag tasks between the pool and the timeline in any of them."
           }
         }
       }
@@ -1844,7 +1844,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Stacked: the pool above the timeline. Side by side: the pool and the timeline next to each other. Only the widget changes."
+            "value": "Stacked: the pool above the timeline. Side by side: the pool and the timeline next to each other. Only the widget changes; it has no pages."
           }
         }
       }
@@ -1977,6 +1977,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "This week — picked for the week, the day is built from these. Half year and Someday — backlog. Waiting — not in the day. The app never lowers a status."
+          }
+        }
+      }
+    },
+    "info.taskPage.subtasks": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each subtask is a task note of its own that lists this one in “projects”, as TaskNotes does. Type a name and press Return to add one."
           }
         }
       }
@@ -3989,7 +4000,18 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Side by side, the pool and the timeline both use the full height of the screen."
+            "value": "Side by side and on pages, the pool and the timeline use the full height of the screen."
+          }
+        }
+      }
+    },
+    "settings.today.paged": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pages"
           }
         }
       }
@@ -4088,7 +4110,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "# SuperPooper settings\n\nSettings of the SuperPooper app on iPhone. Change them in the app (Settings); the block above is read by every device.\n"
+            "value": "# SuperPooper settings\n\nSettings of the SuperPooper app on iPhone. Change them in the app (Settings) or in the properties above; every device reads them.\n"
           }
         }
       }
@@ -4522,6 +4544,39 @@
         }
       }
     },
+    "taskPage.chip.high": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "High"
+          }
+        }
+      }
+    },
+    "taskPage.chip.today": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today"
+          }
+        }
+      }
+    },
+    "taskPage.chip.tomorrow": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tomorrow"
+          }
+        }
+      }
+    },
     "taskPage.due": {
       "extractionState": "manual",
       "localizations": {
@@ -4726,7 +4781,18 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Note"
+            "value": "Description"
+          }
+        }
+      }
+    },
+    "taskPage.note.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Description"
           }
         }
       }
@@ -4874,6 +4940,28 @@
         }
       }
     },
+    "taskPage.subtask.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a subtask"
+          }
+        }
+      }
+    },
+    "taskPage.subtasks": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subtasks"
+          }
+        }
+      }
+    },
     "timeline.alert": {
       "extractionState": "manual",
       "localizations": {
@@ -4903,6 +4991,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Edit"
+          }
+        }
+      }
+    },
+    "today.page.pool": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show the pool"
+          }
+        }
+      }
+    },
+    "today.page.timeline": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show the timeline"
           }
         }
       }

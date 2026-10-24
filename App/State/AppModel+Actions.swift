@@ -77,13 +77,13 @@ extension AppModel {
         }
     }
 
-    /// Renames the note file; tasks that link to it get their `previous_task` updated.
+    /// Renames the note file; tasks that link to it get their `previous_task` and `projects` updated.
     @discardableResult
     func rename(_ name: String, to newName: String) async -> Bool {
         guard let task = task(named: name) else { return false }
         let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed != name else { return true }
-        let dependents = tasks.filter { $0.previousTasks.contains { $0.isSameNoteName(as: name) } }
+        let dependents = tasks.filter { ($0.previousTasks + $0.projects).contains { $0.isSameNoteName(as: name) } }
         var renamed = false
         do {
             if config.flags.backups { try await services.tasks.backup([task] + dependents, reason: "rename") }

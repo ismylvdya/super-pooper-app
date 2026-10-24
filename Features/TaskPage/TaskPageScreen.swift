@@ -24,7 +24,6 @@ struct TaskPageScreen: View {
                     HabitSections(editor: editor)
                 } else {
                     TaskSections(editor: editor)
-                    TaskNoteSection(taskName: task.name)
                 }
             }
             .toolbar {
@@ -46,12 +45,19 @@ struct TaskPageScreen: View {
     }
 }
 
-/// The sections of a task (also used by the new-task draft).
+/// The sections of a task (also used by the new-task draft): the quick chips under the name, the text,
+/// subtasks, then everything else.
 struct TaskSections: View {
     let editor: TaskEditor
 
     var body: some View {
-        TaskPlanSection(editor: editor)
+        TaskQuickChips(editor: editor)
+        if let draft = editor.draft {
+            DraftNoteSection(draft: draft)
+        } else {
+            TaskNoteSection(taskName: editor.task.name)
+        }
+        SubtasksSection(editor: editor)
         TaskEventsSection(editor: editor)
         if !editor.isDraft { TaskLinksSection(task: editor.task) }
         TaskPropertiesSection(editor: editor)

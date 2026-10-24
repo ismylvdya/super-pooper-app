@@ -13,6 +13,8 @@ struct TaskNote: Identifiable, Hashable, Codable, Sendable {
     var timeEstimate: Int?
     /// Names of the tasks that come before this one (`previous_task`, TaskNotes "blocked by").
     var previousTasks: [String] = []
+    /// Names of the notes this one is a subtask of (`projects`, TaskNotes "subtask of").
+    var projects: [String] = []
     var previousEvent: EventLink?
     var nextEvent: EventLink?
     var needEnergy: Bool = false

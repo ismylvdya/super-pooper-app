@@ -46,3 +46,18 @@ struct TaskNoteSection: View {
         }
     }
 }
+
+/// The text of a task that is not created yet: kept in the draft and written with the note.
+struct DraftNoteSection: View {
+    @Environment(\.tokens) private var tokens
+    @Binding var draft: NoteDraft
+
+    var body: some View {
+        PlateSection(header: "taskPage.note", info: "info.taskPage.note") {
+            TextField("taskPage.note.placeholder", text: $draft.body, axis: .vertical)
+                .font(tokens.font(.rowTitle))
+                .lineLimit(3...)
+                .accessibilityIdentifier("taskPage.note")
+        }
+    }
+}

@@ -5,7 +5,7 @@ enum SpacingToken: String, CaseIterable, Sendable {
     case screenHorizontal, screenBottom, groupGap, plateInner, plateRowGap, headerToPlate, hintToPlate
     case iconTextGap, chipHorizontal, chipVertical, chipGap, infoPadding, nestedTitleInset, nestedTitleLift
     case childIndent, rowVertical, poolRowGap, blockGap, timelineLabelWidth, timelineItemGap, timelineItemPadding
-    case bannerTop, bannerPadding, widgetPadding, habitCellGap, titleBottom, hourLabelGap, bellInset, liftShadow, listRowInset
+    case bannerTop, bannerPadding, widgetPadding, habitCellGap, titleBottom, hourLabelGap, bellInset, liftShadow, listRowInset, toggleChipHorizontal, toggleChipVertical
 }
 
 enum RadiusToken: String, CaseIterable, Sendable {
@@ -15,12 +15,12 @@ enum RadiusToken: String, CaseIterable, Sendable {
 enum SizeToken: String, CaseIterable, Sendable {
     case badgeOffset, iconColumn, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, navTitleStep
     case problemDot, sourceDot, habitCell, fadeHeight, bannerLines, poolRowEstimate, poolCounter, poolWidth, widgetRowHeight
-    case habitRingRatio, habitPartialDot, habitMenuDot, habitHistoryMaxHeight, habitStatsBar, infoMaxHeightRatio, linkBadge, titleFade, hourDigitsWidth, pullThreshold, pullIcon, actionPopoverWidth, daySwipeStart, reviewChevron, timelineZoomMin, timelineZoomMax, wrapMinWidth, narrowFadeShift, liftOverhang
+    case habitRingRatio, habitPartialDot, habitMenuDot, habitHistoryMaxHeight, habitStatsBar, infoMaxHeightRatio, linkBadge, titleFade, hourDigitsWidth, pullThreshold, pullIcon, actionPopoverWidth, daySwipeStart, reviewChevron, timelineZoomMin, timelineZoomMax, wrapMinWidth, narrowFadeShift, liftOverhang, pagePeek, dropLine, dropMarkerHeight
 }
 
 enum OpacityToken: String, CaseIterable, Sendable {
     case blocked, past, eventFill, taskFill, doneText, fadeTop, fadeMiddle, habitEmpty, partialFill
-    case gridFadedWeek, unlinked, eventTime, nowOverBlocks, daySwipeThreshold, daySwipeFade
+    case gridFadedWeek, unlinked, eventTime, nowOverBlocks, daySwipeThreshold, daySwipeFade, toggleChipFill
 }
 
 enum DurationToken: String, CaseIterable, Sendable {
@@ -30,7 +30,7 @@ enum DurationToken: String, CaseIterable, Sendable {
 enum FontToken: String, CaseIterable, Sendable {
     case pageTitle, navTitle, sectionHeader, rowTitle, hint, chip, info, timelineHour, banner, poolCounter
     case taskTitle, emptyTitle, emptyBody, footer, widgetTitle, widgetCaption, caption, noteEditor
-    case nameField, statValue
+    case nameField, statValue, toggleChip
 }
 
 enum ColorToken: String, CaseIterable, Sendable {

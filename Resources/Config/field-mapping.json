@@ -6,6 +6,7 @@
     "due": "due",
     "timeEstimate": "time_estimate",
     "previousTasks": "previous_task",
+    "projects": "projects",
     "previousEvent": "previous_event",
     "nextEvent": "next_event",
     "needEnergy": "need_energy",

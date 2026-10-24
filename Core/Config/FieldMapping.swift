@@ -10,6 +10,8 @@ struct FieldMapping: Codable, Hashable, Sendable {
         let due: String
         let timeEstimate: String
         let previousTasks: String
+        /// TaskNotes subtasks: a subtask lists its parent notes here.
+        let projects: String
         let previousEvent: String
         let nextEvent: String
         let needEnergy: String

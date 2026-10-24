@@ -168,3 +168,23 @@ struct NoteOperationsTests {
         try FileManager.default.contentsOfDirectory(atPath: sandbox.backups.path).filter { !$0.hasPrefix(".") }.sorted()
     }
 }
+
+/// Subtasks are TaskNotes `projects` links to the parent note.
+@Suite("Subtask links")
+struct SubtaskLinkTests {
+    @Test func projectsAreReadAsParentNames() async throws {
+        let note = try await SandboxNote("Длинная заметка с незнакомыми ключами")
+        #expect(note.task.projects == ["Ремонт"])
+    }
+
+    @Test func aSubtaskGetsItsParentInProjectsOnce() async throws {
+        let note = try await SandboxNote("Повесить зеркало")
+        try await note.apply([.addProject("Ремонт"), .addProject("ремонт")])
+        #expect(note.task.projects == ["Ремонт"])
+        #expect(try note.text().contains("projects:\n  - \"[[Ремонт]]\"\n"))
+
+        try await note.apply([.renameProject(from: "Ремонт", to: "Ремонт кухни")])
+        #expect(note.task.projects == ["Ремонт кухни"])
+        #expect(try note.text().contains("  - \"[[Ремонт кухни]]\"\n"))
+    }
+}

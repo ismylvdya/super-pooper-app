@@ -34,6 +34,16 @@ struct TaskNoteWriter: Sendable {
                 let renamed = entries.map { linkName($0)?.isSameNoteName(as: old) == true ? relink($0, to: new) : $0 }
                 guard renamed != entries else { continue }
                 document.set(keys.previousTasks, to: .list(renamed))
+            case .addProject(let name):
+                var entries = listItems(keys.projects, in: document)
+                guard !entries.contains(where: { linkName($0)?.isSameNoteName(as: name) == true }) else { continue }
+                entries.append(.scalar(WikiLink.make(name), quoted: true))
+                document.set(keys.projects, to: .list(entries))
+            case .renameProject(let old, let new):
+                let entries = listItems(keys.projects, in: document)
+                let renamed = entries.map { linkName($0)?.isSameNoteName(as: old) == true ? .scalar(WikiLink.make(new), quoted: true) : $0 }
+                guard renamed != entries else { continue }
+                document.set(keys.projects, to: .list(renamed))
             case .previousEvent(let link):
                 set(keys.previousEvent, link.map { .scalar($0.rawValue(timeZone: timeZone), quoted: true) }, in: &document)
             case .nextEvent(let link):

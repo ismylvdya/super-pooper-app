@@ -42,18 +42,46 @@ extension AppModel {
         await setHabitMark(name, on: day, to: mark)
     }
 
-    /// Creates the note of a draft (a task or a habit) with all its fields. Returns the final name.
+    /// Creates the note of a draft (a task or a habit) with all its fields, its text and its subtasks
+    /// (each a task of its own linked by `projects`, as TaskNotes does). Returns the final name.
     func create(_ draft: NoteDraft, named name: String) async -> String? {
         do {
             let created = try await services.tasks.create(named: name, status: draft.note.status)
-            let result = try await services.tasks.apply(draft.changes.filter(\.isFieldOfNewNote), to: created)
+            var result = try await services.tasks.apply(draft.changes.filter(\.isFieldOfNewNote), to: created)
+            if !draft.body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                result = try await services.tasks.setBody(draft.body, of: result.task)
+            }
             replace(result.task)
+            for subtask in draft.subtasks.map({ $0.trimmingCharacters(in: .whitespacesAndNewlines) }) where !subtask.isEmpty {
+                try await createSubtask(subtask, of: result.task.name)
+            }
             await publishDerivedState()
             return result.task.name
         } catch {
             banners.show(Self.describe(error), style: .problem)
             return nil
         }
+    }
+
+    /// A task of this week that is a subtask of `parent`.
+    func addSubtask(_ name: String, to parent: String) async {
+        do {
+            try await createSubtask(name, of: parent)
+            await publishDerivedState()
+        } catch {
+            banners.show(Self.describe(error), style: .problem)
+        }
+    }
+
+    /// Subtasks of a note (notes whose `projects` link to it), by name.
+    func subtasks(of parent: String) -> [TaskNote] {
+        tasks.filter { $0.projects.contains { $0.isSameNoteName(as: parent) } }
+            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+    }
+
+    private func createSubtask(_ name: String, of parent: String) async throws {
+        let created = try await services.tasks.create(named: name, status: .thisWeek)
+        replace(try await services.tasks.apply([.addProject(parent)], to: created).task)
     }
 
     /// A new habit: daily from today, shown in Today as the settings say.

@@ -11,6 +11,9 @@ enum TaskFieldChange: Hashable, Sendable {
     case addPreviousTask(String)
     case removePreviousTask(String)
     case renamePreviousTask(from: String, to: String)
+    /// Makes the note a subtask of another one (TaskNotes `projects`).
+    case addProject(String)
+    case renameProject(from: String, to: String)
     case previousEvent(EventLink?)
     case nextEvent(EventLink?)
     case needEnergy(Bool)
@@ -47,6 +50,10 @@ extension TaskNote {
                 task.previousTasks.removeAll { $0.isSameNoteName(as: name) }
             case .renamePreviousTask(let old, let new):
                 task.previousTasks = task.previousTasks.map { $0.isSameNoteName(as: old) ? new : $0 }
+            case .addProject(let name):
+                if !task.projects.contains(where: { $0.isSameNoteName(as: name) }) { task.projects.append(name) }
+            case .renameProject(let old, let new):
+                task.projects = task.projects.map { $0.isSameNoteName(as: old) ? new : $0 }
             case .previousEvent(let value): task.previousEvent = value
             case .nextEvent(let value): task.nextEvent = value
             case .needEnergy(let value): task.needEnergy = value
