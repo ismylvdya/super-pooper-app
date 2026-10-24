@@ -12,6 +12,8 @@ struct CalendarEvent: Identifiable, Hashable, Codable, Sendable {
     let colorHex: String
     /// The event has an alert in Calendar (its block shows the bell).
     var hasAlarm = false
+    /// When its alerts fire (the app sends them as its own notifications).
+    var alarmDates: [Date] = []
 
     /// Recurring instances share `eventIdentifier`; the start makes them unique.
     var id: String { "\(eventIdentifier)@\(start.timeIntervalSince1970)" }
@@ -27,7 +29,7 @@ struct CalendarEvent: Identifiable, Hashable, Codable, Sendable {
 
 extension CalendarEvent {
     private enum CodingKeys: String, CodingKey {
-        case eventIdentifier, title, start, end, isAllDay, calendarID, calendarTitle, colorHex, hasAlarm
+        case eventIdentifier, title, start, end, isAllDay, calendarID, calendarTitle, colorHex, hasAlarm, alarmDates
     }
 
     /// Widget snapshots written before `hasAlarm` existed still decode.
@@ -40,7 +42,8 @@ extension CalendarEvent {
                   calendarID: try values.decode(String.self, forKey: .calendarID),
                   calendarTitle: try values.decode(String.self, forKey: .calendarTitle),
                   colorHex: try values.decode(String.self, forKey: .colorHex),
-                  hasAlarm: try values.decodeIfPresent(Bool.self, forKey: .hasAlarm) ?? false)
+                  hasAlarm: try values.decodeIfPresent(Bool.self, forKey: .hasAlarm) ?? false,
+                  alarmDates: try values.decodeIfPresent([Date].self, forKey: .alarmDates) ?? [])
     }
 }
 

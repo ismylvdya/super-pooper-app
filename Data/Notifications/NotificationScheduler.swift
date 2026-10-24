@@ -7,7 +7,8 @@ protocol NotificationScheduling: Sendable {
     func registerCategories(_ registry: ActionRegistry, habitActionsEnabled: Bool)
     /// Makes the pending set equal to `planned`; delivered notifications whose source is gone,
     /// done or moved (not in `stillValid`, i.e. today's plan including past times) are removed.
-    func sync(planned: [PlannedNotification], stillValid: [PlannedNotification]) async
+    /// `immediate`: alerts whose time already passed without a notification (moved into the past), sent now.
+    func sync(planned: [PlannedNotification], stillValid: [PlannedNotification], now immediate: [PlannedNotification]) async
     func removeAll() async
     /// Puts a notification the user swiped away or tapped back into Notification Center (silently).
     func restore(_ notification: UNNotification) async
@@ -23,6 +24,7 @@ enum NotificationPayload {
     static let habitCategory = "habit"
     static let taskCategory = "task"
     static let reminderCategory = "reminder"
+    static let eventCategory = "event"
 }
 
 struct UserNotificationScheduler: NotificationScheduling {
@@ -66,24 +68,42 @@ struct UserNotificationScheduler: NotificationScheduling {
             habit,
             category(NotificationPayload.taskCategory, .taskNotification),
             category(NotificationPayload.reminderCategory, .reminderNotification),
+            category(NotificationPayload.eventCategory, .eventNotification),
         ])
     }
 
-    func sync(planned: [PlannedNotification], stillValid: [PlannedNotification]) async {
-        let pending = await center.pendingNotificationRequests().map(\.identifier).filter { $0.hasPrefix(NotificationPayload.prefix) }
-        let wanted = Set(planned.map { identifier(for: $0) })
-        center.removePendingNotificationRequests(withIdentifiers: pending.filter { !wanted.contains($0) })
-
-        let pendingSet = Set(pending)
-        for notification in planned where !pendingSet.contains(identifier(for: notification)) {
+    /// Pending requests are compared by identifier and fire time: a habit's slot identifier stays the
+    /// same from day to day, and a moved item must be rescheduled even when its identifier did not change.
+    func sync(planned: [PlannedNotification], stillValid: [PlannedNotification], now immediate: [PlannedNotification]) async {
+        let pending = await center.pendingNotificationRequests().filter { $0.identifier.hasPrefix(NotificationPayload.prefix) }
+        let wanted = Dictionary(planned.map { (identifier(for: $0), $0.fireDate) }, uniquingKeysWith: { first, _ in first })
+        let current = Dictionary(pending.map { ($0.identifier, fireDate(of: $0)) }, uniquingKeysWith: { first, _ in first })
+        let outdated = current.filter { id, date in
+            guard let want = wanted[id] else { return true }
+            return date.map { abs($0.timeIntervalSince(want)) > 30 } ?? true
+        }
+        center.removePendingNotificationRequests(withIdentifiers: Array(outdated.keys))
+        for notification in planned {
+            let id = identifier(for: notification)
+            guard current[id] == nil || outdated[id] != nil else { continue }
             try? await center.add(request(for: notification))
         }
+        for notification in immediate {
+            let content = self.content(for: notification)
+            try? await center.add(UNNotificationRequest(identifier: identifier(for: notification) + "|late", content: content, trigger: nil))
+        }
 
-        let validIdentifiers = Set(stillValid.map { identifier(for: $0) })
-        let delivered = await center.deliveredNotifications().map(\.request.identifier)
-        center.removeDeliveredNotifications(withIdentifiers: delivered.filter {
-            $0.hasPrefix(NotificationPayload.prefix) && !validIdentifiers.contains($0)
-        })
+        // Delivered ones stay only while their item is still open for their day (identifier + day).
+        let valid = Set(stillValid.flatMap { [identifier(for: $0) + "#" + $0.day.isoString, identifier(for: $0) + "|late#" + $0.day.isoString] })
+        let delivered = await center.deliveredNotifications().map(\.request)
+        center.removeDeliveredNotifications(withIdentifiers: delivered.filter { request in
+            let day = request.content.userInfo[NotificationPayload.dayKey] as? String ?? ""
+            return request.identifier.hasPrefix(NotificationPayload.prefix) && !valid.contains(request.identifier + "#" + day)
+        }.map(\.identifier))
+    }
+
+    private func fireDate(of request: UNNotificationRequest) -> Date? {
+        (request.trigger as? UNCalendarNotificationTrigger)?.nextTriggerDate()
     }
 
     func removeAll() async {
@@ -100,20 +120,33 @@ struct UserNotificationScheduler: NotificationScheduling {
         try? await center.add(UNNotificationRequest(identifier: original.identifier, content: content, trigger: trigger))
     }
 
-    /// The fire time is part of the identifier, so a moved task gets a fresh notification.
+    /// Habits keep one identifier per time slot (the new day's notification replaces the old one);
+    /// everything else carries its fire time, so a moved item gets a fresh notification.
     private func identifier(for notification: PlannedNotification) -> String {
-        "\(NotificationPayload.prefix)\(notification.id)@\(Int(notification.fireDate.timeIntervalSince1970))"
+        if notification.kind == .habit, notification.id == notification.key { return NotificationPayload.prefix + notification.id }
+        return "\(NotificationPayload.prefix)\(notification.id)@\(Int(notification.fireDate.timeIntervalSince1970))"
     }
 
     private func request(for notification: PlannedNotification) -> UNNotificationRequest {
+        let content = content(for: notification)
+        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: notification.fireDate)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+        return UNNotificationRequest(identifier: identifier(for: notification), content: content, trigger: trigger)
+    }
+
+    private func content(for notification: PlannedNotification) -> UNMutableNotificationContent {
         let content = UNMutableNotificationContent()
         content.title = notification.title
-        content.body = bodyText(notification.kind)
+        content.body = notification.start.map { start in
+            "\(bodyText(notification.kind)) \(start.formatted(date: .omitted, time: .shortened))"
+        } ?? bodyText(notification.kind)
         content.sound = .default
+        content.threadIdentifier = notification.key
         content.categoryIdentifier = switch notification.kind {
         case .habit: NotificationPayload.habitCategory
         case .task: NotificationPayload.taskCategory
         case .reminder: NotificationPayload.reminderCategory
+        case .event: NotificationPayload.eventCategory
         }
         content.userInfo = [
             NotificationPayload.kindKey: notification.kind.rawValue,
@@ -121,8 +154,6 @@ struct UserNotificationScheduler: NotificationScheduling {
             NotificationPayload.dayKey: notification.day.isoString,
             NotificationPayload.reminderKey: notification.reminderID ?? "",
         ]
-        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: notification.fireDate)
-        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
-        return UNNotificationRequest(identifier: identifier(for: notification), content: content, trigger: trigger)
+        return content
     }
 }

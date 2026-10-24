@@ -17,7 +17,8 @@ struct NotificationPlannerTests {
 
     @Test func aTimedHabitGetsOneNotificationPerDayOfTheHorizon() {
         let planned = plan([vitamins], at: "08:00")
-        #expect(planned.map(\.id) == days(21...27).map { "habit|Vitamins 💊|\($0)|09:00" })
+        // The next one carries the slot identifier (it replaces an older delivered one), the rest are per day.
+        #expect(planned.map(\.id) == ["habit|Vitamins 💊|09:00"] + days(22...27).map { "habit|Vitamins 💊|\($0)|09:00" })
         #expect(planned.map { clockTime($0.fireDate) } == Array(repeating: "09:00", count: 7))
         #expect(planned.map(\.day.isoString) == days(21...27))
         #expect(planned.allSatisfy { $0.kind == .habit && $0.taskName == "Vitamins 💊" && $0.title == "Vitamins 💊" })
@@ -97,11 +98,20 @@ struct NotificationPlannerTests {
         let water = makeHabit("Water at ten", time: "10:00")
         let context = TestCalendar.context(TestCalendar.wednesday, "13:25")
         let valid = planner.stillValidToday(tasks: [vitamins, parcel, friday, water], reminders: [], skipped: ["Water at ten"], context: context)
-        #expect(Set(valid.map(\.id)) == ["habit|Vitamins 💊|2026-10-21|09:00", "task|Parcel"])
+        // Today's vitamins (per day and as the delivered slot of an open day) and the parcel.
+        let todays = valid.filter { $0.day == LocalDate("2026-10-21") }
+        #expect(Set(todays.map(\.id)) == ["habit|Vitamins 💊|2026-10-21|09:00", "habit|Vitamins 💊|09:00", "task|Parcel"])
 
         let marked = vitamins.applying([.markInstance(day: LocalDate("2026-10-21"), mark: .done)])
         let doneParcel = parcel.applying([.status(.done), .completedDate(LocalDate("2026-10-21"))])
-        #expect(planner.stillValidToday(tasks: [marked, doneParcel], reminders: [], skipped: [], context: context).isEmpty)
+        let afterMarking = planner.stillValidToday(tasks: [marked, doneParcel], reminders: [], skipped: [], context: context)
+        #expect(!afterMarking.contains { $0.day == LocalDate("2026-10-21") })
+    }
+
+    @Test func yesterdaysOpenHabitNotificationStaysUntilTheNewOneComes() {
+        let context = TestCalendar.context(TestCalendar.wednesday, "08:00")
+        let valid = planner.stillValidToday(tasks: [vitamins], reminders: [], skipped: [], context: context)
+        #expect(valid.contains { $0.id == "habit|Vitamins 💊|09:00" && $0.day == LocalDate("2026-10-20") })
     }
 
     // MARK: - Helpers

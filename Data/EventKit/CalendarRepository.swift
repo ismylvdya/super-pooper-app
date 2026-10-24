@@ -50,7 +50,10 @@ struct EventKitCalendarRepository: CalendarRepository {
                                  isAllDay: event.isAllDay, calendarID: event.calendar.calendarIdentifier,
                                  calendarTitle: event.calendar.title,
                                  colorHex: UIColor(cgColor: event.calendar.cgColor).hexString,
-                                 hasAlarm: event.hasAlarms)
+                                 hasAlarm: event.hasAlarms,
+                                 alarmDates: event.status == .canceled ? [] : (event.alarms ?? []).map { alarm in
+                                     alarm.absoluteDate ?? start.addingTimeInterval(alarm.relativeOffset)
+                                 })
         }
         .sorted { $0.start < $1.start }
     }

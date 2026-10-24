@@ -13,6 +13,7 @@ struct AppServices {
     let settingsStore: SettingsStore
     let dayStateStore: DayStateStore
     let snapshotStore: SnapshotStore
+    let alertStateStore: AlertStateStore
     let widgets: WidgetReloading
 }
 

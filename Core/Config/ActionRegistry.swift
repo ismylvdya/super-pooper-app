@@ -34,6 +34,7 @@ enum ActionMenu: String, Codable, CaseIterable, Sendable {
     case archiveRow
     case habitPage
     case habitArchiveRow
+    case eventNotification
 }
 
 extension ActionMenu {

@@ -1,3 +1,4 @@
+@preconcurrency import EventKit
 import Foundation
 import UserNotifications
 
@@ -64,6 +65,7 @@ final class AppContainer {
             case .habit: L10n.string("notification.habit.body")
             case .task: L10n.string("notification.task.body")
             case .reminder: L10n.string("notification.reminder.body")
+            case .event: L10n.string("notification.event.body")
             }
         }
         let services = AppServices(
@@ -76,6 +78,7 @@ final class AppContainer {
             reminders: EventKitRemindersRepository(eventKit: eventKit, calendar: calendar),
             notifications: notifications, settingsStore: settingsStore,
             dayStateStore: DayStateStore(store: shared), snapshotStore: SnapshotStore(store: shared),
+            alertStateStore: AlertStateStore(store: shared),
             widgets: WidgetKitReloader())
 
         let banners = BannerCenter()
@@ -107,5 +110,19 @@ final class AppContainer {
         #endif
         await model.sync(announce: false)
         if let url = launch.openURL { router.handle(url) }
+        observeCalendarChanges()
+    }
+
+    /// Calendar and Reminders edits made elsewhere (moved, deleted, completed) reach the timeline and the
+    /// notifications right away while the app runs; otherwise at the next sync or background refresh.
+    private func observeCalendarChanges() {
+        let model = self.model
+        Task { @MainActor in
+            for await _ in NotificationCenter.default.notifications(named: .EKEventStoreChanged, object: eventKit.store) {
+                try? await Task.sleep(for: .milliseconds(500))
+                await model.refreshCalendarSources()
+                await model.publishDerivedState()
+            }
+        }
     }
 }

@@ -18,7 +18,7 @@ enum PreviewModel {
                                             fileName: config.rules.vault.settingsNote, vaultSettings: { settingsStore.load().vault }),
             calendars: StaticCalendarRepository(), reminders: StaticRemindersRepository(), notifications: SilentNotifications(),
             settingsStore: settingsStore, dayStateStore: DayStateStore(store: store),
-            snapshotStore: SnapshotStore(store: store), widgets: NoWidgets())
+            snapshotStore: SnapshotStore(store: store), alertStateStore: AlertStateStore(store: store), widgets: NoWidgets())
         let model = AppModel(config: config, services: services, banners: BannerCenter(),
                              clock: FixedClock(now: PreviewSamples.context.now), calendar: PreviewSamples.calendar)
         model.setScanResult(VaultScanResult(tasks: PreviewSamples.tasks, fileProblems: [], conflicted: []))
@@ -107,7 +107,7 @@ struct SilentNotifications: NotificationScheduling {
     func access() async -> SourceAccess { .granted }
     func requestAccess() async -> Bool { true }
     func registerCategories(_ registry: ActionRegistry, habitActionsEnabled: Bool) {}
-    func sync(planned: [PlannedNotification], stillValid: [PlannedNotification]) async {}
+    func sync(planned: [PlannedNotification], stillValid: [PlannedNotification], now immediate: [PlannedNotification]) async {}
     func removeAll() async {}
     func restore(_ notification: UNNotification) async {}
 }

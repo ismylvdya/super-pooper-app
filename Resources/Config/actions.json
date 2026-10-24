@@ -140,6 +140,7 @@
     "habitArchiveRow": [
       "restoreHabit",
       "delete"
-    ]
+    ],
+    "eventNotification": []
   }
 }

@@ -1992,6 +1992,17 @@
         }
       }
     },
+    "notification.event.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starts at"
+          }
+        }
+      }
+    },
     "notification.habit.body": {
       "extractionState": "manual",
       "localizations": {
