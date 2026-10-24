@@ -20,7 +20,8 @@ struct ClockSettingsSection: View {
                 .labelsHidden()
             }
             PlateRow(icon: .title, title: "settings.clock.prefix") {
-                TextField("settings.clock.prefix.placeholder", text: $prefix)
+                TextField("settings.clock.prefix.placeholder", text: Binding(get: { prefix.withVisibleTrailingSpaces },
+                                                                              set: { prefix = $0.withOrdinarySpaces }))
                     .multilineTextAlignment(.trailing)
                     .autocorrectionDisabled()
                     .onSubmit { model.updateSettings { $0.clock.prefix = prefix } }
