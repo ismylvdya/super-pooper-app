@@ -1,7 +1,7 @@
 #!/bin/bash
 # Пересобирает dist/altstore-source.json под текущий dist/SuperPooper.ipa: версия и номер сборки из
 # Config/Shared.xcconfig, дата, размер, sha256, ссылки на raw.githubusercontent.com из git remote origin.
-# Иконка приложения и иконка источника (разработчика) — design/icon/AppIcon-light.png.
+# Иконка приложения — design/icon/AppIcon-light.png; иконка источника (разработчика) — аватар аккаунта GitHub.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -22,7 +22,7 @@ source = {
     "name": "SuperPooperApp",
     "subtitle": "Day, tasks and habits over Obsidian",
     "description": "Personal source for SuperPooper.",
-    "iconURL": icon,
+    "iconURL": f"https://github.com/{os.environ['REMOTE'].split('/')[0]}.png",
     "website": f"https://github.com/{os.environ['REMOTE']}",
     "tintColor": "#FF2D55",
     "identifier": f"{get('SP_BUNDLE_ID')}.source",

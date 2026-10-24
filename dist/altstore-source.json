@@ -2,7 +2,7 @@
   "name": "SuperPooperApp",
   "subtitle": "Day, tasks and habits over Obsidian",
   "description": "Personal source for SuperPooper.",
-  "iconURL": "https://raw.githubusercontent.com/ismylvdya/super-pooper-app/main/design/icon/AppIcon-light.png",
+  "iconURL": "https://github.com/ismylvdya.png",
   "website": "https://github.com/ismylvdya/super-pooper-app",
   "tintColor": "#FF2D55",
   "identifier": "SuperPooperApp.source",
