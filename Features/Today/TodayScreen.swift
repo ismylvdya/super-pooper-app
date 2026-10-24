@@ -99,7 +99,6 @@ struct TodayScreen: View {
                 .font(tokens.font(.navTitle))
         }
         .tint(.primary)
-        .disabled(dayOffset == 0)
         .accessibilityIdentifier("today.day")
     }
 

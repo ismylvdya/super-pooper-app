@@ -36,8 +36,9 @@ struct HabitsScreen: View {
             }
             Section {
                 NavigationLink(value: Route.routines) {
-                    Label("routines.title", systemImage: icons[.timeOfDay])
+                    PlateRow(icon: .timeOfDay, title: "routines.title")
                 }
+                .listRowInsets(EdgeInsets(top: 0, leading: tokens.space(.listRowInset), bottom: 0, trailing: tokens.space(.listRowInset)))
                 .listRowBackground(tokens.color(.plateBackground))
             }
 
@@ -66,7 +67,10 @@ struct HabitRow: View {
 
     var body: some View {
         HStack(spacing: tokens.space(.iconTextGap)) {
+            // The mark sits in the icon column of the other plates, its circle as wide as an icon;
+            // the outer ring of Twice may reach past it.
             HabitDayButton(habit: habit, day: today)
+                .frame(width: tokens.size(.iconColumn))
             NavigationLink(value: Route.task(habit.name)) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(habit.name).foregroundStyle(tokens.habitColor(habit)).lineLimit(2)
@@ -95,7 +99,7 @@ struct HabitDayButton: View {
     var body: some View {
         let grid = HabitGrid(task: habit, weekCount: 1, today: day, calendar: model.calendar)
         let cell = grid.weeks.last?.first { $0.date == day }?.cell ?? .open
-        let metrics = HabitDotMetrics(dot: tokens.size(.habitDot), ringRatio: tokens.size(.habitRingRatio))
+        let metrics = HabitDotMetrics(dot: tokens.size(.iconColumn), ringRatio: tokens.size(.habitRingRatio))
         HabitDayCell(cell: cell, color: tokens.habitColor(habit), metrics: metrics)
             .contentShape(Circle())
             .onTapGesture {

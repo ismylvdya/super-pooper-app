@@ -15,7 +15,7 @@ enum RadiusToken: String, CaseIterable, Sendable {
 enum SizeToken: String, CaseIterable, Sendable {
     case badgeOffset, iconColumn, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, navTitleStep
     case problemDot, sourceDot, habitCell, fadeHeight, bannerLines, poolRowEstimate, poolCounter, poolWidth, widgetRowHeight
-    case habitDot, habitRingRatio, habitPartialDot, habitMenuDot, habitHistoryMaxHeight, habitStatsBar, infoMaxHeightRatio, linkBadge, titleFade, hourDigitsWidth, pullThreshold, pullIcon, actionPopoverWidth, daySwipeStart, reviewChevron, timelineZoomMin, timelineZoomMax, wrapMinWidth, narrowFadeShift, liftOverhang
+    case habitRingRatio, habitPartialDot, habitMenuDot, habitHistoryMaxHeight, habitStatsBar, infoMaxHeightRatio, linkBadge, titleFade, hourDigitsWidth, pullThreshold, pullIcon, actionPopoverWidth, daySwipeStart, reviewChevron, timelineZoomMin, timelineZoomMax, wrapMinWidth, narrowFadeShift, liftOverhang
 }
 
 enum OpacityToken: String, CaseIterable, Sendable {
@@ -35,7 +35,7 @@ enum FontToken: String, CaseIterable, Sendable {
 
 enum ColorToken: String, CaseIterable, Sendable {
     case accent, task, habit, high, energy, pleasant, heart, nowLine, problem, partial, twice
-    case past, screenBackground, plateBackground, chipBackground, primaryText, secondaryText, tertiaryText
+    case past, swipeNeutral, screenBackground, plateBackground, chipBackground, primaryText, secondaryText, tertiaryText
     case separator, bannerBackground, infoText, destructive, habitEmpty, eventText, timelineGrid
     case missed, success, warning, error
 }

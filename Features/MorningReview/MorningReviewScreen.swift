@@ -26,7 +26,7 @@ struct MorningReviewScreen: View {
                                 Button { model.postpone(item.id) } label: {
                                     Label("review.postpone", systemImage: icons[.postpone])
                                 }
-                                .tint(tokens.color(.success))
+                                .tint(tokens.color(.swipeNeutral))
                             }
                     }
                     .onMove { source, destination in
