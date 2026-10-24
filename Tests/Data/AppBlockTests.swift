@@ -46,15 +46,44 @@ struct AppBlockTests {
         #expect(SyncedSettings.merged(note: Data("not json".utf8), over: settings) == settings)
     }
 
-    @Test func theSettingsNoteRoundTrips() async throws {
+    @Test func theSettingsNoteKeepsEverySettingAsAProperty() async throws {
         let sandbox = try VaultSandbox.make()
-        let note = VaultSettingsNote(location: FixedVaultLocation(url: sandbox.vault), fileSystem: CoordinatedFileSystem(),
-                                     fileName: "SuperPooper Settings.md", vaultSettings: { TestConfig.defaults.vault })
+        let note = settingsNote(in: sandbox)
         #expect(await note.read() == nil)
-        let json = try JSONEncoder.store.encode(SyncedSettings(TestConfig.defaults))
-        try await note.write(json)
-        #expect(await note.read() == json)
-        let url = sandbox.vault.appendingPathComponent("TaskNotes/SuperPooper Settings.md")
-        #expect(try String(contentsOf: url, encoding: .utf8).hasPrefix("```SuperPooperApp\n"))
+        var settings = TestConfig.defaults
+        settings.timeline.hoursBefore = 5
+        settings.clock.prefix = "12"
+        settings.habits.morningRoutine = ["Душ", "Завтрак"]
+        try await note.write(try JSONEncoder.store.encode(SyncedSettings(settings)))
+
+        let back = try #require(await note.read())
+        #expect(SyncedSettings.merged(note: back, over: TestConfig.defaults) == settings)
+        let text = try String(contentsOf: noteURL(in: sandbox), encoding: .utf8)
+        #expect(text.hasPrefix("---\n"))
+        #expect(text.contains("timeline.hoursBefore: 5\n") && text.contains("clock.prefix: \"12\"\n"))
+        #expect(!text.contains("```"))
+    }
+
+    @Test func anOldBlockIsReadAndReplacedByProperties() async throws {
+        let sandbox = try VaultSandbox.make()
+        let url = noteURL(in: sandbox)
+        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try ("```SuperPooperApp\n{\"appearance\":{\"pastOpacity\":0.5}}\n```\n\nМои заметки\n").write(to: url, atomically: true, encoding: .utf8)
+        let note = settingsNote(in: sandbox)
+
+        let old = try #require(await note.read())
+        #expect(SyncedSettings.merged(note: old, over: TestConfig.defaults).appearance.pastOpacity == 0.5)
+        try await note.write(try JSONEncoder.store.encode(SyncedSettings(TestConfig.defaults)))
+        let text = try String(contentsOf: url, encoding: .utf8)
+        #expect(!text.contains("SuperPooperApp") && text.contains("appearance.pastOpacity: ") && text.hasSuffix("Мои заметки\n"))
+    }
+
+    private func settingsNote(in sandbox: VaultSandbox) -> VaultSettingsNote {
+        VaultSettingsNote(location: FixedVaultLocation(url: sandbox.vault), fileSystem: CoordinatedFileSystem(),
+                          fileName: "SuperPooper Settings.md", vaultSettings: { TestConfig.defaults.vault })
+    }
+
+    private func noteURL(in sandbox: VaultSandbox) -> URL {
+        sandbox.vault.appendingPathComponent("TaskNotes/SuperPooper Settings.md")
     }
 }

@@ -36,6 +36,14 @@ struct FrontmatterDocument: Sendable {
         opening + blocks.flatMap(\.lines).map(\.text).joined() + closing + body
     }
 
+    /// The note with this frontmatter and another body. A closing `---` at the very end of the file has no
+    /// line ending yet; it gets one before a body.
+    func text(withBody newBody: String) -> String {
+        var head = opening + blocks.flatMap(\.lines).map(\.text).joined() + closing
+        if !newBody.isEmpty, !head.hasSuffix("\n") { head += lineEnding }
+        return head + newBody
+    }
+
     /// The key's lines exactly as they are in the file, line breaks included.
     func rawValue(for key: String) -> String? {
         blocks.first { $0.key == key }.map { $0.lines.map(\.text).joined() }

@@ -1,7 +1,8 @@
 import Foundation
 
 /// The settings note in the vault: `SuperPooper Settings.md` next to the tasks folder (inside the
-/// TaskNotes folder), with the settings as JSON in a ```SuperPooperApp block.
+/// TaskNotes folder), with every setting as a property of its own (see `SettingsProperties`).
+/// Notes written before kept the JSON in a ```SuperPooperApp block; it is still read and dropped on the next write.
 protocol SettingsNoteRepository: Sendable {
     func read() async -> Data?
     func write(_ json: Data) async throws
@@ -13,22 +14,37 @@ struct VaultSettingsNote: SettingsNoteRepository {
     let fileName: String
     let vaultSettings: @Sendable () -> AppSettings.Vault
 
+    /// The properties over the old block (if any); nil when the note has neither.
     func read() async -> Data? {
         try? await location.withRoot { root in
             let url = try noteURL(root: root)
             guard fileSystem.fileExists(url) else { return nil }
-            return AppBlock.json(in: try fileSystem.read(url).text)
+            let text = try fileSystem.read(url).text
+            guard let document = try? FrontmatterDocument(text: text) else { return AppBlock.json(in: text) }
+            let legacy = AppBlock.json(in: document.body)
+            let properties = document.keys.compactMap { key in
+                (try? document.value(for: key)).map { SettingsProperties.Property(key: key, value: $0) }
+            }
+            guard !properties.isEmpty else { return legacy }
+            let json = try SettingsProperties.json(from: properties)
+            return try legacy.map { try JSONMerge.merge(base: $0, overlay: json) } ?? json
         }
     }
 
-    /// Replaces only the block; text written around it in Obsidian stays.
+    /// Rewrites the settings properties; other properties and the text written in Obsidian stay.
     func write(_ json: Data) async throws {
         try await location.withRoot { root in
             let url = try noteURL(root: root)
             let current = fileSystem.fileExists(url) ? try fileSystem.read(url).text : L10n.string("settingsNote.intro")
-            let split = AppBlock.split(current)
-            let visible = split.block.isEmpty ? current : split.visible
-            try fileSystem.write(AppBlock.join(block: AppBlock.make(json: json), visible: visible), to: url)
+            var document = try (try? FrontmatterDocument(text: current)) ?? FrontmatterDocument(text: "---\n---\n" + current)
+            let properties = try SettingsProperties.properties(from: json)
+            let roots = try SettingsProperties.roots(of: json)
+            let written = Set(properties.map(\.key))
+            for key in document.keys where roots.contains(SettingsProperties.root(of: key)) && !written.contains(key) {
+                document.remove(key)
+            }
+            for property in properties { document.set(property.key, to: property.value) }
+            try fileSystem.write(document.text(withBody: AppBlock.split(document.body).visible), to: url)
         }
     }
 
