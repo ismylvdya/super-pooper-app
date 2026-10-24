@@ -3,9 +3,9 @@ import SwiftUI
 /// Main screen: blocks from the arrangement's layout (`layouts/today-*.layout.json`), refreshed every
 /// minute so "now" and chains move. The pool and the timeline both pull to refresh (full sync).
 /// Top left: the morning review (edit the pool) and the problems badge; top right: search. In landscape
-/// the bar is hidden and the same buttons stand in a column on the left. Swiping left or right moves
-/// both halves with the finger to tomorrow / yesterday (and further): another day shows only its own
-/// events, reminders and dated tasks; its name in the bar brings back today.
+/// the bar is hidden and the same buttons stand in a column on the left. Swiping left or right slides
+/// the pool and the timeline together, each inside its own area, to tomorrow / yesterday (and further):
+/// another day shows only its own events, reminders and dated tasks; its name in the bar brings back today.
 struct TodayScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
@@ -48,14 +48,16 @@ struct TodayScreen: View {
             let bottomInset = geometry.safeAreaInsets.bottom
             TimelineView(.periodic(from: .now, by: model.config.rules.timeline.refreshSeconds)) { _ in
                 let plan = model.plan(at: model.clock.now, dayOffset: dayOffset)
+                let fade = 1 - min(abs(dragX) / geometry.size.width, 1) * tokens.opacity(.daySwipeFade)
                 ScreenLayoutView(layout: layout) { id in
                     TodayBlock(id: id, plan: plan, handler: handler,
                                bottomInset: Self.touchesBottom(id, in: layout) ? bottomInset : 0)
+                        .daySlide(dragX, fade: fade)
                 }
                 .padding(.horizontal, tokens.space(.screenHorizontal))
                 .padding(.top, tokens.space(.headerToPlate))
-                .offset(x: dragX)
-                .opacity(1 - min(abs(dragX) / geometry.size.width, 1) * tokens.opacity(.daySwipeFade))
+                // An empty pool still takes the swipe.
+                .contentShape(Rectangle())
             }
             .ignoresSafeArea(.container, edges: .bottom)
             .simultaneousGesture(daySwipe(width: geometry.size.width))
@@ -87,19 +89,18 @@ struct TodayScreen: View {
             }
     }
 
-    /// The name of the day shown when it is not today; tapping it goes back to today.
-    @ViewBuilder private var dayTitle: some View {
-        if dayOffset != 0 {
-            let day = model.context().today.adding(days: dayOffset)
-            Button {
-                withAnimation(tokens.animation) { dayOffset = 0 }
-            } label: {
-                Text(DayName.format(day, offset: dayOffset, calendar: model.calendar))
-                    .font(tokens.font(.navTitle))
-            }
-            .tint(.primary)
-            .accessibilityIdentifier("today.day")
+    /// The name of the shown day; on another day, tapping it goes back to today.
+    private var dayTitle: some View {
+        let day = model.context().today.adding(days: dayOffset)
+        return Button {
+            withAnimation(tokens.animation) { dayOffset = 0 }
+        } label: {
+            Text(DayName.format(day, offset: dayOffset, calendar: model.calendar))
+                .font(tokens.font(.navTitle))
         }
+        .tint(.primary)
+        .disabled(dayOffset == 0)
+        .accessibilityIdentifier("today.day")
     }
 
     /// Blocks along a horizontal axis all reach the bottom; along a vertical one only the last does.
@@ -145,6 +146,27 @@ struct TodayButtons: View {
                 .accessibilityLabel(Text("search.title"))
                 .accessibilityIdentifier("today.search")
         }
+    }
+}
+
+private extension View {
+    /// The block follows the day swipe inside its own area; at rest nothing is clipped, so lifted plates
+    /// still reach over the margins.
+    func daySlide(_ offset: CGFloat, fade: Double) -> some View {
+        modifier(DaySlide(offset: offset, fade: fade))
+    }
+}
+
+private struct DaySlide: ViewModifier {
+    @Environment(\.tokens) private var tokens
+    let offset: CGFloat
+    let fade: Double
+
+    func body(content: Content) -> some View {
+        content
+            .offset(x: offset)
+            .opacity(fade)
+            .clipShape(Rectangle().inset(by: offset == 0 ? -tokens.size(.liftOverhang) : 0))
     }
 }
 
