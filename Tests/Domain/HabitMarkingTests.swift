@@ -32,6 +32,14 @@ struct HabitMarkingTests {
         #expect(HabitMarking.notificationMark(.done, current: .partial, remindersPerDay: 1) == .partial)
     }
 
+    @Test func aDayWithSeveralRemindersClosesOnlyWithTwice() {
+        #expect(!HabitMarking.isDayClosed(nil, twiceADay: false, remindersPerDay: 1))
+        #expect(HabitMarking.isDayClosed(.done, twiceADay: false, remindersPerDay: 1))
+        #expect(!HabitMarking.isDayClosed(.done, twiceADay: false, remindersPerDay: 2))
+        #expect(!HabitMarking.isDayClosed(.partial, twiceADay: true, remindersPerDay: 0))
+        #expect(HabitMarking.isDayClosed(.twice, twiceADay: false, remindersPerDay: 2))
+    }
+
     @Test func partiallyNeverDowngrades() {
         #expect(HabitMarking.notificationMark(.partial, current: nil, remindersPerDay: 2) == .partial)
         #expect(HabitMarking.notificationMark(.partial, current: .done, remindersPerDay: 2) == .done)

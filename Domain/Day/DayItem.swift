@@ -30,6 +30,9 @@ struct DayItem: Identifiable, Hashable, Sendable {
     var isHabit: Bool { task.isHabit }
     var isDone: Bool { state.isDone }
     var isBlocked: Bool { !isDone && !blockers.isEmpty }
-    /// Nothing is left to do today (a twice-a-day habit needs both marks): it leaves the pool and the timeline.
-    var isFinished: Bool { isHabit && task.habit.twiceADay ? state.mark == .twice : isDone }
+    /// Nothing is left to do today (see `HabitMarking.isDayClosed`): it leaves the pool and the timeline.
+    var isFinished: Bool {
+        guard isHabit else { return isDone }
+        return HabitMarking.isDayClosed(state.mark, twiceADay: task.habit.twiceADay, remindersPerDay: task.habitTimes.count)
+    }
 }

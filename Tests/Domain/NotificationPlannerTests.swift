@@ -35,6 +35,16 @@ struct NotificationPlannerTests {
         #expect(plan([marked], at: "08:00").map(\.day.isoString) == ["2026-10-22"] + days(24...27))
     }
 
+    @Test func theNextReminderOfTheDayStillComesAfterTheFirstDone() {
+        let twoReminders = makeHabit("Stretch", status: .habit) { $0.reminderTimes = [LocalTime("09:00"), LocalTime("09:01")] }
+        let doneOnce = twoReminders.applying([.markInstance(day: LocalDate("2026-10-21"), mark: .done)])
+        let today = plan([doneOnce], at: "09:00").filter { $0.day.isoString == "2026-10-21" }
+        #expect(today.map { clockTime($0.fireDate) } == ["09:01"])
+
+        let doneTwice = twoReminders.applying([.markInstance(day: LocalDate("2026-10-21"), mark: .twice)])
+        #expect(plan([doneTwice], at: "09:00").allSatisfy { $0.day.isoString != "2026-10-21" })
+    }
+
     @Test func skipTodayRemovesOnlyTodaysNotification() {
         #expect(plan([vitamins], at: "08:00", skipped: ["Vitamins 💊"]).map(\.day.isoString) == days(22...27))
     }

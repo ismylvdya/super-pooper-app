@@ -77,7 +77,9 @@ struct NotificationPlanner: Sendable {
                 let instances = HabitInstances(task: task)
                 for offset in 0..<horizonDays {
                     let day = context.today.adding(days: offset)
-                    guard occurrence.occurs(task, on: day), instances.mark(on: day) == nil else { continue }
+                    guard occurrence.occurs(task, on: day),
+                          !HabitMarking.isDayClosed(instances.mark(on: day), twiceADay: task.habit.twiceADay,
+                                                    remindersPerDay: task.habitTimes.count) else { continue }
                     if day == context.today, skipped.contains(task.name) { continue }
                     for time in task.habitTimes {
                         result.append(PlannedNotification(id: "habit|\(task.name)|\(day.isoString)|\(time.string)", kind: .habit,

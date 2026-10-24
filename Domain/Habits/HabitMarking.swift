@@ -12,6 +12,13 @@ enum HabitMarking {
         }
     }
 
+    /// Nothing is left to do on a day with this mark. A twice-a-day habit, or one with two or more reminders
+    /// a day, waits for Twice (its next reminder still comes after the first Done); any other habit for any mark.
+    static func isDayClosed(_ mark: HabitMark?, twiceADay: Bool, remindersPerDay: Int) -> Bool {
+        guard let mark else { return false }
+        return mark == .twice || !(twiceADay || remindersPerDay >= 2)
+    }
+
     /// A button pressed on a reminder notification. With two or more reminders a day, the second
     /// Done of the day is Twice; Partially only marks an unmarked day and never downgrades.
     static func notificationMark(_ action: HabitMark, current: HabitMark?, remindersPerDay: Int) -> HabitMark {
