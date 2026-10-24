@@ -44,6 +44,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let maxHoursAfter: Int
         /// Another day (swiped to on Today) is shown around this time.
         let otherDayAnchor: LocalTime
+        /// A task dropped on the timeline lands on a multiple of this many minutes.
+        let dropStepMinutes: Int
     }
 
     struct Widgets: Codable, Hashable, Sendable {

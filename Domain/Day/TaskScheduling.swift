@@ -1,0 +1,46 @@
+import Foundation
+
+/// Dragging a task between the pool and the timeline. Dropped on the timeline it gets a `due` with the
+/// date and time of that spot (and with it a notification); dragged back to the pool it keeps its date
+/// and loses the time. Habits stay where their rule puts them: a time would apply to every day of theirs.
+enum TaskScheduling {
+    static func canMove(_ task: TaskNote) -> Bool { !task.isHabit }
+
+    static func changes(scheduling task: TaskNote, at moment: Date, calendar: Calendar) -> [TaskFieldChange] {
+        guard canMove(task) else { return [] }
+        let parts = calendar.dateComponents([.hour, .minute], from: moment)
+        let time = LocalTime(minutesSinceMidnight: (parts.hour ?? 0) * 60 + (parts.minute ?? 0))
+        return [.due(TaskDue(day: LocalDate(moment, in: calendar), time: time))]
+    }
+
+    static func changes(unscheduling task: TaskNote) -> [TaskFieldChange] {
+        guard canMove(task), let due = task.due, due.time != nil else { return [] }
+        return [.due(TaskDue(day: due.day))]
+    }
+
+    /// The moment at `offset` points below the top of a timeline window, on a multiple of `stepMinutes`.
+    static func moment(atOffset offset: Double, windowStart: Date, hourHeight: Double, stepMinutes: Int, calendar: Calendar) -> Date {
+        let raw = windowStart.addingTimeInterval(max(offset, 0) / max(hourHeight, 1) * 3600)
+        let step = Double(max(stepMinutes, 1) * 60)
+        let dayStart = calendar.startOfDay(for: raw)
+        let seconds = (raw.timeIntervalSince(dayStart) / step).rounded() * step
+        return dayStart.addingTimeInterval(seconds)
+    }
+}
+
+/// The pool order while a task is dragged over it: the task goes in front of the first row whose
+/// middle is below the finger.
+enum PoolDropOrder {
+    struct Row: Equatable {
+        let id: String
+        let midY: Double
+    }
+
+    static func order(rows: [Row], dragged: String, at y: Double) -> [String] {
+        let others = rows.filter { $0.id != dragged }.sorted { $0.midY < $1.midY }
+        let index = others.firstIndex { $0.midY > y } ?? others.count
+        var ids = others.map(\.id)
+        ids.insert(dragged, at: index)
+        return ids
+    }
+}

@@ -6,6 +6,7 @@ struct TimelineBlock: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
     @Environment(\.openURL) private var openURL
+    @Environment(TaskDragState.self) private var drag: TaskDragState?
     @State private var eventToDelete: CalendarEvent?
     @State private var highlightedSlot: String?
     let plan: DayPlan
@@ -40,6 +41,13 @@ struct TimelineBlock: View {
                 ScrollView {
                     DayTimelineView(slots: plan.timeline, window: day, now: plan.now,
                                     hourHeight: hourHeight, style: style, taskContent: taskRow)
+                        .modifier(TimelineDropTarget(drag: drag, moment: { y in
+                            TaskScheduling.moment(atOffset: Double(y), windowStart: day.start, hourHeight: Double(hourHeight),
+                                                  stepMinutes: model.config.rules.timeline.dropStepMinutes, calendar: model.calendar)
+                        }, onDrop: { item, moment in
+                            Haptics.play(.light)
+                            Task { await model.schedule(item.id, at: moment) }
+                        }))
                         .padding(.vertical, tokens.space(.groupGap) / 2)
                 }
                 .scrollPosition($position)
@@ -131,6 +139,7 @@ struct TimelineBlock: View {
         style.rowsHaveOwnPlates = true
         style.showsNow = plan.isToday
         style.highlightedSlot = highlightedSlot
+        style.dropMarker = drag?.hoverMoment
         style.onLinkTap = { slot in
             Haptics.play(.light)
             withAnimation(tokens.animation) { highlightedSlot = highlightedSlot == slot.id ? nil : slot.id }
@@ -148,11 +157,32 @@ struct TimelineBlock: View {
                                calendar: model.calendar)
     }
 
-    /// The same row as in the pool, without chips: the title gets up to two lines.
+    /// The same row as in the pool, without chips: the title gets up to two lines. A task on the timeline
+    /// by its own time (not a habit, not a chain) can be dragged to another time or back to the pool.
     private func taskRow(_ item: DayItem, _ slot: TimelineSlot) -> some View {
-        PoolRowContent(item: item, today: plan.today, isCompact: false, titleFont: .system(size: model.settings.timeline.taskFontSize),
-                       showsDetails: false, titleLineLimit: 2,
-                       titleLineHeight: UIFont.systemFont(ofSize: model.settings.timeline.taskFontSize).lineHeight,
-                       plate: .slot(isPast: slot.isPast, isCompact: false), handler: handler)
+        let movable = slot.time != nil && TaskScheduling.canMove(item.task)
+        return PoolRowContent(item: item, today: plan.today, isCompact: false, titleFont: .system(size: model.settings.timeline.taskFontSize),
+                              showsDetails: false, titleLineLimit: 2,
+                              titleLineHeight: UIFont.systemFont(ofSize: model.settings.timeline.taskFontSize).lineHeight,
+                              plate: .slot(isPast: slot.isPast, isCompact: false), handler: handler,
+                              dragSource: movable ? .timeline : nil)
+    }
+}
+
+/// The one-column timeline as a drop target for tasks.
+private struct TimelineDropTarget: ViewModifier {
+    let drag: TaskDragState?
+    let moment: (CGFloat) -> Date
+    let onDrop: (DayItem, Date) -> Void
+
+    func body(content: Content) -> some View {
+        if let drag {
+            // The empty space between the hours counts too: a drop target is only what is hit-testable.
+            content
+                .contentShape(Rectangle())
+                .onDrop(of: TaskDragState.types, delegate: TimelineDropDelegate(drag: drag, moment: moment, onDrop: onDrop))
+        } else {
+            content
+        }
     }
 }

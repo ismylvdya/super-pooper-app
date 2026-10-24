@@ -47,6 +47,7 @@ final class NewTaskUITests: XCTestCase {
         launch("superpooper://habits")
         let plus = app.buttons["habits.new"]
         XCTAssertTrue(plus.waitForExistence(timeout: 10))
+        app.dismissBanners()
         plus.tap()
         let name = app.textFields["taskPage.name"]
         XCTAssertTrue(name.waitForExistence(timeout: 5))

@@ -38,6 +38,9 @@ struct DayTimelineView<TaskContent: View>: View {
                         .offset(x: labelWidth + item.frame.minX, y: item.frame.minY)
                 }
                 if style.showsNow, window.contains(now) { nowLine(width: geometry.size.width, blocks: placed(width: itemsWidth)) }
+                if let marker = style.dropMarker, window.contains(marker) {
+                    TimelineDropMarker(moment: marker, labelWidth: labelWidth, width: geometry.size.width).offset(y: y(marker))
+                }
             }
         }
         .frame(height: max(totalHeight, contentBottom))
@@ -243,4 +246,6 @@ struct TimelineStyle {
     var rowsHaveOwnPlates = false
     /// Dense widget timelines: plates with minimal vertical padding.
     var compactPlates = false
+    /// Where a dragged task would land (its minutes are shown next to the hours).
+    var dropMarker: Date?
 }

@@ -20,17 +20,11 @@ final class TodayUITests: XCTestCase {
         XCTAssertTrue(app.buttons["today.review"].waitForExistence(timeout: 10))
     }
 
-    /// Banners sit over the navigation bar for a few seconds; swipe them away like a user would.
     private func dismissBanners() {
-        for _ in 0..<3 {
-            let banner = app.descendants(matching: .any)["banner"]
-            guard banner.waitForExistence(timeout: 2) else { return }
-            banner.swipeUp()
-            XCTAssertTrue(banner.waitForNonExistence(timeout: 3), "a swipe up must dismiss the banner")
-        }
+        app.dismissBanners()
     }
 
-    /// Pool rows have no checkboxes: a long press offers Done, and the done task moves to the end.
+    /// Pool rows have no checkboxes: a long press offers Done, and the done task leaves the pool.
     func testLongPressMarksATaskDone() {
         launch()
         dismissBanners()
@@ -40,27 +34,28 @@ final class TodayUITests: XCTestCase {
         let done = app.buttons["Done"]
         XCTAssertTrue(done.waitForExistence(timeout: 5))
         done.tap()
-        expectMovedToTheEnd(title)
+        expectLeftThePool(title)
     }
 
-    /// Done items go to the end of the pool, below the visible rows.
-    private func expectMovedToTheEnd(_ row: XCUIElement) {
+    /// Done items leave the pool.
+    private func expectLeftThePool(_ row: XCUIElement) {
         let moved = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false OR hittable == false"), object: row)
         XCTAssertEqual(XCTWaiter().wait(for: [moved], timeout: 5), .completed)
     }
 
-    /// "Выпить воды" is the first pool row (habits without time go first), so it is always on screen.
-    func testLongPressHabitOffersPartiallyTwiceSkip() {
+    /// "Выпить воды" is the first pool row (the morning routine goes first), so it is always on screen.
+    /// It is not a twice-a-day habit, so its menu has no Twice.
+    func testLongPressHabitOffersPartiallyAndSkip() {
         launch()
         dismissBanners()
         let row = app.buttons["title:Выпить воды 💧"]
         XCTAssertTrue(row.waitForExistence(timeout: 10))
         row.press(forDuration: 1.2)
         XCTAssertTrue(app.buttons["Partially"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["Twice"].exists)
+        XCTAssertFalse(app.buttons["Twice"].exists)
         XCTAssertTrue(app.buttons["Skip today"].exists)
         app.buttons["Partially"].tap()
-        expectMovedToTheEnd(row)
+        expectLeftThePool(row)
     }
 
     func testTaskPageEditsHighPriority() {

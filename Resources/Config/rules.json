@@ -49,7 +49,8 @@
   "timeline": {
     "refreshSeconds": 60,
     "maxHoursAfter": 18,
-    "otherDayAnchor": "08:00"
+    "otherDayAnchor": "08:00",
+    "dropStepMinutes": 5
   },
   "widgets": {
     "refreshMinutes": 15,
