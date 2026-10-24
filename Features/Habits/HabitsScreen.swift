@@ -32,14 +32,7 @@ struct HabitsScreen: View {
                     model.moveHabits(names)
                 }
             }
-            if !model.archivedHabits.isEmpty {
-                Section {
-                    NavigationLink(value: Route.habitArchive) {
-                        Label(L10n.format("habits.archive", model.archivedHabits.count), systemImage: icons[.archive])
-                    }
-                    .listRowBackground(tokens.color(.plateBackground))
-                }
-            }
+
         }
         .scrollContentBackground(.hidden)
         .background(tokens.color(.screenBackground))

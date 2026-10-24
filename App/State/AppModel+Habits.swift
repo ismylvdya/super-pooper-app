@@ -6,6 +6,8 @@ extension AppModel {
         HabitOrder.sorted(tasks.filter { $0.isHabit && !$0.isArchived }, order: settings.habits.order)
     }
 
+    var archivedNotesCount: Int { archivedTasks.count + archivedHabits.count }
+
     var archivedHabits: [TaskNote] {
         tasks.filter { $0.isHabit && $0.isArchived }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }

@@ -10,13 +10,18 @@ struct SettingsScreen: View {
                 SettingsLink(route: .taskSettings, icon: .taskSettings, title: "settings.tasks")
                 SettingsLink(route: .habitSettings, icon: .habitSettings, title: "settings.habits")
             }
-            PlateSection(header: nil) {
-                if !model.conflictedNotes.isEmpty {
+            if !model.conflictedNotes.isEmpty {
+                PlateSection(header: nil) {
                     SettingsLink(route: .conflicts, icon: .problem, title: "conflicts.title", value: "\(model.conflictedNotes.count)")
+                }
+            }
+            ClockSettingsSection()
+            PlateSection(header: nil) {
+                if model.config.flags.archive, model.archivedNotesCount > 0 {
+                    SettingsLink(route: .archive, icon: .archive, title: "archive.title", value: "\(model.archivedNotesCount)")
                 }
                 SettingsLink(route: .trash, icon: .trash, title: "trash.title", value: model.trashCount.map(String.init))
             }
-            ClockSettingsSection()
             #if DEBUG
             DebugSettingsSection()
             #endif
@@ -39,10 +44,8 @@ struct TaskSettingsScreen: View {
             TimelineSettingsSection()
             PoolSettingsSection()
             AppearanceSettingsSection()
-            AccentSettingsSection()
             ColorSettingsSection()
             NotificationSettingsSection()
-            if model.config.flags.archive, !model.archivedTasks.isEmpty { ArchiveSettingsSection() }
         }
         .task { await model.refreshAccess() }
     }
@@ -121,16 +124,6 @@ struct NotificationSettingsSection: View {
                 .labelsHidden()
                 .disabled(!model.config.flags.notifications)
             }
-        }
-    }
-}
-
-struct ArchiveSettingsSection: View {
-    @Environment(AppModel.self) private var model
-
-    var body: some View {
-        PlateSection(header: nil) {
-            SettingsLink(route: .archive, icon: .archive, title: "archive.title", value: "\(model.archivedTasks.count)")
         }
     }
 }

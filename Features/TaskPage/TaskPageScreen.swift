@@ -30,14 +30,9 @@ struct TaskPageScreen: View {
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        ActionMenuContent(menu: task.isHabit ? .habitPage : .taskPage, item: nil) { handler.handle($0, taskName: task.name) }
-                    } label: {
-                        Image(systemName: icons[.more])
+                    ActionPopoverButton(menu: task.isHabit ? .habitPage : .taskPage, accessibilityID: "taskPage.more") {
+                        handler.handle($0, taskName: task.name)
                     }
-                    .tint(.primary)
-                    .accessibilityLabel(Text("taskPage.more"))
-                    .accessibilityIdentifier("taskPage.more")
                 }
             }
             .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }

@@ -188,6 +188,28 @@
         }
       }
     },
+    "archive.habits": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habits"
+          }
+        }
+      }
+    },
+    "archive.tasks": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tasks"
+          }
+        }
+      }
+    },
     "archive.title": {
       "extractionState": "manual",
       "localizations": {
@@ -360,17 +382,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "SuperPooper can see your whole vault. Choose only the TaskNotes folder in Settings → Tasks → TaskNotes folder."
-          }
-        }
-      }
-    },
-    "color.accent": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Accent"
           }
         }
       }
@@ -1288,28 +1299,6 @@
         }
       }
     },
-    "habits.archive": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Archive (%lld)"
-          }
-        }
-      }
-    },
-    "habits.archive.title": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Habit archive"
-          }
-        }
-      }
-    },
     "habits.empty": {
       "extractionState": "manual",
       "localizations": {
@@ -1493,17 +1482,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Like Apple Calendar: every day, week, month or year, on chosen weekdays or a day of the month. The rule is written to the note as a TaskNotes recurrence."
-          }
-        }
-      }
-    },
-    "info.settings.accent": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The color of switches, pickers and highlights. The buttons in the top bars always stay black."
           }
         }
       }
@@ -2967,28 +2945,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Search"
-          }
-        }
-      }
-    },
-    "settings.accent": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Accent color"
-          }
-        }
-      }
-    },
-    "settings.accent.hint": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Empty = the color from the app."
           }
         }
       }

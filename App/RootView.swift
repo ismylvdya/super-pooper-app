@@ -92,7 +92,6 @@ struct RootView: View {
         case .taskSettings: TaskSettingsScreen()
         case .habitSettings: HabitSettingsScreen()
         case .archive: ArchiveScreen()
-        case .habitArchive: HabitArchiveScreen()
         case .trash: TrashScreen()
         case .conflicts: ConflictsScreen()
         case .conflict(let name): ConflictVersionsScreen(noteName: name)

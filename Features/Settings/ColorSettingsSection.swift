@@ -79,14 +79,3 @@ struct ColorField: View {
         model.updateSettings { $0.colors[token.rawValue] = text }
     }
 }
-
-/// The accent color of the app (switches, pickers, links) on its own; the buttons in the bars stay black.
-struct AccentSettingsSection: View {
-    var body: some View {
-        PlateSection(header: "settings.accent", info: "info.settings.accent", hint: "settings.accent.hint") {
-            PlateRow(icon: .colors, title: "color.accent") {
-                ColorField(token: .accent)
-            }
-        }
-    }
-}

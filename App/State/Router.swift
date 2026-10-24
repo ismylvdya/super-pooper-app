@@ -17,7 +17,6 @@ enum Route: Hashable {
     case taskSettings
     case habitSettings
     case archive
-    case habitArchive
     case trash
     case conflicts
     case conflict(String)
@@ -61,7 +60,7 @@ final class Router {
         case "habit": show(.habits, name.isEmpty ? [] : [.task(name)])
         case "habits": show(.habits)
         case "settings", "clock": show(.settings)
-        case "archive": show(.settings, [.taskSettings, .archive])
+        case "archive": show(.settings, [.archive])
         case "trash": show(.settings, [.trash])
         case "review": show(.today); isReviewPresented = true
         #if DEBUG
