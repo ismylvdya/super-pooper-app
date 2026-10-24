@@ -63,6 +63,20 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let maxAllowedSkips: Int
     }
 
+    /// Pool rows of long tasks are taller: extra title lines from this estimate on.
+    struct Pool: Codable, Hashable, Sendable {
+        struct ExtraLines: Codable, Hashable, Sendable {
+            let minutes: Int
+            let lines: Int
+        }
+
+        let extraLines: [ExtraLines]
+
+        func extraLines(forEstimate minutes: Int) -> Int {
+            extraLines.filter { minutes >= $0.minutes }.map(\.lines).max() ?? 0
+        }
+    }
+
     let day: DayRules
     let timeEstimates: [EstimateOption]
     let notifications: Notifications
@@ -72,6 +86,7 @@ struct RulesConfig: Codable, Hashable, Sendable {
     let timeline: Timeline
     let widgets: Widgets
     let habits: Habits
+    let pool: Pool
 }
 
 /// Order of the pool sort criteria (`sort.json`).

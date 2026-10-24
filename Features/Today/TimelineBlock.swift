@@ -87,6 +87,7 @@ struct TimelineBlock: View {
             if let url = URL(string: remindersURL + reminder.id) { openURL(url) }
         }
         style.onEventDelete = { eventToDelete = $0 }
+        style.rowsHaveOwnPlates = true
         style.highlightedSlot = highlightedSlot
         style.onLinkTap = { slot in
             Haptics.play(.light)
@@ -109,6 +110,7 @@ struct TimelineBlock: View {
     private func taskRow(_ item: DayItem, _ slot: TimelineSlot) -> some View {
         PoolRowContent(item: item, today: plan.today, isCompact: false, titleFont: .system(size: model.settings.timeline.taskFontSize),
                        showsDetails: false, titleLineLimit: 2,
-                       titleLineHeight: UIFont.systemFont(ofSize: model.settings.timeline.taskFontSize).lineHeight, handler: handler)
+                       titleLineHeight: UIFont.systemFont(ofSize: model.settings.timeline.taskFontSize).lineHeight,
+                       plate: .slot(isPast: slot.isPast, isCompact: false), handler: handler)
     }
 }

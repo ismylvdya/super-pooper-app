@@ -109,12 +109,6 @@ struct RowChip: Identifiable {
         if !item.problems.isEmpty { result.append(RowChip(id: "problem", icon: .problem, text: nil, tint: tokens.color(.problem))) }
         if task.isHighPriority { result.append(RowChip(id: "high", icon: .high, text: nil, tint: tokens.color(.high))) }
         if task.isHabit { result.append(RowChip(id: "habit", icon: .habit, text: nil, tint: tokens.color(.habit))) }
-        if let due = task.due, !task.isHabit, due.day != today || due.time != nil {
-            result.append(RowChip(id: "due", icon: .due, text: DueText.format(due, today: today), tint: nil))
-        } else if task.isHabit, !task.habitTimes.isEmpty {
-            result.append(RowChip(id: "due", icon: .time, text: task.habitTimes.map(\.string).joined(separator: " "), tint: nil))
-        }
-        result.append(RowChip(id: "estimate", icon: nil, text: EstimateText.label(task.timeEstimate, rules: rules), tint: nil))
         if task.needEnergy { result.append(RowChip(id: "energy", icon: .energy, text: nil, tint: tokens.color(.energy))) }
         if task.pleasant == true { result.append(RowChip(id: "pleasant", icon: .pleasant, text: nil, tint: tokens.color(.heart))) }
         return result

@@ -122,7 +122,12 @@ struct DayTimelineView<TaskContent: View>: View {
             TimelineReminderBlock(reminder: reminder, slot: slot, font: style.taskFont, lineHeight: style.taskLineHeight,
                                   isCompact: style.compactPlates,
                                   onToggle: style.onReminderToggle, onOpen: style.onReminderTap)
-        case .task(let item): TimelineTaskBlock(item: item, isPast: slot.isPast, isCompact: style.compactPlates) { taskContent(item, slot) }
+        case .task(let item):
+            if style.rowsHaveOwnPlates {
+                taskContent(item, slot)
+            } else {
+                TimelineTaskBlock(item: item, isPast: slot.isPast, isCompact: style.compactPlates) { taskContent(item, slot) }
+            }
         }
     }
 
@@ -227,6 +232,8 @@ struct TimelineStyle {
     /// The block whose links are highlighted (the rest dims), and the tap on a block's link mark.
     var highlightedSlot: String?
     var onLinkTap: ((TimelineSlot) -> Void)?
+    /// Task rows draw their own plates (and long-press highlight) instead of getting one here.
+    var rowsHaveOwnPlates = false
     /// Dense widget timelines: plates with minimal vertical padding.
     var compactPlates = false
 }

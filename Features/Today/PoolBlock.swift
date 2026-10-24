@@ -83,20 +83,31 @@ struct PoolBlock: View {
     }
 }
 
-/// A task in a rounded plate — the same look in the pool and on the timeline.
+/// A task in a rounded plate — the same look in the pool and on the timeline. In the pool the plate
+/// grows with the estimate (a long task takes more room); the long-press highlight is the plate itself.
 struct PoolRow: View {
+    @Environment(\.tokens) private var tokens
+    @Environment(\.rules) private var rules
     let item: DayItem
     let today: LocalDate
     var isCompact = false
     let handler: TaskActionHandler
 
     var body: some View {
-        PoolRowContent(item: item, today: today, isCompact: isCompact, handler: handler).taskPlate(isDone: item.isDone)
+        let lines = rules.pool.extraLines(forEstimate: rules.day.estimate(of: item.task))
+        PoolRowContent(item: item, today: today, isCompact: isCompact, plate: .pool,
+                       minimumHeight: CGFloat(lines) * tokens.uiFont(.taskTitle).lineHeight, handler: handler)
     }
 }
 
-/// The row with its tap, title and long-press menu wiring, without the plate.
+/// The row with its tap, title and long-press menu wiring, on its plate.
 struct PoolRowContent: View {
+    enum PlateKind {
+        case pool
+        case slot(isPast: Bool, isCompact: Bool)
+    }
+
+    @Environment(\.tokens) private var tokens
     let item: DayItem
     let today: LocalDate
     var isCompact = true
@@ -104,17 +115,38 @@ struct PoolRowContent: View {
     var showsDetails = true
     var titleLineLimit: Int?
     var titleLineHeight: CGFloat?
+    var plate: PlateKind = .pool
+    /// Extra height under the content (pool rows of long tasks).
+    var minimumHeight: CGFloat = 0
     let handler: TaskActionHandler
 
     var body: some View {
-        TaskRowView(item: item, today: today, titleFont: titleFont, showsDetails: showsDetails, isCompact: isCompact,
-                    titleLineLimit: titleLineLimit, titleLineHeight: titleLineHeight,
-                    onOpen: { handler.run(ActionRegistryLookup.open, taskName: item.id) })
-            .contextMenu {
-                ActionMenuContent(menu: item.isHabit ? .habitContext : .taskContext, item: item) {
-                    handler.handle($0, taskName: item.id)
+        let row = TaskRowView(item: item, today: today, titleFont: titleFont, showsDetails: showsDetails, isCompact: isCompact,
+                              titleLineLimit: titleLineLimit, titleLineHeight: titleLineHeight,
+                              onOpen: { handler.run(ActionRegistryLookup.open, taskName: item.id) })
+        Group {
+            switch plate {
+            case .pool:
+                VStack(alignment: .leading, spacing: 0) {
+                    row
+                    Spacer(minLength: minimumHeight)
                 }
+                .taskPlate(isDone: item.isDone)
+            case .slot(let isPast, let isCompact):
+                row.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading).slotPlate(isPast: isPast, isCompact: isCompact)
             }
+        }
+        .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: tokens.radius(plateRadius), style: .continuous))
+        .contextMenu {
+            ActionMenuContent(menu: item.isHabit ? .habitContext : .taskContext, item: item) {
+                handler.handle($0, taskName: item.id)
+            }
+        }
+    }
+
+    private var plateRadius: RadiusToken {
+        if case .slot(_, true) = plate { return .widgetItem }
+        return .poolRow
     }
 }
 

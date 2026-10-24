@@ -62,5 +62,17 @@
     "defaultWeeklyGoal": 3,
     "maxAllowedSkips": 14,
     "historyPullWeeks": 4
+  },
+  "pool": {
+    "extraLines": [
+      {
+        "minutes": 60,
+        "lines": 1
+      },
+      {
+        "minutes": 240,
+        "lines": 2
+      }
+    ]
   }
 }
