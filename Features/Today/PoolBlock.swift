@@ -57,6 +57,7 @@ struct PoolBlock: View {
         .scrollIndicators(.hidden)
         .refreshable { await model.sync(announce: true) }
         .edgeFades(bottomExtension: bottomInset)
+        .liftRoom()
     }
 
     /// Rows after the last visible one.

@@ -96,18 +96,16 @@
   ],
   "menus": {
     "habitContext": [
-      "done",
+      "unmark",
       "partial",
+      "done",
       "twice",
       "skipToday",
-      "unmark",
-      "open",
       "routines"
     ],
     "taskContext": [
       "done",
       "unmark",
-      "open",
       "archive",
       "delete"
     ],

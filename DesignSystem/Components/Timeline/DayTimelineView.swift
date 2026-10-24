@@ -29,8 +29,8 @@ struct DayTimelineView<TaskContent: View>: View {
                                 if isLinked { linkBadge(item.slot, isOn: style.highlightedSlot == item.slot.id) }
                                 if item.slot.alerts { AlertBell() }
                             }
-                            .padding(.top, tokens.space(.timelineItemPadding) / 2)
-                            .padding(.trailing, tokens.space(.plateInner) / 2)
+                            .padding(.top, tokens.space(.bellInset))
+                            .padding(.trailing, tokens.space(.bellInset))
                         }
                         .opacity(highlighted.map { $0.contains(item.slot.id) ? 1 : tokens.opacity(.unlinked) } ?? 1)
                         .frame(width: max(item.frame.width - tokens.space(.timelineItemGap), 0),

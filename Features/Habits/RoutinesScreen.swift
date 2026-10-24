@@ -26,8 +26,10 @@ struct RoutinesScreen: View {
                     .listRowBackground(tokens.color(.plateBackground))
             }
             ForEach(members, id: \.name) { habit in
-                Text(habit.name).foregroundStyle(tokens.habitColor(habit))
-                    .listRowBackground(tokens.color(.plateBackground))
+                NavigationLink(value: Route.task(habit.name)) {
+                    Text(habit.name).foregroundStyle(tokens.habitColor(habit))
+                }
+                .listRowBackground(tokens.color(.plateBackground))
             }
             .onMove { source, destination in
                 var names = members.map(\.name)

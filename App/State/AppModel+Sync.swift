@@ -164,7 +164,8 @@ extension AppModel {
         case TaskRepositoryError.nameTaken(let name): L10n.format("error.rename.taken", name)
         case TaskRepositoryError.invalidName(let name): L10n.format("error.rename.invalid", name)
         case TaskRepositoryError.fileMissing(let name): L10n.format("error.file.missing", name)
-        default: error.localizedDescription
+        // System errors would come in the phone's language; the app speaks English.
+        default: L10n.format("error.generic", (error as NSError).domain, (error as NSError).code)
         }
     }
 }

@@ -52,9 +52,10 @@ struct TaskSections: View {
     let editor: TaskEditor
 
     var body: some View {
-        TaskPropertiesSection(editor: editor)
-        if !editor.isDraft { TaskLinksSection(task: editor.task) }
+        TaskPlanSection(editor: editor)
         TaskEventsSection(editor: editor)
+        if !editor.isDraft { TaskLinksSection(task: editor.task) }
+        TaskPropertiesSection(editor: editor)
     }
 }
 

@@ -1,33 +1,47 @@
 import SwiftUI
 
-/// All-day events of the day as small capsules in their calendar color, above the timeline.
+/// All-day events of the day, one full-width bar each in its calendar color, above the timeline.
+/// Long titles fade out; in the app a tap opens Calendar and a long press offers deleting the event.
 struct AllDayStrip: View {
     @Environment(\.tokens) private var tokens
+    @Environment(\.icons) private var icons
     let events: [CalendarEvent]
     var font: Font?
+    var lineHeight: CGFloat = 16
     var onTap: ((CalendarEvent) -> Void)?
+    var onDelete: ((CalendarEvent) -> Void)?
 
     var body: some View {
-        ChipFlow(spacing: tokens.space(.chipGap)) {
+        VStack(spacing: tokens.space(.chipGap)) {
             ForEach(events) { event in
                 if let onTap {
-                    Button { onTap(event) } label: { capsule(event) }.buttonStyle(.plain)
+                    Button { onTap(event) } label: { bar(event) }
+                        .buttonStyle(.plain)
+                        .contentShape(.contextMenuPreview, Capsule())
+                        .contextMenu {
+                            if let onDelete {
+                                Button(role: .destructive) { onDelete(event) } label: {
+                                    Label(LocalizedStringKey("action.deleteEvent"), systemImage: icons[.delete])
+                                }
+                            }
+                        }
                 } else {
-                    capsule(event)
+                    bar(event)
                 }
             }
         }
     }
 
-    /// Widgets have no buttons here: the capsule is plain there.
-    private func capsule(_ event: CalendarEvent) -> some View {
+    /// Widgets have no buttons: the bar is plain there.
+    private func bar(_ event: CalendarEvent) -> some View {
         HStack(spacing: 4) {
             Circle().fill(Color(hex: event.colorHex)).frame(width: tokens.size(.problemDot), height: tokens.size(.problemDot))
-            Text(event.title).font(font ?? tokens.font(.chip)).lineLimit(1)
+            FadingText(text: event.title, font: font ?? tokens.font(.chip), lineHeight: lineHeight)
         }
         .foregroundStyle(tokens.color(.eventText))
         .padding(.horizontal, tokens.space(.chipHorizontal))
         .padding(.vertical, tokens.space(.chipVertical))
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color(hex: event.colorHex).opacity(tokens.opacity(.eventFill)), in: Capsule())
     }
 }

@@ -80,7 +80,8 @@ struct PlateRow<Trailing: View>: View {
     private var label: some View {
         HStack(spacing: tokens.space(.iconTextGap)) {
             if let icon {
-                Image(systemName: icons[icon])
+                Image(icon: icon, icons: icons)
+                    .renderingMode(.template)
                     .foregroundStyle(tint ?? tokens.color(.accent))
                     .frame(width: tokens.size(.iconColumn))
             }

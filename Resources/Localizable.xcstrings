@@ -793,6 +793,17 @@
         }
       }
     },
+    "error.generic": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something went wrong (%@ %lld). Try again or pull to refresh."
+          }
+        }
+      }
+    },
     "error.layout.unknownBlock": {
       "extractionState": "manual",
       "localizations": {
@@ -3670,7 +3681,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tasks"
+            "value": "Today"
           }
         }
       }
@@ -4661,6 +4672,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choose event"
+          }
+        }
+      }
+    },
+    "taskPage.plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Priority and date"
           }
         }
       }

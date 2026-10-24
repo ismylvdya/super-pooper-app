@@ -33,10 +33,15 @@ struct WidgetPoolBlock: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
-            ForEach(visibleCount.map { Array(plan.pool.prefix($0)) } ?? plan.pool) { item in
-                TaskRowView(item: item, today: plan.today, titleFont: tokens.font(.widgetTitle), showsDetails: false,
-                            isCompact: true, titleLineHeight: tokens.uiFont(.widgetTitle).lineHeight)
-                    .taskPlate(isDone: item.isDone)
+            // The same plates as Today, without chips; habits of one routine share a plate.
+            ForEach(PoolSegments.make(visibleCount.map { Array(plan.pool.prefix($0)) } ?? plan.pool)) { segment in
+                VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
+                    ForEach(segment.items) { item in
+                        TaskRowView(item: item, today: plan.today, titleFont: tokens.font(.widgetTitle), showsDetails: false,
+                                    isCompact: true, titleLineHeight: tokens.uiFont(.widgetTitle).lineHeight)
+                    }
+                }
+                .taskPlate(isDone: segment.items.allSatisfy(\.isDone))
             }
             if let visibleCount, plan.pool.count > visibleCount {
                 Text(L10n.format("pool.more", plan.pool.count - visibleCount))

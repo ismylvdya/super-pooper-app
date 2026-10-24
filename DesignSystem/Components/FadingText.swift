@@ -15,11 +15,13 @@ struct FadingText: View {
         let fade = tokens.size(.titleFade)
         Group {
             if lines <= 1 {
-                Text(text)
-                    .font(font)
-                    .lineLimit(1)
-                    .fixedSize(horizontal: true, vertical: false)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                // An overlay never widens the layout: the line keeps its natural width and is cut by the frame.
+                Color.clear
+                    .frame(maxWidth: .infinity)
+                    .frame(height: lineHeight)
+                    .overlay(alignment: .leading) {
+                        Text(text).font(font).lineLimit(1).fixedSize()
+                    }
             } else {
                 Text(text)
                     .font(font)

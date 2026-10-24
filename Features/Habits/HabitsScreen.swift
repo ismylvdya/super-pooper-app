@@ -73,6 +73,9 @@ struct HabitRow: View {
                 }
             }
         }
+        // A long press lifts the whole row and offers today's marks.
+        .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: tokens.radius(.poolRow), style: .continuous))
+        .contextMenu { HabitDayMenu(habit: habit, day: today) }
     }
 }
 
@@ -87,15 +90,12 @@ struct HabitDayButton: View {
         let grid = HabitGrid(task: habit, weekCount: 1, today: day, calendar: model.calendar)
         let cell = grid.weeks.last?.first { $0.date == day }?.cell ?? .open
         let metrics = HabitDotMetrics(dot: tokens.size(.habitDot), ringRatio: tokens.size(.habitRingRatio))
-        let inset = cell == .twice ? 0 : 2 * metrics.ring
         HabitDayCell(cell: cell, color: tokens.habitColor(habit), metrics: metrics)
-            .contentShape(Circle().inset(by: inset))
-            .contentShape(.contextMenuPreview, Circle().inset(by: inset))
+            .contentShape(Circle())
             .onTapGesture {
                 Haptics.play(.light)
                 Task { await model.cycleHabit(habit.name, on: day) }
             }
-            .contextMenu { HabitDayMenu(habit: habit, day: day) }
             .accessibilityAddTraits(.isButton)
             .accessibilityLabel(Text("habits.markToday"))
             .accessibilityIdentifier("habitDay:\(habit.name)")
@@ -117,6 +117,11 @@ struct HabitDayMenu: View {
         if showsDate {
             Text(day.startDate(in: model.calendar).formatted(.dateTime.day().month(.abbreviated).year()))
         }
+        let unmark = actions.definition(.unmark)
+        Button { set(nil) } label: {
+            Label { Text(LocalizedStringKey(unmark.title)) } icon: { Image(icons[HabitMarkIcon.icon(for: nil)]) }
+        }
+        .disabled(current == nil)
         ForEach(marks, id: \.self) { mark in
             let action = actions.definition(Self.actionID(mark))
             Button { set(mark) } label: {
@@ -124,15 +129,9 @@ struct HabitDayMenu: View {
             }
             .disabled(current == mark)
         }
-        if current != nil {
-            let action = actions.definition(.unmark)
-            Button { set(nil) } label: {
-                Label { Text(LocalizedStringKey(action.title)) } icon: { Image(icons[HabitMarkIcon.icon(for: nil)]) }
-            }
-        }
     }
 
-    private var marks: [HabitMark] { habit.habit.twiceADay ? [.done, .partial, .twice] : [.done, .partial] }
+    private var marks: [HabitMark] { habit.habit.twiceADay ? [.partial, .done, .twice] : [.partial, .done] }
 
     private func set(_ mark: HabitMark?) {
         Haptics.play(.light)

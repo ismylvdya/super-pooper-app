@@ -16,15 +16,16 @@ struct RootView: View {
                     ForEach(AppTab.allCases, id: \.self) { tab in
                         NavigationStack(path: Binding(get: { router.paths[tab] ?? [] }, set: { router.paths[tab] = $0 })) {
                             root(tab, model: model)
-                                .bannerHost(tab: tab)
                                 .navigationDestination(for: Route.self) { route in
-                                    destination(route).bannerHost(tab: tab).refreshable { await model.sync(announce: true) }
+                                    destination(route).refreshable { await model.sync(announce: true) }
                                 }
                         }
                         .tabItem { Label(LocalizedStringKey(String("tab.") + tab.rawValue), systemImage: container.config.icons[tab.icon]) }
                         .tag(tab)
                     }
                 }
+                // The banner sits right under the status bar, over the bar buttons, on every tab.
+                .overlay(alignment: .top) { BannerOverlay() }
                 .sheet(isPresented: $router.isReviewPresented) { MorningReviewScreen().tint(tokens.color(.accent)) }
                 .sheet(isPresented: $router.isProblemsPresented) { ProblemsSheet().tint(tokens.color(.accent)) }
             } else {
@@ -35,11 +36,12 @@ struct RootView: View {
         .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { screenHeight = $0 }
         .environment(\.screenHeight, screenHeight)
         .environment(\.timelineBell, model.settings.timeline.bellStyle)
+        // The user's colors and opacity sit closest to the views, over the bundled tokens of `appConfig`.
+        .environment(\.tokens, tokens)
         .environment(model)
         .environment(container.router)
         .environment(container.banners)
         .appConfig(container.config)
-        .environment(\.tokens, tokens)
         .task {
             await container.start()
             openReviewIfNeeded()

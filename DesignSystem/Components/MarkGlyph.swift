@@ -12,7 +12,8 @@ struct MarkGlyph: View {
     var size: CGFloat?
 
     var body: some View {
-        Image(systemName: icons[icon])
+        Image(icon: icon, icons: icons)
+            .renderingMode(.template)
             .resizable()
             .scaledToFit()
             .symbolRenderingMode(.hierarchical)
@@ -33,8 +34,8 @@ struct MarkGlyph: View {
         switch state {
         case .open: .checkboxOpen
         case .marked(.done): .markDone
-        case .marked(.partial): .markPartial
-        case .marked(.twice): .markTwice
+        case .marked(.partial): .habitMarkPartial
+        case .marked(.twice): .habitMarkTwice
         }
     }
 }

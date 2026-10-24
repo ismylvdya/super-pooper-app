@@ -74,6 +74,6 @@
   "postpone": "moon.zzz",
   "habitMarkOpen": "HabitMarkOpen",
   "habitMarkDone": "HabitMarkDone",
-  "habitMarkPartial": "HabitMarkPartial",
+  "habitMarkPartial": "HabitMarkDot",
   "habitMarkTwice": "HabitMarkTwice"
 }

@@ -28,6 +28,7 @@ struct HabitHistorySection: View {
     let habit: TaskNote
     @State private var addedWeeks = 0
     @State private var isAtBottom = true
+    @State private var width: CGFloat = 320
 
     var body: some View {
         let today = model.context().today
@@ -35,8 +36,8 @@ struct HabitHistorySection: View {
                                         minimumWeeks: rules.habits.historyMinimumWeeks,
                                         extraWeeks: rules.habits.historyExtraWeeks) + addedWeeks
         let grid = HabitGrid(task: habit, weekCount: weeks, today: today, calendar: model.calendar)
-        let metrics = HabitDotMetrics(dot: tokens.size(.habitDot), ringRatio: tokens.size(.habitRingRatio))
         let inner = tokens.space(.plateInner)
+        let metrics = HabitDotMetrics.fitting(width: width - inner * 2, ringRatio: tokens.size(.habitRingRatio))
         let shape = RoundedRectangle(cornerRadius: tokens.radius(.plate), style: .continuous)
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 4) {
@@ -59,6 +60,7 @@ struct HabitHistorySection: View {
                 .contentMargins(.vertical, tokens.size(.fadeHeight) / 2, for: .scrollContent)
                 // The newest week is visible first; weeks added on top keep the scroll position.
                 .defaultScrollAnchor(.bottom, for: .initialOffset)
+                .scrollBounceBehavior(.always)
                 .scrollIndicators(.hidden)
                 .onScrollGeometryChange(for: Bool.self) { geometry in
                     geometry.visibleRect.maxY >= geometry.contentSize.height - 1
@@ -75,11 +77,7 @@ struct HabitHistorySection: View {
             }
             .background(tokens.color(.plateBackground), in: shape)
             .clipShape(shape)
-            Text("habitPage.history.hint")
-                .font(tokens.font(.hint))
-                .foregroundStyle(tokens.color(.secondaryText))
-                .padding(.horizontal, inner)
-                .padding(.top, tokens.space(.hintToPlate))
+            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         }
     }
 }
@@ -112,7 +110,7 @@ struct HabitOptionsSection: View {
                 }
                 .labelsHidden()
             }
-            toggle(.markTwice, "habitPage.twiceADay", "info.habitPage.twiceADay", \.twiceADay, TaskFieldChange.twiceADay)
+            toggle(.habitMarkTwice, "habitPage.twiceADay", "info.habitPage.twiceADay", \.twiceADay, TaskFieldChange.twiceADay)
             if options.twiceADay {
                 PlateRow(icon: nil, title: "habitPage.twiceCountsDouble", indent: true) {
                     Toggle("habitPage.twiceCountsDouble", isOn: binding(\.twiceCountsDouble, TaskFieldChange.twiceCountsDouble)).labelsHidden()

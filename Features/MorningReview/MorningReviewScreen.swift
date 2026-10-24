@@ -47,7 +47,7 @@ struct MorningReviewScreen: View {
                             }
                             .listRowBackground(tokens.color(.plateBackground))
                             .opacity(tokens.opacity(.blocked))
-                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                            .swipeActions(edge: .leading, allowsFullSwipe: true) {
                                 Button { model.unpostpone(task.name) } label: {
                                     Label("review.backToToday", systemImage: icons[.restore])
                                 }
@@ -127,6 +127,7 @@ struct ReviewRow: View {
             }
         }
         .padding(.vertical, 4)
+        .padding(.trailing, tokens.size(.reviewChevron))
         .frame(maxWidth: .infinity, alignment: .leading)
         .overlay(alignment: .trailing) {
             Image(systemName: icons[.chevron]).foregroundStyle(tokens.color(.tertiaryText))

@@ -1,6 +1,22 @@
 import SwiftUI
 
-/// Status, High, date (+ optional time), estimate, need energy, pleasant.
+/// High priority and the date (+ optional time): the first plate of a task page.
+struct TaskPlanSection: View {
+    let editor: TaskEditor
+
+    var body: some View {
+        PlateSection(header: "taskPage.plan", info: "info.taskPage.properties") {
+            PlateRow(icon: .high, title: "taskPage.high", info: "info.taskPage.high") {
+                Toggle("taskPage.high", isOn: Binding(get: { editor.task.isHighPriority }, set: { editor.apply([.highPriority($0)]) }))
+                    .labelsHidden()
+                    .accessibilityIdentifier("taskPage.high")
+            }
+            DueEditor(editor: editor)
+        }
+    }
+}
+
+/// Status, estimate, need energy, pleasant.
 struct TaskPropertiesSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.rules) private var rules
@@ -29,7 +45,7 @@ struct TaskPropertiesSection: View {
         }
     }
 
-    /// Status, High and the date make no sense for a habit: it is always active and repeats by its own rule.
+    /// The status makes no sense for a habit: it is always active and repeats by its own rule.
     @ViewBuilder private var taskOnlyRows: some View {
         PlateRow(icon: .status, title: "taskPage.status", info: "info.taskPage.status") {
             Picker("taskPage.status", selection: Binding(
@@ -43,12 +59,6 @@ struct TaskPropertiesSection: View {
             }
             .labelsHidden()
         }
-        PlateRow(icon: .high, title: "taskPage.high", info: "info.taskPage.high") {
-            Toggle("taskPage.high", isOn: binding(\.isHighPriority, change: TaskFieldChange.highPriority))
-                .labelsHidden()
-                .accessibilityIdentifier("taskPage.high")
-        }
-        DueEditor(editor: editor)
     }
 
     private func binding<Value>(_ keyPath: KeyPath<TaskNote, Value>, change: @escaping (Value) -> TaskFieldChange) -> Binding<Value> {

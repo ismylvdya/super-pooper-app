@@ -13,43 +13,67 @@ struct TimelineBlock: View {
     /// Space under the block that belongs to the home indicator (the timeline scrolls under it).
     let bottomInset: CGFloat
 
+    @State private var zoom: CGFloat = 1
+    @GestureState private var pinch: CGFloat = 1
+    @State private var position = ScrollPosition(edge: .top)
+
+    /// The whole logical day is always there to scroll through; the settings only choose what is shown
+    /// first (hours around now, or the day range fitted to the height). Pinch zooms. Leaving Today
+    /// resets both. All-day events and pull-to-refresh sit at the top of the same scroll.
     @ViewBuilder private var content: some View {
         let settings = model.settings.timeline
         switch model.settings.timelineMode {
-        case .aroundNow:
-            ScrollView {
-                DayTimelineView(slots: plan.timeline, window: rollingWindow(settings), now: plan.now,
-                                hourHeight: tokens.size(.hourHeight), style: style, taskContent: taskRow)
-                    .padding(.vertical, tokens.space(.groupGap) / 2)
-            }
-            .contentMargins(.bottom, bottomInset, for: .scrollContent)
-            .scrollIndicators(.hidden)
-            .refreshable { await model.sync(announce: true) }
-            .edgeFades(bottomExtension: bottomInset)
-        case .wholeDay:
+        case .aroundNow, .wholeDay:
             GeometryReader { geometry in
-                let window = TimelineWindow.fixed(start: settings.wholeDay.start, end: settings.wholeDay.end,
-                                                  context: model.context(at: plan.now))
-                let height = geometry.size.height - bottomInset - tokens.space(.groupGap)
+                let context = model.context(at: plan.now)
+                let day = TimelineWindow(start: context.dayStart, end: context.dayEnd)
+                let shown = model.settings.timelineMode == .wholeDay
+                    ? TimelineWindow.fixed(start: settings.wholeDay.start, end: settings.wholeDay.end, context: context)
+                    : rollingWindow(settings)
+                let height = max(geometry.size.height - bottomInset - tokens.space(.groupGap), 1)
+                let base = model.settings.timelineMode == .wholeDay
+                    ? height / CGFloat(max(shown.duration, 3600) / 3600)
+                    : tokens.size(.hourHeight)
+                let hourHeight = base * min(max(zoom * pinch, tokens.size(.timelineZoomMin)), tokens.size(.timelineZoomMax))
+                let stripHeight = plan.allDayEvents.isEmpty ? 0 : allDayHeight
                 ScrollView {
-                    DayTimelineView(slots: plan.timeline, window: window, now: plan.now,
-                                    hourHeight: max(height, 1) / CGFloat(max(window.duration, 3600) / 3600),
-                                    style: style, taskContent: taskRow)
-                        .padding(.vertical, tokens.space(.groupGap) / 2)
+                    VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
+                        if !plan.allDayEvents.isEmpty { allDayStrip }
+                        DayTimelineView(slots: plan.timeline, window: day, now: plan.now,
+                                        hourHeight: hourHeight, style: style, taskContent: taskRow)
+                    }
+                    .padding(.vertical, tokens.space(.groupGap) / 2)
                 }
+                .scrollPosition($position)
                 .contentMargins(.bottom, bottomInset, for: .scrollContent)
                 .scrollBounceBehavior(.always)
                 .scrollIndicators(.hidden)
                 .refreshable { await model.sync(announce: true) }
                 .edgeFades(bottomExtension: bottomInset)
+                .liftRoom()
+                .simultaneousGesture(
+                    MagnifyGesture()
+                        .updating($pinch) { value, state, _ in state = value.magnification }
+                        .onEnded { value in
+                            zoom = min(max(zoom * value.magnification, tokens.size(.timelineZoomMin)), tokens.size(.timelineZoomMax))
+                        }
+                )
+                .onAppear {
+                    zoom = 1
+                    let offset = CGFloat(shown.start.timeIntervalSince(day.start) / 3600) * base + stripHeight
+                    position.scrollTo(y: max(offset, 0))
+                }
             }
         case .halves:
             GeometryReader { geometry in
                 ScrollView {
-                    HalvesTimeline(plan: plan, settings: settings, context: model.context(at: plan.now),
-                                   height: geometry.size.height - bottomInset - tokens.space(.groupGap),
-                                   style: style, taskContent: taskRow)
-                        .padding(.vertical, tokens.space(.groupGap) / 2)
+                    VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
+                        if !plan.allDayEvents.isEmpty { allDayStrip }
+                        HalvesTimeline(plan: plan, settings: settings, context: model.context(at: plan.now),
+                                       height: geometry.size.height - bottomInset - tokens.space(.groupGap),
+                                       style: style, taskContent: taskRow)
+                    }
+                    .padding(.vertical, tokens.space(.groupGap) / 2)
                 }
                 .contentMargins(.bottom, bottomInset, for: .scrollContent)
                 .scrollBounceBehavior(.always)
@@ -59,14 +83,20 @@ struct TimelineBlock: View {
         }
     }
 
+    private var allDayStrip: some View {
+        let size = model.settings.timeline.eventFontSize - 2
+        return AllDayStrip(events: plan.allDayEvents, font: .system(size: size), lineHeight: UIFont.systemFont(ofSize: size).lineHeight,
+                           onTap: style.onEventTap, onDelete: style.onEventDelete)
+    }
+
+    private var allDayHeight: CGFloat {
+        let line = UIFont.systemFont(ofSize: model.settings.timeline.eventFontSize - 2).lineHeight + tokens.space(.chipVertical) * 2
+        return CGFloat(plan.allDayEvents.count) * (line + tokens.space(.chipGap))
+    }
+
     /// The block with the dialog for the one timeline edit: deleting an event (events are created in Calendar).
     var body: some View {
-        VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
-            if !plan.allDayEvents.isEmpty {
-                AllDayStrip(events: plan.allDayEvents, font: .system(size: model.settings.timeline.eventFontSize - 2), onTap: style.onEventTap)
-            }
-            content.frame(maxHeight: .infinity)
-        }
+        content.frame(maxHeight: .infinity)
             .alert("event.delete.title", isPresented: Binding(get: { eventToDelete != nil }, set: { if !$0 { eventToDelete = nil } }),
                    presenting: eventToDelete) { event in
                 Button("action.deleteEvent", role: .destructive) { Task { await model.deleteEvent(event) } }

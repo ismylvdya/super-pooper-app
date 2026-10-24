@@ -11,6 +11,7 @@ struct ActionMenuContent: View {
 
     var body: some View {
         ForEach(actions.actions(in: menu).filter(isAvailable), id: \.id) { action in
+            let isCurrent = isCurrentMark(action)
             Button(role: action.destructive ? .destructive : nil) {
                 Haptics.play(action.haptic)
                 perform(action)
@@ -22,15 +23,26 @@ struct ActionMenuContent: View {
                     Label(LocalizedStringKey(action.title), systemImage: action.icon)
                 }
             }
+            .disabled(isCurrent)
+        }
+    }
+
+    /// The mark the item already has: shown, but not selectable.
+    private func isCurrentMark(_ action: ActionDefinition) -> Bool {
+        guard let item else { return false }
+        switch action.id {
+        case .done: return item.state == .marked(.done)
+        case .partial: return item.state == .marked(.partial)
+        case .twice: return item.state == .marked(.twice)
+        default: return false
         }
     }
 
     private func isAvailable(_ action: ActionDefinition) -> Bool {
         guard let item else { return true }
         switch action.id {
-        case .done: return item.state != .marked(.done)
-        case .partial: return item.state != .marked(.partial)
-        case .twice: return item.state != .marked(.twice)
+        case .done, .partial: return true
+        case .twice: return !item.isHabit || item.task.habit.twiceADay || item.state == .marked(.twice)
         case .unmark: return item.isDone
         case .skipToday: return item.isHabit && !item.isDone
         default: return true
