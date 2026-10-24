@@ -155,19 +155,20 @@ struct DayBuilder: Sendable {
     private func fixedEntries(timed: [DayItem], events: [CalendarEvent], reminders: [ReminderItem], context: DayContext) -> [TimelineSlot] {
         var entries: [TimelineSlot] = []
         for event in events where !event.isAllDay && overlapsToday(event, context) {
-            entries.append(TimelineSlot(content: .event(event), start: event.start, end: event.end, isPast: event.end <= context.now))
+            entries.append(TimelineSlot(content: .event(event), start: event.start, end: event.end, isPast: event.end <= context.now,
+                                        alerts: event.hasAlarm))
         }
         for item in timed {
             for time in timesOfDay(of: item.task, context: context) {
                 let start = context.moment(time, onLogicalDay: context.today)
                 let end = start.addingTimeInterval(Double(rules.estimate(of: item.task)) * 60)
-                entries.append(TimelineSlot(content: .task(item), start: start, end: end, isPast: item.isDone, time: time))
+                entries.append(TimelineSlot(content: .task(item), start: start, end: end, isPast: item.isDone, time: time, alerts: true))
             }
         }
         for reminder in reminders where context.contains(reminder.due) {
             let end = reminder.due.addingTimeInterval(Double(rules.reminderMinutes) * 60)
             entries.append(TimelineSlot(content: .reminder(reminder), start: reminder.due, end: end,
-                                         isPast: reminder.isCompleted || end <= context.now))
+                                         isPast: reminder.isCompleted || end <= context.now, alerts: true))
         }
         return entries
     }

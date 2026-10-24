@@ -3,9 +3,12 @@ import SwiftUI
 /// A calendar event: tinted fill with the calendar color stripe (distinct from tasks).
 struct TimelineEventBlock: View {
     @Environment(\.tokens) private var tokens
+    @Environment(\.titleReserve) private var reserve
     let event: CalendarEvent
     let slot: TimelineSlot
     let font: Font
+    /// Line height of `font` (titles fade on their last line).
+    var lineHeight: CGFloat = 18
 
     var body: some View {
         let color = slot.isPast ? tokens.color(.past) : Color(hex: event.colorHex)
@@ -14,8 +17,9 @@ struct TimelineEventBlock: View {
                 .fill(color)
                 .frame(width: tokens.size(.eventStripe))
             VStack(alignment: .leading, spacing: 0) {
-                Text(event.title).font(font.weight(.semibold)).lineLimit(2)
+                FadingText(text: event.title, font: font.weight(.semibold), lineHeight: lineHeight, lines: 2, reserve: reserve)
                 Text(TimeRangeText.format(event.start, event.end)).font(tokens.font(.caption)).lineLimit(1)
+                    .opacity(tokens.opacity(.eventTime))
             }
             .foregroundStyle(slot.isPast ? tokens.color(.secondaryText) : tokens.color(.eventText))
             Spacer(minLength: 0)
@@ -30,39 +34,38 @@ struct TimelineEventBlock: View {
     }
 }
 
-/// A reminder looks like a task: title on a plate; done/past ones are grey. Long press completes it.
+/// A reminder looks like a task: title on a plate; done/past ones are grey. In the app a tap opens it in
+/// Reminders and a long press completes it; widgets get the plain plate (no gestures there).
 struct TimelineReminderBlock: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
+    @Environment(\.titleReserve) private var reserve
     let reminder: ReminderItem
     let slot: TimelineSlot
     let font: Font
+    var lineHeight: CGFloat = 18
     var isCompact = false
     var onToggle: ((ReminderItem) -> Void)?
     var onOpen: ((ReminderItem) -> Void)?
 
     var body: some View {
-        HStack(alignment: .top, spacing: tokens.space(.iconTextGap)) {
-            Text(reminder.title)
-                .font(font)
-                .lineLimit(isCompact ? 1 : 2)
-                .foregroundStyle(slot.isPast ? tokens.color(.secondaryText) : tokens.color(.primaryText))
-            Spacer(minLength: 0)
-            Image(systemName: icons[.reminder]).font(tokens.font(.caption))
-                .foregroundStyle(slot.isPast ? tokens.color(.past) : Color(hex: reminder.colorHex))
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .contentShape(Rectangle())
-        .onTapGesture { onOpen?(reminder) }
-        .contextMenu {
-            if let onToggle {
-                Button { onToggle(reminder) } label: {
-                    Label(LocalizedStringKey(reminder.isCompleted ? "action.unmark" : "action.done"),
-                          systemImage: icons[reminder.isCompleted ? .remove : .markDone])
+        let plate = FadingText(text: reminder.title, font: font, lineHeight: lineHeight, lines: isCompact ? 1 : 2, reserve: reserve)
+            .foregroundStyle(slot.isPast ? tokens.color(.secondaryText) : tokens.color(.primaryText))
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .slotPlate(isPast: slot.isPast, isCompact: isCompact)
+        if let onToggle, let onOpen {
+            plate
+                .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: tokens.radius(isCompact ? .widgetItem : .poolRow), style: .continuous))
+                .onTapGesture { onOpen(reminder) }
+                .contextMenu {
+                    Button { onToggle(reminder) } label: {
+                        Label(LocalizedStringKey(reminder.isCompleted ? "action.unmark" : "action.done"),
+                              systemImage: icons[reminder.isCompleted ? .remove : .markDone])
+                    }
                 }
-            }
+        } else {
+            plate
         }
-        .slotPlate(isPast: slot.isPast, isCompact: isCompact)
     }
 }
 

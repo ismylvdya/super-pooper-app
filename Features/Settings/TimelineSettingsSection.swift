@@ -39,6 +39,14 @@ struct TimelineSettingsSection: View {
             }
             slider(.fontSize, "settings.timeline.eventFont", "info.settings.timeline.eventFont", \.eventFontSize)
             slider(.fontSize, "settings.timeline.taskFont", "info.settings.timeline.taskFont", \.taskFontSize)
+            slider(.bell, "settings.timeline.bellSize", "info.settings.timeline.bell", \.bellSize, range: 7...20)
+            VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
+                PlateRow(icon: .opacity, title: "settings.timeline.bellOpacity") {
+                    Text(model.settings.timeline.bellOpacity.formatted(.percent.precision(.fractionLength(0))))
+                        .foregroundStyle(tokens.color(.secondaryText))
+                }
+                Slider(value: binding(\.bellOpacity), in: 0.1...1, step: 0.05)
+            }
         }
     }
 
@@ -69,12 +77,12 @@ struct TimelineSettingsSection: View {
     }
 
     private func slider(_ icon: Icon, _ title: LocalizedStringKey, _ info: LocalizedStringKey,
-                        _ keyPath: WritableKeyPath<AppSettings.Timeline, Double>) -> some View {
+                        _ keyPath: WritableKeyPath<AppSettings.Timeline, Double>, range: ClosedRange<Double> = 11...22) -> some View {
         VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
             PlateRow(icon: icon, title: title, info: info) {
                 Text(verbatim: "\(Int(model.settings.timeline[keyPath: keyPath])) pt").foregroundStyle(tokens.color(.secondaryText))
             }
-            Slider(value: binding(keyPath), in: 11...22, step: 1)
+            Slider(value: binding(keyPath), in: range, step: 1)
         }
     }
 }
@@ -117,7 +125,7 @@ struct TimelinePreview: View {
 
     private func row(_ item: DayItem, _ slot: TimelineSlot) -> some View {
         TaskRowView(item: item, today: plan.today, titleFont: .system(size: settings.timeline.taskFontSize), showsDetails: false,
-                    titleLineLimit: 2)
+                    titleLineLimit: 2, titleLineHeight: UIFont.systemFont(ofSize: settings.timeline.taskFontSize).lineHeight)
     }
 
     private var plan: DayPlan { model.plan(at: model.clock.now) }

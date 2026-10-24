@@ -5,6 +5,7 @@ import SwiftUI
 struct DayTimelineView<TaskContent: View>: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
+    @Environment(\.timelineBell) private var bell
     let slots: [TimelineSlot]
     let window: TimelineWindow
     let now: Date
@@ -20,19 +21,35 @@ struct DayTimelineView<TaskContent: View>: View {
             ZStack(alignment: .topLeading) {
                 hourGrid(width: geometry.size.width)
                 ForEach(placed(width: itemsWidth)) { item in
+                    let isLinked = links.isLinked(item.slot.id)
                     block(for: item.slot)
+                        .environment(\.titleReserve, cornerWidth(linked: isLinked, alerts: item.slot.alerts))
                         .overlay(alignment: .topTrailing) {
-                            if links.isLinked(item.slot.id) { linkBadge(item.slot, isOn: style.highlightedSlot == item.slot.id) }
+                            HStack(spacing: tokens.space(.chipVertical)) {
+                                if isLinked { linkBadge(item.slot, isOn: style.highlightedSlot == item.slot.id) }
+                                if item.slot.alerts { AlertBell() }
+                            }
+                            .padding(.top, tokens.space(.timelineItemPadding) / 2)
+                            .padding(.trailing, tokens.space(.plateInner) / 2)
                         }
                         .opacity(highlighted.map { $0.contains(item.slot.id) ? 1 : tokens.opacity(.unlinked) } ?? 1)
                         .frame(width: max(item.frame.width - tokens.space(.timelineItemGap), 0),
                                height: max(item.frame.height - tokens.space(.timelineItemGap), 0), alignment: .topLeading)
                         .offset(x: labelWidth + item.frame.minX, y: item.frame.minY)
                 }
-                if window.contains(now) { nowLine(width: geometry.size.width) }
+                if window.contains(now) { nowLine(width: geometry.size.width, blocks: placed(width: itemsWidth)) }
             }
         }
         .frame(height: max(totalHeight, contentBottom))
+    }
+
+    /// Room the title leaves at the top right for the link mark and the bell.
+    private func cornerWidth(linked: Bool, alerts: Bool) -> CGFloat {
+        let gap = tokens.space(.chipVertical)
+        var width: CGFloat = 0
+        if linked { width += tokens.size(.linkBadge) + gap * 3 }
+        if alerts { width += bell.size + gap }
+        return width
     }
 
     private var contentBottom: CGFloat { CGFloat(placed(width: 1).map(\.frame.maxY).max() ?? 0) }
@@ -86,8 +103,11 @@ struct DayTimelineView<TaskContent: View>: View {
         switch slot.content {
         case .event(let event):
             if let onEventTap = style.onEventTap {
-                Button { onEventTap(event) } label: { TimelineEventBlock(event: event, slot: slot, font: style.eventFont) }
+                Button { onEventTap(event) } label: {
+                    TimelineEventBlock(event: event, slot: slot, font: style.eventFont, lineHeight: style.eventLineHeight)
+                }
                     .buttonStyle(.plain)
+                    .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: tokens.radius(.timelineItem), style: .continuous))
                     .contextMenu {
                         if let onEventDelete = style.onEventDelete {
                             Button(role: .destructive) { onEventDelete(event) } label: {
@@ -96,10 +116,10 @@ struct DayTimelineView<TaskContent: View>: View {
                         }
                     }
             } else {
-                TimelineEventBlock(event: event, slot: slot, font: style.eventFont)
+                TimelineEventBlock(event: event, slot: slot, font: style.eventFont, lineHeight: style.eventLineHeight)
             }
         case .reminder(let reminder):
-            TimelineReminderBlock(reminder: reminder, slot: slot, font: style.taskFont,
+            TimelineReminderBlock(reminder: reminder, slot: slot, font: style.taskFont, lineHeight: style.taskLineHeight,
                                   isCompact: style.compactPlates,
                                   onToggle: style.onReminderToggle, onOpen: style.onReminderTap)
         case .task(let item): TimelineTaskBlock(item: item, isPast: slot.isPast, isCompact: style.compactPlates) { taskContent(item, slot) }
@@ -110,8 +130,7 @@ struct DayTimelineView<TaskContent: View>: View {
     @ViewBuilder private func linkBadge(_ slot: TimelineSlot, isOn: Bool) -> some View {
         let mark = Image(systemName: icons[.links])
             .font(.system(size: tokens.size(.linkBadge), weight: .bold))
-            .foregroundStyle(isOn ? tokens.color(.accent) : tokens.color(.secondaryText))
-            .padding(tokens.space(.chipVertical))
+            .foregroundStyle(isOn ? tokens.color(.primaryText) : tokens.color(.secondaryText))
         if let onLinkTap = style.onLinkTap {
             Button { onLinkTap(slot) } label: { mark.contentShape(Rectangle()) }
                 .buttonStyle(.plain)
@@ -121,14 +140,15 @@ struct DayTimelineView<TaskContent: View>: View {
         }
     }
 
+    /// Hours as plain numbers ("9", "14"), right-aligned next to the grid line.
     private func hourGrid(width: CGFloat) -> some View {
         ForEach(hourMarks, id: \.self) { mark in
-            HStack(alignment: .center, spacing: 4) {
+            HStack(alignment: .center, spacing: tokens.space(.hourLabelGap)) {
                 if style.showsHourLabels {
-                    Text(mark.formatted(.dateTime.hour()))
-                        .font(tokens.font(.timelineHour))
+                    Text(verbatim: "\(Calendar.current.component(.hour, from: mark))")
+                        .font(tokens.font(.timelineHour).monospacedDigit())
                         .foregroundStyle(tokens.color(.tertiaryText))
-                        .frame(width: labelWidth - 4, alignment: .leading)
+                        .frame(width: labelWidth - tokens.space(.hourLabelGap), alignment: .trailing)
                 }
                 Rectangle().fill(tokens.color(.timelineGrid)).frame(height: 0.5)
             }
@@ -148,13 +168,38 @@ struct DayTimelineView<TaskContent: View>: View {
         return marks
     }
 
-    private func nowLine(width: CGFloat) -> some View {
-        HStack(spacing: 0) {
-            Circle().fill(tokens.color(.nowLine)).frame(width: tokens.size(.nowDot), height: tokens.size(.nowDot))
-            Rectangle().fill(tokens.color(.nowLine)).frame(height: tokens.size(.nowLine))
+    /// The "now" cursor, as in the old Calendar widget: a dot in the middle of the hour numbers and a
+    /// line from its center to the right edge with a rounded end; over blocks it is more see-through.
+    private func nowLine(width: CGFloat, blocks: [PlacedSlot]) -> some View {
+        let dot = tokens.size(.nowDot)
+        let centerX = style.showsHourLabels
+            ? labelWidth - tokens.space(.hourLabelGap) - tokens.size(.hourDigitsWidth) / 2
+            : dot / 2
+        let origin = CGPoint(x: centerX - dot / 2, y: y(now) - dot / 2)
+        let gap = tokens.space(.timelineItemGap)
+        let covered = blocks.map { CGRect(x: labelWidth + $0.frame.minX - origin.x, y: $0.frame.minY - origin.y,
+                                          width: max($0.frame.width - gap, 0), height: max($0.frame.height - gap, 0)) }
+        let radius = tokens.radius(.poolRow)
+        let overBlocks = tokens.opacity(.nowOverBlocks)
+        return ZStack(alignment: .leading) {
+            UnevenRoundedRectangle(bottomTrailingRadius: tokens.size(.nowLine) / 2, topTrailingRadius: tokens.size(.nowLine) / 2)
+                .frame(height: tokens.size(.nowLine))
+                .padding(.leading, dot / 2)
+            Circle().frame(width: dot, height: dot)
         }
-        .frame(width: width - labelWidth + tokens.size(.nowDot) / 2)
-        .offset(x: labelWidth - tokens.size(.nowDot) / 2, y: y(now) - tokens.size(.nowDot) / 2)
+        .foregroundStyle(tokens.color(.nowLine))
+        .mask {
+            Canvas { context, size in
+                context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(.black))
+                context.blendMode = .destinationOut
+                for rect in covered {
+                    context.fill(RoundedRectangle(cornerRadius: radius, style: .continuous).path(in: rect),
+                                 with: .color(.black.opacity(1 - overBlocks)))
+                }
+            }
+        }
+        .frame(width: width - origin.x, height: dot)
+        .offset(x: origin.x, y: origin.y)
         .allowsHitTesting(false)
         .accessibilityHidden(true)
     }
@@ -164,6 +209,9 @@ struct DayTimelineView<TaskContent: View>: View {
 struct TimelineStyle {
     var eventFont: Font
     var taskFont: Font
+    /// Line heights of the two fonts (titles fade on their last line).
+    var eventLineHeight: CGFloat = 18
+    var taskLineHeight: CGFloat = 20
     /// At least one line of normal text.
     var minimumItemHeight: CGFloat
     /// Tasks get at least their title and chip lines (short tasks still show two lines).

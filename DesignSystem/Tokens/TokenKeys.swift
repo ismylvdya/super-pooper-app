@@ -5,7 +5,7 @@ enum SpacingToken: String, CaseIterable, Sendable {
     case screenHorizontal, screenBottom, groupGap, plateInner, plateRowGap, headerToPlate, hintToPlate
     case iconTextGap, chipHorizontal, chipVertical, chipGap, infoPadding, nestedTitleInset, nestedTitleLift
     case childIndent, rowVertical, poolRowGap, blockGap, timelineLabelWidth, timelineItemGap, timelineItemPadding
-    case bannerTop, bannerPadding, widgetPadding, habitCellGap, titleBottom
+    case bannerTop, bannerPadding, widgetPadding, habitCellGap, titleBottom, hourLabelGap
 }
 
 enum RadiusToken: String, CaseIterable, Sendable {
@@ -15,12 +15,12 @@ enum RadiusToken: String, CaseIterable, Sendable {
 enum SizeToken: String, CaseIterable, Sendable {
     case badgeOffset, iconColumn, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, navTitleStep
     case problemDot, sourceDot, habitCell, fadeHeight, bannerLines, poolRowEstimate, poolCounter, poolWidth, widgetRowHeight
-    case habitDayButton, habitHistoryMaxHeight, habitStatsBar, infoMaxHeightRatio, linkBadge
+    case habitDayButton, habitHistoryMaxHeight, habitStatsBar, infoMaxHeightRatio, linkBadge, titleFade, hourDigitsWidth
 }
 
 enum OpacityToken: String, CaseIterable, Sendable {
     case blocked, past, eventFill, taskFill, doneText, fadeTop, fadeMiddle, habitEmpty, partialFill
-    case gridFadedWeek, unlinked
+    case gridFadedWeek, unlinked, eventTime, nowOverBlocks
 }
 
 enum DurationToken: String, CaseIterable, Sendable {

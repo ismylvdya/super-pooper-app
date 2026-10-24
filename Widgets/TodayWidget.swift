@@ -53,5 +53,6 @@ struct TodayWidgetEntryView: View {
         .containerBackground(tokens.color(.screenBackground), for: .widget)
         .widgetURL(DeepLink.today)
         .environment(\.tokens, entry.source.map { $0.config.tokens.applying($0.settings) } ?? tokens)
+        .environment(\.timelineBell, entry.source?.settings.timeline.bellStyle ?? TimelineBellStyle())
     }
 }

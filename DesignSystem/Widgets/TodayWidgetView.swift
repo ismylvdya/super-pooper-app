@@ -35,7 +35,7 @@ struct WidgetPoolBlock: View {
         VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
             ForEach(visibleCount.map { Array(plan.pool.prefix($0)) } ?? plan.pool) { item in
                 TaskRowView(item: item, today: plan.today, titleFont: tokens.font(.widgetTitle), showsDetails: false,
-                            isCompact: true)
+                            isCompact: true, titleLineHeight: tokens.uiFont(.widgetTitle).lineHeight)
                     .taskPlate(isDone: item.isDone)
             }
             if let visibleCount, plan.pool.count > visibleCount {
@@ -48,6 +48,8 @@ struct WidgetPoolBlock: View {
         }
         .frame(maxWidth: .infinity, maxHeight: visibleCount == nil ? .infinity : nil, alignment: .topLeading)
         .clipped()
+        // The pool starts at its first row; only the cut bottom fades (empty space under it stays empty).
+        .overlay(alignment: .bottom) { if visibleCount == nil { EdgeFade(edge: .bottom) } }
         .frame(idealWidth: tokens.size(.poolWidth))
     }
 }
@@ -65,7 +67,10 @@ struct WidgetTimelineBlock: View {
             if !plan.allDayEvents.isEmpty {
                 AllDayStrip(events: plan.allDayEvents, font: tokens.font(.widgetCaption), onTap: nil)
             }
+            // The widget shows a cut of the day: both ends fade.
             scaledTimeline
+                .overlay(alignment: .top) { EdgeFade(edge: .top) }
+                .overlay(alignment: .bottom) { EdgeFade(edge: .bottom) }
         }
     }
 
@@ -98,13 +103,16 @@ struct WidgetTimelineBlock: View {
     private func style(hourHeight: CGFloat) -> TimelineStyle {
         // Half an hour in the current scale, but never less than one line of text.
         let minimum = max(hourHeight / 2, tokens.uiFont(.widgetCaption).lineHeight + tokens.space(.timelineItemGap) * 2)
+        let line = tokens.uiFont(.widgetCaption).lineHeight
         var style = TimelineStyle(eventFont: tokens.font(.widgetCaption), taskFont: tokens.font(.widgetCaption),
+                                  eventLineHeight: line, taskLineHeight: line,
                                   minimumItemHeight: minimum, minimumTaskHeight: minimum)
         style.compactPlates = true
         return style
     }
 
     private func row(_ item: DayItem, hourHeight: CGFloat) -> some View {
-        TaskRowView(item: item, today: plan.today, titleFont: tokens.font(.widgetCaption), showsDetails: false, titleLineLimit: 1)
+        TaskRowView(item: item, today: plan.today, titleFont: tokens.font(.widgetCaption), showsDetails: false, titleLineLimit: 1,
+                    titleLineHeight: tokens.uiFont(.widgetCaption).lineHeight)
     }
 }

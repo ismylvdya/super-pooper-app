@@ -73,5 +73,6 @@
   "habitDone": "circle.fill",
   "habitPartial": "smallcircle.filled.circle",
   "habitTwice": "circle.inset.filled",
-  "habitNotScheduled": "circle.dotted"
+  "habitNotScheduled": "circle.dotted",
+  "bell": "bell"
 }

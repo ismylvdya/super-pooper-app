@@ -5,6 +5,7 @@ import SwiftUI
 /// The same view is used in the pool, on the timeline and in widgets.
 struct TaskRowView: View {
     @Environment(\.tokens) private var tokens
+    @Environment(\.titleReserve) private var reserve
     @Environment(\.icons) private var icons
     @Environment(\.rules) private var rules
     let item: DayItem
@@ -16,6 +17,8 @@ struct TaskRowView: View {
     var isCompact = false
     /// Title lines; nil = compact rows get one line, others wrap freely.
     var titleLineLimit: Int?
+    /// Line height of `titleFont` (nil = the task title token), for fading the last line.
+    var titleLineHeight: CGFloat?
     var onOpen: (() -> Void)?
 
     var body: some View {
@@ -56,12 +59,20 @@ struct TaskRowView: View {
         ForEach(chips) { chip in Chip(icon: chip.icon, text: chip.text, tint: chip.tint) }
     }
 
+    /// Limited titles fade out instead of ending with "…".
+    @ViewBuilder private var titleText: some View {
+        let font = titleFont ?? tokens.font(.taskTitle)
+        if let lines = titleLineLimit ?? (isCompact ? 1 : nil) {
+            FadingText(text: item.task.name, font: font, lineHeight: titleLineHeight ?? tokens.uiFont(.taskTitle).lineHeight,
+                       lines: lines, reserve: reserve)
+        } else {
+            Text(item.task.name).font(font).multilineTextAlignment(.leading).padding(.trailing, reserve)
+        }
+    }
+
     @ViewBuilder private var title: some View {
-        let text = Text(item.task.name)
-            .font(titleFont ?? tokens.font(.taskTitle))
+        let text = titleText
             .foregroundStyle(item.isDone ? tokens.color(.secondaryText) : tokens.color(.primaryText))
-            .multilineTextAlignment(.leading)
-            .lineLimit(titleLineLimit ?? (isCompact ? 1 : nil))
         if let onOpen {
             Button(action: onOpen) { text }
                 .buttonStyle(.plain)

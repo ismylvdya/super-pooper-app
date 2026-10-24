@@ -49,7 +49,8 @@ struct EventKitCalendarRepository: CalendarRepository {
             return CalendarEvent(eventIdentifier: identifier, title: event.title ?? "", start: start, end: end,
                                  isAllDay: event.isAllDay, calendarID: event.calendar.calendarIdentifier,
                                  calendarTitle: event.calendar.title,
-                                 colorHex: UIColor(cgColor: event.calendar.cgColor).hexString)
+                                 colorHex: UIColor(cgColor: event.calendar.cgColor).hexString,
+                                 hasAlarm: event.hasAlarms)
         }
         .sorted { $0.start < $1.start }
     }

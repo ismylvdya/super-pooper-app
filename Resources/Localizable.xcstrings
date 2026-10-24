@@ -1662,6 +1662,17 @@
         }
       }
     },
+    "info.settings.timeline.bell": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blocks that will send an alert — reminders, events with a Calendar alert, timed tasks and habits with reminders — show a bell in the corner."
+          }
+        }
+      }
+    },
     "info.settings.timeline.dayRange": {
       "extractionState": "manual",
       "localizations": {
@@ -3576,6 +3587,28 @@
         }
       }
     },
+    "settings.timeline.bellOpacity": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bell opacity"
+          }
+        }
+      }
+    },
+    "settings.timeline.bellSize": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bell size"
+          }
+        }
+      }
+    },
     "settings.timeline.dayRange": {
       "extractionState": "manual",
       "localizations": {
@@ -4353,6 +4386,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Status"
+          }
+        }
+      }
+    },
+    "timeline.alert": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Will alert"
           }
         }
       }

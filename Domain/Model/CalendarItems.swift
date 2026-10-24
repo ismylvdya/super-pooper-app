@@ -10,6 +10,8 @@ struct CalendarEvent: Identifiable, Hashable, Codable, Sendable {
     let calendarID: String
     let calendarTitle: String
     let colorHex: String
+    /// The event has an alert in Calendar (its block shows the bell).
+    var hasAlarm = false
 
     /// Recurring instances share `eventIdentifier`; the start makes them unique.
     var id: String { "\(eventIdentifier)@\(start.timeIntervalSince1970)" }
@@ -20,6 +22,25 @@ struct CalendarEvent: Identifiable, Hashable, Codable, Sendable {
         let first = LocalDate(start, in: calendar)
         let last = LocalDate(max(end.addingTimeInterval(-1), start), in: calendar)
         return first <= day && day <= last
+    }
+}
+
+extension CalendarEvent {
+    private enum CodingKeys: String, CodingKey {
+        case eventIdentifier, title, start, end, isAllDay, calendarID, calendarTitle, colorHex, hasAlarm
+    }
+
+    /// Widget snapshots written before `hasAlarm` existed still decode.
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(eventIdentifier: try values.decode(String.self, forKey: .eventIdentifier),
+                  title: try values.decode(String.self, forKey: .title),
+                  start: try values.decode(Date.self, forKey: .start), end: try values.decode(Date.self, forKey: .end),
+                  isAllDay: try values.decode(Bool.self, forKey: .isAllDay),
+                  calendarID: try values.decode(String.self, forKey: .calendarID),
+                  calendarTitle: try values.decode(String.self, forKey: .calendarTitle),
+                  colorHex: try values.decode(String.self, forKey: .colorHex),
+                  hasAlarm: try values.decodeIfPresent(Bool.self, forKey: .hasAlarm) ?? false)
     }
 }
 

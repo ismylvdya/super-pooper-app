@@ -39,7 +39,9 @@
       "end": "22:00"
     },
     "eventFontSize": 15,
-    "taskFontSize": 17
+    "taskFontSize": 17,
+    "bellSize": 11,
+    "bellOpacity": 0.45
   },
   "notifications": {
     "enabled": true

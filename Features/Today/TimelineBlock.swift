@@ -108,6 +108,7 @@ struct TimelineBlock: View {
     /// The same row as in the pool, without chips: the title gets up to two lines.
     private func taskRow(_ item: DayItem, _ slot: TimelineSlot) -> some View {
         PoolRowContent(item: item, today: plan.today, isCompact: false, titleFont: .system(size: model.settings.timeline.taskFontSize),
-                       showsDetails: false, titleLineLimit: 2, handler: handler)
+                       showsDetails: false, titleLineLimit: 2,
+                       titleLineHeight: UIFont.systemFont(ofSize: model.settings.timeline.taskFontSize).lineHeight, handler: handler)
     }
 }

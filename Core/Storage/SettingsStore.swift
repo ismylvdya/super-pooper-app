@@ -31,7 +31,7 @@ extension AppSettings {
                         wholeDay: .init(start: .midnight, end: .midnight), hoursBefore: 2, hoursAfter: 8,
                         firstHalf: .init(start: .midnight, end: .midnight),
                         secondHalf: .init(start: .midnight, end: .midnight),
-                        eventFontSize: 15, taskFontSize: 15),
+                        eventFontSize: 15, taskFontSize: 15, bellSize: 11, bellOpacity: 0.45),
         notifications: .init(enabled: false),
         onboarding: .init(completed: false),
         habits: .init(order: [], showInTodayByDefault: false),

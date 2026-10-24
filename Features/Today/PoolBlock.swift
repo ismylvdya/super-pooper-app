@@ -103,11 +103,12 @@ struct PoolRowContent: View {
     var titleFont: Font?
     var showsDetails = true
     var titleLineLimit: Int?
+    var titleLineHeight: CGFloat?
     let handler: TaskActionHandler
 
     var body: some View {
         TaskRowView(item: item, today: today, titleFont: titleFont, showsDetails: showsDetails, isCompact: isCompact,
-                    titleLineLimit: titleLineLimit,
+                    titleLineLimit: titleLineLimit, titleLineHeight: titleLineHeight,
                     onOpen: { handler.run(ActionRegistryLookup.open, taskName: item.id) })
             .contextMenu {
                 ActionMenuContent(menu: item.isHabit ? .habitContext : .taskContext, item: item) {

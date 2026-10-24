@@ -31,6 +31,8 @@ extension TimelineStyle {
         let titleLine = UIFont.systemFont(ofSize: settings.taskFontSize).lineHeight + 6
         return TimelineStyle(eventFont: .system(size: settings.eventFontSize),
                              taskFont: .system(size: settings.taskFontSize),
+                             eventLineHeight: UIFont.systemFont(ofSize: settings.eventFontSize, weight: .semibold).lineHeight,
+                             taskLineHeight: UIFont.systemFont(ofSize: settings.taskFontSize).lineHeight,
                              minimumItemHeight: titleLine + tokens.space(.timelineItemPadding),
                              // As high as the title row plus the plate padding: equal space above and below.
                              minimumTaskHeight: titleLine + tokens.space(.rowVertical))

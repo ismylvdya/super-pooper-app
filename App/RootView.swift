@@ -34,6 +34,7 @@ struct RootView: View {
         .tint(tokens.color(.accent))
         .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { screenHeight = $0 }
         .environment(\.screenHeight, screenHeight)
+        .environment(\.timelineBell, model.settings.timeline.bellStyle)
         .environment(model)
         .environment(container.router)
         .environment(container.banners)
