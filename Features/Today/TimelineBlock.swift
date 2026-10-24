@@ -88,6 +88,7 @@ struct TimelineBlock: View {
         }
         style.onEventDelete = { eventToDelete = $0 }
         style.rowsHaveOwnPlates = true
+        style.showsNow = plan.isToday
         style.highlightedSlot = highlightedSlot
         style.onLinkTap = { slot in
             Haptics.play(.light)

@@ -40,6 +40,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let refreshSeconds: Double
         /// Upper bound for the hours shown in the one-column layout.
         let maxHoursAfter: Int
+        /// Another day (swiped to on Today) is shown around this time.
+        let otherDayAnchor: LocalTime
     }
 
     struct Widgets: Codable, Hashable, Sendable {

@@ -37,7 +37,7 @@ struct DayTimelineView<TaskContent: View>: View {
                                height: max(item.frame.height - tokens.space(.timelineItemGap), 0), alignment: .topLeading)
                         .offset(x: labelWidth + item.frame.minX, y: item.frame.minY)
                 }
-                if window.contains(now) { nowLine(width: geometry.size.width, blocks: placed(width: itemsWidth)) }
+                if style.showsNow, window.contains(now) { nowLine(width: geometry.size.width, blocks: placed(width: itemsWidth)) }
             }
         }
         .frame(height: max(totalHeight, contentBottom))
@@ -232,6 +232,8 @@ struct TimelineStyle {
     /// The block whose links are highlighted (the rest dims), and the tap on a block's link mark.
     var highlightedSlot: String?
     var onLinkTap: ((TimelineSlot) -> Void)?
+    /// Another day than today has no "now" cursor.
+    var showsNow = true
     /// Task rows draw their own plates (and long-press highlight) instead of getting one here.
     var rowsHaveOwnPlates = false
     /// Dense widget timelines: plates with minimal vertical padding.

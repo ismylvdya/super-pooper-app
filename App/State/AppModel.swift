@@ -57,6 +57,11 @@ final class AppModel {
         DayContext(now: date ?? clock.now, calendar: calendar, boundary: settings.day.boundary, energyHour: settings.day.energyHour)
     }
 
+    func plan(at date: Date, dayOffset: Int) -> DayPlan {
+        DayPlanning.plan(config: config, settings: settings, tasks: tasks, events: events, reminders: reminders,
+                         dayState: dayState, context: context(at: date), dayOffset: dayOffset)
+    }
+
     func plan(at date: Date) -> DayPlan {
         DayPlanning.plan(config: config, settings: settings, tasks: tasks, events: events, reminders: reminders, dayState: dayState,
                          context: context(at: date))

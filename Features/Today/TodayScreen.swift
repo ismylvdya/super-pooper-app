@@ -3,7 +3,9 @@ import SwiftUI
 /// Main screen: blocks from the arrangement's layout (`layouts/today-*.layout.json`), refreshed every
 /// minute so "now" and chains move. The pool and the timeline both pull to refresh (full sync).
 /// Top left: the morning review (edit the pool) and the problems badge; top right: search. In landscape
-/// the bar is hidden and the same buttons stand in a column on the left.
+/// the bar is hidden and the same buttons stand in a column on the left. Swiping left or right moves
+/// both halves with the finger to tomorrow / yesterday (and further): another day shows only its own
+/// events, reminders and dated tasks; its name in the bar brings back today.
 struct TodayScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
@@ -12,6 +14,8 @@ struct TodayScreen: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @State private var pendingAction: PendingAction?
+    @State private var dayOffset = 0
+    @State private var dragX: CGFloat = 0
 
     private var isLandscape: Bool { verticalSizeClass == .compact }
 
@@ -31,6 +35,7 @@ struct TodayScreen: View {
         .toolbar(isLandscape ? .hidden : .automatic, for: .navigationBar)
         .toolbar {
             ToolbarItemGroup(placement: .topBarLeading) { TodayButtons(placement: .leading) }
+            ToolbarItem(placement: .principal) { dayTitle }
             ToolbarItemGroup(placement: .topBarTrailing) { TodayButtons(placement: .trailing) }
         }
         .navigationBarTitleDisplayMode(.inline)
@@ -42,15 +47,58 @@ struct TodayScreen: View {
             let layout = model.config.todayLayout(for: model.settings.today.arrangement)
             let bottomInset = geometry.safeAreaInsets.bottom
             TimelineView(.periodic(from: .now, by: model.config.rules.timeline.refreshSeconds)) { _ in
-                let plan = model.plan(at: model.clock.now)
+                let plan = model.plan(at: model.clock.now, dayOffset: dayOffset)
                 ScreenLayoutView(layout: layout) { id in
                     TodayBlock(id: id, plan: plan, handler: handler,
                                bottomInset: Self.touchesBottom(id, in: layout) ? bottomInset : 0)
                 }
                 .padding(.horizontal, tokens.space(.screenHorizontal))
                 .padding(.top, tokens.space(.headerToPlate))
+                .offset(x: dragX)
+                .opacity(1 - min(abs(dragX) / geometry.size.width, 1) * tokens.opacity(.daySwipeFade))
             }
             .ignoresSafeArea(.container, edges: .bottom)
+            .simultaneousGesture(daySwipe(width: geometry.size.width))
+        }
+    }
+
+    /// A horizontal drag moves both halves with the finger; far enough, it lands on the next or previous day.
+    private func daySwipe(width: CGFloat) -> some Gesture {
+        DragGesture(minimumDistance: tokens.size(.daySwipeStart))
+            .onChanged { value in
+                guard abs(value.translation.width) > abs(value.translation.height) * 1.5 else { return }
+                dragX = value.translation.width
+            }
+            .onEnded { value in
+                let distance = value.translation.width
+                let isSwipe = abs(distance) > abs(value.translation.height) * 1.5
+                    && (abs(distance) > width * tokens.opacity(.daySwipeThreshold) || abs(value.predictedEndTranslation.width) > width / 2)
+                guard isSwipe else {
+                    withAnimation(tokens.animation) { dragX = 0 }
+                    return
+                }
+                let step = distance < 0 ? 1 : -1
+                Haptics.play(.light)
+                withAnimation(.easeIn(duration: tokens.duration(.animation) / 2)) { dragX = distance < 0 ? -width : width } completion: {
+                    dayOffset += step
+                    dragX = distance < 0 ? width : -width
+                    withAnimation(.easeOut(duration: tokens.duration(.animation) / 2)) { dragX = 0 }
+                }
+            }
+    }
+
+    /// The name of the day shown when it is not today; tapping it goes back to today.
+    @ViewBuilder private var dayTitle: some View {
+        if dayOffset != 0 {
+            let day = model.context().today.adding(days: dayOffset)
+            Button {
+                withAnimation(tokens.animation) { dayOffset = 0 }
+            } label: {
+                Text(DayName.format(day, offset: dayOffset, calendar: model.calendar))
+                    .font(tokens.font(.navTitle))
+            }
+            .tint(.primary)
+            .accessibilityIdentifier("today.day")
         }
     }
 

@@ -43,6 +43,8 @@ struct DayPlan: Sendable {
     let problems: [PlanProblem]
     /// All-day events of today: they have no place on the hour grid and sit in a strip above it.
     var allDayEvents: [CalendarEvent] = []
+    /// False for another day browsed by swiping: no "now" cursor there.
+    var isToday = true
 
     static func empty(today: LocalDate, now: Date) -> DayPlan {
         DayPlan(today: today, now: now, pool: [], timeline: [], problems: [])

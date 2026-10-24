@@ -71,7 +71,9 @@ extension AppModel {
         var reminders: [ReminderItem] = []
         if config.flags.reminders {
             let until = context.today.adding(days: rules.notifications.horizonDays).startDate(in: calendar, offset: settings.day.boundary)
-            reminders = await services.reminders.reminders(from: context.dayStart, to: until, listIDs: settings.sources.reminderListIDs)
+            // Past days too, for browsing them on Today.
+            let from = context.today.adding(days: -rules.eventLinks.resolveDaysBefore).startDate(in: calendar, offset: settings.day.boundary)
+            reminders = await services.reminders.reminders(from: from, to: until, listIDs: settings.sources.reminderListIDs)
         }
         setSources(events: events, reminders: reminders)
     }
