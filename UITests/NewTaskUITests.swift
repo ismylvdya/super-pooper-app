@@ -16,14 +16,19 @@ final class NewTaskUITests: XCTestCase {
     }
 
     private func expectCreatedBanner(_ name: String) {
-        let banner = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Created' AND label CONTAINS %@", name)).firstMatch
+        let banner = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == 'banner' AND label BEGINSWITH 'Created' AND label CONTAINS %@", name)).firstMatch
         XCTAssertTrue(banner.waitForExistence(timeout: 15))
     }
 
     func testReviewRowOpensTheTaskAndPlusCreatesOne() {
         launch("superpooper://review")
-        let row = app.staticTexts["Сдать отчёт"]
-        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        // The link opens the review once the vault is read; if Today came first, open it from there.
+        if !app.navigationBars["Morning review"].waitForExistence(timeout: 6) { app.buttons["today.review"].tap() }
+        // The list is long and lazy: scroll down to the row.
+        let row = app.staticTexts["Позвонить в банк"]
+        for _ in 0..<4 where !row.waitForExistence(timeout: 2) { app.swipeUp() }
+        XCTAssertTrue(row.exists)
         row.tap()
         XCTAssertTrue(app.textFields["taskPage.name"].waitForExistence(timeout: 5))
         app.navigationBars.buttons.element(boundBy: 0).tap()
