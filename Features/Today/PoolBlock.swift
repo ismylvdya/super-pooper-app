@@ -37,12 +37,18 @@ struct PoolBlock: View {
     private var list: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: tokens.space(.poolRowGap)) {
-                ForEach(plan.pool) { item in
-                    row(item)
-                        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { rowHeights[item.id] = $0 }
-                        .onScrollVisibilityChange(threshold: 0.5) { visible in
-                            if visible { visibleRows.insert(item.id) } else { visibleRows.remove(item.id) }
+                ForEach(PoolSegments.make(plan.pool)) { segment in
+                    if segment.isRoutine {
+                        // One plate for the whole routine; each habit keeps its own tap and long press.
+                        VStack(alignment: .leading, spacing: 0) {
+                            ForEach(segment.items) { item in tracked(row(item, plate: .bare), item) }
                         }
+                        .background(tokens.color(.plateBackground),
+                                    in: RoundedRectangle(cornerRadius: tokens.radius(.poolRow), style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: tokens.radius(.poolRow), style: .continuous))
+                    } else if let item = segment.items.first {
+                        tracked(row(item, plate: .pool), item)
+                    }
                 }
             }
         }
@@ -78,8 +84,16 @@ struct PoolBlock: View {
         return heights.reduce(0, +) + tokens.space(.poolRowGap) * CGFloat(max(rows.count - 1, 0))
     }
 
-    private func row(_ item: DayItem) -> some View {
-        PoolRow(item: item, today: plan.today, isCompact: fillsHeight, handler: handler)
+    private func row(_ item: DayItem, plate: PoolRowContent.PlateKind) -> some View {
+        PoolRow(item: item, today: plan.today, isCompact: fillsHeight, plate: plate, handler: handler)
+    }
+
+    private func tracked(_ view: some View, _ item: DayItem) -> some View {
+        view
+            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { rowHeights[item.id] = $0 }
+            .onScrollVisibilityChange(threshold: 0.5) { visible in
+                if visible { visibleRows.insert(item.id) } else { visibleRows.remove(item.id) }
+            }
     }
 }
 
@@ -91,11 +105,12 @@ struct PoolRow: View {
     let item: DayItem
     let today: LocalDate
     var isCompact = false
+    var plate: PoolRowContent.PlateKind = .pool
     let handler: TaskActionHandler
 
     var body: some View {
         let lines = rules.pool.extraLines(forEstimate: rules.day.estimate(of: item.task))
-        PoolRowContent(item: item, today: today, isCompact: isCompact, plate: .pool,
+        PoolRowContent(item: item, today: today, isCompact: isCompact, plate: plate,
                        minimumHeight: CGFloat(lines) * tokens.uiFont(.taskTitle).lineHeight, handler: handler)
     }
 }
@@ -104,6 +119,8 @@ struct PoolRow: View {
 struct PoolRowContent: View {
     enum PlateKind {
         case pool
+        /// Inside a shared routine plate: the row's own padding, no plate of its own.
+        case bare
         case slot(isPast: Bool, isCompact: Bool)
     }
 
@@ -132,6 +149,14 @@ struct PoolRowContent: View {
                     Spacer(minLength: minimumHeight)
                 }
                 .taskPlate(isDone: item.isDone)
+            case .bare:
+                VStack(alignment: .leading, spacing: 0) {
+                    row
+                    Spacer(minLength: minimumHeight)
+                }
+                .padding(.vertical, tokens.space(.rowVertical) / 2)
+                .padding(.horizontal, tokens.space(.plateInner) / 2)
+                .background(tokens.color(.plateBackground))
             case .slot(let isPast, let isCompact):
                 row.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading).slotPlate(isPast: isPast, isCompact: isCompact)
             }

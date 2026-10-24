@@ -132,3 +132,17 @@ struct RoutineOrderTests {
         #expect(pool.extraLines(forEstimate: 240) == 2)
     }
 }
+
+@Suite("Routine plates")
+struct PoolSegmentsTests {
+    private func item(_ name: String, _ part: HabitTimeOfDay?, habit: Bool = true, done: Bool = false) -> DayItem {
+        let task = habit ? makeHabit(name, status: .habit) { $0.habit.timeOfDay = part } : makeTask(name)
+        return DayItem(task: task, state: done ? .marked(.done) : .open, blockers: [], problems: [])
+    }
+
+    @Test func neighbouringHabitsOfOneRoutineShareAPlate() {
+        let segments = PoolSegments.make([item("A", .morning), item("B", .morning), item("C", nil, habit: false),
+                                          item("D", .evening), item("E", .evening), item("F", .morning, done: true)])
+        #expect(segments.map { $0.items.map(\.id) } == [["A", "B"], ["C"], ["D", "E"], ["F"]])
+    }
+}
