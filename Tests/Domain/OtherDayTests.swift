@@ -36,6 +36,18 @@ struct OtherDayTests {
         #expect(tomorrow([waiting, planned]).dayNames == ["Planned"] as Set)
     }
 
+    /// Habits come by their own repeat rule on the days ahead too, and only those shown in Today.
+    @Test func habitsShowOnTheDaysTheyRepeat() {
+        let everyDay = makeHabit("Water", status: .habit)
+        let everySixDays = makeHabit("Laundry", rule: "DTSTART:20261021;FREQ=DAILY;INTERVAL=6", status: .habit)
+        let hidden = makeHabit("Hidden", status: .habit) { $0.habit.showInToday = false }
+        #expect(tomorrow([everyDay, everySixDays, hidden]).dayNames == ["Water"] as Set)
+        let sixDaysOn = DayPlanning.plan(config: config, settings: TestConfig.defaults, tasks: [everyDay, everySixDays, hidden],
+                                         events: [], reminders: [], dayState: DayState(day: LocalDate(TestCalendar.wednesday)),
+                                         context: TestCalendar.context(), dayOffset: 6)
+        #expect(sixDaysOn.dayNames == ["Water", "Laundry"] as Set)
+    }
+
     @Test func linksToTasksWithoutThatDateStillWork() {
         let screwdriver = makeTask("Find screwdriver")
         let assemble = makeTask("Assemble") { $0.due = TaskDue("2026-10-22"); $0.previousTasks = ["Find screwdriver"] }

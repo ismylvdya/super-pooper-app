@@ -16,7 +16,7 @@ struct DayInputs: Sendable {
     var postponed: Set<String> = []
     /// Which kinds of entries the timeline shows; hidden timed tasks and habits stay in the pool.
     var timelineFilter = TimelineFilter()
-    /// Another day than today: only this week's tasks dated that day are in it, no habits.
+    /// Another day than today: this week's tasks dated that day and the habits shown in Today that repeat on it.
     var isOtherDay = false
     /// The calendars are readable and chosen: a link to an event that is not found is a problem.
     var eventsKnown = true
@@ -41,7 +41,7 @@ struct DayBuilder: Sendable {
             let previousEvent = task.previousEvent.flatMap(resolver.resolve)
             let nextEvent = task.nextEvent.flatMap(resolver.resolve)
             let inDay = inputs.isOtherDay
-                ? isOnOtherDay(task, context: context)
+                ? isOnOtherDay(task, occurrence: occurrence, context: context)
                 : isInDay(task, occurrence: occurrence, skipped: inputs.skipped, context: context)
                 && !inputs.postponed.contains(task.name)
             let taskProblems = self.problems(of: task, graph: graph, previousEvent: previousEvent, nextEvent: nextEvent,
@@ -105,8 +105,9 @@ struct DayBuilder: Sendable {
         return context.logicalDay(of: due) > context.today
     }
 
-    private func isOnOtherDay(_ task: TaskNote, context: DayContext) -> Bool {
-        guard !task.isHabit, task.status == .thisWeek, let due = task.due else { return false }
+    private func isOnOtherDay(_ task: TaskNote, occurrence: TaskOccurrence, context: DayContext) -> Bool {
+        if task.isHabit { return task.isInTodayHabits && occurrence.occurs(task, on: context.today) }
+        guard task.status == .thisWeek, let due = task.due else { return false }
         return context.logicalDay(of: due) == context.today
     }
 
