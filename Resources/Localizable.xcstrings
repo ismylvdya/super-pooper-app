@@ -3026,17 +3026,6 @@
         }
       }
     },
-    "row.after": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "After: %@"
-          }
-        }
-      }
-    },
     "search.empty": {
       "extractionState": "manual",
       "localizations": {

@@ -110,7 +110,7 @@ struct ReviewRow: View {
             HStack(spacing: tokens.space(.chipGap)) {
                 if item.isHabit { Image(systemName: icons[.habit]).foregroundStyle(tokens.color(.habit)) }
                 Text(task.name).foregroundStyle(item.isDone ? tokens.color(.secondaryText) : tokens.color(.primaryText))
-                if item.isBlocked { Image(systemName: icons[.blocked]).foregroundStyle(tokens.color(.secondaryText)) }
+                if item.isBlocked { Image(systemName: icons[.links]).foregroundStyle(tokens.color(.secondaryText)) }
             }
             ChipFlow(spacing: tokens.space(.chipGap)) {
                 toggleChip(.high, isOn: task.isHighPriority, tint: tokens.color(.high)) { [.highPriority(!$0.isHighPriority)] }

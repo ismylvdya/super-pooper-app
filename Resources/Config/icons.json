@@ -12,7 +12,6 @@
   "due": "calendar",
   "time": "clock",
   "estimate": "hourglass",
-  "blocked": "lock.fill",
   "previousTasks": "arrow.turn.left.up",
   "nextTasks": "arrow.turn.right.down",
   "previousEvent": "calendar.badge.checkmark",

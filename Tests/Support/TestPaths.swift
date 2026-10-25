@@ -31,6 +31,7 @@ enum TestConfig {
     static let sort = decode(SortConfig.self, "sort.json")
     static let defaults = decode(AppSettings.self, "defaults.json")
     static let actions = decode(ActionRegistry.self, "actions.json")
+    static let tokens = decode(DesignTokens.self, "tokens.json")
 
     static func decode<T: Decodable>(_ type: T.Type, _ file: String) -> T {
         do {

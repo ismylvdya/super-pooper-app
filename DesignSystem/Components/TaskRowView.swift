@@ -1,17 +1,17 @@
 import SwiftUI
 
-/// One task or habit row: title, property chips and what blocks it. Tasks are marked from the long-press menu,
-/// so there is no checkbox; a marked row is grey and ends with its mark.
+/// One task or habit row: title and property chips (a task waiting for another has the link chip, nothing
+/// else). Tasks are marked from the long-press menu, so there is no checkbox; a marked row is grey and ends
+/// with its mark.
 /// The same view is used in the pool, on the timeline and in widgets.
 struct TaskRowView: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.titleReserve) private var reserve
-    @Environment(\.icons) private var icons
     @Environment(\.rules) private var rules
     let item: DayItem
     let today: LocalDate
     var titleFont: Font?
-    /// Chips and the "After: …" line; widgets hide them to stay compact.
+    /// Chips; widgets hide them to stay compact.
     var showsDetails = true
     /// Narrow columns: one title line and one chip line that dissolves on the right.
     var isCompact = false
@@ -40,16 +40,10 @@ struct TaskRowView: View {
                         ChipFlow(spacing: tokens.space(.chipGap)) { chipViews }
                     }
                 }
-                if showsDetails, !isCompact, item.isBlocked {
-                    Label(L10n.format("row.after", blockerNames), systemImage: icons[.blocked])
-                        .font(tokens.font(.caption))
-                        .foregroundStyle(tokens.color(.secondaryText))
-                }
             }
             Spacer(minLength: 0)
             if item.isDone { MarkGlyph(state: item.state, color: tokens.color(.past), size: tokens.size(.doneMark)) }
         }
-        .opacity(item.isBlocked ? tokens.opacity(.blocked) : 1)
         .contentShape(Rectangle())
         // Anywhere on the row opens the task (chips included).
         .onTapGesture { onOpen?() }
@@ -80,15 +74,6 @@ struct TaskRowView: View {
         } else {
             text
         }
-    }
-
-    private var blockerNames: String {
-        L10n.list(item.blockers.map {
-            switch $0 {
-            case .task(let name): name
-            case .event(let title, _): title
-            }
-        })
     }
 
     private var chips: [RowChip] {
