@@ -41,9 +41,6 @@ struct VaultScanner: Sendable {
     private func read(_ url: URL, root: URL, checkConflicts: Bool, into output: inout Output) {
         let name = url.deletingPathExtension().lastPathComponent.precomposedStringWithCanonicalMapping
         let relativePath = VaultPaths.relative(url, to: root)
-        if checkConflicts, ubiquity.hasConflicts(url) {
-            output.result.conflicted.append(name)
-        }
         let file: NoteFile
         do {
             file = try fileSystem.read(url)
@@ -54,6 +51,8 @@ struct VaultScanner: Sendable {
         do {
             let document = try FrontmatterDocument(text: file.text)
             guard reader.isTask(document) else { return }
+            // Only tasks can be resolved on the conflicts screen; other notes are Obsidian's business.
+            if checkConflicts, ubiquity.hasConflicts(url) { output.result.conflicted.append(name) }
             output.result.tasks.append(reader.task(from: document, name: name, relativePath: relativePath))
             output.modificationDates[relativePath] = file.modificationDate
         } catch let error as FrontmatterError {

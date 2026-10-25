@@ -59,6 +59,16 @@ struct ICloudTests {
         #expect(result.tasks.count == 36)
     }
 
+    /// Only tasks get to the conflicts screen: a plain note in conflict there could never be resolved.
+    @Test func conflictsOfNotesThatAreNotTasksAreNotReported() async throws {
+        let sandbox = try VaultSandbox.make()
+        try "# Просто заметка\n".write(to: sandbox.url(of: "Просто заметка"), atomically: true, encoding: .utf8)
+        let ubiquity = FakeUbiquityService()
+        ubiquity.conflict("Просто заметка.md")
+        ubiquity.conflict("Сдать отчёт.md")
+        #expect(await sandbox.scan(ubiquity: ubiquity).conflicted == ["Сдать отчёт"])
+    }
+
     @Test func aLocalVaultSkipsTheICloudChecks() async throws {
         let sandbox = try VaultSandbox.make()
         let ubiquity = FakeUbiquityService()
