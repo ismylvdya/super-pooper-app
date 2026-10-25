@@ -185,7 +185,7 @@ struct NoVaultScreen: View {
     var body: some View {
         VStack {
             EmptyStateView(icon: .emptyVault, title: message == nil ? "vault.empty.title" : "vault.error.title",
-                           message: message.map { LocalizedStringKey($0) } ?? "vault.empty.message",
+                           message: message.map { Text(verbatim: $0) } ?? Text("vault.empty.message"),
                            actionTitle: "vault.choose") { isPickerPresented = true }
             #if DEBUG
             Button("vault.useTestVault") {

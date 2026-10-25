@@ -36,4 +36,15 @@ final class RegressionUITests: XCTestCase {
             .matching(NSPredicate(format: "value == %@", "Позвонить в банк")).firstMatch
         XCTAssertTrue(parent.waitForNonExistence(timeout: 3), "the subtask's page is shown in the sheet, not under it")
     }
+
+    /// A subtask's name shows as typed: underscores around a word are part of the name, not Markdown italics.
+    func testASubtaskNameShowsAsTyped() {
+        launch("superpooper://task/Позвонить в банк")
+        let field = app.textFields["taskPage.subtask"].firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 8))
+        field.tap()
+        field.typeText("Взять _синюю_ ручку\n")
+        XCTAssertTrue(app.staticTexts["Взять _синюю_ ручку"].waitForExistence(timeout: 5))
+    }
+
 }

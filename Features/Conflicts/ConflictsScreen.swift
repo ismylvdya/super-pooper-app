@@ -15,7 +15,7 @@ struct ConflictsScreen: View {
                 PlateSection(header: nil, hint: "conflicts.hint") {
                     ForEach(model.conflictedNotes, id: \.self) { name in
                         NavigationLink(value: Route.conflict(name)) {
-                            PlateRow(icon: .problem, title: LocalizedStringKey(name), tint: tokens.color(.warning)) {
+                            PlateRow(icon: .problem, title: Text(verbatim: name), tint: tokens.color(.warning)) {
                                 Image(systemName: icons[.chevron]).foregroundStyle(tokens.color(.tertiaryText))
                             }
                         }
@@ -40,7 +40,7 @@ struct ConflictVersionsScreen: View {
     var body: some View {
         PageScaffold(title: noteName) {
             ForEach(versions) { version in
-                PlateSection(header: LocalizedStringKey(title(version)), hint: LocalizedStringKey(detail(version))) {
+                PlateSection(header: Text(verbatim: title(version)), hint: Text(verbatim: detail(version))) {
                     Text(version.text)
                         .font(tokens.font(.noteEditor))
                         .frame(maxWidth: .infinity, alignment: .leading)

@@ -6,9 +6,24 @@ struct EmptyStateView: View {
     @Environment(\.icons) private var icons
     let icon: Icon
     let title: LocalizedStringKey
-    let message: LocalizedStringKey
-    var actionTitle: LocalizedStringKey?
-    var action: (() -> Void)?
+    let message: Text
+    let actionTitle: LocalizedStringKey?
+    let action: (() -> Void)?
+
+    init(icon: Icon, title: LocalizedStringKey, message: LocalizedStringKey, actionTitle: LocalizedStringKey? = nil,
+         action: (() -> Void)? = nil) {
+        self.init(icon: icon, title: title, message: Text(message), actionTitle: actionTitle, action: action)
+    }
+
+    /// A message already made into text, e.g. `Text(verbatim:)` for an error the system wrote.
+    init(icon: Icon, title: LocalizedStringKey, message: Text, actionTitle: LocalizedStringKey? = nil,
+         action: (() -> Void)? = nil) {
+        self.icon = icon
+        self.title = title
+        self.message = message
+        self.actionTitle = actionTitle
+        self.action = action
+    }
 
     var body: some View {
         VStack(spacing: tokens.space(.groupGap)) {
@@ -16,7 +31,7 @@ struct EmptyStateView: View {
                 .font(tokens.font(.emptyIcon))
                 .foregroundStyle(tokens.color(.accent))
             Text(title).font(tokens.font(.emptyTitle)).multilineTextAlignment(.center)
-            Text(message)
+            message
                 .font(tokens.font(.emptyBody))
                 .foregroundStyle(tokens.color(.secondaryText))
                 .multilineTextAlignment(.center)

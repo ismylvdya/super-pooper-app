@@ -8,8 +8,8 @@ struct ClockSettingsSection: View {
     var body: some View {
         let zone = TimeZone(identifier: model.settings.clock.timeZone) ?? .current
         PlateSection(header: "settings.clock", info: "info.settings.clock",
-                     hint: LocalizedStringKey(L10n.format("settings.clock.preview",
-                                                          ClockLine.text(prefix: prefix, date: model.clock.now, timeZone: zone)))) {
+                     hint: Text(verbatim: L10n.format("settings.clock.preview",
+                                                      ClockLine.text(prefix: prefix, date: model.clock.now, timeZone: zone)))) {
             PlateRow(icon: .clockSettings, title: "settings.clock.zone") {
                 Picker("settings.clock.zone", selection: Binding(
                     get: { model.settings.clock.timeZone },

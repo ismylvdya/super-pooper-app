@@ -14,7 +14,7 @@ struct RecurrenceEditorSection: View {
     var body: some View {
         let draft = self.draft ?? initialDraft
         PlateSection(header: "recurrenceEditor.header", info: "info.recurrenceEditor",
-                     hint: LocalizedStringKey(RecurrenceText.describe(draft))) {
+                     hint: Text(verbatim: RecurrenceText.describe(draft))) {
             PlateRow(icon: .recurrence, title: "recurrenceEditor.frequency") {
                 Picker("recurrenceEditor.frequency", selection: edit(\.frequency)) {
                     ForEach(RecurrenceFrequency.allCases, id: \.self) { Text(LocalizedStringKey($0.titleKey)).tag($0) }
