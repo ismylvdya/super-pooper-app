@@ -40,6 +40,8 @@ final class AppModel {
     @ObservationIgnored var runningSync: Task<Void, Never>?
     /// Another sync was asked for while one runs (`true`: with the banner).
     @ObservationIgnored var syncAgain: Bool?
+    /// The edit of each note still running (see `edit`).
+    @ObservationIgnored var pendingEdits: [String: Task<Void, Never>] = [:]
     /// Counts reads of the calendars and reminders; an older read that ends later is dropped.
     @ObservationIgnored var sourcesGeneration = 0
     @ObservationIgnored var notificationTask: Task<Void, Never>?

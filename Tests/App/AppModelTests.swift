@@ -150,6 +150,18 @@ struct AppModelTests {
         #expect(model.task(named: "Новая во время синка") != nil)
     }
 
+    /// Two quick taps on a habit's day: the second one sees the first one's mark (Done, then back to none),
+    /// instead of deciding from the same old state.
+    @Test func twoQuickTapsOnAHabitDayGoThereAndBack() async throws {
+        let model = try makeModel()
+        let today = model.context().today
+        async let first: Void = model.cycleHabit("Выпить воды 💧", on: today)
+        async let second: Void = model.cycleHabit("Выпить воды 💧", on: today)
+        _ = await (first, second)
+        let habit = try #require(model.task(named: "Выпить воды 💧"))
+        #expect(HabitInstances(task: habit).mark(on: today) == nil)
+    }
+
     @Test func archiveAndDelete() async throws {
         let model = try makeModel()
         await model.perform(.archive, on: "Сдать отчёт")

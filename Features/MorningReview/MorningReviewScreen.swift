@@ -112,13 +112,11 @@ struct ReviewRow: View {
                 if item.isBlocked { Image(systemName: icons[.blocked]).foregroundStyle(tokens.color(.secondaryText)) }
             }
             ChipFlow(spacing: tokens.space(.chipGap)) {
-                toggleChip(.high, isOn: task.isHighPriority, tint: tokens.color(.high)) { [.highPriority(!task.isHighPriority)] }
+                toggleChip(.high, isOn: task.isHighPriority, tint: tokens.color(.high)) { [.highPriority(!$0.isHighPriority)] }
                 dueChip
                 estimateChip
-                toggleChip(.energy, isOn: task.needEnergy, tint: tokens.color(.energy)) { [.needEnergy(!task.needEnergy)] }
-                toggleChip(.pleasant, isOn: task.pleasant == true, tint: tokens.color(.heart)) {
-                    [.pleasant(task.pleasant != true)]
-                }
+                toggleChip(.energy, isOn: task.needEnergy, tint: tokens.color(.energy)) { [.needEnergy(!$0.needEnergy)] }
+                toggleChip(.pleasant, isOn: task.pleasant == true, tint: tokens.color(.heart)) { [.pleasant($0.pleasant != true)] }
                 if !task.isHabit { statusChip }
                 if !task.previousTasks.isEmpty || item.isBlocked {
                     Chip(icon: .previousTasks, text: "\(task.previousTasks.count)")
@@ -135,10 +133,11 @@ struct ReviewRow: View {
         .onTapGesture(perform: onOpen)
     }
 
-    private func toggleChip(_ icon: Icon, isOn: Bool, tint: Color, changes: @escaping () -> [TaskFieldChange]) -> some View {
+    /// The new value is decided from the note as it is when the edit runs (two quick taps go there and back).
+    private func toggleChip(_ icon: Icon, isOn: Bool, tint: Color, changes: @escaping (TaskNote) -> [TaskFieldChange]) -> some View {
         Button {
             Haptics.play(.light)
-            Task { await model.update(task.name, changes()) }
+            Task { await model.edit(task.name, changes) }
         } label: {
             Chip(icon: icon, tint: tint, isOn: isOn)
         }

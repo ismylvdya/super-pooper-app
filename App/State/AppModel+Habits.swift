@@ -14,14 +14,20 @@ extension AppModel {
 
     /// Tap on a habit's day: none → Done (→ Twice) → none.
     func cycleHabit(_ name: String, on day: LocalDate) async {
-        guard let habit = task(named: name) else { return }
-        let next = HabitMarking.next(after: HabitInstances(task: habit).mark(on: day), twiceADay: habit.habit.twiceADay)
-        await setHabitMark(name, on: day, to: next)
+        await markHabit(name, on: day) { habit in
+            HabitMarking.next(after: HabitInstances(task: habit).mark(on: day), twiceADay: habit.habit.twiceADay)
+        }
     }
 
     func setHabitMark(_ name: String, on day: LocalDate, to mark: HabitMark?) async {
-        guard let habit = task(named: name), day <= context().today else { return }
-        await write(habit, TaskMarking(today: context().today).changes(marking: habit, as: mark, on: day))
+        await markHabit(name, on: day) { _ in mark }
+    }
+
+    /// The new mark is chosen from the habit as the previous edit left it.
+    private func markHabit(_ name: String, on day: LocalDate, mark: @escaping (TaskNote) -> HabitMark?) async {
+        let today = context().today
+        guard day <= today else { return }
+        await edit(name) { habit in TaskMarking(today: today).changes(marking: habit, as: mark(habit), on: day) }
     }
 
     func moveHabits(_ names: [String]) {
@@ -37,9 +43,9 @@ extension AppModel {
             await perform(action, on: name, day: day == context().today ? nil : day)
             return
         }
-        let current = HabitInstances(task: note).mark(on: day)
-        let mark = HabitMarking.notificationMark(pressed, current: current, remindersPerDay: note.habitTimes.count)
-        await setHabitMark(name, on: day, to: mark)
+        await markHabit(name, on: day) { habit in
+            HabitMarking.notificationMark(pressed, current: HabitInstances(task: habit).mark(on: day), remindersPerDay: habit.habitTimes.count)
+        }
     }
 
     /// Creates the note of a draft (a task or a habit) with all its fields, its text and its subtasks

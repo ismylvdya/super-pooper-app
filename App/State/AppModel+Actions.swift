@@ -33,8 +33,21 @@ extension AppModel {
     }
 
     func update(_ name: String, _ changes: [TaskFieldChange]) async {
-        guard let task = task(named: name) else { return }
-        await write(task, changes)
+        await edit(name) { _ in changes }
+    }
+
+    /// Edits of one note run one after another, and each decides from the note as the edit before it left it:
+    /// a second quick tap (a toggle, a habit mark) does not repeat the first one's decision.
+    func edit(_ name: String, _ changes: @escaping (TaskNote) -> [TaskFieldChange]) async {
+        let previous = pendingEdits[name]
+        let edit = Task { @MainActor in
+            await previous?.value
+            guard let note = self.task(named: name) else { return }
+            await self.write(note, changes(note))
+        }
+        pendingEdits[name] = edit
+        await edit.value
+        if pendingEdits[name] == edit { pendingEdits[name] = nil }
     }
 
     @discardableResult
