@@ -78,6 +78,19 @@ struct AppBlockTests {
         #expect(!text.contains("SuperPooperApp") && text.contains("appearance.pastOpacity: ") && text.hasSuffix("Мои заметки\n"))
     }
 
+    /// A color reset on one device (no overrides left) is reset on the others too, not kept from their copy.
+    @Test func aRemovedColorStaysRemovedOnOtherDevices() async throws {
+        var colored = TestConfig.defaults
+        colored.colors = ["task": "#111111"]
+        #expect(SyncedSettings.merged(note: Data(#"{"colors":{}}"#.utf8), over: colored).colors.isEmpty)
+
+        let sandbox = try VaultSandbox.make()
+        let note = settingsNote(in: sandbox)
+        try await note.write(try JSONEncoder.store.encode(SyncedSettings(TestConfig.defaults)))
+        let back = try #require(await note.read())
+        #expect(SyncedSettings.merged(note: back, over: colored).colors.isEmpty)
+    }
+
     private func settingsNote(in sandbox: VaultSandbox) -> VaultSettingsNote {
         VaultSettingsNote(location: FixedVaultLocation(url: sandbox.vault), fileSystem: CoordinatedFileSystem(),
                           fileName: "SuperPooper Settings.md", vaultSettings: { TestConfig.defaults.vault })

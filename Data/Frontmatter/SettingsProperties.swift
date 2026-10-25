@@ -10,7 +10,8 @@ enum SettingsProperties {
 
     static let separator: Character = "."
 
-    /// The leaves of a JSON object, sorted by path. Empty objects have no leaves and are left out.
+    /// The leaves of a JSON object, sorted by path. An empty object is written as `key: {}`, so "nothing set"
+    /// (all colors reset) is not mistaken for "not written by this version".
     static func properties(from json: Data) throws -> [Property] {
         var result: [Property] = []
         flatten(try JSONSerialization.jsonObject(with: json), path: "", into: &result)
@@ -39,6 +40,10 @@ enum SettingsProperties {
 
     private static func flatten(_ value: Any, path: String, into result: inout [Property]) {
         if let object = value as? [String: Any] {
+            if object.isEmpty, !path.isEmpty {
+                result.append(Property(key: path, value: .map([])))
+                return
+            }
             for key in object.keys.sorted() {
                 flatten(object[key]!, path: path.isEmpty ? key : "\(path)\(separator)\(key)", into: &result)
             }

@@ -50,11 +50,18 @@ struct SyncedSettings: Codable, Equatable, Sendable {
     }
 
     /// The note's JSON over `settings`: keys missing in the note (an older version wrote it) keep
-    /// their current values; an unreadable note changes nothing.
+    /// their current values; an unreadable note changes nothing. The color overrides are a list of the
+    /// user's entries, not a structure: when the note has them they replace the local ones (a color reset on
+    /// another device stays reset).
     static func merged(note json: Data, over settings: AppSettings) -> AppSettings {
         guard let current = try? JSONEncoder.store.encode(SyncedSettings(settings)),
               let merged = try? JSONMerge.merge(base: current, overlay: json),
-              let synced = try? JSONDecoder.store.decode(SyncedSettings.self, from: merged) else { return settings }
+              var synced = try? JSONDecoder.store.decode(SyncedSettings.self, from: merged) else { return settings }
+        if let colors = (try? JSONDecoder.store.decode(NoteColors.self, from: json))?.colors { synced.colors = colors }
         return synced.applied(to: settings)
+    }
+
+    private struct NoteColors: Decodable {
+        let colors: [String: String]?
     }
 }
