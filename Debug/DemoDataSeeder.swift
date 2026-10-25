@@ -83,8 +83,9 @@ struct DemoDataSeeder {
         reminder.title = title
         reminder.calendar = list
         let due = date(day, time)
+        // No alarm: the app plans its own notifications, and an alarm already in the past would make
+        // Reminders ring at once on every seeded launch (tests and screenshots launch dozens of times).
         reminder.dueDateComponents = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: due)
-        reminder.addAlarm(EKAlarm(absoluteDate: due))
         try store.save(reminder, commit: false)
     }
 }
