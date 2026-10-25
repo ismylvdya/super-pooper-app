@@ -146,6 +146,8 @@ struct PoolRow: View {
         PoolRowContent(item: item, today: today, isToday: isToday, isCompact: isCompact, plate: plate,
                        minimumHeight: CGFloat(lines) * tokens.uiFont(.taskTitle).lineHeight, handler: handler,
                        dragSource: dragSource)
+            // A subtask sits under its parent, shifted right.
+            .padding(.leading, CGFloat(item.depth) * tokens.space(.subtaskIndent))
     }
 }
 

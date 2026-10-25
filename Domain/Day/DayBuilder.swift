@@ -69,8 +69,8 @@ struct DayBuilder: Sendable {
         // Done today: it leaves the pool and the timeline instead of staying greyed out.
         let poolItems = items.filter { !$0.isFinished && !timedNames.contains($0.id) && chainAnchors[$0.id] == nil }
 
-        let pool = inputs.manualOrder.map { sorter.applyingManualOrder($0, to: poolItems, graph: graph, context: context) }
-            ?? sorter.sorted(poolItems, graph: graph, context: context)
+        let pool = SubtaskNesting.nested(inputs.manualOrder.map { sorter.applyingManualOrder($0, to: poolItems, graph: graph, context: context) }
+            ?? sorter.sorted(poolItems, graph: graph, context: context))
 
         var timeline = fixedEntries(timed: shownTimed, events: inputs.timelineFilter.events ? inputs.events : [],
                                     reminders: inputs.timelineFilter.reminders ? inputs.reminders : [], context: context)
