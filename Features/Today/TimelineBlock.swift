@@ -17,6 +17,7 @@ struct TimelineBlock: View {
     @State private var zoom: CGFloat = 1
     @GestureState private var pinch: CGFloat = 1
     @State private var position = ScrollPosition(edge: .top)
+    @State private var opening: TimelineOpening?
     @State private var pull: CGFloat = 0
 
     /// The whole logical day is always there to scroll through; the settings only choose what is shown
@@ -79,8 +80,16 @@ struct TimelineBlock: View {
                 }
                 .onAppear {
                     zoom = 1
-                    let offset = CGFloat(shown.start.timeIntervalSince(day.start) / 3600) * base
-                    position.scrollTo(y: max(offset - stripHeight, 0))
+                    let start = shown.start.timeIntervalSince(day.start) / 3600 * Double(base)
+                    let opened = TimelineOpening(startOffset: start, stripHeight: Double(stripHeight))
+                    opening = opened
+                    position.scrollTo(y: CGFloat(opened.offset))
+                }
+                .onChange(of: stripHeight) { _, height in
+                    if let offset = opening?.stripChanged(to: Double(height)) { position.scrollTo(y: CGFloat(offset)) }
+                }
+                .onScrollPhaseChange { _, phase in
+                    if phase == .interacting { opening?.userScrolled() }
                 }
             }
         case .halves:
