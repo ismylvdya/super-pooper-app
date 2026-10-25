@@ -134,13 +134,22 @@ struct UserNotificationScheduler: NotificationScheduling {
         return UNNotificationRequest(identifier: identifier(for: notification), content: content, trigger: trigger)
     }
 
+    /// A phone plays the default sound; the simulator, where the app is tested all day, stays quiet.
+    private static var alertSound: UNNotificationSound? {
+        #if targetEnvironment(simulator)
+        nil
+        #else
+        .default
+        #endif
+    }
+
     private func content(for notification: PlannedNotification) -> UNMutableNotificationContent {
         let content = UNMutableNotificationContent()
         content.title = notification.title
         content.body = notification.start.map { start in
             "\(bodyText(notification.kind)) \(start.formatted(date: .omitted, time: .shortened))"
         } ?? bodyText(notification.kind)
-        content.sound = .default
+        content.sound = Self.alertSound
         content.threadIdentifier = notification.key
         content.categoryIdentifier = switch notification.kind {
         case .habit: NotificationPayload.habitCategory
