@@ -26,15 +26,23 @@ protocol NoteFileSystem: Sendable {
 /// `NSFileCoordinator`-based implementation with atomic writes.
 struct CoordinatedFileSystem: NoteFileSystem {
     /// Only the cheap `isRegularFile` key: iCloud attributes are slow to fetch and are asked
-    /// for only when the folder is in iCloud Drive.
+    /// for only when the folder is in iCloud Drive. Hidden folders inside (the trash, `.obsidian`) are skipped;
+    /// hidden files stay, since iCloud keeps not-yet-downloaded notes as `.Name.md.icloud`.
     func listFiles(in folder: URL) throws -> [URL] {
-        let keys: [URLResourceKey] = [.isRegularFileKey]
+        let keys: [URLResourceKey] = [.isRegularFileKey, .isDirectoryKey]
         guard let enumerator = FileManager.default.enumerator(at: folder, includingPropertiesForKeys: keys, options: []) else {
             return []
         }
-        return enumerator.compactMap { $0 as? URL }.filter {
-            (try? $0.resourceValues(forKeys: Set(keys)).isRegularFile) == true
+        var files: [URL] = []
+        for case let url as URL in enumerator {
+            let values = try? url.resourceValues(forKeys: Set(keys))
+            if values?.isDirectory == true, url.lastPathComponent.hasPrefix(".") {
+                enumerator.skipDescendants()
+            } else if values?.isRegularFile == true {
+                files.append(url)
+            }
         }
+        return files
     }
 
     func read(_ url: URL) throws -> NoteFile {

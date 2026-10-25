@@ -112,6 +112,19 @@ struct VaultScannerTests {
         try expectSame(task, expected, created: "2026-10-06", modified: "2026-10-19")
     }
 
+    /// The trash, `.obsidian` and other hidden folders are not part of the tasks, even when the chosen tasks
+    /// folder is the vault root itself.
+    @Test func hiddenFoldersAreNotScanned() async throws {
+        let sandbox = try VaultSandbox.make()
+        let note = try String(contentsOf: sandbox.url(of: "Купить молоко"), encoding: .utf8)
+        let trash = sandbox.vault.appendingPathComponent(".trash", isDirectory: true)
+        try FileManager.default.createDirectory(at: trash, withIntermediateDirectories: true)
+        try note.write(to: trash.appendingPathComponent("Удалённая.md"), atomically: true, encoding: .utf8)
+        let output = await sandbox.scanner().scan(root: sandbox.vault, tasksFolder: "")
+        #expect(!output.result.tasks.map(\.name).contains("Удалённая"))
+        #expect(output.result.tasks.map(\.name).contains("Купить молоко"))
+    }
+
     @Test func aMissingTasksFolderIsAFileProblem() async throws {
         let sandbox = try VaultSandbox.make()
         let output = await sandbox.scanner().scan(root: sandbox.vault, tasksFolder: "Nowhere/Tasks")
