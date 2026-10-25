@@ -15,9 +15,9 @@ struct HabitsScreen: View {
             Text("tab.habits")
                 .font(tokens.font(.pageTitle))
                 .frame(maxWidth: .infinity)
+                .tracksLargeTitle($isLargeTitleVisible)
                 .listRowBackground(Color.clear)
                 .listRowInsets(EdgeInsets())
-                .tracksLargeTitle($isLargeTitleVisible)
             if model.habits.isEmpty {
                 Text("habits.empty").font(tokens.font(.hint)).foregroundStyle(tokens.color(.secondaryText))
                     .listRowBackground(Color.clear)
