@@ -42,6 +42,11 @@ struct AppModelTests {
         #expect(model.config.actions.menus["taskContext"]?.contains(.archive) == false)
     }
 
+    @Test func aNewHabitIsShownInTodayByDefault() throws {
+        let model = try makeModel()
+        #expect(model.newHabitDraft().changes.contains(.showInToday(true)))
+    }
+
     /// Links order tasks but never prevent checking one off.
     @Test func aTaskAfterAnUnfinishedOneCanStillBeChecked() async throws {
         let model = try makeModel()

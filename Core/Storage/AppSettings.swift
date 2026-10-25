@@ -93,8 +93,9 @@ struct AppSettings: Codable, Equatable, Sendable {
     struct Habits: Codable, Equatable, Sendable {
         /// The user's order of the habit list (names); habits not in it follow alphabetically.
         var order: [String]
-        /// "Show in Today" of a newly created habit.
-        var showInTodayByDefault: Bool
+        /// "Show in Today" of a newly created habit (on by default; the old `showInTodayByDefault`, which was off,
+        /// is not read any more).
+        var showNewHabitsInToday: Bool
         /// The order of the morning and evening routines in the pool (habit names).
         var morningRoutine: [String]
         var eveningRoutine: [String]

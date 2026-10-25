@@ -96,7 +96,7 @@ extension AppModel {
     func newHabitDraft() -> NoteDraft {
         NoteDraft(status: .habit, changes: [
             .recurrence(RecurrenceDraft(start: context().today).raw),
-            .showInToday(settings.habits.showInTodayByDefault),
+            .showInToday(settings.habits.showNewHabitsInToday),
         ])
     }
 

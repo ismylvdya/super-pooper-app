@@ -59,7 +59,7 @@
   "colors": {},
   "habits": {
     "order": [],
-    "showInTodayByDefault": false,
+    "showNewHabitsInToday": true,
     "morningRoutine": [],
     "eveningRoutine": []
   },

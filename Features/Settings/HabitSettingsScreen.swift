@@ -12,8 +12,8 @@ struct HabitSettingsScreen: View {
             PlateSection(header: "settings.habits.new", hint: "settings.habits.new.hint") {
                 PlateRow(icon: .today, title: "habitPage.showInToday", info: "info.habitPage.showInToday") {
                     Toggle("habitPage.showInToday", isOn: Binding(
-                        get: { model.settings.habits.showInTodayByDefault },
-                        set: { value in model.updateSettings { $0.habits.showInTodayByDefault = value } }
+                        get: { model.settings.habits.showNewHabitsInToday },
+                        set: { value in model.updateSettings { $0.habits.showNewHabitsInToday = value } }
                     ))
                     .labelsHidden()
                 }
