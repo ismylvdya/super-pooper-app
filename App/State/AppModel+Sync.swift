@@ -81,8 +81,11 @@ extension AppModel {
         if !hasLoaded { await sync(announce: false) }
     }
 
-    /// Re-reads anchor events and reminders (cheap, no vault access).
+    /// Re-reads anchor events and reminders (cheap, no vault access). Reads can overlap (settings changed,
+    /// Calendar changed, a sync); only the newest one is kept.
     func refreshCalendarSources() async {
+        sourcesGeneration += 1
+        let generation = sourcesGeneration
         let context = context()
         let rules = config.rules
         let from = context.today.adding(days: -rules.eventLinks.resolveDaysBefore).startDate(in: calendar)
@@ -95,6 +98,7 @@ extension AppModel {
             let from = context.today.adding(days: -rules.eventLinks.resolveDaysBefore).startDate(in: calendar, offset: settings.day.boundary)
             reminders = await services.reminders.reminders(from: from, to: until, listIDs: settings.sources.reminderListIDs)
         }
+        guard generation == sourcesGeneration else { return }
         setSources(events: events, reminders: reminders)
     }
 

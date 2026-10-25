@@ -115,6 +115,18 @@ struct AppModelTests {
         #expect(await repository.scanCount == 2)
     }
 
+    /// Lists switched quickly: an older read of the reminders that ends last must not bring back the old lists.
+    @Test func theNewestReminderListsWin() async throws {
+        let model = try #require(PreviewModel.make(reminders: ListedReminders())).model
+        model.updateSettings { $0.sources.reminderListIDs = ["old"] }
+        async let older: Void = model.refreshCalendarSources()
+        try await Task.sleep(for: .milliseconds(50))
+        model.updateSettings { $0.sources.reminderListIDs = ["new"] }
+        await model.refreshCalendarSources()
+        await older
+        #expect(model.reminders.map(\.listID) == ["new"])
+    }
+
     @Test func archiveAndDelete() async throws {
         let model = try makeModel()
         await model.perform(.archive, on: "Сдать отчёт")
@@ -174,4 +186,19 @@ private actor RecordingNotifications: NotificationScheduling {
 
     func removeAll() async { lastPlanned = [] }
     nonisolated func restore(_ notification: UNNotification) async {}
+}
+
+/// Reminders of the asked lists; the "old" list takes a while to read.
+private struct ListedReminders: RemindersRepository {
+    var access: SourceAccess { .granted }
+    func requestAccess() async -> Bool { true }
+    func lists() -> [SourceCollection] { [] }
+    func setCompleted(_ completed: Bool, reminderID: String) throws {}
+
+    func reminders(from start: Date, to end: Date, listIDs: [String]) async -> [ReminderItem] {
+        if listIDs == ["old"] {
+            await withCheckedContinuation { done in DispatchQueue.global().asyncAfter(deadline: .now() + 0.4) { done.resume() } }
+        }
+        return listIDs.map { ReminderItem(id: $0, title: $0, due: start, listID: $0, listTitle: $0, colorHex: "#000000", isCompleted: false) }
+    }
 }

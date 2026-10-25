@@ -5,7 +5,8 @@ import SwiftUI
 /// An app model on in-memory sample data for SwiftUI previews of whole screens.
 @MainActor
 enum PreviewModel {
-    static func make(notifications: NotificationScheduling = SilentNotifications()) -> (model: AppModel, router: Router, config: AppConfig)? {
+    static func make(notifications: NotificationScheduling = SilentNotifications(),
+                     reminders: RemindersRepository = StaticRemindersRepository()) -> (model: AppModel, router: Router, config: AppConfig)? {
         guard let config = try? AppConfig.load() else { return nil }
         let store = JSONFileStore(directory: FileManager.default.temporaryDirectory
             .appendingPathComponent("SuperPooperPreview-\(UUID().uuidString)"))
@@ -16,7 +17,7 @@ enum PreviewModel {
                                         noteExtension: config.rules.vault.noteExtension, vaultSettings: { settingsStore.load().vault }),
             settingsNote: VaultSettingsNote(location: FixedVaultLocation(url: store.directory), fileSystem: CoordinatedFileSystem(),
                                             fileName: config.rules.vault.settingsNote, vaultSettings: { settingsStore.load().vault }),
-            calendars: StaticCalendarRepository(), reminders: StaticRemindersRepository(), notifications: notifications,
+            calendars: StaticCalendarRepository(), reminders: reminders, notifications: notifications,
             settingsStore: settingsStore, dayStateStore: DayStateStore(store: store),
             snapshotStore: SnapshotStore(store: store), alertStateStore: AlertStateStore(store: store), widgets: NoWidgets())
         let model = AppModel(config: config, services: services, banners: BannerCenter(),

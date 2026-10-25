@@ -38,6 +38,8 @@ final class AppModel {
     @ObservationIgnored var runningSync: Task<Void, Never>?
     /// Another sync was asked for while one runs (`true`: with the banner).
     @ObservationIgnored var syncAgain: Bool?
+    /// Counts reads of the calendars and reminders; an older read that ends later is dropped.
+    @ObservationIgnored var sourcesGeneration = 0
     @ObservationIgnored var notificationTask: Task<Void, Never>?
     @ObservationIgnored var settingsNoteWrite: Task<Void, Never>?
     /// A settings change not written to the vault note yet.
