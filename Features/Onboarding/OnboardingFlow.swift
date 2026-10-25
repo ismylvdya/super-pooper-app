@@ -1,7 +1,8 @@
 import SwiftUI
 
 /// First launch, step by step: vault folder → Calendar → Reminders → notifications → anchor
-/// calendars and reminder lists. Every step is also available later in Settings.
+/// calendars and reminder lists. Every step is also available later in Settings. A step that does not
+/// fit (the biggest text sizes) scrolls instead of cutting its explanation.
 struct OnboardingFlow: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
@@ -16,9 +17,14 @@ struct OnboardingFlow: View {
         NavigationStack {
             VStack(spacing: tokens.space(.groupGap)) {
                 progress
-                Spacer()
-                content
-                Spacer()
+                ViewThatFits(in: .vertical) {
+                    VStack(spacing: tokens.space(.groupGap)) {
+                        Spacer()
+                        content
+                        Spacer()
+                    }
+                    ScrollView { content }.scrollBounceBehavior(.basedOnSize)
+                }
                 buttons
             }
             .padding(.horizontal, tokens.space(.screenHorizontal))

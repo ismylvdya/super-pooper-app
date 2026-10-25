@@ -56,4 +56,13 @@ final class RegressionUITests: XCTestCase {
         XCTAssertTrue(tomorrow.waitForExistence(timeout: 8))
         XCTAssertGreaterThan(tomorrow.frame.minY, high.frame.maxY, "the last chip goes under the first one")
     }
+
+    /// With the biggest text an onboarding step that does not fit scrolls, so its explanation is not cut.
+    func testOnboardingStepsScrollWithTheBiggestText() {
+        app.launchArguments = ["-SPVaultPath", "TestVault", "-SPResetState",
+                               "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
+        app.launch()
+        let message = app.scrollViews.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Choose the TaskNotes folder'")).firstMatch
+        XCTAssertTrue(message.waitForExistence(timeout: 8), "the explanation is in a scroll view")
+    }
 }
