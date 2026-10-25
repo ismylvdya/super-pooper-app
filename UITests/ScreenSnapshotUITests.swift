@@ -91,6 +91,16 @@ final class ScreenSnapshotUITests: XCTestCase {
         snap("menu-habits-row")
     }
 
+    func testLists() {
+        launch("superpooper://lists")
+        snap("lists")
+    }
+
+    func testWeeklyReview() {
+        launch("superpooper://lists/weeklyReview")
+        snap("lists-weekly-review")
+    }
+
     func testSettings() {
         launch("superpooper://settings")
         snapTopAndBottom("settings")

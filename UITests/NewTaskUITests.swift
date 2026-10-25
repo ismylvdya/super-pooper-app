@@ -89,6 +89,18 @@ final class NewTaskUITests: XCTestCase {
         XCTAssertTrue(banner.waitForExistence(timeout: 25))
     }
 
+    /// The weekly review in the Lists tab brings a task of a later planning level to this week.
+    func testWeeklyReviewAddsATaskToThisWeek() {
+        launch("superpooper://lists/weeklyReview")
+        let add = app.buttons["lists.toThisWeek.Выучить испанский"]
+        for _ in 0..<4 where !add.waitForExistence(timeout: 3) { app.swipeUp() }
+        add.tap()
+        let banner = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == 'banner' AND label CONTAINS 'Выучить испанский'")).firstMatch
+        XCTAssertTrue(banner.waitForExistence(timeout: 25))
+        XCTAssertTrue(add.waitForNonExistence(timeout: 5), "a this-week task has no + any more")
+    }
+
     func testTapInHabitsMarksToday() {
         launch("superpooper://habits")
         let day = app.descendants(matching: .any)["habitDay:Медитация 🧘"]

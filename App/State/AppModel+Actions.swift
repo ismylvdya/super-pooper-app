@@ -181,6 +181,14 @@ extension AppModel {
         }
     }
 
+    /// The weekly review on the phone: a task of a later planning level joins this week.
+    func moveToThisWeek(_ name: String) async {
+        guard let task = task(named: name), task.status != .thisWeek else { return }
+        if await write(task, [.status(.thisWeek)]) {
+            banners.show(L10n.format("banner.promoted", name), style: .success)
+        }
+    }
+
     func resetOrder() {
         updateDayState { $0.manualOrder = nil }
         Task { await publishDerivedState() }

@@ -68,6 +68,7 @@ struct RootView: View {
         switch tab {
         case .today: home(model)
         case .habits: HabitsScreen()
+        case .lists: ListsScreen()
         case .settings: SettingsScreen()
         }
     }
@@ -101,6 +102,7 @@ struct RootView: View {
         case .poolOrder: PoolOrderScreen()
         case .conflicts: ConflictsScreen()
         case .conflict(let name): ConflictVersionsScreen(noteName: name)
+        case .list(let id): TaskListScreen(listID: id)
         #if DEBUG
         case .debugNotifications: NotificationsDebugScreen()
         case .debugWidgets: WidgetGalleryScreen()
@@ -124,6 +126,7 @@ extension AppTab {
         switch self {
         case .today: .tabToday
         case .habits: .tabHabits
+        case .lists: .tabLists
         case .settings: .tabSettings
         }
     }

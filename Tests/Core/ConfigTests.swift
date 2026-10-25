@@ -11,6 +11,16 @@ struct ConfigTests {
         #expect(TestConfig.actions.menus["eventContext"] == [.deleteEvent])
     }
 
+    /// Every list of the Lists tab has a title text; the weekly review holds what is not this week yet.
+    @Test func listsLoadWithTheirTexts() throws {
+        let config = try AppConfig.load(bundle: Bundle(for: BundleToken.self).appHostBundle)
+        let bundle = Bundle(for: BundleToken.self).appHostBundle
+        for list in config.lists.lists {
+            #expect(bundle.localizedString(forKey: list.title, value: "∅", table: nil) != "∅", "missing text for \(list.title)")
+        }
+        #expect(config.lists.list("weeklyReview")?.filter.statuses == [.halfYear, .someday, .waiting])
+    }
+
     /// "new|old" in icons.json: the newer symbol where the system has it, the fallback otherwise.
     @Test func iconFallbacksPickTheFirstAvailableSymbol() throws {
         let icons = TestConfig.decode(IconSet.self, "icons.json")

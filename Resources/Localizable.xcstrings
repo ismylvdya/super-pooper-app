@@ -2047,6 +2047,94 @@
         }
       }
     },
+    "lists.all": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All tasks"
+          }
+        }
+      }
+    },
+    "lists.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No tasks here"
+          }
+        }
+      }
+    },
+    "lists.energy": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Needs energy"
+          }
+        }
+      }
+    },
+    "lists.pleasant": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pleasant"
+          }
+        }
+      }
+    },
+    "lists.quick": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quick (15 min or less)"
+          }
+        }
+      }
+    },
+    "lists.toThisWeek": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add to This week"
+          }
+        }
+      }
+    },
+    "lists.waiting": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting"
+          }
+        }
+      }
+    },
+    "lists.weeklyReview": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekly review"
+          }
+        }
+      }
+    },
     "note.unnamed": {
       "extractionState": "manual",
       "localizations": {
@@ -4617,6 +4705,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Habits"
+          }
+        }
+      }
+    },
+    "tab.lists": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lists"
           }
         }
       }

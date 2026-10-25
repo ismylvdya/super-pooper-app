@@ -5,6 +5,7 @@ import Observation
 enum AppTab: String, CaseIterable, Hashable {
     case today
     case habits
+    case lists
     case settings
 }
 
@@ -22,6 +23,8 @@ enum Route: Hashable {
     case poolOrder
     case conflicts
     case conflict(String)
+    /// A list of the Lists tab, by its id in `lists.json`.
+    case list(String)
     #if DEBUG
     case debugNotifications
     case debugWidgets
@@ -71,6 +74,7 @@ final class Router {
         case "task": if !name.isEmpty { show(.today, [.task(name)]) }
         case "habit": show(.habits, name.isEmpty ? [] : [.task(name)])
         case "habits": show(.habits)
+        case "lists": show(.lists, name.isEmpty ? [] : [.list(name)])
         case "settings", "clock": show(.settings)
         case "archive": show(.settings, [.archive])
         case "trash": show(.settings, [.trash])

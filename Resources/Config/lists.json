@@ -1,0 +1,39 @@
+{
+  "lists": [
+    {
+      "id": "weeklyReview",
+      "title": "lists.weeklyReview",
+      "icon": "review",
+      "statuses": ["halfYear", "someday", "waiting"]
+    },
+    {
+      "id": "pleasant",
+      "title": "lists.pleasant",
+      "icon": "pleasant",
+      "pleasant": true
+    },
+    {
+      "id": "energy",
+      "title": "lists.energy",
+      "icon": "energy",
+      "needEnergy": true
+    },
+    {
+      "id": "quick",
+      "title": "lists.quick",
+      "icon": "listQuick",
+      "maxEstimate": 15
+    },
+    {
+      "id": "waiting",
+      "title": "lists.waiting",
+      "icon": "listWaiting",
+      "statuses": ["waiting"]
+    },
+    {
+      "id": "all",
+      "title": "lists.all",
+      "icon": "listAll"
+    }
+  ]
+}

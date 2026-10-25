@@ -15,6 +15,7 @@ struct AppConfig: Sendable {
         static let flags = "feature-flags.json"
         static let rules = "rules.json"
         static let defaults = "defaults.json"
+        static let lists = "lists.json"
     }
 
     let tokens: DesignTokens
@@ -28,6 +29,8 @@ struct AppConfig: Sendable {
     let fieldMapping: FieldMapping
     let flags: FeatureFlags
     let rules: RulesConfig
+    /// The lists of the Lists tab.
+    let lists: TaskListsConfig
     /// Raw `defaults.json`; user settings are merged over it.
     let defaultSettings: Data
 
@@ -55,6 +58,7 @@ struct AppConfig: Sendable {
             fieldMapping: fieldMapping,
             flags: try loader.load(FeatureFlags.self, from: File.flags),
             rules: try loader.load(RulesConfig.self, from: File.rules),
+            lists: try loader.load(TaskListsConfig.self, from: File.lists),
             defaultSettings: defaults
         )
     }
