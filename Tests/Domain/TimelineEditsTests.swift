@@ -13,6 +13,18 @@ struct TimelineEditsTests {
         #expect(plan.eventSlot("Meeting") != nil)
     }
 
+    /// Tomorrow's all-day event is not in today's strip: not in the evening, not after midnight before the day boundary.
+    @Test func tomorrowsAllDayEventStaysOutOfToday() {
+        let today = makeEvent("Today off", from: "00:00", to: "23:59", allDay: true)
+        let tomorrow = CalendarEvent(eventIdentifier: "ek-tomorrow", title: "Tomorrow off",
+                                     start: TestCalendar.date("2026-10-22"), end: TestCalendar.date("2026-10-23"), isAllDay: true,
+                                     calendarID: "cal-anchors", calendarTitle: "Anchors", colorHex: "#FF3B30")
+        let scenario = DayScenario(tasks: [], events: [today, tomorrow])
+        for (day, time) in [(TestCalendar.wednesday, "13:25"), (TestCalendar.wednesday, "23:30"), ("2026-10-22", "01:30")] {
+            #expect(scenario.build(at: TestCalendar.context(day, time)).allDayEvents.map(\.title) == ["Today off"])
+        }
+    }
+
     @Test func searchMatchesNamesAndTitlesIgnoringCase() {
         let tasks = [makeTask("Buy Batteries"), makeTask("Call bank"), makeTask("batteries charger")]
         #expect(SearchMatcher.tasks(tasks, matching: "BATTER").map(\.name) == ["batteries charger", "Buy Batteries"])
