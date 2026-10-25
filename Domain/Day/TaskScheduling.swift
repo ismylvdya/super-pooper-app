@@ -21,7 +21,7 @@ enum TaskScheduling {
 
     /// The moment at `offset` points below the top of a timeline window, on a multiple of `stepMinutes`.
     static func moment(atOffset offset: Double, windowStart: Date, hourHeight: Double, stepMinutes: Int, calendar: Calendar) -> Date {
-        let raw = windowStart.addingTimeInterval(max(offset, 0) / max(hourHeight, 1) * 3600)
+        let raw = windowStart.addingTimeInterval(max(offset, 0) / max(hourHeight, 1) * TimelineWindow.hour)
         let step = Double(max(stepMinutes, 1) * 60)
         let dayStart = calendar.startOfDay(for: raw)
         let seconds = (raw.timeIntervalSince(dayStart) / step).rounded() * step

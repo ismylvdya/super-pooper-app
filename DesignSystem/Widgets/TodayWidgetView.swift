@@ -88,12 +88,12 @@ struct WidgetTimelineBlock: View {
                 let before = min(timeline.hoursBefore, rules.widgets.maxHoursBefore)
                 let window = TimelineWindow.rolling(now: plan.now, hoursBefore: before,
                                                     hoursAfter: max(min(timeline.hoursAfter, maxHours - before), 1), calendar: context.calendar)
-                let hourHeight = geometry.size.height / CGFloat(window.duration / 3600)
+                let hourHeight = CGFloat(window.hourHeight(fitting: Double(geometry.size.height)))
                 DayTimelineView(slots: plan.timeline, window: window, now: plan.now, hourHeight: hourHeight,
                                 style: style(hourHeight: hourHeight), taskContent: { item, _ in row(item) })
             case .wholeDay:
                 let window = TimelineWindow.fixed(start: timeline.wholeDay.start, end: timeline.wholeDay.end, context: context)
-                let hourHeight = geometry.size.height / CGFloat(max(window.duration, 3600) / 3600)
+                let hourHeight = CGFloat(window.hourHeight(fitting: Double(geometry.size.height)))
                 DayTimelineView(slots: plan.timeline, window: window, now: plan.now, hourHeight: hourHeight,
                                 style: style(hourHeight: hourHeight), taskContent: { item, _ in row(item) })
             case .halves:

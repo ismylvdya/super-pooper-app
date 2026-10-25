@@ -35,7 +35,7 @@ struct TimelineBlock: View {
                     : rollingWindow(settings)
                 let height = max(geometry.size.height - bottomInset - tokens.space(.groupGap), 1)
                 let base = model.settings.timelineMode == .wholeDay
-                    ? height / CGFloat(max(shown.duration, 3600) / 3600)
+                    ? CGFloat(shown.hourHeight(fitting: Double(height)))
                     : tokens.size(.hourHeight)
                 let hourHeight = base * min(max(zoom * pinch, tokens.size(.timelineZoomMin)), tokens.size(.timelineZoomMax))
                 let stripHeight = plan.allDayEvents.isEmpty ? 0 : allDayHeight
@@ -80,7 +80,7 @@ struct TimelineBlock: View {
                 }
                 .onAppear {
                     zoom = 1
-                    let start = shown.start.timeIntervalSince(day.start) / 3600 * Double(base)
+                    let start = day.offset(of: shown.start, hourHeight: Double(base))
                     let opened = TimelineOpening(startOffset: start, stripHeight: Double(stripHeight))
                     opening = opened
                     position.scrollTo(y: CGFloat(opened.offset))

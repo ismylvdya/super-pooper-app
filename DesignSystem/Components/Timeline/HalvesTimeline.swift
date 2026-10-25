@@ -15,8 +15,7 @@ struct HalvesTimeline<TaskContent: View>: View {
             TimelineWindow.fixed(start: settings.firstHalf.start, end: settings.firstHalf.end, context: context),
             TimelineWindow.fixed(start: settings.secondHalf.start, end: settings.secondHalf.end, context: context),
         ]
-        let longest = windows.map(\.duration).max() ?? 3600
-        let hourHeight = max(height, 1) / CGFloat(longest / 3600)
+        let hourHeight = max(height, 1) / CGFloat(windows.map(\.hours).max() ?? 1)
         HStack(alignment: .top, spacing: tokens.space(.blockGap)) {
             ForEach(windows, id: \.self) { window in
                 DayTimelineView(slots: plan.timeline, window: window, now: plan.now, hourHeight: hourHeight,

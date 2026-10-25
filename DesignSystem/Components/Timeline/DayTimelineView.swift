@@ -64,10 +64,10 @@ struct DayTimelineView<TaskContent: View>: View {
     private var contentBottom: CGFloat { CGFloat(placed(width: 1).map(\.frame.maxY).max() ?? 0) }
 
     private var labelWidth: CGFloat { style.showsHourLabels ? tokens.space(.timelineLabelWidth) : 0 }
-    private var totalHeight: CGFloat { CGFloat(window.duration / 3600) * hourHeight }
+    private var totalHeight: CGFloat { CGFloat(window.hours) * hourHeight }
 
     private func y(_ date: Date) -> CGFloat {
-        CGFloat(date.timeIntervalSince(window.start) / 3600) * hourHeight
+        CGFloat(window.offset(of: date, hourHeight: Double(hourHeight)))
     }
 
     private struct PlacedSlot: Identifiable {
@@ -170,10 +170,10 @@ struct DayTimelineView<TaskContent: View>: View {
     private var hourMarks: [Date] {
         var marks: [Date] = []
         var cursor = calendar.dateInterval(of: .hour, for: window.start)?.start ?? window.start
-        if cursor < window.start { cursor = cursor.addingTimeInterval(3600) }
+        if cursor < window.start { cursor = cursor.addingTimeInterval(TimelineWindow.hour) }
         while cursor <= window.end {
             marks.append(cursor)
-            cursor = cursor.addingTimeInterval(3600)
+            cursor = cursor.addingTimeInterval(TimelineWindow.hour)
         }
         return marks
     }
