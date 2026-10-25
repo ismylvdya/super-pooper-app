@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// A new task (from the morning review) or habit (from the Habits tab): the usual page with an empty
-/// name. Nothing is written while it is open; leaving the page with Back creates the note with
-/// everything set here. Without a name it is called "Unnamed" if anything was set, and nothing is
+/// A new task (from This week or Today) or habit (from the Habits tab): the usual page with an empty
+/// name, the cursor already in it; Return closes the keyboard and keeps the name. Nothing is written while
+/// it is open; leaving the page with Back creates the note with everything set here. Without a name it is called "Unnamed" if anything was set, and nothing is
 /// created if the page was left untouched.
 struct NewNoteScreen: View {
     enum Kind { case task, habit }
@@ -13,6 +13,7 @@ struct NewNoteScreen: View {
     @State private var draft: NoteDraft?
     @State private var untouched: NoteDraft?
     @State private var name = ""
+    @FocusState private var isNameFocused: Bool
 
     var body: some View {
         let current = draft ?? initialDraft
@@ -22,6 +23,14 @@ struct NewNoteScreen: View {
         PageScaffold(title: name.isEmpty ? L10n.string(kind == .task ? "task.new.title" : "habits.new") : name,
                      titleView: AnyView(TextField(placeholder, text: $name, axis: .vertical)
                         .multilineTextAlignment(.center)
+                        .submitLabel(.done)
+                        .focused($isNameFocused)
+                        .onChange(of: name) { _, value in
+                            // Return in a vertical field inserts a newline: it means "done".
+                            guard value.contains("\n") else { return }
+                            name = value.replacingOccurrences(of: "\n", with: "")
+                            isNameFocused = false
+                        }
                         .accessibilityIdentifier("taskPage.name"))) {
             switch kind {
             case .task: TaskSections(editor: editor)
@@ -35,6 +44,7 @@ struct NewNoteScreen: View {
             if draft == nil { draft = current }
             if untouched == nil { untouched = current }
         }
+        .task { isNameFocused = true }
         .onDisappear(perform: create)
     }
 

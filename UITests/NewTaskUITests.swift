@@ -58,6 +58,21 @@ final class NewTaskUITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["habitDay:Читать 20 минут"].waitForExistence(timeout: 5))
     }
 
+    /// A new task opens with the cursor in its name; Return closes the keyboard and keeps the name.
+    func testNewTaskNameIsFocusedAndReturnClosesTheKeyboard() {
+        launch("superpooper://today")
+        let plus = app.buttons["today.newTask"]
+        XCTAssertTrue(plus.waitForExistence(timeout: 10))
+        app.dismissBanners()
+        plus.tap()
+        let name = app.textFields["taskPage.name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5), "the keyboard is up without a tap")
+        app.typeText("Купить хлеб\n")
+        XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout: 5), "Return closes the keyboard")
+        XCTAssertEqual(name.value as? String, "Купить хлеб")
+    }
+
     func testTapInHabitsMarksToday() {
         launch("superpooper://habits")
         let day = app.descendants(matching: .any)["habitDay:Медитация 🧘"]
