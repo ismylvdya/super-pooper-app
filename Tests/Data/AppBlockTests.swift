@@ -91,6 +91,21 @@ struct AppBlockTests {
         #expect(SyncedSettings.merged(note: back, over: colored).colors.isEmpty)
     }
 
+    /// A settings note whose frontmatter does not parse is left alone (not wrapped in a new frontmatter).
+    @Test func aBrokenSettingsNoteIsNotOverwritten() async throws {
+        let sandbox = try VaultSandbox.make()
+        let url = noteURL(in: sandbox)
+        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        // The closing `---` is missing: the frontmatter cannot be told from the text.
+        let broken = "---\ntimeline.hoursBefore: 2\nМои заметки\n"
+        try broken.write(to: url, atomically: true, encoding: .utf8)
+        let note = settingsNote(in: sandbox)
+        await #expect(throws: (any Error).self) {
+            try await note.write(try JSONEncoder.store.encode(SyncedSettings(TestConfig.defaults)))
+        }
+        #expect(try String(contentsOf: url, encoding: .utf8) == broken)
+    }
+
     private func settingsNote(in sandbox: VaultSandbox) -> VaultSettingsNote {
         VaultSettingsNote(location: FixedVaultLocation(url: sandbox.vault), fileSystem: CoordinatedFileSystem(),
                           fileName: "SuperPooper Settings.md", vaultSettings: { TestConfig.defaults.vault })

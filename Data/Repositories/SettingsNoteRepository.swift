@@ -31,12 +31,19 @@ struct VaultSettingsNote: SettingsNoteRepository {
         }
     }
 
-    /// Rewrites the settings properties; other properties and the text written in Obsidian stay.
+    /// Rewrites the settings properties; other properties and the text written in Obsidian stay. A note without
+    /// frontmatter gets one; a note whose frontmatter does not parse is not touched (the error is thrown), so what
+    /// the user wrote there never moves into the text.
     func write(_ json: Data) async throws {
         try await location.withRoot { root in
             let url = try noteURL(root: root)
             let current = fileSystem.fileExists(url) ? try fileSystem.read(url).text : L10n.string("settingsNote.intro")
-            var document = try (try? FrontmatterDocument(text: current)) ?? FrontmatterDocument(text: "---\n---\n" + current)
+            var document: FrontmatterDocument
+            do {
+                document = try FrontmatterDocument(text: current)
+            } catch FrontmatterError.noFrontmatter {
+                document = try FrontmatterDocument(text: "---\n---\n" + current)
+            }
             let properties = try SettingsProperties.properties(from: json)
             let roots = try SettingsProperties.roots(of: json)
             let written = Set(properties.map(\.key))
