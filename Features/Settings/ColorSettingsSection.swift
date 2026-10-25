@@ -28,9 +28,7 @@ struct ColorSettingsSection: View {
                 TaskRowView(item: item, today: plan.today, isCompact: true).taskPlate(isDone: item.isDone)
             }
         }
-        .padding(tokens.space(.chipGap))
-        .background(tokens.color(.screenBackground), in: RoundedRectangle(cornerRadius: tokens.radius(.timelineItem), style: .continuous))
-        .allowsHitTesting(false)
+        .settingsPreviewFrame()
         .accessibilityHidden(true)
     }
 }

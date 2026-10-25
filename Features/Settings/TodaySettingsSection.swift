@@ -54,8 +54,7 @@ struct ArrangementPreview: View {
             if id == "pool" { pool } else { timeline }
         }
         .frame(height: tokens.size(.previewHeight))
-        .padding(tokens.space(.chipGap))
-        .background(tokens.color(.screenBackground), in: RoundedRectangle(cornerRadius: tokens.radius(.timelineItem), style: .continuous))
+        .settingsPreviewFrame()
         .animation(tokens.animation, value: arrangement)
         .accessibilityHidden(true)
     }

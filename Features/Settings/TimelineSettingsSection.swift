@@ -110,7 +110,7 @@ struct TimelinePreview: View {
         let plan = model.plan(at: model.clock.now)
         let timeline = settings.timeline
         let style = TimelineStyle.make(timeline, tokens: tokens)
-        let height: CGFloat = 220
+        let height = tokens.size(.timelinePreviewHeight)
         Group {
             switch settings.timelineMode {
             case .aroundNow:
@@ -118,21 +118,21 @@ struct TimelinePreview: View {
                     DayTimelineView(slots: plan.timeline,
                                     window: TimelineWindow.rolling(now: plan.now, hoursBefore: timeline.hoursBefore,
                                                                    hoursAfter: timeline.hoursAfter, calendar: model.calendar),
-                                    now: plan.now, hourHeight: tokens.size(.hourHeight) * 0.6, style: style, taskContent: row)
+                                    now: plan.now, hourHeight: tokens.size(.hourHeight) * tokens.size(.timelinePreviewScale), style: style, taskContent: row)
                 }
             case .wholeDay:
                 let window = TimelineWindow.fixed(start: timeline.wholeDay.start, end: timeline.wholeDay.end,
                                                   context: model.context(at: plan.now))
                 DayTimelineView(slots: plan.timeline, window: window, now: plan.now,
-                                hourHeight: height / CGFloat(max(window.duration, 3600) / 3600), style: style, taskContent: row)
+                                hourHeight: CGFloat(window.hourHeight(fitting: Double(height))), style: style, taskContent: row)
             case .halves:
-                HalvesTimeline(plan: plan, settings: timeline, context: model.context(at: plan.now), height: height - 20,
+                HalvesTimeline(plan: plan, settings: timeline, context: model.context(at: plan.now), height: height - tokens.size(.timelinePreviewHalvesInset),
                                taskContent: row)
             }
         }
         .frame(height: height)
-        .allowsHitTesting(false)
         .clipShape(RoundedRectangle(cornerRadius: tokens.radius(.timelineItem), style: .continuous))
+        .settingsPreviewFrame()
         .accessibilityLabel(Text("settings.timeline.preview"))
     }
 

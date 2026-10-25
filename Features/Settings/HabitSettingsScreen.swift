@@ -68,9 +68,7 @@ struct AppearanceSettingsSection: View {
             TaskRowView(item: item, today: model.context().today, isCompact: true).taskPlate(isDone: true)
             TimelineEventBlock(event: event, slot: slot, font: tokens.font(.rowTitle), lineHeight: tokens.uiFont(.rowTitle).lineHeight).fixedSize(horizontal: false, vertical: true)
         }
-        .padding(tokens.space(.chipGap))
-        .background(tokens.color(.screenBackground), in: RoundedRectangle(cornerRadius: tokens.radius(.timelineItem), style: .continuous))
-        .allowsHitTesting(false)
+        .settingsPreviewFrame()
         .accessibilityHidden(true)
     }
 }
