@@ -95,8 +95,9 @@ final class TodayUITests: XCTestCase {
         dismissBanners()
         edit.tap()
         XCTAssertTrue(app.navigationBars["This week"].waitForExistence(timeout: 5))
-        let first = app.cells.element(boundBy: 0)
-        let third = app.cells.element(boundBy: 2)
+        // Row 0 is the Morning header; the tasks start at row 1.
+        let first = app.cells.element(boundBy: 1)
+        let third = app.cells.element(boundBy: 3)
         XCTAssertTrue(first.waitForExistence(timeout: 5))
         let handle = first.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5))
         handle.press(forDuration: 0.8, thenDragTo: third.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.8)))

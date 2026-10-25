@@ -172,6 +172,15 @@ extension AppModel {
         Task { await publishDerivedState() }
     }
 
+    /// A drag in This week across the Morning / Day / Evening groups: the new order, and a new part of the day
+    /// for the tasks that changed group.
+    func applyReviewMove(_ move: ReviewGroups.Move) {
+        setManualOrder(move.order)
+        for (name, group) in move.regrouped {
+            Task { await update(name, [.timeOfDay(group.timeOfDay)]) }
+        }
+    }
+
     func resetOrder() {
         updateDayState { $0.manualOrder = nil }
         Task { await publishDerivedState() }

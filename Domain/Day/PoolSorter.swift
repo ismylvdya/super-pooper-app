@@ -43,13 +43,13 @@ struct PoolSorter: Sendable {
     private func key(_ criterion: PoolSortCriterion, _ task: TaskNote, _ context: DayContext) -> Double {
         switch criterion {
         case .morningRoutine:
-            return task.isHabit && task.habit.timeOfDay == .morning ? 0 : 1
+            return task.habit.timeOfDay == .morning ? 0 : 1
         case .routineOrder:
             return routines.position(of: task).map(Double.init) ?? 10_000
         case .habitsFirst:
             return task.isHabit && task.habitTimes.isEmpty ? 0 : 1
         case .habitTimeOfDay:
-            guard task.isHabit, let part = task.habit.timeOfDay else { return 1 }
+            guard let part = task.habit.timeOfDay else { return 1 }
             return part == rules.partOfDay(context) ? 0 : 2
         case .dueToday:
             return !task.isHabit && task.due.map(context.logicalDay(of:)) == context.today ? 0 : 1

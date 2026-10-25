@@ -21,9 +21,9 @@ enum PoolSegments {
         return result.map(Segment.init)
     }
 
-    /// Open habits of the morning or evening routine; done ones stand alone at the end of the pool.
+    /// Open habits and tasks of the morning or evening routine; done ones stand alone at the end of the pool.
     private static func routine(of item: DayItem) -> HabitTimeOfDay? {
-        guard item.isHabit, !item.isDone, let part = item.task.habit.timeOfDay, part != .day else { return nil }
+        guard !item.isDone, let part = item.task.habit.timeOfDay, part != .day else { return nil }
         return part
     }
 }

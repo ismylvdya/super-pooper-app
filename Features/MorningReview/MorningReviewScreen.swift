@@ -1,8 +1,9 @@
 import SwiftUI
 
-/// Morning review: the pool as a table — one row per task with property chips edited in place,
-/// rows reorder by dragging. Until the first drag the order follows the automatic sort after every
-/// edit; after it the manual order is kept for today. "Reset to auto" brings the sort back.
+/// This week (the review): the pool as a table — one row per task with property chips edited in place, in
+/// Morning, Day and Evening groups; rows reorder by dragging, also into another group (which sets their part
+/// of the day). Until the first drag the order follows the automatic sort after every edit; after it the
+/// manual order is kept for today. Reset sorting brings the sort back.
 /// Tapping a row (outside its chips) opens the task page; "+" creates a new this-week task.
 /// Swiping a row left takes it out of today: it stays this week and waits in "Postponed" at the bottom
 /// (and in tomorrow's review); swiping it there brings it back.
@@ -17,22 +18,34 @@ struct MorningReviewScreen: View {
             let plan = model.plan(at: model.clock.now)
             List {
                 Section {
-                    ForEach(plan.pool) { item in
-                        ReviewRow(item: item, today: plan.today) { path.append(.task(item.id)) }
-                            .listRowBackground(tokens.color(.plateBackground))
-                            .accessibilityIdentifier("review:\(item.id)")
-                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                Button { Haptics.play(.light); model.postpone(item.id) } label: {
-                                    Label("review.postpone", systemImage: icons[.postpone])
-                                }
-                                .tint(tokens.color(.swipeNeutral))
+                    let rows = ReviewGroups.rows(plan.pool)
+                    let items = Dictionary(plan.pool.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+                    ForEach(rows) { row in
+                        switch row {
+                        case .header(let group):
+                            Text(LocalizedStringKey("review.group." + group.rawValue))
+                                .font(tokens.font(.sectionHeader))
+                                .foregroundStyle(tokens.color(.tertiaryText))
+                                .listRowBackground(Color.clear)
+                                .moveDisabled(true)
+                                .accessibilityIdentifier("review.group.\(group.rawValue)")
+                        case .item(let name):
+                            if let item = items[name] {
+                                ReviewRow(item: item, today: plan.today) { path.append(.task(item.id)) }
+                                    .listRowBackground(tokens.color(.plateBackground))
+                                    .accessibilityIdentifier("review:\(item.id)")
+                                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                        Button { Haptics.play(.light); model.postpone(item.id) } label: {
+                                            Label("review.postpone", systemImage: icons[.postpone])
+                                        }
+                                        .tint(tokens.color(.swipeNeutral))
+                                    }
                             }
+                        }
                     }
                     .onMove { source, destination in
-                        var names = plan.pool.map(\.id)
-                        names.move(fromOffsets: source, toOffset: destination)
                         Haptics.play(.medium)
-                        model.setManualOrder(names)
+                        model.applyReviewMove(ReviewGroups.move(rows, from: source, to: destination, pool: plan.pool))
                     }
                 } footer: {
                     Text(model.dayState.manualOrder == nil ? "review.footer.auto" : "review.footer.manual")
