@@ -22,24 +22,13 @@ struct PageScaffold<Content: View>: View {
                     .frame(maxWidth: .infinity)
                     .padding(.horizontal, isNested ? tokens.space(.nestedTitleInset) - tokens.space(.screenHorizontal) : 0)
                     .padding(.top, isNested ? 0 : tokens.space(.nestedTitleLift))
-                    .onScrollVisibilityChange(threshold: 0.4) { visible in
-                        withAnimation(.easeInOut(duration: tokens.duration(.titleColorAnimation))) { isLargeTitleVisible = visible }
-                    }
+                    .tracksLargeTitle($isLargeTitleVisible)
                 content
             }
             .padding(.horizontal, tokens.space(.screenHorizontal))
             .padding(.bottom, tokens.space(.screenBottom))
         }
         .background(tokens.color(.screenBackground))
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                Text(title)
-                    .font(tokens.font(.navTitle))
-                    .lineLimit(1)
-                    .minimumScaleFactor(tokens.size(.navTitleMin) / tokens.uiFont(.navTitle).pointSize)
-                    .foregroundStyle(isLargeTitleVisible ? Color.clear : tokens.color(.primaryText))
-            }
-        }
+        .barTitle(title, isHidden: isLargeTitleVisible)
     }
 }

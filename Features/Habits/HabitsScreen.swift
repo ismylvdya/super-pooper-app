@@ -7,6 +7,7 @@ struct HabitsScreen: View {
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
+    @State private var isLargeTitleVisible = true
 
     var body: some View {
         let today = model.context().today
@@ -16,6 +17,7 @@ struct HabitsScreen: View {
                 .frame(maxWidth: .infinity)
                 .listRowBackground(Color.clear)
                 .listRowInsets(EdgeInsets())
+                .tracksLargeTitle($isLargeTitleVisible)
             if model.habits.isEmpty {
                 Text("habits.empty").font(tokens.font(.hint)).foregroundStyle(tokens.color(.secondaryText))
                     .listRowBackground(Color.clear)
@@ -46,7 +48,7 @@ struct HabitsScreen: View {
         .scrollContentBackground(.hidden)
         .background(tokens.color(.screenBackground))
         .refreshable { await model.sync(announce: true) }
-        .navigationBarTitleDisplayMode(.inline)
+        .barTitle(L10n.string("tab.habits"), isHidden: isLargeTitleVisible)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { router.open(.newHabit) } label: { Image(systemName: icons[.newTask]) }

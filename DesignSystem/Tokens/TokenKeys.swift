@@ -20,7 +20,7 @@ enum SizeToken: String, CaseIterable, Sendable {
 
 enum OpacityToken: String, CaseIterable, Sendable {
     case blocked, past, eventFill, fadeTop, fadeMiddle, habitEmpty
-    case gridFadedWeek, unlinked, eventTime, nowOverBlocks, daySwipeThreshold, daySwipeFade, toggleChipFill, bannerShadow, previewBlock
+    case gridFadedWeek, unlinked, eventTime, nowOverBlocks, daySwipeThreshold, daySwipeFade, toggleChipFill, bannerShadow, previewBlock, largeTitleVisible
 }
 
 enum DurationToken: String, CaseIterable, Sendable {
