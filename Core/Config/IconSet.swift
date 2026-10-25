@@ -19,3 +19,14 @@ enum Icon: String, CaseIterable, Sendable {
 }
 
 typealias IconSet = TokenTable<Icon, String>
+
+extension TokenTable where Key == Icon, Value == String {
+    /// `"7.calendar|calendar"`: the first symbol the system has, so a newer SF Symbol can have a fallback on an
+    /// older iOS. A single name is kept as it is.
+    func resolvingFallbacks(isAvailable: (String) -> Bool) -> IconSet {
+        replacing(Dictionary(uniqueKeysWithValues: Icon.allCases.map { key in
+            let candidates = self[key].split(separator: "|").map(String.init)
+            return (key, candidates.first(where: isAvailable) ?? candidates.last ?? self[key])
+        }))
+    }
+}

@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 /// All bundled configs, loaded and validated once at start-up (composition root and widgets).
 struct AppConfig: Sendable {
@@ -43,7 +44,7 @@ struct AppConfig: Sendable {
         }
         return AppConfig(
             tokens: try loader.load(DesignTokens.self, from: File.tokens),
-            icons: try loader.load(IconSet.self, from: File.icons),
+            icons: try loader.load(IconSet.self, from: File.icons).resolvingFallbacks { UIImage(systemName: $0) != nil },
             actions: actions,
             todayStacked: try layout(File.todayStacked),
             todaySideBySide: try layout(File.todaySideBySide),
