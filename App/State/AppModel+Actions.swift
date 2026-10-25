@@ -71,7 +71,8 @@ extension AppModel {
         }
     }
 
-    /// Renames the note file; tasks that link to it get their `previous_task` and `projects` updated.
+    /// Renames the note file; tasks that link to it get their `previous_task` and `projects` updated, and the
+    /// settings and today's state that name it follow the new name.
     @discardableResult
     func rename(_ name: String, to newName: String) async -> Bool {
         guard let task = task(named: name) else { return false }
@@ -83,6 +84,7 @@ extension AppModel {
             if config.flags.backups { try await services.tasks.backup([task] + dependents, reason: "rename") }
             _ = try await services.tasks.rename(task, to: trimmed, dependents: dependents)
             renamed = true
+            followRename(from: name, to: trimmed)
         } catch {
             banners.show(Self.describe(error), style: .problem)
         }
@@ -90,6 +92,20 @@ extension AppModel {
         if let result = try? await services.tasks.scan() { setScanResult(result) }
         await publishDerivedState()
         return renamed
+    }
+
+    private func followRename(from old: String, to new: String) {
+        let rename = { (names: [String]) in NameReferences.renaming(names, from: old, to: new) }
+        updateSettings {
+            $0.habits.order = rename($0.habits.order)
+            $0.habits.morningRoutine = rename($0.habits.morningRoutine)
+            $0.habits.eveningRoutine = rename($0.habits.eveningRoutine)
+        }
+        updateDayState {
+            $0.skipped = rename($0.skipped)
+            $0.postponed = rename($0.postponed)
+            $0.manualOrder = $0.manualOrder.map(rename)
+        }
     }
 
     func body(of name: String) async -> String? {

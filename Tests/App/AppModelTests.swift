@@ -48,6 +48,21 @@ struct AppModelTests {
         #expect(model.task(named: "Позвонить в банк")?.completedDate == nil)
     }
 
+    /// Settings and the day keep pointing at a renamed habit: its place in the list and the routine, Skip today.
+    @Test func renamingAHabitKeepsItsOrderRoutineAndSkip() async throws {
+        let model = try makeModel()
+        let name = "Выпить воды 💧"
+        model.updateSettings {
+            $0.habits.order = ["Медитация 🧘", name]
+            $0.habits.morningRoutine = [name]
+        }
+        await model.perform(.skipToday, on: name)
+        #expect(await model.rename(name, to: "Вода 💧"))
+        #expect(model.settings.habits.order == ["Медитация 🧘", "Вода 💧"])
+        #expect(model.settings.habits.morningRoutine == ["Вода 💧"])
+        #expect(model.dayState.skipped == ["Вода 💧"])
+    }
+
     @Test func archiveAndDelete() async throws {
         let model = try makeModel()
         await model.perform(.archive, on: "Сдать отчёт")

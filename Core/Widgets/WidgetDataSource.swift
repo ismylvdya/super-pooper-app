@@ -39,7 +39,10 @@ struct WidgetDataSource: Sendable {
 
     var habitNames: [String] { habits.map(\.name) }
 
+    /// The chosen habit; the first one until a habit is chosen. A chosen habit that is gone (renamed, deleted)
+    /// gives nil, so the widget asks to choose again instead of showing and marking another habit.
     func habit(named name: String?) -> TaskNote? {
-        habits.first { $0.name == name } ?? habits.first
+        guard let name else { return habits.first }
+        return habits.first { $0.name.isSameNoteName(as: name) }
     }
 }
