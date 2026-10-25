@@ -27,7 +27,6 @@ struct HabitHistorySection: View {
     @Environment(\.rules) private var rules
     let habit: TaskNote
     @State private var addedWeeks = 0
-    @State private var isAtBottom = true
     @State private var width: CGFloat = 320
 
     var body: some View {
@@ -57,16 +56,10 @@ struct HabitHistorySection: View {
                 .defaultScrollAnchor(.bottom, for: .initialOffset)
                 .scrollBounceBehavior(.always)
                 .scrollIndicators(.hidden)
-                .onScrollGeometryChange(for: Bool.self) { geometry in
-                    geometry.visibleRect.maxY >= geometry.contentSize.height - 1
-                } action: { _, atBottom in isAtBottom = atBottom }
+                .edgeFades(color: tokens.color(.plateBackground))
                 .pullToExtend(icon: .olderWeeks) {
                     Haptics.play(.medium)
                     addedWeeks += rules.habits.historyPullWeeks
-                }
-                .overlay(alignment: .top) { EdgeFade(edge: .top, color: tokens.color(.plateBackground)) }
-                .overlay(alignment: .bottom) {
-                    EdgeFade(edge: .bottom, color: tokens.color(.plateBackground)).opacity(isAtBottom ? 0 : 1)
                 }
                 .frame(maxHeight: tokens.size(.habitHistoryMaxHeight))
             }
