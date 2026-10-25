@@ -41,7 +41,8 @@
   "vault": {
     "downloadTimeoutSeconds": 20,
     "noteExtension": "md",
-    "settingsNote": "SuperPooper Settings.md"
+    "settingsNote": "SuperPooper Settings.md",
+    "settingsWriteDelaySeconds": 1
   },
   "backups": {
     "keepCount": 20

@@ -76,6 +76,18 @@ struct AppModelTests {
         #expect(model.services.snapshotStore.load()?.tasks.count == before)
     }
 
+    /// A setting changed a moment before a sync is not undone by the older copy in the vault note.
+    @Test func aSettingChangedJustBeforeASyncStays() async throws {
+        let model = try makeModel()
+        let root = try await model.services.vault.withRoot { $0 }
+        try FileManager.default.createDirectory(at: root.appendingPathComponent("TaskNotes/Tasks"), withIntermediateDirectories: true)
+        await model.sync(announce: false)
+        #expect(await model.services.settingsNote.read() != nil)
+        model.updateSettings { $0.timeline.hoursBefore = 5 }
+        await model.sync(announce: false)
+        #expect(model.settings.timeline.hoursBefore == 5)
+    }
+
     @Test func archiveAndDelete() async throws {
         let model = try makeModel()
         await model.perform(.archive, on: "Сдать отчёт")

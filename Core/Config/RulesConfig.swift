@@ -31,6 +31,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let noteExtension: String
         /// The note with the app's settings, next to the tasks folder.
         let settingsNote: String
+        /// The settings note is written this long after the last change.
+        let settingsWriteDelaySeconds: Double
     }
 
     struct Backups: Codable, Hashable, Sendable {

@@ -38,6 +38,8 @@ final class AppModel {
     @ObservationIgnored var runningSync: Task<Void, Never>?
     @ObservationIgnored var notificationTask: Task<Void, Never>?
     @ObservationIgnored var settingsNoteWrite: Task<Void, Never>?
+    /// A settings change not written to the vault note yet.
+    @ObservationIgnored var settingsNotePending = false
 
     init(config: AppConfig, services: AppServices, banners: BannerCenter, clock: Clock, calendar: Calendar) {
         self.config = config
@@ -115,11 +117,30 @@ final class AppModel {
 
     /// Writes the vault note shortly after the last change (sliders send many).
     private func scheduleSettingsNoteWrite() {
+        settingsNotePending = true
         settingsNoteWrite?.cancel()
         settingsNoteWrite = Task {
-            try? await Task.sleep(for: .seconds(1))
-            guard !Task.isCancelled, let json = try? JSONEncoder.store.encode(SyncedSettings(settings)) else { return }
-            try? await services.settingsNote.write(json)
+            try? await Task.sleep(for: .seconds(config.rules.vault.settingsWriteDelaySeconds))
+            guard !Task.isCancelled else { return }
+            await writeSettingsNote()
+        }
+    }
+
+    /// A change not written yet goes to the note before the note is read, so a sync does not undo it.
+    func flushSettingsNote() async {
+        guard settingsNotePending else { return }
+        settingsNoteWrite?.cancel()
+        await writeSettingsNote()
+    }
+
+    /// A failed write stays pending and is tried again before the next read.
+    private func writeSettingsNote() async {
+        guard let json = try? JSONEncoder.store.encode(SyncedSettings(settings)) else { return }
+        do {
+            try await services.settingsNote.write(json)
+            settingsNotePending = false
+        } catch {
+            settingsNotePending = true
         }
     }
 

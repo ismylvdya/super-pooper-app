@@ -76,7 +76,8 @@ struct VaultSandbox {
                                           clock: { backupClock.now })
         let settings = TestConfig.defaults.vault
         let rules = RulesConfig.Vault(downloadTimeoutSeconds: downloadTimeout, noteExtension: TestConfig.rules.vault.noteExtension,
-                                      settingsNote: TestConfig.rules.vault.settingsNote)
+                                      settingsNote: TestConfig.rules.vault.settingsNote,
+                                      settingsWriteDelaySeconds: TestConfig.rules.vault.settingsWriteDelaySeconds)
         return VaultTaskRepository(location: FixedVaultLocation(url: vault), fileSystem: fileSystem, ubiquity: ubiquity,
                                    mapping: TestConfig.mapping, calendar: TestCalendar.calendar, rules: rules,
                                    backups: backupService, clock: FixedClock(now: now), vaultSettings: { settings })
