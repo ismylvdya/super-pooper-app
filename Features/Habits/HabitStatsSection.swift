@@ -30,10 +30,10 @@ struct HabitStatsSection: View {
                 if habit.habit.twiceADay { value("\(stats.twiceCount)", "habitPage.stats.twice") }
             }
             BarRow(title: "habitPage.stats.byWeekday", color: color, bars: Weekday.allCases.map { day in
-                (Calendar(identifier: .gregorian).veryShortStandaloneWeekdaySymbols[day.rawValue % 7], stats.byWeekday[day] ?? 0)
+                (day.name(.initial, in: model.calendar), stats.byWeekday[day] ?? 0)
             })
             BarRow(title: "habitPage.stats.byMonth", color: color, bars: stats.byMonth.map { month in
-                (Calendar(identifier: .gregorian).veryShortStandaloneMonthSymbols[month.month - 1], month.count)
+                (MonthName.initial(month.month, in: model.calendar), month.count)
             })
         }
     }

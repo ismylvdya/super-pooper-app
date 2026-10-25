@@ -132,7 +132,7 @@ enum DueText {
         case 0: dayText = L10n.string("due.today")
         case 1: dayText = L10n.string("due.tomorrow")
         case -1: dayText = L10n.string("due.yesterday")
-        case 2...6: dayText = calendar.shortWeekdaySymbols[due.day.weekday.rawValue % 7]
+        case 2...6: dayText = due.day.weekday.name(.short, in: calendar)
         default: dayText = due.day.startDate(in: calendar).formatted(.dateTime.month(.abbreviated).day())
         }
         guard let time = due.time else { return dayText }

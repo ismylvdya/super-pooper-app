@@ -68,13 +68,13 @@ extension HabitGridView where Menu == EmptyView {
 /// Monday … Sunday initials above a habit grid, one per cell.
 struct WeekdayHeader: View {
     @Environment(\.tokens) private var tokens
+    @Environment(\.calendar) private var calendar
     let metrics: HabitDotMetrics
 
     var body: some View {
-        let symbols = Calendar(identifier: .gregorian).veryShortStandaloneWeekdaySymbols
         HStack(spacing: metrics.spacing) {
             ForEach(Weekday.allCases, id: \.self) { day in
-                Text(verbatim: symbols[day.rawValue % 7])
+                Text(verbatim: day.name(.initial, in: calendar))
                     .font(tokens.font(.caption))
                     .foregroundStyle(tokens.color(.secondaryText))
                     .frame(width: metrics.cell)

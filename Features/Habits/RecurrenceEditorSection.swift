@@ -14,7 +14,7 @@ struct RecurrenceEditorSection: View {
     var body: some View {
         let draft = self.draft ?? initialDraft
         PlateSection(header: "recurrenceEditor.header", info: "info.recurrenceEditor",
-                     hint: Text(verbatim: RecurrenceText.describe(draft))) {
+                     hint: Text(verbatim: RecurrenceText.describe(draft, calendar: model.calendar))) {
             PlateRow(icon: .recurrence, title: "recurrenceEditor.frequency") {
                 Picker("recurrenceEditor.frequency", selection: edit(\.frequency)) {
                     ForEach(RecurrenceFrequency.allCases, id: \.self) { Text(LocalizedStringKey($0.titleKey)).tag($0) }
@@ -51,7 +51,7 @@ struct RecurrenceEditorSection: View {
                         value.weekdays = days
                     }
                 } label: {
-                    Chip(text: Calendar(identifier: .gregorian).veryShortStandaloneWeekdaySymbols[day.rawValue % 7],
+                    Chip(text: day.name(.initial, in: model.calendar),
                          tint: tokens.color(.accent), isOn: selected.contains(day))
                 }
                 .buttonStyle(.borderless)
@@ -136,13 +136,11 @@ struct RecurrenceEditorSection: View {
     }
 
     private func monthlyTitle(_ day: RecurrenceDraft.MonthlyDay) -> LocalizedStringKey {
-        let symbols = Calendar(identifier: .gregorian).weekdaySymbols
         switch day {
         case .dayOfMonth: return "recurrenceEditor.dayOfMonth"
         case .lastDayOfMonth: return "recurrenceEditor.lastDay"
         case .weekday(let ordinal, let weekday):
-            let name = symbols[weekday.rawValue % 7]
-            return LocalizedStringKey(RecurrenceText.ordinalWeekday(ordinal, name))
+            return LocalizedStringKey(RecurrenceText.ordinalWeekday(ordinal, weekday.name(.full, in: model.calendar)))
         }
     }
 }

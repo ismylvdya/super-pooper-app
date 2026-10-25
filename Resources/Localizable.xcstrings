@@ -2443,17 +2443,6 @@
         }
       }
     },
-    "recurrence.at": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": " at %@"
-          }
-        }
-      }
-    },
     "recurrence.count": {
       "extractionState": "manual",
       "localizations": {
@@ -2571,17 +2560,6 @@
           "stringUnit": {
             "state": "translated",
             "value": " on day %@"
-          }
-        }
-      }
-    },
-    "recurrence.unknown": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Unknown rule: %@"
           }
         }
       }
