@@ -11,19 +11,19 @@ struct TimelineLayoutTests {
     // MARK: - ChainLayout
 
     @Test func aBeforeChainIsPlacedBackToBackFromNow() {
-        let slots = layout(.before(call), [open("A", 15), open("B", 60), open("C", nil)])
+        let slots = layout(.before(TimelineChain.Target(event: call)), [open("A", 15), open("B", 60), open("C", nil)])
         #expect(slots.map(\.label) == ["A 13:25–13:40", "B 13:40–14:40", "C 14:40–14:55"])
         #expect(slots.allSatisfy { !$0.isPast })
     }
 
     @Test func anAfterChainStartsAtTheEventEndOrAtNowWhenTheEventIsOver() {
-        #expect(layout(.after(call), [open("A", 15)]).map(\.label) == ["A 20:00–20:15"])
+        #expect(layout(.after(TimelineChain.Target(event: call)), [open("A", 15)]).map(\.label) == ["A 20:00–20:15"])
         let late = TestCalendar.date(TestCalendar.wednesday, "20:40")
-        #expect(layout(.after(call), [open("A", 15)], now: late).map(\.label) == ["A 20:40–20:55"])
+        #expect(layout(.after(TimelineChain.Target(event: call)), [open("A", 15)], now: late).map(\.label) == ["A 20:40–20:55"])
     }
 
     @Test func doneItemsLeaveTheChain() {
-        let slots = layout(.before(call), [done("Done 1", 15), done("Done 2", 30), open("Open", 15)])
+        let slots = layout(.before(TimelineChain.Target(event: call)), [done("Done 1", 15), done("Done 2", 30), open("Open", 15)])
         #expect(slots.map(\.label) == ["Open 13:25–13:40"])
     }
 

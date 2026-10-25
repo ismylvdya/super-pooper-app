@@ -56,16 +56,17 @@ struct DayBuilder: Sendable {
                                  blockers: blocking.blockers(for: task, previousEvent: previousEvent),
                                  problems: taskProblems))
             if let event = previousEvent, overlapsToday(event, context) {
-                anchors[task.name] = .after(event)
+                anchors[task.name] = .after(TimelineChain.Target(event: event))
             } else if let event = nextEvent, overlapsToday(event, context) {
-                anchors[task.name] = .before(event)
+                anchors[task.name] = .before(TimelineChain.Target(event: event))
             }
         }
 
         let timed = items.filter { inputs.timelineFilter.shows($0) && !timesOfDay(of: $0.task, context: context).isEmpty }
         let shownTimed = timed.filter { !openTimes(of: $0, context: context).isEmpty }
         let timedNames = Set(timed.map(\.id))
-        let chainAnchors = propagate(anchors, through: items.filter { !timedNames.contains($0.id) }, graph: graph)
+        let chainAnchors = propagate(anchors, timed: targets(of: shownTimed, context: context),
+                                     through: items.filter { !timedNames.contains($0.id) }, graph: graph)
         // Done today: it leaves the pool and the timeline instead of staying greyed out.
         let poolItems = items.filter { !$0.isFinished && !timedNames.contains($0.id) && chainAnchors[$0.id] == nil }
 
@@ -154,23 +155,41 @@ struct DayBuilder: Sendable {
 
     // MARK: - Timeline
 
-    /// A task joins the chain of its first chained predecessor, so indirect links reach the timeline too.
-    private func propagate(_ anchors: [String: TimelineChain.Anchor], through items: [DayItem], graph: TaskGraph) -> [String: TimelineChain.Anchor] {
+    /// Anything linked to the timeline, directly or not, goes there too; only tasks linked among the pool
+    /// alone stay in the pool. A task after an event or a timed task (or after a task that is) follows it; a task
+    /// that must be done before one of them is laid out from now.
+    private func propagate(_ anchors: [String: TimelineChain.Anchor], timed: [String: TimelineChain.Target],
+                           through items: [DayItem], graph: TaskGraph) -> [String: TimelineChain.Anchor] {
         var result: [String: TimelineChain.Anchor] = [:]
         let ordered = TopologicalOrder.stable(items.sorted { $0.id < $1.id }, graph: graph)
-        for item in ordered {
-            if let own = anchors[item.id] {
-                result[item.id] = own
-            } else if let inherited = graph.predecessors(of: item.id).compactMap({ result[$0] }).first {
-                result[item.id] = inherited
+        func target(of name: String) -> TimelineChain.Target? { timed[name] ?? result[name]?.target }
+        var changed = true
+        while changed {
+            changed = false
+            for item in ordered where result[item.id] == nil {
+                let followed = graph.predecessors(of: item.id).lazy.compactMap { timed[$0].map(TimelineChain.Anchor.after) ?? result[$0] }.first
+                if let anchor = anchors[item.id] ?? followed {
+                    result[item.id] = anchor
+                    changed = true
+                }
+            }
+            for item in ordered.reversed() where result[item.id] == nil {
+                if let next = graph.successors(of: item.id).lazy.compactMap(target(of:)).first {
+                    result[item.id] = .before(next)
+                    changed = true
+                }
             }
         }
-        // Whatever must be done before a task that is itself before an event is before that event too.
-        for item in ordered.reversed() {
-            guard let anchor = result[item.id], case .before = anchor else { continue }
-            for predecessor in graph.predecessors(of: item.id) where result[predecessor] == nil && ordered.contains(where: { $0.id == predecessor }) {
-                result[predecessor] = anchor
-            }
+        return result
+    }
+
+    /// Timed tasks and habits as chain targets: their first open block today.
+    private func targets(of timed: [DayItem], context: DayContext) -> [String: TimelineChain.Target] {
+        var result: [String: TimelineChain.Target] = [:]
+        for item in timed {
+            guard let time = openTimes(of: item, context: context).first else { continue }
+            let start = context.moment(time, onLogicalDay: context.today)
+            result[item.id] = TimelineChain.Target(id: "task:\(item.id)", end: start.addingTimeInterval(Double(rules.estimate(of: item.task)) * 60))
         }
         return result
     }
@@ -180,12 +199,7 @@ struct DayBuilder: Sendable {
         var groups: [String: (anchor: TimelineChain.Anchor, items: [DayItem])] = [:]
         for item in items {
             guard let anchor = anchors[item.id] else { continue }
-            let key: String
-            switch anchor {
-            case .before(let event): key = "before:\(event.id)"
-            case .after(let event): key = "after:\(event.id)"
-            }
-            groups[key, default: (anchor, [])].items.append(item)
+            groups[anchor.key, default: (anchor, [])].items.append(item)
         }
         return groups.keys.sorted().compactMap { key in
             guard let group = groups[key] else { return nil }

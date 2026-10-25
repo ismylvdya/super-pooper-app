@@ -115,12 +115,14 @@ struct DayTimelineTests {
         #expect(plan.poolNames.isEmpty)
     }
 
-    @Test func aPredecessorOfATaskAfterAnEventStaysInThePool() {
+    /// What must be done before a task that follows an event goes to the timeline too, from now.
+    @Test func aPredecessorOfATaskAfterAnEventIsOnTheTimelineFromNow() throws {
         let anchor = makeTask("Write notes") { $0.previousEvent = eventLink(to: call); $0.previousTasks = ["Find pen"] }
         let earlier = makeTask("Find pen")
         let plan = DayScenario(tasks: [anchor, earlier], events: [call]).build()
-        #expect(plan.timelineTaskNames == ["Write notes"])
-        #expect(plan.poolNames == ["Find pen"])
+        #expect(plan.timelineTaskNames == ["Find pen", "Write notes"])
+        #expect(plan.poolNames.isEmpty)
+        #expect(clockTime(try #require(plan.slot("Find pen")).start) == "13:25")
     }
 
     @Test func tasksLinkedOnlyToEachOtherStayInThePool() {
@@ -131,12 +133,19 @@ struct DayTimelineTests {
         #expect(plan.timelineTaskNames.isEmpty)
     }
 
-    @Test func aSuccessorOfATimedTaskStaysInThePool() {
-        let timed = makeTask("At four") { $0.due = TaskDue("2026-10-21T16:00") }
-        let after = makeTask("After four") { $0.previousTasks = ["At four"] }
-        let plan = DayScenario(tasks: [timed, after]).build()
-        #expect(plan.timelineTaskNames == ["At four"])
-        #expect(plan.poolNames == ["After four"])
+    /// A task after a timed one follows it on the timeline; one before it is laid out from now; their links carry on.
+    @Test func tasksLinkedToATimedTaskAreOnTheTimelineAroundIt() throws {
+        let timed = makeTask("At four") { $0.due = TaskDue("2026-10-21T16:00"); $0.timeEstimate = 60 }
+        let after = makeTask("After four") { $0.previousTasks = ["At four"]; $0.timeEstimate = 15 }
+        let before = makeTask("Before four") { $0.timeEstimate = 15 }
+        let timedWithBefore = timed.applying([.addPreviousTask("Before four")])
+        let sibling = makeTask("Also after it") { $0.previousTasks = ["After four"]; $0.timeEstimate = 15 }
+        let plan = DayScenario(tasks: [timedWithBefore, after, before, sibling]).build()
+        #expect(Set(plan.timelineTaskNames) == ["At four", "After four", "Before four", "Also after it"])
+        #expect(plan.poolNames.isEmpty)
+        #expect(clockTime(try #require(plan.slot("After four")).start) == "17:00")
+        #expect(clockTime(try #require(plan.slot("Also after it")).start) == "17:15")
+        #expect(clockTime(try #require(plan.slot("Before four")).start) == "13:25")
     }
 
     @Test func anEventOnAnotherDayKeepsTheTaskInThePoolWithoutAProblem() {
