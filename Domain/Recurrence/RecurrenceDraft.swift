@@ -22,12 +22,37 @@ struct RecurrenceDraft: Equatable, Sendable {
     var interval = 1
     /// Weekly days; empty means the weekday of `start`.
     var weekdays: Set<Weekday> = []
-    var monthlyDay: MonthlyDay
+    var monthlyDay: MonthlyDay {
+        didSet {
+            // The last day and weekdays are only "On the"; a day number from the fifth on only "Each".
+            switch monthlyDay {
+            case .lastDayOfMonth, .weekday: monthlyMode = .onThe
+            case .dayOfMonth: if MonthlyPattern(monthlyDay) == nil { monthlyMode = .each }
+            }
+        }
+    }
+    /// "Each" day number or "On the" first … last day or weekday; kept while editing, so day 1 picked as
+    /// "Each 1" does not jump to "On the first day".
+    var monthlyMode: MonthlyPattern.Mode
     var end: End = .never
 
     init(start: LocalDate) {
         self.start = start
         monthlyDay = .dayOfMonth(start.day)
+        monthlyMode = .each
+    }
+
+    /// "On the" ordinal and kind of the monthly day (first day when it is a day number of "Each").
+    var monthlyPattern: MonthlyPattern {
+        get { MonthlyPattern(monthlyDay) ?? MonthlyPattern(ordinal: .first, kind: .day) }
+        set { monthlyDay = newValue.monthlyDay }
+    }
+
+    /// Switching between "Each" (the start's day number) and "On the" (the first day).
+    mutating func setMonthlyMode(_ mode: MonthlyPattern.Mode) {
+        guard mode != monthlyMode else { return }
+        monthlyMode = mode
+        monthlyDay = mode == .each ? .dayOfMonth(start.day) : monthlyPattern.monthlyDay
     }
 
     init(rule: RecurrenceRule, fallbackStart: LocalDate) {
@@ -40,6 +65,7 @@ struct RecurrenceDraft: Equatable, Sendable {
         } else if let entry = rule.byDay.first(where: { $0.ordinal != nil }), let ordinal = entry.ordinal {
             monthlyDay = .weekday(ordinal: ordinal, weekday: entry.weekday)
         }
+        monthlyMode = MonthlyPattern.mode(of: monthlyDay)
         if let count = rule.count {
             end = .count(count)
         } else if let until = rule.untilDate {

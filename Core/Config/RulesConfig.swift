@@ -119,6 +119,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let pastOpacity: Range
         let recurrenceInterval: Range
         let recurrenceCount: Range
+        /// "Each" day number of a monthly repeat.
+        let monthDay: Range
     }
 
     let day: DayRules

@@ -2652,13 +2652,13 @@
         }
       }
     },
-    "recurrenceEditor.dayOfMonth": {
+    "recurrenceEditor.each": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Day of the month"
+            "value": "Each"
           }
         }
       }
@@ -2817,13 +2817,24 @@
         }
       }
     },
-    "recurrenceEditor.lastDay": {
+    "recurrenceEditor.kind": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Last day"
+            "value": "Day"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.kind.day": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day"
           }
         }
       }
@@ -2834,7 +2845,84 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "On"
+            "value": "Days"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.onThe": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On the"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.ordinal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Which"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.ordinal.first": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "First"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.ordinal.fourth": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fourth"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.ordinal.last": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.ordinal.second": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Second"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.ordinal.third": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Third"
           }
         }
       }

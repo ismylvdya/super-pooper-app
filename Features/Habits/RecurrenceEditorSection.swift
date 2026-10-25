@@ -59,16 +59,43 @@ struct RecurrenceEditorSection: View {
         }
     }
 
+    /// As in Apple Calendar: "Each" day number, or "On the" first … last day or weekday of the month.
     @ViewBuilder private func monthlyRows(_ draft: RecurrenceDraft) -> some View {
         PlateRow(icon: nil, title: "recurrenceEditor.monthlyDay", indent: true) {
-            Picker("recurrenceEditor.monthlyDay", selection: edit(\.monthlyDay)) {
-                ForEach(monthlyChoices(draft), id: \.self) { Text(monthlyTitle($0)).tag($0) }
+            Picker("recurrenceEditor.monthlyDay", selection: Binding(get: { draft.monthlyMode },
+                                                                     set: { mode in change { $0.setMonthlyMode(mode) } })) {
+                Text("recurrenceEditor.each").tag(MonthlyPattern.Mode.each)
+                Text("recurrenceEditor.onThe").tag(MonthlyPattern.Mode.onThe)
             }
             .labelsHidden()
         }
-        if case .dayOfMonth(let day) = draft.monthlyDay {
-            PlateRow(icon: nil, title: "recurrenceEditor.dayNumber", indent: true) {
-                Stepper(String(day), value: Binding(get: { day }, set: { value in change { $0.monthlyDay = .dayOfMonth(value) } }), in: 1...31)
+        switch draft.monthlyMode {
+        case .each:
+            if case .dayOfMonth(let day) = draft.monthlyDay {
+                PlateRow(icon: nil, title: "recurrenceEditor.dayNumber", indent: true) {
+                    Stepper(String(day), value: Binding(get: { day }, set: { value in change { $0.monthlyDay = .dayOfMonth(value) } }),
+                            in: rules.limits.monthDay.ints)
+                }
+            }
+        case .onThe:
+            PlateRow(icon: nil, title: "recurrenceEditor.ordinal", indent: true) {
+                Picker("recurrenceEditor.ordinal", selection: edit(\.monthlyPattern.ordinal)) {
+                    ForEach(MonthlyPattern.Ordinal.allCases, id: \.self) { ordinal in
+                        Text(LocalizedStringKey("recurrenceEditor.ordinal." + String(describing: ordinal))).tag(ordinal)
+                    }
+                }
+                .labelsHidden()
+            }
+            PlateRow(icon: nil, title: "recurrenceEditor.kind", indent: true) {
+                Picker("recurrenceEditor.kind", selection: edit(\.monthlyPattern.kind)) {
+                    ForEach(MonthlyPattern.Kind.all, id: \.self) { kind in
+                        switch kind {
+                        case .day: Text("recurrenceEditor.kind.day").tag(kind)
+                        case .weekday(let weekday): Text(verbatim: weekday.name(.full, in: model.calendar)).tag(kind)
+                        }
+                    }
+                }
+                .labelsHidden()
             }
         }
     }
@@ -121,27 +148,6 @@ struct RecurrenceEditorSection: View {
         let raw = updated.raw
         guard raw != task.recurrenceRaw else { return }
         editor.apply([.recurrence(raw)])
-    }
-
-    private func monthlyChoices(_ draft: RecurrenceDraft) -> [RecurrenceDraft.MonthlyDay] {
-        let start = draft.start
-        var choices: [RecurrenceDraft.MonthlyDay] = [.dayOfMonth(start.day), .lastDayOfMonth,
-                                                      .weekday(ordinal: (start.day - 1) / 7 + 1, weekday: start.weekday)]
-        if start.day + 7 > LocalDate.daysInMonth(year: start.year, month: start.month) {
-            choices.append(.weekday(ordinal: -1, weekday: start.weekday))
-        }
-        if !choices.contains(draft.monthlyDay) { choices.insert(draft.monthlyDay, at: 0) }
-        if case .dayOfMonth = draft.monthlyDay { choices.removeAll { if case .dayOfMonth = $0 { $0 != draft.monthlyDay } else { false } } }
-        return choices
-    }
-
-    private func monthlyTitle(_ day: RecurrenceDraft.MonthlyDay) -> LocalizedStringKey {
-        switch day {
-        case .dayOfMonth: return "recurrenceEditor.dayOfMonth"
-        case .lastDayOfMonth: return "recurrenceEditor.lastDay"
-        case .weekday(let ordinal, let weekday):
-            return LocalizedStringKey(RecurrenceText.ordinalWeekday(ordinal, weekday.name(.full, in: model.calendar)))
-        }
     }
 }
 

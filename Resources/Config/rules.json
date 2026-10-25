@@ -119,6 +119,10 @@
     "recurrenceCount": {
       "min": 1,
       "max": 999
+    },
+    "monthDay": {
+      "min": 1,
+      "max": 31
     }
   },
   "editing": {
