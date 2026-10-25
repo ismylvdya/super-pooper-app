@@ -73,7 +73,7 @@ actor VaultTaskRepository: TaskRepository {
     }
 
     func rename(_ task: TaskNote, to newName: String, dependents: [TaskNote]) async throws -> TaskNote {
-        try NoteNameRules.validate(newName)
+        guard NoteNameRules.isValid(newName) else { throw TaskRepositoryError.invalidName(newName) }
         let renamed: TaskNote = try await location.withRoot { root in
             let source = try existingURL(of: task, root: root)
             let target = source.deletingLastPathComponent().appendingPathComponent("\(newName).\(noteExtension)")
@@ -108,7 +108,7 @@ actor VaultTaskRepository: TaskRepository {
     }
 
     func create(named name: String, status: TaskStatus) async throws -> TaskNote {
-        try NoteNameRules.validate(name)
+        guard NoteNameRules.isValid(name) else { throw TaskRepositoryError.invalidName(name) }
         let settings = vaultSettings()
         let reader = readerFactory(settings)
         let text = writer.newNote(tag: settings.taskTag, status: status, now: clock.now)
@@ -200,18 +200,5 @@ actor VaultTaskRepository: TaskRepository {
         let url = root.appendingPathComponent(task.relativePath)
         guard fileSystem.fileExists(url) else { throw TaskRepositoryError.fileMissing(task.name) }
         return url
-    }
-}
-
-/// Obsidian-safe note names: no path separators or link syntax characters.
-enum NoteNameRules {
-    static let forbidden = CharacterSet(charactersIn: "/\\:*?\"<>|#^[]")
-
-    static func validate(_ name: String) throws {
-        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty, trimmed == name, !name.hasPrefix("."), name.count <= 200,
-              name.rangeOfCharacter(from: forbidden) == nil else {
-            throw TaskRepositoryError.invalidName(name)
-        }
     }
 }

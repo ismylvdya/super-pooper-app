@@ -64,3 +64,17 @@ extension AppModel {
         await publishDerivedState()
     }
 }
+
+extension AppModel {
+    func selectVault(_ url: URL) async {
+        SyncLog.logger.info("vault selected: \(url.path, privacy: .public)")
+        do {
+            try services.vault.select(url)
+            await sync(announce: true)
+            if vaultIsWholeVault { banners.show(L10n.string("banner.wholeVault"), style: .warning) }
+        } catch {
+            SyncLog.logger.error("vault selection failed: \(String(describing: error), privacy: .public)")
+            banners.show(Self.describe(error), style: .problem)
+        }
+    }
+}

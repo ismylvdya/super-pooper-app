@@ -13,25 +13,3 @@ struct SyncTasksIntent: AppIntent {
         return .result()
     }
 }
-
-/// Connects intents to the app model without the shared code knowing the app.
-@MainActor
-enum AppActionBridge {
-    static var syncHandler: (() async -> Void)?
-    static var habitTapHandler: ((String) async -> Void)?
-
-    static func sync() async {
-        await syncHandler?()
-    }
-
-    static func tapHabit(_ name: String) async {
-        await habitTapHandler?(name)
-    }
-}
-
-struct SuperPooperShortcuts: AppShortcutsProvider {
-    static var appShortcuts: [AppShortcut] {
-        AppShortcut(intent: SyncTasksIntent(), phrases: ["Sync tasks in \(.applicationName)"],
-                    shortTitle: "intent.sync.title", systemImageName: "arrow.triangle.2.circlepath")
-    }
-}
