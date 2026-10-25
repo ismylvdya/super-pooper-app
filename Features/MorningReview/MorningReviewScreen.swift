@@ -72,10 +72,11 @@ struct MorningReviewScreen: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("review.reset") {
+                    Button {
                         model.resetOrder()
                         model.banners.show(L10n.string("banner.orderReset"))
-                    }
+                    } label: { Image(systemName: icons[.resetSort]) }
+                    .accessibilityLabel(Text("review.reset"))
                     .disabled(model.dayState.manualOrder == nil)
                 }
                 ToolbarItem(placement: .confirmationAction) {

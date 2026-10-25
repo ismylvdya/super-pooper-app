@@ -166,7 +166,7 @@ struct TodayButtons: View {
     var body: some View {
         switch placement {
         case .leading:
-            Button { router.isReviewPresented = true } label: { Image(systemName: icons[.edit]) }
+            Button { router.isReviewPresented = true } label: { Image(systemName: icons[.review]) }
                 .tint(tokens.color(.accent))
                 .accessibilityLabel(Text("review.title"))
                 .accessibilityIdentifier("today.review")

@@ -7,6 +7,8 @@ struct ActionMenuContent: View {
     @Environment(\.icons) private var icons
     let menu: ActionMenu
     let item: DayItem?
+    /// Skip today and Not today only make sense on today's page.
+    var isToday = true
     let perform: (ActionDefinition) -> Void
 
     var body: some View {
@@ -44,7 +46,8 @@ struct ActionMenuContent: View {
         case .done, .partial: return true
         case .twice: return !item.isHabit || item.task.habit.twiceADay || item.state == .marked(.twice)
         case .unmark: return item.isDone
-        case .skipToday: return item.isHabit && !item.isDone
+        case .skipToday: return isToday && item.isHabit && !item.isDone
+        case .notToday: return isToday && !item.isHabit && !item.isDone
         default: return true
         }
     }

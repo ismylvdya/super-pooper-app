@@ -15,6 +15,9 @@ extension AppModel {
             guard day == nil || day == context().today else { return }
             updateDayState { if !$0.skipped.contains(name) { $0.skipped.append(name) } }
             await publishDerivedState()
+        case .notToday:
+            guard day == nil || day == context().today else { return }
+            postpone(name)
         case .archive:
             if await write(task, [.status(.archived)]) {
                 banners.show(L10n.format("banner.archived", name), style: .success)

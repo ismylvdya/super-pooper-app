@@ -30,6 +30,18 @@ struct AppModelTests {
         #expect(model.task(named: "Выпить воды 💧") == before)
     }
 
+    /// "Not today" in the pool menu takes a task out of today without writing; it stays this week.
+    @Test func notTodayFromTheMenuPostponesTheTask() async throws {
+        let model = try makeModel()
+        let before = try #require(model.task(named: "Повесить полку"))
+        await model.perform(.notToday, on: "Повесить полку")
+        #expect(model.dayState.postponed == ["Повесить полку"])
+        #expect(model.plan(at: model.clock.now).item(named: "Повесить полку") == nil)
+        #expect(model.task(named: "Повесить полку") == before)
+        #expect(model.config.actions.menus["taskContext"]?.contains(.notToday) == true)
+        #expect(model.config.actions.menus["taskContext"]?.contains(.archive) == false)
+    }
+
     /// Links order tasks but never prevent checking one off.
     @Test func aTaskAfterAnUnfinishedOneCanStillBeChecked() async throws {
         let model = try makeModel()

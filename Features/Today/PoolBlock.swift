@@ -114,7 +114,7 @@ struct PoolBlock: View {
     }
 
     private func row(_ item: DayItem, plate: PoolRowContent.PlateKind) -> some View {
-        PoolRow(item: item, today: plan.today, isCompact: fillsHeight, plate: plate, handler: handler,
+        PoolRow(item: item, today: plan.today, isToday: plan.isToday, isCompact: fillsHeight, plate: plate, handler: handler,
                 dragSource: plan.isToday ? .pool : nil)
     }
 
@@ -135,6 +135,7 @@ struct PoolRow: View {
     @Environment(\.rules) private var rules
     let item: DayItem
     let today: LocalDate
+    var isToday = true
     var isCompact = false
     var plate: PoolRowContent.PlateKind = .pool
     let handler: TaskActionHandler
@@ -142,7 +143,7 @@ struct PoolRow: View {
 
     var body: some View {
         let lines = rules.pool.extraLines(forEstimate: rules.day.estimate(of: item.task))
-        PoolRowContent(item: item, today: today, isCompact: isCompact, plate: plate,
+        PoolRowContent(item: item, today: today, isToday: isToday, isCompact: isCompact, plate: plate,
                        minimumHeight: CGFloat(lines) * tokens.uiFont(.taskTitle).lineHeight, handler: handler,
                        dragSource: dragSource)
     }
@@ -162,6 +163,7 @@ struct PoolRowContent: View {
     @Environment(TaskDragState.self) private var drag: TaskDragState?
     let item: DayItem
     let today: LocalDate
+    var isToday = true
     var isCompact = true
     var titleFont: Font?
     var showsDetails = true
@@ -200,7 +202,7 @@ struct PoolRowContent: View {
         }
         .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: tokens.radius(plateRadius), style: .continuous))
         .contextMenu {
-            ActionMenuContent(menu: item.isHabit ? .habitContext : .taskContext, item: item) {
+            ActionMenuContent(menu: item.isHabit ? .habitContext : .taskContext, item: item, isToday: isToday) {
                 handler.handle($0, taskName: item.id)
             }
         }

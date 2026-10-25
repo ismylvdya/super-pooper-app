@@ -7,6 +7,7 @@ enum ActionID: String, Codable, CaseIterable, Sendable {
     case partial
     case twice
     case skipToday
+    case notToday
     case unmark
     case open
     case archive

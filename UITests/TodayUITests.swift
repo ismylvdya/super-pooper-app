@@ -77,7 +77,7 @@ final class TodayUITests: XCTestCase {
         XCTAssertTrue(edit.waitForExistence(timeout: 5))
         dismissBanners()
         edit.tap()
-        XCTAssertTrue(app.navigationBars["Morning review"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.navigationBars["This week"].waitForExistence(timeout: 5))
         let first = app.cells.element(boundBy: 0)
         let third = app.cells.element(boundBy: 2)
         XCTAssertTrue(first.waitForExistence(timeout: 5))

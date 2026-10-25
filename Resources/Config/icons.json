@@ -1,6 +1,7 @@
 {
   "settings": "gearshape",
-  "review": "list.bullet.rectangle.portrait",
+  "review": "7.calendar",
+  "resetSort": "arrow.trianglehead.2.counterclockwise",
   "more": "ellipsis.circle",
   "info": "info.circle",
   "problem": "exclamationmark.triangle.fill",
@@ -33,8 +34,6 @@
   "poolCount": "tray.full",
   "archive": "archivebox",
   "delete": "trash",
-  "edit": "pencil",
-  "version": "number",
   "search": "magnifyingglass",
   "resetOrder": "arrow.counterclockwise",
   "add": "plus.circle.fill",

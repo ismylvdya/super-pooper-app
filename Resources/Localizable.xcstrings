@@ -67,6 +67,17 @@
         }
       }
     },
+    "action.notToday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not today"
+          }
+        }
+      }
+    },
     "action.open": {
       "extractionState": "manual",
       "localizations": {
@@ -2955,7 +2966,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Morning review"
+            "value": "This week"
           }
         }
       }

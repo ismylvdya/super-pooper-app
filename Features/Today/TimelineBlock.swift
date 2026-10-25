@@ -171,7 +171,7 @@ struct TimelineBlock: View {
     /// by its own time (not a habit, not a chain) can be dragged to another time or back to the pool.
     private func taskRow(_ item: DayItem, _ slot: TimelineSlot) -> some View {
         let movable = slot.time != nil && TaskScheduling.canMove(item.task)
-        return PoolRowContent(item: item, today: plan.today, isCompact: false, titleFont: .system(size: model.settings.timeline.taskFontSize),
+        return PoolRowContent(item: item, today: plan.today, isToday: plan.isToday, isCompact: false, titleFont: .system(size: model.settings.timeline.taskFontSize),
                               showsDetails: false, titleLineLimit: 2,
                               titleLineHeight: UIFont.systemFont(ofSize: model.settings.timeline.taskFontSize).lineHeight,
                               plate: .slot(isPast: slot.isPast, isCompact: false), handler: handler,

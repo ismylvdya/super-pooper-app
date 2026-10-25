@@ -29,6 +29,13 @@
       "haptic": "light"
     },
     {
+      "id": "notToday",
+      "title": "action.notToday",
+      "icon": "moon.zzz",
+      "destructive": false,
+      "haptic": "light"
+    },
+    {
       "id": "unmark",
       "title": "action.unmark",
       "icon": "arrow.uturn.backward.circle",
@@ -113,7 +120,7 @@
     "taskContext": [
       "done",
       "unmark",
-      "archive",
+      "notToday",
       "delete"
     ],
     "taskPage": [
