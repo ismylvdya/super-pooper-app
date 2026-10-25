@@ -66,6 +66,9 @@ extension AppModel {
 }
 
 extension AppModel {
+    /// A vault folder is chosen (it may still be loading).
+    var hasVault: Bool { services.vault.hasVault }
+
     func selectVault(_ url: URL) async {
         SyncLog.logger.info("vault selected: \(url.path, privacy: .public)")
         do {

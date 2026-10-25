@@ -79,7 +79,7 @@ struct RootView: View {
         switch model.vaultState {
         case .failed(let message):
             NoVaultScreen(message: message)
-        case .notSelected where !model.services.vault.hasVault:
+        case .notSelected where !model.hasVault:
             NoVaultScreen(message: nil)
         default:
             TodayScreen()

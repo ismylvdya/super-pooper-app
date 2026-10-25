@@ -22,7 +22,7 @@ struct MorningReviewScreen: View {
                             .listRowBackground(tokens.color(.plateBackground))
                             .accessibilityIdentifier("review:\(item.id)")
                             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                Button { model.postpone(item.id) } label: {
+                                Button { Haptics.play(.light); model.postpone(item.id) } label: {
                                     Label("review.postpone", systemImage: icons[.postpone])
                                 }
                                 .tint(tokens.color(.swipeNeutral))
@@ -47,7 +47,7 @@ struct MorningReviewScreen: View {
                             .listRowBackground(tokens.color(.plateBackground))
                             .opacity(tokens.opacity(.blocked))
                             .swipeActions(edge: .leading, allowsFullSwipe: true) {
-                                Button { model.unpostpone(task.name) } label: {
+                                Button { Haptics.play(.light); model.unpostpone(task.name) } label: {
                                     Label("review.backToToday", systemImage: icons[.restore])
                                 }
                                 .tint(tokens.color(.success))

@@ -150,13 +150,11 @@ extension AppModel {
 
     /// The morning review takes a task out of today; it stays this week and is back tomorrow.
     func postpone(_ name: String) {
-        Haptics.play(.light)
         updateDayState { if !$0.postponed.contains(name) { $0.postponed.append(name) } }
         Task { await publishDerivedState() }
     }
 
     func unpostpone(_ name: String) {
-        Haptics.play(.light)
         updateDayState { $0.postponed.removeAll { $0 == name } }
         Task { await publishDerivedState() }
     }

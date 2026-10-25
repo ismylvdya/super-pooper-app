@@ -1,5 +1,4 @@
 import Foundation
-import WidgetKit
 
 /// Everything the app state talks to, created once in the composition root.
 struct AppServices {
@@ -15,12 +14,4 @@ struct AppServices {
     let snapshotStore: SnapshotStore
     let alertStateStore: AlertStateStore
     let widgets: WidgetReloading
-}
-
-protocol WidgetReloading: Sendable {
-    func reloadAll()
-}
-
-struct WidgetKitReloader: WidgetReloading {
-    func reloadAll() { WidgetCenter.shared.reloadAllTimelines() }
 }
