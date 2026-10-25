@@ -771,6 +771,17 @@
         }
       }
     },
+    "day.tomorrow.short": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tomorrow"
+          }
+        }
+      }
+    },
     "day.yesterday": {
       "extractionState": "manual",
       "localizations": {
@@ -778,6 +789,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Yesterday, %@"
+          }
+        }
+      }
+    },
+    "day.yesterday.short": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yesterday"
           }
         }
       }

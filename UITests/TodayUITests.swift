@@ -30,13 +30,14 @@ final class TodayUITests: XCTestCase {
         dismissBanners()
         let day = app.buttons["today.day"]
         XCTAssertEqual(day.label, "Today")
-        app.buttons["today.nextDay"].tap()
+        // Bar buttons refuse the accessibility "scroll to visible" step: tap by coordinate.
+        app.buttons["today.nextDay"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         XCTAssertTrue(app.buttons.matching(NSPredicate(format: "identifier == 'today.day' AND label BEGINSWITH 'Tomorrow'")).firstMatch
             .waitForExistence(timeout: 5))
         app.tabBars.buttons["Today"].tap()
         XCTAssertTrue(app.buttons.matching(NSPredicate(format: "identifier == 'today.day' AND label == 'Today'")).firstMatch
             .waitForExistence(timeout: 5))
-        app.buttons["today.previousDay"].tap()
+        app.buttons["today.previousDay"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         XCTAssertTrue(app.buttons.matching(NSPredicate(format: "identifier == 'today.day' AND label BEGINSWITH 'Yesterday'")).firstMatch
             .waitForExistence(timeout: 5))
     }

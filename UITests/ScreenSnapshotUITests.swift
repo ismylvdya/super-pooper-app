@@ -28,6 +28,14 @@ final class ScreenSnapshotUITests: XCTestCase {
         snap("today-timeline")
     }
 
+    func testTomorrow() {
+        launch("superpooper://today")
+        // Bar buttons refuse the accessibility "scroll to visible" step: tap by coordinate.
+        app.buttons["today.nextDay"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        settle()
+        snap("today-tomorrow")
+    }
+
     func testTodayStacked() {
         launch("superpooper://today", arrangement: "stacked")
         snap("today-stacked")

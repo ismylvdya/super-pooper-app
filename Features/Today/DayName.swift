@@ -12,4 +12,14 @@ enum DayName {
         default: return date.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated))
         }
     }
+
+    /// The same without the date where a word says it ("Tomorrow"), for a narrow bar.
+    static func short(_ day: LocalDate, offset: Int, calendar: Calendar) -> String {
+        switch offset {
+        case 0: L10n.string("day.today")
+        case 1: L10n.string("day.tomorrow.short")
+        case -1: L10n.string("day.yesterday.short")
+        default: day.startDate(in: calendar).formatted(.dateTime.day().month(.abbreviated))
+        }
+    }
 }
