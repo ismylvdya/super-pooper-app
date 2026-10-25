@@ -36,6 +36,8 @@ final class AppModel {
     /// Paths written while a scan was running; their scanned copies are stale.
     @ObservationIgnored private var writtenDuringSync: Set<String>?
     @ObservationIgnored var runningSync: Task<Void, Never>?
+    /// Another sync was asked for while one runs (`true`: with the banner).
+    @ObservationIgnored var syncAgain: Bool?
     @ObservationIgnored var notificationTask: Task<Void, Never>?
     @ObservationIgnored var settingsNoteWrite: Task<Void, Never>?
     /// A settings change not written to the vault note yet.

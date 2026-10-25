@@ -50,12 +50,21 @@ actor InMemoryTaskRepository: TaskRepository {
     private var bodies: [String: String] = [:]
     /// Scans throw this (tests of a vault that cannot be read).
     private var scanError: Error?
+    /// How long a scan takes (tests of syncs that overlap) and how many ran.
+    private var scanSeconds: Double = 0
+    private(set) var scanCount = 0
 
     init(tasks: [TaskNote]) { self.tasks = tasks }
 
     func failScans(with error: Error?) { scanError = error }
+    func slowScans(by seconds: Double) { scanSeconds = seconds }
 
     func scan() async throws -> VaultScanResult {
+        scanCount += 1
+        if scanSeconds > 0 {
+            let seconds = scanSeconds
+            await withCheckedContinuation { done in DispatchQueue.global().asyncAfter(deadline: .now() + seconds) { done.resume() } }
+        }
         if let scanError { throw scanError }
         return VaultScanResult(tasks: tasks, fileProblems: [], conflicted: [])
     }

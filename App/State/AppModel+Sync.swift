@@ -4,13 +4,22 @@ import os
 extension AppModel {
     /// Full sync: vault, auto-promotion, calendar and reminders, then widgets and notifications.
     /// `announce` shows a banner with what changed (pull-to-refresh).
-    /// A second call while a sync runs waits for that sync instead of starting another one.
+    /// A call while a sync runs does not start a second one in parallel: the running sync reads everything once
+    /// more when it is done (the vault or settings may have changed since it started), and the call waits for that.
     func sync(announce: Bool) async {
         if let running = runningSync {
+            syncAgain = (syncAgain ?? false) || announce
             await running.value
             return
         }
-        let task = Task { await performSync(announce: announce) }
+        let task = Task {
+            var next: Bool? = announce
+            while let current = next {
+                syncAgain = nil
+                await performSync(announce: current)
+                next = syncAgain
+            }
+        }
         runningSync = task
         await task.value
         runningSync = nil
