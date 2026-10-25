@@ -43,11 +43,7 @@ struct TaskLinksSection: View {
                     Text(name).foregroundStyle(model.task(named: name) == nil ? tokens.color(.problem) : tokens.color(.primaryText))
                 }
                 Spacer()
-                Button { remove(name, side: side) } label: {
-                    Image(systemName: icons[.remove]).foregroundStyle(tokens.color(.destructive))
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(Text("taskPage.removeLink"))
+                RemoveButton(label: "taskPage.removeLink") { remove(name, side: side) }
             }
             .padding(.leading, tokens.space(.childIndent))
         }
@@ -120,13 +116,9 @@ struct TaskEventsSection: View {
                         .foregroundStyle(resolved == nil ? tokens.color(.problem) : tokens.color(.secondaryText))
                 }
                 Spacer()
-                Button {
+                RemoveButton(label: "taskPage.removeLink") {
                     editor.apply([field == .previous ? .previousEvent(nil) : .nextEvent(nil)])
-                } label: {
-                    Image(systemName: icons[.remove]).foregroundStyle(tokens.color(.destructive))
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(Text("taskPage.removeLink"))
             }
             .padding(.leading, tokens.space(.childIndent))
         }

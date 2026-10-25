@@ -4,7 +4,6 @@ import SwiftUI
 struct HabitRemindersSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.icons) private var icons
-    @Environment(\.tokens) private var tokens
     @Environment(\.rules) private var rules
     let editor: TaskEditor
 
@@ -16,11 +15,9 @@ struct HabitRemindersSection: View {
                 PlateRow(icon: index == 0 ? .reminder : nil, title: "taskPage.reminders.time") {
                     DatePicker("taskPage.reminders.time", selection: binding(at: index), displayedComponents: .hourAndMinute)
                         .labelsHidden()
-                    Button { save(times.enumerated().filter { $0.offset != index }.map(\.element)) } label: {
-                        Image(systemName: icons[.remove]).foregroundStyle(tokens.color(.problem))
+                    RemoveButton(label: "taskPage.reminders.remove") {
+                        save(times.enumerated().filter { $0.offset != index }.map(\.element))
                     }
-                    .buttonStyle(.borderless)
-                    .accessibilityLabel(Text("taskPage.reminders.remove"))
                 }
             }
             Button { save(times + [nextTime]) } label: {
