@@ -20,20 +20,7 @@ struct SourcesSettingsSection: View {
                     .foregroundStyle(tokens.color(.warning))
             }
             ObsidianLinkRows()
-            NavigationLink { SourcePickerScreen(kind: .calendars) } label: {
-                PlateRow(icon: .calendars, title: "settings.calendars", info: "info.settings.calendars") {
-                    count(model.settings.sources.anchorCalendarIDs.count)
-                }
-            }
-            .buttonStyle(.plain)
-            .disabled(model.access.calendars != .granted)
-            NavigationLink { SourcePickerScreen(kind: .reminderLists) } label: {
-                PlateRow(icon: .reminderLists, title: "settings.reminderLists", info: "info.settings.reminderLists") {
-                    count(model.settings.sources.reminderListIDs.count)
-                }
-            }
-            .buttonStyle(.plain)
-            .disabled(model.access.reminders != .granted || !model.config.flags.reminders)
+            SourceListRows()
             accessRow(.calendars, "settings.access.calendar", "info.settings.access.calendar", model.access.calendars) {
                 await model.requestCalendarAccess()
             }
@@ -45,13 +32,6 @@ struct SourcesSettingsSection: View {
             }
         }
         .vaultPicker(isPresented: $isPickingVault)
-    }
-
-    private func count(_ value: Int) -> some View {
-        HStack(spacing: tokens.space(.valueChevronGap)) {
-            Text(verbatim: "\(value)").foregroundStyle(tokens.color(.secondaryText))
-            Image(systemName: icons[.chevron]).foregroundStyle(tokens.color(.tertiaryText))
-        }
     }
 
     private func accessRow(_ icon: Icon, _ title: LocalizedStringKey, _ info: LocalizedStringKey, _ access: SourceAccess,

@@ -61,21 +61,7 @@ struct OnboardingFlow: View {
             VStack(spacing: tokens.space(.groupGap)) {
                 OnboardingStep(icon: .event, title: "onboarding.sources.title", message: "onboarding.sources.message",
                                status: nil, action: nil) {}
-                Plate {
-                    NavigationLink { SourcePickerScreen(kind: .calendars) } label: {
-                        PlateRow(icon: .calendars, title: "settings.calendars") {
-                            Text(verbatim: "\(model.settings.sources.anchorCalendarIDs.count)")
-                        }
-                    }
-                    .disabled(model.access.calendars != .granted)
-                    NavigationLink { SourcePickerScreen(kind: .reminderLists) } label: {
-                        PlateRow(icon: .reminderLists, title: "settings.reminderLists") {
-                            Text(verbatim: "\(model.settings.sources.reminderListIDs.count)")
-                        }
-                    }
-                    .disabled(model.access.reminders != .granted)
-                }
-                .buttonStyle(.plain)
+                Plate { SourceListRows() }
             }
         }
     }
