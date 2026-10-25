@@ -28,7 +28,7 @@ struct TaskLinksSection: View {
     }
 
     private var nextTasks: [String] {
-        model.tasks.filter { $0.previousTasks.contains(task.name) }.map(\.name).sorted()
+        NameOrder.sorted(model.tasks.filter { $0.previousTasks.contains(task.name) }.map(\.name))
     }
 
     @ViewBuilder private func linkGroup(_ side: Side, icon: Icon, title: LocalizedStringKey, names: [String]) -> some View {

@@ -86,7 +86,7 @@ final class AppModel {
     func task(named name: String) -> TaskNote? { tasks.first { $0.name == name } }
 
     var archivedTasks: [TaskNote] {
-        tasks.filter { $0.isArchived && !$0.isHabit }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+        NameOrder.sorted(tasks.filter { $0.isArchived && !$0.isHabit })
     }
 
     func updateDayState(_ change: (inout DayState) -> Void) {

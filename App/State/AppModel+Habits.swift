@@ -9,7 +9,7 @@ extension AppModel {
     var archivedNotesCount: Int { archivedTasks.count + archivedHabits.count }
 
     var archivedHabits: [TaskNote] {
-        tasks.filter { $0.isHabit && $0.isArchived }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+        NameOrder.sorted(tasks.filter { $0.isHabit && $0.isArchived })
     }
 
     /// Tap on a habit's day: none → Done (→ Twice) → none.
@@ -82,8 +82,7 @@ extension AppModel {
 
     /// Subtasks of a note (notes whose `projects` link to it), by name.
     func subtasks(of parent: String) -> [TaskNote] {
-        tasks.filter { $0.projects.contains { $0.isSameNoteName(as: parent) } }
-            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+        NameOrder.sorted(tasks.filter { $0.projects.contains { $0.isSameNoteName(as: parent) } })
     }
 
     private func createSubtask(_ name: String, of parent: String) async throws {

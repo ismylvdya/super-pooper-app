@@ -9,7 +9,7 @@ enum HabitOrder {
             case let (left?, right?): return left < right
             case (.some, nil): return true
             case (nil, .some): return false
-            case (nil, nil): return lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
+            case (nil, nil): return NameOrder.precedes(lhs.name, rhs.name)
             }
         }
     }

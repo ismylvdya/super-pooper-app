@@ -32,9 +32,8 @@ struct TaskPickerScreen: View {
     }
 
     private var results: [TaskNote] {
-        model.tasks
-            .filter { !excluded.contains($0.name) && $0.status != .archived }
-            .filter { query.isEmpty || $0.name.localizedCaseInsensitiveContains(query) }
-            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+        NameOrder.sorted(model.tasks.filter {
+            !excluded.contains($0.name) && $0.status != .archived && SearchMatcher.matches($0.name, query)
+        })
     }
 }

@@ -68,18 +68,3 @@ struct SearchScreen: View {
         if let url = URL(string: "\(prefix)\(Int(event.start.timeIntervalSinceReferenceDate))") { openURL(url) }
     }
 }
-
-/// Case-insensitive "contains" over names and titles; the order is alphabetical for tasks, by time for events.
-enum SearchMatcher {
-    static func tasks(_ tasks: [TaskNote], matching query: String) -> [TaskNote] {
-        guard !query.isEmpty else { return [] }
-        return tasks.filter { $0.name.localizedCaseInsensitiveContains(query) }
-            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-    }
-
-    static func events(_ events: [CalendarEvent], matching query: String) -> [CalendarEvent] {
-        guard !query.isEmpty else { return [] }
-        return events.filter { $0.title.localizedCaseInsensitiveContains(query) }.sorted { $0.start < $1.start }
-    }
-}
-

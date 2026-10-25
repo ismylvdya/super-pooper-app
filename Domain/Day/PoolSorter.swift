@@ -38,7 +38,7 @@ struct PoolSorter: Sendable {
                 let right = key(criterion, rhs.task, context)
                 if left != right { return left < right }
             }
-            return lhs.task.name.localizedStandardCompare(rhs.task.name) == .orderedAscending
+            return NameOrder.precedes(lhs.task.name, rhs.task.name)
         }
         return finalize(auto, graph: graph)
     }
