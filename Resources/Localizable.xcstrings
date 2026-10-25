@@ -4962,6 +4962,17 @@
         }
       }
     },
+    "today.nextDay": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next day"
+          }
+        }
+      }
+    },
     "today.page.pool": {
       "extractionState": "manual",
       "localizations": {
@@ -4980,6 +4991,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Show the timeline"
+          }
+        }
+      }
+    },
+    "today.previousDay": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previous day"
           }
         }
       }

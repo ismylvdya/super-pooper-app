@@ -1,13 +1,8 @@
 import Foundation
 
-/// What a horizontal swipe on Today does. Leftwards is forward. With pages, a swipe first turns to the
-/// timeline (or back to the pool); past the last page it changes the day.
+/// What a horizontal swipe on Today does: with pages, it turns to the timeline (or back to the pool); the day
+/// is changed with the buttons next to its name, not by swiping. Leftwards is forward.
 enum TodaySwipe {
-    enum Move: Equatable {
-        case page(Int)
-        case day(Int)
-    }
-
     /// A drag is sideways when it moves `axisRatio` times more across than up or down.
     static func isHorizontal(width: Double, height: Double, axisRatio: Double) -> Bool {
         abs(width) > abs(height) * axisRatio
@@ -20,9 +15,10 @@ enum TodaySwipe {
             && (abs(width) > containerWidth * threshold || abs(predictedWidth) > containerWidth / 2)
     }
 
-    static func move(forward: Bool, page: Int, pageCount: Int) -> Move {
-        if forward, page < pageCount - 1 { return .page(page + 1) }
-        if !forward, page > 0 { return .page(page - 1) }
-        return .day(forward ? 1 : -1)
+    /// The page a swipe turns to; nil past the first or last page.
+    static func page(forward: Bool, page: Int, pageCount: Int) -> Int? {
+        if forward, page < pageCount - 1 { return page + 1 }
+        if !forward, page > 0 { return page - 1 }
+        return nil
     }
 }

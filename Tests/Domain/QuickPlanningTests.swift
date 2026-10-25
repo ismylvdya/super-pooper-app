@@ -87,12 +87,13 @@ struct QuickPlanningTests {
 
     // MARK: - Swipes
 
-    @Test func onPagesASwipeTurnsThePageBeforeItChangesTheDay() {
-        #expect(TodaySwipe.move(forward: true, page: 0, pageCount: 2) == .page(1))
-        #expect(TodaySwipe.move(forward: true, page: 1, pageCount: 2) == .day(1))
-        #expect(TodaySwipe.move(forward: false, page: 1, pageCount: 2) == .page(0))
-        #expect(TodaySwipe.move(forward: false, page: 0, pageCount: 2) == .day(-1))
-        #expect(TodaySwipe.move(forward: true, page: 0, pageCount: 1) == .day(1))
+    /// A swipe only turns the pages; past the edge it does nothing (days change with the buttons).
+    @Test func onPagesASwipeTurnsThePageAndStopsAtTheEdge() {
+        #expect(TodaySwipe.page(forward: true, page: 0, pageCount: 2) == 1)
+        #expect(TodaySwipe.page(forward: true, page: 1, pageCount: 2) == nil)
+        #expect(TodaySwipe.page(forward: false, page: 1, pageCount: 2) == 0)
+        #expect(TodaySwipe.page(forward: false, page: 0, pageCount: 2) == nil)
+        #expect(TodaySwipe.page(forward: true, page: 0, pageCount: 1) == nil)
     }
 
     @Test func theWidgetHasNoPages() {

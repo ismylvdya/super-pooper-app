@@ -2,21 +2,23 @@ import SwiftUI
 
 /// Main screen: blocks from the arrangement's layout (`layouts/today-*.layout.json`), refreshed every
 /// minute so "now" and chains move. The pool and the timeline both pull to refresh (full sync).
-/// Top left: the morning review (edit the pool) and the problems badge; top right: search. In landscape
-/// the bar is hidden and the same buttons stand in a column on the left. Swiping left or right slides
-/// the pool and the timeline together, each inside its own area, to tomorrow / yesterday (and further):
-/// another day shows only its own events, reminders and dated tasks; its name in the bar brings back today.
-/// With the paged arrangement the swipe first turns between the pool and the timeline pages.
+/// Top left: This week (the review) and the problems badge; top right: new task and search. In landscape
+/// the bar is hidden and the same buttons stand in a column on the left. The arrows next to the day's name
+/// slide the pool and the timeline together to yesterday / tomorrow (and further): another day shows its own
+/// events, reminders, dated tasks and habits; its name, or the Today tab, brings back today. With the paged
+/// arrangement a swipe turns between the pool and the timeline pages.
 /// Tasks are dragged between the pool and the timeline (see `TaskDragState`).
 struct TodayScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
+    @Environment(\.icons) private var icons
     @Environment(\.openURL) private var openURL
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @State private var pendingAction: PendingAction?
     @State private var dayOffset = 0
     @State private var dragX: CGFloat = 0
+    @State private var width: CGFloat = 0
     @State private var page = 0
     @State private var pageDrag: CGFloat = 0
     @State private var taskDrag = TaskDragState()
@@ -29,6 +31,7 @@ struct TodayScreen: View {
                 VStack(spacing: tokens.space(.groupGap)) {
                     TodayButtons(placement: .leading)
                     TodayButtons(placement: .trailing)
+                    dayNavigation(axis: .vertical)
                 }
                 .padding(.leading, tokens.space(.screenHorizontal))
                 .padding(.top, tokens.space(.headerToPlate))
@@ -36,15 +39,17 @@ struct TodayScreen: View {
             content
         }
         .background(tokens.color(.screenBackground))
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         .toolbar(isLandscape ? .hidden : .automatic, for: .navigationBar)
         .toolbar {
             ToolbarItemGroup(placement: .topBarLeading) { TodayButtons(placement: .leading) }
-            ToolbarItem(placement: .principal) { dayTitle }
+            ToolbarItem(placement: .principal) { dayNavigation(axis: .horizontal) }
             ToolbarItemGroup(placement: .topBarTrailing) { TodayButtons(placement: .trailing) }
         }
         .navigationBarTitleDisplayMode(.inline)
         .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
         .environment(taskDrag)
+        .onChange(of: router.todayTaps) { if dayOffset != 0 { withAnimation(tokens.animation) { dayOffset = 0 } } }
     }
 
     private var layout: ScreenLayout { model.config.todayLayout(for: model.settings.today.arrangement) }
@@ -86,60 +91,60 @@ struct TodayScreen: View {
         }
     }
 
-    /// A horizontal drag moves the pages or both halves with the finger; far enough, it turns the page or
-    /// lands on the next or previous day.
+    /// On pages a horizontal drag moves them with the finger; far enough, it turns the page. Past the first or
+    /// last page it does nothing: the day changes with the arrows.
     private func daySwipe(width: CGFloat) -> some Gesture {
         DragGesture(minimumDistance: tokens.size(.daySwipeStart))
             .onChanged { value in
                 guard TodaySwipe.isHorizontal(width: value.translation.width, height: value.translation.height,
-                                              axisRatio: tokens.size(.daySwipeAxisRatio)) else { return }
-                let distance = value.translation.width
-                switch TodaySwipe.move(forward: distance < 0, page: page, pageCount: pageCount) {
-                case .page:
-                    pageDrag = distance
-                    dragX = 0
-                case .day:
-                    dragX = distance
-                    pageDrag = 0
-                }
+                                              axisRatio: tokens.size(.daySwipeAxisRatio)),
+                      TodaySwipe.page(forward: value.translation.width < 0, page: page, pageCount: pageCount) != nil else { return }
+                pageDrag = value.translation.width
             }
             .onEnded { value in
                 let distance = value.translation.width
                 let isSwipe = TodaySwipe.isSwipe(width: distance, height: value.translation.height,
                                                  predictedWidth: value.predictedEndTranslation.width, containerWidth: width,
                                                  threshold: tokens.opacity(.daySwipeThreshold), axisRatio: tokens.size(.daySwipeAxisRatio))
-                guard isSwipe else {
-                    withAnimation(tokens.animation) {
-                        dragX = 0
-                        pageDrag = 0
-                    }
-                    return
-                }
-                if case .page(let target) = TodaySwipe.move(forward: distance < 0, page: page, pageCount: pageCount) {
+                if isSwipe, let target = TodaySwipe.page(forward: distance < 0, page: page, pageCount: pageCount) {
                     turn(to: target)
-                    return
-                }
-                let step = distance < 0 ? 1 : -1
-                Haptics.play(.light)
-                withAnimation(.easeIn(duration: tokens.duration(.animation) / 2)) { dragX = distance < 0 ? -width : width } completion: {
-                    dayOffset += step
-                    dragX = distance < 0 ? width : -width
-                    withAnimation(.easeOut(duration: tokens.duration(.animation) / 2)) { dragX = 0 }
+                } else {
+                    withAnimation(tokens.animation) { pageDrag = 0 }
                 }
             }
     }
 
-    /// The name of the shown day; on another day, tapping it goes back to today.
-    private var dayTitle: some View {
+    /// Yesterday / tomorrow: the pool and the timeline slide out to the side and the other day slides in.
+    private func changeDay(by step: Int) {
+        withAnimation(.easeIn(duration: tokens.duration(.animation) / 2)) { dragX = step > 0 ? -width : width } completion: {
+            dayOffset += step
+            dragX = step > 0 ? width : -width
+            withAnimation(.easeOut(duration: tokens.duration(.animation) / 2)) { dragX = 0 }
+        }
+    }
+
+    /// The arrows around the shown day's name; on another day, tapping the name goes back to today.
+    private func dayNavigation(axis: Axis) -> some View {
         let day = model.context().today.adding(days: dayOffset)
-        return Button {
-            withAnimation(tokens.animation) { dayOffset = 0 }
-        } label: {
-            Text(DayName.format(day, offset: dayOffset, calendar: model.calendar))
-                .font(tokens.font(.navTitle))
+        let layout = axis == .horizontal ? AnyLayout(HStackLayout(spacing: tokens.space(.chipGap)))
+                                         : AnyLayout(VStackLayout(spacing: tokens.space(.chipGap)))
+        return layout {
+            Button { changeDay(by: -1) } label: { Image(systemName: icons[.previousDay]) }
+                .accessibilityLabel(Text("today.previousDay"))
+                .accessibilityIdentifier("today.previousDay")
+            Button {
+                withAnimation(tokens.animation) { dayOffset = 0 }
+            } label: {
+                Text(DayName.format(day, offset: dayOffset, calendar: model.calendar))
+                    .font(tokens.font(.navTitle))
+                    .lineLimit(1)
+            }
+            .accessibilityIdentifier("today.day")
+            Button { changeDay(by: 1) } label: { Image(systemName: icons[.nextDay]) }
+                .accessibilityLabel(Text("today.nextDay"))
+                .accessibilityIdentifier("today.nextDay")
         }
         .tint(tokens.color(.accent))
-        .accessibilityIdentifier("today.day")
     }
 
     /// Blocks along a horizontal axis all reach the bottom; along a vertical one only the last does.

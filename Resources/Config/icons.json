@@ -40,6 +40,8 @@
   "colors": "paintpalette",
   "remove": "minus.circle.fill",
   "chevron": "chevron.right",
+  "previousDay": "chevron.left",
+  "nextDay": "chevron.right",
   "status": "circle.dashed.inset.filled",
   "note": "doc.text",
   "title": "character.cursor.ibeam",

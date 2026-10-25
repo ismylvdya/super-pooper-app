@@ -37,6 +37,14 @@ final class Router {
     var paths: [AppTab: [Route]] = [:]
     var isReviewPresented = false
     var isProblemsPresented = false
+    /// Grows on every tap on the Today tab: Today goes back to today's date.
+    private(set) var todayTaps = 0
+
+    /// The tab bar's selection: a tap on Today (also when it is already selected) brings back today.
+    func select(_ tab: AppTab) {
+        if tab == .today { todayTaps += 1 }
+        self.tab = tab
+    }
 
     /// The stack of the selected tab.
     var path: [Route] {

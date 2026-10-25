@@ -24,6 +24,23 @@ final class TodayUITests: XCTestCase {
         app.dismissBanners()
     }
 
+    /// The arrows next to the day's name change the day; the Today tab brings back today.
+    func testArrowsChangeTheDayAndTheTodayTabBringsItBack() {
+        launch()
+        dismissBanners()
+        let day = app.buttons["today.day"]
+        XCTAssertEqual(day.label, "Today")
+        app.buttons["today.nextDay"].tap()
+        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "identifier == 'today.day' AND label BEGINSWITH 'Tomorrow'")).firstMatch
+            .waitForExistence(timeout: 5))
+        app.tabBars.buttons["Today"].tap()
+        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "identifier == 'today.day' AND label == 'Today'")).firstMatch
+            .waitForExistence(timeout: 5))
+        app.buttons["today.previousDay"].tap()
+        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "identifier == 'today.day' AND label BEGINSWITH 'Yesterday'")).firstMatch
+            .waitForExistence(timeout: 5))
+    }
+
     /// Pool rows have no checkboxes: a long press offers Done, and the done task leaves the pool.
     func testLongPressMarksATaskDone() {
         launch()

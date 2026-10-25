@@ -12,7 +12,7 @@ struct RootView: View {
         let model = container.model
         Group {
             if model.settings.onboarding.completed {
-                TabView(selection: $router.tab) {
+                TabView(selection: Binding(get: { router.tab }, set: { router.select($0) })) {
                     ForEach(AppTab.allCases, id: \.self) { tab in
                         NavigationStack(path: Binding(get: { router.paths[tab] ?? [] }, set: { router.paths[tab] = $0 })) {
                             root(tab, model: model)
