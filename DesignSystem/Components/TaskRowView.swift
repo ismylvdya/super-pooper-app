@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// One task or habit row: title and property chips (a task waiting for another has the link chip, nothing
-/// else). Tasks are marked from the long-press menu, so there is no checkbox; a marked row is grey and ends
+/// One task or habit row: the title with its property chips on the right, on the same line (a task waiting for
+/// another has the link chip, nothing else). Tasks are marked from the long-press menu, so there is no checkbox; a marked row is grey and ends
 /// with its mark.
 /// The same view is used in the pool, on the timeline and in widgets.
 struct TaskRowView: View {
@@ -13,7 +13,7 @@ struct TaskRowView: View {
     var titleFont: Font?
     /// Chips; widgets hide them to stay compact.
     var showsDetails = true
-    /// Narrow columns: one title line and one chip line that dissolves on the right.
+    /// Narrow columns: one title line that dissolves before the chips.
     var isCompact = false
     /// Title lines; nil = compact rows get one line, others wrap freely.
     var titleLineLimit: Int?
@@ -23,25 +23,10 @@ struct TaskRowView: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: tokens.space(.iconTextGap)) {
-            VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
-                title
-                if showsDetails, !chips.isEmpty {
-                    if isCompact {
-                        // An overlay never widens the row: chips that don't fit dissolve on the right.
-                        Color.clear
-                            .frame(maxWidth: .infinity)
-                            .frame(height: tokens.uiFont(.chip).lineHeight + tokens.space(.chipVertical) * 2)
-                            .overlay(alignment: .leading) {
-                                HStack(spacing: tokens.space(.chipGap)) { chipViews }.fixedSize()
-                            }
-                            .clipped()
-                            .mask(TrailingFadeMask(width: tokens.size(.fadeHeight)))
-                    } else {
-                        ChipFlow(spacing: tokens.space(.chipGap)) { chipViews }
-                    }
-                }
+            title.frame(maxWidth: .infinity, alignment: .leading)
+            if showsDetails, !chips.isEmpty {
+                HStack(spacing: tokens.space(.chipGap)) { chipViews }.fixedSize()
             }
-            Spacer(minLength: 0)
             if item.isDone { MarkGlyph(state: item.state, color: tokens.color(.past), size: tokens.size(.doneMark)) }
         }
         .contentShape(Rectangle())
