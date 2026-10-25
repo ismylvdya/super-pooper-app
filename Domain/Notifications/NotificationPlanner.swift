@@ -98,7 +98,7 @@ struct NotificationPlanner: Sendable {
         for reminder in reminders where !reminder.isCompleted {
             result.append(PlannedNotification(id: "reminder|\(reminder.id)|\(reminder.due.timeIntervalSince1970)", kind: .reminder,
                                               title: reminder.title, fireDate: reminder.due, taskName: nil,
-                                              day: LocalDate(reminder.due, in: context.calendar), reminderID: reminder.id,
+                                              day: context.logicalDay(of: reminder.due), reminderID: reminder.id,
                                               key: "reminder|\(reminder.id)"))
         }
 
@@ -107,7 +107,7 @@ struct NotificationPlanner: Sendable {
             for (index, fire) in event.alarmDates.enumerated() where fire < horizonEnd {
                 result.append(PlannedNotification(id: "event|\(event.eventIdentifier)|\(Int(event.start.timeIntervalSince1970))|\(index)",
                                                   kind: .event, title: event.title, fireDate: fire, taskName: nil,
-                                                  day: LocalDate(event.start, in: context.calendar),
+                                                  day: context.logicalDay(of: event.start),
                                                   key: "event|\(event.eventIdentifier)|\(index)", start: event.start))
             }
         }

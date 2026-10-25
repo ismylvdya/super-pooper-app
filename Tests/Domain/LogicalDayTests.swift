@@ -24,4 +24,10 @@ struct LogicalDayTests {
         #expect(today("2026-03-29", "03:30") == "2026-03-28")
         #expect(today("2026-03-29", "04:30") == "2026-03-29")
     }
+
+    @Test func aMomentBelongsToTheLogicalDayOfItsWallClock() {
+        let context = TestCalendar.context("2026-10-22", "13:00")
+        #expect(context.logicalDay(of: TestCalendar.date("2026-10-23", "01:30")).isoString == "2026-10-22")
+        #expect(context.logicalDay(of: TestCalendar.date("2026-10-23", "04:00")).isoString == "2026-10-23")
+    }
 }

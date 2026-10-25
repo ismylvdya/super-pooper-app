@@ -124,6 +124,18 @@ struct NotificationPlannerTests {
         #expect(valid.contains { $0.id == "habit|Vitamins 💊|09:00" && $0.day == LocalDate("2026-10-20") })
     }
 
+    /// After midnight, before the day boundary, it is still Wednesday: a delivered 01:30 reminder or event alert
+    /// of that night stays in Notification Center.
+    @Test func aNightReminderOrEventBelongsToTheEveningBefore() {
+        let context = TestCalendar.context("2026-10-22", "02:00")
+        let reminder = makeReminder("Take pills", day: "2026-10-22", at: "01:30")
+        var late = makeEvent("Late show", day: "2026-10-22", from: "01:30", to: "02:30")
+        late.alarmDates = [TestCalendar.date("2026-10-22", "01:30")]
+        let valid = planner.stillValidToday(tasks: [], reminders: [reminder], events: [late], skipped: [], context: context)
+        #expect(Set(valid.map(\.kind)) == [.reminder, .event])
+        #expect(valid.allSatisfy { $0.day == LocalDate("2026-10-21") })
+    }
+
     // MARK: - Helpers
 
     private func plan(_ tasks: [TaskNote], at time: String, skipped: Set<String> = []) -> [PlannedNotification] {
