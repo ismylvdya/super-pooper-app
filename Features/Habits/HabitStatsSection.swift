@@ -39,7 +39,7 @@ struct HabitStatsSection: View {
     }
 
     private func value(_ text: String, _ title: LocalizedStringKey, detail: String? = nil) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: tokens.space(.titleDetailGap)) {
             Text(verbatim: text).font(tokens.font(.statValue))
             Text(title).font(tokens.font(.caption)).foregroundStyle(tokens.color(.secondaryText))
             if let detail { Text(verbatim: detail).font(tokens.font(.caption)).foregroundStyle(tokens.color(.tertiaryText)) }
@@ -75,7 +75,7 @@ struct BarRow: View {
             Text(title).font(tokens.font(.caption)).foregroundStyle(tokens.color(.secondaryText))
             HStack(alignment: .bottom, spacing: tokens.space(.habitCellGap)) {
                 ForEach(Array(bars.enumerated()), id: \.offset) { _, bar in
-                    VStack(spacing: 2) {
+                    VStack(spacing: tokens.space(.titleDetailGap)) {
                         Text(verbatim: "\(bar.value)").font(tokens.font(.caption)).foregroundStyle(tokens.color(.tertiaryText))
                         RoundedRectangle(cornerRadius: tokens.radius(.habitCell), style: .continuous)
                             .fill(color.opacity(bar.value == 0 ? tokens.opacity(.habitEmpty) : 1))

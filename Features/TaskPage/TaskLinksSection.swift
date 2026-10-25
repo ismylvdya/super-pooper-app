@@ -108,12 +108,10 @@ struct TaskEventsSection: View {
             let resolved = EventLinkResolver(events: model.events, calendar: model.calendar).resolve(link)
             HStack(spacing: tokens.space(.iconTextGap)) {
                 if let resolved { SourceDot(hex: resolved.colorHex) }
-                VStack(alignment: .leading, spacing: 2) {
+                TitleDetailLabel(detail: Text(resolved == nil ? L10n.string("taskPage.eventNotFound")
+                                                              : (resolved?.start ?? link.start).formatted(date: .abbreviated, time: .shortened)),
+                                 detailTint: resolved == nil ? tokens.color(.problem) : nil) {
                     Text(link.title)
-                    Text(resolved == nil ? L10n.string("taskPage.eventNotFound")
-                                         : (resolved?.start ?? link.start).formatted(date: .abbreviated, time: .shortened))
-                        .font(tokens.font(.hint))
-                        .foregroundStyle(resolved == nil ? tokens.color(.problem) : tokens.color(.secondaryText))
                 }
                 Spacer()
                 RemoveButton(label: "taskPage.removeLink") {

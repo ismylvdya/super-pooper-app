@@ -21,7 +21,7 @@ struct TrashScreen: View {
         }
         .task { await model.refreshTrash() }
         .refreshable { await model.refreshTrash() }
-        .alert("trash.delete.title", isPresented: Binding(get: { toDelete != nil }, set: { if !$0 { toDelete = nil } }),
+        .alert("trash.delete.title", isPresented: Binding(presenting: $toDelete),
                presenting: toDelete) { note in
             Button("trash.delete", role: .destructive) { Task { await model.deletePermanently(note) } }
             Button("common.cancel", role: .cancel) {}
@@ -43,7 +43,7 @@ private struct TrashRow: View {
     var body: some View {
         HStack(spacing: tokens.space(.iconTextGap)) {
             Button { Task { text = await model.trashedText(note) } } label: {
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: tokens.space(.titleDetailGap)) {
                     Text(note.name).foregroundStyle(tokens.color(.primaryText)).multilineTextAlignment(.leading)
                     if let date = note.trashedAt {
                         Text(date.formatted(date: .abbreviated, time: .shortened))

@@ -19,7 +19,8 @@ struct SuperPooperApp: App {
     }
 }
 
-/// Shown instead of the app when a bundled config file is broken: names the file and the key.
+/// Shown instead of the app when a bundled config file is broken: names the file and the key. Plain system
+/// styles, since the broken file may be tokens.json itself.
 struct ConfigErrorView: View {
     let error: ConfigError
 

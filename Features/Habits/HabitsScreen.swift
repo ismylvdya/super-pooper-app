@@ -74,10 +74,8 @@ struct HabitRow: View {
             HabitDayButton(habit: habit, day: today)
                 .frame(width: tokens.size(.iconColumn))
             NavigationLink(value: Route.task(habit.name)) {
-                VStack(alignment: .leading, spacing: 2) {
+                TitleDetailLabel(detail: Text(HabitSummary.weekLine(habit, today: today, calendar: model.calendar))) {
                     Text(habit.name).foregroundStyle(tokens.habitColor(habit)).lineLimit(2)
-                    Text(HabitSummary.weekLine(habit, today: today, calendar: model.calendar))
-                        .font(tokens.font(.hint)).foregroundStyle(tokens.color(.secondaryText))
                 }
             }
         }

@@ -58,7 +58,7 @@ struct ActionConfirmation: ViewModifier {
     func body(content: Content) -> some View {
         content.alert(
             Text(LocalizedStringKey(pending?.action.confirmTitle ?? "")),
-            isPresented: Binding(get: { pending != nil }, set: { if !$0 { pending = nil } }),
+            isPresented: Binding(presenting: $pending),
             presenting: pending
         ) { pending in
             Button(LocalizedStringKey(pending.action.title), role: pending.action.destructive ? .destructive : nil) {

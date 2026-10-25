@@ -43,11 +43,8 @@ struct EventPickerScreen: View {
     private func row(_ event: CalendarEvent) -> some View {
         HStack(spacing: tokens.space(.iconTextGap)) {
             SourceDot(hex: event.colorHex)
-            VStack(alignment: .leading, spacing: 2) {
+            TitleDetailLabel(detail: Text(event.isAllDay ? L10n.string("picker.event.allDay") : TimeRangeText.format(event.start, event.end))) {
                 Text(event.title).foregroundStyle(tokens.color(.primaryText))
-                Text(event.isAllDay ? L10n.string("picker.event.allDay") : TimeRangeText.format(event.start, event.end))
-                    .font(tokens.font(.hint))
-                    .foregroundStyle(tokens.color(.secondaryText))
             }
         }
     }

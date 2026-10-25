@@ -127,7 +127,7 @@ struct TimelineBlock: View {
     /// The block with the dialog for the one timeline edit: deleting an event (events are created in Calendar).
     var body: some View {
         content.frame(maxHeight: .infinity)
-            .alert("event.delete.title", isPresented: Binding(get: { eventToDelete != nil }, set: { if !$0 { eventToDelete = nil } }),
+            .alert("event.delete.title", isPresented: Binding(presenting: $eventToDelete),
                    presenting: eventToDelete) { event in
                 Button("action.deleteEvent", role: .destructive) { Task { await model.deleteEvent(event) } }
                 Button("common.cancel", role: .cancel) {}

@@ -53,7 +53,7 @@ struct ConflictVersionsScreen: View {
             }
         }
         .task(id: noteName) { versions = await model.versions(of: noteName) }
-        .alert("conflicts.keep.title", isPresented: Binding(get: { toKeep != nil }, set: { if !$0 { toKeep = nil } }),
+        .alert("conflicts.keep.title", isPresented: Binding(presenting: $toKeep),
                presenting: toKeep) { version in
             Button("conflicts.keep") {
                 Task {

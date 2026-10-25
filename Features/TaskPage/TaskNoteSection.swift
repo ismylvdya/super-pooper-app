@@ -41,6 +41,7 @@ struct TaskNoteSection: View {
             }
         }
         .onDisappear {
+            saveTask?.cancel()
             guard let loaded, text != loaded else { return }
             let value = text
             Task { await model.setBody(value, of: taskName) }

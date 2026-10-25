@@ -19,9 +19,8 @@ struct ProblemsSheet: View {
                         router.open(.task(task))
                     } label: {
                         Label {
-                            VStack(alignment: .leading, spacing: 2) {
+                            TitleDetailLabel(detail: Text(line.detail)) {
                                 Text(line.title).foregroundStyle(tokens.color(.primaryText))
-                                Text(line.detail).font(tokens.font(.hint)).foregroundStyle(tokens.color(.secondaryText))
                             }
                         } icon: {
                             Image(systemName: icons[.problem]).foregroundStyle(tokens.color(.problem))

@@ -56,10 +56,8 @@ struct PoolOrderScreen: View {
         List {
             Section {
                 ForEach(criteria, id: \.self) { criterion in
-                    VStack(alignment: .leading, spacing: 2) {
+                    TitleDetailLabel(detail: Text(LocalizedStringKey(String("sort.") + criterion.rawValue + ".hint"))) {
                         Text(LocalizedStringKey(String("sort.") + criterion.rawValue))
-                        Text(LocalizedStringKey(String("sort.") + criterion.rawValue + ".hint"))
-                            .font(tokens.font(.hint)).foregroundStyle(tokens.color(.secondaryText))
                     }
                     .listRowBackground(tokens.color(.plateBackground))
                 }

@@ -76,7 +76,7 @@ struct SettingsFooter: View {
     @Environment(\.tokens) private var tokens
 
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: tokens.space(.footerLineGap)) {
             Text(L10n.format("settings.version", Bundle.main.marketingVersion, Bundle.main.buildNumber))
             Text("settings.credits")
         }
