@@ -76,7 +76,7 @@ actor VaultTaskRepository: TaskRepository {
         let renamed: TaskNote = try await location.withRoot { root in
             let source = try existingURL(of: task, root: root)
             let target = source.deletingLastPathComponent().appendingPathComponent("\(newName).\(noteExtension)")
-            if isTaken(newName, in: source.deletingLastPathComponent(), except: source) {
+            if NoteFolder(source.deletingLastPathComponent(), fileSystem: fileSystem).isTaken(newName, except: source) {
                 throw TaskRepositoryError.nameTaken(newName)
             }
             try fileSystem.move(source, to: target)
@@ -100,13 +100,9 @@ actor VaultTaskRepository: TaskRepository {
         try await location.withRoot { root in
             let source = try existingURL(of: task, root: root)
             let trash = root.appendingPathComponent(trashFolder, isDirectory: true)
-            var target = trash.appendingPathComponent(source.lastPathComponent)
-            var counter = 1
-            while fileSystem.fileExists(target) || isTaken(target.deletingPathExtension().lastPathComponent, in: trash, except: nil) {
-                target = trash.appendingPathComponent("\(task.name) \(counter).\(noteExtension)")
-                counter += 1
-            }
-            try fileSystem.move(source, to: target)
+            let names = NoteFolder(trash, fileSystem: fileSystem)
+            let name = UniqueName.free(source.deletingPathExtension().lastPathComponent, firstNumber: 1) { names.isTaken($0) }
+            try fileSystem.move(source, to: trash.appendingPathComponent("\(name).\(noteExtension)"))
         }
     }
 
@@ -118,12 +114,8 @@ actor VaultTaskRepository: TaskRepository {
         return try await location.withRoot { root in
             let folder = root.appendingPathComponent(VaultPaths.tasksFolder(settings.tasksFolder, in: root, exists: fileSystem.fileExists),
                                                      isDirectory: true)
-            var finalName = name
-            var counter = 2
-            while isTaken(finalName, in: folder, except: nil) {
-                finalName = "\(name) \(counter)"
-                counter += 1
-            }
+            let names = NoteFolder(folder, fileSystem: fileSystem)
+            let finalName = UniqueName.free(name) { names.isTaken($0) }
             let url = folder.appendingPathComponent("\(finalName).\(noteExtension)")
             try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
             try fileSystem.write(text, to: url)
@@ -203,20 +195,6 @@ actor VaultTaskRepository: TaskRepository {
     }
 
     /// Name check that also sees evicted iCloud files (`.Name.md.icloud`).
-    private func isTaken(_ name: String, in folder: URL, except: URL?) -> Bool {
-        let files = (try? fileSystem.listFiles(in: folder)) ?? []
-        let excluded = except.map(Self.comparablePath)
-        return files.contains { file in
-            guard excluded.map({ !Self.comparablePath(file).isSameNoteName(as: $0) }) ?? true else { return false }
-            let fileName = ICloudPlaceholder.realName(of: file.lastPathComponent) ?? file.lastPathComponent
-            return (fileName as NSString).deletingPathExtension.isSameNoteName(as: name)
-        }
-    }
-
-    private static func comparablePath(_ url: URL) -> String {
-        url.standardizedFileURL.resolvingSymlinksInPath().path
-    }
-
     private func existingURL(of task: TaskNote, root: URL) throws -> URL {
         let url = root.appendingPathComponent(task.relativePath)
         guard fileSystem.fileExists(url) else { throw TaskRepositoryError.fileMissing(task.name) }

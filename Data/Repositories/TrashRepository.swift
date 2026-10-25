@@ -51,12 +51,8 @@ struct VaultTrashRepository: TrashRepository {
             let source = root.appendingPathComponent(note.relativePath)
             let folder = root.appendingPathComponent(VaultPaths.tasksFolder(settings.tasksFolder, in: root, exists: fileSystem.fileExists),
                                                      isDirectory: true)
-            var name = note.name
-            var counter = 2
-            while fileSystem.fileExists(folder.appendingPathComponent("\(name).\(noteExtension)")) {
-                name = "\(note.name) \(counter)"
-                counter += 1
-            }
+            let names = NoteFolder(folder, fileSystem: fileSystem)
+            let name = UniqueName.free(note.name) { names.isTaken($0) }
             try fileSystem.move(source, to: folder.appendingPathComponent("\(name).\(noteExtension)"))
             return name
         }
