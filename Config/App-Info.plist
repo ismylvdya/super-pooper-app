@@ -37,9 +37,13 @@
 			<key>UIApplicationShortcutItemType</key>
 			<string>new-task</string>
 			<key>UIApplicationShortcutItemTitle</key>
-			<string>New task</string>
-			<key>UIApplicationShortcutItemIconSymbolName</key>
-			<string>plus</string>
+			<string>🔫 New делишка</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>new-inbox</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>📥 New in inbox</string>
 		</dict>
 	</array>
 	<key>NSCalendarsFullAccessUsageDescription</key>

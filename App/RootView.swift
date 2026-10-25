@@ -28,6 +28,7 @@ struct RootView: View {
                 .overlay(alignment: .top) { BannerOverlay() }
                 .sheet(isPresented: $router.isReviewPresented) { MorningReviewScreen().tint(tokens.color(.accent)) }
                 .sheet(isPresented: $router.isProblemsPresented) { ProblemsSheet().tint(tokens.color(.accent)) }
+                .sheet(isPresented: $router.isInboxEntryPresented) { InboxEntrySheet().tint(tokens.color(.accent)) }
             } else {
                 OnboardingFlow()
             }

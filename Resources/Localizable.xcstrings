@@ -298,6 +298,28 @@
         }
       }
     },
+    "banner.inboxAdded": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Added to %@"
+          }
+        }
+      }
+    },
+    "banner.inboxListMissing": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There is no “%@” list in Reminders"
+          }
+        }
+      }
+    },
     "banner.orderReset": {
       "extractionState": "manual",
       "localizations": {
@@ -1416,6 +1438,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ times this week"
+          }
+        }
+      }
+    },
+    "inbox.add": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add"
+          }
+        }
+      }
+    },
+    "inbox.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reminder"
           }
         }
       }

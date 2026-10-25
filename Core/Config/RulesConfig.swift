@@ -141,9 +141,15 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let repeatCount: Int
     }
 
+    /// The Reminders list the "New in inbox" quick action adds to (found by its title).
+    struct Inbox: Codable, Hashable, Sendable {
+        let listTitle: String
+    }
+
     let pool: Pool
     let limits: Limits
     let editing: Editing
+    let inbox: Inbox
 }
 
 /// Order of the pool sort criteria (`sort.json`).

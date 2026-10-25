@@ -1,14 +1,20 @@
 import EventKit
 import UIKit
 
-/// "Remember at X" reminders: read, and checked off from the timeline. The inbox list is never
-/// touched: only lists chosen in settings are used.
+/// "Remember at X" reminders: read, and checked off from the timeline. The inbox list is only written to by
+/// the "New in inbox" quick action; it is never read.
 protocol RemindersRepository: Sendable {
     var access: SourceAccess { get }
     func requestAccess() async -> Bool
     func lists() -> [SourceCollection]
     func reminders(from start: Date, to end: Date, listIDs: [String]) async -> [ReminderItem]
     func setCompleted(_ completed: Bool, reminderID: String) throws
+    /// A new reminder without a date in the list with this title.
+    func add(_ title: String, toListTitled listTitle: String) throws
+}
+
+enum RemindersError: Error, Equatable {
+    case listNotFound(String)
 }
 
 struct EventKitRemindersRepository: RemindersRepository {
@@ -22,6 +28,16 @@ struct EventKitRemindersRepository: RemindersRepository {
     func setCompleted(_ completed: Bool, reminderID: String) throws {
         guard let reminder = eventKit.store.calendarItem(withIdentifier: reminderID) as? EKReminder else { return }
         reminder.isCompleted = completed
+        try eventKit.store.save(reminder, commit: true)
+    }
+
+    func add(_ title: String, toListTitled listTitle: String) throws {
+        guard let list = eventKit.store.calendars(for: .reminder).first(where: { $0.title.isSameNoteName(as: listTitle) }) else {
+            throw RemindersError.listNotFound(listTitle)
+        }
+        let reminder = EKReminder(eventStore: eventKit.store)
+        reminder.title = title
+        reminder.calendar = list
         try eventKit.store.save(reminder, commit: true)
     }
 

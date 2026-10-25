@@ -127,5 +127,8 @@
     "noteSaveDelaySeconds": 1.2,
     "repeatUntilDays": 30,
     "repeatCount": 10
+  },
+  "inbox": {
+    "listTitle": "📥 inbox"
   }
 }

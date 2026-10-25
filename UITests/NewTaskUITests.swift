@@ -73,6 +73,22 @@ final class NewTaskUITests: XCTestCase {
         XCTAssertEqual(name.value as? String, "Купить хлеб")
     }
 
+    /// The "New in inbox" quick action: the field is ready to type, Return adds the reminder and closes the sheet.
+    func testNewInInboxAddsAReminder() {
+        app.launchArguments = ["-SPVaultPath", "TestVault", "-SPSkipOnboarding", "-SPNow", "11:30", "-SPSeedDemo",
+                               "-SPOpen", "superpooper://new-inbox"]
+        app.launch()
+        let field = app.textFields["inbox.title"]
+        XCTAssertTrue(field.waitForExistence(timeout: 15))
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5), "the keyboard is up without a tap")
+        app.typeText("Позвонить сантехнику\n")
+        XCTAssertTrue(field.waitForNonExistence(timeout: 5), "the sheet closes")
+        let banner = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == 'banner' AND label BEGINSWITH 'Added to'")).firstMatch
+        // Banners come one after another and hide by themselves: the sync's may be in front of it.
+        XCTAssertTrue(banner.waitForExistence(timeout: 25))
+    }
+
     func testTapInHabitsMarksToday() {
         launch("superpooper://habits")
         let day = app.descendants(matching: .any)["habitDay:Медитация 🧘"]

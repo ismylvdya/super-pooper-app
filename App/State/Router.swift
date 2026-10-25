@@ -37,6 +37,7 @@ final class Router {
     var paths: [AppTab: [Route]] = [:]
     var isReviewPresented = false
     var isProblemsPresented = false
+    var isInboxEntryPresented = false
     /// Grows on every tap on the Today tab: Today goes back to today's date.
     private(set) var todayTaps = 0
 
@@ -62,7 +63,7 @@ final class Router {
 
     /// `superpooper://task/<name>`, `superpooper://habit/<name>`, `superpooper://habits`, `superpooper://settings`,
     /// `superpooper://review`, `superpooper://archive`, `superpooper://trash`, `superpooper://clock`,
-    /// `superpooper://new-task` (also the Home Screen quick action).
+    /// `superpooper://new-task` and `superpooper://new-inbox` (also the Home Screen quick actions).
     func handle(_ url: URL) {
         guard url.scheme == DeepLink.scheme else { return }
         let name = url.path().removingPercentEncoding.map { String($0.dropFirst()) } ?? ""
@@ -75,6 +76,7 @@ final class Router {
         case "trash": show(.settings, [.trash])
         case "review": show(.today); isReviewPresented = true
         case "new-task": isReviewPresented = false; show(.today, [.newTask])
+        case "new-inbox": isReviewPresented = false; show(.today); isInboxEntryPresented = true
         #if DEBUG
         case "debug-notifications": show(.settings, [.debugNotifications])
         case "debug-widgets": show(.settings, [.debugWidgets])

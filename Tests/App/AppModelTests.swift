@@ -47,6 +47,18 @@ struct AppModelTests {
         #expect(model.newHabitDraft().changes.contains(.showInToday(true)))
     }
 
+    /// "New in inbox" adds a reminder to the inbox list by its title, or says the list is missing.
+    @Test func newInInboxAddsAReminderToTheInboxList() throws {
+        let inbox = InboxRecorder(lists: ["📥 Inbox"])
+        let model = try #require(PreviewModel.make(reminders: inbox)).model
+        #expect(model.addToInbox("  Купить хлеб "))
+        #expect(inbox.added == [InboxRecorder.Added(title: "Купить хлеб", list: "📥 inbox")])
+        #expect(!model.addToInbox("   "))
+        let missing = try #require(PreviewModel.make(reminders: InboxRecorder(lists: []))).model
+        #expect(!missing.addToInbox("Купить хлеб"))
+        #expect(missing.banners.current?.style == .problem)
+    }
+
     /// Links order tasks but never prevent checking one off.
     @Test func aTaskAfterAnUnfinishedOneCanStillBeChecked() async throws {
         let model = try makeModel()
@@ -246,6 +258,7 @@ private struct ListedReminders: RemindersRepository {
     func requestAccess() async -> Bool { true }
     func lists() -> [SourceCollection] { [] }
     func setCompleted(_ completed: Bool, reminderID: String) throws {}
+    func add(_ title: String, toListTitled listTitle: String) throws {}
 
     func reminders(from start: Date, to end: Date, listIDs: [String]) async -> [ReminderItem] {
         if listIDs == ["old"] {
@@ -261,9 +274,34 @@ private struct EarlyReminder: RemindersRepository {
     func requestAccess() async -> Bool { true }
     func lists() -> [SourceCollection] { [] }
     func setCompleted(_ completed: Bool, reminderID: String) throws {}
+    func add(_ title: String, toListTitled listTitle: String) throws {}
 
     func reminders(from start: Date, to end: Date, listIDs: [String]) async -> [ReminderItem] {
         let due = PreviewSamples.context.dayEnd.addingTimeInterval(3600)
         return [ReminderItem(id: "early", title: "Early", due: due, listID: "list", listTitle: "List", colorHex: "#000000", isCompleted: false)]
+    }
+}
+
+/// Records reminders added to a list; lists that are not there fail like in EventKit.
+private final class InboxRecorder: RemindersRepository, @unchecked Sendable {
+    struct Added: Equatable {
+        let title: String
+        let list: String
+    }
+
+    let listTitles: [String]
+    private(set) var added: [Added] = []
+
+    init(lists: [String]) { listTitles = lists }
+
+    var access: SourceAccess { .granted }
+    func requestAccess() async -> Bool { true }
+    func lists() -> [SourceCollection] { [] }
+    func reminders(from start: Date, to end: Date, listIDs: [String]) async -> [ReminderItem] { [] }
+    func setCompleted(_ completed: Bool, reminderID: String) throws {}
+
+    func add(_ title: String, toListTitled listTitle: String) throws {
+        guard listTitles.contains(where: { $0.isSameNoteName(as: listTitle) }) else { throw RemindersError.listNotFound(listTitle) }
+        added.append(Added(title: title, list: listTitle))
     }
 }
