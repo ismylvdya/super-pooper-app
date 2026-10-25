@@ -84,6 +84,8 @@ struct UserNotificationScheduler: NotificationScheduling {
         }
         center.removePendingNotificationRequests(withIdentifiers: Array(outdated.keys))
         for notification in planned {
+            // A newer plan is waiting: it will add what is still missing.
+            if Task.isCancelled { return }
             let id = identifier(for: notification)
             guard current[id] == nil || outdated[id] != nil else { continue }
             try? await center.add(request(for: notification))

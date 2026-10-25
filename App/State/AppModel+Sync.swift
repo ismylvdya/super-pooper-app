@@ -99,9 +99,15 @@ extension AppModel {
         }
         services.widgets.reloadAll()
         // The notification center can be slow to answer (or not answer at all in a broken simulator);
-        // a sync never waits for it. The newest plan replaces one still being scheduled.
-        notificationTask?.cancel()
-        notificationTask = Task { await rescheduleNotifications(context: context) }
+        // a sync never waits for it. Plans go one after another, so an older one still being scheduled cannot
+        // finish after the newest; a plan already replaced by a newer one is skipped.
+        let previous = notificationTask
+        previous?.cancel()
+        notificationTask = Task {
+            await previous?.value
+            guard !Task.isCancelled else { return }
+            await rescheduleNotifications(context: context)
+        }
     }
 
     /// Background refresh waits for the notification schedule before the app is suspended.

@@ -1,4 +1,5 @@
 import Foundation
+@preconcurrency import UserNotifications
 import Testing
 @testable import SuperPooper
 
@@ -88,6 +89,19 @@ struct AppModelTests {
         #expect(model.settings.timeline.hoursBefore == 5)
     }
 
+    /// Two plans in a row (a sync, then a mark): the newer one is what stays scheduled, even when the older one is
+    /// slower to reach the notification center.
+    @Test func theNewestNotificationPlanWins() async throws {
+        let recorder = RecordingNotifications()
+        let model = try #require(PreviewModel.make(notifications: recorder)).model
+        await model.publishDerivedState()
+        await model.perform(.done, on: "Забрать посылку")
+        await model.waitForNotifications()
+        try await Task.sleep(for: .milliseconds(600))
+        #expect(await recorder.calls > 0)
+        #expect(await !recorder.lastPlanned.contains { $0.taskName == "Забрать посылку" })
+    }
+
     @Test func archiveAndDelete() async throws {
         let model = try makeModel()
         await model.perform(.archive, on: "Сдать отчёт")
@@ -125,4 +139,26 @@ struct AppModelTests {
         #expect(model.hasLoaded)
         #expect(model.runningSync == nil)
     }
+}
+
+/// Notifications that remember the last plan; the first plan takes a while to arrive (a slow notification center).
+private actor RecordingNotifications: NotificationScheduling {
+    private(set) var lastPlanned: [PlannedNotification] = []
+    private(set) var calls = 0
+
+    nonisolated func access() async -> SourceAccess { .granted }
+    nonisolated func requestAccess() async -> Bool { true }
+    nonisolated func registerCategories(_ registry: ActionRegistry, habitActionsEnabled: Bool) {}
+
+    func sync(planned: [PlannedNotification], stillValid: [PlannedNotification], now immediate: [PlannedNotification]) async {
+        calls += 1
+        // The real center does not stop when the task is cancelled: a wait that ignores cancellation.
+        if calls == 1 {
+            await withCheckedContinuation { done in DispatchQueue.global().asyncAfter(deadline: .now() + 0.4) { done.resume() } }
+        }
+        lastPlanned = planned
+    }
+
+    func removeAll() async { lastPlanned = [] }
+    nonisolated func restore(_ notification: UNNotification) async {}
 }
