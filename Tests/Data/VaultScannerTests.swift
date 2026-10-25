@@ -42,6 +42,15 @@ struct VaultScannerTests {
         #expect(plan.problems.count == 6)
     }
 
+    /// Without Calendar access (or with no calendars chosen) the app cannot know whether a linked event exists.
+    @Test func eventLinksAreNotReportedMissingWithoutCalendars() async throws {
+        var scenario = DayScenario(tasks: try await scannedTasks())
+        scenario.eventsKnown = false
+        let plan = scenario.build()
+        #expect(plan.problems(of: "Подготовить вопросы папе").isEmpty)
+        #expect(plan.problems(of: "Связь на несуществующую") == [.linkedTaskNotFound("Несуществующая задача")])
+    }
+
     // MARK: - Exact fields
 
     @Test func aTaskWithAnEventLinkIsReadExactly() async throws {

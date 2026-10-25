@@ -102,10 +102,12 @@ struct DayScenario {
     var manualOrder: [String]?
     var routines = HabitRoutines()
     var postponed: Set<String> = []
+    var eventsKnown = true
 
     func build(at context: DayContext = TestCalendar.context()) -> DayPlan {
-        let inputs = DayInputs(tasks: tasks, events: events, reminders: reminders, skipped: skipped, manualOrder: manualOrder,
+        var inputs = DayInputs(tasks: tasks, events: events, reminders: reminders, skipped: skipped, manualOrder: manualOrder,
                                routines: routines, postponed: postponed)
+        inputs.eventsKnown = eventsKnown
         return DayBuilder(rules: TestConfig.rules.day, sortCriteria: TestConfig.sort.pool).build(inputs, context: context)
     }
 }

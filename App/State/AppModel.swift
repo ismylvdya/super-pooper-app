@@ -60,12 +60,17 @@ final class AppModel {
 
     func plan(at date: Date, dayOffset: Int) -> DayPlan {
         DayPlanning.plan(config: config, settings: settings, tasks: tasks, events: events, reminders: reminders,
-                         dayState: dayState, context: context(at: date), dayOffset: dayOffset)
+                         dayState: dayState, context: context(at: date), dayOffset: dayOffset, eventsKnown: eventsKnown)
     }
 
     func plan(at date: Date) -> DayPlan {
         DayPlanning.plan(config: config, settings: settings, tasks: tasks, events: events, reminders: reminders, dayState: dayState,
-                         context: context(at: date))
+                         context: context(at: date), eventsKnown: eventsKnown)
+    }
+
+    /// Without Calendar access or chosen calendars, a linked event cannot be looked up.
+    private var eventsKnown: Bool {
+        services.calendars.access == .granted && !settings.sources.anchorCalendarIDs.isEmpty
     }
 
     func task(named name: String) -> TaskNote? { tasks.first { $0.name == name } }

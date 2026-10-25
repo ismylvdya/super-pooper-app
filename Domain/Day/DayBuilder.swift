@@ -18,6 +18,8 @@ struct DayInputs: Sendable {
     var timelineFilter = TimelineFilter()
     /// Another day than today: only this week's tasks dated that day are in it, no habits.
     var isOtherDay = false
+    /// The calendars are readable and chosen: a link to an event that is not found is a problem.
+    var eventsKnown = true
 }
 
 /// Decides what is in today, what goes to the pool and what goes to the timeline.
@@ -43,7 +45,7 @@ struct DayBuilder: Sendable {
                 : isInDay(task, occurrence: occurrence, skipped: inputs.skipped, context: context)
                 && !inputs.postponed.contains(task.name)
             let taskProblems = self.problems(of: task, graph: graph, previousEvent: previousEvent, nextEvent: nextEvent,
-                                             checkEvents: inDay)
+                                             checkEvents: inDay && inputs.eventsKnown)
             if inDay || (task.isHabit && !task.isArchived) || !task.status.isCompleted {
                 problems += taskProblems.map { PlanProblem(taskName: task.name, problem: $0) }
             }
