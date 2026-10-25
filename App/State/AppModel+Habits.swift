@@ -51,6 +51,7 @@ extension AppModel {
             if !draft.body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 result = try await services.tasks.setBody(draft.body, of: result.task)
             }
+            noteWrite(result.task)
             replace(result.task)
             for subtask in draft.subtasks.map({ $0.trimmingCharacters(in: .whitespacesAndNewlines) }) where !subtask.isEmpty {
                 try await createSubtask(subtask, of: result.task.name)
@@ -81,7 +82,9 @@ extension AppModel {
 
     private func createSubtask(_ name: String, of parent: String) async throws {
         let created = try await services.tasks.create(named: name, status: .thisWeek)
-        replace(try await services.tasks.apply([.addProject(parent)], to: created).task)
+        let subtask = try await services.tasks.apply([.addProject(parent)], to: created).task
+        noteWrite(subtask)
+        replace(subtask)
     }
 
     /// A new habit: daily from today, shown in Today as the settings say.

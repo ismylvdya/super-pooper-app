@@ -60,14 +60,16 @@ actor InMemoryTaskRepository: TaskRepository {
     func failScans(with error: Error?) { scanError = error }
     func slowScans(by seconds: Double) { scanSeconds = seconds }
 
+    /// Like the vault scanner, the list of notes is taken first and read later.
     func scan() async throws -> VaultScanResult {
         scanCount += 1
+        let listed = tasks
         if scanSeconds > 0 {
             let seconds = scanSeconds
             await withCheckedContinuation { done in DispatchQueue.global().asyncAfter(deadline: .now() + seconds) { done.resume() } }
         }
         if let scanError { throw scanError }
-        return VaultScanResult(tasks: tasks, fileProblems: [], conflicted: [])
+        return VaultScanResult(tasks: listed, fileProblems: [], conflicted: [])
     }
 
     func apply(_ changes: [TaskFieldChange], to task: TaskNote) async throws -> TaskWriteResult {

@@ -137,6 +137,19 @@ struct AppModelTests {
         #expect(reminders.map(\.title) == ["Early"])
     }
 
+    /// "+" pressed while a slow sync reads the vault: the new task does not vanish when the sync finishes.
+    @Test func aTaskCreatedDuringASyncStays() async throws {
+        let model = try makeModel()
+        let repository = try #require(model.services.tasks as? InMemoryTaskRepository)
+        await repository.slowScans(by: 0.3)
+        async let running: Void = model.sync(announce: false)
+        try await Task.sleep(for: .milliseconds(100))
+        let created = await model.create(NoteDraft(status: .thisWeek), named: "Новая во время синка")
+        await running
+        #expect(created == "Новая во время синка")
+        #expect(model.task(named: "Новая во время синка") != nil)
+    }
+
     @Test func archiveAndDelete() async throws {
         let model = try makeModel()
         await model.perform(.archive, on: "Сдать отчёт")

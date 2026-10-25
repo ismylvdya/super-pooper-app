@@ -82,7 +82,10 @@ extension AppModel {
         var renamed = false
         do {
             if config.flags.backups { try await services.tasks.backup([task] + dependents, reason: "rename") }
-            _ = try await services.tasks.rename(task, to: trimmed, dependents: dependents)
+            let result = try await services.tasks.rename(task, to: trimmed, dependents: dependents)
+            remove(task)
+            noteWrite(result)
+            replace(result)
             renamed = true
             followRename(from: name, to: trimmed)
         } catch {
