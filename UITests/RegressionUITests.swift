@@ -9,8 +9,9 @@ final class RegressionUITests: XCTestCase {
         app = XCUIApplication()
     }
 
-    private func launch(_ link: String) {
+    private func launch(_ link: String, textSize: String? = nil) {
         app.launchArguments = ["-SPVaultPath", "TestVault", "-SPSkipOnboarding", "-SPNow", "11:30", "-SPResetState", "-SPOpen", link]
+        if let textSize { app.launchArguments += ["-UIPreferredContentSizeCategoryName", textSize] }
         app.launch()
     }
 
@@ -47,4 +48,12 @@ final class RegressionUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Взять _синюю_ ручку"].waitForExistence(timeout: 5))
     }
 
+    /// With big text the High / Today / Tomorrow chips move to a second line instead of cutting their titles.
+    func testQuickChipsWrapInsteadOfCuttingTheirTitles() {
+        launch("superpooper://task/Позвонить в банк", textSize: "UICTContentSizeCategoryAccessibilityL")
+        let high = app.buttons["taskPage.chip.high"]
+        let tomorrow = app.buttons["taskPage.chip.tomorrow"]
+        XCTAssertTrue(tomorrow.waitForExistence(timeout: 8))
+        XCTAssertGreaterThan(tomorrow.frame.minY, high.frame.maxY, "the last chip goes under the first one")
+    }
 }

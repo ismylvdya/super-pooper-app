@@ -10,7 +10,7 @@ struct TaskQuickChips: View {
     var body: some View {
         let context = model.context()
         let selected = QuickDue.selection(of: editor.task.due, context: context)
-        HStack(spacing: tokens.space(.chipGap)) {
+        ChipFlow(spacing: tokens.space(.chipGap), alignment: .center) {
             ToggleChip(icon: .high, title: "taskPage.chip.high", tint: tokens.color(.high), isOn: editor.task.isHighPriority) {
                 editor.edit { [.highPriority(!$0.isHighPriority)] }
             }
