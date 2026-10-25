@@ -40,6 +40,7 @@
   },
   "vault": {
     "downloadTimeoutSeconds": 20,
+    "downloadPollSeconds": 0.25,
     "noteExtension": "md",
     "settingsNote": "SuperPooper Settings.md",
     "settingsWriteDelaySeconds": 1
@@ -49,6 +50,7 @@
   },
   "timeline": {
     "refreshSeconds": 60,
+    "externalChangeDelaySeconds": 0.5,
     "maxHoursAfter": 18,
     "otherDayAnchor": "08:00",
     "dropStepMinutes": 5

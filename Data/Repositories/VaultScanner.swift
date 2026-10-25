@@ -9,6 +9,7 @@ struct VaultScanner: Sendable {
     let reader: TaskNoteReader
     let noteExtension: String
     let downloadTimeout: TimeInterval
+    let downloadPoll: TimeInterval
 
     struct Output: Sendable {
         var result: VaultScanResult
@@ -78,7 +79,7 @@ struct VaultScanner: Sendable {
         for url in pending { try? ubiquity.startDownloading(url) }
         let deadline = Date().addingTimeInterval(downloadTimeout)
         while !pending.isEmpty, Date() < deadline {
-            try? await Task.sleep(for: .milliseconds(250))
+            try? await Task.sleep(for: .seconds(downloadPoll))
             pending = pending.filter { !isReady($0) }
         }
         let missing = Set(pending)

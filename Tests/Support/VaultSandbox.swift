@@ -60,7 +60,8 @@ struct VaultSandbox {
 
     func scanner(ubiquity: UbiquityService = FakeUbiquityService(), downloadTimeout: TimeInterval = 0.3) -> VaultScanner {
         VaultScanner(fileSystem: CoordinatedFileSystem(), ubiquity: ubiquity, reader: reader(),
-                     noteExtension: TestConfig.rules.vault.noteExtension, downloadTimeout: downloadTimeout)
+                     noteExtension: TestConfig.rules.vault.noteExtension, downloadTimeout: downloadTimeout,
+                     downloadPoll: TestConfig.rules.vault.downloadPollSeconds)
     }
 
     func scan(ubiquity: UbiquityService = FakeUbiquityService(), downloadTimeout: TimeInterval = 0.3) async -> VaultScanResult {
@@ -75,7 +76,8 @@ struct VaultSandbox {
         let backupService = BackupService(directory: backups, keepCount: keepBackups, fileSystem: fileSystem,
                                           clock: { backupClock.now })
         let settings = TestConfig.defaults.vault
-        let rules = RulesConfig.Vault(downloadTimeoutSeconds: downloadTimeout, noteExtension: TestConfig.rules.vault.noteExtension,
+        let rules = RulesConfig.Vault(downloadTimeoutSeconds: downloadTimeout, downloadPollSeconds: TestConfig.rules.vault.downloadPollSeconds,
+                                      noteExtension: TestConfig.rules.vault.noteExtension,
                                       settingsNote: TestConfig.rules.vault.settingsNote,
                                       settingsWriteDelaySeconds: TestConfig.rules.vault.settingsWriteDelaySeconds)
         return VaultTaskRepository(location: FixedVaultLocation(url: vault), fileSystem: fileSystem, ubiquity: ubiquity,

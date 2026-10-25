@@ -121,7 +121,7 @@ final class AppContainer {
         let model = self.model
         Task { @MainActor in
             for await _ in NotificationCenter.default.notifications(named: .EKEventStoreChanged, object: eventKit.store) {
-                try? await Task.sleep(for: .milliseconds(500))
+                try? await Task.sleep(for: .seconds(model.config.rules.timeline.externalChangeDelaySeconds))
                 await model.refreshCalendarSources()
                 await model.publishDerivedState()
             }

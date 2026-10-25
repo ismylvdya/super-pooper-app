@@ -30,7 +30,8 @@ actor VaultTaskRepository: TaskRepository {
         self.readerFactory = readerFactory
         self.scanner = { settings in
             VaultScanner(fileSystem: fileSystem, ubiquity: ubiquity, reader: readerFactory(settings),
-                         noteExtension: rules.noteExtension, downloadTimeout: rules.downloadTimeoutSeconds)
+                         noteExtension: rules.noteExtension, downloadTimeout: rules.downloadTimeoutSeconds,
+                         downloadPoll: rules.downloadPollSeconds)
         }
         self.vaultSettings = vaultSettings
         self.backups = backups

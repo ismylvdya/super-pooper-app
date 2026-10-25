@@ -28,6 +28,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
 
     struct Vault: Codable, Hashable, Sendable {
         let downloadTimeoutSeconds: Double
+        /// While waiting for iCloud downloads, the files are checked this often.
+        let downloadPollSeconds: Double
         let noteExtension: String
         /// The note with the app's settings, next to the tasks folder.
         let settingsNote: String
@@ -42,6 +44,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
     struct Timeline: Codable, Hashable, Sendable {
         /// How often "now" moves and chains are re-laid out.
         let refreshSeconds: Double
+        /// A Calendar or Reminders change made elsewhere is read this long after it is announced (they come in bursts).
+        let externalChangeDelaySeconds: Double
         /// Upper bound for the hours shown in the one-column layout.
         let maxHoursAfter: Int
         /// Another day (swiped to on Today) is shown around this time.
