@@ -5,7 +5,6 @@ import SwiftUI
 struct SubtasksSection: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
-    @Environment(\.tokens) private var tokens
     let editor: TaskEditor
     @State private var newName = ""
 

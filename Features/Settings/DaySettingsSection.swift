@@ -20,15 +20,13 @@ struct DaySettingsSection: View {
 
 /// A compact hour-and-minute picker bound to `LocalTime`.
 struct TimeField: View {
+    @Environment(\.calendar) private var calendar
     @Binding var time: LocalTime
 
     var body: some View {
         DatePicker("", selection: Binding(
-            get: { Calendar.current.date(from: DateComponents(hour: time.hour, minute: time.minute)) ?? Date() },
-            set: { date in
-                let parts = Calendar.current.dateComponents([.hour, .minute], from: date)
-                time = LocalTime(hour: parts.hour ?? 0, minute: parts.minute ?? 0) ?? time
-            }
+            get: { calendar.date(from: DateComponents(hour: time.hour, minute: time.minute)) ?? .distantPast },
+            set: { date in time = LocalTime(date, in: calendar) }
         ), displayedComponents: .hourAndMinute)
         .labelsHidden()
     }

@@ -11,9 +11,7 @@ struct WidgetDataSource: Sendable {
     static func load(bundle: Bundle = .main) -> WidgetDataSource? {
         guard let config = try? AppConfig.load(bundle: bundle) else { return nil }
         let store = JSONFileStore(directory: AppGroupContainer.directory(bundle: bundle))
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = .current
-        calendar.firstWeekday = 2
+        let calendar = AppCalendar.make()
         // Everything in the widget reads `today.arrangement`, so it gets the widget's own one there.
         var settings = SettingsStore(store: store, defaults: config.defaultSettings).load()
         settings.today.arrangement = settings.today.widgetArrangement.forWidget

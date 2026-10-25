@@ -28,7 +28,7 @@ struct HalvesTimeline<TaskContent: View>: View {
 
 extension TimelineStyle {
     static func make(_ settings: AppSettings.Timeline, tokens: DesignTokens) -> TimelineStyle {
-        let titleLine = UIFont.systemFont(ofSize: settings.taskFontSize).lineHeight + 6
+        let titleLine = UIFont.systemFont(ofSize: settings.taskFontSize).lineHeight + tokens.space(.timelineTitleExtra)
         return TimelineStyle(eventFont: .system(size: settings.eventFontSize),
                              taskFont: .system(size: settings.taskFontSize),
                              eventLineHeight: UIFont.systemFont(ofSize: settings.eventFontSize, weight: .semibold).lineHeight,

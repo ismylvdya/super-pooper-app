@@ -5,7 +5,6 @@ import SwiftUI
 struct TrashScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
-    @Environment(\.icons) private var icons
     @State private var toDelete: TrashedNote?
 
     var body: some View {

@@ -102,14 +102,16 @@ struct TimelineBlock: View {
         }
     }
 
+    /// All-day bars are a little smaller than the event titles.
+    private var allDayFontSize: CGFloat { model.settings.timeline.eventFontSize - tokens.size(.allDayFontDelta) }
+
     private var allDayStrip: some View {
-        let size = model.settings.timeline.eventFontSize - 2
-        return AllDayStrip(events: plan.allDayEvents, font: .system(size: size), lineHeight: UIFont.systemFont(ofSize: size).lineHeight,
-                           onTap: style.onEventTap, onDelete: style.onEventDelete)
+        AllDayStrip(events: plan.allDayEvents, font: .system(size: allDayFontSize), lineHeight: UIFont.systemFont(ofSize: allDayFontSize).lineHeight,
+                    onTap: style.onEventTap, onDelete: style.onEventDelete)
     }
 
     private var allDayHeight: CGFloat {
-        let line = UIFont.systemFont(ofSize: model.settings.timeline.eventFontSize - 2).lineHeight + tokens.space(.chipVertical) * 2
+        let line = UIFont.systemFont(ofSize: allDayFontSize).lineHeight + tokens.space(.chipVertical) * 2
         return CGFloat(plan.allDayEvents.count) * (line + tokens.space(.chipGap)) + tokens.space(.chipGap)
     }
 

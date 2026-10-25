@@ -4,13 +4,12 @@ import SwiftUI
 struct DueDateSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppModel.self) private var model
+    @Environment(\.tokens) private var tokens
     @State private var date: Date
     @State private var hasTime: Bool
     let onSave: (TaskDue?) -> Void
 
-    init(due: TaskDue, onSave: @escaping (TaskDue?) -> Void) {
-        var calendar = Calendar.current
-        calendar.timeZone = .current
+    init(due: TaskDue, calendar: Calendar, onSave: @escaping (TaskDue?) -> Void) {
         _date = State(initialValue: due.date(in: calendar))
         _hasTime = State(initialValue: due.time != nil)
         self.onSave = onSave
@@ -38,12 +37,11 @@ struct DueDateSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("common.save") {
-                        let parts = model.calendar.dateComponents([.hour, .minute], from: date)
-                        let time = hasTime ? LocalTime(hour: parts.hour ?? 0, minute: parts.minute ?? 0) : nil
+                        let time = hasTime ? LocalTime(date, in: model.calendar) : nil
                         onSave(TaskDue(day: LocalDate(date, in: model.calendar), time: time))
                         dismiss()
                     }
-                    .fontWeight(.semibold)
+                    .font(tokens.font(.emptyAction))
                 }
             }
         }

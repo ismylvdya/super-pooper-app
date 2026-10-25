@@ -30,11 +30,11 @@ struct OnboardingFlow: View {
     }
 
     private var progress: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: tokens.space(.progressGap)) {
             ForEach(Step.allCases, id: \.self) { item in
                 Capsule()
                     .fill(item.rawValue <= step.rawValue ? tokens.color(.accent) : tokens.color(.chipBackground))
-                    .frame(height: 4)
+                    .frame(height: tokens.size(.progressHeight))
             }
         }
         .padding(.top, tokens.space(.groupGap))
@@ -111,13 +111,13 @@ struct OnboardingStep: View {
 
     var body: some View {
         VStack(spacing: tokens.space(.plateRowGap)) {
-            Image(systemName: icons[icon]).font(.system(size: 52)).foregroundStyle(tokens.color(.accent))
+            Image(systemName: icons[icon]).font(tokens.font(.emptyIcon)).foregroundStyle(tokens.color(.accent))
             Text(title).font(tokens.font(.emptyTitle)).multilineTextAlignment(.center)
             Text(message).font(tokens.font(.emptyBody)).foregroundStyle(tokens.color(.secondaryText)).multilineTextAlignment(.center)
             if let status {
                 Label(status, systemImage: icons[.permissionGranted]).foregroundStyle(tokens.color(.pleasant))
             } else if let action {
-                Button(action: perform) { Text(action).fontWeight(.semibold) }.buttonStyle(.bordered)
+                Button(action: perform) { Text(action).font(tokens.font(.emptyAction)) }.buttonStyle(.bordered)
             }
         }
     }

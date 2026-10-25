@@ -4,6 +4,7 @@ import SwiftUI
 struct TaskNoteSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
+    @Environment(\.rules) private var rules
     let taskName: String
     var header: LocalizedStringKey = "taskPage.note"
     /// One line when empty, growing with the text (habit descriptions).
@@ -20,7 +21,7 @@ struct TaskNoteSection: View {
             } else {
                 TextEditor(text: $text)
                     .font(tokens.font(.noteEditor))
-                    .frame(minHeight: 160)
+                    .frame(minHeight: tokens.size(.noteEditorMinHeight))
                     .scrollContentBackground(.hidden)
             }
         }
@@ -33,7 +34,7 @@ struct TaskNoteSection: View {
             guard let loaded, value != loaded else { return }
             saveTask?.cancel()
             saveTask = Task {
-                try? await Task.sleep(for: .seconds(1.2))
+                try? await Task.sleep(for: .seconds(rules.editing.noteSaveDelaySeconds))
                 guard !Task.isCancelled else { return }
                 await model.setBody(value, of: taskName)
                 self.loaded = value

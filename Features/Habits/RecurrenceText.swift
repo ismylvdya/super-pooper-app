@@ -50,7 +50,12 @@ enum RecurrenceText {
         return days.map { day in
             let name = symbols[day.weekday.rawValue % 7]
             guard let ordinal = day.ordinal else { return name }
-            return ordinal == -1 ? L10n.format("recurrence.last", name) : "\(ordinal). \(name)"
-        }.joined(separator: ", ")
+            return ordinalWeekday(ordinal, name)
+        }.joined(separator: L10n.string("common.listSeparator"))
+    }
+
+    /// "2. Mon", or "last Mon" for -1.
+    static func ordinalWeekday(_ ordinal: Int, _ name: String) -> String {
+        ordinal == -1 ? L10n.format("recurrence.last", name) : L10n.format("recurrence.nth", ordinal, name)
     }
 }

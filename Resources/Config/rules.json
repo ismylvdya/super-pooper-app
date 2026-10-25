@@ -56,7 +56,9 @@
     "refreshMinutes": 15,
     "entryCount": 24,
     "habitGridWeeksSmall": 4,
-    "timelineHours": 6
+    "timelineHours": 6,
+    "maxHoursBefore": 1,
+    "backgroundRefreshMinutes": 30
   },
   "habits": {
     "historyMinimumWeeks": 6,
@@ -77,5 +79,50 @@
         "lines": 2
       }
     ]
+  },
+  "limits": {
+    "poolVisibleCount": {
+      "min": 1,
+      "max": 10
+    },
+    "hoursBefore": {
+      "min": 0,
+      "max": 6
+    },
+    "bellSize": {
+      "min": 7,
+      "max": 20,
+      "step": 1
+    },
+    "bellOpacity": {
+      "min": 0.1,
+      "max": 1,
+      "step": 0.05
+    },
+    "fontSize": {
+      "min": 11,
+      "max": 22,
+      "step": 1
+    },
+    "pastOpacity": {
+      "min": 0.05,
+      "max": 1,
+      "step": 0.05
+    },
+    "recurrenceInterval": {
+      "min": 1,
+      "max": 99
+    },
+    "recurrenceCount": {
+      "min": 1,
+      "max": 999
+    }
+  },
+  "editing": {
+    "defaultTime": "09:00",
+    "nextReminderGapMinutes": 240,
+    "noteSaveDelaySeconds": 1.2,
+    "repeatUntilDays": 30,
+    "repeatCount": 10
   }
 }

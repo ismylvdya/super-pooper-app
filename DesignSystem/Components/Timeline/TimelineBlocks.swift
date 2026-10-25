@@ -8,7 +8,7 @@ struct TimelineEventBlock: View {
     let slot: TimelineSlot
     let font: Font
     /// Line height of `font` (titles fade on their last line).
-    var lineHeight: CGFloat = 18
+    let lineHeight: CGFloat
 
     var body: some View {
         let color = slot.isPast ? tokens.color(.past) : Color(hex: event.colorHex)
@@ -43,7 +43,7 @@ struct TimelineReminderBlock: View {
     let reminder: ReminderItem
     let slot: TimelineSlot
     let font: Font
-    var lineHeight: CGFloat = 18
+    let lineHeight: CGFloat
     var isCompact = false
     var onToggle: ((ReminderItem) -> Void)?
     var onOpen: ((ReminderItem) -> Void)?
@@ -71,7 +71,6 @@ struct TimelineReminderBlock: View {
 
 /// A task on the timeline looks exactly like a pool row; done ones turn grey like past events.
 struct TimelineTaskBlock<Content: View>: View {
-    let item: DayItem
     let isPast: Bool
     var isCompact = false
     @ViewBuilder let content: Content
@@ -108,7 +107,7 @@ private struct SlotPlate: ViewModifier {
 
 enum TimeRangeText {
     static func format(_ start: Date, _ end: Date) -> String {
-        "\(start.formatted(date: .omitted, time: .shortened))–\(end.formatted(date: .omitted, time: .shortened))"
+        L10n.format("common.range", start.formatted(date: .omitted, time: .shortened), end.formatted(date: .omitted, time: .shortened))
     }
 }
 

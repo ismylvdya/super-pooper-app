@@ -31,11 +31,6 @@ final class EventKitAccess: @unchecked Sendable {
             return false
         }
     }
-
-    /// Picks up changes made in Calendar/Reminders since the last read.
-    func refresh() {
-        store.refreshSourcesIfNecessary()
-    }
 }
 
 extension EKCalendar {

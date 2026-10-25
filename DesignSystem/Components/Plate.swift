@@ -10,16 +10,7 @@ struct PlateSection<Content: View>: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            if let header {
-                HStack(spacing: 4) {
-                    Text(header)
-                        .font(tokens.font(.sectionHeader))
-                        .foregroundStyle(tokens.color(.tertiaryText))
-                    if let info { InfoButton(text: info, tint: tokens.color(.tertiaryText)) }
-                }
-                .padding(.horizontal, tokens.space(.plateInner))
-                .padding(.bottom, tokens.space(.headerToPlate))
-            }
+            if let header { PlateHeader(title: header, info: info) }
             Plate { content }
             if let hint {
                 Text(hint)
@@ -29,6 +20,24 @@ struct PlateSection<Content: View>: View {
                     .padding(.top, tokens.space(.hintToPlate))
             }
         }
+    }
+}
+
+/// The title above a plate, with an optional ⓘ.
+struct PlateHeader: View {
+    @Environment(\.tokens) private var tokens
+    let title: LocalizedStringKey
+    var info: LocalizedStringKey?
+
+    var body: some View {
+        HStack(spacing: tokens.space(.titleInfoGap)) {
+            Text(title)
+                .font(tokens.font(.sectionHeader))
+                .foregroundStyle(tokens.color(.tertiaryText))
+            if let info { InfoButton(text: info, tint: tokens.color(.tertiaryText)) }
+        }
+        .padding(.horizontal, tokens.space(.plateInner))
+        .padding(.bottom, tokens.space(.headerToPlate))
     }
 }
 
@@ -85,7 +94,7 @@ struct PlateRow<Trailing: View>: View {
                     .foregroundStyle(tint ?? tokens.color(.accent))
                     .frame(width: tokens.size(.iconColumn))
             }
-            HStack(spacing: 4) {
+            HStack(spacing: tokens.space(.titleInfoGap)) {
                 Text(title).foregroundStyle(tint ?? tokens.color(.primaryText))
                 if let info { InfoButton(text: info, tint: tint ?? tokens.color(.primaryText)) }
             }

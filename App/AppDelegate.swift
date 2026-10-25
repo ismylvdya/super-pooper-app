@@ -67,7 +67,7 @@ enum BackgroundRefresh {
     static func schedule() {
         guard case .success(let container) = AppContainer.shared, container.config.flags.backgroundRefresh else { return }
         let request = BGAppRefreshTaskRequest(identifier: identifier)
-        request.earliestBeginDate = Date().addingTimeInterval(30 * 60)
+        request.earliestBeginDate = container.model.clock.now.addingTimeInterval(Double(container.config.rules.widgets.backgroundRefreshMinutes) * 60)
         try? BGTaskScheduler.shared.submit(request)
     }
 

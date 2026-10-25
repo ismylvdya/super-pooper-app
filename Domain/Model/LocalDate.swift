@@ -167,6 +167,12 @@ struct LocalTime: Hashable, Comparable, Codable, Sendable, CustomStringConvertib
         self.init(hour: h, minute: m)
     }
 
+    /// The wall-clock time of `date` in `calendar`.
+    init(_ date: Date, in calendar: Calendar) {
+        let parts = calendar.dateComponents([.hour, .minute], from: date)
+        self.init(minutesSinceMidnight: (parts.hour ?? 0) * 60 + (parts.minute ?? 0))
+    }
+
     init(minutesSinceMidnight: Int) {
         let clamped = min(max(minutesSinceMidnight, 0), 24 * 60 - 1)
         self.hour = clamped / 60

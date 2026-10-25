@@ -5,7 +5,7 @@ import SwiftUI
 struct RootView: View {
     let container: AppContainer
     @Environment(\.scenePhase) private var scenePhase
-    @State private var screenHeight: CGFloat = 800
+    @State private var screenHeight = BundledConfig.tokens.size(.screenHeightEstimate)
 
     var body: some View {
         @Bindable var router = container.router
@@ -36,6 +36,7 @@ struct RootView: View {
         .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { screenHeight = $0 }
         .environment(\.screenHeight, screenHeight)
         .environment(\.timelineBell, model.settings.timeline.bellStyle)
+        .environment(\.calendar, model.calendar)
         // The user's colors and opacity sit closest to the views, over the bundled tokens of `appConfig`.
         .environment(\.tokens, tokens)
         .environment(model)
@@ -72,7 +73,7 @@ struct RootView: View {
 
     /// Reading `vaultState` keeps this view observing it, so choosing a vault switches to Today.
     /// Bundled tokens with the user's color choices.
-    private var tokens: DesignTokens { container.config.tokens.applying(container.model.settings) }
+    private var tokens: DesignTokens { container.config.tokens.applying(container.model.settings, limits: container.config.rules.limits) }
 
     @ViewBuilder private func home(_ model: AppModel) -> some View {
         switch model.vaultState {

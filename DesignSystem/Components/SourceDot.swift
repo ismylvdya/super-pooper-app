@@ -4,11 +4,10 @@ import SwiftUI
 struct SourceDot: View {
     @Environment(\.tokens) private var tokens
     let hex: String
-    var size: CGFloat?
 
     var body: some View {
         Circle()
             .fill(Color(hex: hex))
-            .frame(width: size ?? tokens.size(.sourceDot), height: size ?? tokens.size(.sourceDot))
+            .frame(width: tokens.size(.sourceDot), height: tokens.size(.sourceDot))
     }
 }

@@ -20,7 +20,9 @@ struct TodayEntry: TimelineEntry {
 }
 
 struct TodayProvider: TimelineProvider {
-    func placeholder(in context: Context) -> TodayEntry { TodayEntry(date: Date(), source: WidgetDataSource.load()) }
+    private let clock: Clock = SystemClock()
+
+    func placeholder(in context: Context) -> TodayEntry { TodayEntry(date: clock.now, source: WidgetDataSource.load()) }
 
     func getSnapshot(in context: Context, completion: @escaping (TodayEntry) -> Void) {
         completion(placeholder(in: context))
@@ -29,9 +31,10 @@ struct TodayProvider: TimelineProvider {
     /// One entry per few minutes so "now" and the chains move; the app reloads it on every change.
     func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEntry>) -> Void) {
         let source = WidgetDataSource.load()
-        let step = Double(source?.config.rules.widgets.refreshMinutes ?? 15) * 60
-        let count = source?.config.rules.widgets.entryCount ?? 24
-        let now = Date()
+        let rules = (source?.config.rules ?? BundledConfig.rules).widgets
+        let step = Double(rules.refreshMinutes) * 60
+        let count = rules.entryCount
+        let now = clock.now
         let entries = (0..<count).map { TodayEntry(date: now.addingTimeInterval(Double($0) * step), source: source) }
         completion(Timeline(entries: entries, policy: .atEnd))
     }
@@ -52,7 +55,8 @@ struct TodayWidgetEntryView: View {
         }
         .containerBackground(tokens.color(.screenBackground), for: .widget)
         .widgetURL(DeepLink.today)
-        .environment(\.tokens, entry.source.map { $0.config.tokens.applying($0.settings) } ?? tokens)
-        .environment(\.timelineBell, entry.source?.settings.timeline.bellStyle ?? TimelineBellStyle())
+        .environment(\.tokens, entry.source.map { $0.config.tokens.applying($0.settings, limits: $0.config.rules.limits) } ?? tokens)
+        .environment(\.timelineBell, (entry.source?.settings ?? BundledConfig.settings).timeline.bellStyle)
+        .environment(\.calendar, entry.source?.calendar ?? AppCalendar.make())
     }
 }

@@ -5,7 +5,6 @@ import SwiftUI
 struct ColorSettingsSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
-    @Environment(\.icons) private var icons
 
     /// The colors offered here (token names in tokens.json).
     static let editable: [ColorToken] = [.task, .habit, .past, .high, .energy, .heart, .nowLine, .twice, .problem]
@@ -46,12 +45,12 @@ struct ColorField: View {
 
     var body: some View {
         HStack(spacing: tokens.space(.chipGap)) {
-            TextField("#RRGGBB", text: $hex)
+            TextField("settings.colors.hex", text: $hex)
                 .font(tokens.font(.chip).monospaced())
                 .multilineTextAlignment(.trailing)
                 .textInputAutocapitalization(.characters)
                 .autocorrectionDisabled()
-                .frame(width: 84)
+                .frame(width: tokens.size(.hexFieldWidth))
                 .onSubmit { save(hex) }
             ColorPicker("", selection: Binding(
                 get: { tokens.color(token) },

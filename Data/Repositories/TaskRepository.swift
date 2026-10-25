@@ -26,7 +26,6 @@ struct TaskWriteResult: Sendable {
 
 enum TaskRepositoryError: Error, Equatable, Sendable {
     case fileMissing(String)
-    case notATask(String)
     case brokenFrontmatter(String)
     case invalidName(String)
     case nameTaken(String)

@@ -37,7 +37,7 @@ struct PageScaffold<Content: View>: View {
                 Text(title)
                     .font(tokens.font(.navTitle))
                     .lineLimit(1)
-                    .minimumScaleFactor(tokens.size(.navTitleMin) / 17)
+                    .minimumScaleFactor(tokens.size(.navTitleMin) / tokens.uiFont(.navTitle).pointSize)
                     .foregroundStyle(isLargeTitleVisible ? Color.clear : tokens.color(.primaryText))
             }
         }

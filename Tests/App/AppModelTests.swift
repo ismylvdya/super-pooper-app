@@ -33,17 +33,17 @@ struct AppModelTests {
     @Test func aTaskAfterAnUnfinishedOneCanStillBeChecked() async throws {
         let model = try makeModel()
         #expect(model.plan(at: model.clock.now).item(named: "Повесить полку")?.isBlocked == true)
-        await model.toggle("Повесить полку")
+        await model.perform(.done, on: "Повесить полку")
         #expect(model.task(named: "Повесить полку")?.status == .done)
     }
 
-    @Test func toggleChecksAndUnchecksARegularTask() async throws {
+    @Test func doneAndUnmarkCheckAndUncheckARegularTask() async throws {
         let model = try makeModel()
         let today = model.context().today
-        await model.toggle("Позвонить в банк")
+        await model.perform(.done, on: "Позвонить в банк")
         #expect(model.task(named: "Позвонить в банк")?.status == .done)
         #expect(model.task(named: "Позвонить в банк")?.completedDate == today)
-        await model.toggle("Позвонить в банк")
+        await model.perform(.unmark, on: "Позвонить в банк")
         #expect(model.task(named: "Позвонить в банк")?.status == .thisWeek)
         #expect(model.task(named: "Позвонить в банк")?.completedDate == nil)
     }

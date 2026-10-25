@@ -22,21 +22,25 @@ struct ClockEntry: TimelineEntry {
 
 /// One entry per minute for the next hour; the line is computed from the stored settings.
 struct ClockProvider: TimelineProvider {
-    func placeholder(in context: Context) -> ClockEntry { entry(at: Date()) }
+    private let clock: Clock = SystemClock()
+
+    func placeholder(in context: Context) -> ClockEntry { entry(at: clock.now, settings: WidgetDataSource.load()?.settings.clock) }
 
     func getSnapshot(in context: Context, completion: @escaping (ClockEntry) -> Void) {
-        completion(entry(at: Date()))
+        completion(placeholder(in: context))
     }
 
+    /// The stored settings are read once for the whole hour of entries.
     func getTimeline(in context: Context, completion: @escaping (Timeline<ClockEntry>) -> Void) {
-        let now = Date()
-        let start = now.addingTimeInterval(-now.timeIntervalSince1970.truncatingRemainder(dividingBy: 60))
-        let entries = (0..<60).map { entry(at: start.addingTimeInterval(Double($0) * 60)) }
+        let settings = WidgetDataSource.load()?.settings.clock
+        let now = clock.now
+        let minute: TimeInterval = 60
+        let start = now.addingTimeInterval(-now.timeIntervalSince1970.truncatingRemainder(dividingBy: minute))
+        let entries = (0..<Int(3600 / minute)).map { entry(at: start.addingTimeInterval(Double($0) * minute), settings: settings) }
         completion(Timeline(entries: entries, policy: .atEnd))
     }
 
-    private func entry(at date: Date) -> ClockEntry {
-        let settings = WidgetDataSource.load()?.settings.clock
+    private func entry(at date: Date, settings: AppSettings.Clock?) -> ClockEntry {
         let zone = settings.flatMap { TimeZone(identifier: $0.timeZone) } ?? .current
         return ClockEntry(date: date, text: ClockLine.text(prefix: settings?.prefix ?? "", date: date, timeZone: zone))
     }

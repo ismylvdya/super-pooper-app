@@ -25,7 +25,7 @@ struct BannerView: View {
         }
         .padding(tokens.space(.bannerPadding))
         .background(tokens.color(.bannerBackground), in: RoundedRectangle(cornerRadius: tokens.radius(.banner), style: .continuous))
-        .shadow(color: .black.opacity(0.12), radius: 12, y: 4)
+        .shadow(color: tokens.color(.shadow).opacity(tokens.opacity(.bannerShadow)), radius: tokens.size(.bannerShadowRadius), y: tokens.size(.bannerShadowY))
         .padding(.horizontal, tokens.space(.screenHorizontal))
         .padding(.top, tokens.space(.bannerTop))
         .offset(y: min(dragOffset, 0))
@@ -47,10 +47,10 @@ struct BannerView: View {
             .onChanged { dragOffset = $0.translation.height }
             .onEnded { value in
                 let distance = value.translation.height
-                if distance < -20 || value.predictedEndTranslation.height < -60 {
+                if distance < -tokens.size(.bannerDismissDistance) || value.predictedEndTranslation.height < -tokens.size(.bannerDismissFling) {
                     onDismiss()
                 } else {
-                    if abs(distance) < 6, abs(value.translation.width) < 6 {
+                    if abs(distance) < tokens.size(.tapSlop), abs(value.translation.width) < tokens.size(.tapSlop) {
                         if let onTap {
                             onTap()
                             onDismiss()

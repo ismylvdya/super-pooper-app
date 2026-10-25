@@ -52,12 +52,13 @@ struct HabitStatsSection: View {
     }
 
     private func percent(_ share: Double?) -> String {
-        share.map { $0.formatted(.percent.precision(.fractionLength(0))) } ?? "—"
+        share.map { $0.formatted(.percent.precision(.fractionLength(0))) } ?? L10n.string("common.noValue")
     }
 
     private func range(_ streak: HabitStats.Streak) -> String {
         let style = Date.FormatStyle().day().month(.abbreviated)
-        return "\(streak.first.startDate(in: model.calendar).formatted(style))–\(streak.last.startDate(in: model.calendar).formatted(style))"
+        return L10n.format("common.range", streak.first.startDate(in: model.calendar).formatted(style),
+                           streak.last.startDate(in: model.calendar).formatted(style))
     }
 }
 

@@ -8,8 +8,6 @@ struct NoteFile: Sendable {
 
 enum NoteWriteError: Error, Equatable, Sendable {
     case notUTF8
-    case nameTaken(String)
-    case invalidName(String)
 }
 
 /// File operations on notes, coordinated with other writers (iCloud, Obsidian).

@@ -23,12 +23,14 @@ struct HabitGridEntry: TimelineEntry {
 }
 
 struct HabitGridProvider: AppIntentTimelineProvider {
+    private let clock: Clock = SystemClock()
+
     func placeholder(in context: Context) -> HabitGridEntry {
-        HabitGridEntry(date: Date(), habitName: nil, source: WidgetDataSource.load())
+        HabitGridEntry(date: clock.now, habitName: nil, source: WidgetDataSource.load())
     }
 
     func snapshot(for configuration: SelectHabitIntent, in context: Context) async -> HabitGridEntry {
-        HabitGridEntry(date: Date(), habitName: configuration.habit?.id, source: WidgetDataSource.load(),
+        HabitGridEntry(date: clock.now, habitName: configuration.habit?.id, source: WidgetDataSource.load(),
                        options: HabitWidgetOptions(titleSize: configuration.titleSize.points, wrapTitle: configuration.wrapTitle,
                                                    breakWords: configuration.breakWords, weeks: configuration.weeks))
     }
@@ -36,7 +38,8 @@ struct HabitGridProvider: AppIntentTimelineProvider {
     /// The grid only changes when the app writes a new snapshot (it reloads widgets) or the logical day ends.
     func timeline(for configuration: SelectHabitIntent, in context: Context) async -> Timeline<HabitGridEntry> {
         let entry = await snapshot(for: configuration, in: context)
-        let dayEnd = entry.source?.context(at: entry.date).dayEnd ?? Date().addingTimeInterval(3600)
+        let retry = clock.now.addingTimeInterval(Double(BundledConfig.rules.widgets.refreshMinutes) * 60)
+        let dayEnd = entry.source?.context(at: entry.date).dayEnd ?? retry
         return Timeline(entries: [entry], policy: .after(dayEnd))
     }
 }
@@ -59,6 +62,7 @@ struct HabitGridEntryView: View {
         }
         .containerBackground(tokens.color(.plateBackground), for: .widget)
         .widgetURL(habit.flatMap { DeepLink.habit($0.name) } ?? DeepLink.habits)
-        .environment(\.tokens, entry.source.map { $0.config.tokens.applying($0.settings) } ?? tokens)
+        .environment(\.tokens, entry.source.map { $0.config.tokens.applying($0.settings, limits: $0.config.rules.limits) } ?? tokens)
+        .environment(\.calendar, entry.source?.calendar ?? AppCalendar.make())
     }
 }

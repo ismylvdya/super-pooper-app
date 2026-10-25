@@ -16,7 +16,7 @@ struct ConflictsScreen: View {
                     ForEach(model.conflictedNotes, id: \.self) { name in
                         NavigationLink(value: Route.conflict(name)) {
                             PlateRow(icon: .problem, title: LocalizedStringKey(name), tint: tokens.color(.warning)) {
-                                Image(systemName: icons[.chevron]).foregroundStyle(.tertiary)
+                                Image(systemName: icons[.chevron]).foregroundStyle(tokens.color(.tertiaryText))
                             }
                         }
                         .buttonStyle(.plain)

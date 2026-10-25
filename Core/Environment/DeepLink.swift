@@ -6,8 +6,6 @@ enum DeepLink {
     /// Any tap on a widget opens Today.
     static let today = URL(string: "\(scheme)://today")
 
-    static func task(_ name: String) -> URL? { url(host: "task", name: name) }
-
     /// The habit's page in the Habits tab (habit widgets open it).
     static func habit(_ name: String) -> URL? { url(host: "habit", name: name) }
 

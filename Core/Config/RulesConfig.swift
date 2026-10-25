@@ -55,6 +55,10 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let habitGridWeeksSmall: Int
         /// Hours the one-column timeline shows in the Today widget.
         let timelineHours: Int
+        /// The widget timeline starts at most this many hours before now.
+        let maxHoursBefore: Int
+        /// Background refresh (vault, widgets, notifications) is asked for this often.
+        let backgroundRefreshMinutes: Int
     }
 
     struct Habits: Codable, Hashable, Sendable {
@@ -83,6 +87,34 @@ struct RulesConfig: Codable, Hashable, Sendable {
         }
     }
 
+    /// Ranges of the number controls on settings and note pages.
+    struct Limits: Codable, Hashable, Sendable {
+        struct Range: Codable, Hashable, Sendable {
+            let min: Double
+            let max: Double
+            /// The slider step, when it has one.
+            var step: Double?
+
+            var closed: ClosedRange<Double> { min...max }
+
+            /// The nearest step (unchanged without one).
+            func snapped(_ value: Double) -> Double {
+                guard let step, step > 0 else { return value }
+                return (value / step).rounded() * step
+            }
+            var ints: ClosedRange<Int> { Int(min)...Int(max) }
+        }
+
+        let poolVisibleCount: Range
+        let hoursBefore: Range
+        let bellSize: Range
+        let bellOpacity: Range
+        let fontSize: Range
+        let pastOpacity: Range
+        let recurrenceInterval: Range
+        let recurrenceCount: Range
+    }
+
     let day: DayRules
     let timeEstimates: [EstimateOption]
     let notifications: Notifications
@@ -92,7 +124,20 @@ struct RulesConfig: Codable, Hashable, Sendable {
     let timeline: Timeline
     let widgets: Widgets
     let habits: Habits
+    /// Values a new date, time, reminder or repeat end starts from.
+    struct Editing: Codable, Hashable, Sendable {
+        let defaultTime: LocalTime
+        /// A new habit reminder comes this long after the last one.
+        let nextReminderGapMinutes: Int
+        /// The note text is saved this long after typing stops.
+        let noteSaveDelaySeconds: Double
+        let repeatUntilDays: Int
+        let repeatCount: Int
+    }
+
     let pool: Pool
+    let limits: Limits
+    let editing: Editing
 }
 
 /// Order of the pool sort criteria (`sort.json`).

@@ -12,7 +12,6 @@ struct TodayScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
-    @Environment(\.icons) private var icons
     @Environment(\.openURL) private var openURL
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @State private var pendingAction: PendingAction?
@@ -93,7 +92,8 @@ struct TodayScreen: View {
     private func daySwipe(width: CGFloat) -> some Gesture {
         DragGesture(minimumDistance: tokens.size(.daySwipeStart))
             .onChanged { value in
-                guard abs(value.translation.width) > abs(value.translation.height) * 1.5 else { return }
+                guard TodaySwipe.isHorizontal(width: value.translation.width, height: value.translation.height,
+                                              axisRatio: tokens.size(.daySwipeAxisRatio)) else { return }
                 let distance = value.translation.width
                 switch TodaySwipe.move(forward: distance < 0, page: page, pageCount: pageCount) {
                 case .page:
@@ -106,8 +106,9 @@ struct TodayScreen: View {
             }
             .onEnded { value in
                 let distance = value.translation.width
-                let isSwipe = abs(distance) > abs(value.translation.height) * 1.5
-                    && (abs(distance) > width * tokens.opacity(.daySwipeThreshold) || abs(value.predictedEndTranslation.width) > width / 2)
+                let isSwipe = TodaySwipe.isSwipe(width: distance, height: value.translation.height,
+                                                 predictedWidth: value.predictedEndTranslation.width, containerWidth: width,
+                                                 threshold: tokens.opacity(.daySwipeThreshold), axisRatio: tokens.size(.daySwipeAxisRatio))
                 guard isSwipe else {
                     withAnimation(tokens.animation) {
                         dragX = 0
@@ -138,7 +139,7 @@ struct TodayScreen: View {
             Text(DayName.format(day, offset: dayOffset, calendar: model.calendar))
                 .font(tokens.font(.navTitle))
         }
-        .tint(.primary)
+        .tint(tokens.color(.accent))
         .accessibilityIdentifier("today.day")
     }
 
@@ -166,12 +167,12 @@ struct TodayButtons: View {
         switch placement {
         case .leading:
             Button { router.isReviewPresented = true } label: { Image(systemName: icons[.edit]) }
-                .tint(.primary)
+                .tint(tokens.color(.accent))
                 .accessibilityLabel(Text("review.title"))
                 .accessibilityIdentifier("today.review")
             if model.config.flags.problemBadge, model.problemCount > 0 {
                 Button { router.isProblemsPresented = true } label: {
-                    HStack(spacing: 4) {
+                    HStack(spacing: tokens.space(.badgeGap)) {
                         Image(systemName: icons[.problem])
                         Text(verbatim: "\(model.problemCount)").font(tokens.font(.poolCounter))
                     }
@@ -181,11 +182,11 @@ struct TodayButtons: View {
             }
         case .trailing:
             Button { router.open(.newTask) } label: { Image(systemName: icons[.newTask]) }
-                .tint(.primary)
+                .tint(tokens.color(.accent))
                 .accessibilityLabel(Text("task.new.title"))
                 .accessibilityIdentifier("today.newTask")
             Button { router.open(.search) } label: { Image(systemName: icons[.search]) }
-                .tint(.primary)
+                .tint(tokens.color(.accent))
                 .accessibilityLabel(Text("search.title"))
                 .accessibilityIdentifier("today.search")
         }

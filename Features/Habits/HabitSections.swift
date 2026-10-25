@@ -40,12 +40,7 @@ struct HabitHistorySection: View {
         let metrics = HabitDotMetrics.fitting(width: width - inner * 2, ringRatio: tokens.size(.habitRingRatio))
         let shape = RoundedRectangle(cornerRadius: tokens.radius(.plate), style: .continuous)
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 4) {
-                Text("habitPage.history").font(tokens.font(.sectionHeader)).foregroundStyle(tokens.color(.tertiaryText))
-                InfoButton(text: "info.habitPage.history", tint: tokens.color(.tertiaryText))
-            }
-            .padding(.horizontal, inner)
-            .padding(.bottom, tokens.space(.headerToPlate))
+            PlateHeader(title: "habitPage.history", info: "info.habitPage.history")
             VStack(spacing: 0) {
                 WeekdayHeader(metrics: metrics).padding(.top, inner)
                 ScrollView {
@@ -163,7 +158,7 @@ struct HabitGoalSection: View {
             case .weeklyGoal(let times):
                 PlateRow(icon: nil, title: "habitPage.goal.timesAWeek", indent: true) {
                     Stepper(String(times), value: Binding(get: { times }, set: { editor.apply([.weeklyGoal($0)]) }),
-                            in: 1...(options.unitsPerDay > 1 ? 14 : 7))
+                            in: 1...(Weekday.allCases.count * Int(options.unitsPerDay)))
                         .fixedSize()
                 }
             }

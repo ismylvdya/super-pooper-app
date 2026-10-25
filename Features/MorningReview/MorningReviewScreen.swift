@@ -8,7 +8,6 @@ import SwiftUI
 /// (and in tomorrow's review); swiping it there brings it back.
 struct MorningReviewScreen: View {
     @Environment(AppModel.self) private var model
-    @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
     @State private var path: [Route] = []
@@ -126,7 +125,7 @@ struct ReviewRow: View {
                 }
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, tokens.space(.reviewRowVertical))
         .padding(.trailing, tokens.size(.reviewChevron))
         .frame(maxWidth: .infinity, alignment: .leading)
         .overlay(alignment: .trailing) {
@@ -158,10 +157,10 @@ struct ReviewRow: View {
             Toggle("review.due.exact", isOn: Binding(get: { task.due != nil && !isToday && !isTomorrow },
                                                     set: { _ in isPickingDate = true }))
         } label: {
-            Chip(icon: .due, text: task.due.map { DueText.format($0, today: today) }, isOn: task.due != nil)
+            Chip(icon: .due, text: task.due.map { DueText.format($0, today: today, calendar: model.calendar) }, isOn: task.due != nil)
         }
         .sheet(isPresented: $isPickingDate) {
-            DueDateSheet(due: task.due ?? TaskDue(day: today, time: LocalTime(hour: 9, minute: 0))) { setDue($0) }
+            DueDateSheet(due: task.due ?? TaskDue(day: today, time: rules.editing.defaultTime), calendar: model.calendar) { setDue($0) }
         }
     }
 

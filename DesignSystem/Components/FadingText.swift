@@ -56,6 +56,7 @@ struct FadingText: View {
 /// The mark of a timeline block that will send a notification: a plain bell in the text color, faded.
 /// Size and opacity come from the settings.
 struct AlertBell: View {
+    @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
     @Environment(\.timelineBell) private var bell
 
@@ -64,19 +65,19 @@ struct AlertBell: View {
             .resizable()
             .scaledToFit()
             .frame(width: bell.size, height: bell.size)
-            .foregroundStyle(Color.primary.opacity(bell.opacity))
+            .foregroundStyle(tokens.color(.primaryText).opacity(bell.opacity))
             .accessibilityLabel(Text("timeline.alert"))
     }
 }
 
 /// Bell size and opacity from the settings, and the room titles keep free for the corner icons.
 struct TimelineBellStyle: Equatable {
-    var size: CGFloat = 11
-    var opacity: Double = 0.45
+    var size: CGFloat
+    var opacity: Double
 }
 
 private struct TimelineBellKey: EnvironmentKey {
-    static let defaultValue = TimelineBellStyle()
+    static let defaultValue = BundledConfig.settings.timeline.bellStyle
 }
 
 private struct TitleReserveKey: EnvironmentKey {

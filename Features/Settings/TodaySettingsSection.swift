@@ -53,7 +53,7 @@ struct ArrangementPreview: View {
         ScreenLayoutView(layout: model.config.todayLayout(for: arrangement)) { id in
             if id == "pool" { pool } else { timeline }
         }
-        .frame(height: 120)
+        .frame(height: tokens.size(.previewHeight))
         .padding(tokens.space(.chipGap))
         .background(tokens.color(.screenBackground), in: RoundedRectangle(cornerRadius: tokens.radius(.timelineItem), style: .continuous))
         .animation(tokens.animation, value: arrangement)
@@ -61,25 +61,29 @@ struct ArrangementPreview: View {
     }
 
     private var pool: some View {
-        VStack(spacing: 4) {
-            ForEach(0..<3, id: \.self) { _ in
-                RoundedRectangle(cornerRadius: 4, style: .continuous).fill(tokens.color(.plateBackground)).frame(height: 16)
+        VStack(spacing: tokens.space(.previewRowGap)) {
+            ForEach(0..<Int(tokens.size(.previewRows)), id: \.self) { _ in
+                RoundedRectangle(cornerRadius: tokens.radius(.previewItem), style: .continuous)
+                    .fill(tokens.color(.plateBackground))
+                    .frame(height: tokens.size(.previewRow))
             }
             if arrangement != .stacked { Spacer(minLength: 0) }
         }
-        .frame(idealWidth: 80)
+        .frame(idealWidth: tokens.size(.previewPoolWidth))
     }
 
     private var timeline: some View {
         VStack(spacing: 0) {
-            ForEach(0..<6, id: \.self) { _ in
-                Rectangle().fill(tokens.color(.timelineGrid)).frame(height: 0.5)
+            ForEach(0..<Int(tokens.size(.previewHours)), id: \.self) { _ in
+                Rectangle().fill(tokens.color(.timelineGrid)).frame(height: tokens.size(.gridLine))
                 Spacer(minLength: 0)
             }
         }
         .overlay(alignment: .topLeading) {
-            RoundedRectangle(cornerRadius: 4, style: .continuous).fill(tokens.color(.accent).opacity(0.35))
-                .frame(height: 22).padding(.top, 30)
+            RoundedRectangle(cornerRadius: tokens.radius(.previewItem), style: .continuous)
+                .fill(tokens.color(.accent).opacity(tokens.opacity(.previewBlock)))
+                .frame(height: tokens.size(.previewBlock))
+                .padding(.top, tokens.size(.previewBlockTop))
         }
     }
 }

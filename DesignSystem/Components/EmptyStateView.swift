@@ -13,7 +13,7 @@ struct EmptyStateView: View {
     var body: some View {
         VStack(spacing: tokens.space(.groupGap)) {
             Image(systemName: icons[icon])
-                .font(.system(size: 52))
+                .font(tokens.font(.emptyIcon))
                 .foregroundStyle(tokens.color(.accent))
             Text(title).font(tokens.font(.emptyTitle)).multilineTextAlignment(.center)
             Text(message)
@@ -21,7 +21,7 @@ struct EmptyStateView: View {
                 .foregroundStyle(tokens.color(.secondaryText))
                 .multilineTextAlignment(.center)
             if let actionTitle, let action {
-                Button(action: action) { Text(actionTitle).fontWeight(.semibold) }
+                Button(action: action) { Text(actionTitle).font(tokens.font(.emptyAction)) }
                     .buttonStyle(.borderedProminent)
                     .tint(tokens.color(.accent))
             }

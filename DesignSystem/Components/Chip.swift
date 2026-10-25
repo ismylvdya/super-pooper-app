@@ -10,7 +10,7 @@ struct Chip: View {
     var isOn = true
 
     var body: some View {
-        HStack(spacing: 3) {
+        HStack(spacing: tokens.space(.chipIconGap)) {
             if let icon { Image(systemName: icons[icon]) }
             if let text { Text(text).lineLimit(1) }
         }

@@ -7,6 +7,8 @@ struct TimelineSettingsSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
 
+    private var limits: RulesConfig.Limits { model.config.rules.limits }
+
     var body: some View {
         PlateSection(header: "settings.timeline", info: "info.settings.timeline", hint: "settings.timeline.hint") {
             TimelinePreview(settings: model.settings)
@@ -28,7 +30,7 @@ struct TimelineSettingsSection: View {
             }
             switch model.settings.timelineMode {
             case .aroundNow:
-                stepper(.hoursBefore, "settings.timeline.hoursBefore", "info.settings.timeline.hoursBefore", \.hoursBefore, 0...6)
+                stepper(.hoursBefore, "settings.timeline.hoursBefore", "info.settings.timeline.hoursBefore", \.hoursBefore, limits.hoursBefore.ints)
                 stepper(.hoursAfter, "settings.timeline.hoursAfter", "info.settings.timeline.hoursAfter", \.hoursAfter,
                         1...model.config.rules.timeline.maxHoursAfter)
             case .wholeDay:
@@ -37,15 +39,15 @@ struct TimelineSettingsSection: View {
                 halfRow("settings.timeline.firstHalf", \.firstHalf)
                 halfRow("settings.timeline.secondHalf", \.secondHalf)
             }
-            slider(.fontSize, "settings.timeline.eventFont", "info.settings.timeline.eventFont", \.eventFontSize)
-            slider(.fontSize, "settings.timeline.taskFont", "info.settings.timeline.taskFont", \.taskFontSize)
-            slider(.bell, "settings.timeline.bellSize", "info.settings.timeline.bell", \.bellSize, range: 7...20)
+            slider(.fontSize, "settings.timeline.eventFont", "info.settings.timeline.eventFont", \.eventFontSize, limits.fontSize)
+            slider(.fontSize, "settings.timeline.taskFont", "info.settings.timeline.taskFont", \.taskFontSize, limits.fontSize)
+            slider(.bell, "settings.timeline.bellSize", "info.settings.timeline.bell", \.bellSize, limits.bellSize)
             VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
                 PlateRow(icon: .opacity, title: "settings.timeline.bellOpacity") {
                     Text(model.settings.timeline.bellOpacity.formatted(.percent.precision(.fractionLength(0))))
                         .foregroundStyle(tokens.color(.secondaryText))
                 }
-                Slider(value: binding(\.bellOpacity), in: 0.1...1, step: 0.05)
+                Slider(value: binding(\.bellOpacity), in: limits.bellOpacity.closed, step: limits.bellOpacity.step ?? 0)
             }
             shownToggle(.event, "settings.timeline.showEvents", \.events)
             shownToggle(.reminder, "settings.timeline.showReminders", \.reminders)
@@ -79,21 +81,21 @@ struct TimelineSettingsSection: View {
     private func halfRow(_ title: LocalizedStringKey, _ keyPath: WritableKeyPath<AppSettings.Timeline, AppSettings.TimeRange>,
                          info: LocalizedStringKey = "info.settings.timeline.halves") -> some View {
         PlateRow(icon: .halves, title: title, info: info, indent: true) {
-            HStack(spacing: 4) {
+            HStack(spacing: tokens.space(.titleInfoGap)) {
                 TimeField(time: binding(keyPath.appending(path: \.start)))
-                Text(verbatim: "–")
+                Text("common.dash")
                 TimeField(time: binding(keyPath.appending(path: \.end)))
             }
         }
     }
 
     private func slider(_ icon: Icon, _ title: LocalizedStringKey, _ info: LocalizedStringKey,
-                        _ keyPath: WritableKeyPath<AppSettings.Timeline, Double>, range: ClosedRange<Double> = 11...22) -> some View {
+                        _ keyPath: WritableKeyPath<AppSettings.Timeline, Double>, _ range: RulesConfig.Limits.Range) -> some View {
         VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
             PlateRow(icon: icon, title: title, info: info) {
-                Text(verbatim: "\(Int(model.settings.timeline[keyPath: keyPath])) pt").foregroundStyle(tokens.color(.secondaryText))
+                Text(L10n.format("settings.points", Int(model.settings.timeline[keyPath: keyPath]))).foregroundStyle(tokens.color(.secondaryText))
             }
-            Slider(value: binding(keyPath), in: range, step: 1)
+            Slider(value: binding(keyPath), in: range.closed, step: range.step ?? 1)
         }
     }
 }

@@ -8,14 +8,14 @@ enum Icon: String, CaseIterable, Sendable {
     case vault, calendars, reminderLists, notifications
     case dayBoundary, energyHour, timelineLayout, hoursAfter, hoursBefore, halves, fontSize, poolCount
     case archive, delete, edit, version, search, resetOrder, add, newTask, colors, remove, chevron, status, note, title, recurrence
-    case checkboxOpen, markDone, markPartial, markTwice
-    case emptyVault, debugSeed, permissionGranted, permissionMissing
+    case checkboxOpen, markDone
+    case emptyVault, debugSeed, permissionGranted
     case tabToday, tabHabits, tabSettings
     case bell, olderWeeks, postpone
     /// Asset catalog template images (not SF Symbols): the habit marks, shared by menus and notifications.
     case habitMarkOpen, habitMarkDone, habitMarkPartial, habitMarkTwice
     case today, harmful, timeOfDay, goal, trash, restore, links, opacity, obsidian, habitSettings, taskSettings, clockSettings
-    case tomorrow, subtask, addSubtask
+    case tomorrow, subtask, addSubtask, selected
 }
 
 typealias IconSet = TokenTable<Icon, String>

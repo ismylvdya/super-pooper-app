@@ -22,10 +22,11 @@ struct DesignTokens: Decodable, Sendable {
     var animation: Animation { .easeInOut(duration: duration(.animation)) }
 
     /// The user's appearance settings over the bundled tokens: colors and the opacity of done/past items.
-    func applying(_ settings: AppSettings) -> DesignTokens {
+    func applying(_ settings: AppSettings, limits: RulesConfig.Limits) -> DesignTokens {
         let colored = overridingColors(settings.colors)
+        let past = min(max(settings.appearance.pastOpacity, limits.pastOpacity.min), limits.pastOpacity.max)
         return DesignTokens(spacing: spacing, radius: radius, size: size,
-                            opacity: colored.opacity.replacing([.past: min(max(settings.appearance.pastOpacity, 0.05), 1)]),
+                            opacity: colored.opacity.replacing([.past: past]),
                             duration: duration, font: font, color: colored.color)
     }
 

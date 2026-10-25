@@ -34,10 +34,7 @@ final class AppContainer {
     init(config: AppConfig, launch: LaunchOptions) {
         self.config = config
         self.launch = launch
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = .current
-        calendar.firstWeekday = Weekday.monday.rawValue + 1
-        calendar.locale = Locale.current
+        let calendar = AppCalendar.make()
 
         let shared = JSONFileStore(directory: AppGroupContainer.directory())
         if launch.resetState {

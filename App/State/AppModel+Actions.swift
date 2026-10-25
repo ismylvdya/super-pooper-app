@@ -1,12 +1,6 @@
 import Foundation
 
 extension AppModel {
-    /// Tap on a task: check it off or un-check it. Links only order tasks; they never prevent a check.
-    func toggle(_ name: String) async {
-        guard let task = task(named: name) else { return }
-        await write(task, TaskMarking(today: context().today).changes(toggling: task))
-    }
-
     /// `day`: a habit mark for that day (habit page, notifications); `nil` = today.
     func perform(_ action: ActionID, on name: String, day: LocalDate? = nil) async {
         guard let task = task(named: name) else { return }

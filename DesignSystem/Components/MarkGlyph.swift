@@ -7,8 +7,6 @@ struct MarkGlyph: View {
     @Environment(\.icons) private var icons
     let state: DayItemState
     let color: Color
-    /// A small lock: the task comes after something unfinished (it can still be checked).
-    var showsLock = false
     var size: CGFloat?
 
     var body: some View {
@@ -19,15 +17,7 @@ struct MarkGlyph: View {
             .symbolRenderingMode(.hierarchical)
             .foregroundStyle(color)
             .frame(width: size ?? tokens.size(.checkbox), height: size ?? tokens.size(.checkbox))
-            .overlay(alignment: .bottomTrailing) {
-                if showsLock {
-                    Image(systemName: icons[.blocked])
-                        .font(.system(size: (size ?? tokens.size(.checkbox)) * 0.4))
-                        .foregroundStyle(tokens.color(.secondaryText))
-                        .offset(x: tokens.size(.badgeOffset), y: tokens.size(.badgeOffset))
-                }
-            }
-            .padding(3)
+            .padding(tokens.space(.markPadding))
     }
 
     private var icon: Icon {

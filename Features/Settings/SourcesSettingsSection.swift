@@ -48,7 +48,7 @@ struct SourcesSettingsSection: View {
     }
 
     private func count(_ value: Int) -> some View {
-        HStack(spacing: 6) {
+        HStack(spacing: tokens.space(.valueChevronGap)) {
             Text(verbatim: "\(value)").foregroundStyle(tokens.color(.secondaryText))
             Image(systemName: icons[.chevron]).foregroundStyle(tokens.color(.tertiaryText))
         }
@@ -94,7 +94,7 @@ struct SourcePickerScreen: View {
                                 Text(item.title).foregroundStyle(tokens.color(.primaryText))
                                 Spacer()
                                 if selected.contains(item.id) {
-                                    Image(systemName: "checkmark").foregroundStyle(tokens.color(.accent))
+                                    Image(systemName: icons[.selected]).foregroundStyle(tokens.color(.accent))
                                 }
                             }
                         }

@@ -15,7 +15,6 @@ import SwiftUI
         MarkGlyph(state: .marked(.done), color: .purple)
         MarkGlyph(state: .marked(.partial), color: .purple)
         MarkGlyph(state: .marked(.twice), color: .purple)
-        MarkGlyph(state: .open, color: .blue, showsLock: true)
     }
 }
 
@@ -52,7 +51,10 @@ import SwiftUI
         DayTimelineView(slots: plan.timeline,
                         window: TimelineWindow.rolling(now: plan.now, hoursBefore: 2, hoursAfter: 9, calendar: context.calendar),
                         now: plan.now, hourHeight: 64,
-                        style: TimelineStyle(eventFont: .subheadline, taskFont: .subheadline, minimumItemHeight: 34)) { item, _ in
+                        style: TimelineStyle(eventFont: .subheadline, taskFont: .subheadline,
+                                             eventLineHeight: UIFont.preferredFont(forTextStyle: .subheadline).lineHeight,
+                                             taskLineHeight: UIFont.preferredFont(forTextStyle: .subheadline).lineHeight,
+                                             minimumItemHeight: 34)) { item, _ in
             TaskRowView(item: item, today: plan.today, showsDetails: false)
         }
         .padding()

@@ -4,14 +4,15 @@ import SwiftUI
 /// Drawn with its top at the spot; the caller offsets it there.
 struct TimelineDropMarker: View {
     @Environment(\.tokens) private var tokens
+    @Environment(\.calendar) private var calendar
     let moment: Date
     let labelWidth: CGFloat
     let width: CGFloat
 
     var body: some View {
-        let minute = Calendar.current.component(.minute, from: moment)
+        let minute = calendar.component(.minute, from: moment)
         HStack(alignment: .center, spacing: tokens.space(.hourLabelGap)) {
-            Text(verbatim: String(format: ":%02d", minute))
+            Text(L10n.format("timeline.dropMinutes", minute))
                 .font(tokens.font(.timelineHour).monospacedDigit())
                 .foregroundStyle(tokens.color(.accent))
                 .frame(width: max(labelWidth - tokens.space(.hourLabelGap), 0), alignment: .trailing)

@@ -18,6 +18,7 @@ private struct PullToExtend: ViewModifier {
 
     func body(content: Content) -> some View {
         let threshold = tokens.size(.pullThreshold)
+        let start = tokens.size(.pullStartScale)
         content
             .onScrollGeometryChange(for: CGFloat.self) { max(0, -($0.contentOffset.y + $0.contentInsets.top)) } action: { _, new in
                 pull = new
@@ -35,9 +36,9 @@ private struct PullToExtend: ViewModifier {
             }
             .overlay(alignment: .top) {
                 Image(systemName: icons[icon])
-                    .font(.system(size: tokens.size(.pullIcon), weight: .semibold))
+                    .font(tokens.font(.pullIcon))
                     .foregroundStyle(tokens.color(.secondaryText))
-                    .scaleEffect(isArmed ? 1.2 : 0.6 + 0.4 * min(pull / threshold, 1))
+                    .scaleEffect(isArmed ? tokens.size(.pullArmedScale) : start + (1 - start) * min(pull / threshold, 1))
                     .opacity(min(pull / threshold, 1))
                     .offset(y: max(pull / 2 - tokens.size(.pullIcon) / 2, 0))
                     .animation(.easeOut(duration: tokens.duration(.animation)), value: isArmed)

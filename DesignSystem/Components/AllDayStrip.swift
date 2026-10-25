@@ -7,7 +7,7 @@ struct AllDayStrip: View {
     @Environment(\.icons) private var icons
     let events: [CalendarEvent]
     var font: Font?
-    var lineHeight: CGFloat = 16
+    let lineHeight: CGFloat
     var onTap: ((CalendarEvent) -> Void)?
     var onDelete: ((CalendarEvent) -> Void)?
 
@@ -34,7 +34,7 @@ struct AllDayStrip: View {
 
     /// Widgets have no buttons: the bar is plain there.
     private func bar(_ event: CalendarEvent) -> some View {
-        HStack(spacing: 4) {
+        HStack(spacing: tokens.space(.dotTextGap)) {
             Circle().fill(Color(hex: event.colorHex)).frame(width: tokens.size(.problemDot), height: tokens.size(.problemDot))
             FadingText(text: event.title, font: font ?? tokens.font(.chip), lineHeight: lineHeight)
         }

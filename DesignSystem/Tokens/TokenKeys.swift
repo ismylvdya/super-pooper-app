@@ -5,22 +5,22 @@ enum SpacingToken: String, CaseIterable, Sendable {
     case screenHorizontal, screenBottom, groupGap, plateInner, plateRowGap, headerToPlate, hintToPlate
     case iconTextGap, chipHorizontal, chipVertical, chipGap, infoPadding, nestedTitleInset, nestedTitleLift
     case childIndent, rowVertical, poolRowGap, blockGap, timelineLabelWidth, timelineItemGap, timelineItemPadding
-    case bannerTop, bannerPadding, widgetPadding, habitCellGap, titleBottom, hourLabelGap, bellInset, liftShadow, listRowInset, toggleChipHorizontal, toggleChipVertical
+    case bannerTop, bannerPadding, widgetPadding, habitCellGap, hourLabelGap, bellInset, liftShadow, listRowInset, toggleChipHorizontal, toggleChipVertical, titleInfoGap, chipIconGap, dotTextGap, valueChevronGap, reviewRowVertical, markPadding, badgeGap, progressGap, linkBadgeTrailing, timelineTitleExtra, previewRowGap
 }
 
 enum RadiusToken: String, CaseIterable, Sendable {
-    case plate, chip, timelineItem, banner, poolRow, habitCell, widgetItem
+    case plate, chip, timelineItem, banner, poolRow, habitCell, widgetItem, previewItem
 }
 
 enum SizeToken: String, CaseIterable, Sendable {
-    case badgeOffset, iconColumn, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, navTitleStep
-    case problemDot, sourceDot, habitCell, fadeHeight, bannerLines, poolRowEstimate, poolCounter, poolWidth, widgetRowHeight
-    case habitRingRatio, habitPartialDot, habitMenuDot, habitHistoryMaxHeight, habitStatsBar, infoMaxHeightRatio, linkBadge, titleFade, hourDigitsWidth, pullThreshold, pullIcon, actionPopoverWidth, daySwipeStart, reviewChevron, timelineZoomMin, timelineZoomMax, wrapMinWidth, narrowFadeShift, liftOverhang, pagePeek, dropLine, dropMarkerHeight
+    case iconColumn, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin
+    case problemDot, sourceDot, fadeHeight, bannerLines, poolRowEstimate, poolCounter, poolWidth
+    case habitRingRatio, habitPartialDot, habitHistoryMaxHeight, habitStatsBar, infoMaxHeightRatio, linkBadge, titleFade, hourDigitsWidth, pullThreshold, pullIcon, actionPopoverWidth, daySwipeStart, reviewChevron, timelineZoomMin, timelineZoomMax, wrapMinWidth, narrowFadeShift, liftOverhang, pagePeek, dropLine, dropMarkerHeight, screenHeightEstimate, bannerShadowRadius, bannerShadowY, bannerDismissDistance, bannerDismissFling, tapSlop, hexFieldWidth, noteEditorMinHeight, pullArmedScale, pullStartScale, daySwipeAxisRatio, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, allDayFontDelta, previewHeight, previewRow, previewRows, previewHours, previewPoolWidth, previewBlock, previewBlockTop
 }
 
 enum OpacityToken: String, CaseIterable, Sendable {
-    case blocked, past, eventFill, taskFill, doneText, fadeTop, fadeMiddle, habitEmpty, partialFill
-    case gridFadedWeek, unlinked, eventTime, nowOverBlocks, daySwipeThreshold, daySwipeFade, toggleChipFill
+    case blocked, past, eventFill, fadeTop, fadeMiddle, habitEmpty
+    case gridFadedWeek, unlinked, eventTime, nowOverBlocks, daySwipeThreshold, daySwipeFade, toggleChipFill, bannerShadow, previewBlock
 }
 
 enum DurationToken: String, CaseIterable, Sendable {
@@ -30,12 +30,12 @@ enum DurationToken: String, CaseIterable, Sendable {
 enum FontToken: String, CaseIterable, Sendable {
     case pageTitle, navTitle, sectionHeader, rowTitle, hint, chip, info, timelineHour, banner, poolCounter
     case taskTitle, emptyTitle, emptyBody, footer, widgetTitle, widgetCaption, caption, noteEditor
-    case nameField, statValue, toggleChip
+    case statValue, toggleChip, pullIcon, emptyIcon, emptyAction, linkBadge
 }
 
 enum ColorToken: String, CaseIterable, Sendable {
-    case accent, task, habit, high, energy, pleasant, heart, nowLine, problem, partial, twice
+    case accent, task, habit, high, energy, pleasant, heart, nowLine, problem, twice
     case past, swipeNeutral, screenBackground, plateBackground, chipBackground, primaryText, secondaryText, tertiaryText
-    case separator, bannerBackground, infoText, destructive, habitEmpty, eventText, timelineGrid
-    case missed, success, warning, error
+    case bannerBackground, infoText, destructive, eventText, timelineGrid
+    case missed, success, warning, error, shadow
 }

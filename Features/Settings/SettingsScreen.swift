@@ -53,6 +53,7 @@ struct TaskSettingsScreen: View {
 
 /// A plate row that pushes a page.
 struct SettingsLink: View {
+    @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
     let route: Route
     let icon: Icon
@@ -62,8 +63,8 @@ struct SettingsLink: View {
     var body: some View {
         NavigationLink(value: route) {
             PlateRow(icon: icon, title: title) {
-                if let value { Text(verbatim: value).foregroundStyle(.secondary) }
-                Image(systemName: icons[.chevron]).foregroundStyle(.tertiary)
+                if let value { Text(verbatim: value).foregroundStyle(tokens.color(.secondaryText)) }
+                Image(systemName: icons[.chevron]).foregroundStyle(tokens.color(.tertiaryText))
             }
         }
         .buttonStyle(.plain)
@@ -101,7 +102,7 @@ struct PoolSettingsSection: View {
             SettingsLink(route: .poolOrder, icon: .resetOrder, title: "sort.title")
             PlateRow(icon: .poolCount, title: "settings.pool.visible", info: "info.settings.pool.visible") {
                 Stepper(value: Binding(get: { model.settings.pool.visibleCount },
-                                       set: { value in model.updateSettings { $0.pool.visibleCount = value } }), in: 1...10) {
+                                       set: { value in model.updateSettings { $0.pool.visibleCount = value } }), in: model.config.rules.limits.poolVisibleCount.ints) {
                     Text(verbatim: "\(model.settings.pool.visibleCount)")
                 }
                 .fixedSize()
@@ -133,7 +134,6 @@ struct NotificationSettingsSection: View {
 /// DEBUG only: creates demo calendar events and reminders in the simulator.
 struct DebugSettingsSection: View {
     @Environment(AppModel.self) private var model
-    @Environment(\.icons) private var icons
 
     var body: some View {
         PlateSection(header: "settings.debug", hint: "settings.debug.hint") {

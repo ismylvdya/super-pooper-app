@@ -38,9 +38,4 @@ struct TaskActionHandler {
             Task { await model.perform(action.id, on: taskName) }
         }
     }
-
-    func toggle(_ taskName: String) {
-        Haptics.play(.light)
-        Task { await model.toggle(taskName) }
-    }
 }

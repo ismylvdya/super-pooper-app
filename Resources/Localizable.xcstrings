@@ -1,17 +1,6 @@
 {
   "sourceLanguage": "en",
   "strings": {
-    "a11y.check": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mark as done"
-          }
-        }
-      }
-    },
     "a11y.dismiss": {
       "extractionState": "manual",
       "localizations": {
@@ -30,17 +19,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "About this setting"
-          }
-        }
-      }
-    },
-    "a11y.uncheck": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mark as not done"
           }
         }
       }
@@ -518,6 +496,17 @@
         }
       }
     },
+    "common.dash": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "–"
+          }
+        }
+      }
+    },
     "common.done": {
       "extractionState": "manual",
       "localizations": {
@@ -529,35 +518,35 @@
         }
       }
     },
-    "common.none": {
+    "common.listSeparator": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "None"
+            "value": ", "
           }
         }
       }
     },
-    "common.off": {
+    "common.noValue": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Off"
+            "value": "—"
           }
         }
       }
     },
-    "common.on": {
+    "common.range": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "On"
+            "value": "%1$@–%2$@"
           }
         }
       }
@@ -756,6 +745,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Yesterday, %@"
+          }
+        }
+      }
+    },
+    "due.dayAndTime": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ %2$@"
           }
         }
       }
@@ -1086,17 +1086,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "History"
-          }
-        }
-      }
-    },
-    "habitPage.history.hint": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tap a day to mark it, long press for Partially or Twice."
           }
         }
       }
@@ -1915,17 +1904,6 @@
         }
       }
     },
-    "info.taskPage.name": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The task name is the note’s file name. Changing it renames the file and updates links from other tasks."
-          }
-        }
-      }
-    },
     "info.taskPage.note": {
       "extractionState": "manual",
       "localizations": {
@@ -2560,6 +2538,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Every month"
+          }
+        }
+      }
+    },
+    "recurrence.nth": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld. %2$@"
           }
         }
       }
@@ -3290,6 +3279,17 @@
         }
       }
     },
+    "settings.colors.hex": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "#RRGGBB"
+          }
+        }
+      }
+    },
     "settings.colors.hint": {
       "extractionState": "manual",
       "localizations": {
@@ -3616,6 +3616,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Done task"
+          }
+        }
+      }
+    },
+    "settings.points": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld pt"
           }
         }
       }
@@ -4808,17 +4819,6 @@
         }
       }
     },
-    "taskPage.plan": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Priority and date"
-          }
-        }
-      }
-    },
     "taskPage.pleasant": {
       "extractionState": "manual",
       "localizations": {
@@ -4973,6 +4973,17 @@
         }
       }
     },
+    "timeline.dropMinutes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ":%02lld"
+          }
+        }
+      }
+    },
     "timeline.links": {
       "extractionState": "manual",
       "localizations": {
@@ -4980,17 +4991,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Show linked blocks"
-          }
-        }
-      }
-    },
-    "today.edit": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Edit"
           }
         }
       }

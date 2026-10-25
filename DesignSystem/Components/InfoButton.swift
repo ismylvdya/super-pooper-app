@@ -46,7 +46,7 @@ private struct InfoBubble: View {
 }
 
 private struct ScreenHeightKey: EnvironmentKey {
-    static let defaultValue: CGFloat = 800
+    static let defaultValue = BundledConfig.tokens.size(.screenHeightEstimate)
 }
 
 extension EnvironmentValues {

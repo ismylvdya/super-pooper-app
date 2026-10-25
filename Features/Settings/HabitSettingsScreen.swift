@@ -5,6 +5,7 @@ import SwiftUI
 struct HabitSettingsScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.rules) private var rules
+    @Environment(\.tokens) private var tokens
 
     var body: some View {
         PageScaffold(title: L10n.string("settings.habits")) {
@@ -24,10 +25,10 @@ struct HabitSettingsScreen: View {
             }
             PlateSection(header: "settings.habits.partsOfDay", info: "info.settings.habits.partsOfDay") {
                 PlateRow(icon: .timeOfDay, title: "habitPage.timeOfDay.morning") {
-                    Text(L10n.format("settings.habits.until", rules.day.morningEnds.string)).foregroundStyle(.secondary)
+                    Text(L10n.format("settings.habits.until", rules.day.morningEnds.string)).foregroundStyle(tokens.color(.secondaryText))
                 }
                 PlateRow(icon: nil, title: "habitPage.timeOfDay.evening") {
-                    Text(L10n.format("settings.habits.from", rules.day.eveningStarts.string)).foregroundStyle(.secondary)
+                    Text(L10n.format("settings.habits.from", rules.day.eveningStarts.string)).foregroundStyle(tokens.color(.secondaryText))
                 }
             }
         }
@@ -41,13 +42,14 @@ struct AppearanceSettingsSection: View {
 
     var body: some View {
         let opacity = model.settings.appearance.pastOpacity
+        let limits = model.config.rules.limits.pastOpacity
         PlateSection(header: "settings.appearance", info: "info.settings.pastOpacity") {
             PlateRow(icon: .opacity, title: "settings.pastOpacity") {
-                Text(opacity.formatted(.percent.precision(.fractionLength(0)))).monospacedDigit().foregroundStyle(.secondary)
+                Text(opacity.formatted(.percent.precision(.fractionLength(0)))).monospacedDigit().foregroundStyle(tokens.color(.secondaryText))
             }
             Slider(value: Binding(get: { opacity },
-                                  set: { value in model.updateSettings { $0.appearance.pastOpacity = (value * 20).rounded() / 20 } }),
-                   in: 0.05...1)
+                                  set: { value in model.updateSettings { $0.appearance.pastOpacity = limits.snapped(value) } }),
+                   in: limits.closed)
                 .accessibilityIdentifier("settings.pastOpacity")
             preview
         }
@@ -64,7 +66,7 @@ struct AppearanceSettingsSection: View {
         let slot = TimelineSlot(content: .event(event), start: event.start, end: event.end, isPast: true)
         return VStack(alignment: .leading, spacing: tokens.space(.poolRowGap)) {
             TaskRowView(item: item, today: model.context().today, isCompact: true).taskPlate(isDone: true)
-            TimelineEventBlock(event: event, slot: slot, font: tokens.font(.rowTitle)).fixedSize(horizontal: false, vertical: true)
+            TimelineEventBlock(event: event, slot: slot, font: tokens.font(.rowTitle), lineHeight: tokens.uiFont(.rowTitle).lineHeight).fixedSize(horizontal: false, vertical: true)
         }
         .padding(tokens.space(.chipGap))
         .background(tokens.color(.screenBackground), in: RoundedRectangle(cornerRadius: tokens.radius(.timelineItem), style: .continuous))

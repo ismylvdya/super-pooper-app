@@ -5,6 +5,7 @@ struct HabitRemindersSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.icons) private var icons
     @Environment(\.tokens) private var tokens
+    @Environment(\.rules) private var rules
     let editor: TaskEditor
 
     private var task: TaskNote { editor.task }
@@ -32,19 +33,18 @@ struct HabitRemindersSection: View {
 
     private var times: [LocalTime] { task.habitTimes }
 
-    /// Four hours after the last reminder, or 09:00 for the first one.
+    /// A while after the last reminder, or the default time for the first one (`rules.json` → `editing`).
     private var nextTime: LocalTime {
-        guard let last = times.last else { return LocalTime(hour: 9, minute: 0)! }
-        return LocalTime(minutesSinceMidnight: last.hour * 60 + last.minute + 240)
+        guard let last = times.last else { return rules.editing.defaultTime }
+        return LocalTime(minutesSinceMidnight: last.minutesSinceMidnight + rules.editing.nextReminderGapMinutes)
     }
 
     private func binding(at index: Int) -> Binding<Date> {
         Binding(
             get: { model.context().today.startDate(in: model.calendar, offset: times[index]) },
             set: { date in
-                let parts = model.calendar.dateComponents([.hour, .minute], from: date)
                 var updated = times
-                updated[index] = LocalTime(hour: parts.hour ?? 0, minute: parts.minute ?? 0) ?? times[index]
+                updated[index] = LocalTime(date, in: model.calendar)
                 save(updated)
             }
         )

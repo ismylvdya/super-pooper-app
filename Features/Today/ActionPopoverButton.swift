@@ -13,7 +13,7 @@ struct ActionPopoverButton: View {
 
     var body: some View {
         Button { isPresented = true } label: { Image(systemName: icons[.more]) }
-            .tint(.primary)
+            .tint(tokens.color(.accent))
             .accessibilityLabel(Text("taskPage.more"))
             .accessibilityIdentifier(accessibilityID)
             .popover(isPresented: $isPresented) {

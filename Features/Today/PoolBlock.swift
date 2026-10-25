@@ -7,7 +7,6 @@ import SwiftUI
 struct PoolBlock: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
-    @Environment(\.icons) private var icons
     @Environment(TaskDragState.self) private var drag: TaskDragState?
     let plan: DayPlan
     let handler: TaskActionHandler
@@ -159,6 +158,7 @@ struct PoolRowContent: View {
     }
 
     @Environment(\.tokens) private var tokens
+    @Environment(\.actions) private var actions
     @Environment(TaskDragState.self) private var drag: TaskDragState?
     let item: DayItem
     let today: LocalDate
@@ -177,7 +177,7 @@ struct PoolRowContent: View {
     var body: some View {
         let row = TaskRowView(item: item, today: today, titleFont: titleFont, showsDetails: showsDetails, isCompact: isCompact,
                               titleLineLimit: titleLineLimit, titleLineHeight: titleLineHeight,
-                              onOpen: { handler.run(ActionRegistryLookup.open, taskName: item.id) })
+                              onOpen: { handler.run(actions.definition(.open), taskName: item.id) })
         Group {
             switch plate {
             case .pool:
@@ -211,11 +211,6 @@ struct PoolRowContent: View {
         if case .slot(_, true) = plate { return .widgetItem }
         return .poolRow
     }
-}
-
-/// The "open" action definition without a registry round trip in row closures.
-enum ActionRegistryLookup {
-    @MainActor static var open: ActionDefinition { BundledConfig.actions.definition(.open) }
 }
 
 /// The pool as a drop target (today only).

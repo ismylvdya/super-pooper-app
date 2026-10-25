@@ -5,6 +5,7 @@ import SwiftUI
 struct RecurrenceEditorSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
+    @Environment(\.rules) private var rules
     let editor: TaskEditor
     @State private var draft: RecurrenceDraft?
 
@@ -22,7 +23,7 @@ struct RecurrenceEditorSection: View {
             }
             PlateRow(icon: nil, title: "recurrenceEditor.interval", indent: true) {
                 Stepper(L10n.format("recurrenceEditor.every", draft.interval, L10n.string(draft.frequency.unitKey)),
-                        value: edit(\.interval), in: 1...99)
+                        value: edit(\.interval), in: rules.limits.recurrenceInterval.ints)
             }
             if draft.frequency == .weekly { weekdayRow(draft) }
             if draft.frequency == .monthly { monthlyRows(draft) }
@@ -76,7 +77,7 @@ struct RecurrenceEditorSection: View {
         PlateRow(icon: nil, title: "recurrenceEditor.ends", indent: true) {
             Picker("recurrenceEditor.ends", selection: Binding(
                 get: { EndKind(draft.end) },
-                set: { kind in change { $0.end = kind.end(after: draft.start) } }
+                set: { kind in change { $0.end = kind.end(after: draft.start, editing: rules.editing) } }
             )) {
                 ForEach(EndKind.allCases, id: \.self) { Text(LocalizedStringKey($0.titleKey)).tag($0) }
             }
@@ -95,7 +96,7 @@ struct RecurrenceEditorSection: View {
         case .count(let count):
             PlateRow(icon: nil, title: "recurrenceEditor.endCount", indent: true) {
                 Stepper(L10n.format("recurrenceEditor.times", count),
-                        value: Binding(get: { count }, set: { value in change { $0.end = .count(value) } }), in: 1...999)
+                        value: Binding(get: { count }, set: { value in change { $0.end = .count(value) } }), in: rules.limits.recurrenceCount.ints)
             }
         }
     }
@@ -141,7 +142,7 @@ struct RecurrenceEditorSection: View {
         case .lastDayOfMonth: return "recurrenceEditor.lastDay"
         case .weekday(let ordinal, let weekday):
             let name = symbols[weekday.rawValue % 7]
-            return LocalizedStringKey(ordinal == -1 ? L10n.format("recurrence.last", name) : "\(ordinal). \(name)")
+            return LocalizedStringKey(RecurrenceText.ordinalWeekday(ordinal, name))
         }
     }
 }
@@ -165,11 +166,11 @@ private enum EndKind: CaseIterable {
         }
     }
 
-    func end(after start: LocalDate) -> RecurrenceDraft.End {
+    func end(after start: LocalDate, editing: RulesConfig.Editing) -> RecurrenceDraft.End {
         switch self {
         case .never: .never
-        case .until: .until(start.adding(days: 30))
-        case .count: .count(10)
+        case .until: .until(start.adding(days: editing.repeatUntilDays))
+        case .count: .count(editing.repeatCount)
         }
     }
 }

@@ -65,6 +65,7 @@ struct TaskPropertiesSection: View {
 /// The task date: a toggle; when on, a date and (child) an optional time.
 struct DueEditor: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.rules) private var rules
     let editor: TaskEditor
 
     private var task: TaskNote { editor.task }
@@ -87,7 +88,7 @@ struct DueEditor: View {
             PlateRow(icon: nil, title: "taskPage.due.hasTime", info: "info.taskPage.time", indent: true) {
                 Toggle("taskPage.due.hasTime", isOn: Binding(
                     get: { due.time != nil },
-                    set: { on in save(TaskDue(day: due.day, time: on ? LocalTime(hour: 9, minute: 0) : nil)) }
+                    set: { on in save(TaskDue(day: due.day, time: on ? rules.editing.defaultTime : nil)) }
                 )).labelsHidden()
             }
             if let time = due.time {
@@ -95,8 +96,7 @@ struct DueEditor: View {
                     DatePicker("taskPage.due.time", selection: Binding(
                         get: { due.day.startDate(in: model.calendar, offset: time) },
                         set: { date in
-                            let parts = model.calendar.dateComponents([.hour, .minute], from: date)
-                            save(TaskDue(day: due.day, time: LocalTime(hour: parts.hour ?? 0, minute: parts.minute ?? 0)))
+                            save(TaskDue(day: due.day, time: LocalTime(date, in: model.calendar)))
                         }
                     ), displayedComponents: .hourAndMinute)
                     .labelsHidden()

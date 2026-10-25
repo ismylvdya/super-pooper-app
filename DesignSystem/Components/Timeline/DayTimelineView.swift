@@ -6,6 +6,7 @@ struct DayTimelineView<TaskContent: View>: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
     @Environment(\.timelineBell) private var bell
+    @Environment(\.calendar) private var calendar
     let slots: [TimelineSlot]
     let window: TimelineWindow
     let now: Date
@@ -55,7 +56,7 @@ struct DayTimelineView<TaskContent: View>: View {
     private func cornerWidth(linked: Bool, alerts: Bool) -> CGFloat {
         let gap = tokens.space(.chipVertical)
         var width: CGFloat = 0
-        if linked { width += tokens.size(.linkBadge) + gap * 3 }
+        if linked { width += tokens.size(.linkBadge) + tokens.space(.linkBadgeTrailing) }
         if alerts { width += bell.size + gap }
         return width
     }
@@ -134,7 +135,7 @@ struct DayTimelineView<TaskContent: View>: View {
             if style.rowsHaveOwnPlates {
                 taskContent(item, slot)
             } else {
-                TimelineTaskBlock(item: item, isPast: slot.isPast, isCompact: style.compactPlates) { taskContent(item, slot) }
+                TimelineTaskBlock(isPast: slot.isPast, isCompact: style.compactPlates) { taskContent(item, slot) }
             }
         }
     }
@@ -142,7 +143,7 @@ struct DayTimelineView<TaskContent: View>: View {
     /// A small link mark; tapping it highlights everything linked to the block (widgets only show it).
     @ViewBuilder private func linkBadge(_ slot: TimelineSlot, isOn: Bool) -> some View {
         let mark = Image(systemName: icons[.links])
-            .font(.system(size: tokens.size(.linkBadge), weight: .bold))
+            .font(tokens.font(.linkBadge))
             .foregroundStyle(isOn ? tokens.color(.primaryText) : tokens.color(.secondaryText))
         if let onLinkTap = style.onLinkTap {
             Button { onLinkTap(slot) } label: { mark.contentShape(Rectangle()) }
@@ -158,21 +159,21 @@ struct DayTimelineView<TaskContent: View>: View {
         ForEach(hourMarks, id: \.self) { mark in
             HStack(alignment: .center, spacing: tokens.space(.hourLabelGap)) {
                 if style.showsHourLabels {
-                    Text(verbatim: "\(Calendar.current.component(.hour, from: mark))")
+                    Text(verbatim: "\(calendar.component(.hour, from: mark))")
                         .font(tokens.font(.timelineHour).monospacedDigit())
                         .foregroundStyle(tokens.color(.tertiaryText))
                         .frame(width: labelWidth - tokens.space(.hourLabelGap), alignment: .trailing)
                 }
-                Rectangle().fill(tokens.color(.timelineGrid)).frame(height: 0.5)
+                Rectangle().fill(tokens.color(.timelineGrid)).frame(height: tokens.size(.gridLine))
             }
-            .frame(width: width, height: 12)
-            .offset(y: y(mark) - 6)
+            .frame(width: width, height: tokens.size(.hourLabelHeight))
+            .offset(y: y(mark) - tokens.size(.hourLabelHeight) / 2)
         }
     }
 
     private var hourMarks: [Date] {
         var marks: [Date] = []
-        var cursor = Calendar.current.dateInterval(of: .hour, for: window.start)?.start ?? window.start
+        var cursor = calendar.dateInterval(of: .hour, for: window.start)?.start ?? window.start
         if cursor < window.start { cursor = cursor.addingTimeInterval(3600) }
         while cursor <= window.end {
             marks.append(cursor)
@@ -223,8 +224,8 @@ struct TimelineStyle {
     var eventFont: Font
     var taskFont: Font
     /// Line heights of the two fonts (titles fade on their last line).
-    var eventLineHeight: CGFloat = 18
-    var taskLineHeight: CGFloat = 20
+    var eventLineHeight: CGFloat
+    var taskLineHeight: CGFloat
     /// At least one line of normal text.
     var minimumItemHeight: CGFloat
     /// Tasks get at least their title and chip lines (short tasks still show two lines).

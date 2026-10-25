@@ -8,7 +8,6 @@ struct TaskPageScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(\.openURL) private var openURL
-    @Environment(\.icons) private var icons
     @Environment(\.dismiss) private var dismiss
     let taskName: String
     @State private var renamedTo: String?
