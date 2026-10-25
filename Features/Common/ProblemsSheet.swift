@@ -45,7 +45,8 @@ struct ProblemsSheet: View {
     private var lines: [Line] {
         let files = model.fileProblems.map { problem -> Line in
             switch problem {
-            case .brokenYAML(let file, let reason): Line(taskName: nil, title: file, detail: L10n.format("problem.brokenYAML", reason))
+            case .brokenYAML(let file, let error):
+                Line(taskName: nil, title: file, detail: L10n.format("problem.brokenYAML", FrontmatterErrorText.describe(error)))
             case .notDownloaded(let file): Line(taskName: nil, title: file, detail: L10n.string("problem.notDownloaded"))
             case .unreadable(let file, let reason): Line(taskName: nil, title: file, detail: L10n.format("problem.unreadable", reason))
             case .tasksFolderMissing(let folder): Line(taskName: nil, title: folder, detail: L10n.string("problem.folderMissing"))

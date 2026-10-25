@@ -1,6 +1,6 @@
 import Foundation
 
-enum FrontmatterError: Error, Equatable, Sendable {
+enum FrontmatterError: Error, Hashable, Sendable {
     case noFrontmatter
     case unterminated
     case malformedLine(line: Int, text: String)

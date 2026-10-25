@@ -2,7 +2,7 @@ import Foundation
 
 /// A file-level problem found while scanning the vault.
 enum FileProblem: Hashable, Sendable {
-    case brokenYAML(file: String, reason: String)
+    case brokenYAML(file: String, error: FrontmatterError)
     case notDownloaded(file: String)
     case unreadable(file: String, reason: String)
     case tasksFolderMissing(String)
