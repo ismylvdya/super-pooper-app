@@ -178,6 +178,13 @@ struct DayTimelineView<TaskContent: View>: View {
         return marks
     }
 
+    /// The corners the now line is cut out by: an event's own, or the plate of a task or reminder
+    /// (smaller in widgets).
+    private func cornerRadius(of slot: TimelineSlot) -> CGFloat {
+        if case .event = slot.content { return tokens.radius(.timelineItem) }
+        return tokens.radius(style.compactPlates ? .widgetItem : .poolRow)
+    }
+
     /// The "now" cursor, as in the old Calendar widget: a dot in the middle of the hour numbers and a
     /// line from its center to the right edge with a rounded end; over blocks it is more see-through.
     private func nowLine(width: CGFloat, blocks: [PlacedSlot]) -> some View {
@@ -187,9 +194,11 @@ struct DayTimelineView<TaskContent: View>: View {
             : dot / 2
         let origin = CGPoint(x: centerX - dot / 2, y: y(now) - dot / 2)
         let gap = tokens.space(.timelineItemGap)
-        let covered = blocks.map { CGRect(x: labelWidth + $0.frame.minX - origin.x, y: $0.frame.minY - origin.y,
-                                          width: max($0.frame.width - gap, 0), height: max($0.frame.height - gap, 0)) }
-        let radius = tokens.radius(.poolRow)
+        let covered = blocks.map { block in
+            (rect: CGRect(x: labelWidth + block.frame.minX - origin.x, y: block.frame.minY - origin.y,
+                          width: max(block.frame.width - gap, 0), height: max(block.frame.height - gap, 0)),
+             radius: cornerRadius(of: block.slot))
+        }
         let overBlocks = tokens.opacity(.nowOverBlocks)
         return ZStack(alignment: .leading) {
             UnevenRoundedRectangle(bottomTrailingRadius: tokens.size(.nowLine) / 2, topTrailingRadius: tokens.size(.nowLine) / 2)
@@ -202,8 +211,8 @@ struct DayTimelineView<TaskContent: View>: View {
             Canvas { context, size in
                 context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(.black))
                 context.blendMode = .destinationOut
-                for rect in covered {
-                    context.fill(RoundedRectangle(cornerRadius: radius, style: .continuous).path(in: rect),
+                for block in covered {
+                    context.fill(RoundedRectangle(cornerRadius: block.radius, style: .continuous).path(in: block.rect),
                                  with: .color(.black.opacity(1 - overBlocks)))
                 }
             }
