@@ -23,10 +23,10 @@ SuperPooper — iPhone-приложение-оболочка над тремя �
 |---|---|---|
 | `App/` | точка входа, composition root (`AppContainer`), `RootView`, состояние приложения `State/` (`AppModel` + расширения по темам, `Router`, `BannerCenter`), делегат уведомлений и background refresh | приложение |
 | `Features/` | экраны: `Today/`, `Habits/` (список, страница привычки, история, статистика), `TaskPage/`, `Pickers/`, `MorningReview/`, `Settings/` (корень, Tasks, Habits, Clock), `Conflicts/`, `Trash/`, `Onboarding/`, `Archive/`, `Common/` (черновик новой заметки, `TaskEditor`) | приложение |
-| `DesignSystem/` | токены (`Tokens/`), общие компоненты (`Components/`: плашки, чипы, строка задачи, таймлайн, баннер), вью виджетов (`Widgets/`), превью (`Previews/`) | приложение + виджеты |
-| `Domain/` | чистая логика без SwiftUI/EventKit: модели, день (`Day/`), привычки (`Habits/`: отметки, история, сетка, статистика, порядок), RRULE (`Recurrence/`), часы (`Clock/`), план уведомлений | приложение + виджеты |
-| `Data/` | vault (bookmark, iCloud, координированные файлы, бэкапы), frontmatter (чтение и точечная запись YAML), репозитории, EventKit, уведомления | приложение |
-| `Core/` | загрузка конфигов (`Config/`), хранилище App Group (`Storage/`), часы, тексты, deep links (`Environment/`), App Intent выбора привычки (`Intents/`), источник данных виджетов (`Widgets/`) | приложение + виджеты |
+| `DesignSystem/` | токены (`Tokens/`), общие компоненты (`Components/`, карта — §2.1), форматтеры текста (`Formatters/`: срок, оценка, диапазон времени), вью виджетов (`Widgets/`), превью (`Previews/`) | приложение + виджеты |
+| `Domain/` | чистая логика без SwiftUI/EventKit: модели и правила имён (`Model/`), день (`Day/`: план, сортировка, окно и открытие таймлайна), привычки (`Habits/`: отметки, история, сетка, статистика, порядок), RRULE (`Recurrence/`), часы (`Clock/`), план уведомлений, поиск и порядок по имени (`Search/`) | приложение + виджеты |
+| `Data/` | vault (bookmark, iCloud, координированные файлы, пути, бэкапы), frontmatter (чтение и точечная запись YAML), репозитории, EventKit, уведомления, перерисовка виджетов (`Widgets/`) | приложение |
+| `Core/` | загрузка и проверка конфигов (`Config/`, ссылки на Calendar/Reminders), хранилище App Group (`Storage/`), часы, календарь приложения, HEX-цвета, тексты, deep links (`Environment/`), App Intents (`Intents/`), источник данных виджетов (`Widgets/`) | приложение + виджеты |
 | `Resources/` | конфиги `Config/*.json`, `Localizable.xcstrings` | приложение + виджеты |
 | `AppResources/` | `Assets.xcassets` (иконка) | приложение |
 | `Widgets/` | WidgetKit: Today (Large), Habit (Small: кнопка «сегодня» + 4 недели), Clock (экран блокировки) | виджеты |
@@ -39,7 +39,31 @@ SuperPooper — iPhone-приложение-оболочка над тремя �
 
 Проект — обычный `SuperPooper.xcodeproj` с **синхронизируемыми папками** (Xcode 16+): новый файл в папке сам попадает во все таргеты этой папки, `project.pbxproj` править не нужно.
 
-Слои и направление вызовов: **экраны → состояние (`AppModel`) → домен (`Domain/`) → репозитории (`Data/Repositories`) → источники (файлы, EventKit, уведомления)**. Экран не читает файлы и не зовёт EventKit. Домен — чистые функции: данные и «сейчас» на входе, результат на выходе.
+Слои и направление вызовов: **экраны → состояние (`AppModel`) → домен (`Domain/`) → репозитории (`Data/Repositories`) → источники (файлы, EventKit, уведомления)**. Экран не читает файлы и не зовёт EventKit. Домен — чистые функции: данные и «сейчас» на входе, результат на выходе. Data не собирает тексты интерфейса (ошибка YAML приходит как `FrontmatterError`, слова — `Features/Common/FrontmatterErrorText`), модель не играет вибрацию (это делают экраны и `TaskActionHandler` по `actions.json`). Один файл — одна ответственность (вспомогательный тип — в свой файл рядом).
+
+Время — только из `Clock`; календарь — один (`AppCalendar.make()`), у приложения и виджетов одинаковый, во вью — `@Environment(\.calendar)`. Логический день момента — `DayContext.logicalDay(of:)` (сравнение по циферблату, поэтому ночи перевода часов не сдвигают границу).
+
+### 2.1. Карта общих компонентов
+
+| Что нужно на экране | Компонент |
+|---|---|
+| Группа настроек: заголовок, плашка, подсказка; строка плашки с иконкой, ⓘ и элементом справа | `PlateSection`, `PlateHeader`, `Plate`, `PlateRow` (`Plate.swift`). Текст пользователя (имя заметки, имя устройства, превью часов) — передавать `Text(verbatim:)`, иначе `_слово_` станет курсивом |
+| Заголовок с серой строкой под ним | `TitleDetailLabel` |
+| Значение и шеврон в конце строки, открывающей страницу | `DisclosureAccessory(value:)` |
+| Красный минус «убрать из списка» | `RemoveButton(label:)` |
+| Чипы в строку с переносом (по левому краю или по центру) | `ChipFlow(spacing:alignment:)`; чип — `Chip`, чип-переключатель — `ToggleChip` |
+| Плашка строки задачи / блока таймлайна | `.taskPlate(isDone:)`, `.slotPlate(...)` |
+| Страница с большим заголовком, уходящим в панель | `PageScaffold`; для `List` — `.tracksLargeTitle($visible)` на строке заголовка и `.barTitle(_:isHidden:)` |
+| Системный `List` на фоне экрана | `.appList()` |
+| Затухание краёв прокрутки | `.edgeFades(color:bottomExtension:)` |
+| Превью на странице настроек | `.settingsPreviewFrame()` |
+| Пустой экран с одной кнопкой | `EmptyStateView` |
+| Меню действий (контекстное, «…») | `ActionMenuContent(menu:)` для дел и привычек, `RegistryMenu(menu:)` для напоминаний и событий; состав и порядок — только `actions.json` |
+| Алерт над optional-значением | `.alert(…, isPresented: Binding(presenting: $item), presenting: item)` |
+| Высота часа и положение момента на таймлайне | `TimelineWindow.hourHeight(fitting:)`, `offset(of:hourHeight:)`; где открыть таймлайн — `TimelineOpening` |
+| Порядок по имени и поиск | `NameOrder`, `SearchMatcher` |
+| Названия дней недели и месяцев | `Weekday.name(_:in:)`, `MonthName.initial(_:in:)` |
+| Ссылки «открыть в Calendar / Reminders» | `rules.eventLinks.calendarURL(at:)`, `reminderURL(id:)` |
 
 ## 3. Карта конфигов: чтобы изменить X — правь Y
 
@@ -50,11 +74,13 @@ SuperPooper — iPhone-приложение-оболочка над тремя �
 | Раскладку Today (пул сверху/слева/страницами, доли места, порядок блоков) | `layouts/today-stacked.layout.json` (пул сверху), `layouts/today-side-by-side.layout.json` (пул слева) и `layouts/today-paged.layout.json` (по умолчанию: пул и таймлайн — две страницы на весь экран, `"paged": true`, `"peek"` — токен размера видимого края соседней страницы): `axis` (`vertical`/`horizontal`), `blocks` (`size`: `fit` или `fill` + `weight`), `spacing` (имя токена). Какой из них используется — настройка Settings → Today screen; у виджета Today свой выбор и только первые два (`TodayArrangement.forWidget`) |
 | Отступы, скругления, размеры, прозрачности, длительности, шрифты, цвета (светлые и тёмные) | `tokens.json`. Новый токен = ключ в JSON + `case` в `DesignSystem/Tokens/TokenKeys.swift` |
 | Иконки SF Symbols вне действий | `icons.json` (+ `case` в `Core/Config/IconSet.swift` для нового) |
-| Действия (название, иконка, вибрация, подтверждение) и состав меню/уведомлений | `actions.json` (`actions` и `menus`) |
+| Действия (название, иконка, вибрация, подтверждение) и состав меню/уведомлений | `actions.json` (`actions` и `menus`): меню дела и привычки в пуле, страницы дела, дня привычки в Habits и истории (`habitDay`), напоминания (`reminderContext`) и события (`eventContext`) на таймлайне. Новое меню — `case` в `ActionMenu` (`Core/Config/ActionRegistry.swift`), отсутствующее меню или действие останавливает запуск с ошибкой конфига |
 | Порядок критериев сортировки пула | `sort.json` → `pool` (список; переставить строки = поменять приоритет) |
 | Имена полей TaskNotes и значения статусов/приоритетов | `field-mapping.json` |
 | Включить/выключить функцию | `feature-flags.json` |
-| Пороги и правила: оценка по умолчанию, подписи оценок (`2 min`…`dohuya`), лимит уведомлений, горизонт, окно поиска событий, таймаут iCloud, число бэкапов, шаги виджетов | `rules.json` |
+| Пороги и правила: оценка по умолчанию, подписи оценок (`2 min`…`dohuya`), лимит уведомлений, горизонт, окно поиска событий, таймаут и шаг опроса iCloud, задержки (запись заметки настроек, реакция на изменения в Calendar), число бэкапов, шаги виджетов | `rules.json` |
+| Пределы степперов и слайдеров настроек (часы до/после, размер колокольчика, шрифты, прозрачность, интервал и число повторов) | `rules.json` → `limits` (`min`, `max`, `step`) |
+| С чего начинается новое значение: время по умолчанию, отступ следующего напоминания привычки, задержка сохранения описания, конец повторения через N дней / после N раз | `rules.json` → `editing` |
 | Значения настроек по умолчанию (папка задач, тег, граница дня, час энергии, раскладка таймлайна…) | `defaults.json` |
 | Тексты интерфейса, уведомлений, виджетов | `Resources/Localizable.xcstrings` (ключи вида `settings.day.boundary`) |
 | Bundle ID / App Group / версию | `Config/Shared.xcconfig` (`SP_BUNDLE_ID`, `MARKETING_VERSION`, `CURRENT_PROJECT_VERSION`) |
@@ -221,6 +247,8 @@ date_modified: 2026-10-22T18:01:02.456+02:00         # обновляется п
   ```
 - Тесты состояния приложения (`Tests/App`) работают на in-memory сервисах из `Debug/PreviewModel.swift` — тех же, что у превью экранов.
 - Добавить случай в фикстуры: новый `.md` в `Fixtures/TestVault/TaskNotes/Tasks/`, при необходимости — проверка в `Tests/Data`.
+- Регрессии, видные только в интерфейсе (markdown в именах, перенос чипов при крупном шрифте, прокрутка онбординга, сабтаск в разборе), — `UITests/RegressionUITests.swift`.
+- **Эталонные снимки** для рефакторинга: `scripts/snapshots.sh <папка> [quick]` снимает основные экраны, меню и виджеты (`UITests/ScreenSnapshotUITests.swift`) на своих симуляторах «SuperPooper Snap Mini» (iPhone 13 mini) и «SuperPooper Max» (16 Pro Max), в светлой и тёмной теме, обычным и крупным шрифтом (`quick` — только mini, светлая, обычный). Дата фиксирована (`SP_SNAPSHOT_TODAY`, по умолчанию 2026-10-25): vault рендерится на неё, приложение получает `-SPToday`, поэтому снимки не зависят от дня недели. Сравнение: `swift scripts/compare-snapshots.swift <эталон> <новый> [<папка разниц>]` — допуск 16 на канал, отличие засчитывается при доле пикселей больше 0,05 %.
 
 ## 9. Запуск в симуляторе с тестовыми данными
 
@@ -232,7 +260,7 @@ scripts/sim.sh launch -SPVaultPath TestVault -SPSeedDemo -SPSkipOnboarding -SPNo
 scripts/sim.sh screenshot .build/shot.png
 ```
 
-DEBUG-аргументы (в Release их нет): `-SPVaultPath`, `-SPSeedDemo` (календарь «SuperPooper Test» с событиями 10:00, «Call with dad» 19:00–20:00, повторяющимся «Lunch», лист с напоминанием на 15:00 и лист «Inbox», который приложение игнорирует), `-SPNow HH:mm`, `-SPSkipOnboarding`, `-SPResetState`, `-SPTimeline oneColumn|twoColumns`, `-SPOpen superpooper://…`, `-SPProvisionalNotifications`. Deep links: `superpooper://task/<имя>`, `…://settings`, `…://review`, `…://archive`, DEBUG: `…://debug-notifications`, `…://debug-widgets`. Тестовый vault также можно выбрать вручную: на экране выбора папки в Debug-сборке есть кнопка «Use test vault (Debug)»; или «Файлы» → «На iPhone» → SuperPooper → TestVault (в Debug Documents видны в «Файлах»). Если пикер или «На iPhone» в симуляторе не открываются — это зависла служба файлов симулятора: перезапустить симулятор. Симулятор для глаз — «SuperPooper Mini» (iPhone 13 mini, 360 pt): `SP_SIMULATOR="SuperPooper Mini" scripts/sim.sh …`.
+DEBUG-аргументы (в Release их нет): `-SPVaultPath`, `-SPSeedDemo` (календарь «SuperPooper Test» с событиями 10:00, «Call with dad» 19:00–20:00, повторяющимся «Lunch», лист с напоминанием на 15:00 и лист «Inbox», который приложение игнорирует), `-SPNow HH:mm`, `-SPToday YYYY-MM-DD`, `-SPSkipOnboarding`, `-SPResetState`, `-SPTimeline oneColumn|twoColumns`, `-SPArrangement stacked|sideBySide|paged`, `-SPOpen superpooper://…`, `-SPProvisionalNotifications`. В симуляторе уведомления без звука, а демо-напоминания без будильников. Deep links: `superpooper://task/<имя>`, `…://settings`, `…://review`, `…://archive`, DEBUG: `…://debug-notifications`, `…://debug-widgets`. Тестовый vault также можно выбрать вручную: на экране выбора папки в Debug-сборке есть кнопка «Use test vault (Debug)»; или «Файлы» → «На iPhone» → SuperPooper → TestVault (в Debug Documents видны в «Файлах»). Если пикер или «На iPhone» в симуляторе не открываются — это зависла служба файлов симулятора: перезапустить симулятор. Симулятор для глаз — «SuperPooper Mini» (iPhone 13 mini, 360 pt): `SP_SIMULATOR="SuperPooper Mini" scripts/sim.sh …`.
 
 ## 10. Частые поломки
 
@@ -247,7 +275,7 @@ DEBUG-аргументы (в Release их нет): `-SPVaultPath`, `-SPSeedDemo`
 | Событий нет на таймлайне | нет доступа к Calendar или не выбраны календари | Settings → Sources: Calendar access, Anchor calendars |
 | «Event not found» у задачи | событие удалили/перенесли на другой день | выбрать событие заново на странице задачи |
 | Виджет «Open SuperPooper once…» | нет снимка в App Group или виджет не видит группу | открыть приложение; проверить App Group у обоих таргетов (TRANSFER.md) |
-| Экран «Config error» | опечатка в `Resources/Config/*.json` | исправить ключ, указанный на экране |
+| Экран «Config error» | опечатка в `Resources/Config/*.json` (в том числе имя блока, токена отступа или `peek` в раскладке Today, нет меню или действия в `actions.json`) | исправить ключ, указанный на экране |
 
 ## 11. Процесс (из манифеста)
 
