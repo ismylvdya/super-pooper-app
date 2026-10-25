@@ -19,13 +19,17 @@ struct DayTimelineTests {
         #expect(!slot.isPast)
     }
 
-    @Test func dueWithoutTimeOrOnAnotherDayStaysInThePool() {
+    /// Due today without a time and overdue tasks are in the pool; a task dated later this week waits for its day.
+    @Test func dueWithoutTimeOrOverdueStaysInThePoolALaterOneWaits() {
         let today = makeTask("Due today") { $0.due = TaskDue("2026-10-21") }
         let friday = makeTask("Friday at ten") { $0.due = TaskDue("2026-10-23T10:00") }
+        let tomorrow = makeTask("Tomorrow") { $0.due = TaskDue("2026-10-22") }
         let overdue = makeTask("Yesterday at ten") { $0.due = TaskDue("2026-10-20T10:00") }
-        let plan = DayScenario(tasks: [today, friday, overdue]).build()
-        #expect(Set(plan.poolNames) == ["Due today", "Friday at ten", "Yesterday at ten"])
+        let plan = DayScenario(tasks: [today, friday, tomorrow, overdue]).build()
+        #expect(Set(plan.poolNames) == ["Due today", "Yesterday at ten"])
         #expect(plan.timeline.isEmpty)
+        let fridayPlan = DayScenario(tasks: [today, friday, tomorrow, overdue]).build(at: TestCalendar.context("2026-10-23", "08:00"))
+        #expect(fridayPlan.timelineTaskNames == ["Friday at ten"])
     }
 
     @Test func aTimedHabitIsOnTheTimelineEveryDayItOccurs() throws {

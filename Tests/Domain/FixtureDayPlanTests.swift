@@ -17,7 +17,7 @@ struct FixtureDayPlanTests {
             // The morning routine first, all day long.
             "Выпить воды 💧", "Утро — зарядка 🤸", "Утро — душ 🚿", "Утро — завтрак 🥣",
             "Неизвестное правило", "Полить цветы 🌱", "Медитация 🧘",
-            "Оплатить интернет", "Позвонить в банк", "Сдать отчёт", "Разобрать почту", "Помыть окна",
+            "Оплатить интернет", "Позвонить в банк", "Разобрать почту", "Помыть окна",
             "Сходить к стоматологу", "Купить батарейки 🔋", "Длинная заметка с незнакомыми ключами", "Найти отвёртку",
             "Записать идеи", "Связь без скобок", "Связь на несуществующую", "Цикл Б", "Цикл А", "Собрать шкаф",
             "Повесить зеркало", "Посмотреть сериал 🍿",
@@ -34,7 +34,7 @@ struct FixtureDayPlanTests {
         let series = try #require(names.firstIndex(of: "Посмотреть сериал 🍿"))
         #expect(dentist < mail && series < mail && mail < windows)
         #expect(names.prefix(4) == ["Выпить воды 💧", "Утро — зарядка 🤸", "Утро — душ 🚿", "Утро — завтрак 🥣"])
-        #expect(names[7...9] == ["Оплатить интернет", "Позвонить в банк", "Сдать отчёт"])
+        #expect(names[7...8] == ["Оплатить интернет", "Позвонить в банк"])
     }
 
     @Test func hiddenTasksStayOutOfTheDay() async throws {
@@ -42,7 +42,9 @@ struct FixtureDayPlanTests {
         let hidden: Set<String> = ["Архивная задача", "Ждать ответа от арендодателя", "Выучить испанский", "Обновить резюме",
                                    "Старая сделанная задача", "Стирка 🧺"]
         #expect(plan.dayNames.isDisjoint(with: hidden))
-        #expect(plan.dayNames.count == 29)
+        // Due on Friday: it waits for its day.
+        #expect(!plan.dayNames.contains("Сдать отчёт"))
+        #expect(plan.dayNames.count == 28)
     }
 
     @Test func timelineHoldsTimedTasksChainsEventsAndReminders() async throws {

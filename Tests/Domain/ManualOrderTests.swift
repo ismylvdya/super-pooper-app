@@ -26,15 +26,15 @@ struct ManualOrderTests {
     }
 
     @Test func aNewTaskIsInsertedRightAfterItsAutoSortedNeighbour() {
-        let tomorrow = makeTask("N tomorrow") { $0.due = TaskDue("2026-10-22") }
-        #expect(DayScenario(tasks: [a, b, c, tomorrow]).build(at: context).poolNames == ["A", "N tomorrow", "B", "C"])
-        #expect(ordered(["C", "B", "A"], [a, b, c, tomorrow]) == ["C", "B", "A", "N tomorrow"])
+        let energy = makeTask("N energy") { $0.needEnergy = true }
+        #expect(DayScenario(tasks: [a, b, c, energy]).build(at: context).poolNames == ["A", "N energy", "B", "C"])
+        #expect(ordered(["C", "B", "A"], [a, b, c, energy]) == ["C", "B", "A", "N energy"])
     }
 
     @Test func severalNewTasksEachFollowTheirOwnNeighbour() {
-        let tomorrow = makeTask("N tomorrow") { $0.due = TaskDue("2026-10-22") }
+        let energy = makeTask("N energy") { $0.needEnergy = true }
         let halfHour = makeTask("N half hour") { $0.timeEstimate = 30 }
-        #expect(ordered(["C", "B", "A"], [a, b, c, tomorrow, halfHour]) == ["C", "B", "N half hour", "A", "N tomorrow"])
+        #expect(ordered(["C", "B", "A"], [a, b, c, energy, halfHour]) == ["C", "B", "N half hour", "A", "N energy"])
     }
 
     @Test func aNewTaskThatSortsFirstGoesToTheTop() {

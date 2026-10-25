@@ -94,7 +94,15 @@ struct DayBuilder: Sendable {
             guard task.isInTodayHabits, !skipped.contains(task.name) else { return false }
             return occurrence.occurs(task, on: context.today) || HabitInstances(task: task).mark(on: context.today) != nil
         }
-        return task.status == .thisWeek || (task.status == .done && task.completedDate == context.today)
+        return (task.status == .thisWeek && !isDatedLater(task, context: context))
+            || (task.status == .done && task.completedDate == context.today)
+    }
+
+    /// A task dated after today (Tomorrow, a day of next week) waits for its day, even this week.
+    /// An overdue one stays in today.
+    private func isDatedLater(_ task: TaskNote, context: DayContext) -> Bool {
+        guard let due = task.due else { return false }
+        return context.logicalDay(of: due) > context.today
     }
 
     private func isOnOtherDay(_ task: TaskNote, context: DayContext) -> Bool {
