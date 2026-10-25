@@ -1,7 +1,8 @@
 #!/bin/bash
 # Эталонные снимки основных экранов (UITests/ScreenSnapshotUITests) для проверки рефакторинга.
 # scripts/snapshots.sh <папка> [quick]
-#   полный прогон: «SuperPooper Mini» (iPhone 13 mini) и «SuperPooper Max» (iPhone 16 Pro Max),
+#   полный прогон: свои симуляторы «SuperPooper Snap Mini» (iPhone 13 mini) и «SuperPooper Max»
+#   (iPhone 16 Pro Max), чтобы не трогать рабочий,
 #   светлая и тёмная тема, обычный и крупный шрифт — по папке на сочетание;
 #   quick: только Mini, светлая тема, обычный шрифт.
 # Сравнение двух прогонов: swift scripts/compare-snapshots.swift <эталон> <новый> [<папка разниц>]
@@ -12,12 +13,13 @@ OUT="$(cd "$1" && pwd)"
 MODE="${2:-full}"
 
 udid() { xcrun simctl list devices available -j | /usr/bin/python3 -c "import json,sys; name=sys.argv[1]; print(next((d['udid'] for r in json.load(sys.stdin)['devices'].values() for d in r if d['name']==name), ''))" "$1"; }
+[ -n "$(udid "SuperPooper Snap Mini")" ] || xcrun simctl create "SuperPooper Snap Mini" "iPhone 13 mini" >/dev/null
 [ -n "$(udid "SuperPooper Max")" ] || xcrun simctl create "SuperPooper Max" "iPhone 16 Pro Max" >/dev/null
 
 if [ "$MODE" = quick ]; then
-  DEVICES=("SuperPooper Mini"); APPEARANCES=(light); SIZES=(large)
+  DEVICES=("SuperPooper Snap Mini"); APPEARANCES=(light); SIZES=(large)
 else
-  DEVICES=("SuperPooper Mini" "SuperPooper Max"); APPEARANCES=(light dark); SIZES=(large extra-extra-extra-large)
+  DEVICES=("SuperPooper Snap Mini" "SuperPooper Max"); APPEARANCES=(light dark); SIZES=(large extra-extra-extra-large)
 fi
 
 SP_SIMULATOR="${DEVICES[0]}" scripts/xcb.sh build-for-testing -quiet >/dev/null
@@ -31,7 +33,7 @@ for DEVICE in "${DEVICES[@]}"; do
   SP_SIMULATOR="$DEVICE" scripts/sim.sh grant >/dev/null 2>&1
   for APPEARANCE in "${APPEARANCES[@]}"; do
     for SIZE in "${SIZES[@]}"; do
-      NAME="$(echo "$DEVICE" | sed 's/SuperPooper //')-$APPEARANCE-$SIZE"
+      NAME="$(echo "$DEVICE" | sed 's/SuperPooper //; s/Snap //')-$APPEARANCE-$SIZE"
       echo "== $NAME"
       xcrun simctl ui "$ID" appearance "$APPEARANCE"
       xcrun simctl ui "$ID" content_size "$SIZE"
