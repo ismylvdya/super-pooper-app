@@ -63,7 +63,7 @@ struct DayBuilder: Sendable {
         }
 
         let timed = items.filter { inputs.timelineFilter.shows($0) && !timesOfDay(of: $0.task, context: context).isEmpty }
-        let shownTimed = timed.filter { !$0.isFinished }
+        let shownTimed = timed.filter { !openTimes(of: $0, context: context).isEmpty }
         let timedNames = Set(timed.map(\.id))
         let chainAnchors = propagate(anchors, through: items.filter { !timedNames.contains($0.id) }, graph: graph)
         // Done today: it leaves the pool and the timeline instead of staying greyed out.
@@ -122,6 +122,16 @@ struct DayBuilder: Sendable {
         if task.isHabit { return task.habitTimes }
         guard let due = task.due, let time = due.time, context.logicalDay(of: due) == context.today else { return [] }
         return [time]
+    }
+
+    /// The times still to do today. Done leaves the timeline; a habit with several reminders loses one block per
+    /// mark, earliest first (Done the first of two, Twice both); one with a single time keeps it until the day
+    /// is closed (twice a day waits for Twice).
+    private func openTimes(of item: DayItem, context: DayContext) -> [LocalTime] {
+        let times = timesOfDay(of: item.task, context: context)
+        guard item.isHabit, times.count > 1 else { return item.isFinished ? [] : times }
+        let ordered = times.sorted { context.moment($0, onLogicalDay: context.today) < context.moment($1, onLogicalDay: context.today) }
+        return Array(ordered.dropFirst(HabitMarking.timesClosed(by: item.state.mark)))
     }
 
     private func overlapsToday(_ event: CalendarEvent, _ context: DayContext) -> Bool {
@@ -189,7 +199,7 @@ struct DayBuilder: Sendable {
                                         alerts: event.hasAlarm))
         }
         for item in timed {
-            for time in timesOfDay(of: item.task, context: context) {
+            for time in openTimes(of: item, context: context) {
                 let start = context.moment(time, onLogicalDay: context.today)
                 let end = start.addingTimeInterval(Double(rules.estimate(of: item.task)) * 60)
                 entries.append(TimelineSlot(content: .task(item), start: start, end: end, isPast: false, time: time, alerts: true))

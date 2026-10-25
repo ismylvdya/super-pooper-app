@@ -12,6 +12,15 @@ enum HabitMarking {
         }
     }
 
+    /// How many of a day's reminder times a mark closes, earliest first: Done or Partially one, Twice two.
+    static func timesClosed(by mark: HabitMark?) -> Int {
+        switch mark {
+        case nil: 0
+        case .done, .partial: 1
+        case .twice: 2
+        }
+    }
+
     /// Nothing is left to do on a day with this mark. A twice-a-day habit, or one with two or more reminders
     /// a day, waits for Twice (its next reminder still comes after the first Done); any other habit for any mark.
     static func isDayClosed(_ mark: HabitMark?, twiceADay: Bool, remindersPerDay: Int) -> Bool {
