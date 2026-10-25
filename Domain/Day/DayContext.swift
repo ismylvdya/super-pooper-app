@@ -2,20 +2,23 @@ import Foundation
 
 /// Everything time-related the day logic needs: "now", the calendar (with an explicit time zone)
 /// and the user's day boundary and energy hour. The logical day starts at `boundary`, so at 02:00
-/// it is still "yesterday".
+/// it is still "yesterday". `focus` is the moment the day is seen around: now for today, the anchor hour of
+/// another day browsed on Today; `today` is the logical day of the focus, while "past" and blocking use `now`.
 struct DayContext: Sendable {
     let now: Date
+    let focus: Date
     let calendar: Calendar
     let boundary: LocalTime
     let energyHour: LocalTime
     let today: LocalDate
 
-    init(now: Date, calendar: Calendar, boundary: LocalTime, energyHour: LocalTime) {
+    init(now: Date, calendar: Calendar, boundary: LocalTime, energyHour: LocalTime, focus: Date? = nil) {
         self.now = now
+        self.focus = focus ?? now
         self.calendar = calendar
         self.boundary = boundary
         self.energyHour = energyHour
-        self.today = Self.logicalDay(of: now, calendar: calendar, boundary: boundary)
+        self.today = Self.logicalDay(of: focus ?? now, calendar: calendar, boundary: boundary)
     }
 
     /// Wall-clock time before the boundary belongs to the previous date. Compared on the clock face, not by
@@ -59,6 +62,11 @@ struct DayContext: Sendable {
 
     func with(now: Date) -> DayContext {
         DayContext(now: now, calendar: calendar, boundary: boundary, energyHour: energyHour)
+    }
+
+    /// The same now, seen around `moment` (another day).
+    func focused(on moment: Date) -> DayContext {
+        DayContext(now: now, calendar: calendar, boundary: boundary, energyHour: energyHour, focus: moment)
     }
 
     func contains(_ date: Date) -> Bool { date >= dayStart && date < dayEnd }

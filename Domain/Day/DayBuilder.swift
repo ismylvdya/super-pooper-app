@@ -16,6 +16,8 @@ struct DayInputs: Sendable {
     var postponed: Set<String> = []
     /// Which kinds of entries the timeline shows; hidden timed tasks and habits stay in the pool.
     var timelineFilter = TimelineFilter()
+    /// Another day than today: only this week's tasks dated that day are in it, no habits.
+    var isOtherDay = false
 }
 
 /// Decides what is in today, what goes to the pool and what goes to the timeline.
@@ -36,7 +38,9 @@ struct DayBuilder: Sendable {
         for task in inputs.tasks {
             let previousEvent = task.previousEvent.flatMap(resolver.resolve)
             let nextEvent = task.nextEvent.flatMap(resolver.resolve)
-            let inDay = isInDay(task, occurrence: occurrence, skipped: inputs.skipped, context: context)
+            let inDay = inputs.isOtherDay
+                ? isOnOtherDay(task, context: context)
+                : isInDay(task, occurrence: occurrence, skipped: inputs.skipped, context: context)
                 && !inputs.postponed.contains(task.name)
             let taskProblems = self.problems(of: task, graph: graph, previousEvent: previousEvent, nextEvent: nextEvent,
                                              checkEvents: inDay)
@@ -70,13 +74,15 @@ struct DayBuilder: Sendable {
                                     reminders: inputs.timelineFilter.reminders ? inputs.reminders : [], context: context)
         let chainLayout = ChainLayout(rules: rules)
         for chain in chains(items: items, anchors: chainAnchors, sorter: sorter, graph: graph, context: context) {
-            timeline += chainLayout.entries(for: chain, now: context.now)
+            timeline += chainLayout.entries(for: chain, now: context.focus)
         }
         timeline.sort { $0.start != $1.start ? $0.start < $1.start : $0.end > $1.end }
 
         let allDay = inputs.events.filter { $0.isAllDay && $0.covers(context.today, calendar: context.calendar) }
             .sorted { $0.title < $1.title }
-        return DayPlan(today: context.today, now: context.now, pool: pool, timeline: timeline, problems: problems, allDayEvents: allDay)
+        var plan = DayPlan(today: context.today, now: context.now, pool: pool, timeline: timeline, problems: problems, allDayEvents: allDay)
+        plan.focus = context.focus
+        return plan
     }
 
     // MARK: - Membership
@@ -87,6 +93,11 @@ struct DayBuilder: Sendable {
             return occurrence.occurs(task, on: context.today) || HabitInstances(task: task).mark(on: context.today) != nil
         }
         return task.status == .thisWeek || (task.status == .done && task.completedDate == context.today)
+    }
+
+    private func isOnOtherDay(_ task: TaskNote, context: DayContext) -> Bool {
+        guard !task.isHabit, task.status == .thisWeek, let due = task.due else { return false }
+        return context.logicalDay(of: due) == context.today
     }
 
     private func state(of task: TaskNote, today: LocalDate) -> DayItemState {

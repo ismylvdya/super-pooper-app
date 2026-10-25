@@ -27,7 +27,7 @@ struct TimelineBlock: View {
         switch model.settings.timelineMode {
         case .aroundNow, .wholeDay:
             GeometryReader { geometry in
-                let context = model.context(at: plan.now)
+                let context = model.context(at: plan.timelineFocus)
                 let day = TimelineWindow(start: context.dayStart, end: context.dayEnd)
                 let shown = model.settings.timelineMode == .wholeDay
                     ? TimelineWindow.fixed(start: settings.wholeDay.start, end: settings.wholeDay.end, context: context)
@@ -88,7 +88,7 @@ struct TimelineBlock: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
                         if !plan.allDayEvents.isEmpty { allDayStrip }
-                        HalvesTimeline(plan: plan, settings: settings, context: model.context(at: plan.now),
+                        HalvesTimeline(plan: plan, settings: settings, context: model.context(at: plan.timelineFocus),
                                        height: geometry.size.height - bottomInset - tokens.space(.groupGap),
                                        style: style, taskContent: taskRow)
                     }
@@ -154,7 +154,7 @@ struct TimelineBlock: View {
     }
 
     private func rollingWindow(_ settings: AppSettings.Timeline) -> TimelineWindow {
-        TimelineWindow.rolling(now: plan.now, hoursBefore: settings.hoursBefore,
+        TimelineWindow.rolling(now: plan.timelineFocus, hoursBefore: settings.hoursBefore,
                                hoursAfter: min(settings.hoursAfter, model.config.rules.timeline.maxHoursAfter),
                                calendar: model.calendar)
     }
