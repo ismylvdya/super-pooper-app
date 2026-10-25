@@ -15,8 +15,14 @@ struct DayContext: Sendable {
         self.calendar = calendar
         self.boundary = boundary
         self.energyHour = energyHour
-        let shifted = now.addingTimeInterval(-Double(boundary.minutesSinceMidnight) * 60)
-        self.today = LocalDate(shifted, in: calendar)
+        self.today = Self.logicalDay(of: now, calendar: calendar, boundary: boundary)
+    }
+
+    /// Wall-clock time before the boundary belongs to the previous date. Compared on the clock face, not by
+    /// subtracting hours, so the nights the clocks change keep the boundary where it is.
+    static func logicalDay(of date: Date, calendar: Calendar, boundary: LocalTime) -> LocalDate {
+        let day = LocalDate(date, in: calendar)
+        return LocalTime(date, in: calendar) < boundary ? day.adding(days: -1) : day
     }
 
     var dayStart: Date { today.startDate(in: calendar, offset: boundary) }
@@ -32,6 +38,11 @@ struct DayContext: Sendable {
     /// The moment of `time` within logical `day`: times before the boundary are after midnight.
     func moment(_ time: LocalTime, onLogicalDay day: LocalDate) -> Date {
         time < boundary ? date(day.adding(days: 1), time) : date(day, time)
+    }
+
+    /// The logical day of a moment (a notification at 01:30 belongs to the evening before).
+    func logicalDay(of date: Date) -> LocalDate {
+        Self.logicalDay(of: date, calendar: calendar, boundary: boundary)
     }
 
     /// The logical day a dated task belongs to (`due` 01:00 on the 24th → the 23rd with a 04:00 boundary).
