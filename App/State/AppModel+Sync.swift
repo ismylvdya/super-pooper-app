@@ -111,7 +111,8 @@ extension AppModel {
         }
         let rules = config.rules.notifications
         let planner = NotificationPlanner(horizonDays: rules.horizonDays, limit: rules.limit)
-        let skipped = Set(dayState.day == context.today ? dayState.skipped : [])
+        // Skip today (habits) and Not today (tasks) both take an item out of today's notifications.
+        let skipped = Set(dayState.day == context.today ? dayState.skipped + dayState.postponed : [])
         let planned = planner.plan(tasks: tasks, reminders: reminders, events: events, skipped: skipped, context: context)
         let valid = planner.stillValidToday(tasks: tasks, reminders: reminders, events: events, skipped: skipped, context: context)
         // Alerts moved into the past or added too late come right away, once.

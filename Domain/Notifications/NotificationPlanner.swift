@@ -37,7 +37,8 @@ struct NotificationPlanner: Sendable {
     let horizonDays: Int
     let limit: Int
 
-    /// Upcoming notifications, nearest first, at most `limit`.
+    /// Upcoming notifications, nearest first, at most `limit`. `skipped`: names taken out of today
+    /// (Skip today for habits, Not today for tasks).
     func plan(tasks: [TaskNote], reminders: [ReminderItem], events: [CalendarEvent] = [], skipped: Set<String>,
               context: DayContext) -> [PlannedNotification] {
         let upcoming = all(tasks: tasks, reminders: reminders, events: events, skipped: skipped, context: context)
@@ -89,9 +90,11 @@ struct NotificationPlanner: Sendable {
                     }
                 }
             } else if task.status == .thisWeek, let due = task.due, let time = due.time {
+                let day = context.logicalDay(of: due)
+                if day == context.today, skipped.contains(task.name) { continue }
                 result.append(PlannedNotification(id: "task|\(task.name)", kind: .task, title: task.name,
                                                   fireDate: context.date(due.day, time), taskName: task.name,
-                                                  day: context.logicalDay(of: due), key: "task|\(task.name)"))
+                                                  day: day, key: "task|\(task.name)"))
             }
         }
 

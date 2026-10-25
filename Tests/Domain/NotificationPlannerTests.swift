@@ -70,6 +70,13 @@ struct NotificationPlannerTests {
         #expect(first.kind == .task && first.day == LocalDate("2026-10-21") && clockTime(first.fireDate) == "16:00")
     }
 
+    /// "Not today" takes a timed task out of today, its notification too; on its next date it notifies again.
+    @Test func aTaskMovedOutOfTodayDoesNotNotifyToday() {
+        let parcel = makeTask("Pick up parcel") { $0.due = TaskDue("2026-10-21T16:00") }
+        let friday = makeTask("Friday call") { $0.due = TaskDue("2026-10-23T10:00") }
+        #expect(plan([parcel, friday], at: "13:25", skipped: ["Pick up parcel", "Friday call"]).map(\.id) == ["task|Friday call"])
+    }
+
     /// Only tasks of this week notify; backlog tasks get here through auto-promotion first.
     @Test func timedTasksOutsideThisWeekAreNotPlanned() {
         let backlog = makeTask("Backlog", status: .halfYear) { $0.due = TaskDue("2026-10-23T10:00") }
