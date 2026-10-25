@@ -14,9 +14,8 @@ struct TodayWidgetView: View {
         VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
             ScreenLayoutView(layout: layout) { id in
                 switch id {
-                case "pool": WidgetPoolBlock(plan: plan, visibleCount: settings.poolUsesVisibleCount ? settings.pool.visibleCount : nil)
-                case "timeline": WidgetTimelineBlock(plan: plan, settings: settings, context: context, maxHours: maxTimelineHours)
-                default: EmptyView()
+                case .pool: WidgetPoolBlock(plan: plan, visibleCount: settings.poolUsesVisibleCount ? settings.pool.visibleCount : nil)
+                case .timeline: WidgetTimelineBlock(plan: plan, settings: settings, context: context, maxHours: maxTimelineHours)
                 }
             }
         }

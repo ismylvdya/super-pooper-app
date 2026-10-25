@@ -11,7 +11,7 @@ struct PagedStack<Block: View>: View {
     var page = 0
     var drag: CGFloat = 0
     var onTurn: ((Int) -> Void)?
-    @ViewBuilder let block: (String) -> Block
+    @ViewBuilder let block: (TodayBlockID) -> Block
 
     var body: some View {
         GeometryReader { geometry in

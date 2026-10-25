@@ -16,7 +16,7 @@ struct ScreenLayout: Codable, Hashable, Sendable {
     }
 
     struct Slot: Codable, Hashable, Sendable {
-        let block: String
+        let block: TodayBlockID
         let size: Size
         let weight: Double?
     }
@@ -31,4 +31,20 @@ struct ScreenLayout: Codable, Hashable, Sendable {
     var peek: String? = nil
 
     var isPaged: Bool { paged == true }
+
+    /// The gap and peek names must be design tokens, so a typo stops the app with the file and the key
+    /// instead of silently becoming a zero gap.
+    func validate(file: String) throws {
+        if SpacingToken(rawValue: spacing) == nil {
+            throw ConfigError(file: file, path: "spacing", message: "unknown spacing token \"\(spacing)\"")
+        }
+        if let peek, SizeToken(rawValue: peek) == nil {
+            throw ConfigError(file: file, path: "peek", message: "unknown size token \"\(peek)\"")
+        }
+    }
+}
+
+/// The blocks a Today layout places (`block` in `layouts/today-*.layout.json`).
+enum TodayBlockID: String, Codable, CaseIterable, Sendable {
+    case pool, timeline
 }

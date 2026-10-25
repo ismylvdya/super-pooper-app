@@ -13,7 +13,7 @@ struct ConfigTests {
 
     @Test func bundledConfigsLoad() throws {
         let config = try AppConfig.load(bundle: Bundle(for: BundleToken.self).appHostBundle)
-        #expect(config.todayStacked.blocks.map(\.block) == ["pool", "timeline"])
+        #expect(config.todayStacked.blocks.map(\.block) == [.pool, .timeline])
         #expect(config.todayStacked.axis == .vertical)
         #expect(config.todaySideBySide.axis == .horizontal)
         #expect(config.sort.pool == PoolSortCriterion.allCases)
@@ -29,6 +29,15 @@ struct ConfigTests {
         for key in keys {
             #expect(bundle.localizedString(forKey: key, value: "∅", table: nil) != "∅", "missing text for \(key)")
         }
+    }
+
+    /// A gap or peek name that is not a design token stops the app with the file and the key, not a zero gap.
+    @Test func layoutTokenTypoIsReported() throws {
+        let json = Data(#"{"axis": "horizontal", "spacing": "screenHorizontl", "blocks": [{"block": "pool", "size": "fill"}]}"#.utf8)
+        let layout = try ConfigLoader.decode(ScreenLayout.self, from: json, file: "today.layout.json")
+        #expect(throws: ConfigError.self) { try layout.validate(file: "today.layout.json") }
+        let unknownBlock = Data(#"{"axis": "horizontal", "spacing": "screenHorizontal", "blocks": [{"block": "pol", "size": "fill"}]}"#.utf8)
+        #expect(throws: ConfigError.self) { try ConfigLoader.decode(ScreenLayout.self, from: unknownBlock, file: "today.layout.json") }
     }
 
     @Test func layoutTypoIsReported() {

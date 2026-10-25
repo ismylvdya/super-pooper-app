@@ -36,13 +36,18 @@ struct AppConfig: Sendable {
         try actions.validate(file: File.actions)
         let defaults = try loader.data(File.defaults)
         _ = try ConfigLoader.decode(AppSettings.self, from: defaults, file: File.defaults)
+        func layout(_ file: String) throws -> ScreenLayout {
+            let layout = try loader.load(ScreenLayout.self, from: file)
+            try layout.validate(file: file)
+            return layout
+        }
         return AppConfig(
             tokens: try loader.load(DesignTokens.self, from: File.tokens),
             icons: try loader.load(IconSet.self, from: File.icons),
             actions: actions,
-            todayStacked: try loader.load(ScreenLayout.self, from: File.todayStacked),
-            todaySideBySide: try loader.load(ScreenLayout.self, from: File.todaySideBySide),
-            todayPaged: try loader.load(ScreenLayout.self, from: File.todayPaged),
+            todayStacked: try layout(File.todayStacked),
+            todaySideBySide: try layout(File.todaySideBySide),
+            todayPaged: try layout(File.todayPaged),
             sort: try loader.load(SortConfig.self, from: File.sort),
             fieldMapping: try loader.load(FieldMapping.self, from: File.fieldMapping),
             flags: try loader.load(FeatureFlags.self, from: File.flags),

@@ -815,17 +815,6 @@
         }
       }
     },
-    "error.layout.unknownBlock": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Unknown block “%@” in today.layout.json"
-          }
-        }
-      }
-    },
     "error.rename.invalid": {
       "extractionState": "manual",
       "localizations": {

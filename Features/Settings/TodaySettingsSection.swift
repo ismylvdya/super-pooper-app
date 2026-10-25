@@ -51,7 +51,10 @@ struct ArrangementPreview: View {
 
     var body: some View {
         ScreenLayoutView(layout: model.config.todayLayout(for: arrangement)) { id in
-            if id == "pool" { pool } else { timeline }
+            switch id {
+            case .pool: pool
+            case .timeline: timeline
+            }
         }
         .frame(height: tokens.size(.previewHeight))
         .settingsPreviewFrame()

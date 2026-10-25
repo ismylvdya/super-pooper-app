@@ -144,7 +144,7 @@ struct TodayScreen: View {
     }
 
     /// Blocks along a horizontal axis all reach the bottom; along a vertical one only the last does.
-    private static func touchesBottom(_ id: String, in layout: ScreenLayout) -> Bool {
+    private static func touchesBottom(_ id: TodayBlockID, in layout: ScreenLayout) -> Bool {
         layout.axis == .horizontal || layout.blocks.last?.block == id
     }
 
@@ -214,22 +214,17 @@ private struct DaySlide: ViewModifier {
     }
 }
 
-/// Maps layout block ids to block views. Unknown ids show a visible error instead of crashing.
+/// Maps layout block ids to block views (unknown ids stop the app at config loading).
 struct TodayBlock: View {
-    @Environment(\.tokens) private var tokens
-    let id: String
+    let id: TodayBlockID
     let plan: DayPlan
     let handler: TaskActionHandler
     let bottomInset: CGFloat
 
     var body: some View {
         switch id {
-        case "pool": PoolBlock(plan: plan, handler: handler, bottomInset: bottomInset)
-        case "timeline": TimelineBlock(plan: plan, handler: handler, bottomInset: bottomInset)
-        default:
-            Text(L10n.format("error.layout.unknownBlock", id))
-                .font(tokens.font(.hint))
-                .foregroundStyle(tokens.color(.problem))
+        case .pool: PoolBlock(plan: plan, handler: handler, bottomInset: bottomInset)
+        case .timeline: TimelineBlock(plan: plan, handler: handler, bottomInset: bottomInset)
         }
     }
 }

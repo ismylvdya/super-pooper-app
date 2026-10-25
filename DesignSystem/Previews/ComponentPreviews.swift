@@ -72,7 +72,7 @@ import SwiftUI
 #Preview("Today widget") {
     TodayWidgetView(plan: PreviewSamples.plan, settings: .fallback,
                     layout: ScreenLayout(axis: .vertical, spacing: "blockGap",
-                                         blocks: [.init(block: "pool", size: .fit, weight: nil), .init(block: "timeline", size: .fill, weight: 1)]),
+                                         blocks: [.init(block: .pool, size: .fit, weight: nil), .init(block: .timeline, size: .fill, weight: 1)]),
                     context: PreviewSamples.context, maxTimelineHours: 6)
         .frame(width: 338, height: 354)
 }

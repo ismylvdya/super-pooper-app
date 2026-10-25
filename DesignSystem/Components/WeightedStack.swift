@@ -18,17 +18,17 @@ struct WeightedStack: Layout {
 
         var lengths = [CGFloat](repeating: 0, count: subviews.count)
         var fitTotal: CGFloat = 0
-        for index in subviews.indices where slot(index).size == .fit {
+        for index in subviews.indices where size(index) == .fit {
             let ideal = axis == .vertical
                 ? subviews[index].sizeThatFits(ProposedViewSize(width: cross, height: nil)).height
                 : subviews[index].sizeThatFits(ProposedViewSize(width: nil, height: cross)).width
             lengths[index] = min(ideal, total)
             fitTotal += lengths[index]
         }
-        let weights = subviews.indices.map { slot($0).size == .fill ? (slot($0).weight ?? 1) : 0 }
+        let weights = subviews.indices.map { size($0) == .fill ? (slot(at: $0)?.weight ?? 1) : 0 }
         let weightSum = weights.reduce(0, +)
         let remaining = max(total - fitTotal - gaps, 0)
-        for index in subviews.indices where slot(index).size == .fill {
+        for index in subviews.indices where size(index) == .fill {
             lengths[index] = weightSum > 0 ? remaining * weights[index] / weightSum : 0
         }
 
@@ -41,9 +41,10 @@ struct WeightedStack: Layout {
         }
     }
 
-    private func slot(_ index: Int) -> ScreenLayout.Slot {
-        index < slots.count ? slots[index] : ScreenLayout.Slot(block: "", size: .fill, weight: 1)
-    }
+    /// A view beyond the layout's slots fills like a slot of weight 1.
+    private func size(_ index: Int) -> ScreenLayout.Size { slot(at: index)?.size ?? .fill }
+
+    private func slot(at index: Int) -> ScreenLayout.Slot? { index < slots.count ? slots[index] : nil }
 }
 
 /// Renders a `ScreenLayout`: asks the registry for each block by id. A paged layout shows `page`
@@ -54,7 +55,7 @@ struct ScreenLayoutView<Block: View>: View {
     var page = 0
     var pageDrag: CGFloat = 0
     var onTurn: ((Int) -> Void)?
-    @ViewBuilder let block: (String) -> Block
+    @ViewBuilder let block: (TodayBlockID) -> Block
 
     var body: some View {
         if layout.isPaged {

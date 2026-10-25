@@ -16,8 +16,8 @@ final class TaskDragState {
     var hoverMoment: Date?
     /// The pool with the task at the spot under the finger.
     var poolOrder: [String]?
-    /// Turns the Today pages to a block ("pool", "timeline"); set by the screen, nothing without pages.
-    var turn: (String) -> Void = { _ in }
+    /// Turns the Today pages to a block; set by the screen, nothing without pages.
+    var turn: (TodayBlockID) -> Void = { _ in }
 
     func begin(_ item: DayItem, from source: Source) -> NSItemProvider {
         self.item = item
@@ -57,7 +57,7 @@ struct TimelineDropDelegate: DropDelegate {
     }
 
     func dropEntered(info: DropInfo) {
-        drag.turn("timeline")
+        drag.turn(.timeline)
     }
 
     func dropUpdated(info: DropInfo) -> DropProposal? {
@@ -92,7 +92,7 @@ struct PoolDropDelegate: DropDelegate {
     }
 
     func dropEntered(info: DropInfo) {
-        drag.turn("pool")
+        drag.turn(.pool)
     }
 
     func dropUpdated(info: DropInfo) -> DropProposal? {
