@@ -63,6 +63,19 @@ struct AppModelTests {
         #expect(model.dayState.skipped == ["Вода 💧"])
     }
 
+    /// A vault that cannot be read this once (bookmark not resolved in the background, no access) must not
+    /// wipe the notifications and the widgets: they keep the last known tasks.
+    @Test func aFailedScanKeepsTheWidgetSnapshot() async throws {
+        let model = try makeModel()
+        await model.sync(announce: false)
+        let before = try #require(model.services.snapshotStore.load()).tasks.count
+        #expect(before > 0)
+        let repository = try #require(model.services.tasks as? InMemoryTaskRepository)
+        await repository.failScans(with: CocoaError(.fileReadNoPermission))
+        await model.sync(announce: false)
+        #expect(model.services.snapshotStore.load()?.tasks.count == before)
+    }
+
     @Test func archiveAndDelete() async throws {
         let model = try makeModel()
         await model.perform(.archive, on: "Сдать отчёт")

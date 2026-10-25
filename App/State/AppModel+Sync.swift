@@ -23,6 +23,7 @@ extension AppModel {
 
         let previousTasks = tasks
         var report = SyncReport()
+        var scanFailed = false
         let started = Date()
         if services.vault.hasVault {
             beginTrackingWrites()
@@ -42,6 +43,7 @@ extension AppModel {
                 if config.flags.autoPromote { report.promoted = await autoPromote() }
             } catch {
                 setVaultState(.failed(Self.describe(error)))
+                scanFailed = true
             }
         } else {
             setVaultState(.notSelected)
@@ -56,7 +58,8 @@ extension AppModel {
             report.removed = diff.removed
         }
         markLoaded()
-        await publishDerivedState()
+        // A vault that could not be read this time leaves the notifications and the widgets as they were.
+        if !scanFailed { await publishDerivedState() }
         let problems = problemCount
         let newProblems = problems > dayState.announcedProblems
         updateDayState { $0.announcedProblems = problems }

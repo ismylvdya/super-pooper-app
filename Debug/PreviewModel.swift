@@ -48,10 +48,17 @@ extension View {
 actor InMemoryTaskRepository: TaskRepository {
     private var tasks: [TaskNote]
     private var bodies: [String: String] = [:]
+    /// Scans throw this (tests of a vault that cannot be read).
+    private var scanError: Error?
 
     init(tasks: [TaskNote]) { self.tasks = tasks }
 
-    func scan() async throws -> VaultScanResult { VaultScanResult(tasks: tasks, fileProblems: [], conflicted: []) }
+    func failScans(with error: Error?) { scanError = error }
+
+    func scan() async throws -> VaultScanResult {
+        if let scanError { throw scanError }
+        return VaultScanResult(tasks: tasks, fileProblems: [], conflicted: [])
+    }
 
     func apply(_ changes: [TaskFieldChange], to task: TaskNote) async throws -> TaskWriteResult {
         let updated = task.applying(changes)
