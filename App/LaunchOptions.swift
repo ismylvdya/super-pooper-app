@@ -4,6 +4,7 @@ import Foundation
 /// - `-SPVaultPath <path>`: use this folder as the vault without the picker (relative = inside Documents);
 /// - `-SPSeedDemo`: create the demo calendar, events and reminders and select them;
 /// - `-SPNow <HH:mm>`: pretend the current time is HH:mm today (the clock keeps ticking);
+/// - `-SPToday <YYYY-MM-DD>`: pretend today is that date (with `-SPNow` at that time, otherwise at the current one);
 /// - `-SPSkipOnboarding`: mark onboarding as done;
 /// - `-SPResetState`: forget app settings and day state before start;
 /// - `-SPTimeline oneColumn|twoColumns`: override the timeline layout;
@@ -14,6 +15,7 @@ struct LaunchOptions {
     var vaultPath: String?
     var seedDemo = false
     var now: LocalTime?
+    var today: LocalDate?
     var skipOnboarding = false
     var resetState = false
     var timelineLayout: AppSettings.TimelineLayout?
@@ -31,6 +33,7 @@ struct LaunchOptions {
         options.vaultPath = value("-SPVaultPath")
         options.seedDemo = arguments.contains("-SPSeedDemo")
         options.now = value("-SPNow").flatMap(LocalTime.init(string:))
+        options.today = value("-SPToday").flatMap(LocalDate.init(isoString:))
         options.skipOnboarding = arguments.contains("-SPSkipOnboarding")
         options.resetState = arguments.contains("-SPResetState")
         options.timelineLayout = value("-SPTimeline").flatMap(AppSettings.TimelineLayout.init(rawValue:))
@@ -39,6 +42,14 @@ struct LaunchOptions {
         options.provisionalNotifications = arguments.contains("-SPProvisionalNotifications")
         #endif
         return options
+    }
+
+    /// A clock that starts at `-SPToday` / `-SPNow`, or the system clock when neither is given.
+    func clock(calendar: Calendar) -> Clock {
+        guard now != nil || today != nil else { return SystemClock() }
+        let real = Date()
+        let day = today ?? LocalDate(real, in: calendar)
+        return ShiftedClock(startingAt: day.startDate(in: calendar, offset: now ?? LocalTime(real, in: calendar)))
     }
 
     func vaultURL() -> URL? {

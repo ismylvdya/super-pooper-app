@@ -3,7 +3,9 @@ import XCTest
 /// Reference pictures of the main screens on the rendered test vault. `scripts/snapshots.sh` runs them on
 /// each device, theme and text size and compares them with a saved set, so a refactoring that should not
 /// change anything on screen can be checked. With `SP_SNAPSHOT_DIR` set the pictures go to that folder,
-/// otherwise they are attached to the test result.
+/// otherwise they are attached to the test result. `SP_SNAPSHOT_TODAY` (YYYY-MM-DD) fixes the date, so habits
+/// of the weekday and due dates are the same whatever day the pictures are taken; the vault must be rendered
+/// for the same date (`scripts/sim.sh load-vault <date>`).
 final class ScreenSnapshotUITests: XCTestCase {
     private var app: XCUIApplication!
 
@@ -115,10 +117,11 @@ final class ScreenSnapshotUITests: XCTestCase {
 
     // MARK: - Helpers
 
-    /// A fixed clock, a fresh day state and the demo calendar; banners are swiped away.
+    /// A fixed clock (and date), a fresh day state and the demo calendar; banners are swiped away.
     private func launch(_ link: String, arrangement: String = "paged") {
         app.launchArguments = ["-SPVaultPath", "TestVault", "-SPSkipOnboarding", "-SPNow", "11:30", "-SPResetState", "-SPSeedDemo",
                                "-SPArrangement", arrangement, "-SPOpen", link]
+        if let today = ProcessInfo.processInfo.environment["SP_SNAPSHOT_TODAY"] { app.launchArguments += ["-SPToday", today] }
         app.launch()
         XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 15))
         settle(seconds: 2)

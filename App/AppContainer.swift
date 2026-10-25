@@ -41,9 +41,7 @@ final class AppContainer {
             shared.remove(SettingsStore.fileName)
             shared.remove(DayStateStore.fileName)
         }
-        let clock: Clock = launch.now.map { time in
-            ShiftedClock(startingAt: LocalDate(Date(), in: calendar).startDate(in: calendar, offset: time))
-        } ?? SystemClock()
+        let clock = launch.clock(calendar: calendar)
 
         let vaultLocation: VaultLocating = launch.vaultURL().map(FixedVaultLocation.init(url:))
             ?? BookmarkVaultLocation(store: shared)
