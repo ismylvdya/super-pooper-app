@@ -4,7 +4,6 @@ import SwiftUI
 /// Under the existing ones there is always one empty field to add the next.
 struct SubtasksSection: View {
     @Environment(AppModel.self) private var model
-    @Environment(Router.self) private var router
     let editor: TaskEditor
     @State private var newName = ""
 
@@ -13,8 +12,9 @@ struct SubtasksSection: View {
             if let draft = editor.draft {
                 draftRows(draft)
             } else {
+                // A link, not the router: in the morning review the page is in the sheet's own stack.
                 ForEach(model.subtasks(of: editor.task.name), id: \.name) { subtask in
-                    Button { router.open(.task(subtask.name)) } label: {
+                    NavigationLink(value: Route.task(subtask.name)) {
                         SubtaskLabel(name: subtask.name, isDone: subtask.status.isCompleted)
                     }
                     .buttonStyle(.plain)
