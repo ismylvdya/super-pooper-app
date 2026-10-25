@@ -13,8 +13,11 @@ enum YAMLSerializer {
         entryLines(key: key, value: value, indentation: "")
     }
 
+    /// Text with double quotes in it (JSON in a property) goes in single quotes, so it needs no escapes.
     static func scalarText(_ text: String, quoted: Bool) -> String {
-        quoted || needsQuotes(text) ? doubleQuoted(text) : text
+        guard quoted || needsQuotes(text) else { return text }
+        if text.contains("\""), !text.contains("'"), !text.unicodeScalars.contains(where: isControl) { return "'\(text)'" }
+        return doubleQuoted(text)
     }
 
     /// Whether plain text would be misread or rejected by a YAML parser.

@@ -42,6 +42,8 @@ struct AppConfig: Sendable {
             try layout.validate(file: file)
             return layout
         }
+        let fieldMapping = try loader.load(FieldMapping.self, from: File.fieldMapping)
+        try fieldMapping.validate(file: File.fieldMapping)
         return AppConfig(
             tokens: try loader.load(DesignTokens.self, from: File.tokens),
             icons: try loader.load(IconSet.self, from: File.icons).resolvingFallbacks { UIImage(systemName: $0) != nil },
@@ -50,7 +52,7 @@ struct AppConfig: Sendable {
             todaySideBySide: try layout(File.todaySideBySide),
             todayPaged: try layout(File.todayPaged),
             sort: try loader.load(SortConfig.self, from: File.sort),
-            fieldMapping: try loader.load(FieldMapping.self, from: File.fieldMapping),
+            fieldMapping: fieldMapping,
             flags: try loader.load(FeatureFlags.self, from: File.flags),
             rules: try loader.load(RulesConfig.self, from: File.rules),
             defaultSettings: defaults

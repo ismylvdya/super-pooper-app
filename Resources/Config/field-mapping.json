@@ -46,5 +46,19 @@
     "morning": "morning",
     "day": "day",
     "evening": "evening"
+  },
+  "itemSettings": {
+    "property": "superpooper",
+    "fields": [
+      "reminderTimes",
+      "habitColor",
+      "harmful",
+      "showInToday",
+      "timeOfDay",
+      "twiceADay",
+      "twiceCountsDouble",
+      "weeklyGoal",
+      "allowedSkips"
+    ]
   }
 }

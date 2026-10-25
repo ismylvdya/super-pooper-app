@@ -17,7 +17,8 @@ struct TaskNoteReader: Sendable {
     }
 
     func task(from document: FrontmatterDocument, name: String, relativePath: String) -> TaskNote {
-        var fields = FieldReader(document: document)
+        let settings = ItemSettingsProperty(property: mapping.itemSettings.property, keys: mapping.itemSettingsKeys)
+        var fields = FieldReader(document: document, settings: settings.values(in: document) ?? [:])
         let keys = mapping.fields
 
         var task = TaskNote(name: name, relativePath: relativePath,
@@ -71,12 +72,15 @@ struct TaskNoteReader: Sendable {
     }
 }
 
-/// Typed access to frontmatter values that collects problems.
+/// Typed access to frontmatter values that collects problems. The item settings JSON wins over a separate
+/// key of the same name (older notes have only those).
 private struct FieldReader {
     let document: FrontmatterDocument
+    let settings: [String: YAMLValue]
     var problems: [TaskProblem] = []
 
     mutating func value(_ key: String) -> YAMLValue? {
+        if let value = settings[key] { return value == .null ? nil : value }
         do {
             guard let value = try document.value(for: key) else { return nil }
             if case .null = value { return nil }

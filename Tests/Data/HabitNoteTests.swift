@@ -2,18 +2,22 @@ import Foundation
 import Testing
 @testable import SuperPooper
 
-/// The habit keys in a note (`habit_color`, `harmful`, `show_in_today`, …): written readable for Obsidian,
-/// read back the same, removed when switched off.
+/// The app's settings of a habit (`habit_color`, `harmful`, `show_in_today`, …) live in one JSON property
+/// (`superpooper`); notes with the older separate keys are read and moved into it with the next change.
 @Suite("Habit notes")
 struct HabitNoteTests {
-    @Test func habitOptionsRoundTrip() async throws {
+    @Test func habitOptionsRoundTripThroughTheSettingsProperty() async throws {
         let note = try await SandboxNote("Медитация 🧘")
         let written = try await note.apply([.habitColor("#34C759"), .harmful(true), .showInToday(false), .timeOfDay(.evening),
                                             .twiceADay(true), .twiceCountsDouble(true), .weeklyGoal(4)]).task
         let text = try note.text()
-        for line in ["habit_color: \"#34C759\"", "harmful: true", "show_in_today: false", "time_of_day: evening",
-                     "twice_a_day: true", "twice_counts_double: true", "weekly_goal: 4"] {
-            #expect(text.contains(line))
+        let line = try #require(text.split(separator: "\n").first { $0.hasPrefix("superpooper: '{") })
+        for pair in ["\"habit_color\":\"#34C759\"", "\"harmful\":true", "\"show_in_today\":false", "\"time_of_day\":\"evening\"",
+                     "\"twice_a_day\":true", "\"twice_counts_double\":true", "\"weekly_goal\":4"] {
+            #expect(line.contains(pair))
+        }
+        for key in ["habit_color:", "harmful:", "show_in_today:", "time_of_day:", "weekly_goal:", "reminder_times:"] {
+            #expect(!text.split(separator: "\n").contains { $0.hasPrefix(key) }, "no separate \(key) key")
         }
         #expect(written.habit.color == "#34C759" && written.habit.harmful && !written.habit.showInToday)
         #expect(written.habit.timeOfDay == .evening && written.habit.skipRule == .weeklyGoal(times: 4))
@@ -30,7 +34,19 @@ struct HabitNoteTests {
     @Test func showInTodayIsAlwaysWrittenExplicitly() async throws {
         let note = try await SandboxNote("Медитация 🧘")
         _ = try await note.apply([.showInToday(true)])
-        #expect(try note.text().contains("show_in_today: true"))
+        #expect(try note.text().contains("\"show_in_today\":true"))
+    }
+
+    /// Separate keys of an older note are read as before; the first settings change moves them into the JSON.
+    @Test func olderSeparateKeysAreReadAndMovedIntoTheProperty() async throws {
+        let note = try await SandboxNote("Медитация 🧘")
+        let old = try note.text().replacingOnce("\ntags:", with: "\nhabit_color: \"#FF9500\"\nweekly_goal: 2\ntags:")
+        try note.sandbox.write(old, to: note.task.name)
+        let written = try await note.apply([.harmful(true)]).task
+        let text = try note.text()
+        #expect(written.habit.color == "#FF9500" && written.habit.skipRule == .weeklyGoal(times: 2) && written.habit.harmful)
+        #expect(!text.contains("\nhabit_color:") && !text.contains("\nweekly_goal:"))
+        #expect(text.contains("\"habit_color\":\"#FF9500\"") && text.contains("\"weekly_goal\":2"))
     }
 }
 

@@ -6,6 +6,13 @@ import Foundation
 struct TaskNoteWriter: Sendable {
     let mapping: FieldMapping
     let timeZone: TimeZone
+    private let settings: ItemSettingsProperty
+
+    init(mapping: FieldMapping, timeZone: TimeZone) {
+        self.mapping = mapping
+        self.timeZone = timeZone
+        settings = ItemSettingsProperty(property: mapping.itemSettings.property, keys: mapping.itemSettingsKeys)
+    }
 
     func apply(_ changes: [TaskFieldChange], to document: inout FrontmatterDocument, now: Date) {
         let keys = mapping.fields
@@ -67,7 +74,7 @@ struct TaskNoteWriter: Sendable {
             case .harmful(let value):
                 set(keys.harmful, value ? .bool(true) : nil, in: &document)
             case .showInToday(let value):
-                document.set(keys.showInToday, to: .bool(value))
+                set(keys.showInToday, .bool(value), in: &document)
             case .timeOfDay(let value):
                 set(keys.timeOfDay, value.map { .string(mapping.raw($0)) }, in: &document)
             case .twiceADay(let value):
@@ -83,8 +90,15 @@ struct TaskNoteWriter: Sendable {
         document.set(keys.dateModified, to: .scalar(ISO8601.formatWithMilliseconds(now, timeZone: timeZone), quoted: false))
     }
 
+    /// The app's item settings go into their JSON property; everything else is a key of its own.
     private func set(_ key: String, _ value: YAMLValue?, in document: inout FrontmatterDocument) {
-        if let value { document.set(key, to: value) } else { document.remove(key) }
+        if settings.keys.contains(key) {
+            settings.set(key, to: value, in: &document)
+        } else if let value {
+            document.set(key, to: value)
+        } else {
+            document.remove(key)
+        }
     }
 
     /// The items of a list key as they are in the file (a single scalar counts as one item).

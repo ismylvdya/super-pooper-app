@@ -56,10 +56,18 @@ struct FieldMapping: Codable, Hashable, Sendable {
         let normal: String
     }
 
+    /// The app's own settings of an item, kept together in one JSON property (see `ItemSettingsProperty`).
+    struct ItemSettings: Codable, Hashable, Sendable {
+        let property: String
+        /// Names in `fields` (`habitColor`, `showInToday` …) of the settings that go into it.
+        let fields: [String]
+    }
+
     let fields: Fields
     let statuses: Statuses
     let priorities: Priorities
     let timesOfDay: TimesOfDay
+    let itemSettings: ItemSettings
     /// `reltype` written into new `previous_task` entries.
     let dependencyRelType: String
 
@@ -104,5 +112,19 @@ struct FieldMapping: Codable, Hashable, Sendable {
         case .habit: statuses.habit
         case .other(let raw): raw
         }
+    }
+
+    /// Every name in `itemSettings.fields` must be a field, so a typo stops the app instead of losing a setting.
+    func validate(file: String) throws {
+        if itemSettingsKeys.count != Set(itemSettings.fields).count {
+            throw ConfigError(file: file, path: "itemSettings.fields", message: "a name that is not in \"fields\"")
+        }
+    }
+
+    /// Frontmatter key names of the item settings, e.g. `habit_color`.
+    var itemSettingsKeys: Set<String> {
+        guard let data = try? JSONEncoder().encode(fields),
+              let names = (try? JSONSerialization.jsonObject(with: data)) as? [String: String] else { return [] }
+        return Set(itemSettings.fields.compactMap { names[$0] })
     }
 }
