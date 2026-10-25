@@ -52,7 +52,6 @@ struct TodayScreen: View {
 
     private func turn(to newPage: Int) {
         guard layout.isPaged, newPage != page, layout.blocks.indices.contains(newPage) else { return }
-        Haptics.play(.light)
         withAnimation(tokens.animation) {
             page = newPage
             pageDrag = 0
