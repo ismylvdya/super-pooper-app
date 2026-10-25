@@ -118,11 +118,7 @@ struct DayTimelineView<TaskContent: View>: View {
                     .buttonStyle(.plain)
                     .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: tokens.radius(.timelineItem), style: .continuous))
                     .contextMenu {
-                        if let onEventDelete = style.onEventDelete {
-                            Button(role: .destructive) { onEventDelete(event) } label: {
-                                Label(LocalizedStringKey("action.deleteEvent"), systemImage: icons[.delete])
-                            }
-                        }
+                        if let onEventDelete = style.onEventDelete { RegistryMenu(menu: .eventContext) { _ in onEventDelete(event) } }
                     }
             } else {
                 TimelineEventBlock(event: event, slot: slot, font: style.eventFont, lineHeight: style.eventLineHeight)

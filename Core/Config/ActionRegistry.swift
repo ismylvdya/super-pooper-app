@@ -16,6 +16,7 @@ enum ActionID: String, Codable, CaseIterable, Sendable {
     case restoreHalfYear
     case restoreHabit
     case routines
+    case deleteEvent
 }
 
 enum HapticStyle: String, Codable, Sendable {
@@ -35,11 +36,15 @@ enum ActionMenu: String, Codable, CaseIterable, Sendable {
     case habitPage
     case habitArchiveRow
     case eventNotification
+    /// A habit's day in the Habits list and in the history.
+    case habitDay
+    case reminderContext
+    case eventContext
 }
 
 extension ActionMenu {
     /// Menus about a habit's day: their mark actions use the habit mark images.
-    var isHabitMenu: Bool { self == .habitContext || self == .habitNotification }
+    var isHabitMenu: Bool { self == .habitContext || self == .habitNotification || self == .habitDay }
 }
 
 struct ActionDefinition: Codable, Hashable, Sendable {

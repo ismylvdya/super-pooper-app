@@ -112,47 +112,21 @@ struct HabitDayButton: View {
     }
 }
 
-/// Long-press menu of a habit's day: Done / Partially / Twice (twice-a-day habits) / Unmark, with the
-/// habit marks as icons. In the history the day is named ("17 Sep 2026"); in the list it is always today.
+/// Long-press menu of a habit's day, the same as a habit's menu in the pool (`actions.json` → `habitDay`): the
+/// marks with their images, the current one not selectable. In the history the day is named ("17 Sep 2026").
 struct HabitDayMenu: View {
     @Environment(AppModel.self) private var model
-    @Environment(\.actions) private var actions
-    @Environment(\.icons) private var icons
     let habit: TaskNote
     let day: LocalDate
     var showsDate = false
 
     var body: some View {
-        let current = HabitInstances(task: habit).mark(on: day)
         if showsDate {
             Text(day.startDate(in: model.calendar).formatted(.dateTime.day().month(.abbreviated).year()))
         }
-        let unmark = actions.definition(.unmark)
-        Button { set(nil) } label: {
-            Label { Text(LocalizedStringKey(unmark.title)) } icon: { Image(icons[HabitMarkIcon.icon(for: nil)]).renderingMode(.template) }
-        }
-        .disabled(current == nil)
-        ForEach(marks, id: \.self) { mark in
-            let action = actions.definition(Self.actionID(mark))
-            Button { set(mark) } label: {
-                Label { Text(LocalizedStringKey(action.title)) } icon: { Image(icons[HabitMarkIcon.icon(for: mark)]).renderingMode(.template) }
-            }
-            .disabled(current == mark)
-        }
-    }
-
-    private var marks: [HabitMark] { habit.habit.twiceADay ? [.partial, .done, .twice] : [.partial, .done] }
-
-    private func set(_ mark: HabitMark?) {
-        Haptics.play(.light)
-        Task { await model.setHabitMark(habit.name, on: day, to: mark) }
-    }
-
-    static func actionID(_ mark: HabitMark) -> ActionID {
-        switch mark {
-        case .done: .done
-        case .partial: .partial
-        case .twice: .twice
+        let state = HabitInstances(task: habit).mark(on: day).map(DayItemState.marked) ?? .open
+        ActionMenuContent(menu: .habitDay, item: DayItem(task: habit, state: state, blockers: [], problems: [])) { action in
+            Task { await model.setHabitMark(habit.name, on: day, to: AppModel.habitMark(for: action.id)) }
         }
     }
 }

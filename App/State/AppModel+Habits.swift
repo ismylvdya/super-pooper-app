@@ -101,7 +101,8 @@ extension AppModel {
         ])
     }
 
-    private static func habitMark(for action: ActionID) -> HabitMark? {
+    /// The mark a menu or notification action sets (`nil`: Unmark).
+    static func habitMark(for action: ActionID) -> HabitMark? {
         switch action {
         case .done: .done
         case .partial: .partial

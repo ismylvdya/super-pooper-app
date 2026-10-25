@@ -38,7 +38,6 @@ struct TimelineEventBlock: View {
 /// Reminders and a long press completes it; widgets get the plain plate (no gestures there).
 struct TimelineReminderBlock: View {
     @Environment(\.tokens) private var tokens
-    @Environment(\.icons) private var icons
     @Environment(\.titleReserve) private var reserve
     let reminder: ReminderItem
     let slot: TimelineSlot
@@ -57,12 +56,7 @@ struct TimelineReminderBlock: View {
             plate
                 .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: tokens.radius(isCompact ? .widgetItem : .poolRow), style: .continuous))
                 .onTapGesture { onOpen(reminder) }
-                .contextMenu {
-                    Button { onToggle(reminder) } label: {
-                        Label(LocalizedStringKey(reminder.isCompleted ? "action.unmark" : "action.done"),
-                              systemImage: icons[reminder.isCompleted ? .remove : .markDone])
-                    }
-                }
+                .contextMenu { RegistryMenu(menu: .reminderContext) { _ in onToggle(reminder) } }
         } else {
             plate
         }

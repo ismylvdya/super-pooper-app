@@ -92,6 +92,13 @@
       "icon": "sunrise",
       "destructive": false,
       "haptic": "none"
+    },
+    {
+      "id": "deleteEvent",
+      "title": "action.deleteEvent",
+      "icon": "trash",
+      "destructive": true,
+      "haptic": "medium"
     }
   ],
   "menus": {
@@ -139,6 +146,18 @@
       "restoreHabit",
       "delete"
     ],
-    "eventNotification": []
+    "eventNotification": [],
+    "habitDay": [
+      "unmark",
+      "partial",
+      "done",
+      "twice"
+    ],
+    "reminderContext": [
+      "done"
+    ],
+    "eventContext": [
+      "deleteEvent"
+    ]
   }
 }

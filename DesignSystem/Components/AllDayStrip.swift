@@ -4,7 +4,6 @@ import SwiftUI
 /// Long titles fade out; in the app a tap opens Calendar and a long press offers deleting the event.
 struct AllDayStrip: View {
     @Environment(\.tokens) private var tokens
-    @Environment(\.icons) private var icons
     let events: [CalendarEvent]
     var font: Font?
     let lineHeight: CGFloat
@@ -19,11 +18,7 @@ struct AllDayStrip: View {
                         .buttonStyle(.plain)
                         .contentShape(.contextMenuPreview, Capsule())
                         .contextMenu {
-                            if let onDelete {
-                                Button(role: .destructive) { onDelete(event) } label: {
-                                    Label(LocalizedStringKey("action.deleteEvent"), systemImage: icons[.delete])
-                                }
-                            }
+                            if let onDelete { RegistryMenu(menu: .eventContext) { _ in onDelete(event) } }
                         }
                 } else {
                     bar(event)

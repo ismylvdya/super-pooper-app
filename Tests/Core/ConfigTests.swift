@@ -4,6 +4,13 @@ import Testing
 
 /// The bundled configs load and are complete; config typos produce readable errors.
 struct ConfigTests {
+    /// A habit's day offers the same marks in the same order everywhere: the pool, the Habits list, the history.
+    @Test func habitDayMenusMatchThePool() {
+        let marks: Set<ActionID> = [.unmark, .partial, .done, .twice]
+        #expect(TestConfig.actions.menus["habitDay"] == TestConfig.actions.menus["habitContext"]?.filter(marks.contains))
+        #expect(TestConfig.actions.menus["eventContext"] == [.deleteEvent])
+    }
+
     @Test func bundledConfigsLoad() throws {
         let config = try AppConfig.load(bundle: Bundle(for: BundleToken.self).appHostBundle)
         #expect(config.todayStacked.blocks.map(\.block) == ["pool", "timeline"])
