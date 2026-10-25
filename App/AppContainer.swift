@@ -88,6 +88,11 @@ final class AppContainer {
         Haptics.isEnabled = config.flags.haptics
         notifications.registerCategories(config.actions, habitActionsEnabled: config.flags.habitNotificationActions)
 
+        applyLaunchOverrides()
+    }
+
+    /// DEBUG launch arguments that set settings (empty in Release).
+    private func applyLaunchOverrides() {
         if launch.skipOnboarding { model.updateSettings { $0.onboarding.completed = true } }
         if let layout = launch.timelineLayout { model.updateSettings { $0.timeline.layout = layout } }
         if let arrangement = launch.arrangement { model.updateSettings { $0.today.arrangement = arrangement } }
@@ -109,6 +114,8 @@ final class AppContainer {
         }
         #endif
         await model.sync(announce: false)
+        // The settings note read by the sync must not undo what the launch asked for.
+        applyLaunchOverrides()
         if let url = launch.openURL { router.handle(url) }
         observeCalendarChanges()
     }

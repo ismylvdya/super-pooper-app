@@ -7,7 +7,7 @@ import Foundation
 /// - `-SPSkipOnboarding`: mark onboarding as done;
 /// - `-SPResetState`: forget app settings and day state before start;
 /// - `-SPTimeline oneColumn|twoColumns`: override the timeline layout;
-/// - `-SPArrangement stacked|sideBySide`: override the Today arrangement;
+/// - `-SPArrangement stacked|sideBySide|paged`: override the Today arrangement (also over the settings note);
 /// - `-SPOpen <superpooper://…>`: open a deep link after start;
 /// - `-SPProvisionalNotifications`: get quiet notification permission without the system prompt.
 struct LaunchOptions {
