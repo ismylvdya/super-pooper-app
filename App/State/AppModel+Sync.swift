@@ -106,8 +106,11 @@ extension AppModel {
     func publishDerivedState() async {
         let context = context()
         if config.flags.widgetSnapshot {
+            // The widget shows the next hours from this one snapshot, past the day boundary too.
+            let widgets = config.rules.widgets
+            let reach = context.dayEnd.addingTimeInterval(Double(widgets.entryCount * widgets.refreshMinutes) * 60)
             let snapshot = WidgetSnapshot(generatedAt: context.now, tasks: tasks, events: events,
-                                          reminders: reminders.filter { context.contains($0.due) }, dayState: dayState)
+                                          reminders: reminders.filter { $0.due >= context.dayStart && $0.due < reach }, dayState: dayState)
             try? services.snapshotStore.save(snapshot)
         }
         services.widgets.reloadAll()

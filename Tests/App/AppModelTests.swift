@@ -127,6 +127,16 @@ struct AppModelTests {
         #expect(model.reminders.map(\.listID) == ["new"])
     }
 
+    /// The widget keeps showing the next hours from one snapshot, past the day boundary too: tomorrow's early
+    /// reminders are in it.
+    @Test func theWidgetSnapshotReachesPastTheDayBoundary() async throws {
+        let model = try #require(PreviewModel.make(reminders: EarlyReminder())).model
+        await model.refreshCalendarSources()
+        await model.publishDerivedState()
+        let reminders = try #require(model.services.snapshotStore.load()).reminders
+        #expect(reminders.map(\.title) == ["Early"])
+    }
+
     @Test func archiveAndDelete() async throws {
         let model = try makeModel()
         await model.perform(.archive, on: "Сдать отчёт")
@@ -200,5 +210,18 @@ private struct ListedReminders: RemindersRepository {
             await withCheckedContinuation { done in DispatchQueue.global().asyncAfter(deadline: .now() + 0.4) { done.resume() } }
         }
         return listIDs.map { ReminderItem(id: $0, title: $0, due: start, listID: $0, listTitle: $0, colorHex: "#000000", isCompleted: false) }
+    }
+}
+
+/// One reminder an hour after the end of the logical day.
+private struct EarlyReminder: RemindersRepository {
+    var access: SourceAccess { .granted }
+    func requestAccess() async -> Bool { true }
+    func lists() -> [SourceCollection] { [] }
+    func setCompleted(_ completed: Bool, reminderID: String) throws {}
+
+    func reminders(from start: Date, to end: Date, listIDs: [String]) async -> [ReminderItem] {
+        let due = PreviewSamples.context.dayEnd.addingTimeInterval(3600)
+        return [ReminderItem(id: "early", title: "Early", due: due, listID: "list", listTitle: "List", colorHex: "#000000", isCompleted: false)]
     }
 }
