@@ -150,4 +150,7 @@ extension UIColor {
 
 extension Color {
     init(hex: String) { self.init(uiColor: UIColor(hex: hex) ?? .systemGray) }
+
+    /// Hex of a resolved token color (for components that take hex strings).
+    var hexValue: String { UIColor(self).hexString }
 }

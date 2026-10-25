@@ -98,14 +98,3 @@ private struct SlotPlate: ViewModifier {
             .opacity(isPast ? tokens.opacity(.past) : 1)
     }
 }
-
-enum TimeRangeText {
-    static func format(_ start: Date, _ end: Date) -> String {
-        L10n.format("common.range", start.formatted(date: .omitted, time: .shortened), end.formatted(date: .omitted, time: .shortened))
-    }
-}
-
-extension Color {
-    /// Hex of a resolved token color (for components that take hex strings).
-    var hexValue: String { UIColor(self).hexString }
-}
