@@ -55,9 +55,7 @@ private struct SubtaskLabel: View {
     let isDone: Bool
 
     var body: some View {
-        PlateRow(icon: .subtask, title: Text(verbatim: name)) {
-            Image(systemName: icons[.chevron]).foregroundStyle(tokens.color(.tertiaryText))
-        }
+        PlateRow(icon: .subtask, title: Text(verbatim: name)) { DisclosureAccessory() }
         .strikethrough(isDone)
         .contentShape(Rectangle())
     }

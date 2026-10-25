@@ -31,8 +31,7 @@ struct PoolOrderScreen: View {
                     .listRowBackground(tokens.color(.plateBackground))
             }
         }
-        .scrollContentBackground(.hidden)
-        .background(tokens.color(.screenBackground))
+        .appList()
         .navigationTitle(Text("sort.title"))
         .navigationBarTitleDisplayMode(.inline)
     }

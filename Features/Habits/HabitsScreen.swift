@@ -45,8 +45,7 @@ struct HabitsScreen: View {
             }
 
         }
-        .scrollContentBackground(.hidden)
-        .background(tokens.color(.screenBackground))
+        .appList()
         .refreshable { await model.sync(announce: true) }
         .barTitle(L10n.string("tab.habits"), isHidden: isLargeTitleVisible)
         .toolbar {

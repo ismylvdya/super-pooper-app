@@ -126,9 +126,7 @@ struct ReviewRow: View {
         .padding(.vertical, tokens.space(.reviewRowVertical))
         .padding(.trailing, tokens.size(.reviewChevron))
         .frame(maxWidth: .infinity, alignment: .leading)
-        .overlay(alignment: .trailing) {
-            Image(systemName: icons[.chevron]).foregroundStyle(tokens.color(.tertiaryText))
-        }
+        .overlay(alignment: .trailing) { DisclosureAccessory() }
         .contentShape(Rectangle())
         .onTapGesture(perform: onOpen)
     }

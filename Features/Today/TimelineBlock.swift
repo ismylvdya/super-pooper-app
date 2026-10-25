@@ -138,13 +138,12 @@ struct TimelineBlock: View {
 
     private var style: TimelineStyle {
         var style = TimelineStyle.make(model.settings.timeline, tokens: tokens)
-        let prefix = model.config.rules.eventLinks.calendarAppURL
+        let links = model.config.rules.eventLinks
         style.onEventTap = { event in
-            if let url = URL(string: "\(prefix)\(Int(event.start.timeIntervalSinceReferenceDate))") { openURL(url) }
+            if let url = links.calendarURL(at: event.start) { openURL(url) }
         }
-        let remindersURL = model.config.rules.eventLinks.remindersAppURL
         style.onReminderTap = { reminder in
-            if let url = URL(string: remindersURL + reminder.id) { openURL(url) }
+            if let url = links.reminderURL(id: reminder.id) { openURL(url) }
         }
         style.onEventDelete = { eventToDelete = $0 }
         style.rowsHaveOwnPlates = true

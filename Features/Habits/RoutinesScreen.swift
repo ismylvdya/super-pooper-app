@@ -11,8 +11,7 @@ struct RoutinesScreen: View {
             section(.morning, title: "routines.morning", keyPath: \.morningRoutine)
             section(.evening, title: "routines.evening", keyPath: \.eveningRoutine)
         }
-        .scrollContentBackground(.hidden)
-        .background(tokens.color(.screenBackground))
+        .appList()
         .navigationTitle(Text("routines.title"))
         .navigationBarTitleDisplayMode(.inline)
     }

@@ -54,8 +54,7 @@ struct SearchScreen: View {
                 }
             }
         }
-        .scrollContentBackground(.hidden)
-        .background(tokens.color(.screenBackground))
+        .appList()
         .navigationTitle(Text("search.title"))
         .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: Text("search.prompt"))
@@ -64,7 +63,6 @@ struct SearchScreen: View {
     }
 
     private func open(_ event: CalendarEvent) {
-        let prefix = model.config.rules.eventLinks.calendarAppURL
-        if let url = URL(string: "\(prefix)\(Int(event.start.timeIntervalSinceReferenceDate))") { openURL(url) }
+        if let url = model.config.rules.eventLinks.calendarURL(at: event.start) { openURL(url) }
     }
 }

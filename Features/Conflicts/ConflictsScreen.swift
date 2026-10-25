@@ -5,7 +5,6 @@ import SwiftUI
 struct ConflictsScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
-    @Environment(\.icons) private var icons
 
     var body: some View {
         PageScaffold(title: L10n.string("conflicts.title")) {
@@ -15,9 +14,7 @@ struct ConflictsScreen: View {
                 PlateSection(header: nil, hint: "conflicts.hint") {
                     ForEach(model.conflictedNotes, id: \.self) { name in
                         NavigationLink(value: Route.conflict(name)) {
-                            PlateRow(icon: .problem, title: Text(verbatim: name), tint: tokens.color(.warning)) {
-                                Image(systemName: icons[.chevron]).foregroundStyle(tokens.color(.tertiaryText))
-                            }
+                            PlateRow(icon: .problem, title: Text(verbatim: name), tint: tokens.color(.warning)) { DisclosureAccessory() }
                         }
                         .buttonStyle(.plain)
                     }
