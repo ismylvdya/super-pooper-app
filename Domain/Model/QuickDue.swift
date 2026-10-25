@@ -12,15 +12,15 @@ enum QuickDue: CaseIterable, Sendable {
         }
     }
 
-    /// The chip that matches the task's date, if any.
-    static func selection(of due: TaskDue?, today: LocalDate) -> QuickDue? {
+    /// The chip that matches the task's logical day, if any (01:00 tonight is still today).
+    static func selection(of due: TaskDue?, context: DayContext) -> QuickDue? {
         guard let due else { return nil }
-        return allCases.first { $0.day(from: today) == due.day }
+        return allCases.first { $0.day(from: context.today) == context.logicalDay(of: due) }
     }
 
-    /// Tapping a chip: an unselected one moves the date to its day (keeping the time), the selected one clears it.
-    static func toggling(_ chip: QuickDue, due: TaskDue?, today: LocalDate) -> TaskDue? {
-        if selection(of: due, today: today) == chip { return nil }
-        return TaskDue(day: chip.day(from: today), time: due?.time)
+    /// Tapping a chip: an unselected one moves the task to its day (keeping the time), the selected one clears it.
+    static func toggling(_ chip: QuickDue, due: TaskDue?, context: DayContext) -> TaskDue? {
+        if selection(of: due, context: context) == chip { return nil }
+        return context.due(onLogicalDay: chip.day(from: context.today), time: due?.time)
     }
 }

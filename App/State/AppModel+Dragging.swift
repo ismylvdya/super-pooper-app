@@ -10,7 +10,7 @@ extension AppModel {
     /// Back to the pool at the spot it was dropped on.
     func unschedule(_ name: String, poolOrder: [String]) async {
         guard let task = task(named: name) else { return }
-        await write(task, TaskScheduling.changes(unscheduling: task))
+        await write(task, TaskScheduling.changes(unscheduling: task, context: context()))
         setManualOrder(poolOrder)
     }
 }

@@ -8,8 +8,8 @@ struct TaskQuickChips: View {
     let editor: TaskEditor
 
     var body: some View {
-        let today = model.context().today
-        let selected = QuickDue.selection(of: editor.task.due, today: today)
+        let context = model.context()
+        let selected = QuickDue.selection(of: editor.task.due, context: context)
         HStack(spacing: tokens.space(.chipGap)) {
             ToggleChip(icon: .high, title: "taskPage.chip.high", tint: tokens.color(.high), isOn: editor.task.isHighPriority) {
                 editor.apply([.highPriority(!editor.task.isHighPriority)])
@@ -18,7 +18,7 @@ struct TaskQuickChips: View {
             ForEach(QuickDue.allCases, id: \.self) { chip in
                 ToggleChip(icon: chip == .today ? .today : .tomorrow, title: chip == .today ? "taskPage.chip.today" : "taskPage.chip.tomorrow",
                            tint: tokens.color(.task), isOn: selected == chip) {
-                    editor.apply([.due(QuickDue.toggling(chip, due: editor.task.due, today: today))])
+                    editor.apply([.due(QuickDue.toggling(chip, due: editor.task.due, context: context))])
                 }
                 .accessibilityIdentifier(chip == .today ? "taskPage.chip.today" : "taskPage.chip.tomorrow")
             }

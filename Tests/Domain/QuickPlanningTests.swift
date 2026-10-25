@@ -10,19 +10,21 @@ struct QuickPlanningTests {
     // MARK: - Today / Tomorrow chips
 
     @Test func theChipsWorkLikeRadioButtons() {
-        #expect(QuickDue.selection(of: nil, today: today) == nil)
-        let onToday = QuickDue.toggling(.today, due: nil, today: today)
+        let context = TestCalendar.context()
+        #expect(QuickDue.selection(of: nil, context: context) == nil)
+        let onToday = QuickDue.toggling(.today, due: nil, context: context)
         #expect(onToday == TaskDue(day: today))
-        #expect(QuickDue.selection(of: onToday, today: today) == .today)
-        let onTomorrow = QuickDue.toggling(.tomorrow, due: onToday, today: today)
+        #expect(QuickDue.selection(of: onToday, context: context) == .today)
+        let onTomorrow = QuickDue.toggling(.tomorrow, due: onToday, context: context)
         #expect(onTomorrow == TaskDue(day: LocalDate("2026-10-22")))
-        #expect(QuickDue.toggling(.tomorrow, due: onTomorrow, today: today) == nil)
+        #expect(QuickDue.toggling(.tomorrow, due: onTomorrow, context: context) == nil)
     }
 
     @Test func anotherDateSelectsNoChipAndATimeIsKept() {
+        let context = TestCalendar.context()
         let friday = TaskDue(day: LocalDate("2026-10-23"), time: LocalTime("18:00"))
-        #expect(QuickDue.selection(of: friday, today: today) == nil)
-        #expect(QuickDue.toggling(.today, due: friday, today: today) == TaskDue(day: today, time: LocalTime("18:00")))
+        #expect(QuickDue.selection(of: friday, context: context) == nil)
+        #expect(QuickDue.toggling(.today, due: friday, context: context) == TaskDue(day: today, time: LocalTime("18:00")))
     }
 
     // MARK: - Pool ↔ timeline
@@ -35,9 +37,23 @@ struct QuickPlanningTests {
     }
 
     @Test func aTaskDraggedBackToThePoolKeepsItsDateAndLosesItsTime() {
+        let context = TestCalendar.context()
         let timed = makeTask("Позвонить в банк") { $0.due = TaskDue("2026-10-21T14:35") }
-        #expect(TaskScheduling.changes(unscheduling: timed) == [.due(TaskDue(day: today))])
-        #expect(TaskScheduling.changes(unscheduling: makeTask("Без времени")).isEmpty)
+        #expect(TaskScheduling.changes(unscheduling: timed, context: context) == [.due(TaskDue(day: today))])
+        #expect(TaskScheduling.changes(unscheduling: makeTask("Без времени"), context: context).isEmpty)
+    }
+
+    /// Dropped at 00:30 it was tonight; back in the pool it stays today, not tomorrow.
+    @Test func aTaskAfterMidnightGoesBackToThePoolOnItsLogicalDay() {
+        let night = makeTask("Ночная") { $0.due = TaskDue("2026-10-22T00:30") }
+        #expect(TaskScheduling.changes(unscheduling: night, context: TestCalendar.context()) == [.due(TaskDue(day: today))])
+    }
+
+    @Test func aTaskAfterMidnightIsToday() {
+        let context = TestCalendar.context()
+        let night = TaskDue("2026-10-22T01:00")
+        #expect(QuickDue.selection(of: night, context: context) == .today)
+        #expect(QuickDue.toggling(.tomorrow, due: night, context: context) == TaskDue("2026-10-23T01:00"))
     }
 
     @Test func habitsAreNotMovedByDragging() {
@@ -45,7 +61,7 @@ struct QuickPlanningTests {
         #expect(!TaskScheduling.canMove(habit))
         #expect(TaskScheduling.changes(scheduling: habit, at: TestCalendar.date(TestCalendar.wednesday, "10:00"),
                                        calendar: TestCalendar.calendar).isEmpty)
-        #expect(TaskScheduling.changes(unscheduling: habit).isEmpty)
+        #expect(TaskScheduling.changes(unscheduling: habit, context: TestCalendar.context()).isEmpty)
     }
 
     @Test func theSpotUnderTheFingerIsRoundedToTheStep() {

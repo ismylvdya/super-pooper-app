@@ -13,9 +13,10 @@ enum TaskScheduling {
         return [.due(TaskDue(day: LocalDate(moment, in: calendar), time: time))]
     }
 
-    static func changes(unscheduling task: TaskNote) -> [TaskFieldChange] {
+    /// Keeps the logical day: a task at 00:30 goes back to tonight's date, not tomorrow's.
+    static func changes(unscheduling task: TaskNote, context: DayContext) -> [TaskFieldChange] {
         guard canMove(task), let due = task.due, due.time != nil else { return [] }
-        return [.due(TaskDue(day: due.day))]
+        return [.due(TaskDue(day: context.logicalDay(of: due)))]
     }
 
     /// The moment at `offset` points below the top of a timeline window, on a multiple of `stepMinutes`.

@@ -19,6 +19,12 @@ struct AutoPromoterTests {
         #expect(names(promoter.candidates(in: [halfYear, someday], context: TestCalendar.context())) == ["Half year", "Someday"])
     }
 
+    /// 01:00 on Monday the 26th is still Sunday night: this week.
+    @Test func aDueAfterMidnightBelongsToTheDayBefore() {
+        let task = makeTask("Late Sunday", status: .halfYear) { $0.due = TaskDue("2026-10-26T01:00") }
+        #expect(names(promoter.candidates(in: [task], context: TestCalendar.context())) == ["Late Sunday"])
+    }
+
     @Test(arguments: ["2026-10-20", "2026-10-26", "2026-11-04"])
     func dueInThePastOrNextWeekIsNotPromoted(due: String) {
         let task = makeTask("Backlog", status: .halfYear) { $0.due = TaskDue(due) }

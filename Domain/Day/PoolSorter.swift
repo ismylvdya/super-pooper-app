@@ -81,7 +81,7 @@ struct PoolSorter: Sendable {
         case .highPriority:
             return task.isHighPriority ? 0 : 1
         case .nearestDueThisWeek:
-            guard !task.isHabit, let day = task.due?.day, day >= context.today, day <= context.weekEnd else { return 1_000 }
+            guard !task.isHabit, let day = task.due.map(context.logicalDay(of:)), day >= context.today, day <= context.weekEnd else { return 1_000 }
             return Double(context.today.days(until: day))
         case .energyBeforeEnergyHour:
             guard task.needEnergy else { return 1 }

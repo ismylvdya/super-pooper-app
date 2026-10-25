@@ -51,6 +51,12 @@ struct DayContext: Sendable {
         return due.day.adding(days: -1)
     }
 
+    /// A date and time on logical `day`: a time before the boundary falls on the next date.
+    func due(onLogicalDay day: LocalDate, time: LocalTime?) -> TaskDue {
+        guard let time, time < boundary else { return TaskDue(day: day, time: time) }
+        return TaskDue(day: day.adding(days: 1), time: time)
+    }
+
     func with(now: Date) -> DayContext {
         DayContext(now: now, calendar: calendar, boundary: boundary, energyHour: energyHour)
     }
