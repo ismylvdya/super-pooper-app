@@ -44,6 +44,8 @@ struct AppSettings: Codable, Equatable, Sendable {
 
     struct Today: Codable, Equatable, Sendable {
         var arrangement: TodayArrangement
+        /// The app turned sideways has its own arrangement, independent from the upright one.
+        var landscapeArrangement: TodayArrangement
         /// The widget's own arrangement (vertical or horizontal), independent from the app's.
         var widgetArrangement: TodayArrangement
     }

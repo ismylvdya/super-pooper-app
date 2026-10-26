@@ -3,7 +3,8 @@ import SwiftUI
 /// Main screen: blocks from the arrangement's layout (`layouts/today-*.layout.json`), refreshed every
 /// minute so "now" and chains move. The pool and the timeline both pull to refresh (full sync).
 /// Top left: This week (the review) and the problems badge; top right: new task and search. In landscape
-/// the bar is hidden and the same buttons stand in a column on the left. The arrows next to the day's name
+/// the bar is hidden and the same buttons stand in a column along the physical top, each where it is upright on the
+/// physical screen (see `PhysicalBottom`); the layout is the landscape one from settings. The arrows next to the day's name
 /// slide the pool and the timeline together to yesterday / tomorrow (and further): another day shows its own
 /// events, reminders, dated tasks and habits; its name, or the Today tab, brings back today. With the paged
 /// arrangement a swipe turns between the pool and the timeline pages.
@@ -14,7 +15,7 @@ struct TodayScreen: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
     @Environment(\.openURL) private var openURL
-    @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @Environment(\.physicalBottom) private var physicalBottom
     @State private var pendingAction: PendingAction?
     @State private var dayOffset = 0
     @State private var dragX: CGFloat = 0
@@ -25,27 +26,22 @@ struct TodayScreen: View {
     @State private var pageDrag: CGFloat = 0
     @State private var taskDrag = TaskDragState()
 
-    private var isLandscape: Bool { verticalSizeClass == .compact }
+    private var isLandscape: Bool { physicalBottom != nil }
 
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
-            if isLandscape {
-                VStack(spacing: tokens.space(.groupGap)) {
-                    TodayButtons(placement: .leading)
-                    TodayButtons(placement: .trailing)
-                    dayNavigation(axis: .vertical)
-                }
-                .padding(.leading, tokens.space(.screenHorizontal))
-                .padding(.top, tokens.space(.headerToPlate))
-            }
+            if physicalBottom == .trailing { landscapeColumn(bottom: .trailing) }
             content
+            if physicalBottom == .leading { landscapeColumn(bottom: .leading) }
         }
         .background(tokens.color(.screenBackground))
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         .toolbar(isLandscape ? .hidden : .automatic, for: .navigationBar)
         .toolbar {
             ToolbarItemGroup(placement: .topBarLeading) { TodayButtons(placement: .leading) }
-            ToolbarItem(placement: .principal) { dayNavigation(axis: .horizontal) }
+            ToolbarItem(placement: .principal) {
+                dayNavigation.frame(width: max(width - tokens.size(.todayBarSideWidth) * barScale * 2, 0))
+            }
             ToolbarItemGroup(placement: .topBarTrailing) { TodayButtons(placement: .trailing) }
         }
         .navigationBarTitleDisplayMode(.inline)
@@ -54,7 +50,12 @@ struct TodayScreen: View {
         .onChange(of: router.todayTaps) { if dayOffset != 0 { withAnimation(tokens.animation) { dayOffset = 0 } } }
     }
 
-    private var layout: ScreenLayout { model.config.todayLayout(for: model.settings.today.arrangement) }
+    /// Turned sideways, Today has its own arrangement.
+    private var arrangement: AppSettings.TodayArrangement {
+        isLandscape ? model.settings.today.landscapeArrangement : model.settings.today.arrangement
+    }
+
+    private var layout: ScreenLayout { model.config.todayLayout(for: arrangement) }
     private var pageCount: Int { layout.isPaged ? layout.blocks.count : 1 }
 
     private func turn(to newPage: Int) {
@@ -89,7 +90,7 @@ struct TodayScreen: View {
                     if let index = layout.blocks.firstIndex(where: { $0.block == block }) { turn(to: index) }
                 }
             }
-            .onChange(of: model.settings.today.arrangement) { page = 0 }
+            .onChange(of: arrangement) { page = 0 }
         }
     }
 
@@ -125,47 +126,29 @@ struct TodayScreen: View {
         }
     }
 
-    /// The arrows around the shown day's name ("Today", "26 Oct"; in landscape "Mo"); on another day, tapping the
-    /// name goes back to today. The name's frame is as wide as the widest name, so the arrows stay put; in the bar
-    /// it gets at most the room the side buttons leave (the bar never narrows its middle item), shrinking if it has to.
-    @ViewBuilder private func dayNavigation(axis: Axis) -> some View {
-        let today = model.context().today
-        let style: DayName.Style = isLandscape ? .weekday : .date
-        let title = DayName.title(today.adding(days: dayOffset), offset: dayOffset, style: style, calendar: model.calendar)
-        let names = DayName.all(style, around: today, calendar: model.calendar)
-        switch axis {
-        case .horizontal:
-            dayArrows(HStackLayout(spacing: tokens.space(.chipGap)), title: title, names: names)
-                .frame(width: max(width - tokens.size(.todayBarSideWidth) * barScale * 2, 0))
-        case .vertical:
-            dayArrows(VStackLayout(spacing: tokens.space(.chipGap)), title: title, names: names)
-        }
+    /// The arrows around the shown day's name; on another day, tapping the name goes back to today.
+    private var dayNavigation: DayNavigation {
+        DayNavigation(dayOffset: dayOffset, onStep: changeDay) { withAnimation(tokens.animation) { dayOffset = 0 } }
     }
 
-    private func dayArrows(_ layout: some Layout, title: String, names: [String]) -> some View {
-        layout {
-            Button { changeDay(by: -1) } label: { Image(systemName: icons[.previousDay]) }
-                .accessibilityLabel(Text("today.previousDay"))
-                .accessibilityIdentifier("today.previousDay")
-            Button {
-                withAnimation(tokens.animation) { dayOffset = 0 }
-            } label: {
-                ZStack {
-                    ForEach(names, id: \.self) { Text(verbatim: $0).hidden() }
-                    Text(verbatim: title)
+    /// The phone lying sideways: the bar's buttons in a column along the physical top, each where it is on the
+    /// physical screen upright (the right end of the bar at the physical right, the arrows pointing the same way).
+    private func landscapeColumn(bottom: HorizontalEdge) -> some View {
+        VStack(spacing: tokens.space(.groupGap)) {
+            ForEach(PhysicalBottom.physicalOrder(LandscapeSlot.allCases, bottom: bottom), id: \.self) { slot in
+                switch slot {
+                case .leading: TodayButtons(placement: .leading, bottom: bottom)
+                case .day: Spacer(minLength: 0); dayNavigation; Spacer(minLength: 0)
+                case .trailing: TodayButtons(placement: .trailing, bottom: bottom)
                 }
-                .font(tokens.font(.navTitle))
-                .monospacedDigit()
-                .lineLimit(1)
-                .minimumScaleFactor(tokens.size(.navTitleMin) / tokens.uiFont(.navTitle).pointSize)
             }
-            .accessibilityIdentifier("today.day")
-            Button { changeDay(by: 1) } label: { Image(systemName: icons[.nextDay]) }
-                .accessibilityLabel(Text("today.nextDay"))
-                .accessibilityIdentifier("today.nextDay")
         }
-        .tint(tokens.color(.accent))
+        .padding(bottom == .trailing ? .leading : .trailing, tokens.space(.screenHorizontal))
+        .padding(.vertical, tokens.space(.headerToPlate))
     }
+
+    /// The bar upright, from the physical left to the physical right.
+    private enum LandscapeSlot: CaseIterable { case leading, day, trailing }
 
     /// Blocks along a horizontal axis all reach the bottom; along a vertical one only the last does.
     private static func touchesBottom(_ id: TodayBlockID, in layout: ScreenLayout) -> Bool {
@@ -174,46 +157,6 @@ struct TodayScreen: View {
 
     private var handler: TaskActionHandler {
         TaskActionHandler(model: model, router: router, openURL: openURL) { pendingAction = $0 }
-    }
-}
-
-/// The Today buttons: leading = morning review and problems badge, trailing = new task and search.
-struct TodayButtons: View {
-    enum Placement { case leading, trailing }
-
-    @Environment(AppModel.self) private var model
-    @Environment(Router.self) private var router
-    @Environment(\.tokens) private var tokens
-    @Environment(\.icons) private var icons
-    let placement: Placement
-
-    var body: some View {
-        switch placement {
-        case .leading:
-            Button { router.isReviewPresented = true } label: { Image(systemName: icons[.review]) }
-                .tint(tokens.color(.accent))
-                .accessibilityLabel(Text("review.title"))
-                .accessibilityIdentifier("today.review")
-            if model.config.flags.problemBadge, model.problemCount > 0 {
-                Button { router.isProblemsPresented = true } label: {
-                    HStack(spacing: tokens.space(.badgeGap)) {
-                        Image(systemName: icons[.problem])
-                        Text(verbatim: "\(model.problemCount)").font(tokens.font(.poolCounter))
-                    }
-                    .foregroundStyle(tokens.color(.problem))
-                }
-                .accessibilityLabel(Text("problems.title"))
-            }
-        case .trailing:
-            Button { router.open(.newTask) } label: { Image(systemName: icons[.newTask]) }
-                .tint(tokens.color(.accent))
-                .accessibilityLabel(Text("task.new.title"))
-                .accessibilityIdentifier("today.newTask")
-            Button { router.open(.search(.tasksAndEvents)) } label: { Image(systemName: icons[.search]) }
-                .tint(tokens.color(.accent))
-                .accessibilityLabel(Text("search.title"))
-                .accessibilityIdentifier("today.search")
-        }
     }
 }
 

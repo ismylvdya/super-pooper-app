@@ -1,29 +1,41 @@
 import SwiftUI
 
 /// Top-level navigation: onboarding, then Today with pushed pages and sheets; the banner overlay
-/// sits above everything.
+/// sits above everything. Lying sideways, the tab bar is a column along the physical bottom.
 struct RootView: View {
     let container: AppContainer
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
     @State private var screenHeight = BundledConfig.tokens.size(.screenHeightEstimate)
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+    /// Which side the physical bottom took the last time the phone lay sideways.
+    @State private var landscapeBottom: HorizontalEdge = .trailing
+
+    private var physicalBottom: HorizontalEdge? { verticalSizeClass == .compact ? landscapeBottom : nil }
 
     var body: some View {
         @Bindable var router = container.router
         let model = container.model
         Group {
             if model.settings.onboarding.completed {
-                TabView(selection: Binding(get: { router.tab }, set: { router.select($0) })) {
-                    ForEach(AppTab.allCases, id: \.self) { tab in
-                        NavigationStack(path: Binding(get: { router.paths[tab] ?? [] }, set: { router.paths[tab] = $0 })) {
-                            root(tab, model: model)
-                                .navigationDestination(for: Route.self) { route in
-                                    destination(route).refreshable { await model.sync(announce: true) }
-                                }
+                HStack(spacing: 0) {
+                    if physicalBottom == .leading { LandscapeTabBar(bottom: .leading) }
+                    TabView(selection: Binding(get: { router.tab }, set: { router.select($0) })) {
+                        ForEach(AppTab.allCases, id: \.self) { tab in
+                            NavigationStack(path: Binding(get: { router.paths[tab] ?? [] }, set: { router.paths[tab] = $0 })) {
+                                root(tab, model: model)
+                                    .systemTabBar(isShown: physicalBottom == nil)
+                                    .navigationDestination(for: Route.self) { route in
+                                        destination(route)
+                                            .refreshable { await model.sync(announce: true) }
+                                            .systemTabBar(isShown: physicalBottom == nil)
+                                    }
+                            }
+                            .tabItem { Label(LocalizedStringKey(String("tab.") + tab.rawValue), systemImage: container.config.icons[tab.icon]) }
+                            .tag(tab)
                         }
-                        .tabItem { Label(LocalizedStringKey(String("tab.") + tab.rawValue), systemImage: container.config.icons[tab.icon]) }
-                        .tag(tab)
                     }
+                    if physicalBottom == .trailing { LandscapeTabBar(bottom: .trailing) }
                 }
                 // The banner sits right under the status bar, over the bar buttons, on every tab.
                 .overlay(alignment: .top) { BannerOverlay() }
@@ -35,7 +47,10 @@ struct RootView: View {
         }
         .tint(tokens.color(.accent))
         .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { screenHeight = $0 }
+        .onGeometryChange(for: CGSize.self) { $0.size } action: { _ in updateLandscapeBottom() }
+        .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in updateLandscapeBottom() }
         .environment(\.screenHeight, screenHeight)
+        .environment(\.physicalBottom, physicalBottom)
         .environment(\.timelineBell, model.settings.timeline.bellStyle)
         .environment(\.calendar, model.calendar)
         // The user's colors and opacity sit closest to the views, over the bundled tokens of `appConfig`.
@@ -83,6 +98,14 @@ struct RootView: View {
         case .habits: HabitsScreen()
         case .lists: ListsScreen()
         case .settings: SettingsScreen()
+        }
+    }
+
+    /// The window's orientation when it already turned, else the phone's (lying flat keeps the last side).
+    private func updateLandscapeBottom() {
+        let window = UIApplication.shared.connectedScenes.lazy.compactMap { $0 as? UIWindowScene }.first?.effectiveGeometry.interfaceOrientation
+        if let edge = window.flatMap(PhysicalBottom.edge(for:)) ?? PhysicalBottom.edge(for: UIDevice.current.orientation) {
+            landscapeBottom = edge
         }
     }
 
@@ -142,5 +165,12 @@ extension AppTab {
         case .lists: .tabLists
         case .settings: .tabSettings
         }
+    }
+}
+
+private extension View {
+    /// Lying sideways the app draws its own tab bar along the physical bottom instead of the system one.
+    func systemTabBar(isShown: Bool) -> some View {
+        toolbar(isShown ? .visible : .hidden, for: .tabBar)
     }
 }

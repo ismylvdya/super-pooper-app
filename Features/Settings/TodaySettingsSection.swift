@@ -1,12 +1,15 @@
 import SwiftUI
 
-/// Where the pool and the timeline sit on Today and in the widget (each has its own), with live schematic previews.
+/// Where the pool and the timeline sit on Today upright, on Today in landscape and in the widget (each has its own),
+/// with live schematic previews.
 struct TodaySettingsSection: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
         arrangementSection(header: "settings.today", hint: "settings.today.hint", info: "info.settings.today.arrangement",
                            keyPath: \.arrangement, options: AppSettings.TodayArrangement.allCases)
+        arrangementSection(header: "settings.landscape", hint: "settings.landscape.hint", info: "info.settings.today.arrangement",
+                           keyPath: \.landscapeArrangement, options: AppSettings.TodayArrangement.allCases)
         // The widget has no pages.
         arrangementSection(header: "settings.widget", hint: "settings.widget.hint", info: "info.settings.widget.arrangement",
                            keyPath: \.widgetArrangement, options: [.stacked, .sideBySide])
