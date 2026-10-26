@@ -10,7 +10,9 @@ enum BackgroundRefresh {
     static func schedule() {
         guard case .success(let container) = AppContainer.shared, container.config.flags.backgroundRefresh else { return }
         let request = BGAppRefreshTaskRequest(identifier: identifier)
-        request.earliestBeginDate = container.model.clock.now.addingTimeInterval(Double(container.config.rules.widgets.backgroundRefreshMinutes) * 60)
+        // Asked for no later than the end of the logical day: the refresh then clears that day's notifications.
+        let interval = Double(container.config.rules.widgets.backgroundRefreshMinutes) * 60
+        request.earliestBeginDate = min(container.model.clock.now.addingTimeInterval(interval), container.model.context().dayEnd)
         try? BGTaskScheduler.shared.submit(request)
     }
 
@@ -45,8 +47,11 @@ enum BackgroundRefresh {
         await container.model.deleteEvent(identifier: identifier, start: start)
     }
 
+    /// A notification of a day that is over is not put back: it goes with its day.
     static func restore(_ notification: UNNotification) async {
         guard case .success(let container) = AppContainer.shared else { return }
+        let day = (notification.request.content.userInfo[NotificationPayload.dayKey] as? String).flatMap(LocalDate.init(isoString:))
+        guard !StaleNotifications.isOver(day, today: container.model.context().today) else { return }
         await container.model.services.notifications.restore(notification)
     }
 

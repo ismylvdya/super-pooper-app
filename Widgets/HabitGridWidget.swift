@@ -35,10 +35,12 @@ struct HabitGridProvider: AppIntentTimelineProvider {
                                                    breakWords: configuration.breakWords, weeks: configuration.weeks))
     }
 
-    /// The grid only changes when the app writes a new snapshot (it reloads widgets) or the logical day ends.
+    /// The grid only changes when the app writes a new snapshot (it reloads widgets) or the logical day ends; the
+    /// day that is over takes its notifications with it.
     func timeline(for configuration: SelectHabitIntent, in context: Context) async -> Timeline<HabitGridEntry> {
         let entry = await snapshot(for: configuration, in: context)
         let retry = clock.now.addingTimeInterval(Double(BundledConfig.rules.widgets.refreshMinutes) * 60)
+        if let day = entry.source?.context(at: entry.date) { await StaleNotificationCleaner.clear(today: day.today) }
         let dayEnd = entry.source?.context(at: entry.date).dayEnd ?? retry
         return Timeline(entries: [entry], policy: .after(dayEnd))
     }

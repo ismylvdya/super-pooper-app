@@ -61,6 +61,7 @@ struct RootView: View {
                 break
             }
         }
+        .task(id: model.context().today) { await model.syncWhenTheDayEnds() }
         .onOpenURL { container.router.handle($0) }
         .onChange(of: container.router.inboxRequests) { runInboxShortcut() }
     }

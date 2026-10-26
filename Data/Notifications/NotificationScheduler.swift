@@ -14,22 +14,6 @@ protocol NotificationScheduling: Sendable {
     func restore(_ notification: UNNotification) async
 }
 
-/// `userInfo` keys and category ids shared with the notification delegate.
-enum NotificationPayload {
-    static let prefix = "sp|"
-    static let kindKey = "kind"
-    static let taskKey = "task"
-    static let dayKey = "day"
-    static let reminderKey = "reminder"
-    static let eventKey = "event"
-    /// The event's start, seconds since 1970: a repeating event shares its identifier with its other occurrences.
-    static let eventStartKey = "eventStart"
-    static let habitCategory = "habit"
-    static let taskCategory = "task"
-    static let reminderCategory = "reminder"
-    static let eventCategory = "event"
-}
-
 struct UserNotificationScheduler: NotificationScheduling {
     let calendar: Calendar
     let icons: IconSet

@@ -25,6 +25,16 @@ extension AppModel {
         runningSync = nil
     }
 
+    /// While the app stays open over the end of the logical day, the new day is read and published right then:
+    /// the day that is over takes its notifications with it, the widgets turn the page.
+    func syncWhenTheDayEnds() async {
+        let wait = context().dayEnd.timeIntervalSince(clock.now)
+        guard wait > 0 else { return }
+        try? await Task.sleep(for: .seconds(wait))
+        guard !Task.isCancelled else { return }
+        await sync(announce: false)
+    }
+
     private func performSync(announce: Bool) async {
         setSyncing(true)
         defer { setSyncing(false) }

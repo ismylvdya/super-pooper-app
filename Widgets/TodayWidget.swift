@@ -28,7 +28,8 @@ struct TodayProvider: TimelineProvider {
         completion(placeholder(in: context))
     }
 
-    /// One entry per few minutes so "now" and the chains move; the app reloads it on every change.
+    /// One entry per few minutes so "now" and the chains move; the app reloads it on every change. It reloads at the
+    /// latest when the logical day ends, and clears the notifications of the day that is over.
     func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEntry>) -> Void) {
         let source = WidgetDataSource.load()
         let rules = (source?.config.rules ?? BundledConfig.rules).widgets
@@ -36,7 +37,12 @@ struct TodayProvider: TimelineProvider {
         let count = rules.entryCount
         let now = clock.now
         let entries = (0..<count).map { TodayEntry(date: now.addingTimeInterval(Double($0) * step), source: source) }
-        completion(Timeline(entries: entries, policy: .atEnd))
+        let day = source?.context(at: now)
+        let reload = min(entries.last?.date ?? now, day?.dayEnd ?? .distantFuture)
+        Task {
+            if let day { await StaleNotificationCleaner.clear(today: day.today) }
+            completion(Timeline(entries: entries, policy: .after(reload)))
+        }
     }
 }
 
