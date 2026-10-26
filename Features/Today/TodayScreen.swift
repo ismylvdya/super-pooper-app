@@ -125,26 +125,24 @@ struct TodayScreen: View {
         }
     }
 
-    /// The arrows around the shown day's name; on another day, tapping the name goes back to today. In the bar
-    /// it gets exactly the room the side buttons leave (the bar never narrows its middle item): the long name
-    /// ("Tomorrow, 26 Oct") if it fits, otherwise the short one ("Tomorrow"), shrinking if it has to.
+    /// The arrows around the shown day's name ("Today", "26 Oct"; in landscape "Mo"); on another day, tapping the
+    /// name goes back to today. The name's frame is as wide as the widest name, so the arrows stay put; in the bar
+    /// it gets at most the room the side buttons leave (the bar never narrows its middle item), shrinking if it has to.
     @ViewBuilder private func dayNavigation(axis: Axis) -> some View {
-        let day = model.context().today.adding(days: dayOffset)
-        let long = DayName.format(day, offset: dayOffset, calendar: model.calendar)
-        let short = DayName.short(day, offset: dayOffset, calendar: model.calendar)
+        let today = model.context().today
+        let style: DayName.Style = isLandscape ? .weekday : .date
+        let title = DayName.title(today.adding(days: dayOffset), offset: dayOffset, style: style, calendar: model.calendar)
+        let names = DayName.all(style, around: today, calendar: model.calendar)
         switch axis {
         case .horizontal:
-            ViewThatFits(in: .horizontal) {
-                dayArrows(HStackLayout(spacing: tokens.space(.chipGap)), title: long, shrinks: false)
-                dayArrows(HStackLayout(spacing: tokens.space(.chipGap)), title: short, shrinks: true)
-            }
-            .frame(width: max(width - tokens.size(.todayBarSideWidth) * barScale * 2, 0))
+            dayArrows(HStackLayout(spacing: tokens.space(.chipGap)), title: title, names: names)
+                .frame(width: max(width - tokens.size(.todayBarSideWidth) * barScale * 2, 0))
         case .vertical:
-            dayArrows(VStackLayout(spacing: tokens.space(.chipGap)), title: short, shrinks: true)
+            dayArrows(VStackLayout(spacing: tokens.space(.chipGap)), title: title, names: names)
         }
     }
 
-    private func dayArrows(_ layout: some Layout, title: String, shrinks: Bool) -> some View {
+    private func dayArrows(_ layout: some Layout, title: String, names: [String]) -> some View {
         layout {
             Button { changeDay(by: -1) } label: { Image(systemName: icons[.previousDay]) }
                 .accessibilityLabel(Text("today.previousDay"))
@@ -152,10 +150,14 @@ struct TodayScreen: View {
             Button {
                 withAnimation(tokens.animation) { dayOffset = 0 }
             } label: {
-                Text(verbatim: title)
-                    .font(tokens.font(.navTitle))
-                    .lineLimit(1)
-                    .minimumScaleFactor(shrinks ? tokens.size(.navTitleMin) / tokens.uiFont(.navTitle).pointSize : 1)
+                ZStack {
+                    ForEach(names, id: \.self) { Text(verbatim: $0).hidden() }
+                    Text(verbatim: title)
+                }
+                .font(tokens.font(.navTitle))
+                .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(tokens.size(.navTitleMin) / tokens.uiFont(.navTitle).pointSize)
             }
             .accessibilityIdentifier("today.day")
             Button { changeDay(by: 1) } label: { Image(systemName: icons[.nextDay]) }

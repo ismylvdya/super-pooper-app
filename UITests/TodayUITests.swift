@@ -24,22 +24,28 @@ final class TodayUITests: XCTestCase {
         app.dismissBanners()
     }
 
-    /// The arrows next to the day's name change the day; the Today tab brings back today.
+    /// The arrows next to the day's name change the day (another day is named by its date) and stay where they are;
+    /// the Today tab brings back today.
     func testArrowsChangeTheDayAndTheTodayTabBringsItBack() {
         launch()
         dismissBanners()
         let day = app.buttons["today.day"]
         XCTAssertEqual(day.label, "Today")
+        let next = app.buttons["today.nextDay"]
+        let previous = app.buttons["today.previousDay"]
+        let arrows = (next.frame, previous.frame)
+        let date = NSPredicate(format: "identifier == 'today.day' AND label MATCHES '^[0-9]{1,2} [A-Za-z]{3}$'")
         // Bar buttons refuse the accessibility "scroll to visible" step: tap by coordinate.
-        app.buttons["today.nextDay"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "identifier == 'today.day' AND label BEGINSWITH 'Tomorrow'")).firstMatch
-            .waitForExistence(timeout: 5))
+        next.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        XCTAssertTrue(app.buttons.matching(date).firstMatch.waitForExistence(timeout: 5))
+        XCTAssertEqual(next.frame, arrows.0, "the arrows do not move with the name")
+        XCTAssertEqual(previous.frame, arrows.1)
         app.tabBars.buttons["Today"].tap()
         XCTAssertTrue(app.buttons.matching(NSPredicate(format: "identifier == 'today.day' AND label == 'Today'")).firstMatch
             .waitForExistence(timeout: 5))
-        app.buttons["today.previousDay"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "identifier == 'today.day' AND label BEGINSWITH 'Yesterday'")).firstMatch
-            .waitForExistence(timeout: 5))
+        previous.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        XCTAssertTrue(app.buttons.matching(date).firstMatch.waitForExistence(timeout: 5))
+        XCTAssertEqual(previous.frame, arrows.1)
     }
 
     /// Pool rows have no checkboxes: a long press offers Done, and the done task leaves the pool.
