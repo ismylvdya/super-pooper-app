@@ -22,11 +22,9 @@ struct Chip: View {
     }
 }
 
-/// A row of chips that wraps onto the next line when it does not fit. Each line is placed by `alignment`
-/// inside the width; a chip is placed by it inside its line.
+/// A row of chips that wraps onto the next line when it does not fit.
 struct ChipFlow: Layout {
     var spacing: CGFloat
-    var alignment: Alignment = .topLeading
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
         let rows = arrange(width: proposal.width ?? .infinity, subviews: subviews)
@@ -38,30 +36,13 @@ struct ChipFlow: Layout {
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
         var y = bounds.minY
         for row in arrange(width: bounds.width, subviews: subviews) {
-            var x = bounds.minX + Self.offset(of: row.width, in: bounds.width, alignment.horizontal)
+            var x = bounds.minX
             for index in row.indices {
                 let size = subviews[index].sizeThatFits(.unspecified)
-                let top = y + Self.offset(of: size.height, in: row.height, alignment.vertical)
-                subviews[index].place(at: CGPoint(x: x, y: top), proposal: ProposedViewSize(size))
+                subviews[index].place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
                 x += size.width + spacing
             }
             y += row.height + spacing
-        }
-    }
-
-    private static func offset(of length: CGFloat, in space: CGFloat, _ alignment: HorizontalAlignment) -> CGFloat {
-        switch alignment {
-        case .center: (space - length) / 2
-        case .trailing: space - length
-        default: 0
-        }
-    }
-
-    private static func offset(of length: CGFloat, in space: CGFloat, _ alignment: VerticalAlignment) -> CGFloat {
-        switch alignment {
-        case .center: (space - length) / 2
-        case .bottom: space - length
-        default: 0
         }
     }
 

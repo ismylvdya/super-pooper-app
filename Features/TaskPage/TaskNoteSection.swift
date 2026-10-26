@@ -7,23 +7,17 @@ struct TaskNoteSection: View {
     @Environment(\.rules) private var rules
     let taskName: String
     var header: LocalizedStringKey = "taskPage.note"
-    /// One line when empty, growing with the text (habit descriptions).
-    var isCompact = false
+    var placeholder: LocalizedStringKey = "taskPage.note.placeholder"
     @State private var text = ""
     @State private var loaded: String?
     @State private var saveTask: Task<Void, Never>?
 
     var body: some View {
         PlateSection(header: header, info: "info.taskPage.note") {
-            if isCompact {
-                TextField("habitPage.description.placeholder", text: $text, axis: .vertical)
-                    .font(tokens.font(.rowTitle))
-            } else {
-                TextEditor(text: $text)
-                    .font(tokens.font(.noteEditor))
-                    .frame(minHeight: tokens.size(.noteEditorMinHeight))
-                    .scrollContentBackground(.hidden)
-            }
+            // One line when empty, growing with the text.
+            TextField(placeholder, text: $text, axis: .vertical)
+                .font(tokens.font(.rowTitle))
+                .accessibilityIdentifier("taskPage.note")
         }
         .task(id: taskName) {
             let body = await model.body(of: taskName) ?? ""
@@ -58,7 +52,6 @@ struct DraftNoteSection: View {
         PlateSection(header: "taskPage.note", info: "info.taskPage.note") {
             TextField("taskPage.note.placeholder", text: $draft.body, axis: .vertical)
                 .font(tokens.font(.rowTitle))
-                .lineLimit(3...)
                 .accessibilityIdentifier("taskPage.note")
         }
     }

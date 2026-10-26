@@ -44,19 +44,19 @@ struct TaskPageScreen: View {
     }
 }
 
-/// The sections of a task (also used by the new-task draft): the quick chips under the name, the text,
-/// subtasks, then everything else.
+/// The sections of a task (also used by the new-task draft): the quick chips under the name, subtasks, the
+/// text, then everything else.
 struct TaskSections: View {
     let editor: TaskEditor
 
     var body: some View {
         TaskQuickChips(editor: editor)
+        SubtasksSection(editor: editor)
         if let draft = editor.draft {
             DraftNoteSection(draft: draft)
         } else {
             TaskNoteSection(taskName: editor.task.name)
         }
-        SubtasksSection(editor: editor)
         TaskEventsSection(editor: editor)
         if !editor.isDraft { TaskLinksSection(task: editor.task) }
         TaskPropertiesSection(editor: editor)
@@ -67,6 +67,7 @@ struct TaskSections: View {
 struct HeaderNameField: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
+    @Environment(\.tokens) private var tokens
     let task: TaskNote
     let onRenamed: (String) -> Void
     @State private var draft = ""
@@ -76,6 +77,8 @@ struct HeaderNameField: View {
     var body: some View {
         TextField(task.isHabit ? "habitPage.name.placeholder" : "taskPage.name.field", text: $draft, axis: .vertical)
             .multilineTextAlignment(.center)
+            // A habit's name is in its color, as in the Habits list.
+            .foregroundStyle(task.isHabit ? tokens.habitColor(task) : tokens.color(.primaryText))
             .submitLabel(.done)
             .focused($isEditing)
             .onSubmit { commit() }

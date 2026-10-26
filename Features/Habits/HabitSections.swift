@@ -8,7 +8,7 @@ struct HabitSections: View {
     var body: some View {
         if !editor.isDraft {
             HabitHistorySection(habit: editor.task)
-            TaskNoteSection(taskName: editor.task.name, header: "habitPage.description", isCompact: true)
+            TaskNoteSection(taskName: editor.task.name, header: "habitPage.description", placeholder: "habitPage.description.placeholder")
             HabitStatsSection(habit: editor.task)
         }
         HabitOptionsSection(editor: editor)
