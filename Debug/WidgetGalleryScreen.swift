@@ -17,10 +17,11 @@ struct WidgetGalleryScreen: View {
                                         context: source.context(at: now), maxTimelineHours: source.config.rules.widgets.timelineHours)
                     }
                     if let habit = source.habits.first {
-                        let today = source.context(at: now).today
+                        let context = source.context(at: now)
+                        let today = context.today
                         widget(width: 158, height: 158) {
                             HabitWidgetView(habit: habit, grid: HabitGrid(task: habit, weekCount: source.config.rules.widgets.habitGridWeeksSmall,
-                                                                          today: today, calendar: source.calendar), today: today)
+                                                                          today: today, days: context.days), today: today)
                         }
                     }
                 } else {

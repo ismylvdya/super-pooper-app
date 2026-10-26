@@ -54,9 +54,10 @@ struct HabitGridEntryView: View {
         let habit = entry.source?.habit(named: entry.habitName)
         Group {
             if let source = entry.source, let habit {
-                let today = source.context(at: entry.date).today
+                let context = source.context(at: entry.date)
+                let today = context.today
                 HabitWidgetView(habit: habit,
-                                grid: HabitGrid(task: habit, weekCount: entry.options.weeks, today: today, calendar: source.calendar),
+                                grid: HabitGrid(task: habit, weekCount: entry.options.weeks, today: today, days: context.days),
                                 today: today, options: entry.options)
             } else {
                 Text("widget.habit.empty").font(tokens.font(.widgetCaption)).foregroundStyle(tokens.color(.secondaryText)).padding()

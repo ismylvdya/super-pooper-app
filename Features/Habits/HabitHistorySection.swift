@@ -12,11 +12,12 @@ struct HabitHistorySection: View {
     @State private var width: CGFloat = 320
 
     var body: some View {
-        let today = model.context().today
-        let weeks = HabitGrid.weekCount(for: habit, today: today, calendar: model.calendar,
+        let context = model.context()
+        let today = context.today
+        let weeks = HabitGrid.weekCount(for: habit, today: today,
                                         minimumWeeks: rules.habits.historyMinimumWeeks,
                                         extraWeeks: rules.habits.historyExtraWeeks) + addedWeeks
-        let grid = HabitGrid(task: habit, weekCount: weeks, today: today, calendar: model.calendar)
+        let grid = HabitGrid(task: habit, weekCount: weeks, today: today, days: context.days)
         let inner = tokens.space(.plateInner)
         let metrics = HabitDotMetrics.fitting(width: width - inner * 2, ringRatio: tokens.size(.habitRingRatio))
         let shape = RoundedRectangle(cornerRadius: tokens.radius(.plate), style: .continuous)

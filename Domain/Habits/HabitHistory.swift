@@ -3,15 +3,15 @@ import Foundation
 /// A habit's days as facts: which days are scheduled, how each is marked, which ones count as missed.
 struct HabitHistory: Sendable {
     let task: TaskNote
-    let calendar: Calendar
+    let days: DayBoundary
     private let instances: HabitInstances
     private let occurrence: TaskOccurrence
 
-    init(task: TaskNote, calendar: Calendar) {
+    init(task: TaskNote, days: DayBoundary) {
         self.task = task
-        self.calendar = calendar
+        self.days = days
         self.instances = HabitInstances(task: task)
-        self.occurrence = TaskOccurrence(calendar: calendar)
+        self.occurrence = TaskOccurrence(days: days)
     }
 
     var options: HabitOptions { task.habit }
@@ -22,7 +22,7 @@ struct HabitHistory: Sendable {
 
     /// The first day the habit counts from: its creation or its first mark, whichever is earlier.
     func start(today: LocalDate) -> LocalDate {
-        let created = task.dateCreated.map { LocalDate($0, in: calendar) } ?? today
+        let created = task.dateCreated.map(days.day(of:)) ?? today
         return ([created] + instances.complete).min() ?? today
     }
 

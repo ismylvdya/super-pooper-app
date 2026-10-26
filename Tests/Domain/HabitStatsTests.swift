@@ -22,7 +22,7 @@ struct HabitStatsTests {
         return task
     }
 
-    private func stats(_ task: TaskNote) -> HabitStats { HabitStats(task: task, today: today, calendar: TestCalendar.calendar) }
+    private func stats(_ task: TaskNote) -> HabitStats { HabitStats(task: task, today: today, days: TestCalendar.days) }
 
     @Test func currentStreakStartsYesterdayWhileTodayIsOpen() {
         #expect(stats(habit(done: [1, 2, 3, 5])).currentStreak == 3)
@@ -60,7 +60,7 @@ struct HabitStatsTests {
 
     @Test func allowedSkipsDoNotBreakAStreakButMissedDaysDo() {
         let task = habit(createdDaysAgo: 10, done: [1, 3, 4, 8]) { $0.habit.allowedSkips = 1 }
-        let history = HabitHistory(task: task, calendar: TestCalendar.calendar)
+        let history = HabitHistory(task: task, days: TestCalendar.days)
         let missed = history.missedDays(through: today.adding(days: -1), today: today)
         // Runs: 10–9 (9 is the second skip), 7–5 (6 and 5 are beyond one skip), 2 (allowed).
         #expect(missed == Set([9, 6, 5].map { today.adding(days: -$0) }))
@@ -77,12 +77,12 @@ struct HabitStatsTests {
 
     @Test func weekUnitsCountThisWeekOnly() {
         let task = habit(done: [0, 1, 2, 3])  // Wed, Tue, Mon this week; Sun last week
-        #expect(HabitHistory(task: task, calendar: TestCalendar.calendar).weekUnits(containing: today, today: today) == 3)
+        #expect(HabitHistory(task: task, days: TestCalendar.days).weekUnits(containing: today, today: today) == 3)
     }
 
     @Test func gridMarksMissedDays() {
         let task = habit(createdDaysAgo: 10, done: [8]) { $0.habit.allowedSkips = 2 }
-        let grid = HabitGrid(task: task, weekCount: 2, today: today, calendar: TestCalendar.calendar)
+        let grid = HabitGrid(task: task, weekCount: 2, today: today, days: TestCalendar.days)
         let cells = grid.weeks.flatMap { $0 }
         #expect(cells.first { $0.date == today.adding(days: -4) }?.cell == .missed)
         #expect(cells.first { $0.date == today.adding(days: -7) }?.cell == .open)

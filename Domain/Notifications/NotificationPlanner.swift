@@ -43,7 +43,7 @@ struct NotificationPlanner: Sendable {
     /// Everything of today and the coming days, past times included (for late alerts).
     func all(tasks: [TaskNote], reminders: [ReminderItem], events: [CalendarEvent] = [], skipped: Set<String>,
              context: DayContext) -> [PlannedNotification] {
-        let occurrence = TaskOccurrence(calendar: context.calendar)
+        let occurrence = TaskOccurrence(days: context.days)
         var result: [PlannedNotification] = []
 
         for task in tasks {

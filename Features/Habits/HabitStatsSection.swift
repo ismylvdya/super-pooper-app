@@ -8,11 +8,12 @@ struct HabitStatsSection: View {
     let habit: TaskNote
 
     var body: some View {
-        let today = model.context().today
-        let stats = HabitStats(task: habit, today: today, calendar: model.calendar)
+        let context = model.context()
+        let today = context.today
+        let stats = HabitStats(task: habit, today: today, days: context.days)
         let color = tokens.habitColor(habit)
         PlateSection(header: "habitPage.stats", info: habit.habit.harmful ? "info.habitPage.stats.harmful" : "info.habitPage.stats") {
-            Text(HabitSummary.weekLine(habit, today: today, calendar: model.calendar))
+            Text(HabitSummary.weekLine(habit, today: today, days: context.days))
                 .font(tokens.font(.rowTitle))
             HStack(alignment: .top) {
                 value(streak(stats.currentStreak, unit: stats.streakUnit), "habitPage.stats.current")

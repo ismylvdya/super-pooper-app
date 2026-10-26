@@ -28,6 +28,8 @@ struct DayContext: Sendable {
         return LocalTime(date, in: calendar) < boundary ? day.adding(days: -1) : day
     }
 
+    var days: DayBoundary { DayBoundary(calendar: calendar, boundary: boundary) }
+
     var dayStart: Date { today.startDate(in: calendar, offset: boundary) }
     var dayEnd: Date { today.adding(days: 1).startDate(in: calendar, offset: boundary) }
 

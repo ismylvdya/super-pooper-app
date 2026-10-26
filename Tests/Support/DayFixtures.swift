@@ -17,6 +17,9 @@ enum TestCalendar {
         return calendar
     }()
 
+    /// Logical days with the default day boundary from `defaults.json`.
+    static let days = DayBoundary(calendar: calendar, boundary: TestConfig.defaults.day.boundary)
+
     static let wednesday = "2026-10-21"
 
     /// Wall-clock `time` (`HH:mm`) on `day` (`YYYY-MM-DD`) in Belgrade.

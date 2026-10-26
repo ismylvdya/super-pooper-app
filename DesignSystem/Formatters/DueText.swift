@@ -1,8 +1,10 @@
 import SwiftUI
 
 enum DueText {
-    static func format(_ due: TaskDue, today: LocalDate, calendar: Calendar) -> String {
-        let distance = today.days(until: due.day)
+    /// Counted in logical days: 01:00 after midnight is still tonight, shown as a time of today.
+    static func format(_ due: TaskDue, context: DayContext) -> String {
+        let calendar = context.calendar
+        let distance = context.today.days(until: context.logicalDay(of: due))
         let dayText: String
         switch distance {
         case 0: dayText = L10n.string("due.today")

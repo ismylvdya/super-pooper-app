@@ -4,12 +4,6 @@ import Testing
 
 /// The habit grid: weeks as rows ending with the current week, marks per day.
 struct HabitGridTests {
-    private let calendar: Calendar = {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: "Europe/Belgrade") ?? .current
-        return calendar
-    }()
-
     /// Wednesday.
     private let today = LocalDate(year: 2026, month: 10, day: 21)!
 
@@ -24,7 +18,7 @@ struct HabitGridTests {
     }
 
     @Test func layoutEndsWithCurrentWeekMondayFirst() {
-        let grid = HabitGrid(task: habit("DTSTART:20260101;FREQ=DAILY"), weekCount: 3, today: today, calendar: calendar)
+        let grid = HabitGrid(task: habit("DTSTART:20260101;FREQ=DAILY"), weekCount: 3, today: today, days: TestCalendar.days)
         #expect(grid.weeks.count == 3)
         #expect(grid.weeks.allSatisfy { $0.count == 7 })
         let current = grid.weeks[2]
@@ -35,14 +29,14 @@ struct HabitGridTests {
 
     @Test func marksAreDistinct() {
         let grid = HabitGrid(task: habit("DTSTART:20260101;FREQ=DAILY", complete: [-1], partial: [-2], twice: [0]),
-                             weekCount: 1, today: today, calendar: calendar)
+                             weekCount: 1, today: today, days: TestCalendar.days)
         #expect(grid.weeks[0][0].cell == .partial)   // Monday
         #expect(grid.weeks[0][1].cell == .done)      // Tuesday
         #expect(grid.weeks[0][2].cell == .twice)     // Wednesday
     }
 
     @Test func daysWithoutInstanceAreNotScheduled() {
-        let grid = HabitGrid(task: habit("DTSTART:20260101;FREQ=WEEKLY;BYDAY=MO"), weekCount: 1, today: today, calendar: calendar)
+        let grid = HabitGrid(task: habit("DTSTART:20260101;FREQ=WEEKLY;BYDAY=MO"), weekCount: 1, today: today, days: TestCalendar.days)
         #expect(grid.weeks[0][0].cell == .open)
         #expect(grid.weeks[0][1].cell == .notScheduled)
     }

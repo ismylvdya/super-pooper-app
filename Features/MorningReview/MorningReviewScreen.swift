@@ -172,18 +172,21 @@ struct ReviewRow: View {
     }
 
     /// Today / Tomorrow / an exact date and time; the chosen one is checked, choosing it again
-    /// removes the date (no option checked = no date).
+    /// removes the date (no option checked = no date). Today and Tomorrow are logical days, as the task page's chips.
     private var dueChip: some View {
-        let tomorrow = today.adding(days: 1)
-        let isToday = task.due == TaskDue(day: today)
-        let isTomorrow = task.due == TaskDue(day: tomorrow)
+        let context = model.context()
+        let selected = QuickDue.selection(of: task.due, context: context)
         return Menu {
-            Toggle("due.today", isOn: Binding(get: { isToday }, set: { setDue($0 ? TaskDue(day: today) : nil) }))
-            Toggle("due.tomorrow", isOn: Binding(get: { isTomorrow }, set: { setDue($0 ? TaskDue(day: tomorrow) : nil) }))
-            Toggle("review.due.exact", isOn: Binding(get: { task.due != nil && !isToday && !isTomorrow },
+            ForEach(QuickDue.allCases, id: \.self) { chip in
+                Toggle(chip == .today ? "due.today" : "due.tomorrow", isOn: Binding(
+                    get: { selected == chip },
+                    set: { _ in setDue(QuickDue.toggling(chip, due: task.due, context: context)) }
+                ))
+            }
+            Toggle("review.due.exact", isOn: Binding(get: { task.due != nil && selected == nil },
                                                     set: { _ in isPickingDate = true }))
         } label: {
-            Chip(icon: .due, text: task.due.map { DueText.format($0, today: today, calendar: model.calendar) }, isOn: task.due != nil)
+            Chip(icon: .due, text: task.due.map { DueText.format($0, context: context) }, isOn: task.due != nil)
         }
         .sheet(isPresented: $isPickingDate) {
             DueDateSheet(due: task.due ?? TaskDue(day: today, time: rules.editing.defaultTime), calendar: model.calendar) { setDue($0) }

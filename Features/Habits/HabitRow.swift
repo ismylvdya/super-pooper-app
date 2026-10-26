@@ -14,7 +14,7 @@ struct HabitRow: View {
             HabitDayButton(habit: habit, day: today)
                 .frame(width: tokens.size(.iconColumn))
             NavigationLink(value: Route.task(habit.name)) {
-                TitleDetailLabel(detail: Text(HabitSummary.weekLine(habit, today: today, calendar: model.calendar))) {
+                TitleDetailLabel(detail: Text(HabitSummary.weekLine(habit, today: today, days: model.context().days))) {
                     Text(habit.name).foregroundStyle(tokens.habitColor(habit)).lineLimit(2)
                 }
             }
@@ -37,7 +37,7 @@ struct HabitDayButton: View {
     let day: LocalDate
 
     var body: some View {
-        let grid = HabitGrid(task: habit, weekCount: 1, today: day, calendar: model.calendar)
+        let grid = HabitGrid(task: habit, weekCount: 1, today: day, days: model.context().days)
         let cell = grid.weeks.last?.first { $0.date == day }?.cell ?? .open
         let metrics = HabitDotMetrics(dot: tokens.size(.iconColumn), ringRatio: tokens.size(.habitRingRatio))
         HabitDayCell(cell: cell, color: tokens.habitColor(habit), metrics: metrics)
