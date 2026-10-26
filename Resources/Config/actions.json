@@ -3,9 +3,10 @@
     {
       "id": "done",
       "title": "action.done",
-      "icon": "checkmark.circle",
+      "icon": "checkmark.circle.fill",
       "destructive": false,
-      "haptic": "light"
+      "haptic": "light",
+      "color": "actionDone"
     },
     {
       "id": "partial",
@@ -117,8 +118,8 @@
     ],
     "taskPage": [
       "archive",
-      "delete",
-      "openInObsidian"
+      "openInObsidian",
+      "delete"
     ],
     "habitNotification": [
       "done",
@@ -138,14 +139,16 @@
     ],
     "habitPage": [
       "archive",
-      "delete",
-      "openInObsidian"
+      "openInObsidian",
+      "delete"
     ],
     "habitArchiveRow": [
       "restoreHabit",
       "delete"
     ],
-    "eventNotification": [],
+    "eventNotification": [
+      "deleteEvent"
+    ],
     "habitDay": [
       "unmark",
       "partial",

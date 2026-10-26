@@ -9,9 +9,7 @@ struct RegistryMenu: View {
 
     var body: some View {
         ForEach(actions.actions(in: menu), id: \.id) { action in
-            Button(role: action.destructive ? .destructive : nil) { perform(action) } label: {
-                Label(LocalizedStringKey(action.title), systemImage: action.icon)
-            }
+            Button(role: action.destructive ? .destructive : nil) { perform(action) } label: { ActionLabel(action: action) }
         }
     }
 }

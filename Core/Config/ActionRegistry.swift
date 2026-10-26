@@ -54,6 +54,8 @@ struct ActionDefinition: Codable, Hashable, Sendable {
     /// SF Symbol name.
     let icon: String
     let destructive: Bool
+    /// A color token for the icon and title (Done is blue); menus otherwise use the label color.
+    var color: String?
     let haptic: HapticStyle
     /// String Catalog keys of the confirmation dialog; `nil` = no confirmation.
     let confirmTitle: String?
@@ -83,6 +85,11 @@ struct ActionRegistry: Codable, Hashable, Sendable {
         }
         for menu in ActionMenu.allCases where menus[menu.rawValue] == nil {
             throw ConfigError(file: file, path: "menus", message: "missing menu \"\(menu.rawValue)\"")
+        }
+        for action in actions {
+            if let color = action.color, ColorToken(rawValue: color) == nil {
+                throw ConfigError(file: file, path: "actions.\(action.id.rawValue).color", message: "unknown color token \"\(color)\"")
+            }
         }
     }
 }

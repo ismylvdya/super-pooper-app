@@ -24,4 +24,6 @@ struct PlannedNotification: Hashable, Sendable {
     var key: String = ""
     /// Start of the event an alert belongs to.
     var start: Date? = nil
+    /// The calendar event an event alert deletes from its Delete event button.
+    var eventID: String? = nil
 }

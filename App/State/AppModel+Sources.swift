@@ -54,6 +54,15 @@ extension AppModel {
         await publishDerivedState()
     }
 
+    /// The event of a notification: found again by its identifier and start, since a repeating event shares
+    /// the identifier with its other occurrences.
+    func deleteEvent(identifier: String, start: Date) async {
+        if !events.contains(where: { $0.eventIdentifier == identifier }) { await refreshCalendarSources() }
+        guard let event = events.first(where: { $0.eventIdentifier == identifier && $0.start == start })
+                ?? events.first(where: { $0.eventIdentifier == identifier }) else { return }
+        await deleteEvent(event)
+    }
+
     func deleteEvent(_ event: CalendarEvent) async {
         do {
             try services.calendars.delete(event)

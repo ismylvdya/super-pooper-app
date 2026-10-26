@@ -38,6 +38,13 @@ enum BackgroundRefresh {
         await container.model.completeReminder(id: id)
     }
 
+    /// Delete event on an event alert: the occurrence that alert belongs to.
+    static func deleteEvent(_ identifier: String, start: Date) async {
+        guard case .success(let container) = AppContainer.shared else { return }
+        await container.model.ensureLoaded()
+        await container.model.deleteEvent(identifier: identifier, start: start)
+    }
+
     static func restore(_ notification: UNNotification) async {
         guard case .success(let container) = AppContainer.shared else { return }
         await container.model.services.notifications.restore(notification)

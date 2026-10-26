@@ -85,7 +85,8 @@ struct NotificationPlanner: Sendable {
                 result.append(PlannedNotification(id: "event|\(event.eventIdentifier)|\(Int(event.start.timeIntervalSince1970))|\(index)",
                                                   kind: .event, title: event.title, fireDate: fire, taskName: nil,
                                                   day: context.logicalDay(of: event.start),
-                                                  key: "event|\(event.eventIdentifier)|\(index)", start: event.start))
+                                                  key: "event|\(event.eventIdentifier)|\(index)", start: event.start,
+                                                  eventID: event.eventIdentifier))
             }
         }
 

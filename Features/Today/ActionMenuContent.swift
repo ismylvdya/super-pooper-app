@@ -4,7 +4,6 @@ import SwiftUI
 /// for the item's current state are shown.
 struct ActionMenuContent: View {
     @Environment(\.actions) private var actions
-    @Environment(\.icons) private var icons
     let menu: ActionMenu
     let item: DayItem?
     /// Skip today and Not today only make sense on today's page.
@@ -19,11 +18,7 @@ struct ActionMenuContent: View {
                 perform(action)
             } label: {
                 // Habit menus show the habit marks, as the habit notifications do.
-                if menu.isHabitMenu, let mark = HabitMarkIcon.icon(for: action.id) {
-                    Label { Text(LocalizedStringKey(action.title)) } icon: { Image(icons[mark]).renderingMode(.template) }
-                } else {
-                    Label(LocalizedStringKey(action.title), systemImage: action.icon)
-                }
+                ActionLabel(action: action, markIcon: menu.isHabitMenu ? HabitMarkIcon.icon(for: action.id) : nil)
             }
             .disabled(isCurrent)
         }

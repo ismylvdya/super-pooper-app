@@ -131,6 +131,16 @@ struct NotificationPlannerTests {
         #expect(valid.contains { $0.id == "habit|Vitamins 💊|09:00" && $0.day == LocalDate("2026-10-20") })
     }
 
+    /// An event alert knows its event and occurrence, for its Delete event button.
+    @Test func anEventAlertCarriesItsEventForDeleting() throws {
+        var call = makeEvent("Call", from: "18:00", to: "18:30", id: "EK-call")
+        call.alarmDates = [TestCalendar.date(TestCalendar.wednesday, "17:50")]
+        let planned = planner.plan(tasks: [], reminders: [], events: [call], skipped: [], context: TestCalendar.context())
+        let alert = try #require(planned.first { $0.kind == .event })
+        #expect(alert.eventID == "EK-call" && alert.start == call.start)
+        #expect(TestConfig.actions.menus["eventNotification"] == [.deleteEvent])
+    }
+
     /// After midnight, before the day boundary, it is still Wednesday: a delivered 01:30 reminder or event alert
     /// of that night stays in Notification Center.
     @Test func aNightReminderOrEventBelongsToTheEveningBefore() {

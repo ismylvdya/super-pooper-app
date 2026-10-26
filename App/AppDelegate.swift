@@ -50,6 +50,12 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
             await BackgroundRefresh.completeReminder(reminderID)
             return
         }
+        if response.actionIdentifier == ActionID.deleteEvent.rawValue,
+           let eventID = info[NotificationPayload.eventKey] as? String, !eventID.isEmpty,
+           let start = info[NotificationPayload.eventStartKey] as? Double {
+            await BackgroundRefresh.deleteEvent(eventID, start: Date(timeIntervalSince1970: start))
+            return
+        }
         guard let action = ActionID(rawValue: response.actionIdentifier),
               let taskName = info[NotificationPayload.taskKey] as? String, !taskName.isEmpty else { return }
         let day = (info[NotificationPayload.dayKey] as? String).flatMap(LocalDate.init(isoString:))

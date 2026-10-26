@@ -21,6 +21,9 @@ enum NotificationPayload {
     static let taskKey = "task"
     static let dayKey = "day"
     static let reminderKey = "reminder"
+    static let eventKey = "event"
+    /// The event's start, seconds since 1970: a repeating event shares its identifier with its other occurrences.
+    static let eventStartKey = "eventStart"
     static let habitCategory = "habit"
     static let taskCategory = "task"
     static let reminderCategory = "reminder"
@@ -164,6 +167,8 @@ struct UserNotificationScheduler: NotificationScheduling {
             NotificationPayload.taskKey: notification.taskName ?? "",
             NotificationPayload.dayKey: notification.day.isoString,
             NotificationPayload.reminderKey: notification.reminderID ?? "",
+            NotificationPayload.eventKey: notification.eventID ?? "",
+            NotificationPayload.eventStartKey: notification.start?.timeIntervalSince1970 ?? 0,
         ]
         return content
     }

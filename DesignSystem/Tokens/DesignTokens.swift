@@ -18,6 +18,7 @@ struct DesignTokens: Decodable, Sendable {
     func font(_ token: FontToken) -> Font { font[token].font }
     func uiFont(_ token: FontToken) -> UIFont { font[token].uiFont }
     func color(_ token: ColorToken) -> Color { color[token].color }
+    func uiColor(_ token: ColorToken) -> UIColor { color[token].uiColor }
 
     var animation: Animation { .easeInOut(duration: duration(.animation)) }
 
@@ -118,6 +119,7 @@ struct ColorSpec: Decodable, Sendable {
         "secondarySystemGroupedBackground": .secondarySystemGroupedBackground,
         "tertiarySystemFill": .tertiarySystemFill, "secondarySystemFill": .secondarySystemFill,
         "quaternarySystemFill": .quaternarySystemFill, "separator": .separator, "systemRed": .systemRed,
+        "systemBlue": .systemBlue,
     ]
 }
 
