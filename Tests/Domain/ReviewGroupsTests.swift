@@ -32,9 +32,12 @@ struct ReviewGroupsTests {
         #expect(ReviewGroups.move(rows, from: [3], to: 0, pool: pool).regrouped == ["Pay rent": .morning])
     }
 
-    /// Tasks with a part of the day share the routine plate in the pool, like habits.
-    @Test func morningTasksShareTheRoutinePlate() {
-        let segments = PoolSegments.make([item("Stretch", .morning), item("Make coffee", .morning), item("Pay rent")])
-        #expect(segments.map { $0.items.map(\.id) } == [["Stretch", "Make coffee"], ["Pay rent"]])
+    /// Tasks with a part of the day sort with it but stand on their own plates, not in a habit routine's.
+    @Test func morningTasksStandOnTheirOwnPlates() {
+        let habit = DayItem(task: makeHabit("Water", status: .habit) { $0.habit.timeOfDay = .morning }, state: .open, blockers: [], problems: [])
+        let segments = PoolSegments.make([habit, item("Stretch", .morning), item("Make coffee", .morning)])
+        #expect(segments.map { $0.items.map(\.id) } == [["Water"], ["Stretch"], ["Make coffee"]])
+        let plan = DayScenario(tasks: [makeTask("Pay rent"), makeTask("Stretch") { $0.habit.timeOfDay = .morning }]).build()
+        #expect(plan.poolNames == ["Stretch", "Pay rent"])
     }
 }
