@@ -94,13 +94,6 @@
       "haptic": "light"
     },
     {
-      "id": "routines",
-      "title": "action.routines",
-      "icon": "sunrise",
-      "destructive": false,
-      "haptic": "none"
-    },
-    {
       "id": "deleteEvent",
       "title": "action.deleteEvent",
       "icon": "trash",
@@ -114,8 +107,7 @@
       "partial",
       "done",
       "twice",
-      "skipToday",
-      "routines"
+      "skipToday"
     ],
     "taskContext": [
       "done",

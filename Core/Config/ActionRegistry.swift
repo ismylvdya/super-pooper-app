@@ -16,7 +16,6 @@ enum ActionID: String, Codable, CaseIterable, Sendable {
     case restoreThisWeek
     case restoreHalfYear
     case restoreHabit
-    case routines
     case deleteEvent
 }
 

@@ -23,8 +23,6 @@ struct TaskActionHandler {
         switch action.id {
         case .open:
             router.open(.task(taskName))
-        case .routines:
-            router.show(.habits, [.routines])
         case .openInObsidian:
             Task {
                 if let url = await model.obsidianURL(for: taskName) { openURL(url) }

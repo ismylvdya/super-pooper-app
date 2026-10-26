@@ -144,17 +144,6 @@
         }
       }
     },
-    "action.routines": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Routine order"
-          }
-        }
-      }
-    },
     "action.skipToday": {
       "extractionState": "manual",
       "localizations": {

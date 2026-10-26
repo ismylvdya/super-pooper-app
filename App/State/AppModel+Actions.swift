@@ -30,7 +30,7 @@ extension AppModel {
             await write(task, [.status(.habit)])
         case .delete:
             await delete(task)
-        case .open, .openInObsidian, .routines, .deleteEvent:
+        case .open, .openInObsidian, .deleteEvent:
             break
         }
     }
