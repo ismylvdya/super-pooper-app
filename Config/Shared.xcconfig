@@ -4,8 +4,8 @@
 SP_BUNDLE_ID = SuperPooperApp
 SP_APP_GROUP = group.$(SP_BUNDLE_ID)
 
-MARKETING_VERSION = 0.5.0
-CURRENT_PROJECT_VERSION = 12
+MARKETING_VERSION = 0.6.0
+CURRENT_PROJECT_VERSION = 13
 
 // Минимальная iOS — 26.0. Строка с [sdk=…18*] срабатывает только в Xcode 16
 // (iOS 18 SDK), на котором собиралась и проверялась v0; в Xcode 26 она не действует.
