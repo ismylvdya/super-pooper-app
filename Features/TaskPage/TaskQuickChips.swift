@@ -7,23 +7,39 @@ struct TaskQuickChips: View {
     @Environment(\.tokens) private var tokens
     let editor: TaskEditor
 
+    /// One line when the three fit; otherwise High on the first line and the two dates on the second.
     var body: some View {
-        let context = model.context()
-        let selected = QuickDue.selection(of: editor.task.due, context: context)
-        ChipFlow(spacing: tokens.space(.chipGap), alignment: .center) {
-            ToggleChip(icon: .high, title: "taskPage.chip.high", tint: tokens.color(.high), isOn: editor.task.isHighPriority) {
-                editor.edit { [.highPriority(!$0.isHighPriority)] }
+        let spacing = tokens.space(.chipGap)
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: spacing) {
+                highChip
+                dueChips
             }
-            .accessibilityIdentifier("taskPage.chip.high")
-            ForEach(QuickDue.allCases, id: \.self) { chip in
-                ToggleChip(icon: chip == .today ? .today : .tomorrow, title: chip == .today ? "taskPage.chip.today" : "taskPage.chip.tomorrow",
-                           tint: tokens.color(.task), isOn: selected == chip) {
-                    editor.edit { [.due(QuickDue.toggling(chip, due: $0.due, context: context))] }
-                }
-                .accessibilityIdentifier(chip == .today ? "taskPage.chip.today" : "taskPage.chip.tomorrow")
+            VStack(spacing: spacing) {
+                highChip
+                HStack(spacing: spacing) { dueChips }
             }
         }
         .frame(maxWidth: .infinity)
+    }
+
+    private var highChip: some View {
+        ToggleChip(icon: .high, title: "taskPage.chip.high", tint: tokens.color(.high), isOn: editor.task.isHighPriority) {
+            editor.edit { [.highPriority(!$0.isHighPriority)] }
+        }
+        .accessibilityIdentifier("taskPage.chip.high")
+    }
+
+    @ViewBuilder private var dueChips: some View {
+        let context = model.context()
+        let selected = QuickDue.selection(of: editor.task.due, context: context)
+        ForEach(QuickDue.allCases, id: \.self) { chip in
+            ToggleChip(icon: chip == .today ? .today : .tomorrow, title: chip == .today ? "taskPage.chip.today" : "taskPage.chip.tomorrow",
+                       tint: tokens.color(.task), isOn: selected == chip) {
+                editor.edit { [.due(QuickDue.toggling(chip, due: $0.due, context: context))] }
+            }
+            .accessibilityIdentifier(chip == .today ? "taskPage.chip.today" : "taskPage.chip.tomorrow")
+        }
     }
 }
 
