@@ -9,12 +9,17 @@ enum AppTab: String, CaseIterable, Hashable {
     case settings
 }
 
+/// What a search looks through: Today's finds events too, the Lists tab's only task notes.
+enum SearchScope: Hashable {
+    case tasksAndEvents, tasks
+}
+
 /// Pushed pages of the tabs' navigation stacks.
 enum Route: Hashable {
     case task(String)
     case newTask
     case newHabit
-    case search
+    case search(SearchScope)
     case taskSettings
     case habitSettings
     case archive

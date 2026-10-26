@@ -105,7 +105,7 @@ struct RootView: View {
         case .task(let name): TaskPageScreen(taskName: name)
         case .newTask: NewNoteScreen(kind: .task)
         case .newHabit: NewNoteScreen(kind: .habit)
-        case .search: SearchScreen()
+        case .search(let scope): SearchScreen(scope: scope)
         case .taskSettings: TaskSettingsScreen()
         case .habitSettings: HabitSettingsScreen()
         case .archive: ArchiveScreen()

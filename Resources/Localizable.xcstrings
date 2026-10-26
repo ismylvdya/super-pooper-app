@@ -2091,17 +2091,6 @@
         }
       }
     },
-    "lists.all": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "All tasks"
-          }
-        }
-      }
-    },
     "lists.empty": {
       "extractionState": "manual",
       "localizations": {
@@ -2120,6 +2109,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Needs energy"
+          }
+        }
+      }
+    },
+    "lists.group.feel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "By feel"
+          }
+        }
+      }
+    },
+    "lists.group.statuses": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All statuses"
           }
         }
       }
@@ -2153,28 +2164,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Add to This week"
-          }
-        }
-      }
-    },
-    "lists.waiting": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Waiting"
-          }
-        }
-      }
-    },
-    "lists.weeklyReview": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Weekly review"
           }
         }
       }
@@ -3356,6 +3345,17 @@
         }
       }
     },
+    "search.hint.tasks": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type a name to find a task."
+          }
+        }
+      }
+    },
     "search.prompt": {
       "extractionState": "manual",
       "localizations": {
@@ -3363,6 +3363,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tasks and events"
+          }
+        }
+      }
+    },
+    "search.prompt.tasks": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tasks"
           }
         }
       }

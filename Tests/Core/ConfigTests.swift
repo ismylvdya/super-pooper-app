@@ -17,14 +17,15 @@ struct ConfigTests {
         #expect(url?.absoluteString == "shortcuts://run-shortcut?name=Add%20to%20inbox")
     }
 
-    /// Every list of the Lists tab has a title text; the weekly review holds what is not this week yet.
+    /// Every group and list of the Lists tab has a title text; All statuses has a list per planning level.
     @Test func listsLoadWithTheirTexts() throws {
         let config = try AppConfig.load(bundle: Bundle(for: BundleToken.self).appHostBundle)
         let bundle = Bundle(for: BundleToken.self).appHostBundle
-        for list in config.lists.lists {
-            #expect(bundle.localizedString(forKey: list.title, value: "∅", table: nil) != "∅", "missing text for \(list.title)")
+        for title in config.lists.groups.map(\.title) + config.lists.lists.map(\.title) {
+            #expect(bundle.localizedString(forKey: title, value: "∅", table: nil) != "∅", "missing text for \(title)")
         }
-        #expect(config.lists.list("weeklyReview")?.filter.statuses == [.halfYear, .someday, .waiting])
+        let statuses = config.lists.groups.first { $0.id == "statuses" }?.lists.flatMap(\.filter.statuses)
+        #expect(statuses == TaskStatus.known)
     }
 
     /// "new|old" in icons.json: the newer symbol where the system has it, the fallback otherwise.

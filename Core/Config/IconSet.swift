@@ -11,7 +11,7 @@ enum Icon: String, CaseIterable, Codable, Sendable {
     case checkboxOpen, markDone
     case emptyVault, debugSeed, permissionGranted
     case tabToday, tabHabits, tabLists, tabSettings
-    case listQuick, listWaiting, listAll, inboxShortcut
+    case listQuick, listThisWeek, listHalfYear, listSomeday, listWaiting, listDone, listArchived, inboxShortcut
     case bell, olderWeeks, postpone
     /// Asset catalog template images (not SF Symbols): the habit marks, shared by menus and notifications.
     case habitMarkOpen, habitMarkDone, habitMarkPartial, habitMarkTwice

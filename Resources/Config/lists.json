@@ -1,39 +1,70 @@
 {
-  "lists": [
+  "groups": [
     {
-      "id": "weeklyReview",
-      "title": "lists.weeklyReview",
-      "icon": "review",
-      "statuses": ["halfYear", "someday", "waiting"]
+      "id": "feel",
+      "title": "lists.group.feel",
+      "lists": [
+        {
+          "id": "pleasant",
+          "title": "lists.pleasant",
+          "icon": "pleasant",
+          "pleasant": true
+        },
+        {
+          "id": "energy",
+          "title": "lists.energy",
+          "icon": "energy",
+          "needEnergy": true
+        },
+        {
+          "id": "quick",
+          "title": "lists.quick",
+          "icon": "listQuick",
+          "maxEstimate": 15
+        }
+      ]
     },
     {
-      "id": "pleasant",
-      "title": "lists.pleasant",
-      "icon": "pleasant",
-      "pleasant": true
-    },
-    {
-      "id": "energy",
-      "title": "lists.energy",
-      "icon": "energy",
-      "needEnergy": true
-    },
-    {
-      "id": "quick",
-      "title": "lists.quick",
-      "icon": "listQuick",
-      "maxEstimate": 15
-    },
-    {
-      "id": "waiting",
-      "title": "lists.waiting",
-      "icon": "listWaiting",
-      "statuses": ["waiting"]
-    },
-    {
-      "id": "all",
-      "title": "lists.all",
-      "icon": "listAll"
+      "id": "statuses",
+      "title": "lists.group.statuses",
+      "lists": [
+        {
+          "id": "thisWeek",
+          "title": "status.thisWeek",
+          "icon": "listThisWeek",
+          "statuses": ["thisWeek"]
+        },
+        {
+          "id": "halfYear",
+          "title": "status.halfYear",
+          "icon": "listHalfYear",
+          "statuses": ["halfYear"]
+        },
+        {
+          "id": "someday",
+          "title": "status.someday",
+          "icon": "listSomeday",
+          "statuses": ["someday"]
+        },
+        {
+          "id": "waiting",
+          "title": "status.waiting",
+          "icon": "listWaiting",
+          "statuses": ["waiting"]
+        },
+        {
+          "id": "done",
+          "title": "status.done",
+          "icon": "listDone",
+          "statuses": ["done"]
+        },
+        {
+          "id": "archived",
+          "title": "status.archived",
+          "icon": "listArchived",
+          "statuses": ["archived"]
+        }
+      ]
     }
   ]
 }

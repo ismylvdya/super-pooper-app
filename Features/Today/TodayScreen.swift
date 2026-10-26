@@ -207,7 +207,7 @@ struct TodayButtons: View {
                 .tint(tokens.color(.accent))
                 .accessibilityLabel(Text("task.new.title"))
                 .accessibilityIdentifier("today.newTask")
-            Button { router.open(.search) } label: { Image(systemName: icons[.search]) }
+            Button { router.open(.search(.tasksAndEvents)) } label: { Image(systemName: icons[.search]) }
                 .tint(tokens.color(.accent))
                 .accessibilityLabel(Text("search.title"))
                 .accessibilityIdentifier("today.search")

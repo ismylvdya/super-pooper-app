@@ -125,9 +125,19 @@ final class ScreenSnapshotUITests: XCTestCase {
         snap("lists")
     }
 
-    func testWeeklyReview() {
-        launch("superpooper://lists/weeklyReview")
-        snap("lists-weekly-review")
+    func testListsSearch() {
+        launch("superpooper://lists")
+        let search = app.buttons["lists.search"]
+        XCTAssertTrue(search.waitForExistence(timeout: 10))
+        search.tap()
+        app.typeText("Цикл")
+        settle()
+        snap("lists-search")
+    }
+
+    func testSomedayList() {
+        launch("superpooper://lists/someday")
+        snap("lists-someday")
     }
 
     func testSettings() {

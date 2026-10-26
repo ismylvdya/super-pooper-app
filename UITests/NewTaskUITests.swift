@@ -73,9 +73,9 @@ final class NewTaskUITests: XCTestCase {
         XCTAssertEqual(name.value as? String, "Купить хлеб")
     }
 
-    /// The weekly review in the Lists tab brings a task of a later planning level to this week.
-    func testWeeklyReviewAddsATaskToThisWeek() {
-        launch("superpooper://lists/weeklyReview")
+    /// A list of a later planning level in the Lists tab brings its task to this week.
+    func testSomedayListAddsATaskToThisWeek() {
+        launch("superpooper://lists/someday")
         let add = app.buttons["lists.toThisWeek.Выучить испанский"]
         for _ in 0..<4 where !add.waitForExistence(timeout: 3) { app.swipeUp() }
         add.tap()

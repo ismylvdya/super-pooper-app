@@ -1,14 +1,23 @@
 import Foundation
 
-/// The lists of the Lists tab (`lists.json`): each a filter over all task notes.
+/// The lists of the Lists tab (`lists.json`) in their groups: each a filter over all task notes.
 struct TaskListsConfig: Codable, Hashable, Sendable {
+    /// A plate of the Lists tab with a title over it.
+    struct Group: Codable, Hashable, Sendable, Identifiable {
+        let id: String
+        /// Text key in `Localizable.xcstrings`.
+        let title: String
+        let lists: [List]
+    }
+
     struct List: Codable, Hashable, Sendable, Identifiable {
         let id: String
         /// Text key in `Localizable.xcstrings`.
         let title: String
         /// A key of `icons.json`.
         let icon: Icon
-        /// Planning levels in the list; none = every open one (this week, half a year, someday, waiting).
+        /// Planning levels in the list; none = every open one (this week, half a year, someday, waiting). With several
+        /// the list is split by level.
         var statuses: [ListStatus]?
         var pleasant: Bool?
         var needEnergy: Bool?
@@ -18,7 +27,7 @@ struct TaskListsConfig: Codable, Hashable, Sendable {
 
     /// Planning levels by their names in `field-mapping.json` → `statuses`.
     enum ListStatus: String, Codable, Hashable, Sendable {
-        case thisWeek, halfYear, someday, waiting, done
+        case thisWeek, halfYear, someday, waiting, done, archived
 
         var status: TaskStatus {
             switch self {
@@ -27,11 +36,14 @@ struct TaskListsConfig: Codable, Hashable, Sendable {
             case .someday: .someday
             case .waiting: .waiting
             case .done: .done
+            case .archived: .archived
             }
         }
     }
 
-    let lists: [List]
+    let groups: [Group]
+
+    var lists: [List] { groups.flatMap(\.lists) }
 
     func list(_ id: String) -> List? { lists.first { $0.id == id } }
 }

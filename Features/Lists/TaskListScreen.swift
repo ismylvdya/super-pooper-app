@@ -13,19 +13,21 @@ struct TaskListScreen: View {
 
     var body: some View {
         let list = model.config.lists.list(listID)
-        let groups = (list?.filter ?? TaskListFilter()).groups(of: model.tasks, query: query, rules: model.config.rules.day)
+        let filter = list?.filter ?? TaskListFilter()
+        let groups = filter.groups(of: model.tasks, query: query, rules: model.config.rules.day)
         List {
             ForEach(groups, id: \.status) { group in
                 Section {
                     ForEach(group.tasks, id: \.name) { task in row(task) }
                 } header: {
-                    Text(verbatim: StatusText.title(group.status))
+                    // A list of one planning level already says it in its title.
+                    if filter.statuses.count > 1 { Text(verbatim: StatusText.title(group.status)) }
                 }
             }
         }
         .appList()
         .overlay { if groups.isEmpty { Text("lists.empty").foregroundStyle(tokens.color(.secondaryText)) } }
-        .searchable(text: $query, prompt: Text("search.prompt"))
+        .searchable(text: $query, prompt: Text("search.prompt.tasks"))
         .navigationTitle(Text(LocalizedStringKey(list?.title ?? "tab.lists")))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -40,7 +42,7 @@ struct TaskListScreen: View {
     private func row(_ task: TaskNote) -> some View {
         HStack(spacing: tokens.space(.iconTextGap)) {
             NavigationLink(value: Route.task(task.name)) {
-                Text(verbatim: task.name).foregroundStyle(tokens.color(.primaryText))
+                TaggedTaskName(name: task.name)
             }
             if task.status != .thisWeek {
                 Button {
