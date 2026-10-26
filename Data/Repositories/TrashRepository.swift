@@ -53,12 +53,18 @@ struct VaultTrashRepository: TrashRepository {
                                                      isDirectory: true)
             let names = NoteFolder(folder, fileSystem: fileSystem)
             let name = UniqueName.free(note.name) { names.isTaken($0) }
-            try fileSystem.move(source, to: folder.appendingPathComponent("\(name).\(noteExtension)"))
+            let target = folder.appendingPathComponent("\(name).\(noteExtension)")
+            try fileSystem.move(source, to: target)
+            guard fileSystem.isMoved(source, to: target) else { throw TaskRepositoryError.notConfirmed(name) }
             return name
         }
     }
 
     func deletePermanently(_ note: TrashedNote) async throws {
-        try await location.withRoot { root in try fileSystem.remove(root.appendingPathComponent(note.relativePath)) }
+        try await location.withRoot { root in
+            let url = root.appendingPathComponent(note.relativePath)
+            try fileSystem.remove(url)
+            guard !fileSystem.fileExists(url) else { throw TaskRepositoryError.notConfirmed(note.name) }
+        }
     }
 }

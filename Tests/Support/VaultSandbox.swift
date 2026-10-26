@@ -70,8 +70,8 @@ struct VaultSandbox {
     }
 
     func repository(ubiquity: UbiquityService = FakeUbiquityService(), downloadTimeout: TimeInterval = 0.3,
-                    keepBackups: Int = TestConfig.rules.backups.keepCount) -> VaultTaskRepository {
-        let fileSystem = CoordinatedFileSystem()
+                    keepBackups: Int = TestConfig.rules.backups.keepCount,
+                    fileSystem: NoteFileSystem = CoordinatedFileSystem()) -> VaultTaskRepository {
         let backupClock = TickingClock(start: now, step: 1)
         let backupService = BackupService(directory: backups, keepCount: keepBackups, fileSystem: fileSystem,
                                           clock: { backupClock.now })

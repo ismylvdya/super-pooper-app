@@ -23,6 +23,20 @@ protocol NoteFileSystem: Sendable {
     func remove(_ url: URL) throws
 }
 
+extension NoteFileSystem {
+    /// What was written is read back before the change counts as made (and before the app says it is).
+    func isWritten(_ text: String, at url: URL) -> Bool {
+        (try? read(url).text) == text
+    }
+
+    /// A move counts once the note is at its new place and gone from the old one (a rename that only changes
+    /// letter case keeps the same file).
+    func isMoved(_ source: URL, to target: URL) -> Bool {
+        let samePlace = source.standardizedFileURL.path.lowercased() == target.standardizedFileURL.path.lowercased()
+        return fileExists(target) && (samePlace || !fileExists(source))
+    }
+}
+
 /// `NSFileCoordinator`-based implementation with atomic writes.
 struct CoordinatedFileSystem: NoteFileSystem {
     /// Only the cheap `isRegularFile` key: iCloud attributes are slow to fetch and are asked

@@ -72,6 +72,22 @@ struct NoteWriteTests {
             .replacingOnce(modified, with: written + "need_energy: false\npleasant: false\n"))
     }
 
+    /// A change counts (and gets its banner) only once the file read back shows it: a write that did not land fails.
+    @Test func aWriteThatDidNotLandIsNotTakenForDone() async throws {
+        let sandbox = try VaultSandbox.make()
+        let repository = sandbox.repository(fileSystem: LosingFileSystem())
+        let task = try #require(try await repository.scan().tasks.first { $0.name == "Оплатить интернет" })
+        await #expect(throws: TaskRepositoryError.notConfirmed("Оплатить интернет")) {
+            try await repository.apply([.highPriority(true)], to: task)
+        }
+        await #expect(throws: TaskRepositoryError.notConfirmed("Оплатить интернет 2")) {
+            try await repository.rename(task, to: "Оплатить интернет 2", dependents: [])
+        }
+        await #expect(throws: TaskRepositoryError.notConfirmed("Новое дело")) {
+            try await repository.create(named: "Новое дело", status: .thisWeek)
+        }
+    }
+
     @Test func editingTheBodyKeepsTheFrontmatter() async throws {
         let note = try await SandboxNote("Длинная заметка с незнакомыми ключами")
         let frontmatter = try #require(splitNote(try note.text())).frontmatter
@@ -187,4 +203,18 @@ struct NoteWriteTests {
             + list("complete_instances", complete) + list("partial_instances", partial) + list("twice_instances", twice)
             + "time_estimate: 15\ndate_created: 2026-09-21T09:12:44.123+02:00\ndate_modified: \(modified)\n---\n"
     }
+}
+
+/// A disk that says yes to every write and move but keeps nothing.
+private struct LosingFileSystem: NoteFileSystem {
+    private let real = CoordinatedFileSystem()
+
+    func listFiles(in folder: URL) throws -> [URL] { try real.listFiles(in: folder) }
+    func read(_ url: URL) throws -> NoteFile { try real.read(url) }
+    func modificationDate(of url: URL) -> Date? { real.modificationDate(of: url) }
+    func write(_ text: String, to url: URL) throws {}
+    func move(_ url: URL, to destination: URL) throws {}
+    func copy(_ url: URL, to destination: URL) throws { try real.copy(url, to: destination) }
+    func fileExists(_ url: URL) -> Bool { real.fileExists(url) }
+    func remove(_ url: URL) throws {}
 }

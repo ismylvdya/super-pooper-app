@@ -29,6 +29,8 @@ enum TaskRepositoryError: Error, Equatable, Sendable {
     case brokenFrontmatter(String)
     case invalidName(String)
     case nameTaken(String)
+    /// The change was written, but the file read back does not show it: it does not count as made.
+    case notConfirmed(String)
 }
 
 /// Reads, edits and creates TaskNotes notes.

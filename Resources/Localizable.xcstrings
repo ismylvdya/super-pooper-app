@@ -947,6 +947,17 @@
         }
       }
     },
+    "error.write.notConfirmed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” did not change in the TaskNotes folder. Pull to refresh and try again."
+          }
+        }
+      }
+    },
     "estimate.15min": {
       "extractionState": "manual",
       "localizations": {

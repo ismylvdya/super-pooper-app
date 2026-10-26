@@ -83,6 +83,7 @@ actor VaultTaskRepository: TaskRepository {
                 throw TaskRepositoryError.nameTaken(newName)
             }
             try fileSystem.move(source, to: target)
+            guard fileSystem.isMoved(source, to: target) else { throw TaskRepositoryError.notConfirmed(newName) }
             var result = task
             result.name = newName
             result.relativePath = VaultPaths.relative(target, to: root)
@@ -105,7 +106,9 @@ actor VaultTaskRepository: TaskRepository {
             let trash = root.appendingPathComponent(trashFolder, isDirectory: true)
             let names = NoteFolder(trash, fileSystem: fileSystem)
             let name = UniqueName.free(source.deletingPathExtension().lastPathComponent, firstNumber: 1) { names.isTaken($0) }
-            try fileSystem.move(source, to: trash.appendingPathComponent("\(name).\(noteExtension)"))
+            let target = trash.appendingPathComponent("\(name).\(noteExtension)")
+            try fileSystem.move(source, to: target)
+            guard fileSystem.isMoved(source, to: target) else { throw TaskRepositoryError.notConfirmed(task.name) }
         }
     }
 
@@ -122,6 +125,7 @@ actor VaultTaskRepository: TaskRepository {
             let url = folder.appendingPathComponent("\(finalName).\(noteExtension)")
             try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
             try fileSystem.write(text, to: url)
+            guard fileSystem.isWritten(text, at: url) else { throw TaskRepositoryError.notConfirmed(finalName) }
             let relativePath = VaultPaths.relative(url, to: root)
             seenModification[relativePath] = fileSystem.modificationDate(of: url)
             return reader.task(from: try FrontmatterDocument(text: text), name: finalName, relativePath: relativePath)
@@ -195,6 +199,7 @@ actor VaultTaskRepository: TaskRepository {
             // Never write a note that would no longer parse.
             guard let updated = try? FrontmatterDocument(text: text) else { throw TaskRepositoryError.brokenFrontmatter(task.name) }
             try fileSystem.write(text, to: url)
+            guard fileSystem.isWritten(text, at: url) else { throw TaskRepositoryError.notConfirmed(task.name) }
             seenModification[task.relativePath] = fileSystem.modificationDate(of: url)
             return TaskWriteResult(task: reader.task(from: updated, name: task.name, relativePath: task.relativePath),
                                    hadConflict: hadConflict, clashingKeys: clashing)
