@@ -14,6 +14,7 @@ enum TaskFieldChange: Hashable, Sendable {
     /// Makes the note a subtask of another one (TaskNotes `projects`).
     case addProject(String)
     case renameProject(from: String, to: String)
+    case subtaskOrder(Int?)
     case previousEvent(EventLink?)
     case nextEvent(EventLink?)
     case needEnergy(Bool)

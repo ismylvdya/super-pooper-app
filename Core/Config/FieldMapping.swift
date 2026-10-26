@@ -32,6 +32,8 @@ struct FieldMapping: Codable, Hashable, Sendable {
         let twiceCountsDouble: String
         let weeklyGoal: String
         let allowedSkips: String
+        /// A subtask's place among its parent's subtasks (set by dragging them on the parent's page).
+        let subtaskOrder: String
     }
 
     /// Raw values of `time_of_day`.

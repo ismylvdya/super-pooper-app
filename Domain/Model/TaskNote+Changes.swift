@@ -20,6 +20,7 @@ extension TaskNote {
                 if !task.projects.contains(where: { $0.isSameNoteName(as: name) }) { task.projects.append(name) }
             case .renameProject(let old, let new):
                 task.projects = task.projects.map { $0.isSameNoteName(as: old) ? new : $0 }
+            case .subtaskOrder(let value): task.subtaskOrder = value
             case .previousEvent(let value): task.previousEvent = value
             case .nextEvent(let value): task.nextEvent = value
             case .needEnergy(let value): task.needEnergy = value

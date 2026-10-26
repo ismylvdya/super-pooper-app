@@ -21,5 +21,6 @@ check "picker → previous_task link written"          "grep -qF 'uid: \"[[На�
 check "event picker → previous_event written"        "grep -q '^previous_event: \".*|Call with dad|' \"$TASKS/Сходить к стоматологу.md\""
 check "plus in Habits → new habit, in Today"         "grep -q '^status: habit' \"$TASKS/Читать 20 минут.md\" && grep -qF '\"show_in_today\":true' \"$TASKS/Читать 20 минут.md\" && grep -q '^recurrence: ' \"$TASKS/Читать 20 минут.md\""
 check "plus in review → new this_week note"           "grep -q '^status: this_week' \"$TASKS/Позвонить врачу.md\""
+check "subtask dragged → its place in subtask_order"  "grep -qF '\"subtask_order\":' \"$TASKS/Шаг один.md\""
 check "unknown keys and body untouched"              "grep -q '^  nested: значение' \"$TASKS/Длинная заметка с незнакомыми ключами.md\""
 exit $FAILED

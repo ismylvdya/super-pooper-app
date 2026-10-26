@@ -23,6 +23,15 @@ struct HabitNoteTests {
         #expect(written.habit.timeOfDay == .evening && written.habit.skipRule == .weeklyGoal(times: 4))
     }
 
+    /// A subtask's place among its parent's subtasks goes into the same JSON and is read back.
+    @Test func theSubtaskPlaceIsKeptInTheSettingsProperty() async throws {
+        let note = try await SandboxNote("Купить молоко")
+        let written = try await note.apply([.subtaskOrder(2)]).task
+        #expect(try note.text().contains("\"subtask_order\":2"))
+        #expect(written.subtaskOrder == 2)
+        #expect(try await note.apply([.subtaskOrder(nil)]).task.subtaskOrder == nil)
+    }
+
     @Test func switchedOffOptionsLeaveTheNote() async throws {
         let note = try await SandboxNote("Медитация 🧘")
         _ = try await note.apply([.harmful(true), .weeklyGoal(3), .timeOfDay(.morning)])

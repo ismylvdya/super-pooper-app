@@ -82,7 +82,20 @@ extension AppModel {
 
     /// Subtasks of a note (notes whose `projects` link to it), by name.
     func subtasks(of parent: String) -> [TaskNote] {
-        NameOrder.sorted(tasks.filter { $0.projects.contains { $0.isSameNoteName(as: parent) } })
+        SubtaskOrder.sorted(tasks.filter { $0.projects.contains { $0.isSameNoteName(as: parent) } })
+    }
+
+    /// A subtask dragged onto another one on the parent's page takes its place; the list (and the pool) shows the
+    /// new order at once, the places are written to the subtasks after.
+    func moveSubtask(_ name: String, onto target: String, of parent: String) {
+        let places = SubtaskOrder.moving(name, onto: target, in: subtasks(of: parent))
+        for (subtask, place) in places {
+            guard let seen = task(named: subtask) else { continue }
+            replace(seen.applying([.subtaskOrder(place)]))
+            // Written as read before, so the new place is not taken for a change made elsewhere.
+            Task { await write(seen, [.subtaskOrder(place)]) }
+        }
+        Task { await publishDerivedState() }
     }
 
     private func createSubtask(_ name: String, of parent: String) async throws {

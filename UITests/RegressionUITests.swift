@@ -48,6 +48,25 @@ final class RegressionUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Взять _синюю_ ручку"].waitForExistence(timeout: 5))
     }
 
+    /// A subtask dragged onto another one on the parent's page takes its place (by name "Шаг два" comes first).
+    func testASubtaskDraggedOntoAnotherTakesItsPlace() {
+        launch("superpooper://task/Позвонить в банк")
+        let field = app.textFields["taskPage.subtask"].firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 8))
+        field.tap()
+        field.typeText("Шаг один\n")
+        field.tap()
+        field.typeText("Шаг два\n")
+        let first = app.descendants(matching: .any).matching(identifier: "subtask:Шаг один").firstMatch
+        let second = app.descendants(matching: .any).matching(identifier: "subtask:Шаг два").firstMatch
+        XCTAssertTrue(first.waitForExistence(timeout: 5) && second.waitForExistence(timeout: 5))
+        XCTAssertLessThan(second.frame.minY, first.frame.minY)
+        first.press(forDuration: 1.2, thenDragTo: second)
+        let moved = NSPredicate { _, _ in first.frame.minY < second.frame.minY }
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: moved, object: nil)], timeout: 5), .completed,
+                       "the dragged subtask is above the one it was dropped on")
+    }
+
     /// With big text the High / Today / Tomorrow chips move to a second line instead of cutting their titles.
     func testQuickChipsWrapInsteadOfCuttingTheirTitles() {
         launch("superpooper://task/Позвонить в банк", textSize: "UICTContentSizeCategoryAccessibilityL")

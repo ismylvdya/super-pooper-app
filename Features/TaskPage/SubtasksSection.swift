@@ -1,11 +1,15 @@
 import SwiftUI
 
 /// Subtasks, the TaskNotes way: each is a task note of its own that lists this one in `projects`.
-/// Under the existing ones there is always one empty field to add the next.
+/// Under the existing ones there is always one empty field to add the next. A subtask picked up (long press)
+/// and dropped on another one takes its place; the pool follows that order.
 struct SubtasksSection: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.tokens) private var tokens
     let editor: TaskEditor
     @State private var newName = ""
+    @State private var dragged: String?
+    @State private var target: String?
 
     var body: some View {
         PlateSection(header: "taskPage.subtasks", info: "info.taskPage.subtasks") {
@@ -13,11 +17,26 @@ struct SubtasksSection: View {
                 draftRows(draft)
             } else {
                 // A link, not the router: in the morning review the page is in the sheet's own stack.
-                ForEach(model.subtasks(of: editor.task.name), id: \.name) { subtask in
+                let subtasks = model.subtasks(of: editor.task.name)
+                let names = subtasks.map(\.name)
+                ForEach(subtasks, id: \.name) { subtask in
                     NavigationLink(value: Route.task(subtask.name)) {
                         SubtaskLabel(name: subtask.name, isDone: subtask.status.isCompleted)
                     }
                     .buttonStyle(.plain)
+                    .onDrag {
+                        dragged = subtask.name
+                        return NSItemProvider(object: subtask.name as NSString)
+                    }
+                    .onDrop(of: TaskDragState.types, isTargeted: targetBinding(subtask.name)) { _ in
+                        drop(onto: subtask.name)
+                    }
+                    .overlay(alignment: dropEdge(onto: subtask.name, names: names)) {
+                        if target == subtask.name, dragged != subtask.name {
+                            Rectangle().fill(tokens.color(.accent)).frame(height: tokens.size(.subtaskDropLine))
+                        }
+                    }
+                    .accessibilityIdentifier("subtask:\(subtask.name)")
                 }
                 SubtaskField(text: $newName) {
                     let name = newName.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -27,6 +46,26 @@ struct SubtasksSection: View {
                 }
             }
         }
+    }
+
+    private func targetBinding(_ name: String) -> Binding<Bool> {
+        Binding(get: { target == name }, set: { isOver in
+            if isOver { target = name } else if target == name { target = nil }
+        })
+    }
+
+    private func drop(onto name: String) -> Bool {
+        defer { dragged = nil; target = nil }
+        guard let dragged else { return false }
+        Haptics.play(.medium)
+        model.moveSubtask(dragged, onto: name, of: editor.task.name)
+        return true
+    }
+
+    /// The line shows where the dragged subtask goes: under a row below it, above a row above it.
+    private func dropEdge(onto name: String, names: [String]) -> Alignment {
+        guard let dragged, let from = names.firstIndex(of: dragged), let to = names.firstIndex(of: name) else { return .top }
+        return from < to ? .bottom : .top
     }
 
     /// A draft keeps its subtasks until the task is created; a filled field brings the next one.

@@ -26,7 +26,8 @@
     "twiceADay": "twice_a_day",
     "twiceCountsDouble": "twice_counts_double",
     "weeklyGoal": "weekly_goal",
-    "allowedSkips": "allowed_skips"
+    "allowedSkips": "allowed_skips",
+    "subtaskOrder": "subtask_order"
   },
   "statuses": {
     "thisWeek": "this_week",
@@ -58,7 +59,8 @@
       "twiceADay",
       "twiceCountsDouble",
       "weeklyGoal",
-      "allowedSkips"
+      "allowedSkips",
+      "subtaskOrder"
     ]
   }
 }

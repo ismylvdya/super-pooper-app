@@ -85,6 +85,8 @@ struct TaskNoteWriter: Sendable {
                 set(keys.weeklyGoal, value.map(YAMLValue.int), in: &document)
             case .allowedSkips(let value):
                 set(keys.allowedSkips, value.map(YAMLValue.int), in: &document)
+            case .subtaskOrder(let value):
+                set(keys.subtaskOrder, value.map(YAMLValue.int), in: &document)
             }
         }
         document.set(keys.dateModified, to: .scalar(ISO8601.formatWithMilliseconds(now, timeZone: timeZone), quoted: false))

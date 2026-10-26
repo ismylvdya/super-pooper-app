@@ -15,6 +15,8 @@ struct TaskNote: Identifiable, Hashable, Codable, Sendable {
     var previousTasks: [String] = []
     /// Names of the notes this one is a subtask of (`projects`, TaskNotes "subtask of").
     var projects: [String] = []
+    /// Its place among the parent's subtasks, once they were put in order; nil = after those, by name.
+    var subtaskOrder: Int?
     var previousEvent: EventLink?
     var nextEvent: EventLink?
     var needEnergy: Bool = false
