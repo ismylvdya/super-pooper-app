@@ -24,10 +24,11 @@ struct EdgeFade: View {
 
 extension View {
     /// Fades a scroll view's content at an edge only while there is more content beyond that edge.
-    /// `bottomExtension`: the scroll view reaches under the home indicator; the bottom fade
+    /// `topInset`: something solid covers the top of the scroll view (the all-day strip); the top fade starts
+    /// under it. `bottomExtension`: the scroll view reaches under the home indicator; the bottom fade
     /// then runs all the way down to the screen edge.
-    func edgeFades(color: Color? = nil, bottomExtension: CGFloat = 0) -> some View {
-        modifier(ScrollEdgeFades(color: color, bottomExtension: bottomExtension))
+    func edgeFades(color: Color? = nil, topInset: CGFloat = 0, bottomExtension: CGFloat = 0) -> some View {
+        modifier(ScrollEdgeFades(color: color, topInset: topInset, bottomExtension: bottomExtension))
     }
 }
 
@@ -36,6 +37,7 @@ extension View {
 private struct ScrollEdgeFades: ViewModifier {
     @Environment(\.tokens) private var tokens
     let color: Color?
+    let topInset: CGFloat
     let bottomExtension: CGFloat
     @State private var edges = ScrollEdges()
 
@@ -54,7 +56,7 @@ private struct ScrollEdgeFades: ViewModifier {
                                        - geometry.contentOffset.y - geometry.containerSize.height, 0))
             } action: { _, new in edges = new }
             .overlay(alignment: .top) {
-                EdgeFade(edge: .top, color: color).opacity(min(edges.above / length, 1))
+                EdgeFade(edge: .top, color: color).opacity(min(edges.above / length, 1)).padding(.top, topInset)
             }
             .overlay(alignment: .bottom) {
                 EdgeFade(edge: .bottom, color: color, overhang: bottomExtension).opacity(min(edges.below / length, 1))

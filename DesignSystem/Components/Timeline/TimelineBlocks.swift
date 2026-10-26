@@ -34,7 +34,7 @@ struct TimelineEventBlock: View {
     }
 }
 
-/// A reminder looks like a task: title on a plate; done/past ones are grey. In the app a tap opens it in
+/// A reminder looks like a task: title on a plate, one line like every row of the timeline; done/past ones are grey. In the app a tap opens it in
 /// Reminders and a long press completes it; widgets get the plain plate (no gestures there).
 struct TimelineReminderBlock: View {
     @Environment(\.tokens) private var tokens
@@ -48,7 +48,7 @@ struct TimelineReminderBlock: View {
     var onOpen: ((ReminderItem) -> Void)?
 
     var body: some View {
-        let plate = FadingText(text: reminder.title, font: font, lineHeight: lineHeight, lines: isCompact ? 1 : 2, reserve: reserve)
+        let plate = FadingText(text: reminder.title, font: font, lineHeight: lineHeight, lines: 1, reserve: reserve)
             .foregroundStyle(slot.isPast ? tokens.color(.secondaryText) : tokens.color(.primaryText))
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .slotPlate(isPast: slot.isPast, isCompact: isCompact)
