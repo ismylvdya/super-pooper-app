@@ -1,18 +1,20 @@
 import SwiftUI
 
-/// Soft dissolve instead of a hard cut at scroll edges (screen background 85 % → 50 % → 0 %).
+/// Soft dissolve instead of a hard cut at scroll edges (screen background 85 % → 50 % → 0 %; a solid one hides the
+/// content completely at the edge).
 struct EdgeFade: View {
     @Environment(\.tokens) private var tokens
     enum Edge { case top, bottom }
     let edge: Edge
     var color: Color?
+    var isSolid = false
     /// Extra length past the content edge (e.g. down under the home indicator).
     var overhang: CGFloat = 0
 
     var body: some View {
         let base = color ?? tokens.color(.screenBackground)
         let stops: [Gradient.Stop] = [
-            .init(color: base.opacity(tokens.opacity(.fadeTop)), location: 0),
+            .init(color: isSolid ? base : base.opacity(tokens.opacity(.fadeTop)), location: 0),
             .init(color: base.opacity(tokens.opacity(.fadeMiddle)), location: 0.75),
             .init(color: base.opacity(0), location: 1),
         ]
@@ -26,9 +28,9 @@ extension View {
     /// Fades a scroll view's content at an edge only while there is more content beyond that edge.
     /// `topInset`: something solid covers the top of the scroll view (the all-day strip); the top fade starts
     /// under it. `bottomExtension`: the scroll view reaches under the home indicator; the bottom fade
-    /// then runs all the way down to the screen edge.
-    func edgeFades(color: Color? = nil, topInset: CGFloat = 0, bottomExtension: CGFloat = 0) -> some View {
-        modifier(ScrollEdgeFades(color: color, topInset: topInset, bottomExtension: bottomExtension))
+    /// then runs all the way down to the screen edge. `solidTop`: nothing of the content shows at the top edge.
+    func edgeFades(color: Color? = nil, topInset: CGFloat = 0, bottomExtension: CGFloat = 0, solidTop: Bool = false) -> some View {
+        modifier(ScrollEdgeFades(color: color, topInset: topInset, bottomExtension: bottomExtension, solidTop: solidTop))
     }
 }
 
@@ -39,6 +41,7 @@ private struct ScrollEdgeFades: ViewModifier {
     let color: Color?
     let topInset: CGFloat
     let bottomExtension: CGFloat
+    let solidTop: Bool
     @State private var edges = ScrollEdges()
 
     struct ScrollEdges: Equatable {
@@ -56,7 +59,7 @@ private struct ScrollEdgeFades: ViewModifier {
                                        - geometry.contentOffset.y - geometry.containerSize.height, 0))
             } action: { _, new in edges = new }
             .overlay(alignment: .top) {
-                EdgeFade(edge: .top, color: color).opacity(min(edges.above / length, 1)).padding(.top, topInset)
+                EdgeFade(edge: .top, color: color, isSolid: solidTop).opacity(min(edges.above / length, 1)).padding(.top, topInset)
             }
             .overlay(alignment: .bottom) {
                 EdgeFade(edge: .bottom, color: color, overhang: bottomExtension).opacity(min(edges.below / length, 1))

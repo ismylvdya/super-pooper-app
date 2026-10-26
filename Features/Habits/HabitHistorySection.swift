@@ -2,7 +2,8 @@ import SwiftUI
 
 /// Weeks of the habit back to its first marked day; the newest week is at the bottom and visible first.
 /// Tap a day to cycle its mark, long press to pick one. Pulling down at the top adds older weeks
-/// (until the page is left). The top edge always fades, the bottom one while newer weeks are below.
+/// (until the page is left). At the top the older weeks dissolve completely under the weekday header; the bottom
+/// fades in only once the newest week is scrolled down from where it opened.
 struct HabitHistorySection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
@@ -33,13 +34,15 @@ struct HabitHistorySection: View {
                         HabitDayMenu(habit: habit, day: day, showsDate: true)
                     }
                     .frame(maxWidth: .infinity)
+                    // A margin in the content, not a content margin: those arrive after the scroll is placed at the
+                    // bottom and would leave the newest week short of it, under a half-shown fade.
+                    .padding(.vertical, tokens.size(.fadeHeight) / 2)
                 }
-                .contentMargins(.vertical, tokens.size(.fadeHeight) / 2, for: .scrollContent)
                 // The newest week is visible first; weeks added on top keep the scroll position.
                 .defaultScrollAnchor(.bottom, for: .initialOffset)
                 .scrollBounceBehavior(.always)
                 .scrollIndicators(.hidden)
-                .edgeFades(color: tokens.color(.plateBackground))
+                .edgeFades(color: tokens.color(.plateBackground), solidTop: true)
                 .pullToExtend(icon: .olderWeeks) {
                     Haptics.play(.medium)
                     addedWeeks += rules.habits.historyPullWeeks
