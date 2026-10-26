@@ -30,7 +30,7 @@ struct WidgetGalleryScreen: View {
             }
             .padding()
         }
-        .background(Color(white: 0.85))
+        .background(tokens.color(.chipBackground))
         .navigationTitle("Widgets")
     }
 

@@ -66,3 +66,38 @@ private struct ScrollEdgeFades: ViewModifier {
             }
     }
 }
+
+extension View {
+    /// Dissolves the content itself at its edges, to transparent whatever is behind it: for widgets, whose background
+    /// the system may swap (dark, tinted and clear Home Screens), so a gradient of a background color would show.
+    func fadingEdges(top: Bool = false, bottom: Bool = false) -> some View {
+        modifier(FadingEdgesMask(top: top, bottom: bottom))
+    }
+}
+
+/// The same dissolve as `EdgeFade`, as the content's transparency.
+private struct FadingEdgesMask: ViewModifier {
+    @Environment(\.tokens) private var tokens
+    let top: Bool
+    let bottom: Bool
+
+    func body(content: Content) -> some View {
+        content.mask {
+            VStack(spacing: 0) {
+                if top { gradient(.top) }
+                Rectangle()
+                if bottom { gradient(.bottom) }
+            }
+        }
+    }
+
+    private func gradient(_ edge: EdgeFade.Edge) -> some View {
+        let stops: [Gradient.Stop] = [
+            .init(color: .black.opacity(1 - tokens.opacity(.fadeTop)), location: 0),
+            .init(color: .black.opacity(1 - tokens.opacity(.fadeMiddle)), location: 0.75),
+            .init(color: .black, location: 1),
+        ]
+        return LinearGradient(stops: stops, startPoint: edge == .top ? .top : .bottom, endPoint: edge == .top ? .bottom : .top)
+            .frame(height: tokens.size(.fadeHeight))
+    }
+}

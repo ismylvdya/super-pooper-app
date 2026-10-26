@@ -53,7 +53,7 @@ struct WidgetPoolBlock: View {
         .frame(maxWidth: .infinity, maxHeight: visibleCount == nil ? .infinity : nil, alignment: .topLeading)
         .clipped()
         // The pool starts at its first row; only the cut bottom fades (empty space under it stays empty).
-        .overlay(alignment: .bottom) { if visibleCount == nil { EdgeFade(edge: .bottom) } }
+        .fadingEdges(bottom: visibleCount == nil)
         .frame(idealWidth: tokens.size(.poolWidth))
     }
 }
@@ -73,9 +73,7 @@ struct WidgetTimelineBlock: View {
                 AllDayStrip(events: plan.allDayEvents, font: tokens.font(.widgetCaption), lineHeight: tokens.size(.widgetAllDayLine), onTap: nil)
             }
             // The widget shows a cut of the day: both ends fade.
-            scaledTimeline
-                .overlay(alignment: .top) { EdgeFade(edge: .top) }
-                .overlay(alignment: .bottom) { EdgeFade(edge: .bottom) }
+            scaledTimeline.fadingEdges(top: true, bottom: true)
         }
     }
 
