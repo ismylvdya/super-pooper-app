@@ -408,6 +408,50 @@
         }
       }
     },
+    "clock.offset.east": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UTC+%@"
+          }
+        }
+      }
+    },
+    "clock.offset.west": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UTC−%@"
+          }
+        }
+      }
+    },
+    "clock.offset.zero": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UTC"
+          }
+        }
+      }
+    },
+    "clock.zoneItem": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %@"
+          }
+        }
+      }
+    },
     "color.energy": {
       "extractionState": "manual",
       "localizations": {

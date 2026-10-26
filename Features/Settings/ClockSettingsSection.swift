@@ -11,13 +11,20 @@ struct ClockSettingsSection: View {
                      hint: Text(verbatim: L10n.format("settings.clock.preview",
                                                       ClockLine.text(prefix: prefix, date: model.clock.now, timeZone: zone)))) {
             PlateRow(icon: .clockSettings, title: "settings.clock.zone") {
-                Picker("settings.clock.zone", selection: Binding(
-                    get: { model.settings.clock.timeZone },
-                    set: { value in model.updateSettings { $0.clock.timeZone = value } }
-                )) {
-                    ForEach(zones, id: \.self) { Text(verbatim: $0).tag($0) }
+                // The row shows the offset alone; the list names the city next to it.
+                Menu {
+                    Picker("settings.clock.zone", selection: Binding(
+                        get: { model.settings.clock.timeZone },
+                        set: { value in model.updateSettings { $0.clock.timeZone = value } }
+                    )) {
+                        ForEach(zones, id: \.self) { identifier in
+                            Text(verbatim: zoneItem(identifier)).tag(identifier)
+                        }
+                    }
+                } label: {
+                    Text(verbatim: TimeZoneName.offset(zone, at: model.clock.now))
                 }
-                .labelsHidden()
+                .accessibilityIdentifier("settings.clock.zone")
             }
             PlateRow(icon: .title, title: "settings.clock.prefix") {
                 TextField("settings.clock.prefix.placeholder", text: Binding(get: { prefix.withVisibleTrailingSpaces },
@@ -29,6 +36,11 @@ struct ClockSettingsSection: View {
             }
         }
         .onAppear { prefix = model.settings.clock.prefix }
+    }
+
+    private func zoneItem(_ identifier: String) -> String {
+        let zone = TimeZone(identifier: identifier) ?? .current
+        return L10n.format("clock.zoneItem", TimeZoneName.offset(zone, at: model.clock.now), TimeZoneName.city(identifier))
     }
 
     /// The configured zone first, then all known zones.
