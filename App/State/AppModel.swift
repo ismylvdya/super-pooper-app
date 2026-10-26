@@ -26,7 +26,8 @@ final class AppModel {
     /// Notes with iCloud conflict versions the user has not resolved yet.
     private(set) var conflictedNotes: [String] = []
     /// The chosen folder is a whole Obsidian vault: the app asks to pick only the TaskNotes folder.
-    var vaultIsWholeVault = false
+    /// What the chosen folder is (the TaskNotes folder or a whole vault) and where it is in Obsidian.
+    var chosenFolder = ChosenFolder()
     var dayState: DayState
     private(set) var vaultState: VaultState = .notSelected
     private(set) var isSyncing = false

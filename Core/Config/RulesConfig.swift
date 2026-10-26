@@ -35,6 +35,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let noteExtension: String
         /// The note with the app's settings, next to the tasks folder.
         let settingsNote: String
+        /// Where Obsidian keeps its iCloud vaults: a folder under it names its vault and its path in it.
+        let obsidianVaultsFolder: String
         /// The settings note is written this long after the last change.
         let settingsWriteDelaySeconds: Double
     }

@@ -17,14 +17,29 @@ enum VaultPaths {
         exists(root.appendingPathComponent(".obsidian", isDirectory: true))
     }
 
-    /// `obsidian://open?vault=…&file=…` for a note at `relativePath` from the chosen folder. For the TaskNotes
-    /// folder the vault is the folder's parent (or the name from settings) and the path gets the folder's
-    /// name (or the prefix from settings) in front.
-    static func obsidianURL(relativePath: String, root: URL, isWholeVault: Bool, vaultName: String,
+    /// The vault of the chosen folder and the folder's path in it, read from where the folder is: a folder under
+    /// Obsidian's iCloud folder (`…/iCloud~md~obsidian/Documents/<vault>/<path>`). Nil for a folder elsewhere.
+    static func obsidianPlace(of root: URL, vaultsFolder: String) -> ObsidianPlace? {
+        let parts = root.standardizedFileURL.pathComponents
+        let folder = vaultsFolder.split(separator: "/").map(String.init)
+        guard !folder.isEmpty, parts.count > folder.count,
+              let start = (0..<(parts.count - folder.count)).first(where: { Array(parts[$0..<($0 + folder.count)]) == folder })
+        else { return nil }
+        let vault = start + folder.count
+        return ObsidianPlace(vault: parts[vault], pathPrefix: parts[(vault + 1)...].joined(separator: "/"))
+    }
+
+    /// `obsidian://open?vault=…&file=…` for a note at `relativePath` from the chosen folder. The vault and the
+    /// folder's path in it come from settings, else from the folder's place in Obsidian's iCloud folder, else the
+    /// chosen folder is taken as a vault's own folder (the vault is its parent) or as the vault itself.
+    static func obsidianURL(relativePath: String, root: URL, folder: ChosenFolder, vaultName: String,
                             pathPrefix: String, noteExtension: String) -> URL? {
         let file = relativePath.hasSuffix(".\(noteExtension)") ? String(relativePath.dropLast(noteExtension.count + 1)) : relativePath
-        let vault = isWholeVault ? root.lastPathComponent : (vaultName.isEmpty ? root.deletingLastPathComponent().lastPathComponent : vaultName)
-        let prefix = isWholeVault ? "" : (pathPrefix.isEmpty ? root.lastPathComponent : pathPrefix)
+        let guessed = folder.obsidianPlace ?? (folder.isWholeVault
+            ? ObsidianPlace(vault: root.lastPathComponent, pathPrefix: "")
+            : ObsidianPlace(vault: root.deletingLastPathComponent().lastPathComponent, pathPrefix: root.lastPathComponent))
+        let vault = vaultName.isEmpty ? guessed.vault : vaultName
+        let prefix = pathPrefix.isEmpty ? guessed.pathPrefix : pathPrefix
         var components = URLComponents()
         components.scheme = "obsidian"
         components.host = "open"
@@ -39,4 +54,16 @@ enum VaultPaths {
         guard path.hasPrefix(rootPath) else { return url.lastPathComponent }
         return String(path.dropFirst(rootPath.count)).trimmingCharacters(in: CharacterSet(charactersIn: "/"))
     }
+}
+
+/// What the chosen folder is: the TaskNotes folder or a whole vault, and where it is in Obsidian when its path says.
+struct ChosenFolder: Equatable, Sendable {
+    var isWholeVault = false
+    var obsidianPlace: ObsidianPlace?
+}
+
+/// A vault and a folder's path inside it.
+struct ObsidianPlace: Equatable, Sendable {
+    let vault: String
+    let pathPrefix: String
 }

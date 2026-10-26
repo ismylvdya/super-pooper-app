@@ -14,12 +14,12 @@ struct SourcesSettingsSection: View {
                 Button(model.vaultName ?? L10n.string("settings.vault.choose")) { isPickingVault = true }
                     .lineLimit(1)
             }
-            if model.vaultIsWholeVault {
+            if model.chosenFolder.isWholeVault {
                 Label("settings.vault.wholeVault", systemImage: icons[.problem])
                     .font(tokens.font(.hint))
                     .foregroundStyle(tokens.color(.warning))
             }
-            ObsidianLinkRows()
+            ObsidianLinkRows(place: model.chosenFolder.obsidianPlace)
             SourceListRows()
             accessRow(.calendars, "settings.access.calendar", "info.settings.access.calendar", model.access.calendars) {
                 await model.requestCalendarAccess()
@@ -110,23 +110,28 @@ struct SourcePickerScreen: View {
     }
 }
 
-/// Where "Open in Obsidian" points: the vault name and the TaskNotes folder's path inside it.
-/// Empty fields use the chosen folder's parent and the folder's own name.
+/// Where "Open in Obsidian" points: the vault name and the TaskNotes folder's path inside it. A folder in
+/// Obsidian's iCloud folder tells both by its path, so the rows are only there for a folder elsewhere (or
+/// when one was filled in before). Empty fields use the chosen folder's parent and the folder's own name.
 private struct ObsidianLinkRows: View {
     @Environment(AppModel.self) private var model
+    let place: ObsidianPlace?
 
     var body: some View {
-        PlateRow(icon: .obsidian, title: "settings.obsidian.vault", info: "info.settings.obsidian.vault") {
-            TextField("settings.obsidian.auto", text: binding(\.obsidianVault))
-                .multilineTextAlignment(.trailing)
-                .autocorrectionDisabled()
-                .textInputAutocapitalization(.never)
-        }
-        PlateRow(icon: nil, title: "settings.obsidian.prefix", indent: true) {
-            TextField("settings.obsidian.auto", text: binding(\.obsidianPathPrefix))
-                .multilineTextAlignment(.trailing)
-                .autocorrectionDisabled()
-                .textInputAutocapitalization(.never)
+        let vault = model.settings.vault
+        if place == nil || !vault.obsidianVault.isEmpty || !vault.obsidianPathPrefix.isEmpty {
+            PlateRow(icon: .obsidian, title: "settings.obsidian.vault", info: "info.settings.obsidian.vault") {
+                TextField("settings.obsidian.auto", text: binding(\.obsidianVault))
+                    .multilineTextAlignment(.trailing)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+            }
+            PlateRow(icon: nil, title: "settings.obsidian.prefix", indent: true) {
+                TextField("settings.obsidian.auto", text: binding(\.obsidianPathPrefix))
+                    .multilineTextAlignment(.trailing)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+            }
         }
     }
 

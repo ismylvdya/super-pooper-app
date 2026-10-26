@@ -44,6 +44,7 @@
     "downloadPollSeconds": 0.25,
     "noteExtension": "md",
     "settingsNote": "SuperPooper Settings.md",
+    "obsidianVaultsFolder": "iCloud~md~obsidian/Documents",
     "settingsWriteDelaySeconds": 1
   },
   "backups": {

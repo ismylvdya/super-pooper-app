@@ -79,6 +79,7 @@ struct VaultSandbox {
         let rules = RulesConfig.Vault(downloadTimeoutSeconds: downloadTimeout, downloadPollSeconds: TestConfig.rules.vault.downloadPollSeconds,
                                       noteExtension: TestConfig.rules.vault.noteExtension,
                                       settingsNote: TestConfig.rules.vault.settingsNote,
+                                      obsidianVaultsFolder: TestConfig.rules.vault.obsidianVaultsFolder,
                                       settingsWriteDelaySeconds: TestConfig.rules.vault.settingsWriteDelaySeconds)
         return VaultTaskRepository(location: FixedVaultLocation(url: vault), fileSystem: fileSystem, ubiquity: ubiquity,
                                    mapping: TestConfig.mapping, calendar: TestCalendar.calendar, rules: rules,

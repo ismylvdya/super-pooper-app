@@ -49,6 +49,7 @@ protocol TaskRepository: Sendable {
     /// iCloud conflict versions of a note, and keeping the one the user picked.
     func versions(of task: TaskNote) async throws -> [NoteVersion]
     func keep(_ versionID: String, of task: TaskNote) async throws
-    /// The chosen folder is a whole vault (older setups) instead of the TaskNotes folder.
-    func isWholeVault() async -> Bool
+    /// Whether the chosen folder is a whole vault (older setups) instead of the TaskNotes folder, and where it is in
+    /// Obsidian.
+    func chosenFolder() async -> ChosenFolder
 }

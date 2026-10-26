@@ -645,7 +645,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "“%@” will be moved to the vault’s .trash folder. A backup copy is kept in the app."
+            "value": "“%@” will be moved to the .trash folder inside the TaskNotes folder. A backup copy is kept in the app."
           }
         }
       }
@@ -920,7 +920,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "No access to the vault folder. Choose it again in Settings."
+            "value": "No access to the TaskNotes folder. Choose it again in Settings."
           }
         }
       }
@@ -931,7 +931,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Can’t open the vault folder anymore. Choose it again in Settings."
+            "value": "Can’t open the TaskNotes folder anymore. Choose it again in Settings."
           }
         }
       }
@@ -942,7 +942,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choose your vault folder first."
+            "value": "Choose your TaskNotes folder first."
           }
         }
       }
@@ -1723,7 +1723,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "For “Open in Obsidian”: the vault's name and where the TaskNotes folder is inside it. Empty = the chosen folder's parent and the folder's own name."
+            "value": "For “Open in Obsidian”: the vault’s name and where the TaskNotes folder is inside it. A folder in Obsidian’s iCloud folder tells this by itself; empty = the chosen folder’s parent and the folder’s own name."
           }
         }
       }
@@ -2075,7 +2075,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Re-reads the vault, Calendar and Reminders and updates widgets and notifications."
+            "value": "Re-reads the TaskNotes folder, Calendar and Reminders and updates widgets and notifications."
           }
         }
       }
@@ -2526,7 +2526,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This tasks folder is not in the vault. Check Settings → Sources."
+            "value": "There is no such tasks folder in the TaskNotes folder. Check Settings → Sources."
           }
         }
       }
@@ -5375,7 +5375,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "“%@” will be deleted from the vault for good. This can't be undone."
+            "value": "“%@” will be deleted for good. This can’t be undone."
           }
         }
       }
@@ -5474,7 +5474,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Can’t open the vault"
+            "value": "Can’t open the TaskNotes folder"
           }
         }
       }

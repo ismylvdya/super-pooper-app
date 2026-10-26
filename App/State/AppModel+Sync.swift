@@ -41,7 +41,7 @@ extension AppModel {
                 let result = try await services.tasks.scan()
                 SyncLog.logger.info("vault scan: \(result.tasks.count) tasks in \(Date().timeIntervalSince(started), format: .fixed(precision: 2)) s")
                 setScanResult(result)
-                vaultIsWholeVault = await services.tasks.isWholeVault()
+                chosenFolder = await services.tasks.chosenFolder()
                 // The vault's settings note wins over this device (after this device's unwritten change went
                 // there); the first time, this device writes it.
                 await flushSettingsNote()

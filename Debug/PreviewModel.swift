@@ -101,7 +101,7 @@ actor InMemoryTaskRepository: TaskRepository {
         return task
     }
     func obsidianURL(for task: TaskNote) async -> URL? { nil }
-    func isWholeVault() async -> Bool { false }
+    func chosenFolder() async -> ChosenFolder { ChosenFolder() }
     func versions(of task: TaskNote) async throws -> [NoteVersion] { [] }
     func keep(_ versionID: String, of task: TaskNote) async throws {}
 }

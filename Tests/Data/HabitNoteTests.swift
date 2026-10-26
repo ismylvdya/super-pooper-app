@@ -83,13 +83,27 @@ struct TaskNotesFolderTests {
     }
 
     @Test func obsidianLinksPointIntoTheVault() {
-        let url = VaultPaths.obsidianURL(relativePath: "Tasks/Купить молоко.md", root: folder, isWholeVault: false,
+        let url = VaultPaths.obsidianURL(relativePath: "Tasks/Купить молоко.md", root: folder, folder: ChosenFolder(),
                                          vaultName: "", pathPrefix: "", noteExtension: "md")
         let items = URLComponents(url: url!, resolvingAgainstBaseURL: false)?.queryItems
         #expect(items == [URLQueryItem(name: "vault", value: "Vault"), URLQueryItem(name: "file", value: "TaskNotes/Tasks/Купить молоко")])
-        let custom = VaultPaths.obsidianURL(relativePath: "Tasks/A.md", root: folder, isWholeVault: false,
+        let custom = VaultPaths.obsidianURL(relativePath: "Tasks/A.md", root: folder, folder: ChosenFolder(),
                                             vaultName: "Main", pathPrefix: "Work/TaskNotes", noteExtension: "md")
         #expect(URLComponents(url: custom!, resolvingAgainstBaseURL: false)?.queryItems?.last?.value == "Work/TaskNotes/Tasks/A")
+    }
+
+    /// A TaskNotes folder deep in an iCloud vault: its path names the vault and where the folder is, no settings needed.
+    @Test func theFolderInObsidiansICloudFolderTellsItsVault() throws {
+        let vaults = "iCloud~md~obsidian/Documents"
+        let nested = URL(fileURLWithPath: "/private/var/mobile/Library/Mobile Documents/iCloud~md~obsidian/Documents/Main/Work/TaskNotes",
+                         isDirectory: true)
+        let place = try #require(VaultPaths.obsidianPlace(of: nested, vaultsFolder: vaults))
+        #expect(place == ObsidianPlace(vault: "Main", pathPrefix: "Work/TaskNotes"))
+        let url = VaultPaths.obsidianURL(relativePath: "Tasks/A.md", root: nested, folder: ChosenFolder(obsidianPlace: place),
+                                         vaultName: "", pathPrefix: "", noteExtension: "md")
+        #expect(URLComponents(url: url!, resolvingAgainstBaseURL: false)?.queryItems
+                == [URLQueryItem(name: "vault", value: "Main"), URLQueryItem(name: "file", value: "Work/TaskNotes/Tasks/A")])
+        #expect(VaultPaths.obsidianPlace(of: folder, vaultsFolder: vaults) == nil)
     }
 
     @Test func aWholeVaultKeepsItsOwnPaths() async throws {

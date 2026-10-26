@@ -14,6 +14,7 @@ actor VaultTaskRepository: TaskRepository {
     private let ubiquity: UbiquityService
     private let clock: Clock
     private let noteExtension: String
+    private let obsidianVaultsFolder: String
     private var seenModification: [String: Date] = [:]
 
     init(location: VaultLocating, fileSystem: NoteFileSystem, ubiquity: UbiquityService, mapping: FieldMapping,
@@ -37,6 +38,7 @@ actor VaultTaskRepository: TaskRepository {
         self.backups = backups
         self.clock = clock
         self.noteExtension = rules.noteExtension
+        self.obsidianVaultsFolder = rules.obsidianVaultsFolder
     }
 
     func scan() async throws -> VaultScanResult {
@@ -135,8 +137,7 @@ actor VaultTaskRepository: TaskRepository {
     func obsidianURL(for task: TaskNote) async -> URL? {
         let settings = vaultSettings()
         return try? await location.withRoot { root in
-            VaultPaths.obsidianURL(relativePath: task.relativePath, root: root,
-                                   isWholeVault: VaultPaths.isWholeVault(root, exists: fileSystem.fileExists),
+            VaultPaths.obsidianURL(relativePath: task.relativePath, root: root, folder: chosenFolder(root: root),
                                    vaultName: settings.obsidianVault, pathPrefix: settings.obsidianPathPrefix,
                                    noteExtension: noteExtension)
         }
@@ -154,8 +155,13 @@ actor VaultTaskRepository: TaskRepository {
         }
     }
 
-    func isWholeVault() async -> Bool {
-        (try? await location.withRoot { root in VaultPaths.isWholeVault(root, exists: fileSystem.fileExists) }) ?? false
+    func chosenFolder() async -> ChosenFolder {
+        (try? await location.withRoot { root in chosenFolder(root: root) }) ?? ChosenFolder()
+    }
+
+    private func chosenFolder(root: URL) -> ChosenFolder {
+        ChosenFolder(isWholeVault: VaultPaths.isWholeVault(root, exists: fileSystem.fileExists),
+                     obsidianPlace: VaultPaths.obsidianPlace(of: root, vaultsFolder: obsidianVaultsFolder))
     }
 
     // MARK: - Editing
