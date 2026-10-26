@@ -82,6 +82,22 @@ final class RegressionUITests: XCTestCase {
         XCTAssertTrue(listRow.waitForNonExistence(timeout: 6), "Lists → Pleasant opened")
     }
 
+    /// Every text field of the settings keeps a typed trailing space visible (right-aligned fields hide ordinary ones).
+    func testSettingsFieldsShowATypedTrailingSpace() {
+        launch("superpooper://settings")
+        let link = app.buttons["settings.link.taskSettings"]
+        XCTAssertTrue(link.waitForExistence(timeout: 10))
+        link.tap()
+        let vault = app.textFields.matching(NSPredicate(format: "placeholderValue == 'Automatic'")).firstMatch
+        XCTAssertTrue(vault.waitForExistence(timeout: 5))
+        vault.tap()
+        vault.typeText("My ")
+        XCTAssertEqual(vault.value as? String, "My\u{00A0}", "the space after the word is shown")
+        vault.typeText("Vault")
+        XCTAssertEqual(vault.value as? String, "My\u{00A0}Vault")
+        vault.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 8))
+    }
+
     /// With big text the High / Today / Tomorrow chips move to a second line instead of cutting their titles.
     func testQuickChipsWrapInsteadOfCuttingTheirTitles() {
         launch("superpooper://task/Позвонить в банк", textSize: "UICTContentSizeCategoryAccessibilityL")

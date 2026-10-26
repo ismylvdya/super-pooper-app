@@ -8,9 +8,7 @@ struct QuickActionsSettingsSection: View {
     var body: some View {
         PlateSection(header: "settings.quickActions", info: "info.settings.quickActions") {
             PlateRow(icon: .inboxShortcut, title: "settings.inboxShortcut", info: "info.settings.inboxShortcut") {
-                TextField("settings.inboxShortcut.placeholder", text: Binding(get: { shortcut.withVisibleTrailingSpaces },
-                                                                               set: { shortcut = $0.withOrdinarySpaces }))
-                    .multilineTextAlignment(.trailing)
+                TrailingSpaceTextField(placeholder: "settings.inboxShortcut.placeholder", text: $shortcut)
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
                     .onChange(of: shortcut) { _, value in model.updateSettings { $0.quickActions.inboxShortcut = value } }

@@ -43,9 +43,8 @@ struct ColorField: View {
 
     var body: some View {
         HStack(spacing: tokens.space(.chipGap)) {
-            TextField("settings.colors.hex", text: $hex)
+            TrailingSpaceTextField(placeholder: "settings.colors.hex", text: $hex)
                 .font(tokens.font(.chip).monospaced())
-                .multilineTextAlignment(.trailing)
                 .textInputAutocapitalization(.characters)
                 .autocorrectionDisabled()
                 .frame(width: tokens.size(.hexFieldWidth))

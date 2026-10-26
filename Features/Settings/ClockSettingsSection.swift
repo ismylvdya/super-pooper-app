@@ -27,9 +27,7 @@ struct ClockSettingsSection: View {
                 .accessibilityIdentifier("settings.clock.zone")
             }
             PlateRow(icon: .title, title: "settings.clock.prefix") {
-                TextField("settings.clock.prefix.placeholder", text: Binding(get: { prefix.withVisibleTrailingSpaces },
-                                                                              set: { prefix = $0.withOrdinarySpaces }))
-                    .multilineTextAlignment(.trailing)
+                TrailingSpaceTextField(placeholder: "settings.clock.prefix.placeholder", text: $prefix)
                     .autocorrectionDisabled()
                     .onSubmit { model.updateSettings { $0.clock.prefix = prefix } }
                     .onChange(of: prefix) { _, value in model.updateSettings { $0.clock.prefix = value } }
