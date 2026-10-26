@@ -1,6 +1,7 @@
 #!/bin/bash
 # Пересобирает dist/altstore-source.json под текущий dist/SuperPooper.ipa: версия и номер сборки из
-# Config/Shared.xcconfig, дата, размер, sha256, ссылки на raw.githubusercontent.com из git remote origin.
+# Config/Shared.xcconfig, минимальная iOS из Info.plist внутри .ipa (18.0 из Xcode 16, 26.0 из Xcode 26), дата, размер,
+# sha256, ссылки на raw.githubusercontent.com из git remote origin.
 # Иконка приложения — design/icon/AppIcon-light.png; иконка источника (разработчика) — аватар аккаунта GitHub.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -11,12 +12,15 @@ REMOTE="$(git remote get-url origin | sed -E 's#(git@github.com:|https://github.
 BRANCH="${SP_SOURCE_BRANCH:-main}"
 
 REMOTE="$REMOTE" BRANCH="$BRANCH" IPA="$IPA" python3 - <<'PY'
-import hashlib, json, os, re, datetime
+import hashlib, io, json, os, plistlib, re, datetime, zipfile
 cfg = open("Config/Shared.xcconfig").read()
 get = lambda k: re.search(rf"^{k}\s*=\s*(\S+)", cfg, re.M).group(1)
 base = f"https://raw.githubusercontent.com/{os.environ['REMOTE']}/{os.environ['BRANCH']}"
 ipa = os.environ["IPA"]
 data = open(ipa, "rb").read()
+with zipfile.ZipFile(io.BytesIO(data)) as archive:
+    info = next(name for name in archive.namelist() if re.fullmatch(r"Payload/[^/]+\.app/Info\.plist", name))
+    min_os = plistlib.loads(archive.read(info))["MinimumOSVersion"]
 icon = f"{base}/design/icon/AppIcon-light.png"
 source = {
     "name": "SuperPooperApp",
@@ -42,7 +46,7 @@ source = {
             "downloadURL": f"{base}/dist/SuperPooper.ipa",
             "size": len(data),
             "sha256": hashlib.sha256(data).hexdigest(),
-            "minOSVersion": "18.0",
+            "minOSVersion": min_os,
         }],
         "appPermissions": {
             "entitlements": ["com.apple.security.application-groups"],

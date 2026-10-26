@@ -35,7 +35,7 @@ SuperPooper — iPhone-приложение-оболочка над тремя �
 | `UITests/` | UI-тесты ключевых сценариев (XCTest) | UI-тесты |
 | `Fixtures/TestVault/` | шаблоны тестового vault (38 заметок) | — |
 | `Config/` | xcconfig (ID, версии), Info.plist, entitlements | — |
-| `scripts/` | сборка, симулятор, рендер тестового vault, `.ipa` | — |
+| `scripts/` | сборка, симулятор, рендер тестового vault, `.ipa` (сборка под iOS 26 на Xcode 26 — `docs/IOS26-BUILD.md`) | — |
 
 Проект — обычный `SuperPooper.xcodeproj` с **синхронизируемыми папками** (Xcode 16+): новый файл в папке сам попадает во все таргеты этой папки, `project.pbxproj` править не нужно.
 
