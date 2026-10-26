@@ -26,6 +26,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let shortcutsRunURL: String
         /// URL prefix that opens a reminder in Apple Reminders (its identifier is appended).
         let remindersAppURL: String
+        /// URL prefix that opens a list in Apple Reminders (its identifier is appended).
+        let remindersListURL: String
     }
 
     struct Vault: Codable, Hashable, Sendable {

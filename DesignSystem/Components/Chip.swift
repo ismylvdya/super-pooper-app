@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Small rounded label: icon and/or text on a tertiary fill.
+/// Small capsule label: icon and/or text on a tertiary fill.
 struct Chip: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
@@ -18,7 +18,8 @@ struct Chip: View {
         .foregroundStyle(isOn ? (tint ?? tokens.color(.secondaryText)) : tokens.color(.tertiaryText))
         .padding(.horizontal, tokens.space(.chipHorizontal))
         .padding(.vertical, tokens.space(.chipVertical))
-        .background(tokens.color(.chipBackground), in: RoundedRectangle(cornerRadius: tokens.radius(.chip), style: .continuous))
+        // Rounded by half its height, like the row plates around it.
+        .background(tokens.color(.chipBackground), in: Capsule())
     }
 }
 

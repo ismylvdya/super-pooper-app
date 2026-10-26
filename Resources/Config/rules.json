@@ -37,6 +37,7 @@
     "pickerDaysAhead": 7,
     "calendarAppURL": "calshow:",
     "remindersAppURL": "x-apple-reminderkit://REMCDReminder/",
+    "remindersListURL": "x-apple-reminderkit://REMCDList/",
     "shortcutsRunURL": "shortcuts://run-shortcut?name="
   },
   "vault": {

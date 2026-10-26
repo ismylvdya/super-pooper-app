@@ -62,7 +62,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Done"
+            "value": "DONE"
           }
         }
       }
@@ -287,13 +287,13 @@
         }
       }
     },
-    "banner.inboxShortcutMissing": {
+    "banner.inboxListMissing": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Type the name of your inbox shortcut to use 📥 New in inbox"
+            "value": "Choose the Reminders list for 📥 New in inbox."
           }
         }
       }
@@ -782,6 +782,17 @@
         }
       }
     },
+    "day.todayShort": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tod"
+          }
+        }
+      }
+    },
     "due.dayAndTime": {
       "extractionState": "manual",
       "localizations": {
@@ -1145,6 +1156,17 @@
         }
       }
     },
+    "habitPage.repeatable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeatable task"
+          }
+        }
+      }
+    },
     "habitPage.showInToday": {
       "extractionState": "manual",
       "localizations": {
@@ -1305,7 +1327,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Part of the day"
+            "value": "Routine"
           }
         }
       }
@@ -1316,7 +1338,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Any time"
+            "value": "Not"
           }
         }
       }
@@ -1420,6 +1442,17 @@
         }
       }
     },
+    "habits.repeatable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeatable tasks"
+          }
+        }
+      }
+    },
     "habits.week.count": {
       "extractionState": "manual",
       "localizations": {
@@ -1481,7 +1514,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Every week back to the habit's start, newest at the bottom. Tap a day to cycle Done (and Twice), long press to choose. Marks are written into the note, also for past days."
+            "value": "Every week back to the habit's start, newest at the bottom. Tap a day to cycle DONE (and Twice), long press to choose. Marks are written into the note, also for past days."
           }
         }
       }
@@ -1493,6 +1526,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Color, whether the habit shows up on Today, the part of the day it belongs to, and the Twice mark."
+          }
+        }
+      }
+    },
+    "info.habitPage.repeatable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not a habit to keep track of but a task that simply repeats (bills, laundry). It is listed under Repeatable tasks on the Habits tab, and its page has no history grid."
           }
         }
       }
@@ -1536,7 +1580,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Morning habits rise to the top of the pool in the morning, evening ones in the evening; in other parts of the day they go down."
+            "value": "The routine the habit belongs to. Habits of one routine stand together in the pool, joined on one plate, in the order set in Habits → Routines; morning ones rise to the top in the morning, evening ones in the evening."
           }
         }
       }
@@ -1547,7 +1591,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Adds the Twice mark: a tap goes none → Done → Twice → none. With two reminders a day the second Done from a notification counts as Twice."
+            "value": "Adds the Twice mark: a tap goes none → DONE → Twice → none. With two reminders a day the second DONE from a notification counts as Twice."
           }
         }
       }
@@ -1662,13 +1706,13 @@
         }
       }
     },
-    "info.settings.inboxShortcut": {
+    "info.settings.inboxList": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The 📥 New in inbox action runs a shortcut of the Shortcuts app. Make one there that adds a reminder to your inbox list (for example the Add New Reminder action with List set to 📥 inbox and the title asked each time), then type its name here exactly as it is in Shortcuts."
+            "value": "The quick action 📥 New in inbox (long press on the app icon) opens this list in Reminders. Tap “New Reminder” there to add one."
           }
         }
       }
@@ -1679,7 +1723,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Local notifications with actions right in them: Done, Partially, Twice, Skip today."
+            "value": "Local notifications with actions right in them: DONE, Partially, Twice, Skip today."
           }
         }
       }
@@ -2251,7 +2295,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Timed habits and tasks notify you, with Done right in the notification."
+            "value": "Timed habits and tasks notify you, with DONE right in the notification."
           }
         }
       }
@@ -3224,13 +3268,24 @@
         }
       }
     },
+    "routines.day": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day routine"
+          }
+        }
+      }
+    },
     "routines.empty": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "No habits here yet. Set a habit's part of the day to add it."
+            "value": "No habits here yet. Choose a routine on a habit's page to add it."
           }
         }
       }
@@ -3763,24 +3818,24 @@
         }
       }
     },
-    "settings.inboxShortcut": {
+    "settings.inboxList": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "New in inbox"
+            "value": "📥 Inbox list"
           }
         }
       }
     },
-    "settings.inboxShortcut.placeholder": {
+    "settings.inboxList.none": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Shortcut name"
+            "value": "Not chosen"
           }
         }
       }

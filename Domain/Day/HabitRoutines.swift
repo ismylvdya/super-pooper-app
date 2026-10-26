@@ -4,14 +4,22 @@ import Foundation
 /// Habits not in the order follow it by name.
 struct HabitRoutines: Hashable, Sendable {
     var morning: [String] = []
+    var day: [String] = []
     var evening: [String] = []
 
-    /// Position of a habit within its routine; nil for habits outside the morning and evening routines.
+    /// Position of a habit within its routine; nil for habits outside the routines.
     func position(of task: TaskNote) -> Int? {
-        switch task.habit.timeOfDay {
-        case .morning: morning.firstIndex { $0.isSameNoteName(as: task.name) } ?? morning.count
-        case .evening: evening.firstIndex { $0.isSameNoteName(as: task.name) } ?? evening.count
-        case .day, nil: nil
+        guard let part = task.habit.timeOfDay else { return nil }
+        let order = self.order(part)
+        return order.firstIndex { $0.isSameNoteName(as: task.name) } ?? order.count
+    }
+
+    /// The order of one routine.
+    func order(_ part: HabitTimeOfDay) -> [String] {
+        switch part {
+        case .morning: morning
+        case .day: day
+        case .evening: evening
         }
     }
 

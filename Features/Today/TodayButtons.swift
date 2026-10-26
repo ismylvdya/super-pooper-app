@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// The Today buttons: leading = morning review and problems badge, trailing = new task and search. Lying sideways
-/// (`bottom` set) they stand top to bottom in their physical left-to-right order.
+/// (`bottom` set) they stand top to bottom in their physical left-to-right order. Today puts each group in a glass bubble.
 struct TodayButtons: View {
     enum Placement {
         case leading, trailing
@@ -24,7 +24,17 @@ struct TodayButtons: View {
     var bottom: HorizontalEdge?
 
     var body: some View {
-        ForEach(PhysicalBottom.physicalOrder(placement.items, bottom: bottom), id: \.self) { item in button(item) }
+        ForEach(PhysicalBottom.physicalOrder(placement.items.filter(isShown), bottom: bottom), id: \.self) { item in
+            // Each button takes the size of a system bar button in its bubble.
+            button(item)
+                .frame(minWidth: tokens.size(.barButton), minHeight: tokens.size(.barButton))
+                .contentShape(Capsule())
+        }
+    }
+
+    /// The bubble only holds what is shown (the problems badge only with problems).
+    private func isShown(_ item: Item) -> Bool {
+        item != .problems || (model.config.flags.problemBadge && model.problemCount > 0)
     }
 
     @ViewBuilder private func button(_ item: Item) -> some View {

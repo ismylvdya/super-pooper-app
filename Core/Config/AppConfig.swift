@@ -9,6 +9,7 @@ struct AppConfig: Sendable {
         static let actions = "actions.json"
         static let todayStacked = "today-stacked.layout.json"
         static let todaySideBySide = "today-side-by-side.layout.json"
+        static let todaySideBySideLandscape = "today-side-by-side-landscape.layout.json"
         static let todayPaged = "today-paged.layout.json"
         static let sort = "sort.json"
         static let fieldMapping = "field-mapping.json"
@@ -24,6 +25,8 @@ struct AppConfig: Sendable {
     /// Today layouts per arrangement (`layouts/today-*.layout.json`).
     let todayStacked: ScreenLayout
     let todaySideBySide: ScreenLayout
+    /// Side by side with the phone lying sideways: two equal halves.
+    let todaySideBySideLandscape: ScreenLayout
     let todayPaged: ScreenLayout
     let sort: SortConfig
     let fieldMapping: FieldMapping
@@ -53,6 +56,7 @@ struct AppConfig: Sendable {
             actions: actions,
             todayStacked: try layout(File.todayStacked),
             todaySideBySide: try layout(File.todaySideBySide),
+            todaySideBySideLandscape: try layout(File.todaySideBySideLandscape),
             todayPaged: try layout(File.todayPaged),
             sort: try loader.load(SortConfig.self, from: File.sort),
             fieldMapping: fieldMapping,
@@ -63,10 +67,10 @@ struct AppConfig: Sendable {
         )
     }
 
-    func todayLayout(for arrangement: AppSettings.TodayArrangement) -> ScreenLayout {
+    func todayLayout(for arrangement: AppSettings.TodayArrangement, landscape: Bool = false) -> ScreenLayout {
         switch arrangement {
         case .stacked: todayStacked
-        case .sideBySide: todaySideBySide
+        case .sideBySide: landscape ? todaySideBySideLandscape : todaySideBySide
         case .paged: todayPaged
         }
     }

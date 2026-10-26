@@ -26,6 +26,7 @@ struct FieldMapping: Codable, Hashable, Sendable {
         let reminderTimes: String
         let habitColor: String
         let harmful: String
+        let repeatable: String
         let showInToday: String
         let timeOfDay: String
         let twiceADay: String

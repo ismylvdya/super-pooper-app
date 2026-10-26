@@ -119,8 +119,11 @@ final class AppContainer {
     /// notifications right away while the app runs; otherwise at the next sync or background refresh.
     private func observeCalendarChanges() {
         let model = self.model
+        let eventKit = self.eventKit
         Task { @MainActor in
-            for await _ in NotificationCenter.default.notifications(named: .EKEventStoreChanged, object: eventKit.store) {
+            // Filtered by sender instead of `object:`, which needs a Sendable object and EKEventStore is not one.
+            for await notification in NotificationCenter.default.notifications(named: .EKEventStoreChanged)
+            where (notification.object as AnyObject?) === eventKit.store {
                 try? await Task.sleep(for: .seconds(model.config.rules.timeline.externalChangeDelaySeconds))
                 await model.refreshCalendarSources()
                 await model.publishDerivedState()

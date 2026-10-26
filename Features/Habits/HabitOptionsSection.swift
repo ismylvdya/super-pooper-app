@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Color, harmful, Today, part of the day, twice a day.
+/// Color, harmful, repeatable task, Today, routine, twice a day.
 struct HabitOptionsSection: View {
     @Environment(\.tokens) private var tokens
     let editor: TaskEditor
@@ -18,6 +18,7 @@ struct HabitOptionsSection: View {
                 .labelsHidden()
             }
             toggle(.harmful, "habitPage.harmful", "info.habitPage.harmful", \.harmful, TaskFieldChange.harmful)
+            toggle(.recurrence, "habitPage.repeatable", "info.habitPage.repeatable", \.repeatable, TaskFieldChange.repeatable)
             PlateRow(icon: .timeOfDay, title: "habitPage.timeOfDay", info: "info.habitPage.timeOfDay") {
                 Picker("habitPage.timeOfDay", selection: Binding(
                     get: { options.timeOfDay },

@@ -112,10 +112,12 @@ struct DayTimelineView<TaskContent: View>: View {
         switch slot.content {
         case .event(let event):
             if let onEventTap = style.onEventTap {
-                Button { onEventTap(event) } label: {
-                    TimelineEventBlock(event: event, slot: slot, font: style.eventFont, lineHeight: style.eventLineHeight)
-                }
-                    .buttonStyle(.plain)
+                // A tap, not a Button: a button also fires when a swipe across the timeline ends on the event.
+                TimelineEventBlock(event: event, slot: slot, font: style.eventFont, lineHeight: style.eventLineHeight)
+                    .contentShape(Rectangle())
+                    .onTapGesture { onEventTap(event) }
+                    .accessibilityAddTraits(.isButton)
+                    .accessibilityAction { onEventTap(event) }
                     .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: tokens.radius(.timelineItem), style: .continuous))
                     .contextMenu {
                         if let onEventDelete = style.onEventDelete { RegistryMenu(menu: .eventContext) { _ in onEventDelete(event) } }

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The arrows around the shown day's name ("Today", "26 Oct"; lying sideways "Mo"); on another day, tapping the
+/// The arrows around the shown day's name ("Today", "26 Oct"; lying sideways "Mon", "Tod"); on another day, tapping the
 /// name goes back to today. The name's frame is as wide as the widest name, so the arrows stay put; it shrinks if
 /// the room is short. Sideways it is a column in physical order whose arrows point the same physical way as upright.
 struct DayNavigation: View {
@@ -49,7 +49,9 @@ struct DayNavigation: View {
             .font(tokens.font(.navTitle))
             .monospacedDigit()
             .lineLimit(1)
-            .minimumScaleFactor(tokens.size(.navTitleMin) / tokens.uiFont(.navTitle).pointSize)
+            .minimumScaleFactor(bottom == nil ? tokens.size(.navTitleMin) / tokens.uiFont(.navTitle).pointSize : 1)
+            // Sideways the three letters keep their size and may stand out of the narrow button column.
+            .fixedSize(horizontal: bottom != nil, vertical: false)
         }
         .accessibilityIdentifier("today.day")
     }

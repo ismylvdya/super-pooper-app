@@ -1,0 +1,8 @@
+{
+  "axis": "horizontal",
+  "spacing": "screenHorizontal",
+  "blocks": [
+    { "block": "pool", "size": "fill", "weight": 0.5 },
+    { "block": "timeline", "size": "fill", "weight": 0.5 }
+  ]
+}

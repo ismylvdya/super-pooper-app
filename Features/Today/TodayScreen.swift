@@ -2,8 +2,8 @@ import SwiftUI
 
 /// Main screen: blocks from the arrangement's layout (`layouts/today-*.layout.json`), refreshed every
 /// minute so "now" and chains move. The pool and the timeline both pull to refresh (full sync).
-/// Top left: This week (the review) and the problems badge; top right: new task and search. In landscape
-/// the bar is hidden and the same buttons stand in a column along the physical top, each where it is upright on the
+/// Top left: This week (the review) and the problems badge; top right: new task and search, in the app's own bar of
+/// glass bubbles with the day's name midway between them. In landscape the same buttons stand in a column along the physical top, each where it is upright on the
 /// physical screen (see `PhysicalBottom`); the layout is the landscape one from settings. The arrows next to the day's name
 /// slide the pool and the timeline together to yesterday / tomorrow (and further): another day shows its own
 /// events, reminders, dated tasks and habits; its name, or the Today tab, brings back today. With the paged
@@ -20,8 +20,6 @@ struct TodayScreen: View {
     @State private var dayOffset = 0
     @State private var dragX: CGFloat = 0
     @State private var width: CGFloat = 0
-    /// The bar buttons grow with the text size, and so does the room they take.
-    @ScaledMetric(relativeTo: .title3) private var barScale: CGFloat = 1
     @State private var page = 0
     @State private var pageDrag: CGFloat = 0
     @State private var taskDrag = TaskDragState()
@@ -29,22 +27,19 @@ struct TodayScreen: View {
     private var isLandscape: Bool { physicalBottom != nil }
 
     var body: some View {
-        HStack(alignment: .top, spacing: 0) {
-            if physicalBottom == .trailing { landscapeColumn(bottom: .trailing) }
-            content
-            if physicalBottom == .leading { landscapeColumn(bottom: .leading) }
+        VStack(spacing: 0) {
+            if !isLandscape { portraitBar }
+            HStack(alignment: .top, spacing: 0) {
+                if physicalBottom == .trailing { landscapeColumn(bottom: .trailing) }
+                content
+                if physicalBottom == .leading { landscapeColumn(bottom: .leading) }
+            }
         }
         .background(tokens.color(.screenBackground))
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
-        .toolbar(isLandscape ? .hidden : .automatic, for: .navigationBar)
-        .toolbar {
-            ToolbarItemGroup(placement: .topBarLeading) { TodayButtons(placement: .leading) }
-            ToolbarItem(placement: .principal) {
-                dayNavigation.frame(width: max(width - tokens.size(.todayBarSideWidth) * barScale * 2, 0))
-            }
-            ToolbarItemGroup(placement: .topBarTrailing) { TodayButtons(placement: .trailing) }
-        }
-        .navigationBarTitleDisplayMode(.inline)
+        // Today draws its own bar (the same glass bubbles as the system one) so the day's name stands exactly between
+        // the button groups, whatever their widths and the text size.
+        .toolbar(.hidden, for: .navigationBar)
         .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
         .environment(taskDrag)
         .onChange(of: router.todayTaps) { if dayOffset != 0 { withAnimation(tokens.animation) { dayOffset = 0 } } }
@@ -55,7 +50,7 @@ struct TodayScreen: View {
         isLandscape ? model.settings.today.landscapeArrangement : model.settings.today.arrangement
     }
 
-    private var layout: ScreenLayout { model.config.todayLayout(for: arrangement) }
+    private var layout: ScreenLayout { model.config.todayLayout(for: arrangement, landscape: isLandscape) }
     private var pageCount: Int { layout.isPaged ? layout.blocks.count : 1 }
 
     private func turn(to newPage: Int) {
@@ -137,14 +132,39 @@ struct TodayScreen: View {
         VStack(spacing: tokens.space(.groupGap)) {
             ForEach(PhysicalBottom.physicalOrder(LandscapeSlot.allCases, bottom: bottom), id: \.self) { slot in
                 switch slot {
-                case .leading: TodayButtons(placement: .leading, bottom: bottom)
+                case .leading: bubble(.vertical) { TodayButtons(placement: .leading, bottom: bottom) }
                 case .day: Spacer(minLength: 0); dayNavigation; Spacer(minLength: 0)
-                case .trailing: TodayButtons(placement: .trailing, bottom: bottom)
+                case .trailing: bubble(.vertical) { TodayButtons(placement: .trailing, bottom: bottom) }
                 }
             }
         }
-        .padding(bottom == .trailing ? .leading : .trailing, tokens.space(.screenHorizontal))
-        .padding(.vertical, tokens.space(.headerToPlate))
+        // As far from the physical sides as the bubbles upright: measured from the screen edges in both turns.
+        .padding(.vertical, tokens.space(.screenHorizontal))
+        .ignoresSafeArea(.container, edges: .vertical)
+    }
+
+    /// A group of bar buttons in the glass capsule the system draws around them upright.
+    private func bubble(_ axis: Axis, @ViewBuilder _ buttons: () -> some View) -> some View {
+        let layout = axis == .horizontal ? AnyLayout(HStackLayout(spacing: tokens.space(.barButtonGap)))
+            : AnyLayout(VStackLayout(spacing: tokens.space(.barButtonGap)))
+        return layout { buttons() }
+            .buttonStyle(.plain)
+            .foregroundStyle(tokens.color(.primaryText))
+            .glassBubble()
+    }
+
+    /// The bar upright: the button groups at the edges, the day's name with its arrows midway between them.
+    private var portraitBar: some View {
+        HStack(spacing: 0) {
+            bubble(.horizontal) { TodayButtons(placement: .leading) }
+            Spacer(minLength: tokens.space(.chipGap))
+            dayNavigation
+            Spacer(minLength: tokens.space(.chipGap))
+            bubble(.horizontal) { TodayButtons(placement: .trailing) }
+        }
+        .padding(.horizontal, tokens.space(.screenHorizontal))
+        .padding(.top, tokens.space(.todayBarTop))
+        .padding(.bottom, tokens.space(.todayBarBottom))
     }
 
     /// The bar upright, from the physical left to the physical right.

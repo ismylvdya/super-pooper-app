@@ -37,6 +37,7 @@ extension TaskNote {
             case .reminderTimes(let times): task.reminderTimes = times.sorted()
             case .habitColor(let value): task.habit.color = value
             case .harmful(let value): task.habit.harmful = value
+            case .repeatable(let value): task.habit.repeatable = value
             case .showInToday(let value): task.habit.showInToday = value
             case .timeOfDay(let value): task.habit.timeOfDay = value
             case .twiceADay(let value): task.habit.twiceADay = value

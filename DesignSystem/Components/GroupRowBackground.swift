@@ -8,11 +8,15 @@ struct GroupRowBackground: View {
     let isLast: Bool
 
     var body: some View {
-        let top = isFirst ? tokens.radius(.plate) : 0
-        let bottom = isLast ? tokens.radius(.plate) : 0
-        UnevenRoundedRectangle(topLeadingRadius: top, bottomLeadingRadius: bottom, bottomTrailingRadius: bottom,
-                               topTrailingRadius: top, style: .continuous)
-            .fill(tokens.color(.plateBackground))
+        Self.shape(isFirst: isFirst, isLast: isLast, radius: tokens.radius(.plate)).fill(tokens.color(.plateBackground))
+    }
+
+    /// The row's piece of the group's rounded plate.
+    static func shape(isFirst: Bool, isLast: Bool, radius: CGFloat) -> UnevenRoundedRectangle {
+        let top = isFirst ? radius : 0
+        let bottom = isLast ? radius : 0
+        return UnevenRoundedRectangle(topLeadingRadius: top, bottomLeadingRadius: bottom, bottomTrailingRadius: bottom,
+                                      topTrailingRadius: top, style: .continuous)
     }
 }
 

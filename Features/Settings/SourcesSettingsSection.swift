@@ -122,13 +122,9 @@ private struct ObsidianLinkRows: View {
         if place == nil || !vault.obsidianVault.isEmpty || !vault.obsidianPathPrefix.isEmpty {
             PlateRow(icon: .obsidian, title: "settings.obsidian.vault", info: "info.settings.obsidian.vault") {
                 TrailingSpaceTextField(placeholder: "settings.obsidian.auto", text: binding(\.obsidianVault))
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
             }
             PlateRow(icon: nil, title: "settings.obsidian.prefix", indent: true) {
                 TrailingSpaceTextField(placeholder: "settings.obsidian.auto", text: binding(\.obsidianPathPrefix))
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
             }
         }
     }

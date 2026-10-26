@@ -118,6 +118,7 @@ extension AppModel {
         updateSettings {
             $0.habits.order = rename($0.habits.order)
             $0.habits.morningRoutine = rename($0.habits.morningRoutine)
+            $0.habits.dayRoutine = rename($0.habits.dayRoutine)
             $0.habits.eveningRoutine = rename($0.habits.eveningRoutine)
         }
         updateDayState {

@@ -29,6 +29,7 @@ enum WriteConflict {
         case .reminderTimes: return (keys.reminderTimes, { $0.reminderTimes })
         case .habitColor: return (keys.habitColor, { $0.habit.color })
         case .harmful: return (keys.harmful, { $0.habit.harmful })
+        case .repeatable: return (keys.repeatable, { $0.habit.repeatable })
         case .showInToday: return (keys.showInToday, { $0.habit.showInToday })
         case .timeOfDay: return (keys.timeOfDay, { $0.habit.timeOfDay })
         case .twiceADay: return (keys.twiceADay, { $0.habit.twiceADay })

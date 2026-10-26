@@ -53,8 +53,11 @@ struct TaskRowView: View {
         let text = titleText
             .foregroundStyle(item.isDone ? tokens.color(.secondaryText) : tokens.color(.primaryText))
         if let onOpen {
-            Button(action: onOpen) { text }
-                .buttonStyle(.plain)
+            // Not a Button: a button also fires when a swipe (turning the page, scrolling) ends on it; the row's tap
+            // gesture below gives up as soon as the finger moves.
+            text
+                .accessibilityAddTraits(.isButton)
+                .accessibilityAction { onOpen() }
                 .accessibilityIdentifier("title:\(item.task.name)")
         } else {
             text

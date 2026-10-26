@@ -5,8 +5,7 @@
       "title": "action.done",
       "icon": "checkmark.circle.fill",
       "destructive": false,
-      "haptic": "light",
-      "color": "actionDone"
+      "haptic": "light"
     },
     {
       "id": "partial",

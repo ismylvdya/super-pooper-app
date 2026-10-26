@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 
-/// A menu item's label from the action registry. An action with a color (Done) gets it on its icon, drawn
+/// A menu item's label from the action registry. An action with a color in `actions.json` gets it on its icon, drawn
 /// as a colored picture since menus repaint plain symbols in the label color, and on its title where the
 /// system lets it. `markIcon`: a habit mark image instead of the action's symbol.
 struct ActionLabel: View {
@@ -11,7 +11,9 @@ struct ActionLabel: View {
     var markIcon: Icon?
 
     var body: some View {
-        let tint = action.color.flatMap(ColorToken.init(rawValue:)).map { tokens.uiColor($0) }
+        // A destructive action (Delete) is red on its icon too: the menu leaves a plain symbol black.
+        let token = action.color.flatMap(ColorToken.init(rawValue:)) ?? (action.destructive ? .destructive : nil)
+        let tint = token.map { tokens.uiColor($0) }
         Label {
             if let tint { Text(LocalizedStringKey(action.title)).foregroundStyle(Color(uiColor: tint)) } else { Text(LocalizedStringKey(action.title)) }
         } icon: {

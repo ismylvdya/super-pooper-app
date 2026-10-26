@@ -73,6 +73,8 @@ struct TaskNoteWriter: Sendable {
                 set(keys.habitColor, hex.map { .scalar($0, quoted: true) }, in: &document)
             case .harmful(let value):
                 set(keys.harmful, value ? .bool(true) : nil, in: &document)
+            case .repeatable(let value):
+                set(keys.repeatable, value ? .bool(true) : nil, in: &document)
             case .showInToday(let value):
                 set(keys.showInToday, .bool(value), in: &document)
             case .timeOfDay(let value):

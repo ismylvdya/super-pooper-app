@@ -31,6 +31,12 @@ struct DesignTokens: Decodable, Sendable {
                             duration: duration, font: font, color: colored.color)
     }
 
+    /// The widgets' plates: lighter than the app's in the dark, where a widget sits on a dark Home Screen.
+    func forWidget() -> DesignTokens {
+        DesignTokens(spacing: spacing, radius: radius, size: size, opacity: opacity, duration: duration, font: font,
+                     color: color.replacing([.plateBackground: color[.widgetPlate]]))
+    }
+
     /// User color choices (settings) over the bundled palette; unknown names and bad hex are ignored.
     func overridingColors(_ hexByName: [String: String]) -> DesignTokens {
         var overrides: [ColorToken: ColorSpec] = [:]

@@ -98,8 +98,9 @@ struct AppSettings: Codable, Equatable, Sendable {
         /// "Show in Today" of a newly created habit (on by default; the old `showInTodayByDefault`, which was off,
         /// is not read any more).
         var showNewHabitsInToday: Bool
-        /// The order of the morning and evening routines in the pool (habit names).
+        /// The order of the morning, day and evening routines in the pool (habit names).
         var morningRoutine: [String]
+        var dayRoutine: [String]
         var eveningRoutine: [String]
     }
 
@@ -110,9 +111,9 @@ struct AppSettings: Codable, Equatable, Sendable {
         var prefix: String
     }
 
-    /// The Home Screen quick actions: 📥 New in inbox runs this shortcut of the Shortcuts app (kept on this device).
+    /// The Home Screen quick actions: 📥 New in inbox opens this list of Apple Reminders (kept on this device).
     struct QuickActions: Codable, Equatable, Sendable {
-        var inboxShortcut: String
+        var inboxListID: String
     }
 
     struct Appearance: Codable, Equatable, Sendable {

@@ -20,7 +20,7 @@ struct TodaySettingsSection: View {
                                     options: [AppSettings.TodayArrangement]) -> some View {
         let current = model.settings.today[keyPath: keyPath]
         return PlateSection(header: header, hint: hint) {
-            ArrangementPreview(arrangement: current)
+            ArrangementPreview(arrangement: current, landscape: keyPath == \.landscapeArrangement)
             PlateRow(icon: .timelineLayout, title: "settings.today.arrangement", info: info) {}
             Picker("settings.today.arrangement", selection: Binding(
                 get: { current },
@@ -51,9 +51,10 @@ struct ArrangementPreview: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
     let arrangement: AppSettings.TodayArrangement
+    var landscape = false
 
     var body: some View {
-        ScreenLayoutView(layout: model.config.todayLayout(for: arrangement)) { id in
+        ScreenLayoutView(layout: model.config.todayLayout(for: arrangement, landscape: landscape)) { id in
             switch id {
             case .pool: pool
             case .timeline: timeline

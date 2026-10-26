@@ -27,6 +27,7 @@ enum TaskFieldChange: Hashable, Sendable {
     case reminderTimes([LocalTime])
     case habitColor(String?)
     case harmful(Bool)
+    case repeatable(Bool)
     case showInToday(Bool)
     case timeOfDay(HabitTimeOfDay?)
     case twiceADay(Bool)

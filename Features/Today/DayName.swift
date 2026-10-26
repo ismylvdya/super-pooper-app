@@ -1,14 +1,14 @@
 import Foundation
 
-/// The shown day's name on Today: "Today", another day by its date ("26 Oct"); in landscape every day by its
-/// weekday in two letters ("Mo"). The name stands in a frame as wide as the widest one the style can show, so the
+/// The shown day's name on Today: "Today", another day by its date ("26 Oct"); in landscape today is "Tod" and
+/// another day its weekday in three letters ("Mon"). The name stands in a frame as wide as the widest one the style can show, so the
 /// arrows around it never move.
 enum DayName {
     enum Style { case date, weekday }
 
     static func title(_ day: LocalDate, offset: Int, style: Style, calendar: Calendar) -> String {
         switch style {
-        case .weekday: format(day, .dateTime.weekday(.short), calendar: calendar)
+        case .weekday: offset == 0 ? L10n.string("day.todayShort") : format(day, .dateTime.weekday(.abbreviated), calendar: calendar)
         case .date: offset == 0 ? L10n.string("day.today") : format(day, .dateTime.day().month(.abbreviated), calendar: calendar)
         }
     }

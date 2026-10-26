@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// The order of the morning and evening routines: drag habits within a routine; the pool follows it.
-/// Habits join a routine by their part of the day (habit page → Part of the day).
+/// The order of the morning, day and evening routines: drag habits within a routine; the pool follows it.
+/// Habits join a routine on their page (habit page → Routine).
 struct RoutinesScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
@@ -9,6 +9,7 @@ struct RoutinesScreen: View {
     var body: some View {
         List {
             section(.morning, title: "routines.morning", keyPath: \.morningRoutine)
+            section(.day, title: "routines.day", keyPath: \.dayRoutine)
             section(.evening, title: "routines.evening", keyPath: \.eveningRoutine)
         }
         .appList()

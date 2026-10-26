@@ -8,7 +8,8 @@ struct HabitSections: View {
 
     var body: some View {
         if !editor.isDraft {
-            HabitHistorySection(habit: editor.task)
+            // A task that simply repeats has no history grid to keep an eye on.
+            if !editor.task.habit.repeatable { HabitHistorySection(habit: editor.task) }
             TaskNoteSection(taskName: editor.task.name, header: "habitPage.description", placeholder: "habitPage.description.placeholder")
             HabitStatsSection(habit: editor.task)
             TaskLinksSection(task: editor.task)

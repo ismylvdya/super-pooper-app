@@ -5,13 +5,17 @@ import SwiftUI
 /// of the day). Until the first drag the order follows the automatic sort after every edit; after it the
 /// manual order is kept for today. Reset sorting brings the sort back.
 /// Tapping a row (outside its chips) opens the task page; "+" creates a new this-week task.
+/// A long press opens the same menu as the row in the pool (and moving the finger then drags the row).
 /// Swiping a row left takes it out of today: it stays this week and waits in "Not Today" at the bottom
 /// (and in tomorrow's review); swiping it there to the right brings it back.
 struct MorningReviewScreen: View {
     @Environment(AppModel.self) private var model
+    @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
+    @Environment(\.openURL) private var openURL
     @State private var path: [Route] = []
+    @State private var pendingAction: PendingAction?
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -30,7 +34,16 @@ struct MorningReviewScreen: View {
                             if let item = items[name] {
                                 let position = ReviewGroups.position(of: index, in: rows)
                                 ReviewRow(item: item, today: plan.today) { path.append(.task(item.id)) }
+                                    .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: tokens.radius(.plate), style: .continuous))
+                                    .contextMenu {
+                                        ActionMenuContent(menu: item.isHabit ? .habitContext : .taskContext, item: item) {
+                                            perform($0, on: item.id)
+                                        }
+                                    }
                                     .groupRow(isFirst: position.isFirst, isLast: position.isLast)
+                                    // The row is rebuilt when it becomes or stops being the group's first or last, so its
+                                    // rounded corners follow a new order (the list keeps a moved row's old background).
+                                    .id("\(name)|\(position.isFirst)|\(position.isLast)")
                                     .accessibilityIdentifier("review:\(item.id)")
                                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                         Button { Haptics.play(.light); model.postpone(item.id) } label: {
@@ -75,6 +88,7 @@ struct MorningReviewScreen: View {
                 }
             }
             .bannerHost()
+            .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
             .navigationDestination(for: Route.self) { route in
                 switch route {
                 case .task(let name): TaskPageScreen(taskName: name).bannerHost()
@@ -102,6 +116,21 @@ struct MorningReviewScreen: View {
                 }
             }
         }
+    }
+}
+
+extension MorningReviewScreen {
+    /// The pool's actions; opening the task stays in this sheet.
+    private func perform(_ action: ActionDefinition, on name: String) {
+        if action.id == .open {
+            path.append(.task(name))
+        } else {
+            handler.handle(action, taskName: name)
+        }
+    }
+
+    private var handler: TaskActionHandler {
+        TaskActionHandler(model: model, router: router, openURL: openURL) { pendingAction = $0 }
     }
 }
 

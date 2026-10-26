@@ -145,4 +145,16 @@ struct PoolSegmentsTests {
                                           item("D", .evening), item("E", .evening), item("F", .morning, done: true)])
         #expect(segments.map { $0.items.map(\.id) } == [["A", "B"], ["C"], ["D", "E"], ["F"]])
     }
+
+    @Test func theDayRoutineSharesAPlateToo() {
+        let segments = PoolSegments.make([item("A", .day), item("B", .day), item("C", .evening)])
+        #expect(segments.map { $0.items.map(\.id) } == [["A", "B"], ["C"]])
+    }
+
+    @Test func eachRoutineKeepsItsOwnOrder() {
+        let routines = HabitRoutines(morning: ["M2", "M1"], day: ["D2", "D1"], evening: [])
+        #expect(routines.position(of: makeHabit("D1", status: .habit) { $0.habit.timeOfDay = .day }) == 1)
+        #expect(routines.position(of: makeHabit("M2", status: .habit) { $0.habit.timeOfDay = .morning }) == 0)
+        #expect(routines.position(of: makeHabit("Any", status: .habit)) == nil)
+    }
 }

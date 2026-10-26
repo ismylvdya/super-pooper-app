@@ -4,6 +4,7 @@ import SwiftUI
 struct TaskPropertiesSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.rules) private var rules
+    @Environment(\.tokens) private var tokens
     let editor: TaskEditor
 
     private var task: TaskNote { editor.task }
@@ -17,10 +18,10 @@ struct TaskPropertiesSection: View {
                 }
                 .labelsHidden()
             }
-            PlateRow(icon: .energy, title: "taskPage.energy", info: "info.taskPage.energy") {
+            PlateRow(icon: .energy, title: "taskPage.energy", info: "info.taskPage.energy", iconTint: tokens.color(.energy)) {
                 Toggle("taskPage.energy", isOn: binding(\.needEnergy, change: TaskFieldChange.needEnergy)).labelsHidden()
             }
-            PlateRow(icon: .pleasant, title: "taskPage.pleasant", info: "info.taskPage.pleasant") {
+            PlateRow(icon: .pleasant, title: "taskPage.pleasant", info: "info.taskPage.pleasant", iconTint: tokens.color(.heart)) {
                 Toggle("taskPage.pleasant", isOn: Binding(
                     get: { task.pleasant ?? false },
                     set: { value in editor.apply([.pleasant(value)]) }
@@ -31,7 +32,7 @@ struct TaskPropertiesSection: View {
 
     /// The status makes no sense for a habit: it is always active and repeats by its own rule.
     @ViewBuilder private var taskOnlyRows: some View {
-        PlateRow(icon: .high, title: "taskPage.high", info: "info.taskPage.high") {
+        PlateRow(icon: .high, title: "taskPage.high", info: "info.taskPage.high", iconTint: tokens.color(.high)) {
             Toggle("taskPage.high", isOn: Binding(get: { task.isHighPriority }, set: { editor.apply([.highPriority($0)]) }))
                 .labelsHidden()
                 .accessibilityIdentifier("taskPage.high")

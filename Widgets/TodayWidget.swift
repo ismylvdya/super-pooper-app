@@ -61,7 +61,7 @@ struct TodayWidgetEntryView: View {
         }
         .containerBackground(tokens.color(.screenBackground), for: .widget)
         .widgetURL(DeepLink.today)
-        .environment(\.tokens, entry.source.map { $0.config.tokens.applying($0.settings, limits: $0.config.rules.limits) } ?? tokens)
+        .environment(\.tokens, (entry.source.map { $0.config.tokens.applying($0.settings, limits: $0.config.rules.limits) } ?? tokens).forWidget())
         .environment(\.timelineBell, (entry.source?.settings ?? BundledConfig.settings).timeline.bellStyle)
         .environment(\.calendar, entry.source?.calendar ?? AppCalendar.make())
     }

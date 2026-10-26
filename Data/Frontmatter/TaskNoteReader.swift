@@ -57,6 +57,7 @@ struct TaskNoteReader: Sendable {
         var options = HabitOptions()
         options.color = fields.string(keys.habitColor).flatMap { $0.isEmpty ? nil : $0 }
         options.harmful = fields.bool(keys.harmful) ?? false
+        options.repeatable = fields.bool(keys.repeatable) ?? false
         options.showInToday = fields.bool(keys.showInToday) ?? true
         options.timeOfDay = fields.parsed(keys.timeOfDay, mapping.timeOfDay(fromRaw:))
         options.twiceADay = fields.bool(keys.twiceADay) ?? false

@@ -43,12 +43,10 @@ struct ColorField: View {
 
     var body: some View {
         HStack(spacing: tokens.space(.chipGap)) {
-            TrailingSpaceTextField(placeholder: "settings.colors.hex", text: $hex)
-                .font(tokens.font(.chip).monospaced())
-                .textInputAutocapitalization(.characters)
-                .autocorrectionDisabled()
+            TrailingSpaceTextField(placeholder: "settings.colors.hex", text: $hex,
+                                   font: .monospacedSystemFont(ofSize: tokens.uiFont(.chip).pointSize, weight: .regular),
+                                   capitalization: .characters) { save(hex) }
                 .frame(width: tokens.size(.hexFieldWidth))
-                .onSubmit { save(hex) }
             ColorPicker("", selection: Binding(
                 get: { tokens.color(token) },
                 set: { save(UIColor($0).hexString) }

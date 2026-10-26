@@ -3,9 +3,12 @@ import SwiftUI
 /// A habit in the list: today's day button, the name in the habit's color, this week's progress.
 struct HabitRow: View {
     @Environment(AppModel.self) private var model
+    @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     let habit: TaskNote
     let today: LocalDate
+    var isFirst = true
+    var isLast = true
 
     var body: some View {
         HStack(spacing: tokens.space(.iconTextGap)) {
@@ -13,18 +16,26 @@ struct HabitRow: View {
             // the outer ring of Twice may reach past it.
             HabitDayButton(habit: habit, day: today)
                 .frame(width: tokens.size(.iconColumn))
-            NavigationLink(value: Route.task(habit.name)) {
-                TitleDetailLabel(detail: Text(HabitSummary.weekLine(habit, today: today, days: model.context().days))) {
-                    Text(habit.name).foregroundStyle(tokens.habitColor(habit)).lineLimit(2)
+            // A button with the app's chevron, as the rows of the other tabs' plates (a list's link has its own).
+            Button { router.open(.task(habit.name)) } label: {
+                HStack(spacing: tokens.space(.iconTextGap)) {
+                    TitleDetailLabel(detail: Text(HabitSummary.weekLine(habit, today: today, days: model.context().days))) {
+                        Text(habit.name).font(tokens.font(.habitTitle)).foregroundStyle(tokens.habitColor(habit)).lineLimit(2)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    DisclosureAccessory()
                 }
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("habit:\(habit.name)")
         }
-        .padding(.horizontal, tokens.space(.listRowInset))
+        .padding(.horizontal, tokens.space(.plateInner))
         .padding(.vertical, tokens.space(.rowVertical) / 2)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(tokens.color(.plateBackground))
-        // A long press lifts the whole row and offers today's marks.
-        .contentShape(.contextMenuPreview, Rectangle())
+        .background(GroupRowBackground(isFirst: isFirst, isLast: isLast))
+        // A long press lifts the whole row (with its group's corners) and offers today's marks.
+        .contentShape(.contextMenuPreview, GroupRowBackground.shape(isFirst: isFirst, isLast: isLast, radius: tokens.radius(.plate)))
         .contextMenu { HabitDayMenu(habit: habit, day: today) }
     }
 }

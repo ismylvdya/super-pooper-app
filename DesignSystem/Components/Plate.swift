@@ -94,21 +94,24 @@ struct PlateRow<Trailing: View>: View {
     let title: Text
     let info: LocalizedStringKey?
     let tint: Color?
+    /// The icon's own color (a property's color, e.g. the pink heart) while the title stays as it is.
+    let iconTint: Color?
     let indent: Bool
     let trailing: Trailing
 
-    init(icon: Icon?, title: LocalizedStringKey, info: LocalizedStringKey? = nil, tint: Color? = nil, indent: Bool = false,
-         @ViewBuilder trailing: () -> Trailing) {
-        self.init(icon: icon, title: Text(title), info: info, tint: tint, indent: indent, trailing: trailing)
+    init(icon: Icon?, title: LocalizedStringKey, info: LocalizedStringKey? = nil, tint: Color? = nil, iconTint: Color? = nil,
+         indent: Bool = false, @ViewBuilder trailing: () -> Trailing) {
+        self.init(icon: icon, title: Text(title), info: info, tint: tint, iconTint: iconTint, indent: indent, trailing: trailing)
     }
 
     /// A title already made into text, e.g. `Text(verbatim:)` for a note's name.
-    init(icon: Icon?, title: Text, info: LocalizedStringKey? = nil, tint: Color? = nil, indent: Bool = false,
+    init(icon: Icon?, title: Text, info: LocalizedStringKey? = nil, tint: Color? = nil, iconTint: Color? = nil, indent: Bool = false,
          @ViewBuilder trailing: () -> Trailing) {
         self.icon = icon
         self.title = title
         self.info = info
         self.tint = tint
+        self.iconTint = iconTint
         self.indent = indent
         self.trailing = trailing()
     }
@@ -140,7 +143,7 @@ struct PlateRow<Trailing: View>: View {
             if let icon {
                 Image(icon: icon, icons: icons)
                     .renderingMode(.template)
-                    .foregroundStyle(tint ?? tokens.color(.accent))
+                    .foregroundStyle(iconTint ?? tint ?? tokens.color(.accent))
                     .frame(width: tokens.size(.iconColumn))
             }
             HStack(spacing: tokens.space(.titleInfoGap)) {

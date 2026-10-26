@@ -27,6 +27,8 @@ struct HabitOptions: Hashable, Codable, Sendable {
     var color: String?
     /// A habit to get rid of: a mark means "it happened", streaks count clean days.
     var harmful = false
+    /// Not a habit to keep track of but a task that simply repeats (Habits lists it apart, with no history grid).
+    var repeatable = false
     /// Whether the habit appears in Today's pool and timeline. Notes written before the
     /// switch existed have no key and stay visible.
     var showInToday = true

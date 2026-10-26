@@ -10,7 +10,9 @@ struct HabitHistorySection: View {
     @Environment(\.rules) private var rules
     let habit: TaskNote
     @State private var addedWeeks = 0
-    @State private var width: CGFloat = 320
+    /// The plate's width; the grid is laid out only once it is known, so the scroll starts at the real bottom
+    /// (laid out for a guessed width first, the newest week would end up below the plate on a narrow phone).
+    @State private var width: CGFloat?
 
     var body: some View {
         let context = model.context()
@@ -20,12 +22,26 @@ struct HabitHistorySection: View {
                                         extraWeeks: rules.habits.historyExtraWeeks) + addedWeeks
         let grid = HabitGrid(task: habit, weekCount: weeks, today: today, days: context.days)
         let inner = tokens.space(.plateInner)
-        let metrics = HabitDotMetrics.fitting(width: width - inner * 2, ringRatio: tokens.size(.habitRingRatio))
         let shape = RoundedRectangle(cornerRadius: tokens.radius(.plate), style: .continuous)
         VStack(alignment: .leading, spacing: 0) {
             PlateHeader(title: "habitPage.history", info: "info.habitPage.history")
-            VStack(spacing: 0) {
-                WeekdayHeader(metrics: metrics).padding(.top, inner)
+            Group {
+                if let width {
+                    history(grid, metrics: HabitDotMetrics.fitting(width: width - inner * 2, ringRatio: tokens.size(.habitRingRatio)))
+                } else {
+                    Color.clear.frame(height: tokens.size(.habitHistoryMaxHeight))
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .background(tokens.color(.plateBackground), in: shape)
+            .clipShape(shape)
+            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
+        }
+    }
+
+    private func history(_ grid: HabitGrid, metrics: HabitDotMetrics) -> some View {
+        VStack(spacing: 0) {
+                WeekdayHeader(metrics: metrics).padding(.top, tokens.space(.plateInner))
                 ScrollView {
                     HabitGridView(grid: grid, color: tokens.habitColor(habit), metrics: metrics, onTap: { day in
                         Haptics.play(.light)
@@ -48,10 +64,6 @@ struct HabitHistorySection: View {
                     addedWeeks += rules.habits.historyPullWeeks
                 }
                 .frame(maxHeight: tokens.size(.habitHistoryMaxHeight))
-            }
-            .background(tokens.color(.plateBackground), in: shape)
-            .clipShape(shape)
-            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         }
     }
 }

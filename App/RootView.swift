@@ -13,6 +13,15 @@ struct RootView: View {
 
     private var physicalBottom: HorizontalEdge? { verticalSizeClass == .compact ? landscapeBottom : nil }
 
+    /// The screen edge the landscape tab bar stands at (none upright).
+    private var landscapeTabBarEdge: Edge.Set {
+        switch physicalBottom {
+        case .leading: .leading
+        case .trailing: .trailing
+        case nil: []
+        }
+    }
+
     var body: some View {
         @Bindable var router = container.router
         let model = container.model
@@ -37,9 +46,16 @@ struct RootView: View {
                     }
                     if physicalBottom == .trailing { LandscapeTabBar(bottom: .trailing) }
                 }
+                // The landscape tab bar is laid out from the screen edge at the physical bottom, not from the safe area,
+                // so no empty strip is left between it and the tabs.
+                .ignoresSafeArea(.container, edges: landscapeTabBarEdge)
+                // Behind the landscape tab bar, which stands beside the tabs rather than over them.
+                .background(tokens.color(.screenBackground).ignoresSafeArea())
                 // The banner sits right under the status bar, over the bar buttons, on every tab.
                 .overlay(alignment: .top) { BannerOverlay() }
-                .sheet(isPresented: $router.isReviewPresented) { MorningReviewScreen().tint(tokens.color(.accent)) }
+                .sheet(isPresented: $router.isReviewPresented) {
+                    MorningReviewScreen().tint(tokens.color(.accent)).presentationDragIndicator(.visible)
+                }
                 .sheet(isPresented: $router.isProblemsPresented) { ProblemsSheet().tint(tokens.color(.accent)) }
             } else {
                 OnboardingFlow()
@@ -78,17 +94,18 @@ struct RootView: View {
         }
         .task(id: model.context().today) { await model.syncWhenTheDayEnds() }
         .onOpenURL { container.router.handle($0) }
-        .onChange(of: container.router.inboxRequests) { runInboxShortcut() }
+        .onChange(of: container.router.inboxRequests) { openInboxList() }
     }
 
-    /// 📥 New in inbox: the user's shortcut (Settings → Today → Quick actions); without one, that setting opens.
-    private func runInboxShortcut() {
-        let name = container.model.settings.quickActions.inboxShortcut.trimmingCharacters(in: .whitespaces)
-        if !name.isEmpty, let url = container.config.rules.eventLinks.shortcutURL(named: name) {
+    /// 📥 New in inbox: the chosen Reminders list opens in Reminders (Settings → Today → Quick actions); without one,
+    /// that setting opens.
+    private func openInboxList() {
+        let id = container.model.settings.quickActions.inboxListID
+        if !id.isEmpty, let url = container.config.rules.eventLinks.reminderListURL(id: id) {
             openURL(url)
         } else {
             container.router.show(.settings, [.taskSettings])
-            container.banners.show(L10n.string("banner.inboxShortcutMissing"), style: .warning)
+            container.banners.show(L10n.string("banner.inboxListMissing"), style: .warning)
         }
     }
 

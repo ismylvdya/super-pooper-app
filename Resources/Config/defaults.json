@@ -62,6 +62,7 @@
     "order": [],
     "showNewHabitsInToday": true,
     "morningRoutine": [],
+    "dayRoutine": [],
     "eveningRoutine": []
   },
   "clock": {
@@ -72,6 +73,6 @@
     "pastOpacity": 0.2
   },
   "quickActions": {
-    "inboxShortcut": ""
+    "inboxListID": ""
   }
 }
