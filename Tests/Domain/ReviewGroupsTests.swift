@@ -27,6 +27,15 @@ struct ReviewGroupsTests {
         #expect(toEvening.order.last == "Stretch")
     }
 
+    /// Each group is one plate: its first row has the rounded top, its last row the rounded bottom.
+    @Test func eachGroupOpensAndClosesItsPlate() {
+        let rows = ReviewGroups.rows(pool)
+        let positions = rows.indices.filter { if case .item = rows[$0] { true } else { false } }
+            .map { ReviewGroups.position(of: $0, in: rows) }
+        #expect(positions.map(\.isFirst) == [true, true, false, true])
+        #expect(positions.map(\.isLast) == [true, false, true, true])
+    }
+
     @Test func nothingGoesAboveTheFirstHeader() {
         let rows = ReviewGroups.rows(pool)
         #expect(ReviewGroups.move(rows, from: [3], to: 0, pool: pool).regrouped == ["Pay rent": .morning])

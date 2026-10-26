@@ -3230,7 +3230,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Postponed"
+            "value": "Not Today"
           }
         }
       }
@@ -3241,7 +3241,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Not in today's pool; they stay this week and show up in tomorrow's review. Swipe left to bring one back."
+            "value": "Not in today's pool; they stay this week and show up in tomorrow's review. Swipe one right to bring it back."
           }
         }
       }

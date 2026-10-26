@@ -92,6 +92,27 @@ final class ScreenSnapshotUITests: XCTestCase {
         snapTopAndBottom("review")
     }
 
+    /// A task swiped out of today waits under "Not Today" at the bottom; it is brought back afterwards, so the
+    /// other pictures of the run keep it in the pool.
+    func testMorningReviewNotToday() {
+        launch("superpooper://review")
+        let row = app.descendants(matching: .any).matching(identifier: "review:Оплатить интернет").firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        app.swipeUp()
+        row.swipeLeft()
+        let postpone = app.buttons["review.postpone"]
+        if postpone.waitForExistence(timeout: 2) { postpone.tap() }
+        for _ in 0..<6 { app.swipeUp() }
+        settle()
+        snap("review-not-today")
+        let waiting = app.descendants(matching: .any).matching(identifier: "review.notToday:Оплатить интернет").firstMatch
+        XCTAssertTrue(waiting.waitForExistence(timeout: 10))
+        waiting.swipeRight()
+        let back = app.buttons["review.backToToday"]
+        if back.waitForExistence(timeout: 2) { back.tap() }
+        XCTAssertTrue(waiting.waitForNonExistence(timeout: 10))
+    }
+
     func testHabits() {
         launch("superpooper://habits")
         snap("habits")

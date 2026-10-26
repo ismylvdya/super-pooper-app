@@ -43,6 +43,20 @@ enum ReviewGroups {
         }
     }
 
+    /// Where an item row stands in its group: the first one opens the group's plate, the last one closes it.
+    struct Position: Equatable, Sendable {
+        let isFirst: Bool
+        let isLast: Bool
+    }
+
+    static func position(of index: Int, in rows: [Row]) -> Position {
+        func isEdge(_ index: Int) -> Bool {
+            guard rows.indices.contains(index), case .item = rows[index] else { return true }
+            return false
+        }
+        return Position(isFirst: isEdge(index - 1), isLast: isEdge(index + 1))
+    }
+
     struct Move: Equatable, Sendable {
         /// The new order of all tasks.
         let order: [String]
