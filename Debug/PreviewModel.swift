@@ -120,7 +120,6 @@ struct StaticRemindersRepository: RemindersRepository {
     func lists() -> [SourceCollection] { [SourceCollection(id: "list", title: "Remember", colorHex: "#FF9500", sourceTitle: "iCloud")] }
     func reminders(from start: Date, to end: Date, listIDs: [String]) async -> [ReminderItem] { PreviewSamples.reminders }
     func setCompleted(_ completed: Bool, reminderID: String) throws {}
-    func add(_ title: String, toListTitled listTitle: String) throws {}
 }
 
 struct SilentNotifications: NotificationScheduling {

@@ -36,7 +36,8 @@
     "resolveDaysAfter": 14,
     "pickerDaysAhead": 7,
     "calendarAppURL": "calshow:",
-    "remindersAppURL": "x-apple-reminderkit://REMCDReminder/"
+    "remindersAppURL": "x-apple-reminderkit://REMCDReminder/",
+    "shortcutsRunURL": "shortcuts://run-shortcut?name="
   },
   "vault": {
     "downloadTimeoutSeconds": 20,
@@ -131,8 +132,5 @@
     "noteSaveDelaySeconds": 1.2,
     "repeatUntilDays": 30,
     "repeatCount": 10
-  },
-  "inbox": {
-    "listTitle": "📥 inbox"
   }
 }

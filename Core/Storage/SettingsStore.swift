@@ -36,6 +36,7 @@ extension AppSettings {
         onboarding: .init(completed: false),
         habits: .init(order: [], showNewHabitsInToday: true, morningRoutine: [], eveningRoutine: []),
         clock: .init(timeZone: "Europe/Moscow", prefix: ""),
+        quickActions: .init(inboxShortcut: ""),
         appearance: .init(pastOpacity: 0.2),
         colors: [:]
     )

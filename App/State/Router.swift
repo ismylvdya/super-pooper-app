@@ -40,7 +40,8 @@ final class Router {
     var paths: [AppTab: [Route]] = [:]
     var isReviewPresented = false
     var isProblemsPresented = false
-    var isInboxEntryPresented = false
+    /// Grows with every 📥 New in inbox quick action; the root view runs the shortcut.
+    private(set) var inboxRequests = 0
     /// Grows on every tap on the Today tab: Today goes back to today's date.
     private(set) var todayTaps = 0
 
@@ -80,7 +81,7 @@ final class Router {
         case "trash": show(.settings, [.trash])
         case "review": show(.today); isReviewPresented = true
         case "new-task": isReviewPresented = false; show(.today, [.newTask])
-        case "new-inbox": isReviewPresented = false; show(.today); isInboxEntryPresented = true
+        case "new-inbox": isReviewPresented = false; inboxRequests += 1
         #if DEBUG
         case "debug-notifications": show(.settings, [.debugNotifications])
         case "debug-widgets": show(.settings, [.debugWidgets])

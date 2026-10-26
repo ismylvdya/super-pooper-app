@@ -69,5 +69,8 @@
   },
   "appearance": {
     "pastOpacity": 0.2
+  },
+  "quickActions": {
+    "inboxShortcut": ""
   }
 }

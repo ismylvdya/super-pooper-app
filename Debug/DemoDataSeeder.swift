@@ -3,11 +3,10 @@ import EventKit
 import UIKit
 
 /// DEBUG only: creates the "SuperPooper Test" calendar with today's demo events, a reminders list
-/// with a 15:00 reminder, and the inbox list (`rules.json` → `inbox`) the app never reads but the
-/// "New in inbox" quick action adds to. Re-running replaces them.
+/// with a 15:00 reminder, and an "Inbox" list the app must ignore. Re-running replaces them.
 struct DemoDataSeeder {
     static let title = "SuperPooper Test"
-    static var inboxTitle: String { BundledConfig.config?.rules.inbox.listTitle ?? "Inbox" }
+    static let inboxTitle = "Inbox"
 
     struct Sources {
         let calendarID: String

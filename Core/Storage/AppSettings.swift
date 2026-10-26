@@ -108,6 +108,11 @@ struct AppSettings: Codable, Equatable, Sendable {
         var prefix: String
     }
 
+    /// The Home Screen quick actions: 📥 New in inbox runs this shortcut of the Shortcuts app (kept on this device).
+    struct QuickActions: Codable, Equatable, Sendable {
+        var inboxShortcut: String
+    }
+
     struct Appearance: Codable, Equatable, Sendable {
         /// Opacity of done tasks and past events in the pool, the timeline and the widget.
         var pastOpacity: Double
@@ -123,6 +128,7 @@ struct AppSettings: Codable, Equatable, Sendable {
     var onboarding: Onboarding
     var habits: Habits
     var clock: Clock
+    var quickActions: QuickActions
     var appearance: Appearance
     /// Color overrides by token name (`task`, `habit`, `past`, …) as `#RRGGBB`; empty = tokens.json.
     var colors: [String: String]

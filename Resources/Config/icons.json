@@ -57,6 +57,7 @@
   "listQuick": "hare",
   "listWaiting": "hourglass",
   "listAll": "tray.full",
+  "inboxShortcut": "tray.and.arrow.down",
   "tabSettings": "gearshape",
   "today": "sun.max",
   "harmful": "nosign",

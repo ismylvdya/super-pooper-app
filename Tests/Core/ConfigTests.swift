@@ -11,6 +11,12 @@ struct ConfigTests {
         #expect(TestConfig.actions.menus["eventContext"] == [.deleteEvent])
     }
 
+    /// 📥 New in inbox runs the user's shortcut by its name.
+    @Test func theInboxShortcutIsRunByName() {
+        let url = TestConfig.rules.eventLinks.shortcutURL(named: "Add to inbox")
+        #expect(url?.absoluteString == "shortcuts://run-shortcut?name=Add%20to%20inbox")
+    }
+
     /// Every list of the Lists tab has a title text; the weekly review holds what is not this week yet.
     @Test func listsLoadWithTheirTexts() throws {
         let config = try AppConfig.load(bundle: Bundle(for: BundleToken.self).appHostBundle)

@@ -14,6 +14,7 @@ struct TaskSettingsScreen: View {
             AppearanceSettingsSection()
             ColorSettingsSection()
             NotificationSettingsSection()
+            QuickActionsSettingsSection()
         }
         .task { await model.refreshAccess() }
     }

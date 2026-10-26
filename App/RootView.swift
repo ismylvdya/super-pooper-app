@@ -5,6 +5,7 @@ import SwiftUI
 struct RootView: View {
     let container: AppContainer
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.openURL) private var openURL
     @State private var screenHeight = BundledConfig.tokens.size(.screenHeightEstimate)
 
     var body: some View {
@@ -28,7 +29,6 @@ struct RootView: View {
                 .overlay(alignment: .top) { BannerOverlay() }
                 .sheet(isPresented: $router.isReviewPresented) { MorningReviewScreen().tint(tokens.color(.accent)) }
                 .sheet(isPresented: $router.isProblemsPresented) { ProblemsSheet().tint(tokens.color(.accent)) }
-                .sheet(isPresented: $router.isInboxEntryPresented) { InboxEntrySheet().tint(tokens.color(.accent)) }
             } else {
                 OnboardingFlow()
             }
@@ -62,6 +62,18 @@ struct RootView: View {
             }
         }
         .onOpenURL { container.router.handle($0) }
+        .onChange(of: container.router.inboxRequests) { runInboxShortcut() }
+    }
+
+    /// 📥 New in inbox: the user's shortcut (Settings → Today → Quick actions); without one, that setting opens.
+    private func runInboxShortcut() {
+        let name = container.model.settings.quickActions.inboxShortcut.trimmingCharacters(in: .whitespaces)
+        if !name.isEmpty, let url = container.config.rules.eventLinks.shortcutURL(named: name) {
+            openURL(url)
+        } else {
+            container.router.show(.settings, [.taskSettings])
+            container.banners.show(L10n.string("banner.inboxShortcutMissing"), style: .warning)
+        }
     }
 
     @ViewBuilder private func root(_ tab: AppTab, model: AppModel) -> some View {

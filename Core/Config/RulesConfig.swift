@@ -22,6 +22,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let pickerDaysAhead: Int
         /// URL prefix that opens Apple Calendar on a date (seconds since 2001 are appended).
         let calendarAppURL: String
+        /// URL prefix that runs a shortcut of the Shortcuts app (its name is appended, percent-encoded).
+        let shortcutsRunURL: String
         /// URL prefix that opens a reminder in Apple Reminders (its identifier is appended).
         let remindersAppURL: String
     }
@@ -143,15 +145,9 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let repeatCount: Int
     }
 
-    /// The Reminders list the "New in inbox" quick action adds to (found by its title).
-    struct Inbox: Codable, Hashable, Sendable {
-        let listTitle: String
-    }
-
     let pool: Pool
     let limits: Limits
     let editing: Editing
-    let inbox: Inbox
 }
 
 /// Order of the pool sort criteria (`sort.json`).

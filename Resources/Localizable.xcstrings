@@ -287,24 +287,13 @@
         }
       }
     },
-    "banner.inboxAdded": {
+    "banner.inboxShortcutMissing": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Added to %@"
-          }
-        }
-      }
-    },
-    "banner.inboxListMissing": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "There is no “%@” list in Reminders"
+            "value": "Type the name of your inbox shortcut to use 📥 New in inbox"
           }
         }
       }
@@ -1497,28 +1486,6 @@
         }
       }
     },
-    "inbox.add": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Add"
-          }
-        }
-      }
-    },
-    "inbox.placeholder": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reminder"
-          }
-        }
-      }
-    },
     "info.habitPage.goal": {
       "extractionState": "manual",
       "localizations": {
@@ -1728,6 +1695,17 @@
         }
       }
     },
+    "info.settings.inboxShortcut": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The 📥 New in inbox action runs a shortcut of the Shortcuts app. Make one there that adds a reminder to your inbox list (for example the Add New Reminder action with List set to 📥 inbox and the title asked each time), then type its name here exactly as it is in Shortcuts."
+          }
+        }
+      }
+    },
     "info.settings.notifications": {
       "extractionState": "manual",
       "localizations": {
@@ -1768,6 +1746,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "How many pool rows are visible at once; the rest scroll and are counted below."
+          }
+        }
+      }
+    },
+    "info.settings.quickActions": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The actions of a long press on the app icon on the Home Screen."
           }
         }
       }
@@ -3796,6 +3785,28 @@
         }
       }
     },
+    "settings.inboxShortcut": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "📥 New in inbox"
+          }
+        }
+      }
+    },
+    "settings.inboxShortcut.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shortcut name"
+          }
+        }
+      }
+    },
     "settings.notifications": {
       "extractionState": "manual",
       "localizations": {
@@ -3946,6 +3957,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Visible tasks"
+          }
+        }
+      }
+    },
+    "settings.quickActions": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quick actions"
           }
         }
       }
