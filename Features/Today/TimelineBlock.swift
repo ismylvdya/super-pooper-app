@@ -64,7 +64,8 @@ struct TimelineBlock: View {
                 .onScrollGeometryChange(for: CGFloat.self) { max(0, -($0.contentOffset.y + $0.contentInsets.top)) } action: { _, new in
                     pull = new
                 }
-                .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y } action: { _, new in scrollOffset = new }
+                // Counted from the scroll's top position, as `scrollTo(y:)` takes it.
+                .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y + $0.contentInsets.top } action: { _, new in scrollOffset = new }
                 .scrollBounceBehavior(.always)
                 .scrollIndicators(.hidden)
                 .refreshable { await model.sync(announce: true) }
@@ -76,8 +77,10 @@ struct TimelineBlock: View {
                         .onChanged { value in
                             let start = pinchStart ?? (scrollOffset, value.startLocation.y, scale(zoom))
                             pinchStart = start
+                            // The hours start under the top margin (the lift room and the all-day strip) and the padding.
+                            let hoursTop = tokens.space(.liftShadow) + stripHeight + contentTop
                             let offset = TimelineZoom.offset(keeping: Double(start.y), startOffset: Double(start.offset),
-                                                             contentTop: Double(contentTop), from: Double(start.hourHeight),
+                                                             contentTop: Double(hoursTop), from: Double(start.hourHeight),
                                                              to: Double(scale(zoom * value.magnification)))
                             position.scrollTo(y: CGFloat(offset))
                         }
