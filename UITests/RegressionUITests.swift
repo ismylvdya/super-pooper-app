@@ -67,6 +67,21 @@ final class RegressionUITests: XCTestCase {
                        "the dragged subtask is above the one it was dropped on")
     }
 
+    /// A row that opens a page opens it from anywhere on it, not only from its title or chevron (the tap lands in the
+    /// row's middle, on the empty space between them).
+    func testARowOpensItsPageFromItsEmptyMiddle() {
+        launch("superpooper://settings")
+        let settingsRow = app.buttons["settings.link.taskSettings"]
+        XCTAssertTrue(settingsRow.waitForExistence(timeout: 10))
+        settingsRow.tap()
+        XCTAssertTrue(settingsRow.waitForNonExistence(timeout: 6), "Settings → Today opened")
+        launch("superpooper://lists")
+        let listRow = app.buttons["lists.pleasant"]
+        XCTAssertTrue(listRow.waitForExistence(timeout: 10))
+        listRow.tap()
+        XCTAssertTrue(listRow.waitForNonExistence(timeout: 6), "Lists → Pleasant opened")
+    }
+
     /// With big text the High / Today / Tomorrow chips move to a second line instead of cutting their titles.
     func testQuickChipsWrapInsteadOfCuttingTheirTitles() {
         launch("superpooper://task/Позвонить в банк", textSize: "UICTContentSizeCategoryAccessibilityL")

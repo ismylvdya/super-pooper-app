@@ -114,7 +114,8 @@ struct PlateRow<Trailing: View>: View {
     }
 
     /// One line when the title and the control fit side by side; on narrow screens (iPhone mini) the
-    /// control moves under the title instead of squeezing either of them.
+    /// control moves under the title instead of squeezing either of them. The whole row takes a tap: a row that
+    /// opens a page opens it from the empty space between its title and chevron too.
     var body: some View {
         ViewThatFits(in: .horizontal) {
             HStack(spacing: tokens.space(.iconTextGap)) {
@@ -131,6 +132,7 @@ struct PlateRow<Trailing: View>: View {
             }
         }
         .padding(.leading, indent ? tokens.space(.childIndent) : 0)
+        .contentShape(Rectangle())
     }
 
     private var label: some View {
