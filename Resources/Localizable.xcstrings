@@ -1987,7 +1987,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Previous tasks are done before this one and block it until they are done. Next tasks wait for this one. Each link is stored once, in the later task."
+            "value": "Previous tasks and habits come before this one and hold it back until they are done (a habit — until it is marked or skipped today). Next ones wait for this one. Each link is stored once, in the later note."
           }
         }
       }
@@ -2449,7 +2449,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Search tasks"
+            "value": "Search tasks and habits"
           }
         }
       }
@@ -2460,7 +2460,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choose task"
+            "value": "Choose task or habit"
           }
         }
       }

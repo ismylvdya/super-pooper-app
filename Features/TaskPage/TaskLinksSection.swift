@@ -1,7 +1,8 @@
 import SwiftUI
 
 /// Previous tasks (this task's `previous_task`) and Next tasks (tasks whose `previous_task`
-/// contains this one). Each link is stored once, in the later task, and edited from both sides.
+/// contains this one), on task and habit pages alike; either side may be a task or a habit. Each link is stored
+/// once, in the later note, and edited from both sides.
 struct TaskLinksSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.icons) private var icons
