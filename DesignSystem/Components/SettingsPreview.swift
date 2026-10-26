@@ -11,10 +11,13 @@ extension View {
 private struct SettingsPreviewFrame: ViewModifier {
     @Environment(\.tokens) private var tokens
 
+    /// Clipped to its frame: the pages of a paged preview reach past it.
     func body(content: Content) -> some View {
+        let shape = RoundedRectangle(cornerRadius: tokens.radius(.timelineItem), style: .continuous)
         content
             .padding(tokens.space(.chipGap))
-            .background(tokens.color(.screenBackground), in: RoundedRectangle(cornerRadius: tokens.radius(.timelineItem), style: .continuous))
+            .background(tokens.color(.screenBackground), in: shape)
+            .clipShape(shape)
             .allowsHitTesting(false)
     }
 }

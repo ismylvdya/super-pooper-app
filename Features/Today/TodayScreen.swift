@@ -72,7 +72,7 @@ struct TodayScreen: View {
             TimelineView(.periodic(from: .now, by: model.config.rules.timeline.refreshSeconds)) { _ in
                 let plan = model.plan(at: model.clock.now, dayOffset: dayOffset)
                 let fade = 1 - min(abs(dragX) / geometry.size.width, 1) * tokens.opacity(.daySwipeFade)
-                ScreenLayoutView(layout: layout, page: page, pageDrag: pageDrag, onTurn: turn) { id in
+                ScreenLayoutView(layout: layout, page: page, pageDrag: pageDrag, edgeInset: tokens.space(.screenHorizontal), onTurn: turn) { id in
                     TodayBlock(id: id, plan: plan, handler: handler,
                                bottomInset: Self.touchesBottom(id, in: layout) ? bottomInset : 0)
                         .daySlide(dragX, fade: fade)

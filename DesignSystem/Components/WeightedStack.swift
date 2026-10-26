@@ -48,18 +48,27 @@ struct WeightedStack: Layout {
 }
 
 /// Renders a `ScreenLayout`: asks the registry for each block by id. A paged layout shows `page`
-/// (the first one in previews), moved by `pageDrag`; `onTurn` makes its visible edge turn the page.
+/// (the first one in previews), moved by `pageDrag`; `onTurn` makes its visible edge turn the page; `edgeInset` is
+/// the margin between the layout and the screen's edge, which a page behind the leading edge shows in too.
 struct ScreenLayoutView<Block: View>: View {
     @Environment(\.tokens) private var tokens
     let layout: ScreenLayout
     var page = 0
     var pageDrag: CGFloat = 0
+    var edgeInset: CGFloat = 0
     var onTurn: ((Int) -> Void)?
     @ViewBuilder let block: (TodayBlockID) -> Block
+    @State private var chipWidth: CGFloat = 0
 
     var body: some View {
         if layout.isPaged {
-            PagedStack(slots: layout.blocks, spacing: spacing, peek: peek, page: page, drag: pageDrag, onTurn: onTurn, block: block)
+            PagedStack(slots: layout.blocks, spacing: spacing, peeks: layout.blocks.map(peek), edgeInset: edgeInset, page: page,
+                       drag: pageDrag, onTurn: onTurn, block: block)
+                .background {
+                    // The rows' chips are as wide as one with an icon only, the last of a habit's row.
+                    Chip(icon: .habit).hidden().fixedSize()
+                        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { chipWidth = $0 }
+                }
         } else {
             WeightedStack(axis: layout.axis, spacing: spacing, slots: layout.blocks) {
                 ForEach(layout.blocks, id: \.block) { slot in block(slot.block) }
@@ -67,8 +76,10 @@ struct ScreenLayoutView<Block: View>: View {
         }
     }
 
-    private var peek: CGFloat {
-        layout.peek.flatMap(SizeToken.init(rawValue:)).map(tokens.size) ?? 0
+    /// A chip peek is counted from the screen's edge: the row's inner margin and that part of its last chip.
+    private func peek(_ slot: ScreenLayout.Slot) -> CGFloat {
+        if let part = slot.peekChip { return tokens.space(.plateInner) / 2 + chipWidth * part - edgeInset }
+        return layout.peek.flatMap(SizeToken.init(rawValue:)).map(tokens.size) ?? 0
     }
 
     private var spacing: CGFloat {

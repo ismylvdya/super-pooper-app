@@ -19,6 +19,9 @@ struct ScreenLayout: Codable, Hashable, Sendable {
         let block: TodayBlockID
         let size: Size
         let weight: Double?
+        /// On pages: while another page is shown, this one keeps this part of its rows' last chip in sight (the
+        /// pool behind the timeline: its right half, 0.5) instead of the layout's `peek`.
+        var peekChip: Double? = nil
     }
 
     let axis: Axis
