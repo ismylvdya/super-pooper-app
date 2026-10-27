@@ -189,14 +189,15 @@ struct TimelineBlock: View {
                                calendar: model.calendar)
     }
 
-    /// The same row as in the pool, without chips, always on one line (a long title dissolves). A task on the timeline
+    /// The same row as in the pool, without chips or a done mark, always on one line (a long title dissolves): what is
+    /// finished has left the timeline, what is on it is shown plainly (a twice-a-day habit after its first Done too). A task on the timeline
     /// by its own time (not a habit, not a chain) can be dragged to another time or back to the pool.
     private func taskRow(_ item: DayItem, _ slot: TimelineSlot) -> some View {
         let movable = slot.time != nil && TaskScheduling.canMove(item.task)
         return PoolRowContent(item: item, today: plan.today, isToday: plan.isToday, isCompact: false, titleFont: .system(size: model.settings.timeline.taskFontSize),
                               showsDetails: false, titleLineLimit: 1,
                               titleLineHeight: UIFont.systemFont(ofSize: model.settings.timeline.taskFontSize).lineHeight,
-                              plate: .slot(isPast: slot.isPast, isCompact: false), handler: handler,
+                              showsDoneState: false, plate: .slot(isPast: slot.isPast, isCompact: false), handler: handler,
                               dragSource: movable ? .timeline : nil)
     }
 }

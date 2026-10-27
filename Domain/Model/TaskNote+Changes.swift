@@ -23,8 +23,8 @@ extension TaskNote {
             case .subtaskOrder(let value): task.subtaskOrder = value
             case .previousEvent(let value): task.previousEvent = value
             case .nextEvent(let value): task.nextEvent = value
-            case .needEnergy(let value): task.needEnergy = value
-            case .pleasant(let value): task.pleasant = value
+            case .feel(let value): task.feel = value
+            case .migrateLegacyFields: task.hasLegacyFields = false
             case .markInstance(let day, let mark):
                 let instances = HabitInstances(task: task).setting(mark, on: day)
                 task.completeInstances = instances.complete

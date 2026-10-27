@@ -1,10 +1,11 @@
 import SwiftUI
 
-/// A habit in the list: today's day button, the name in the habit's color, this week's progress.
+/// A habit in the list: today's day button, the name in the habit's color (bold), its routine, Twice and reminders.
 struct HabitRow: View {
-    @Environment(AppModel.self) private var model
+    @Environment(AppModel.self) var model
     @Environment(Router.self) private var router
-    @Environment(\.tokens) private var tokens
+    @Environment(\.tokens) var tokens
+    @Environment(\.icons) var icons
     let habit: TaskNote
     let today: LocalDate
     var isFirst = true
@@ -19,8 +20,9 @@ struct HabitRow: View {
             // A button with the app's chevron, as the rows of the other tabs' plates (a list's link has its own).
             Button { router.open(.task(habit.name)) } label: {
                 HStack(spacing: tokens.space(.iconTextGap)) {
-                    TitleDetailLabel(detail: Text(HabitSummary.weekLine(habit, today: today, days: model.context().days))) {
-                        Text(habit.name).font(tokens.font(.habitTitle)).foregroundStyle(tokens.habitColor(habit)).lineLimit(2)
+                    VStack(alignment: .leading, spacing: tokens.space(.titleDetailGap)) {
+                        Text(habit.name).font(tokens.font(.habitTitle)).foregroundStyle(tokens.habitNameColor(habit)).lineLimit(2)
+                        detail
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     DisclosureAccessory()
@@ -34,9 +36,25 @@ struct HabitRow: View {
         .padding(.vertical, tokens.space(.rowVertical) / 2)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(GroupRowBackground(isFirst: isFirst, isLast: isLast))
-        // A long press lifts the whole row (with its group's corners) and offers today's marks.
-        .contentShape(.contextMenuPreview, GroupRowBackground.shape(isFirst: isFirst, isLast: isLast, radius: tokens.radius(.plate)))
+        // A long press lifts the row as a whole plate and offers today's marks.
+        .liftedPlate()
         .contextMenu { HabitDayMenu(habit: habit, day: today) }
+    }
+}
+
+extension HabitRow {
+    /// The routine, Twice and a bell per reminder under the name; nothing when the habit has none of them.
+    @ViewBuilder var detail: some View {
+        let traits = HabitSummary.traits(habit)
+        let bells = HabitSummary.bellCount(habit, limit: model.config.rules.habits.maxListBells)
+        if !traits.isEmpty || bells > 0 {
+            HStack(spacing: tokens.space(.badgeGap)) {
+                if !traits.isEmpty { Text(traits) }
+                ForEach(0..<bells, id: \.self) { _ in Image(systemName: icons[.reminder]) }
+            }
+            .font(tokens.font(.hint))
+            .foregroundStyle(tokens.color(.secondaryText))
+        }
     }
 }
 

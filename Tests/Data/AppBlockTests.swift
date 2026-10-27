@@ -106,6 +106,33 @@ struct AppBlockTests {
         #expect(try String(contentsOf: url, encoding: .utf8) == broken)
     }
 
+    /// The shared settings go to `super-pooper-app-settings.json` next to the tasks folder; until it exists the older
+    /// note is read, and the note is left as it was.
+    @Test func theSettingsFileReplacesTheNote() async throws {
+        let sandbox = try VaultSandbox.make()
+        let url = noteURL(in: sandbox)
+        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let old = "---\nappearance.pastOpacity: 0.5\n---\n"
+        try old.write(to: url, atomically: true, encoding: .utf8)
+        let file = VaultSettingsFile(location: FixedVaultLocation(url: sandbox.vault), fileSystem: CoordinatedFileSystem(),
+                                     fileName: "super-pooper-app-settings.json", vaultSettings: { TestConfig.defaults.vault },
+                                     legacy: settingsNote(in: sandbox))
+
+        let fromNote = try #require(await file.read())
+        #expect(SyncedSettings.merged(note: fromNote, over: TestConfig.defaults).appearance.pastOpacity == 0.5)
+        let moved = try String(contentsOf: sandbox.vault.appendingPathComponent("TaskNotes/super-pooper-app-settings.json"), encoding: .utf8)
+        #expect(moved.contains("\"pastOpacity\" : 0.5"))
+
+        var settings = TestConfig.defaults
+        settings.appearance.pastOpacity = 0.3
+        try await file.write(try JSONEncoder.store.encode(SyncedSettings(settings)))
+        let json = try String(contentsOf: sandbox.vault.appendingPathComponent("TaskNotes/super-pooper-app-settings.json"), encoding: .utf8)
+        #expect(json.hasPrefix("{\n"))
+        let back = try #require(await file.read())
+        #expect(SyncedSettings.merged(note: back, over: TestConfig.defaults).appearance.pastOpacity == 0.3)
+        #expect(try String(contentsOf: url, encoding: .utf8) == old)
+    }
+
     private func settingsNote(in sandbox: VaultSandbox) -> VaultSettingsNote {
         VaultSettingsNote(location: FixedVaultLocation(url: sandbox.vault), fileSystem: CoordinatedFileSystem(),
                           fileName: "SuperPooper Settings.md", vaultSettings: { TestConfig.defaults.vault })

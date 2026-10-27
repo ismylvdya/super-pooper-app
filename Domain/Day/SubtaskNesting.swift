@@ -18,6 +18,7 @@ enum SubtaskNesting {
             guard placed.insert(item.id).inserted else { return }
             var nested = item
             nested.depth = depth
+            nested.hasSubtasks = !(children[item.id] ?? []).isEmpty
             result.append(nested)
             for child in SubtaskOrder.stable(children[item.id] ?? [], order: \.task.subtaskOrder) { place(child, depth: depth + 1) }
         }

@@ -32,11 +32,11 @@ enum PreviewSamples {
         vitamins.due = TaskDue(day: today.adding(days: -20), time: LocalTime(hour: 9, minute: 0))
         var bank = TaskNote(name: "Позвонить в банк", relativePath: "TaskNotes/Tasks/bank.md", status: .thisWeek)
         bank.isHighPriority = true
-        bank.needEnergy = true
+        bank.feel = .needEnergy
         var report = TaskNote(name: "Сдать отчёт", relativePath: "TaskNotes/Tasks/report.md", status: .thisWeek)
         report.due = TaskDue(day: today.adding(days: 2))
         report.timeEstimate = 60
-        report.pleasant = false
+        report.feel = .needEnergy
         var shelf = TaskNote(name: "Повесить полку", relativePath: "TaskNotes/Tasks/shelf.md", status: .thisWeek)
         shelf.previousTasks = ["Позвонить в банк"]
         var parcel = TaskNote(name: "Забрать посылку", relativePath: "TaskNotes/Tasks/parcel.md", status: .thisWeek)

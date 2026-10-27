@@ -22,8 +22,7 @@ enum WriteConflict {
         case .timeEstimate: return (keys.timeEstimate, { $0.timeEstimate })
         case .previousEvent: return (keys.previousEvent, { $0.previousEvent })
         case .nextEvent: return (keys.nextEvent, { $0.nextEvent })
-        case .needEnergy: return (keys.needEnergy, { $0.needEnergy })
-        case .pleasant: return (keys.pleasant, { $0.pleasant })
+        case .feel: return (keys.feel, { $0.feel })
         case .completedDate: return (keys.completedDate, { $0.completedDate })
         case .recurrence: return (keys.recurrence, { $0.recurrenceRaw })
         case .reminderTimes: return (keys.reminderTimes, { $0.reminderTimes })
@@ -37,7 +36,7 @@ enum WriteConflict {
         case .weeklyGoal: return (keys.weeklyGoal, { $0.habit.weeklyGoal })
         case .allowedSkips: return (keys.allowedSkips, { $0.habit.allowedSkips })
         case .subtaskOrder: return (keys.subtaskOrder, { $0.subtaskOrder })
-        case .addPreviousTask, .removePreviousTask, .renamePreviousTask, .addProject, .renameProject, .markInstance: return nil
+        case .addPreviousTask, .removePreviousTask, .renamePreviousTask, .addProject, .renameProject, .markInstance, .migrateLegacyFields: return nil
         }
     }
 }

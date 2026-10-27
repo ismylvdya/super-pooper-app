@@ -15,7 +15,7 @@ extension AppModel {
     /// Tap on a habit's day: none → Done (→ Twice) → none.
     func cycleHabit(_ name: String, on day: LocalDate) async {
         await markHabit(name, on: day) { habit in
-            HabitMarking.next(after: HabitInstances(task: habit).mark(on: day), twiceADay: habit.habit.twiceADay)
+            HabitMarking.next(after: HabitInstances(task: habit).mark(on: day), twiceADay: habit.isTwiceADay)
         }
     }
 

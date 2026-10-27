@@ -27,7 +27,7 @@ struct RoutinesScreen: View {
             }
             ForEach(members, id: \.name) { habit in
                 NavigationLink(value: Route.task(habit.name)) {
-                    Text(habit.name).foregroundStyle(tokens.habitColor(habit))
+                    Text(habit.name).foregroundStyle(tokens.habitNameColor(habit))
                 }
                 .listRowBackground(tokens.color(.plateBackground))
             }

@@ -27,6 +27,8 @@ struct AppSettings: Codable, Equatable, Sendable {
         var visibleCount: Int
         /// The user's order of the pool rules (raw names); empty = `sort.json`.
         var criteria: [String]
+        /// The order of the chips in task rows (raw names of `RowChipKind`).
+        var chipOrder: [String]
     }
 
     /// Where the pool and the timeline sit on Today.
@@ -111,11 +113,6 @@ struct AppSettings: Codable, Equatable, Sendable {
         var prefix: String
     }
 
-    /// The Home Screen quick actions: 📥 New in inbox opens this list of Apple Reminders (kept on this device).
-    struct QuickActions: Codable, Equatable, Sendable {
-        var inboxListID: String
-    }
-
     struct Appearance: Codable, Equatable, Sendable {
         /// Opacity of done tasks and past events in the pool, the timeline and the widget.
         var pastOpacity: Double
@@ -131,7 +128,6 @@ struct AppSettings: Codable, Equatable, Sendable {
     var onboarding: Onboarding
     var habits: Habits
     var clock: Clock
-    var quickActions: QuickActions
     var appearance: Appearance
     /// Color overrides by token name (`task`, `habit`, `past`, …) as `#RRGGBB`; empty = tokens.json.
     var colors: [String: String]

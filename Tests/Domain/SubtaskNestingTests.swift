@@ -13,6 +13,7 @@ struct SubtaskNestingTests {
         let plan = DayScenario(tasks: [boxes, other, van, parent]).build()
         #expect(plan.poolNames == ["Pay rent", "Move flat", "Book a van", "Buy boxes"])
         #expect(plan.pool.map(\.depth) == [0, 0, 1, 1])
+        #expect(plan.pool.map(\.hasSubtasks) == [false, true, false, false])
     }
 
     @Test func aManualOrderDoesNotTearASubtaskFromItsParent() {

@@ -21,7 +21,8 @@
   },
   "pool": {
     "visibleCount": 3,
-    "criteria": []
+    "criteria": [],
+    "chipOrder": ["problem", "blocked", "high", "feel", "habit"]
   },
   "timeline": {
     "layout": "oneColumn",
@@ -71,8 +72,5 @@
   },
   "appearance": {
     "pastOpacity": 0.2
-  },
-  "quickActions": {
-    "inboxListID": ""
   }
 }

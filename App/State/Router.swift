@@ -26,6 +26,7 @@ enum Route: Hashable {
     case trash
     case routines
     case poolOrder
+    case chipOrder
     case conflicts
     case conflict(String)
     /// A list of the Lists tab, by its id in `lists.json`.
@@ -45,14 +46,14 @@ final class Router {
     var paths: [AppTab: [Route]] = [:]
     var isReviewPresented = false
     var isProblemsPresented = false
-    /// Grows with every 📥 New in inbox quick action; the root view runs the shortcut.
-    private(set) var inboxRequests = 0
     /// Grows on every tap on the Today tab: Today goes back to today's date.
     private(set) var todayTaps = 0
 
     /// The tab bar's selection: a tap on Today (also when it is already selected) brings back today.
+    /// Tapping the tab that is already open goes back to its first page, as the system tab bar does.
     func select(_ tab: AppTab) {
         if tab == .today { todayTaps += 1 }
+        if tab == self.tab { paths[tab] = [] }
         self.tab = tab
     }
 
@@ -72,7 +73,7 @@ final class Router {
 
     /// `superpooper://task/<name>`, `superpooper://habit/<name>`, `superpooper://habits`, `superpooper://settings`,
     /// `superpooper://review`, `superpooper://archive`, `superpooper://trash`, `superpooper://clock`,
-    /// `superpooper://new-task` and `superpooper://new-inbox` (also the Home Screen quick actions).
+    /// `superpooper://new-task` (also the Home Screen quick action).
     func handle(_ url: URL) {
         guard url.scheme == DeepLink.scheme else { return }
         let name = url.path().removingPercentEncoding.map { String($0.dropFirst()) } ?? ""
@@ -86,7 +87,6 @@ final class Router {
         case "trash": show(.settings, [.trash])
         case "review": show(.today); isReviewPresented = true
         case "new-task": isReviewPresented = false; show(.today, [.newTask])
-        case "new-inbox": isReviewPresented = false; inboxRequests += 1
         #if DEBUG
         case "debug-notifications": show(.settings, [.debugNotifications])
         case "debug-widgets": show(.settings, [.debugWidgets])

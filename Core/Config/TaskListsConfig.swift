@@ -19,8 +19,7 @@ struct TaskListsConfig: Codable, Hashable, Sendable {
         /// Planning levels in the list; none = every open one (this week, half a year, someday, waiting). With several
         /// the list is split by level.
         var statuses: [ListStatus]?
-        var pleasant: Bool?
-        var needEnergy: Bool?
+        var feel: TaskFeel?
         /// Only tasks estimated at most this many minutes (the default estimate counts).
         var maxEstimate: Int?
     }
@@ -50,7 +49,7 @@ struct TaskListsConfig: Codable, Hashable, Sendable {
 
 extension TaskListsConfig.List {
     var filter: TaskListFilter {
-        TaskListFilter(statuses: statuses?.map(\.status) ?? TaskListFilter.openStatuses, pleasant: pleasant,
-                       needEnergy: needEnergy, maxEstimate: maxEstimate)
+        TaskListFilter(statuses: statuses?.map(\.status) ?? TaskListFilter.openStatuses, feel: feel,
+                       maxEstimate: maxEstimate)
     }
 }

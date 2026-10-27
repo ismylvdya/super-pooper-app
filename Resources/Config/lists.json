@@ -8,13 +8,13 @@
           "id": "pleasant",
           "title": "lists.pleasant",
           "icon": "pleasant",
-          "pleasant": true
+          "feel": "pleasant"
         },
         {
           "id": "energy",
           "title": "lists.energy",
           "icon": "energy",
-          "needEnergy": true
+          "feel": "needEnergy"
         },
         {
           "id": "quick",

@@ -17,7 +17,8 @@ extension AppModel {
             await publishDerivedState()
         case .notToday:
             guard day == nil || day == context().today else { return }
-            postpone(name)
+            let changes = marking.notTodayChanges(for: task)
+            if changes.isEmpty { postpone(name) } else { await write(task, changes) }
         case .archive:
             if await write(task, [.status(.archived)]) {
                 banners.show(L10n.format("banner.archived", name), style: .success)

@@ -6,16 +6,6 @@ extension RulesConfig.EventLinks {
         URL(string: "\(calendarAppURL)\(Int(date.timeIntervalSinceReferenceDate))")
     }
 
-    /// The shortcut of that name run by the Shortcuts app.
-    func shortcutURL(named name: String) -> URL? {
-        name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed).flatMap { URL(string: shortcutsRunURL + $0) }
-    }
-
-    /// The list opened in Apple Reminders.
-    func reminderListURL(id: String) -> URL? {
-        URL(string: remindersListURL + id)
-    }
-
     /// The reminder opened in Apple Reminders.
     func reminderURL(id: String) -> URL? {
         URL(string: remindersAppURL + id)

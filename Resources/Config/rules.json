@@ -36,14 +36,13 @@
     "resolveDaysAfter": 14,
     "pickerDaysAhead": 7,
     "calendarAppURL": "calshow:",
-    "remindersAppURL": "x-apple-reminderkit://REMCDReminder/",
-    "remindersListURL": "x-apple-reminderkit://REMCDList/",
-    "shortcutsRunURL": "shortcuts://run-shortcut?name="
+    "remindersAppURL": "x-apple-reminderkit://REMCDReminder/"
   },
   "vault": {
     "downloadTimeoutSeconds": 20,
     "downloadPollSeconds": 0.25,
     "noteExtension": "md",
+    "settingsFile": "super-pooper-app-settings.json",
     "settingsNote": "SuperPooper Settings.md",
     "obsidianVaultsFolder": "iCloud~md~obsidian/Documents",
     "settingsWriteDelaySeconds": 1
@@ -72,7 +71,8 @@
     "defaultAllowedSkips": 1,
     "defaultWeeklyGoal": 3,
     "maxAllowedSkips": 14,
-    "historyPullWeeks": 4
+    "historyPullWeeks": 4,
+    "maxListBells": 2
   },
   "pool": {
     "extraLines": [

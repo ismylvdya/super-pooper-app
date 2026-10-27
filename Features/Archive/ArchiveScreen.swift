@@ -18,7 +18,7 @@ struct ArchiveScreen: View {
             }
             if !model.archivedHabits.isEmpty {
                 PlateSection(header: "archive.habits") {
-                    ForEach(model.archivedHabits, id: \.name) { habit in row(habit, menu: .habitArchiveRow, color: tokens.habitColor(habit)) }
+                    ForEach(model.archivedHabits, id: \.name) { habit in row(habit, menu: .habitArchiveRow, color: tokens.habitNameColor(habit)) }
                 }
             }
         }

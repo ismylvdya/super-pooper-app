@@ -1,13 +1,14 @@
 import Foundation
 
-/// The settings note in the vault: `SuperPooper Settings.md` next to the tasks folder (inside the
-/// TaskNotes folder), with every setting as a property of its own (see `SettingsProperties`).
-/// Notes written before kept the JSON in a ```SuperPooperApp block; it is still read and dropped on the next write.
+/// Where the app's shared settings live in the vault (see `VaultSettingsFile`).
 protocol SettingsNoteRepository: Sendable {
     func read() async -> Data?
     func write(_ json: Data) async throws
 }
 
+/// The older settings note: `SuperPooper Settings.md` next to the tasks folder, with every setting as a property of
+/// its own (see `SettingsProperties`); older still, the JSON in a ```SuperPooperApp block. Read by
+/// `VaultSettingsFile` until its JSON file exists.
 struct VaultSettingsNote: SettingsNoteRepository {
     let location: VaultLocating
     let fileSystem: NoteFileSystem
@@ -17,7 +18,7 @@ struct VaultSettingsNote: SettingsNoteRepository {
     /// The properties over the old block (if any); nil when the note has neither.
     func read() async -> Data? {
         try? await location.withRoot { root in
-            let url = try noteURL(root: root)
+            let url = try VaultPaths.besideTasks(fileName, root: root, tasksFolder: vaultSettings().tasksFolder, fileSystem: fileSystem)
             guard fileSystem.fileExists(url) else { return nil }
             let text = try fileSystem.read(url).text
             guard let document = try? FrontmatterDocument(text: text) else { return AppBlock.json(in: text) }
@@ -36,7 +37,7 @@ struct VaultSettingsNote: SettingsNoteRepository {
     /// the user wrote there never moves into the text.
     func write(_ json: Data) async throws {
         try await location.withRoot { root in
-            let url = try noteURL(root: root)
+            let url = try VaultPaths.besideTasks(fileName, root: root, tasksFolder: vaultSettings().tasksFolder, fileSystem: fileSystem)
             let current = fileSystem.fileExists(url) ? try fileSystem.read(url).text : L10n.string("settingsNote.intro")
             var document: FrontmatterDocument
             do {
@@ -54,10 +55,12 @@ struct VaultSettingsNote: SettingsNoteRepository {
             try fileSystem.write(document.text(withBody: AppBlock.split(document.body).visible), to: url)
         }
     }
+}
 
-    /// Next to the tasks folder: `TaskNotes/` when the vault is chosen, the chosen folder itself otherwise.
-    private func noteURL(root: URL) throws -> URL {
-        let tasks = VaultPaths.tasksFolder(vaultSettings().tasksFolder, in: root, exists: fileSystem.fileExists)
+extension VaultPaths {
+    /// A file next to the tasks folder: in `TaskNotes/` when the vault is chosen, the chosen folder itself otherwise.
+    static func besideTasks(_ fileName: String, root: URL, tasksFolder: String, fileSystem: NoteFileSystem) throws -> URL {
+        let tasks = VaultPaths.tasksFolder(tasksFolder, in: root, exists: fileSystem.fileExists)
         let parent = (tasks as NSString).deletingLastPathComponent
         return root.appendingPathComponent(parent, isDirectory: true).appendingPathComponent(fileName)
     }

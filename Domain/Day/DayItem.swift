@@ -27,6 +27,8 @@ struct DayItem: Identifiable, Hashable, Sendable {
     let problems: [TaskProblem]
     /// How many parents above it in the pool (a subtask sits under its parent, indented).
     var depth = 0
+    /// Its subtasks sit under it in the pool.
+    var hasSubtasks = false
 
     var id: String { task.name }
     var isHabit: Bool { task.isHabit }

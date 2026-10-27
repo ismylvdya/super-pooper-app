@@ -39,7 +39,7 @@ struct ActionMenuContent: View {
         guard let item else { return true }
         switch action.id {
         case .done, .partial: return true
-        case .twice: return !item.isHabit || item.task.habit.twiceADay || item.state == .marked(.twice)
+        case .twice: return !item.isHabit || item.task.isTwiceADay || item.state == .marked(.twice)
         case .unmark: return item.isDone
         case .skipToday: return isToday && item.isHabit && !item.isDone
         case .notToday: return isToday && !item.isHabit && !item.isDone

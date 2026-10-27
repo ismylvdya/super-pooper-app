@@ -17,6 +17,13 @@ final class SandboxNote {
 
     func text() throws -> String { try sandbox.text(of: task.name) }
 
+    /// Scans again (after the file was changed behind the repository's back).
+    func reload() async throws -> TaskNote {
+        let name = task.name
+        task = try #require(try await repository.scan().tasks.first { $0.name == name })
+        return task
+    }
+
     @discardableResult
     func apply(_ changes: [TaskFieldChange]) async throws -> TaskWriteResult {
         let result = try await repository.apply(changes, to: task)

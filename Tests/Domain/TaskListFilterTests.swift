@@ -6,8 +6,8 @@ import Testing
 struct TaskListFilterTests {
     private let rules = TestConfig.rules.day
     private let tasks = [
-        makeTask("Read a novel", status: .someday) { $0.pleasant = true; $0.timeEstimate = 240 },
-        makeTask("Paint the door", status: .halfYear) { $0.needEnergy = true },
+        makeTask("Read a novel", status: .someday) { $0.feel = .pleasant; $0.timeEstimate = 240 },
+        makeTask("Paint the door", status: .halfYear) { $0.feel = .needEnergy },
         makeTask("Reply to Anna") { $0.timeEstimate = 2 },
         makeTask("Wait for the plumber", status: .waiting),
         makeTask("Old one", status: .done),
@@ -22,8 +22,8 @@ struct TaskListFilterTests {
     }
 
     @Test func propertyListsPickTheirTasks() {
-        #expect(TaskListFilter(pleasant: true).groups(of: tasks, query: "", rules: rules).flatMap(\.tasks).map(\.name) == ["Read a novel"])
-        #expect(TaskListFilter(needEnergy: true).groups(of: tasks, query: "", rules: rules).flatMap(\.tasks).map(\.name) == ["Paint the door"])
+        #expect(TaskListFilter(feel: .pleasant).groups(of: tasks, query: "", rules: rules).flatMap(\.tasks).map(\.name) == ["Read a novel"])
+        #expect(TaskListFilter(feel: .needEnergy).groups(of: tasks, query: "", rules: rules).flatMap(\.tasks).map(\.name) == ["Paint the door"])
         let quick = TaskListFilter(maxEstimate: 15).groups(of: tasks, query: "", rules: rules).flatMap(\.tasks).map(\.name)
         #expect(quick == ["Reply to Anna", "Paint the door", "Wait for the plumber"])
     }

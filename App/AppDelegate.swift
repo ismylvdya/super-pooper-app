@@ -37,11 +37,17 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
     }
 
     /// Swiping or tapping a notification does nothing to the data: the item stays in the day, and the
-    /// notification comes back silently until it is marked. Buttons on it run their action.
+    /// notification comes back silently until it is marked. A tap on an event alert opens Calendar on its day, on a
+    /// reminder its list in Reminders. Buttons on it run their action.
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
         let info = response.notification.request.content.userInfo
         if response.actionIdentifier == UNNotificationDismissActionIdentifier || response.actionIdentifier == UNNotificationDefaultActionIdentifier {
             await BackgroundRefresh.restore(response.notification)
+            if response.actionIdentifier == UNNotificationDefaultActionIdentifier,
+               case .success(let container) = AppContainer.shared,
+               let url = NotificationTapTarget.url(for: info, links: container.config.rules.eventLinks) {
+                await UIApplication.shared.open(url)
+            }
             return
         }
         if (info[NotificationPayload.kindKey] as? String) == PlannedNotification.Kind.reminder.rawValue,

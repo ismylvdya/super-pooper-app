@@ -20,19 +20,19 @@ struct ManualOrderTests {
     }
 
     @Test func propertyEditsDoNotBreakTheManualOrder() {
-        let urgentB = b.applying([.highPriority(true), .due(TaskDue("2026-10-21")), .needEnergy(true)])
+        let urgentB = b.applying([.highPriority(true), .due(TaskDue("2026-10-21")), .feel(.needEnergy)])
         let slowA = a.applying([.highPriority(false), .timeEstimate(240)])
         #expect(ordered(["C", "A", "B"], [slowA, urgentB, c]) == ["C", "A", "B"])
     }
 
     @Test func aNewTaskIsInsertedRightAfterItsAutoSortedNeighbour() {
-        let energy = makeTask("N energy") { $0.needEnergy = true }
+        let energy = makeTask("N energy") { $0.feel = .needEnergy }
         #expect(DayScenario(tasks: [a, b, c, energy]).build(at: context).poolNames == ["A", "N energy", "B", "C"])
         #expect(ordered(["C", "B", "A"], [a, b, c, energy]) == ["C", "B", "A", "N energy"])
     }
 
     @Test func severalNewTasksEachFollowTheirOwnNeighbour() {
-        let energy = makeTask("N energy") { $0.needEnergy = true }
+        let energy = makeTask("N energy") { $0.feel = .needEnergy }
         let halfHour = makeTask("N half hour") { $0.timeEstimate = 30 }
         #expect(ordered(["C", "B", "A"], [a, b, c, energy, halfHour]) == ["C", "B", "N half hour", "A", "N energy"])
     }

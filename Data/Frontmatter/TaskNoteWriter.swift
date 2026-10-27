@@ -11,7 +11,7 @@ struct TaskNoteWriter: Sendable {
     init(mapping: FieldMapping, timeZone: TimeZone) {
         self.mapping = mapping
         self.timeZone = timeZone
-        settings = ItemSettingsProperty(property: mapping.itemSettings.property, keys: mapping.itemSettingsKeys)
+        settings = ItemSettingsProperty(mapping: mapping)
     }
 
     func apply(_ changes: [TaskFieldChange], to document: inout FrontmatterDocument, now: Date) {
@@ -55,10 +55,17 @@ struct TaskNoteWriter: Sendable {
                 set(keys.previousEvent, link.map { .scalar($0.rawValue(timeZone: timeZone), quoted: true) }, in: &document)
             case .nextEvent(let link):
                 set(keys.nextEvent, link.map { .scalar($0.rawValue(timeZone: timeZone), quoted: true) }, in: &document)
-            case .needEnergy(let value):
-                document.set(keys.needEnergy, to: .bool(value))
-            case .pleasant(let value):
-                set(keys.pleasant, value.map(YAMLValue.bool), in: &document)
+            case .feel(let value):
+                setFeel(value, in: &document)
+            case .migrateLegacyFields:
+                settings.migrate(in: &document)
+                if hasLegacyFeel(document), (try? document.value(for: keys.feel)).flatMap({ $0 }) == nil {
+                    setFeel(.legacy(needEnergy: bool(mapping.legacyFields.needEnergy, in: document),
+                                    pleasant: bool(mapping.legacyFields.pleasant, in: document)), in: &document)
+                } else {
+                    document.remove(mapping.legacyFields.needEnergy)
+                    document.remove(mapping.legacyFields.pleasant)
+                }
             case .markInstance(let day, let mark):
                 setInstance(day, included: mark != nil, key: keys.completeInstances, keepEmpty: true, in: &document)
                 setInstance(day, included: mark == .partial, key: keys.partialInstances, keepEmpty: false, in: &document)
@@ -92,6 +99,21 @@ struct TaskNoteWriter: Sendable {
             }
         }
         document.set(keys.dateModified, to: .scalar(ISO8601.formatWithMilliseconds(now, timeZone: timeZone), quoted: false))
+    }
+
+    /// `feel` replaces the older `need_energy` and `pleasant` keys.
+    private func setFeel(_ feel: TaskFeel, in document: inout FrontmatterDocument) {
+        set(mapping.fields.feel, mapping.raw(feel).map { .string($0) }, in: &document)
+        document.remove(mapping.legacyFields.needEnergy)
+        document.remove(mapping.legacyFields.pleasant)
+    }
+
+    private func bool(_ key: String, in document: FrontmatterDocument) -> Bool? {
+        (try? document.value(for: key)).flatMap { $0 }?.bool
+    }
+
+    private func hasLegacyFeel(_ document: FrontmatterDocument) -> Bool {
+        [mapping.legacyFields.needEnergy, mapping.legacyFields.pleasant].contains { (try? document.value(for: $0)).flatMap({ $0 }) != nil }
     }
 
     /// The app's item settings go into their JSON property; everything else is a key of its own.

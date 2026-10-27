@@ -6,6 +6,13 @@ import Foundation
 struct TaskMarking: Sendable {
     let today: LocalDate
 
+    /// "Not today" for a task with a time (it sits on the timeline): the same time tomorrow. Without a time
+    /// nothing is written; the task only leaves today (see `AppModel.postpone`).
+    func notTodayChanges(for task: TaskNote) -> [TaskFieldChange] {
+        guard !task.isHabit, let time = task.due?.time else { return [] }
+        return [.due(TaskDue(day: today.adding(days: 1), time: time))]
+    }
+
     /// `day` matters for habits only (marks for past days); a regular task is simply done or not.
     func changes(marking task: TaskNote, as mark: HabitMark?, on day: LocalDate? = nil) -> [TaskFieldChange] {
         if task.isHabit {

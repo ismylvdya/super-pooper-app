@@ -63,13 +63,12 @@ struct NoteWriteTests {
             .replacingOnce("status: this_week\n", with: "status: half_year\n")
             .replacingOnce(modified, with: written))
 
-        _ = try await note.apply([.timeEstimate(15), .status(.thisWeek), .needEnergy(true), .due(TaskDue("2026-10-23T16:00"))])
+        _ = try await note.apply([.timeEstimate(15), .status(.thisWeek), .feel(.needEnergy), .due(TaskDue("2026-10-23T16:00"))])
         expectSameBytes(try note.text(), try original
-            .replacingOnce(modified, with: written + "need_energy: true\ndue: 2026-10-23T16:00\n"))
+            .replacingOnce(modified, with: written + "feel: need_energy\ndue: 2026-10-23T16:00\n"))
 
-        _ = try await note.apply([.needEnergy(false), .due(nil), .pleasant(false)])
-        expectSameBytes(try note.text(), try original
-            .replacingOnce(modified, with: written + "need_energy: false\npleasant: false\n"))
+        _ = try await note.apply([.feel(.neutral), .due(nil)])
+        expectSameBytes(try note.text(), try original.replacingOnce(modified, with: written))
     }
 
     /// A change counts (and gets its banner) only once the file read back shows it: a write that did not land fails.

@@ -89,7 +89,7 @@ struct ICloudTests {
     @Test func aWriteWithoutOutsideChangesIsNotAConflict() async throws {
         let note = try await SandboxNote("Найти отвёртку")
         #expect(try await note.apply([.highPriority(true)]).hadConflict == false)
-        #expect(try await note.apply([.needEnergy(true)]).hadConflict == false)
+        #expect(try await note.apply([.feel(.needEnergy)]).hadConflict == false)
     }
 
     @Test func aFileChangedElsewhereSinceTheScanIsAConflictAndTheLatestVersionWins() async throws {
@@ -106,7 +106,7 @@ struct ICloudTests {
             .replacingOnce("priority: none\n", with: "priority: high\n")
             .replacingOnce("date_modified: 2026-10-20T09:12:44.123+02:00", with: "date_modified: \(note.sandbox.nowStamp)"))
         #expect(result.task.isHighPriority && result.task.timeEstimate == 60)
-        #expect(try await note.apply([.needEnergy(true)]).hadConflict == false)
+        #expect(try await note.apply([.feel(.needEnergy)]).hadConflict == false)
     }
 
     @Test func conflictVersionsFoundAtWriteTimeAreReported() async throws {

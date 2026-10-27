@@ -15,6 +15,8 @@ struct HabitSections: View {
             TaskLinksSection(task: editor.task)
         }
         HabitOptionsSection(editor: editor)
+        // High, estimate and feel, as on a task page: they sort the habit in the pool and show as its chips.
+        TaskPropertiesSection(editor: editor)
         HabitGoalSection(editor: editor)
         RecurrenceEditorSection(editor: editor)
         HabitRemindersSection(editor: editor)

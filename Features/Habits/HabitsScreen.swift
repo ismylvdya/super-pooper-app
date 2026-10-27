@@ -23,7 +23,6 @@ struct HabitsScreen: View {
                 .pageCell()
             if model.habits.isEmpty {
                 Text("habits.empty").font(tokens.font(.hint)).foregroundStyle(tokens.color(.secondaryText))
-                    .padding(.horizontal, tokens.space(.screenHorizontal))
                     .pageCell()
             }
             group(groups.tracked, header: nil, groups: groups, isRepeatable: false, today: today)
@@ -37,10 +36,11 @@ struct HabitsScreen: View {
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("habits.routines")
             }
-            .padding(.horizontal, tokens.space(.screenHorizontal))
             .pageCell()
         }
         .listStyle(.plain)
+        // The screen margins belong to the list, not to its cells: a lifted or dragged row is only its plate.
+        .contentMargins(.horizontal, tokens.space(.screenHorizontal), for: .scrollContent)
         // Gaps are rows of their own height, not of a list row's minimum.
         .environment(\.defaultMinListRowHeight, 0)
         .appList()
@@ -72,14 +72,13 @@ struct HabitsScreen: View {
                 Text(header)
                     .font(tokens.font(.sectionHeader))
                     .foregroundStyle(tokens.color(.tertiaryText))
-                    .padding(.horizontal, tokens.space(.screenHorizontal) + tokens.space(.plateInner))
+                    .padding(.horizontal, tokens.space(.plateInner))
                     .padding(.bottom, tokens.space(.headerToPlate))
                     .pageCell()
             }
             ForEach(Array(habits.enumerated()), id: \.element.name) { index, habit in
                 let isFirst = index == 0, isLast = index == habits.count - 1
                 HabitRow(habit: habit, today: today, isFirst: isFirst, isLast: isLast)
-                    .padding(.horizontal, tokens.space(.screenHorizontal))
                     .pageCell()
                     // Rebuilt when it becomes or stops being first or last, so the corners follow a new order.
                     .id("\(habit.name)|\(isFirst)|\(isLast)")

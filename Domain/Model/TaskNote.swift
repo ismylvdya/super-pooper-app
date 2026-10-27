@@ -19,9 +19,10 @@ struct TaskNote: Identifiable, Hashable, Codable, Sendable {
     var subtaskOrder: Int?
     var previousEvent: EventLink?
     var nextEvent: EventLink?
-    var needEnergy: Bool = false
-    /// `nil` when the field is absent.
-    var pleasant: Bool?
+    var feel: TaskFeel = .neutral
+    /// The note still has fields of an older format (separate setting keys, `need_energy`/`pleasant`); the next
+    /// sync rewrites them.
+    var hasLegacyFields = false
     var recurrenceRaw: String?
     var recurrence: RecurrenceRule?
     var completeInstances: [LocalDate] = []
@@ -46,6 +47,8 @@ struct TaskNote: Identifiable, Hashable, Codable, Sendable {
         if !reminderTimes.isEmpty { return reminderTimes }
         return due?.time.map { [$0] } ?? []
     }
+    /// A habit done twice a day: the Twice option, or two or more reminders a day (the second Done is Twice).
+    var isTwiceADay: Bool { habit.twiceADay || habitTimes.count >= 2 }
 }
 
 /// A data issue found in a single note (shown as a badge, never as a push).

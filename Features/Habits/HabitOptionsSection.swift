@@ -3,12 +3,21 @@ import SwiftUI
 /// Color, harmful, repeatable task, Today, routine, twice a day.
 struct HabitOptionsSection: View {
     @Environment(\.tokens) private var tokens
+    @Environment(\.icons) private var icons
     let editor: TaskEditor
 
     private var options: HabitOptions { editor.task.habit }
 
     var body: some View {
         PlateSection(header: "habitPage.options", info: "info.habitPage.options") {
+            // What the note is: a habit to keep track of or a task that simply repeats.
+            PlateRow(icon: .recurrence, title: "habitPage.kind", info: "info.habitPage.repeatable") {}
+            Picker("habitPage.kind", selection: Binding(get: { options.repeatable }, set: { editor.apply([.repeatable($0)]) })) {
+                Text("habitPage.kind.habit").tag(false)
+                Text("habitPage.kind.repeatable").tag(true)
+            }
+            .pickerStyle(.segmented)
+            .accessibilityIdentifier("habitPage.kind")
             toggle(.today, "habitPage.showInToday", "info.habitPage.showInToday", \.showInToday, TaskFieldChange.showInToday)
             PlateRow(icon: .colors, title: "habitPage.color") {
                 ColorPicker("habitPage.color", selection: Binding(
@@ -16,9 +25,16 @@ struct HabitOptionsSection: View {
                     set: { color in editor.apply([.habitColor(UIColor(color).hexString)]) }
                 ), supportsOpacity: false)
                 .labelsHidden()
+                // Back to the habit color from the settings.
+                if options.color != nil {
+                    Button { editor.apply([.habitColor(nil)]) } label: {
+                        Image(systemName: icons[.resetOrder]).foregroundStyle(tokens.color(.secondaryText))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text("settings.colors.reset"))
+                }
             }
             toggle(.harmful, "habitPage.harmful", "info.habitPage.harmful", \.harmful, TaskFieldChange.harmful)
-            toggle(.recurrence, "habitPage.repeatable", "info.habitPage.repeatable", \.repeatable, TaskFieldChange.repeatable)
             PlateRow(icon: .timeOfDay, title: "habitPage.timeOfDay", info: "info.habitPage.timeOfDay") {
                 Picker("habitPage.timeOfDay", selection: Binding(
                     get: { options.timeOfDay },

@@ -34,12 +34,18 @@ struct MorningReviewScreen: View {
                             if let item = items[name] {
                                 let position = ReviewGroups.position(of: index, in: rows)
                                 ReviewRow(item: item, today: plan.today) { path.append(.task(item.id)) }
-                                    .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: tokens.radius(.plate), style: .continuous))
+                                    // A subtask sits under its parent, shifted right, as in the pool.
+                                    .padding(.leading, CGFloat(item.depth) * tokens.space(.subtaskIndent))
+                                    // The row fills its cell, so a long press lifts it at its own size.
+                                    .padding(.horizontal, tokens.space(.plateInner))
+                                    .background(GroupRowBackground(isFirst: position.isFirst, isLast: position.isLast))
+                                    .liftedPlate()
                                     .contextMenu {
                                         ActionMenuContent(menu: item.isHabit ? .habitContext : .taskContext, item: item) {
                                             perform($0, on: item.id)
                                         }
                                     }
+                                    .listRowInsets(EdgeInsets())
                                     .groupRow(isFirst: position.isFirst, isLast: position.isLast)
                                     // The row is rebuilt when it becomes or stops being the group's first or last, so its
                                     // rounded corners follow a new order (the list keeps a moved row's old background).
@@ -173,8 +179,9 @@ struct ReviewRow: View {
                 toggleChip(.high, isOn: task.isHighPriority, tint: tokens.color(.high)) { [.highPriority(!$0.isHighPriority)] }
                 dueChip
                 estimateChip
-                toggleChip(.energy, isOn: task.needEnergy, tint: tokens.color(.energy)) { [.needEnergy(!$0.needEnergy)] }
-                toggleChip(.pleasant, isOn: task.pleasant == true, tint: tokens.color(.heart)) { [.pleasant($0.pleasant != true)] }
+                // One feel: turning one on turns the other off.
+                toggleChip(.energy, isOn: task.feel == .needEnergy, tint: tokens.color(.energy)) { [.feel($0.feel == .needEnergy ? .neutral : .needEnergy)] }
+                toggleChip(.pleasant, isOn: task.feel == .pleasant, tint: tokens.color(.heart)) { [.feel($0.feel == .pleasant ? .neutral : .pleasant)] }
                 if !task.isHabit { statusChip }
                 if !task.previousTasks.isEmpty || item.isBlocked {
                     Chip(icon: .previousTasks, text: "\(task.previousTasks.count)")

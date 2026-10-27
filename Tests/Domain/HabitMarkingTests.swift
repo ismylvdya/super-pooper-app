@@ -17,6 +17,14 @@ struct HabitMarkingTests {
         #expect(HabitMarking.next(after: .twice, twiceADay: true) == nil)
     }
 
+    /// Two reminders a day make a habit twice-a-day without the option: tap and menus offer Twice.
+    @Test func twoRemindersADayMeanTwiceADay() {
+        let two = makeTask("Push-ups", status: .habit) { $0.reminderTimes = [LocalTime("11:45"), LocalTime("17:45")] }
+        let one = makeTask("Water", status: .habit) { $0.reminderTimes = [LocalTime("09:00")] }
+        #expect(two.isTwiceADay && !one.isTwiceADay)
+        #expect(HabitMarking.next(after: .done, twiceADay: two.isTwiceADay) == .twice)
+    }
+
     @Test func secondDoneFromATwoReminderDayIsTwice() {
         #expect(HabitMarking.notificationMark(.done, current: nil, remindersPerDay: 2) == .done)
         #expect(HabitMarking.notificationMark(.done, current: .done, remindersPerDay: 2) == .twice)

@@ -7,3 +7,6 @@ xcuserdata/
 .DS_Store
 # Local renders of the test vault
 Fixtures/Rendered/
+
+# Personal signing for Xcode installs
+Config/Local.xcconfig

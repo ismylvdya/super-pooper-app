@@ -56,29 +56,29 @@ struct PoolSorterTests {
     }
 
     @Test func needEnergyGoesUpBeforeTheEnergyHour() {
-        let energy = makeTask("Energy", created: "2026-10-20") { $0.needEnergy = true; $0.timeEstimate = 240 }
+        let energy = makeTask("Energy", created: "2026-10-20") { $0.feel = .needEnergy; $0.timeEstimate = 240 }
         let rest = favoredByEverythingBelow(.energyBeforeEnergyHour)
         #expect(sortedNames([rest, energy], at: TestCalendar.context(TestCalendar.wednesday, "13:59")) == ["Energy", "Rest"])
     }
 
     @Test(arguments: ["14:00", "18:30", "23:59"])
     func needEnergyGoesDownFromTheEnergyHour(time: String) {
-        let energy = makeTask("Energy", created: "2026-01-01") { $0.needEnergy = true; $0.pleasant = false; $0.timeEstimate = 2 }
-        let plain = makeTask("Plain", created: "2026-10-20") { $0.pleasant = true; $0.timeEstimate = 240 }
+        let energy = makeTask("Energy", created: "2026-01-01") { $0.feel = .needEnergy; $0.timeEstimate = 2 }
+        let plain = makeTask("Plain", created: "2026-10-20") { $0.feel = .pleasant; $0.timeEstimate = 240 }
         #expect(sortedNames([energy, plain], at: TestCalendar.context(TestCalendar.wednesday, time)) == ["Plain", "Energy"])
     }
 
-    @Test func unpleasantBeatsEverythingBelow() {
-        let unpleasant = makeTask("Unpleasant", created: "2026-10-20") { $0.pleasant = false; $0.timeEstimate = 240 }
-        let rest = favoredByEverythingBelow(.unpleasantFirst)
-        #expect(sortedNames([rest, unpleasant], at: morning) == ["Unpleasant", "Rest"])
+    @Test func pleasantWaitsBehindEverythingBelow() {
+        let pleasant = makeTask("Pleasant", created: "2026-01-01") { $0.feel = .pleasant; $0.timeEstimate = 2 }
+        let rest = makeTask("Rest", created: "2026-10-20") { $0.timeEstimate = 240 }
+        #expect(sortedNames([pleasant, rest], at: morning) == ["Rest", "Pleasant"])
     }
 
-    @Test func onlyAnExplicitPleasantFalseCountsAsUnpleasant() {
-        let pleasant = makeTask("Pleasant", created: "2026-10-01") { $0.pleasant = true }
+    @Test func afterTheEnergyHourPleasantGoesBehindNeutralButBeforeNeedingEnergy() {
+        let pleasant = makeTask("Pleasant", created: "2026-10-01") { $0.feel = .pleasant }
         let unset = makeTask("Unset", created: "2026-10-02")
-        let unpleasant = makeTask("Unpleasant", created: "2026-10-03") { $0.pleasant = false }
-        #expect(sortedNames([unset, pleasant, unpleasant], at: morning) == ["Unpleasant", "Pleasant", "Unset"])
+        let energy = makeTask("Energy", created: "2026-10-03") { $0.feel = .needEnergy }
+        #expect(sortedNames([pleasant, energy, unset], at: TestCalendar.context(TestCalendar.wednesday, "14:00")) == ["Unset", "Pleasant", "Energy"])
     }
 
     @Test func shorterBeatsOlder() {
@@ -173,8 +173,8 @@ struct PoolSorterTests {
                 case .dueToday: task.due = TaskDue("2026-10-21")
                 case .highPriority: task.isHighPriority = true
                 case .nearestDueThisWeek: if task.due == nil { task.due = TaskDue("2026-10-22") }
-                case .energyBeforeEnergyHour: task.needEnergy = true
-                case .unpleasantFirst: task.pleasant = false
+                case .energyBeforeEnergyHour: task.feel = .needEnergy
+                case .unpleasantFirst: break
                 case .shortFirst: task.timeEstimate = 2
                 case .olderFirst: break
                 }

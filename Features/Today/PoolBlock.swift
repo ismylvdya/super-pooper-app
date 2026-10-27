@@ -72,8 +72,8 @@ struct PoolBlock: View {
                             ForEach(segment.items) { item in tracked(row(item, plate: .bare), item) }
                         }
                         .background(tokens.color(.plateBackground),
-                                    in: RoundedRectangle(cornerRadius: tokens.radius(.poolRow), style: .continuous))
-                        .clipShape(RoundedRectangle(cornerRadius: tokens.radius(.poolRow), style: .continuous))
+                                    in: RoundedRectangle(cornerRadius: tokens.rowPlateRadius, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: tokens.rowPlateRadius, style: .continuous))
                     } else if let item = segment.items.first {
                         tracked(row(item, plate: .pool), item)
                     }
@@ -129,7 +129,8 @@ struct PoolBlock: View {
 }
 
 /// A task in a rounded plate — the same look in the pool and on the timeline. In the pool the plate
-/// grows with the estimate (a long task takes more room); the long-press highlight is the plate itself.
+/// grows with the estimate (a long task takes more room), except a parent: its subtasks hold the time, so it stays
+/// one line; the long-press highlight is the plate itself.
 struct PoolRow: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.rules) private var rules
@@ -142,8 +143,9 @@ struct PoolRow: View {
     var dragSource: TaskDragState.Source?
 
     var body: some View {
-        let lines = rules.pool.extraLines(forEstimate: rules.day.estimate(of: item.task))
-        PoolRowContent(item: item, today: today, isToday: isToday, isCompact: isCompact, plate: plate,
+        let lines = item.hasSubtasks ? 0 : rules.pool.extraLines(forEstimate: rules.day.estimate(of: item.task))
+        PoolRowContent(item: item, today: today, isToday: isToday, isCompact: isCompact,
+                       titleLineLimit: item.hasSubtasks ? 1 : nil, plate: plate,
                        minimumHeight: CGFloat(lines) * tokens.uiFont(.taskTitle).lineHeight, handler: handler,
                        dragSource: dragSource)
             // A subtask sits under its parent, shifted right.
@@ -171,6 +173,7 @@ struct PoolRowContent: View {
     var showsDetails = true
     var titleLineLimit: Int?
     var titleLineHeight: CGFloat?
+    var showsDoneState = true
     var plate: PlateKind = .pool
     /// Extra height under the content (pool rows of long tasks).
     var minimumHeight: CGFloat = 0
@@ -180,7 +183,7 @@ struct PoolRowContent: View {
 
     var body: some View {
         let row = TaskRowView(item: item, today: today, titleFont: titleFont, showsDetails: showsDetails, isCompact: isCompact,
-                              titleLineLimit: titleLineLimit, titleLineHeight: titleLineHeight,
+                              titleLineLimit: titleLineLimit, titleLineHeight: titleLineHeight, showsDoneState: showsDoneState,
                               onOpen: { handler.run(actions.definition(.open), taskName: item.id) })
         Group {
             switch plate {
@@ -202,7 +205,7 @@ struct PoolRowContent: View {
                 row.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading).slotPlate(isPast: isPast, isCompact: isCompact)
             }
         }
-        .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: tokens.radius(plateRadius), style: .continuous))
+        .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: plateRadius, style: .continuous))
         .contextMenu {
             ActionMenuContent(menu: item.isHabit ? .habitContext : .taskContext, item: item, isToday: isToday) {
                 handler.handle($0, taskName: item.id)
@@ -211,9 +214,9 @@ struct PoolRowContent: View {
         .taskDragSource(item, from: dragSource ?? .pool, drag: drag, isOn: dragSource != nil)
     }
 
-    private var plateRadius: RadiusToken {
-        if case .slot(_, true) = plate { return .widgetItem }
-        return .poolRow
+    private var plateRadius: CGFloat {
+        if case .slot(_, true) = plate { return tokens.radius(.widgetItem) }
+        return tokens.rowPlateRadius
     }
 }
 

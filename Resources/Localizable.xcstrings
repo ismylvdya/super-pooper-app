@@ -287,17 +287,6 @@
         }
       }
     },
-    "banner.inboxListMissing": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Choose the Reminders list for 📥 New in inbox."
-          }
-        }
-      }
-    },
     "banner.orderReset": {
       "extractionState": "manual",
       "localizations": {
@@ -382,6 +371,94 @@
           "stringUnit": {
             "state": "translated",
             "value": "SuperPooper can see your whole vault. Choose only the TaskNotes folder in Settings → Tasks → TaskNotes folder."
+          }
+        }
+      }
+    },
+    "chipOrder.blocked": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waits for another task"
+          }
+        }
+      }
+    },
+    "chipOrder.feel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Needs energy or pleasant"
+          }
+        }
+      }
+    },
+    "chipOrder.footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The order of the chips at the right of task rows, from left to right. Drag to change it."
+          }
+        }
+      }
+    },
+    "chipOrder.habit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habit or repeating task"
+          }
+        }
+      }
+    },
+    "chipOrder.high": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "High priority"
+          }
+        }
+      }
+    },
+    "chipOrder.problem": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Problem in the note"
+          }
+        }
+      }
+    },
+    "chipOrder.reset": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset order"
+          }
+        }
+      }
+    },
+    "chipOrder.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chip order"
           }
         }
       }
@@ -1134,6 +1211,39 @@
         }
       }
     },
+    "habitPage.kind": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kind"
+          }
+        }
+      }
+    },
+    "habitPage.kind.habit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habit"
+          }
+        }
+      }
+    },
+    "habitPage.kind.repeatable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeatable task"
+          }
+        }
+      }
+    },
     "habitPage.name.placeholder": {
       "extractionState": "manual",
       "localizations": {
@@ -1152,17 +1262,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Habit"
-          }
-        }
-      }
-    },
-    "habitPage.repeatable": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Repeatable task"
           }
         }
       }
@@ -1453,6 +1552,17 @@
         }
       }
     },
+    "habits.traits.separator": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " · "
+          }
+        }
+      }
+    },
     "habits.week.count": {
       "extractionState": "manual",
       "localizations": {
@@ -1706,17 +1816,6 @@
         }
       }
     },
-    "info.settings.inboxList": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The quick action 📥 New in inbox (long press on the app icon) opens this list in Reminders. Tap “New Reminder” there to add one."
-          }
-        }
-      }
-    },
     "info.settings.notifications": {
       "extractionState": "manual",
       "localizations": {
@@ -1757,17 +1856,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "How many pool rows are visible at once; the rest scroll and are counted below."
-          }
-        }
-      }
-    },
-    "info.settings.quickActions": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The actions of a long press on the app icon on the Home Screen."
           }
         }
       }
@@ -1948,17 +2036,6 @@
         }
       }
     },
-    "info.taskPage.energy": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Such tasks go up in the pool before the energy hour and down after it."
-          }
-        }
-      }
-    },
     "info.taskPage.estimate": {
       "extractionState": "manual",
       "localizations": {
@@ -1977,6 +2054,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Link the task to a calendar event: before it (Next event) or after it (Previous event). Linked tasks line up on the timeline."
+          }
+        }
+      }
+    },
+    "info.taskPage.feel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tasks that need energy (or are unpleasant) go up in the pool before the energy hour and down after it. Pleasant ones are a reward and wait for the rest."
           }
         }
       }
@@ -2010,17 +2098,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "The note text (markdown) is edited as plain text and saved automatically."
-          }
-        }
-      }
-    },
-    "info.taskPage.pleasant": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Unpleasant tasks go before pleasant ones when everything else is equal."
           }
         }
       }
@@ -3818,28 +3895,6 @@
         }
       }
     },
-    "settings.inboxList": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "📥 Inbox list"
-          }
-        }
-      }
-    },
-    "settings.inboxList.none": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Not chosen"
-          }
-        }
-      }
-    },
     "settings.landscape": {
       "extractionState": "manual",
       "localizations": {
@@ -4012,17 +4067,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Visible tasks"
-          }
-        }
-      }
-    },
-    "settings.quickActions": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Quick actions"
           }
         }
       }
@@ -4737,7 +4781,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Unpleasant first"
+            "value": "Pleasant last"
           }
         }
       }
@@ -4748,7 +4792,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tasks marked not pleasant go earlier."
+            "value": "Pleasant tasks are a reward: they go after the rest."
           }
         }
       }
@@ -4995,17 +5039,6 @@
         }
       }
     },
-    "taskPage.energy": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Needs energy"
-          }
-        }
-      }
-    },
     "taskPage.estimate": {
       "extractionState": "manual",
       "localizations": {
@@ -5046,6 +5079,50 @@
           "stringUnit": {
             "state": "translated",
             "value": "A task linked to an event is not checked against the event time — it is a guide, not a promise."
+          }
+        }
+      }
+    },
+    "taskPage.feel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feel"
+          }
+        }
+      }
+    },
+    "taskPage.feel.needEnergy": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Needs energy"
+          }
+        }
+      }
+    },
+    "taskPage.feel.neutral": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neutral"
+          }
+        }
+      }
+    },
+    "taskPage.feel.pleasant": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pleasant"
           }
         }
       }
@@ -5178,17 +5255,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choose event"
-          }
-        }
-      }
-    },
-    "taskPage.pleasant": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pleasant"
           }
         }
       }

@@ -3,7 +3,7 @@ import Testing
 @testable import SuperPooper
 
 /// The app's settings of a habit (`habit_color`, `harmful`, `show_in_today`, …) live in one JSON property
-/// (`superpooper`); notes with the older separate keys are read and moved into it with the next change.
+/// (`fromSuperPooperApp`); notes with the older separate keys or property name are read and moved into it with the next change.
 @Suite("Habit notes")
 struct HabitNoteTests {
     @Test func habitOptionsRoundTripThroughTheSettingsProperty() async throws {
@@ -11,7 +11,7 @@ struct HabitNoteTests {
         let written = try await note.apply([.habitColor("#34C759"), .harmful(true), .showInToday(false), .timeOfDay(.evening),
                                             .twiceADay(true), .twiceCountsDouble(true), .weeklyGoal(4)]).task
         let text = try note.text()
-        let line = try #require(text.split(separator: "\n").first { $0.hasPrefix("superpooper: '{") })
+        let line = try #require(text.split(separator: "\n").first { $0.hasPrefix("fromSuperPooperApp: '{") })
         for pair in ["\"habit_color\":\"#34C759\"", "\"harmful\":true", "\"show_in_today\":false", "\"time_of_day\":\"evening\"",
                      "\"twice_a_day\":true", "\"twice_counts_double\":true", "\"weekly_goal\":4"] {
             #expect(line.contains(pair))
@@ -56,6 +56,30 @@ struct HabitNoteTests {
         #expect(written.habit.color == "#FF9500" && written.habit.skipRule == .weeklyGoal(times: 2) && written.habit.harmful)
         #expect(!text.contains("\nhabit_color:") && !text.contains("\nweekly_goal:"))
         #expect(text.contains("\"habit_color\":\"#FF9500\"") && text.contains("\"weekly_goal\":2"))
+    }
+
+    /// The sync's migration: the old property name, separate keys and the two feel booleans become the current
+    /// fields, values unchanged.
+    @Test func theMigrationRewritesEveryOlderField() async throws {
+        let note = try await SandboxNote("Медитация 🧘")
+        let old = try note.text().replacingOnce("\ntags:", with: """
+
+        superpooper: '{"harmful":true}'
+        habit_color: "#FF9500"
+        need_energy: false
+        pleasant: true
+        tags:
+        """)
+        try note.sandbox.write(old, to: note.task.name)
+        let before = try await note.reload()
+        #expect(before.hasLegacyFields && before.feel == .pleasant && before.habit.harmful)
+        let written = try await note.apply([.migrateLegacyFields]).task
+        let text = try note.text()
+        #expect(!written.hasLegacyFields && written.feel == .pleasant && written.habit.harmful && written.habit.color == "#FF9500")
+        for key in ["superpooper:", "habit_color:", "need_energy:", "pleasant:"] {
+            #expect(!text.split(separator: "\n").contains { $0.hasPrefix(key) }, "no \(key) key")
+        }
+        #expect(text.contains("\nfeel: pleasant\n") && text.contains("\"habit_color\":\"#FF9500\"") && text.contains("\"harmful\":true"))
     }
 }
 

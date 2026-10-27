@@ -63,4 +63,14 @@ extension EnvironmentValues {
         get { self[TitleReserveKey.self] }
         set { self[TitleReserveKey.self] = newValue }
     }
+
+    /// Extra points at the right of a row title when nothing follows it (the plate's right edge is tight for chips).
+    var bareTitleInset: CGFloat {
+        get { self[BareTitleInsetKey.self] }
+        set { self[BareTitleInsetKey.self] = newValue }
+    }
+}
+
+private struct BareTitleInsetKey: EnvironmentKey {
+    static let defaultValue: CGFloat = 0
 }

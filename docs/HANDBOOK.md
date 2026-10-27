@@ -78,7 +78,7 @@ SuperPooper — iPhone-приложение-оболочка над тремя �
 | Порядок критериев сортировки пула | `sort.json` → `pool` (список; переставить строки = поменять приоритет) |
 | Имена полей TaskNotes и значения статусов/приоритетов | `field-mapping.json` |
 | Включить/выключить функцию | `feature-flags.json` |
-| Группы и списки вкладки Lists (группа: название и списки; список: название, иконка — ключ `icons.json`, статусы, `pleasant`, `needEnergy`, `maxEstimate`) | `lists.json` |
+| Группы и списки вкладки Lists (группа: название и списки; список: название, иконка — ключ `icons.json`, статусы, `feel` (`needEnergy`/`pleasant`), `maxEstimate`) | `lists.json` |
 | Пороги и правила: оценка по умолчанию, подписи оценок (`2 min`…`dohuya`), лимит уведомлений, горизонт, окно поиска событий, таймаут и шаг опроса iCloud, задержки (запись заметки настроек, реакция на изменения в Calendar), число бэкапов, шаги виджетов | `rules.json` |
 | Пределы степперов и слайдеров настроек (часы до/после, размер колокольчика, шрифты, прозрачность, интервал и число повторов) | `rules.json` → `limits` (`min`, `max`, `step`) |
 | С чего начинается новое значение: время по умолчанию, отступ следующего напоминания привычки, задержка сохранения описания, конец повторения через N дней / после N раз | `rules.json` → `editing` |
@@ -90,7 +90,7 @@ SuperPooper — iPhone-приложение-оболочка над тремя �
 
 Пользовательские настройки хранятся в App Group (`settings.json`) и при чтении **накладываются на `defaults.json`**: новые поля из новой версии сразу получают значения по умолчанию.
 
-Общая часть настроек (всё, кроме папки, календарей/списков этого устройства и онбординга) лежит в vault — заметка `SuperPooper Settings.md` рядом с папкой задач. **Каждая настройка — отдельное свойство frontmatter**, имя — путь в JSON (`SettingsProperties`):
+Общая часть настроек (всё, кроме папки, календарей/списков этого устройства и онбординга) лежит в vault — файл `super-pooper-app-settings.json` рядом с папкой задач (`rules.vault.settingsFile`, `VaultSettingsFile`), JSON с отступами и сортированными ключами. Пока файла нет, читается старая заметка `SuperPooper Settings.md` и её настройки сразу записываются в новый файл; заметка остаётся как была (её можно удалить руками). В старой заметке **каждая настройка — отдельное свойство frontmatter**, имя — путь в JSON (`SettingsProperties`):
 
 ```yaml
 ---
@@ -139,8 +139,8 @@ habits.morningRoutine:
 2. `dueToday` — `due` сегодня;
 3. `highPriority`;
 4. `nearestDueThisWeek` — ближайший `due` на этой неделе;
-5. `energyBeforeEnergyHour` — `need_energy` до часа энергии выше, после — ниже;
-6. `unpleasantFirst` — `pleasant: false` раньше;
+5. `energyBeforeEnergyHour` — `feel: need_energy` до часа энергии выше, после — ниже;
+6. `unpleasantFirst` («Pleasant last») — `feel: pleasant` ниже остальных;
 7. `shortFirst` — короткая оценка раньше;
 8. `olderFirst` — старше `date_created` раньше.
 
@@ -188,11 +188,10 @@ previous_event: "8A1F…:A2B3…|Call with dad|2026-10-23T19:00:00+02:00"   # п
 next_event: "…"              # до события (тот же формат)
 projects:                    # сабтаск: родительская заметка (как в TaskNotes)
   - "[[Ремонт]]"
-need_energy: true
-pleasant: false
+feel: need_energy            # need_energy | pleasant; нет ключа = нейтрально (старые need_energy/pleasant читаются)
 recurrence: DTSTART:20261001T000000Z;FREQ=DAILY     # правило привычки
-superpooper: '{"habit_color":"#34C759","reminder_times":["09:00","21:00"],"show_in_today":false,"weekly_goal":5}'
-                             # настройки приложения у дела или привычки — одно свойство с JSON (см. ниже)
+fromSuperPooperApp: '{"habit_color":"#34C759","reminder_times":["09:00","21:00"],"show_in_today":false,"weekly_goal":5}'
+                             # собственные настройки ЭТОГО дела или привычки — одно свойство с JSON (см. ниже)
 complete_instances: [ ... ]  # дни с любой отметкой
 partial_instances: [ ... ]   # дни с Partially (они же есть в complete_instances)
 twice_instances: [ ... ]     # дни с Twice (они же есть в complete_instances)
@@ -203,7 +202,7 @@ date_modified: 2026-10-22T18:01:02.456+02:00         # обновляется п
 Текст заметки.
 ```
 
-- **Настройки приложения** у дела или привычки — одно свойство `superpooper` с JSON (имя и состав — `field-mapping.json` → `itemSettings`). Ключи внутри: `reminder_times` (времена дня, несколько можно), `show_in_today` (нет ключа = да), `habit_color`, `harmful`, `repeatable` (повторяющееся дело, а не привычка), `time_of_day` (рутина: `morning` | `day` | `evening`), `twice_a_day`, `twice_counts_double` (Twice = 2 в цели и долях), `weekly_goal` (N раз в неделю), `allowed_skips` (пропуски подряд, если нет `weekly_goal`). Заметки старых версий держат их отдельными свойствами с теми же именами: они читаются, а при следующем изменении любой настройки переезжают в JSON. Скилл может писать любой из вариантов; JSON важнее отдельного ключа.
+- **Собственные настройки дела или привычки** (то, что относится только к нему; общие настройки приложения — в `super-pooper-app-settings.json`, см. выше) — одно свойство `fromSuperPooperApp` с JSON (имя, старые имена `legacyProperties` и состав — `field-mapping.json` → `itemSettings`). Ключи внутри: `reminder_times` (времена дня, несколько можно), `show_in_today` (нет ключа = да), `habit_color`, `harmful`, `repeatable` (повторяющееся дело, а не привычка), `time_of_day` (рутина: `morning` | `day` | `evening`), `twice_a_day`, `twice_counts_double` (Twice = 2 в цели и долях), `weekly_goal` (N раз в неделю), `allowed_skips` (пропуски подряд, если нет `weekly_goal`). Заметки старых версий держат их отдельными свойствами с теми же именами или в свойстве `superpooper`: они читаются, а синхронизация один раз переписывает такие заметки в текущий формат (`TaskFieldChange.migrateLegacyFields`, значения не меняются; туда же `need_energy`/`pleasant` → `feel`). Скилл может писать любой из вариантов; JSON важнее отдельного ключа.
 - `previous_task` читается также как строки `"[[Имя]]"` и строки без скобок; пишется объектами `{uid: "[[Имя]]", reltype: FINISHTOSTART}`, как в TaskNotes. «Next tasks» в файле не хранится — это `previous_task` других задач.
 - **Ссылка на событие**: строка `eventIdentifier|название|начало ISO 8601` (с часовым поясом). Название может содержать `|` — делятся только первый и последний разделитель. Поиск: по `eventIdentifier` в тот же день (у повторяющихся событий id общий, ближайшее по времени начало), затем по названию и точному времени начала, иначе — «event not found» (значок, связь игнорируется). Скилл может писать любой `eventIdentifier` (например, `skill`), если название и время точные.
 - **Сабтаски** — по-тасконотовски: отдельные заметки-задачи, у которых в `projects` есть ссылка на родителя. Приложение добавляет ссылку при создании сабтаска и переименовывает её вместе с родителем; остальные записи `projects` не трогает.
@@ -256,7 +255,7 @@ scripts/sim.sh launch -SPVaultPath TestVault -SPSeedDemo -SPSkipOnboarding -SPNo
 scripts/sim.sh screenshot .build/shot.png
 ```
 
-Ярлыки на иконке приложения (`Config/App-Info.plist`): «🔫 New делишка» → `superpooper://new-task`, «📥 New in inbox» → `superpooper://new-inbox` (запускает шорткат с именем из Settings → Today → Quick actions через `shortcuts://run-shortcut?name=…`; без имени открывает эту настройку). DEBUG-аргументы (в Release их нет): `-SPVaultPath`, `-SPSeedDemo` (календарь «SuperPooper Test» с событиями 10:00, «Call with dad» 19:00–20:00, повторяющимся «Lunch», лист с напоминанием на 15:00 и лист «Inbox», который приложение игнорирует), `-SPNow HH:mm`, `-SPToday YYYY-MM-DD`, `-SPSkipOnboarding`, `-SPResetState`, `-SPTimeline oneColumn|twoColumns`, `-SPArrangement stacked|sideBySide|paged`, `-SPOpen superpooper://…`, `-SPProvisionalNotifications`. В симуляторе уведомления без звука, а демо-напоминания без будильников. Deep links: `superpooper://task/<имя>`, `…://settings`, `…://review`, `…://archive`, DEBUG: `…://debug-notifications`, `…://debug-widgets`. Тестовый vault также можно выбрать вручную: на экране выбора папки в Debug-сборке есть кнопка «Use test vault (Debug)»; или «Файлы» → «На iPhone» → SuperPooper → TestVault (в Debug Documents видны в «Файлах»). Если пикер или «На iPhone» в симуляторе не открываются — это зависла служба файлов симулятора: перезапустить симулятор. Симулятор для глаз — «SuperPooper Mini» (iPhone 13 mini, 360 pt): `SP_SIMULATOR="SuperPooper Mini" scripts/sim.sh …`.
+Ярлык на иконке приложения (`Config/App-Info.plist`): «🔫 New делишка» → `superpooper://new-task`. Быстрое напоминание в инбокс — системным шорткатом в Пункте управления, не из приложения. DEBUG-аргументы (в Release их нет): `-SPVaultPath`, `-SPSeedDemo` (календарь «SuperPooper Test» с событиями 10:00, «Call with dad» 19:00–20:00, повторяющимся «Lunch», лист с напоминанием на 15:00 и лист «Inbox», который приложение игнорирует), `-SPNow HH:mm`, `-SPToday YYYY-MM-DD`, `-SPSkipOnboarding`, `-SPResetState`, `-SPTimeline oneColumn|twoColumns`, `-SPArrangement stacked|sideBySide|paged`, `-SPOpen superpooper://…`, `-SPProvisionalNotifications`. В симуляторе уведомления без звука, а демо-напоминания без будильников. Deep links: `superpooper://task/<имя>`, `…://settings`, `…://review`, `…://archive`, DEBUG: `…://debug-notifications`, `…://debug-widgets`. Тестовый vault также можно выбрать вручную: на экране выбора папки в Debug-сборке есть кнопка «Use test vault (Debug)»; или «Файлы» → «На iPhone» → SuperPooper → TestVault (в Debug Documents видны в «Файлах»). Если пикер или «На iPhone» в симуляторе не открываются — это зависла служба файлов симулятора: перезапустить симулятор. Симулятор для глаз — «SuperPooper Mini» (iPhone 13 mini, 360 pt): `SP_SIMULATOR="SuperPooper Mini" scripts/sim.sh …`.
 
 ## 10. Частые поломки
 

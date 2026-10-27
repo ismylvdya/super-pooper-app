@@ -143,4 +143,9 @@ extension DesignTokens {
     func habitColor(_ task: TaskNote) -> Color {
         task.habit.color.flatMap { UIColor(hex: $0) }.map(Color.init(uiColor:)) ?? color(.habit)
     }
+
+    /// A habit's name: in its own color when it has one; the settings' habit color is for marks and chips only.
+    func habitNameColor(_ task: TaskNote) -> Color {
+        task.habit.color.flatMap { UIColor(hex: $0) }.map(Color.init(uiColor:)) ?? color(.primaryText)
+    }
 }

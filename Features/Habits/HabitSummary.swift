@@ -3,6 +3,17 @@ import Foundation
 /// Short texts about a habit for lists.
 @MainActor
 enum HabitSummary {
+    /// What sets the habit apart in the Habits list: its routine and Twice ("Morning · Twice"); empty if neither.
+    static func traits(_ habit: TaskNote) -> String {
+        var parts: [String] = []
+        if let part = habit.habit.timeOfDay { parts.append(L10n.string("habitPage.timeOfDay." + part.rawValue)) }
+        if habit.isTwiceADay { parts.append(L10n.string("action.twice")) }
+        return parts.joined(separator: L10n.string("habits.traits.separator"))
+    }
+
+    /// A bell per reminder of the day, two at most.
+    static func bellCount(_ habit: TaskNote, limit: Int) -> Int { min(habit.reminderTimes.count, limit) }
+
     /// "3/5 this week" with a weekly goal, "3 this week" without; harmful habits count clean days.
     static func weekLine(_ habit: TaskNote, today: LocalDate, days: DayBoundary) -> String {
         let history = HabitHistory(task: habit, days: days)

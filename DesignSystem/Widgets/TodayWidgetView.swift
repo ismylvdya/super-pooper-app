@@ -41,6 +41,8 @@ struct WidgetPoolBlock: View {
                     }
                 }
                 .taskPlate(isDone: segment.items.allSatisfy(\.isDone))
+                // A subtask sits under its parent, shifted right, as in the app's pool.
+                .padding(.leading, CGFloat(segment.items.first?.depth ?? 0) * tokens.space(.subtaskIndent))
             }
             if let visibleCount, plan.pool.count > visibleCount {
                 Text(L10n.format("pool.more", plan.pool.count - visibleCount))

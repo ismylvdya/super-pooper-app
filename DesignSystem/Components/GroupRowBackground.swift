@@ -28,3 +28,23 @@ extension View {
             .listRowSeparator(isLast ? .hidden : .automatic, edges: .bottom)
     }
 }
+
+extension View {
+    /// What a long press lifts from a grouped row: the row at its own size as a whole rounded plate (the group's
+    /// corners of a first or last row turn into the full plate's), for the context menu and for dragging. The row
+    /// must fill its list cell, so nothing around it (screen margins, cell insets) is lifted with it.
+    func liftedPlate() -> some View {
+        modifier(LiftedPlate())
+    }
+}
+
+private struct LiftedPlate: ViewModifier {
+    @Environment(\.tokens) private var tokens
+
+    func body(content: Content) -> some View {
+        let shape = RoundedRectangle(cornerRadius: tokens.radius(.plate), style: .continuous)
+        content
+            .contentShape(.contextMenuPreview, shape)
+            .contentShape(.dragPreview, shape)
+    }
+}

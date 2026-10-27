@@ -54,7 +54,7 @@ struct TimelineReminderBlock: View {
             .slotPlate(isPast: slot.isPast, isCompact: isCompact)
         if let onToggle, let onOpen {
             plate
-                .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: tokens.radius(isCompact ? .widgetItem : .poolRow), style: .continuous))
+                .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: (isCompact ? tokens.radius(.widgetItem) : tokens.rowPlateRadius), style: .continuous))
                 .onTapGesture { onOpen(reminder) }
                 .contextMenu { RegistryMenu(menu: .reminderContext) { _ in onToggle(reminder) } }
         } else {
@@ -89,7 +89,7 @@ private struct SlotPlate: ViewModifier {
     let isCompact: Bool
 
     func body(content: Content) -> some View {
-        let shape = RoundedRectangle(cornerRadius: tokens.radius(isCompact ? .widgetItem : .poolRow), style: .continuous)
+        let shape = RoundedRectangle(cornerRadius: (isCompact ? tokens.radius(.widgetItem) : tokens.rowPlateRadius), style: .continuous)
         content
             .padding(.vertical, isCompact ? tokens.space(.timelineItemGap) : tokens.space(.rowVertical) / 2)
             .padding(.horizontal, tokens.space(.plateInner) / 2)

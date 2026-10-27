@@ -22,6 +22,8 @@ struct TodayScreen: View {
     @State private var width: CGFloat = 0
     @State private var page = 0
     @State private var pageDrag: CGFloat = 0
+    /// The direction of the drag in progress, decided by its first movement.
+    @State private var swipeAxis: TodaySwipe.Axis?
     @State private var taskDrag = TaskDragState()
 
     private var isLandscape: Bool { physicalBottom != nil }
@@ -94,16 +96,20 @@ struct TodayScreen: View {
     private func daySwipe(width: CGFloat) -> some Gesture {
         DragGesture(minimumDistance: tokens.size(.daySwipeStart))
             .onChanged { value in
-                guard TodaySwipe.isHorizontal(width: value.translation.width, height: value.translation.height,
-                                              axisRatio: tokens.size(.daySwipeAxisRatio)),
+                let axis = TodaySwipe.axis(locked: swipeAxis, width: value.translation.width, height: value.translation.height,
+                                           axisRatio: tokens.size(.daySwipeAxisRatio))
+                swipeAxis = axis
+                guard axis == .horizontal,
                       TodaySwipe.page(forward: value.translation.width < 0, page: page, pageCount: pageCount) != nil else { return }
                 pageDrag = value.translation.width
             }
             .onEnded { value in
                 let distance = value.translation.width
-                let isSwipe = TodaySwipe.isSwipe(width: distance, height: value.translation.height,
-                                                 predictedWidth: value.predictedEndTranslation.width, containerWidth: width,
-                                                 threshold: tokens.opacity(.daySwipeThreshold), axisRatio: tokens.size(.daySwipeAxisRatio))
+                let axis = TodaySwipe.axis(locked: swipeAxis, width: distance, height: value.translation.height,
+                                           axisRatio: tokens.size(.daySwipeAxisRatio))
+                swipeAxis = nil
+                let isSwipe = TodaySwipe.isSwipe(axis: axis, width: distance, predictedWidth: value.predictedEndTranslation.width,
+                                                 containerWidth: width, threshold: tokens.opacity(.daySwipeThreshold))
                 if isSwipe, let target = TodaySwipe.page(forward: distance < 0, page: page, pageCount: pageCount) {
                     turn(to: target)
                 } else {

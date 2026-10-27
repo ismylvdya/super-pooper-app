@@ -78,7 +78,7 @@ struct HeaderNameField: View {
         TextField(task.isHabit ? "habitPage.name.placeholder" : "taskPage.name.field", text: $draft, axis: .vertical)
             .multilineTextAlignment(.center)
             // A habit's name is in its color, as in the Habits list.
-            .foregroundStyle(task.isHabit ? tokens.habitColor(task) : tokens.color(.primaryText))
+            .foregroundStyle(task.isHabit ? tokens.habitNameColor(task) : tokens.color(.primaryText))
             .submitLabel(.done)
             .focused($isEditing)
             .onSubmit { commit() }

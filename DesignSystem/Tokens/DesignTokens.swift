@@ -22,6 +22,13 @@ struct DesignTokens: Decodable, Sendable {
 
     var animation: Animation { .easeInOut(duration: duration(.animation)) }
 
+    /// A chip's height: its line and its padding.
+    var chipHeight: CGFloat { uiFont(.chip).lineHeight + space(.chipVertical) * 2 }
+
+    /// The corner of a task's plate, concentric with its chips: their corner (half their height) plus the distance the
+    /// plate keeps from them on the top, bottom and right (half the row's vertical padding).
+    var rowPlateRadius: CGFloat { chipHeight / 2 + space(.rowVertical) / 2 }
+
     /// The user's appearance settings over the bundled tokens: colors and the opacity of done/past items.
     func applying(_ settings: AppSettings, limits: RulesConfig.Limits) -> DesignTokens {
         let colored = overridingColors(settings.colors)

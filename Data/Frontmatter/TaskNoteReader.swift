@@ -17,7 +17,7 @@ struct TaskNoteReader: Sendable {
     }
 
     func task(from document: FrontmatterDocument, name: String, relativePath: String) -> TaskNote {
-        let settings = ItemSettingsProperty(property: mapping.itemSettings.property, keys: mapping.itemSettingsKeys)
+        let settings = ItemSettingsProperty(mapping: mapping)
         var fields = FieldReader(document: document, settings: settings.values(in: document) ?? [:])
         let keys = mapping.fields
 
@@ -31,8 +31,8 @@ struct TaskNoteReader: Sendable {
         task.subtaskOrder = fields.int(keys.subtaskOrder)
         task.previousEvent = fields.parsed(keys.previousEvent, EventLink.init(rawValue:))
         task.nextEvent = fields.parsed(keys.nextEvent, EventLink.init(rawValue:))
-        task.needEnergy = fields.bool(keys.needEnergy) ?? false
-        task.pleasant = fields.bool(keys.pleasant)
+        task.feel = feel(&fields)
+        task.hasLegacyFields = settings.hasLegacyKeys(in: document) || hasLegacyFeel(document)
         if let raw = fields.string(keys.recurrence), !raw.trimmingCharacters(in: .whitespaces).isEmpty {
             task.recurrenceRaw = raw
             switch RecurrenceRule.parse(raw) {
@@ -65,6 +65,16 @@ struct TaskNoteReader: Sendable {
         options.weeklyGoal = fields.int(keys.weeklyGoal)
         options.allowedSkips = fields.int(keys.allowedSkips)
         return options
+    }
+
+    /// `feel`, or for older notes `need_energy: true` (or `pleasant: false`) = needs energy, `pleasant: true` = pleasant.
+    private func feel(_ fields: inout FieldReader) -> TaskFeel {
+        if let feel = fields.parsed(mapping.fields.feel, mapping.feel(fromRaw:)) { return feel }
+        return .legacy(needEnergy: fields.bool(mapping.legacyFields.needEnergy), pleasant: fields.bool(mapping.legacyFields.pleasant))
+    }
+
+    private func hasLegacyFeel(_ document: FrontmatterDocument) -> Bool {
+        [mapping.legacyFields.needEnergy, mapping.legacyFields.pleasant].contains { (try? document.value(for: $0)).flatMap({ $0 }) != nil }
     }
 
     private func normalizedTag(_ tag: String) -> String {

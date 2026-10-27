@@ -59,10 +59,11 @@ struct PoolSorter: Sendable {
             guard !task.isHabit, let day = task.due.map(context.logicalDay(of:)), day >= context.today, day <= context.weekEnd else { return 1_000 }
             return Double(context.today.days(until: day))
         case .energyBeforeEnergyHour:
-            guard task.needEnergy else { return 1 }
+            guard task.feel == .needEnergy else { return 1 }
             return context.isBeforeEnergyHour ? 0 : 2
         case .unpleasantFirst:
-            return task.pleasant == false ? 0 : 1
+            // Pleasant tasks are a reward: they wait for the rest.
+            return task.feel == .pleasant ? 1 : 0
         case .shortFirst:
             return Double(rules.estimate(of: task))
         case .olderFirst:

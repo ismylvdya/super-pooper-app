@@ -3,7 +3,7 @@ import Foundation
 /// Names of every SF Symbol used outside the action registry (`icons.json`).
 enum Icon: String, CaseIterable, Codable, Sendable {
     case settings, review, more, info, problem, sync
-    case energy, pleasant, high, due, time, estimate
+    case energy, pleasant, feel, chipOrder, high, due, time, estimate
     case previousTasks, nextTasks, previousEvent, nextEvent, event, reminder, habit
     case vault, calendars, reminderLists, notifications
     case dayBoundary, energyHour, timelineLayout, hoursAfter, hoursBefore, halves, fontSize, poolCount
@@ -11,7 +11,7 @@ enum Icon: String, CaseIterable, Codable, Sendable {
     case checkboxOpen, markDone
     case emptyVault, debugSeed, permissionGranted
     case tabToday, tabHabits, tabLists, tabSettings
-    case listQuick, listThisWeek, listHalfYear, listSomeday, listWaiting, listDone, listArchived, inboxShortcut
+    case listQuick, listThisWeek, listHalfYear, listSomeday, listWaiting, listDone, listArchived
     case bell, olderWeeks, postpone
     /// Asset catalog template images (not SF Symbols): the habit marks, shared by menus and notifications.
     case habitMarkOpen, habitMarkDone, habitMarkPartial, habitMarkTwice

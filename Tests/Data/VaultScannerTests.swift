@@ -96,8 +96,8 @@ struct VaultScannerTests {
     @Test func flagsDatesAndStatusesAreRead() async throws {
         let tasks = try await tasksByName()
         let mail = try #require(tasks["Разобрать почту"])
-        #expect(mail.needEnergy && mail.pleasant == false && mail.timeEstimate == 60)
-        #expect(tasks["Посмотреть сериал 🍿"]?.pleasant == true)
+        #expect(mail.feel == .needEnergy && mail.timeEstimate == 60)
+        #expect(tasks["Посмотреть сериал 🍿"]?.feel == .pleasant)
         #expect(tasks["Позвонить в банк"]?.isHighPriority == true)
         #expect(tasks["Записать идеи"]?.timeEstimate == nil)
         #expect(tasks["Забрать посылку на почте"]?.due == TaskDue("2026-10-21T16:00"))

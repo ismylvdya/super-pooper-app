@@ -41,14 +41,6 @@
 			<key>UIApplicationShortcutItemIconSymbolName</key>
 			<string>plus</string>
 		</dict>
-		<dict>
-			<key>UIApplicationShortcutItemType</key>
-			<string>new-inbox</string>
-			<key>UIApplicationShortcutItemTitle</key>
-			<string>📥 New in inbox</string>
-			<key>UIApplicationShortcutItemIconSymbolName</key>
-			<string>plus</string>
-		</dict>
 	</array>
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string>SuperPooper shows your anchor calendar events on the Today timeline.</string>

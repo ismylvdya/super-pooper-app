@@ -29,6 +29,21 @@ struct DayMembershipTests {
         #expect(DayScenario(tasks: [yesterday, undated]).build().dayNames.isEmpty)
     }
 
+    /// A task dated an earlier day that was not done stays in the pool every day until it is handled.
+    @Test(arguments: ["2026-10-20", "2026-10-14T09:00"])
+    func anOverdueTaskStaysInThePool(due: String) {
+        let task = makeTask("Overdue") { $0.due = TaskDue(due) }
+        #expect(DayScenario(tasks: [task]).build().poolNames == ["Overdue"])
+    }
+
+    @Test func notTodayMovesATimedTaskToTheSameTimeTomorrow() {
+        let marking = TaskMarking(today: LocalDate("2026-10-21"))
+        let timed = makeTask("Timed") { $0.due = TaskDue("2026-10-21T16:30") }
+        let dated = makeTask("Dated") { $0.due = TaskDue("2026-10-21") }
+        #expect(marking.notTodayChanges(for: timed) == [.due(TaskDue("2026-10-22T16:30"))])
+        #expect(marking.notTodayChanges(for: dated).isEmpty)
+    }
+
     // MARK: - Recurring tasks
 
     /// Any status but `archived`: archiving takes a recurring task out of the day (see `ArchivedNotesTests`).

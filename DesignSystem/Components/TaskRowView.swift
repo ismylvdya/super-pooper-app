@@ -7,7 +7,8 @@ import SwiftUI
 struct TaskRowView: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.titleReserve) private var reserve
-    @Environment(\.rules) private var rules
+    @Environment(\.bareTitleInset) private var bareInset
+    @Environment(\.chipOrder) private var chipOrder
     let item: DayItem
     let today: LocalDate
     var titleFont: Font?
@@ -19,15 +20,18 @@ struct TaskRowView: View {
     var titleLineLimit: Int?
     /// Line height of `titleFont` (nil = the task title token), for fading the last line.
     var titleLineHeight: CGFloat?
+    /// Grey with its mark when done; the timeline shows an item there plainly (what is finished has left it).
+    var showsDoneState = true
     var onOpen: (() -> Void)?
 
     var body: some View {
         HStack(alignment: .top, spacing: tokens.space(.iconTextGap)) {
             title.frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.trailing, hasTrailing ? 0 : bareInset)
             if showsDetails, !chips.isEmpty {
                 HStack(spacing: tokens.space(.chipGap)) { chipViews }.fixedSize()
             }
-            if item.isDone { MarkGlyph(state: item.state, color: tokens.color(.past), size: tokens.size(.doneMark)) }
+            if isDone { MarkGlyph(state: item.state, color: tokens.color(.past), size: tokens.size(.doneMark)) }
         }
         .contentShape(Rectangle())
         // Anywhere on the row opens the task (chips included).
@@ -51,7 +55,7 @@ struct TaskRowView: View {
 
     @ViewBuilder private var title: some View {
         let text = titleText
-            .foregroundStyle(item.isDone ? tokens.color(.secondaryText) : tokens.color(.primaryText))
+            .foregroundStyle(isDone ? tokens.color(.secondaryText) : tokens.color(.primaryText))
         if let onOpen {
             // Not a Button: a button also fires when a swipe (turning the page, scrolling) ends on it; the row's tap
             // gesture below gives up as soon as the finger moves.
@@ -65,6 +69,10 @@ struct TaskRowView: View {
     }
 
     private var chips: [RowChip] {
-        RowChip.chips(for: item, today: today, rules: rules, tokens: tokens)
+        RowChip.chips(for: item, order: chipOrder, tokens: tokens)
     }
+
+    private var isDone: Bool { showsDoneState && item.isDone }
+
+    private var hasTrailing: Bool { isDone || (showsDetails && !chips.isEmpty) }
 }

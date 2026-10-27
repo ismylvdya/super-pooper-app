@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Status, High, date, estimate, need energy, pleasant.
+/// High, date, status, estimate, how the task feels; a habit has High, estimate and feel.
 struct TaskPropertiesSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.rules) private var rules
@@ -11,6 +11,11 @@ struct TaskPropertiesSection: View {
 
     var body: some View {
         PlateSection(header: "taskPage.properties", info: "info.taskPage.properties") {
+            PlateRow(icon: .high, title: "taskPage.high", info: "info.taskPage.high", iconTint: tokens.color(.high)) {
+                Toggle("taskPage.high", isOn: Binding(get: { task.isHighPriority }, set: { editor.apply([.highPriority($0)]) }))
+                    .labelsHidden()
+                    .accessibilityIdentifier("taskPage.high")
+            }
             if !task.isHabit { taskOnlyRows }
             PlateRow(icon: .estimate, title: "taskPage.estimate", info: "info.taskPage.estimate") {
                 Picker("taskPage.estimate", selection: estimateBinding) {
@@ -18,25 +23,17 @@ struct TaskPropertiesSection: View {
                 }
                 .labelsHidden()
             }
-            PlateRow(icon: .energy, title: "taskPage.energy", info: "info.taskPage.energy", iconTint: tokens.color(.energy)) {
-                Toggle("taskPage.energy", isOn: binding(\.needEnergy, change: TaskFieldChange.needEnergy)).labelsHidden()
+            PlateRow(icon: .feel, title: "taskPage.feel", info: "info.taskPage.feel") {}
+            Picker("taskPage.feel", selection: binding(\.feel, change: TaskFieldChange.feel)) {
+                ForEach(TaskFeel.allCases, id: \.self) { Text(L10n.string("taskPage.feel." + $0.rawValue)).tag($0) }
             }
-            PlateRow(icon: .pleasant, title: "taskPage.pleasant", info: "info.taskPage.pleasant", iconTint: tokens.color(.heart)) {
-                Toggle("taskPage.pleasant", isOn: Binding(
-                    get: { task.pleasant ?? false },
-                    set: { value in editor.apply([.pleasant(value)]) }
-                )).labelsHidden()
-            }
+            .pickerStyle(.segmented)
+            .accessibilityIdentifier("taskPage.feel")
         }
     }
 
     /// The status makes no sense for a habit: it is always active and repeats by its own rule.
     @ViewBuilder private var taskOnlyRows: some View {
-        PlateRow(icon: .high, title: "taskPage.high", info: "info.taskPage.high", iconTint: tokens.color(.high)) {
-            Toggle("taskPage.high", isOn: Binding(get: { task.isHighPriority }, set: { editor.apply([.highPriority($0)]) }))
-                .labelsHidden()
-                .accessibilityIdentifier("taskPage.high")
-        }
         DueEditor(editor: editor)
         PlateRow(icon: .status, title: "taskPage.status", info: "info.taskPage.status") {
             Picker("taskPage.status", selection: Binding(

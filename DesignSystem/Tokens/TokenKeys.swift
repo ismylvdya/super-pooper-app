@@ -10,7 +10,7 @@ enum SpacingToken: String, CaseIterable, Sendable {
 }
 
 enum RadiusToken: String, CaseIterable, Sendable {
-    case plate, chip, timelineItem, banner, poolRow, habitCell, widgetItem, previewItem
+    case plate, chip, timelineItem, banner, habitCell, widgetItem, previewItem
 }
 
 enum SizeToken: String, CaseIterable, Sendable {
@@ -31,7 +31,7 @@ enum DurationToken: String, CaseIterable, Sendable {
 enum FontToken: String, CaseIterable, Sendable {
     case pageTitle, navTitle, sectionHeader, rowTitle, hint, chip, info, timelineHour, banner, poolCounter
     case taskTitle, emptyTitle, emptyBody, footer, widgetTitle, widgetCaption, caption, noteEditor
-    case statValue, toggleChip, pullIcon, emptyIcon, emptyAction, linkBadge, tabIcon, tabLabel, habitTitle
+    case statValue, toggleChip, pullIcon, emptyIcon, emptyAction, linkBadge, tabIcon, systemTabIcon, tabLabel, habitTitle
 }
 
 enum ColorToken: String, CaseIterable, Sendable {

@@ -40,7 +40,16 @@ struct RootView: View {
                                             .systemTabBar(isShown: physicalBottom == nil)
                                     }
                             }
-                            .tabItem { Label(LocalizedStringKey(String("tab.") + tab.rawValue), systemImage: container.config.icons[tab.icon]) }
+                            .tabItem {
+                                Label {
+                                    Text(LocalizedStringKey(String("tab.") + tab.rawValue))
+                                } icon: {
+                                    TabIconImage.image(container.config.icons[tab.icon], font: tokens.uiFont(.systemTabIcon),
+                                                       others: AppTab.allCases.map { container.config.icons[$0.icon] })
+                                        // The symbol exactly as `icons.json` names it: the tab bar fills it otherwise.
+                                        .environment(\.symbolVariants, .none)
+                                }
+                            }
                             .tag(tab)
                         }
                     }
@@ -68,6 +77,7 @@ struct RootView: View {
         .environment(\.screenHeight, screenHeight)
         .environment(\.physicalBottom, physicalBottom)
         .environment(\.timelineBell, model.settings.timeline.bellStyle)
+        .environment(\.chipOrder, RowChipKind.ordered(model.settings.pool.chipOrder))
         .environment(\.calendar, model.calendar)
         // The user's colors and opacity sit closest to the views, over the bundled tokens of `appConfig`.
         .environment(\.tokens, tokens)
@@ -94,20 +104,8 @@ struct RootView: View {
         }
         .task(id: model.context().today) { await model.syncWhenTheDayEnds() }
         .onOpenURL { container.router.handle($0) }
-        .onChange(of: container.router.inboxRequests) { openInboxList() }
     }
 
-    /// 📥 New in inbox: the chosen Reminders list opens in Reminders (Settings → Today → Quick actions); without one,
-    /// that setting opens.
-    private func openInboxList() {
-        let id = container.model.settings.quickActions.inboxListID
-        if !id.isEmpty, let url = container.config.rules.eventLinks.reminderListURL(id: id) {
-            openURL(url)
-        } else {
-            container.router.show(.settings, [.taskSettings])
-            container.banners.show(L10n.string("banner.inboxListMissing"), style: .warning)
-        }
-    }
 
     @ViewBuilder private func root(_ tab: AppTab, model: AppModel) -> some View {
         switch tab {
@@ -153,6 +151,7 @@ struct RootView: View {
         case .trash: TrashScreen()
         case .routines: RoutinesScreen()
         case .poolOrder: PoolOrderScreen()
+        case .chipOrder: ChipOrderScreen()
         case .conflicts: ConflictsScreen()
         case .conflict(let name): ConflictVersionsScreen(noteName: name)
         case .list(let id): TaskListScreen(listID: id)

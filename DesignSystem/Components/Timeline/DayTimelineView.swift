@@ -184,7 +184,7 @@ struct DayTimelineView<TaskContent: View>: View {
     /// (smaller in widgets).
     private func cornerRadius(of slot: TimelineSlot) -> CGFloat {
         if case .event = slot.content { return tokens.radius(.timelineItem) }
-        return tokens.radius(style.compactPlates ? .widgetItem : .poolRow)
+        return (style.compactPlates ? tokens.radius(.widgetItem) : tokens.rowPlateRadius)
     }
 
     /// The "now" cursor, as in the old Calendar widget: a dot in the middle of the hour numbers and a

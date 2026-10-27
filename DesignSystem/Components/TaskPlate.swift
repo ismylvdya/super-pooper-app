@@ -13,9 +13,12 @@ private struct TaskPlate: ViewModifier {
 
     func body(content: Content) -> some View {
         content
+            // The chips on the right keep the same distance from the plate's top, bottom and right edge.
             .padding(.vertical, tokens.space(.rowVertical) / 2)
-            .padding(.horizontal, tokens.space(.plateInner) / 2)
-            .background(tokens.color(.plateBackground), in: RoundedRectangle(cornerRadius: tokens.radius(.poolRow), style: .continuous))
+            .padding(.leading, tokens.space(.plateInner) / 2)
+            .padding(.trailing, tokens.space(.rowVertical) / 2)
+            .environment(\.bareTitleInset, tokens.space(.plateInner) / 2 - tokens.space(.rowVertical) / 2)
+            .background(tokens.color(.plateBackground), in: RoundedRectangle(cornerRadius: tokens.rowPlateRadius, style: .continuous))
             .opacity(isDone ? tokens.opacity(.past) : 1)
     }
 }

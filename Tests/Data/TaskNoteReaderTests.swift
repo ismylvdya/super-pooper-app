@@ -44,7 +44,7 @@ struct TaskNoteReaderTests {
         let task = try read("")
         #expect(task.status == .other(""))
         #expect(!task.isHighPriority && task.due == nil && task.timeEstimate == nil)
-        #expect(!task.needEnergy && task.pleasant == nil && !task.isHabit)
+        #expect(task.feel == .neutral && !task.isHabit)
         #expect(task.previousTasks.isEmpty && task.completeInstances.isEmpty && task.problems.isEmpty)
     }
 
@@ -72,8 +72,8 @@ struct TaskNoteReaderTests {
           - 2026-13-01
         pleasant: false
         """)
-        #expect(task.status == .thisWeek && task.pleasant == false)
-        #expect(task.due == nil && task.timeEstimate == nil && !task.needEnergy && task.previousEvent == nil)
+        #expect(task.status == .thisWeek && task.feel == .neutral)
+        #expect(task.due == nil && task.timeEstimate == nil && task.previousEvent == nil)
         #expect(task.completeInstances == [LocalDate("2026-10-20")])
         #expect(Set(task.problems) == [
             .invalidField(key: "due", value: "tomorrow"),

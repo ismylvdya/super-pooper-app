@@ -22,12 +22,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let pickerDaysAhead: Int
         /// URL prefix that opens Apple Calendar on a date (seconds since 2001 are appended).
         let calendarAppURL: String
-        /// URL prefix that runs a shortcut of the Shortcuts app (its name is appended, percent-encoded).
-        let shortcutsRunURL: String
         /// URL prefix that opens a reminder in Apple Reminders (its identifier is appended).
         let remindersAppURL: String
-        /// URL prefix that opens a list in Apple Reminders (its identifier is appended).
-        let remindersListURL: String
     }
 
     struct Vault: Codable, Hashable, Sendable {
@@ -35,7 +31,9 @@ struct RulesConfig: Codable, Hashable, Sendable {
         /// While waiting for iCloud downloads, the files are checked this often.
         let downloadPollSeconds: Double
         let noteExtension: String
-        /// The note with the app's settings, next to the tasks folder.
+        /// The JSON file with the app's shared settings, next to the tasks folder.
+        let settingsFile: String
+        /// The older note with those settings, read until the file exists.
         let settingsNote: String
         /// Where Obsidian keeps its iCloud vaults: a folder under it names its vault and its path in it.
         let obsidianVaultsFolder: String
@@ -83,6 +81,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let defaultAllowedSkips: Int
         let defaultWeeklyGoal: Int
         let maxAllowedSkips: Int
+        /// Bells under a habit's name in the Habits list (one per reminder, up to this many).
+        let maxListBells: Int
     }
 
     /// Pool rows of long tasks are taller: extra title lines from this estimate on.

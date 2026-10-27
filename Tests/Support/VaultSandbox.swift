@@ -78,6 +78,7 @@ struct VaultSandbox {
         let settings = TestConfig.defaults.vault
         let rules = RulesConfig.Vault(downloadTimeoutSeconds: downloadTimeout, downloadPollSeconds: TestConfig.rules.vault.downloadPollSeconds,
                                       noteExtension: TestConfig.rules.vault.noteExtension,
+                                      settingsFile: TestConfig.rules.vault.settingsFile,
                                       settingsNote: TestConfig.rules.vault.settingsNote,
                                       obsidianVaultsFolder: TestConfig.rules.vault.obsidianVaultsFolder,
                                       settingsWriteDelaySeconds: TestConfig.rules.vault.settingsWriteDelaySeconds)

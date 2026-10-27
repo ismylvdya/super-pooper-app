@@ -17,8 +17,9 @@ enum TaskFieldChange: Hashable, Sendable {
     case subtaskOrder(Int?)
     case previousEvent(EventLink?)
     case nextEvent(EventLink?)
-    case needEnergy(Bool)
-    case pleasant(Bool?)
+    case feel(TaskFeel)
+    /// Rewrites fields of an older format into the current one, changing no value.
+    case migrateLegacyFields
     /// Exactly one mark (or none) for `day` in the three instance lists.
     case markInstance(day: LocalDate, mark: HabitMark?)
     case completedDate(LocalDate?)

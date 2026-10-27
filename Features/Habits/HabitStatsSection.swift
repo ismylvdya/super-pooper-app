@@ -28,7 +28,7 @@ struct HabitStatsSection: View {
             HStack(alignment: .top) {
                 value("\(stats.doneCount)", "habitPage.stats.done")
                 value("\(stats.partialCount)", "habitPage.stats.partial")
-                if habit.habit.twiceADay { value("\(stats.twiceCount)", "habitPage.stats.twice") }
+                if habit.isTwiceADay { value("\(stats.twiceCount)", "habitPage.stats.twice") }
             }
             BarRow(title: "habitPage.stats.byWeekday", color: color, bars: Weekday.allCases.map { day in
                 (day.name(.initial, in: model.calendar), stats.byWeekday[day] ?? 0)

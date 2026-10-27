@@ -96,6 +96,15 @@ struct QuickPlanningTests {
         #expect(TodaySwipe.page(forward: true, page: 0, pageCount: 1) == nil)
     }
 
+    /// The first movement decides the direction: a vertical scroll that later drifts sideways never turns the page.
+    @Test func aDragKeepsTheDirectionOfItsFirstMovement() {
+        #expect(TodaySwipe.axis(locked: nil, width: 4, height: 30, axisRatio: 1.5) == .vertical)
+        #expect(TodaySwipe.axis(locked: .vertical, width: 200, height: 30, axisRatio: 1.5) == .vertical)
+        #expect(TodaySwipe.axis(locked: .horizontal, width: 40, height: 90, axisRatio: 1.5) == .horizontal)
+        #expect(!TodaySwipe.isSwipe(axis: .vertical, width: 300, predictedWidth: 300, containerWidth: 375, threshold: 0.25))
+        #expect(TodaySwipe.isSwipe(axis: .horizontal, width: 120, predictedWidth: 120, containerWidth: 375, threshold: 0.25))
+    }
+
     @Test func theWidgetHasNoPages() {
         #expect(AppSettings.TodayArrangement.paged.forWidget == .sideBySide)
         #expect(AppSettings.TodayArrangement.stacked.forWidget == .stacked)

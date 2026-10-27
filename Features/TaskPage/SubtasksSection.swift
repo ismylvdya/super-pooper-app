@@ -10,8 +10,6 @@ struct SubtasksSection: View {
     @State private var newName = ""
     @State private var dragged: String?
     @State private var target: String?
-    /// The rows' width, for the lifted plate.
-    @State private var rowWidth: CGFloat = 0
 
     var body: some View {
         PlateSection(header: "taskPage.subtasks", info: "info.taskPage.subtasks") {
@@ -24,22 +22,22 @@ struct SubtasksSection: View {
                 ForEach(subtasks, id: \.name) { subtask in
                     NavigationLink(value: Route.task(subtask.name)) {
                         SubtaskLabel(name: subtask.name, isDone: subtask.status.isCompleted)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .buttonStyle(.plain)
-                    // Lifted as a rounded plate of its own, not as a bare rectangle of the row.
-                    .contentShape(.dragPreview, RoundedRectangle(cornerRadius: tokens.radius(.poolRow), style: .continuous))
-                    .onDrag({
+                    // As a habit of a routine in the pool: the row covers its piece of the plate (over the plate's
+                    // inner margins and half the gaps) with the plate's color, and that whole piece lifts as a
+                    // rounded plate.
+                    .padding(.horizontal, tokens.space(.plateInner))
+                    .padding(.vertical, tokens.space(.plateRowGap) / 2)
+                    .background(tokens.color(.plateBackground))
+                    .contentShape(.dragPreview, RoundedRectangle(cornerRadius: tokens.rowPlateRadius, style: .continuous))
+                    .onDrag {
                         dragged = subtask.name
                         return NSItemProvider(object: subtask.name as NSString)
-                    }, preview: {
-                        SubtaskLabel(name: subtask.name, isDone: subtask.status.isCompleted)
-                            .padding(.vertical, tokens.space(.rowVertical) / 2)
-                            .padding(.horizontal, tokens.space(.plateInner) / 2)
-                            .frame(width: rowWidth)
-                            .background(tokens.color(.plateBackground),
-                                        in: RoundedRectangle(cornerRadius: tokens.radius(.poolRow), style: .continuous))
-                    })
-                    .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { rowWidth = $0 }
+                    }
+                    .padding(.horizontal, -tokens.space(.plateInner))
+                    .padding(.vertical, -tokens.space(.plateRowGap) / 2)
                     .onDrop(of: TaskDragState.types, isTargeted: targetBinding(subtask.name)) { _ in
                         drop(onto: subtask.name)
                     }

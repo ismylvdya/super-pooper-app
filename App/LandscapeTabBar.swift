@@ -14,9 +14,20 @@ struct LandscapeTabBar: View {
             ForEach(PhysicalBottom.physicalOrder(AppTab.allCases, bottom: bottom), id: \.self) { tab in
                 Button { router.select(tab) } label: {
                     VStack(spacing: tokens.space(.badgeGap)) {
-                        Image(systemName: icons[tab.icon]).font(tokens.font(.tabIcon))
-                        Text(LocalizedStringKey(String("tab.") + tab.rawValue)).font(tokens.font(.tabLabel))
+                        // The symbol as `icons.json` names it and the small label, as in the tab bar upright.
+                        TabIconImage.image(icons[tab.icon], font: tokens.uiFont(.tabIcon), others: AppTab.allCases.map { icons[$0.icon] },
+                                           matching: .width)
+                            .font(tokens.font(.tabIcon))
+                        // Centered in the bar when it fits; a longer label starts at the left and fades.
+                        ViewThatFits(in: .horizontal) {
+                            Text(L10n.string(String("tab.") + tab.rawValue)).font(tokens.font(.tabLabel)).lineLimit(1).fixedSize()
+                            FadingText(text: L10n.string(String("tab.") + tab.rawValue), font: tokens.font(.tabLabel),
+                                       lineHeight: tokens.uiFont(.tabLabel).lineHeight)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .fixedSize(horizontal: false, vertical: true)
                     }
+                    .padding(.horizontal, tokens.space(.tabBarInner))
                     .foregroundStyle(tokens.color(.primaryText))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background(tokens.color(.chipBackground).opacity(router.tab == tab ? 1 : 0), in: Capsule())

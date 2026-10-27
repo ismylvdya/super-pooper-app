@@ -14,8 +14,8 @@ struct FieldMapping: Codable, Hashable, Sendable {
         let projects: String
         let previousEvent: String
         let nextEvent: String
-        let needEnergy: String
-        let pleasant: String
+        /// How doing the task feels (`feels` values; absent = neutral).
+        let feel: String
         let recurrence: String
         let completeInstances: String
         let partialInstances: String
@@ -54,6 +54,18 @@ struct FieldMapping: Codable, Hashable, Sendable {
         let habit: String
     }
 
+    /// Raw values of `feel`.
+    struct Feels: Codable, Hashable, Sendable {
+        let needEnergy: String
+        let pleasant: String
+    }
+
+    /// Keys of older notes, read and rewritten into the current fields: `need_energy`/`pleasant` booleans became `feel`.
+    struct LegacyFields: Codable, Hashable, Sendable {
+        let needEnergy: String
+        let pleasant: String
+    }
+
     struct Priorities: Codable, Hashable, Sendable {
         let high: String
         let normal: String
@@ -62,6 +74,8 @@ struct FieldMapping: Codable, Hashable, Sendable {
     /// The app's own settings of an item, kept together in one JSON property (see `ItemSettingsProperty`).
     struct ItemSettings: Codable, Hashable, Sendable {
         let property: String
+        /// Earlier names of the property, read when the current one is missing and removed on the next write.
+        let legacyProperties: [String]
         /// Names in `fields` (`habitColor`, `showInToday` …) of the settings that go into it.
         let fields: [String]
     }
@@ -70,6 +84,8 @@ struct FieldMapping: Codable, Hashable, Sendable {
     let statuses: Statuses
     let priorities: Priorities
     let timesOfDay: TimesOfDay
+    let feels: Feels
+    let legacyFields: LegacyFields
     let itemSettings: ItemSettings
     /// `reltype` written into new `previous_task` entries.
     let dependencyRelType: String
@@ -93,6 +109,23 @@ struct FieldMapping: Codable, Hashable, Sendable {
         case timesOfDay.day: .day
         case timesOfDay.evening: .evening
         default: nil
+        }
+    }
+
+    func feel(fromRaw raw: String) -> TaskFeel? {
+        switch raw {
+        case feels.needEnergy: .needEnergy
+        case feels.pleasant: .pleasant
+        default: nil
+        }
+    }
+
+    /// nil = neutral, which is no value.
+    func raw(_ feel: TaskFeel) -> String? {
+        switch feel {
+        case .needEnergy: feels.needEnergy
+        case .pleasant: feels.pleasant
+        case .neutral: nil
         }
     }
 

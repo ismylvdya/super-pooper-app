@@ -9,8 +9,7 @@
     "projects": "projects",
     "previousEvent": "previous_event",
     "nextEvent": "next_event",
-    "needEnergy": "need_energy",
-    "pleasant": "pleasant",
+    "feel": "feel",
     "recurrence": "recurrence",
     "completeInstances": "complete_instances",
     "partialInstances": "partial_instances",
@@ -39,6 +38,14 @@
     "archived": "archived",
     "habit": "habit"
   },
+  "feels": {
+    "needEnergy": "need_energy",
+    "pleasant": "pleasant"
+  },
+  "legacyFields": {
+    "needEnergy": "need_energy",
+    "pleasant": "pleasant"
+  },
   "priorities": {
     "high": "high",
     "normal": "none"
@@ -50,7 +57,8 @@
     "evening": "evening"
   },
   "itemSettings": {
-    "property": "superpooper",
+    "property": "fromSuperPooperApp",
+    "legacyProperties": ["superpooper"],
     "fields": [
       "reminderTimes",
       "habitColor",
