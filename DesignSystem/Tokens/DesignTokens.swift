@@ -28,6 +28,10 @@ struct DesignTokens: Decodable, Sendable {
     /// The corner of a task's plate, concentric with its chips: their corner (half their height) plus the distance the
     /// plate keeps from them on the top, bottom and right (half the row's vertical padding).
     var rowPlateRadius: CGFloat { chipHeight / 2 + space(.rowVertical) / 2 }
+    /// The right inset of a row's own plate (pool, widgets): the chips stand as far from its right edge as from the top.
+    var rowPlateTrailingInset: CGFloat { space(.rowVertical) / 2 }
+    /// The side insets of a timeline slot's plate.
+    var slotPlateInset: CGFloat { space(.plateInner) / 2 }
 
     /// The user's appearance settings over the bundled tokens: colors and the opacity of done/past items.
     func applying(_ settings: AppSettings, limits: RulesConfig.Limits) -> DesignTokens {

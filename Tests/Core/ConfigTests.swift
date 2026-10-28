@@ -4,10 +4,13 @@ import Testing
 
 /// The bundled configs load and are complete; config typos produce readable errors.
 struct ConfigTests {
-    /// A habit's day offers the same marks in the same order everywhere: the pool, the Habits list, the history.
-    @Test func habitDayMenusMatchThePool() {
-        let marks: Set<ActionID> = [.unmark, .partial, .done, .twice]
-        #expect(TestConfig.actions.menus["habitDay"] == TestConfig.actions.menus["habitContext"]?.filter(marks.contains))
+    /// Partially and Twice are picked on the Habits page and in the history only; Today and the notifications offer
+    /// Done (a twice-a-day habit's second Done is Twice) and Skip today, in red.
+    @Test func partialAndTwiceStayOnTheHabitsPage() {
+        #expect(TestConfig.actions.menus["habitDay"] == [.unmark, .partial, .done, .twice])
+        #expect(TestConfig.actions.menus["habitContext"] == [.unmark, .done, .skipToday])
+        #expect(TestConfig.actions.menus["habitNotification"] == [.done, .skipToday])
+        #expect(TestConfig.actions.definition(.skipToday).destructive)
         #expect(TestConfig.actions.menus["eventContext"] == [.deleteEvent])
     }
 

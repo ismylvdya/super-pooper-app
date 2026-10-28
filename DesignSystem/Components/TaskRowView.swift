@@ -7,7 +7,7 @@ import SwiftUI
 struct TaskRowView: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.titleReserve) private var reserve
-    @Environment(\.bareTitleInset) private var bareInset
+    @Environment(\.plateTrailingInset) private var plateInset
     @Environment(\.chipOrder) private var chipOrder
     let item: DayItem
     let today: LocalDate
@@ -25,9 +25,10 @@ struct TaskRowView: View {
     var onOpen: (() -> Void)?
 
     var body: some View {
-        HStack(alignment: .top, spacing: tokens.space(.iconTextGap)) {
+        // The title fades out `fadeGap` before the chips, the corner marks or the plate's edge (`TitleFade`).
+        HStack(alignment: .top, spacing: tokens.space(.fadeGap)) {
             title.frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.trailing, hasTrailing ? 0 : bareInset)
+                .padding(.trailing, hasTrailing ? 0 : TitleFade.trailing(corner: reserve, plateInset: plateInset, gap: tokens.space(.fadeGap)))
             if showsDetails, !chips.isEmpty {
                 HStack(spacing: tokens.space(.chipGap)) { chipViews }.fixedSize()
             }
@@ -47,9 +48,9 @@ struct TaskRowView: View {
         let font = titleFont ?? tokens.font(.taskTitle)
         if let lines = titleLineLimit ?? (isCompact ? 1 : nil) {
             FadingText(text: item.task.name, font: font, lineHeight: titleLineHeight ?? tokens.uiFont(.taskTitle).lineHeight,
-                       lines: lines, reserve: reserve)
+                       lines: lines)
         } else {
-            Text(item.task.name).font(font).multilineTextAlignment(.leading).padding(.trailing, reserve)
+            Text(item.task.name).font(font).multilineTextAlignment(.leading)
         }
     }
 

@@ -6,6 +6,8 @@ struct TrashScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
     @State private var toDelete: TrashedNote?
+    @State private var query = ""
+    @State private var isSearching = false
 
     var body: some View {
         PageScaffold(title: L10n.string("trash.title")) {
@@ -13,12 +15,14 @@ struct TrashScreen: View {
                 Text("trash.empty").font(tokens.font(.hint)).foregroundStyle(tokens.color(.secondaryText))
             } else {
                 PlateSection(header: nil, hint: "trash.hint") {
-                    ForEach(model.trashedNotes) { note in
+                    ForEach(model.trashedNotes.filter { SearchMatcher.matches($0.name, query) }) { note in
                         TrashRow(note: note) { toDelete = note }
                     }
                 }
             }
         }
+        .pageSearch(query: $query, isSearching: $isSearching, prompt: "search.prompt.tasks")
+        .toolbar { ToolbarItem(placement: .topBarTrailing) { SearchBarButton(isSearching: $isSearching, accessibilityID: "trash.search") } }
         .task { await model.refreshTrash() }
         .refreshable { await model.refreshTrash() }
         .alert("trash.delete.title", isPresented: Binding(presenting: $toDelete),

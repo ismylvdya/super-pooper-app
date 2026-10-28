@@ -52,13 +52,12 @@ struct DayTimelineView<TaskContent: View>: View {
         style.compactPlates ? max((style.minimumItemHeight - tokens.space(.timelineItemGap) - bell.size) / 2, 1) : tokens.space(.bellInset)
     }
 
-    /// Room the title leaves at the top right for the link mark and the bell.
+    /// How far from the block's right edge the corner marks reach (their inset, the link mark, the bell and the gap
+    /// between them); 0 without marks. The title fades out `fadeGap` before that (`TitleFade`).
     private func cornerWidth(linked: Bool, alerts: Bool) -> CGFloat {
-        let gap = tokens.space(.chipVertical)
-        var width: CGFloat = 0
-        if linked { width += tokens.size(.linkBadge) + tokens.space(.linkBadgeTrailing) }
-        if alerts { width += bell.size + gap }
-        return width
+        let marks = [linked ? tokens.size(.linkBadge) : nil, alerts ? bell.size : nil].compactMap { $0 }
+        guard !marks.isEmpty else { return 0 }
+        return cornerInset + marks.reduce(0, +) + tokens.space(.chipVertical) * CGFloat(marks.count - 1)
     }
 
     private var contentBottom: CGFloat { CGFloat(placed(width: 1).map(\.frame.maxY).max() ?? 0) }
@@ -118,7 +117,7 @@ struct DayTimelineView<TaskContent: View>: View {
                     .onTapGesture { onEventTap(event) }
                     .accessibilityAddTraits(.isButton)
                     .accessibilityAction { onEventTap(event) }
-                    .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: tokens.radius(.timelineItem), style: .continuous))
+                    .contentShape(.contextMenuPreview, PlateShape(cornerRadius: tokens.radius(.timelineItem)))
                     .contextMenu {
                         if let onEventDelete = style.onEventDelete { RegistryMenu(menu: .eventContext) { _ in onEventDelete(event) } }
                     }
@@ -184,7 +183,8 @@ struct DayTimelineView<TaskContent: View>: View {
     /// (smaller in widgets).
     private func cornerRadius(of slot: TimelineSlot) -> CGFloat {
         if case .event = slot.content { return tokens.radius(.timelineItem) }
-        return (style.compactPlates ? tokens.radius(.widgetItem) : tokens.rowPlateRadius)
+        // The same plate in the app and in widgets; a short slot is capped by `PlateShape`.
+        return tokens.rowPlateRadius
     }
 
     /// The "now" cursor, as in the old Calendar widget: a dot in the middle of the hour numbers and a
@@ -214,7 +214,7 @@ struct DayTimelineView<TaskContent: View>: View {
                 context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(.black))
                 context.blendMode = .destinationOut
                 for block in covered {
-                    context.fill(RoundedRectangle(cornerRadius: block.radius, style: .continuous).path(in: block.rect),
+                    context.fill(PlateShape(cornerRadius: block.radius).path(in: block.rect),
                                  with: .color(.black.opacity(1 - overBlocks)))
                 }
             }

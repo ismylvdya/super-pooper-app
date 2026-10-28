@@ -23,7 +23,7 @@ struct HabitRow: View {
             Button { router.open(.task(habit.name)) } label: {
                 HStack(spacing: tokens.space(.iconTextGap)) {
                     VStack(alignment: .leading, spacing: tokens.space(.titleDetailGap)) {
-                        Text(habit.name).font(tokens.font(.habitTitle)).foregroundStyle(tokens.habitNameColor(habit)).lineLimit(2)
+                        Text(habit.name).font(tokens.font(habit.habit.repeatable ? .repeatableTitle : .habitTitle)).foregroundStyle(tokens.habitNameColor(habit)).lineLimit(2)
                         detail
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -81,7 +81,7 @@ struct HabitDayButton: View {
     var body: some View {
         let grid = HabitGrid(task: habit, weekCount: 1, today: day, days: model.context().days)
         let cell = grid.weeks.last?.first { $0.date == day }?.cell ?? .open
-        HabitDayCell(cell: cell, color: tokens.habitColor(habit), metrics: metrics)
+        HabitDayCell(cell: cell, color: tokens.habitMarkColor(habit), metrics: metrics)
             .contentShape(Circle())
             .onTapGesture {
                 Haptics.play(.light)

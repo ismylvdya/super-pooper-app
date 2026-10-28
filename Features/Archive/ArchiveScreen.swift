@@ -8,20 +8,26 @@ struct ArchiveScreen: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.tokens) private var tokens
     @State private var pendingAction: PendingAction?
+    @State private var query = ""
+    @State private var isSearching = false
 
     var body: some View {
         PageScaffold(title: L10n.string("archive.title")) {
-            if !model.archivedTasks.isEmpty {
+            let tasks = model.archivedTasks.filter { SearchMatcher.matches($0.name, query) }
+            let habits = model.archivedHabits.filter { SearchMatcher.matches($0.name, query) }
+            if !tasks.isEmpty {
                 PlateSection(header: "archive.tasks") {
-                    ForEach(model.archivedTasks, id: \.name) { task in row(task, menu: .archiveRow, color: tokens.color(.primaryText)) }
+                    ForEach(tasks, id: \.name) { task in row(task, menu: .archiveRow, color: tokens.color(.primaryText)) }
                 }
             }
-            if !model.archivedHabits.isEmpty {
+            if !habits.isEmpty {
                 PlateSection(header: "archive.habits") {
-                    ForEach(model.archivedHabits, id: \.name) { habit in row(habit, menu: .habitArchiveRow, color: tokens.habitNameColor(habit)) }
+                    ForEach(habits, id: \.name) { habit in row(habit, menu: .habitArchiveRow, color: tokens.habitNameColor(habit)) }
                 }
             }
         }
+        .pageSearch(query: $query, isSearching: $isSearching, prompt: "search.prompt.tasks")
+        .toolbar { ToolbarItem(placement: .topBarTrailing) { SearchBarButton(isSearching: $isSearching, accessibilityID: "archive.search") } }
         .onChange(of: model.archivedNotesCount == 0) { _, isEmpty in
             if isEmpty { router.popToRoot() }
         }

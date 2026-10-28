@@ -28,12 +28,15 @@ struct ActionMenuContent: View {
     private func isCurrentMark(_ action: ActionDefinition) -> Bool {
         guard let item else { return false }
         switch action.id {
-        case .done: return item.state == .marked(.done)
+        // Without Twice in the menu, Done on a twice-a-day habit done once goes on to Twice.
+        case .done: return item.state == .marked(.done) && !(item.task.isTwiceADay && !offersTwice)
         case .partial: return item.state == .marked(.partial)
         case .twice: return item.state == .marked(.twice)
         default: return false
         }
     }
+
+    private var offersTwice: Bool { actions.actions(in: menu).contains { $0.id == .twice } }
 
     private func isAvailable(_ action: ActionDefinition) -> Bool {
         guard let item else { return true }

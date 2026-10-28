@@ -40,3 +40,10 @@ struct DayItem: Identifiable, Hashable, Sendable {
         return HabitMarking.isDayClosed(state.mark, twiceADay: task.habit.twiceADay, remindersPerDay: task.habitTimes.count)
     }
 }
+
+extension DayItem {
+    /// A note as an item outside a day plan (a list of the Lists tab): done by its status, no blockers.
+    init(listed task: TaskNote) {
+        self.init(task: task, state: task.status == .done ? .marked(.done) : .open, blockers: [], problems: task.problems)
+    }
+}

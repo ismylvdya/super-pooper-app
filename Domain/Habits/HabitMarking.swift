@@ -12,6 +12,12 @@ enum HabitMarking {
         }
     }
 
+    /// Done from a menu without Twice (Today): a twice-a-day habit already done goes on to Twice, as with the
+    /// second Done of a notification; otherwise Done.
+    static func menuDone(current: HabitMark?, twiceADay: Bool) -> HabitMark {
+        twiceADay && current == .done ? .twice : .done
+    }
+
     /// How many of a day's reminder times a mark closes, earliest first: Done or Partially one, Twice two.
     static func timesClosed(by mark: HabitMark?) -> Int {
         switch mark {

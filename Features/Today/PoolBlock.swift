@@ -78,15 +78,16 @@ struct PoolBlock: View {
                             ForEach(segment.items) { item in tracked(row(item, plate: .bare), item) }
                         }
                         .background(tokens.color(.plateBackground),
-                                    in: RoundedRectangle(cornerRadius: tokens.rowPlateRadius, style: .continuous))
-                        .clipShape(RoundedRectangle(cornerRadius: tokens.rowPlateRadius, style: .continuous))
+                                    in: PlateShape(cornerRadius: tokens.rowPlateRadius))
+                        .clipShape(PlateShape(cornerRadius: tokens.rowPlateRadius))
                     } else if let item = segment.items.first {
                         tracked(row(item, plate: .pool), item)
                     }
                 }
             }
         }
-        .contentMargins(.bottom, bottomInset, for: .scrollContent)
+        // Scrolled to the end, the last row clears the tab bar.
+        .contentMargins(.bottom, bottomInset + tokens.space(.scrollEndRoom), for: .scrollContent)
         .scrollBounceBehavior(.always)
         .scrollIndicators(.hidden)
         .refreshable { await model.sync(announce: true) }
@@ -204,14 +205,13 @@ struct PoolRowContent: View {
                     row
                     Spacer(minLength: minimumHeight)
                 }
-                .padding(.vertical, tokens.space(.rowVertical) / 2)
-                .padding(.horizontal, tokens.space(.plateInner) / 2)
+                .rowPlatePadding()
                 .background(tokens.color(.plateBackground))
             case .slot(let isPast, let isCompact):
                 row.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading).slotPlate(isPast: isPast, isCompact: isCompact)
             }
         }
-        .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: plateRadius, style: .continuous))
+        .contentShape(.contextMenuPreview, PlateShape(cornerRadius: tokens.rowPlateRadius))
         .contextMenu {
             ActionMenuContent(menu: item.isHabit ? .habitContext : .taskContext, item: item, isToday: isToday) {
                 handler.handle($0, taskName: item.id)
@@ -220,10 +220,6 @@ struct PoolRowContent: View {
         .taskDragSource(item, from: dragSource ?? .pool, drag: drag, isOn: dragSource != nil)
     }
 
-    private var plateRadius: CGFloat {
-        if case .slot(_, true) = plate { return tokens.radius(.widgetItem) }
-        return tokens.rowPlateRadius
-    }
 }
 
 /// The pool as a drop target (today only).

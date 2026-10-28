@@ -102,6 +102,14 @@ final class AppContainer {
         if let arrangement = launch.arrangement { model.updateSettings { $0.today.arrangement = arrangement } }
     }
 
+    private var signingReminder: SigningExpiryReminder {
+        let rules = config.rules.notifications
+        return SigningExpiryReminder(identifier: rules.signingWarningID, leadHours: rules.signingWarningHours) { expiration in
+            (L10n.string("notification.signing.title"),
+             L10n.format("notification.signing.body", expiration.formatted(date: .abbreviated, time: .shortened)))
+        }
+    }
+
     /// First sync after launch (DEBUG: optionally seeds demo calendar data first).
     func start() async {
         #if DEBUG
@@ -118,6 +126,7 @@ final class AppContainer {
         }
         #endif
         await model.sync(announce: false)
+        await signingReminder.schedule(now: model.clock.now)
         // The settings note read by the sync must not undo what the launch asked for.
         applyLaunchOverrides()
         if let url = launch.openURL { router.handle(url) }

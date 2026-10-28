@@ -25,6 +25,12 @@ struct HabitMarkingTests {
         #expect(HabitMarking.next(after: .done, twiceADay: two.isTwiceADay) == .twice)
     }
 
+    @Test func doneFromTodayOnATwiceHabitDoneOnceIsTwice() {
+        #expect(HabitMarking.menuDone(current: .done, twiceADay: true) == .twice)
+        #expect(HabitMarking.menuDone(current: .done, twiceADay: false) == .done)
+        #expect(HabitMarking.menuDone(current: nil, twiceADay: true) == .done)
+    }
+
     @Test func secondDoneFromATwoReminderDayIsTwice() {
         #expect(HabitMarking.notificationMark(.done, current: nil, remindersPerDay: 2) == .done)
         #expect(HabitMarking.notificationMark(.done, current: .done, remindersPerDay: 2) == .twice)

@@ -42,9 +42,31 @@ private struct LiftedPlate: ViewModifier {
     @Environment(\.tokens) private var tokens
 
     func body(content: Content) -> some View {
-        let shape = RoundedRectangle(cornerRadius: tokens.radius(.plate), style: .continuous)
+        let shape = PlateShape(cornerRadius: tokens.radius(.plate))
         content
             .contentShape(.contextMenuPreview, shape)
             .contentShape(.dragPreview, shape)
+    }
+}
+
+extension View {
+    /// A row of a system grouped list that fills its cell (the list's own insets move inside it), so a long press
+    /// lifts the whole row as a plate (`liftedPlate`), not a shape around its text.
+    func cellFillingRow() -> some View {
+        modifier(CellFillingRow())
+    }
+}
+
+private struct CellFillingRow: ViewModifier {
+    @Environment(\.tokens) private var tokens
+
+    func body(content: Content) -> some View {
+        content
+            .padding(.horizontal, tokens.space(.listRowInset))
+            .padding(.vertical, tokens.space(.listRowVertical))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(tokens.color(.plateBackground))
+            .liftedPlate()
+            .listRowInsets(EdgeInsets())
     }
 }

@@ -25,7 +25,7 @@
       "id": "skipToday",
       "title": "action.skipToday",
       "icon": "forward.end",
-      "destructive": false,
+      "destructive": true,
       "haptic": "light"
     },
     {
@@ -104,9 +104,7 @@
   "menus": {
     "habitContext": [
       "unmark",
-      "partial",
       "done",
-      "twice",
       "skipToday"
     ],
     "taskContext": [
@@ -122,7 +120,6 @@
     ],
     "habitNotification": [
       "done",
-      "partial",
       "skipToday"
     ],
     "taskNotification": [

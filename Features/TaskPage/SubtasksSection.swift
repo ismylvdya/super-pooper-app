@@ -31,7 +31,7 @@ struct SubtasksSection: View {
                     .padding(.horizontal, tokens.space(.plateInner))
                     .padding(.vertical, tokens.space(.plateRowGap) / 2)
                     .background(tokens.color(.plateBackground))
-                    .contentShape(.dragPreview, RoundedRectangle(cornerRadius: tokens.rowPlateRadius, style: .continuous))
+                    .contentShape(.dragPreview, PlateShape(cornerRadius: tokens.rowPlateRadius))
                     .onDrag {
                         dragged = subtask.name
                         return NSItemProvider(object: subtask.name as NSString)

@@ -60,7 +60,7 @@ struct TimelineBlock: View {
                         .padding(.vertical, contentTop)
                 }
                 .scrollPosition($position)
-                .contentMargins(.bottom, bottomInset, for: .scrollContent)
+                .contentMargins(.bottom, bottomInset + tokens.space(.scrollEndRoom), for: .scrollContent)
                 .onScrollGeometryChange(for: CGFloat.self) { max(0, -($0.contentOffset.y + $0.contentInsets.top)) } action: { _, new in
                     pull = new
                 }
@@ -125,7 +125,7 @@ struct TimelineBlock: View {
                     }
                     .padding(.vertical, tokens.space(.groupGap) / 2)
                 }
-                .contentMargins(.bottom, bottomInset, for: .scrollContent)
+                .contentMargins(.bottom, bottomInset + tokens.space(.scrollEndRoom), for: .scrollContent)
                 .scrollBounceBehavior(.always)
                 .scrollIndicators(.hidden)
                 .refreshable { await model.sync(announce: true) }

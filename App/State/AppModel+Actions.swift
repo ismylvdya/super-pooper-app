@@ -6,6 +6,9 @@ extension AppModel {
         guard let task = task(named: name) else { return }
         let marking = TaskMarking(today: context().today)
         switch action {
+        case .done where task.isHabit:
+            let current = HabitInstances(task: task).mark(on: day ?? context().today)
+            await write(task, marking.changes(marking: task, as: HabitMarking.menuDone(current: current, twiceADay: task.isTwiceADay), on: day))
         case .done, .partial, .twice:
             let mark: HabitMark = action == .partial ? .partial : action == .twice ? .twice : .done
             await write(task, marking.changes(marking: task, as: mark, on: day))

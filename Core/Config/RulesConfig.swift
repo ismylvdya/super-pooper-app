@@ -14,6 +14,9 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let horizonDays: Int
         /// The user's own picture for habit notifications, in the app group.
         let imageFile: String
+        /// The warning that the app's signature runs out comes this many hours before.
+        let signingWarningHours: Double
+        let signingWarningID: String
     }
 
     struct EventLinks: Codable, Hashable, Sendable {

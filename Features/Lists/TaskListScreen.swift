@@ -9,9 +9,11 @@ struct TaskListScreen: View {
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
+    @Environment(\.openURL) private var openURL
     let listID: String
     @State private var query = ""
     @State private var isSearching = false
+    @State private var pendingAction: PendingAction?
 
     var body: some View {
         let list = model.config.lists.list(listID)
@@ -29,19 +31,22 @@ struct TaskListScreen: View {
         }
         .appList()
         .overlay { if groups.isEmpty { Text("lists.empty").foregroundStyle(tokens.color(.secondaryText)) } }
-        .modifier(ListSearch(query: $query, isSearching: $isSearching))
+        .pageSearch(query: $query, isSearching: $isSearching, prompt: "search.prompt.tasks")
         .navigationTitle(Text(LocalizedStringKey(list?.title ?? "tab.lists")))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Button { router.open(.newTask) } label: { Image(systemName: icons[.newTask]) }
                     .accessibilityLabel(Text("task.new.title"))
-                Button { isSearching = true } label: { Image(systemName: icons[.search]) }
-                    .accessibilityLabel(Text("search.title"))
-                    .accessibilityIdentifier("list.search")
+                SearchBarButton(isSearching: $isSearching, accessibilityID: "list.search")
             }
         }
         .refreshable { await model.sync(announce: true) }
+        .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
+    }
+
+    private var handler: TaskActionHandler {
+        TaskActionHandler(model: model, router: router, openURL: openURL) { pendingAction = $0 }
     }
 
     private func row(_ task: TaskNote) -> some View {
@@ -59,23 +64,14 @@ struct TaskListScreen: View {
                     .accessibilityIdentifier("lists.toThisWeek.\(task.name)")
             }
         }
+        .cellFillingRow()
         .listRowBackground(tokens.color(.plateBackground))
-    }
-}
-
-/// The search field appears only after the search button: no field hides above the list to be pulled down. Closing
-/// it clears the query.
-private struct ListSearch: ViewModifier {
-    @Binding var query: String
-    @Binding var isSearching: Bool
-
-    func body(content: Content) -> some View {
-        if isSearching {
-            content
-                .searchable(text: $query, isPresented: $isSearching, placement: .navigationBarDrawer(displayMode: .always),
-                            prompt: Text("search.prompt.tasks"))
-        } else {
-            content.onAppear { query = "" }
+        // The pool's menu for the task (Not today has no place outside Today).
+        .contextMenu {
+            ActionMenuContent(menu: task.isHabit ? .habitContext : .taskContext, item: DayItem(listed: task), isToday: false) {
+                handler.handle($0, taskName: task.name)
+            }
         }
     }
 }
+

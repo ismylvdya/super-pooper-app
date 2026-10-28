@@ -17,7 +17,9 @@ struct TimelineEventBlock: View {
                 .fill(color)
                 .frame(width: tokens.size(.eventStripe))
             VStack(alignment: .leading, spacing: 0) {
-                FadingText(text: event.title, font: font.weight(.semibold), lineHeight: lineHeight, lines: 2, reserve: reserve)
+                FadingText(text: event.title, font: font.weight(.semibold), lineHeight: lineHeight, lines: 2,
+                           reserve: TitleFade.trailing(corner: reserve, plateInset: tokens.space(.timelineItemPadding),
+                                                       gap: tokens.space(.fadeGap)))
                 Text(TimeRangeText.format(event.start, event.end)).font(tokens.font(.caption)).lineLimit(1)
                     .opacity(tokens.opacity(.eventTime))
             }
@@ -28,8 +30,8 @@ struct TimelineEventBlock: View {
         .padding(.trailing, tokens.space(.timelineItemPadding))
         .frame(maxHeight: .infinity, alignment: .top)
         .background(color.opacity(tokens.opacity(.eventFill)),
-                    in: RoundedRectangle(cornerRadius: tokens.radius(.timelineItem), style: .continuous))
-        .clipShape(RoundedRectangle(cornerRadius: tokens.radius(.timelineItem), style: .continuous))
+                    in: PlateShape(cornerRadius: tokens.radius(.timelineItem)))
+        .clipShape(PlateShape(cornerRadius: tokens.radius(.timelineItem)))
         .opacity(slot.isPast ? tokens.opacity(.past) : 1)
     }
 }
@@ -48,13 +50,14 @@ struct TimelineReminderBlock: View {
     var onOpen: ((ReminderItem) -> Void)?
 
     var body: some View {
-        let plate = FadingText(text: reminder.title, font: font, lineHeight: lineHeight, lines: 1, reserve: reserve)
+        let plate = FadingText(text: reminder.title, font: font, lineHeight: lineHeight, lines: 1,
+                               reserve: TitleFade.trailing(corner: reserve, plateInset: tokens.slotPlateInset, gap: tokens.space(.fadeGap)))
             .foregroundStyle(slot.isPast ? tokens.color(.secondaryText) : tokens.color(.primaryText))
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .slotPlate(isPast: slot.isPast, isCompact: isCompact)
         if let onToggle, let onOpen {
             plate
-                .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: (isCompact ? tokens.radius(.widgetItem) : tokens.rowPlateRadius), style: .continuous))
+                .contentShape(.contextMenuPreview, PlateShape(cornerRadius: tokens.rowPlateRadius))
                 .onTapGesture { onOpen(reminder) }
                 .contextMenu { RegistryMenu(menu: .reminderContext) { _ in onToggle(reminder) } }
         } else {
@@ -89,10 +92,11 @@ private struct SlotPlate: ViewModifier {
     let isCompact: Bool
 
     func body(content: Content) -> some View {
-        let shape = RoundedRectangle(cornerRadius: (isCompact ? tokens.radius(.widgetItem) : tokens.rowPlateRadius), style: .continuous)
+        let shape = PlateShape(cornerRadius: tokens.rowPlateRadius)
         content
+            .environment(\.plateTrailingInset, tokens.slotPlateInset)
             .padding(.vertical, isCompact ? tokens.space(.timelineItemGap) : tokens.space(.rowVertical) / 2)
-            .padding(.horizontal, tokens.space(.plateInner) / 2)
+            .padding(.horizontal, tokens.slotPlateInset)
             .background(isPast ? tokens.color(.past).opacity(tokens.opacity(.eventFill)) : tokens.color(.plateBackground), in: shape)
             .clipShape(shape)
             .opacity(isPast ? tokens.opacity(.past) : 1)

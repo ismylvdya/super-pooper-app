@@ -2322,6 +2322,28 @@
         }
       }
     },
+    "notification.signing.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Its signature runs out %@. Re-sign it in AltStore or Xcode, and until then turn the Calendar and Reminders notifications back on."
+          }
+        }
+      }
+    },
+    "notification.signing.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SuperPooperApp stops opening soon"
+          }
+        }
+      }
+    },
     "notification.task.body": {
       "extractionState": "manual",
       "localizations": {

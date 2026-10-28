@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// A title that never shows "…": what does not fit dissolves at the right edge (and before `reserve`
-/// points kept free for icons in the corner). With several lines, the text wraps and the last line fades.
+/// points kept free, see `TitleFade`). With several lines, the text wraps and the last line fades.
 struct FadingText: View {
     @Environment(\.tokens) private var tokens
     let text: String
@@ -44,9 +44,7 @@ struct FadingText: View {
                 }
             }
         }
-        // In a narrow column every letter counts: the line runs a few letters on under the corner icons
-        // and into the plate's padding before it fades.
-        .padding(.trailing, isNarrow ? reserve - tokens.size(.narrowFadeShift) : reserve)
+        .padding(.trailing, reserve)
         // Measured outside the padding, so the shift above never feeds back into the width.
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         .accessibilityLabel(Text(text))
@@ -58,19 +56,29 @@ private struct TitleReserveKey: EnvironmentKey {
 }
 
 extension EnvironmentValues {
-    /// Points at the right of a block title kept free for the bell and the link mark.
+    /// How far from a block's right edge its corner marks (the link mark, the bell) reach; 0 = none.
     var titleReserve: CGFloat {
         get { self[TitleReserveKey.self] }
         set { self[TitleReserveKey.self] = newValue }
     }
 
-    /// Extra points at the right of a row title when nothing follows it (the plate's right edge is tight for chips).
-    var bareTitleInset: CGFloat {
-        get { self[BareTitleInsetKey.self] }
-        set { self[BareTitleInsetKey.self] = newValue }
+    /// The right inset of the plate a row sits on (set by the plate), for `TitleFade`.
+    var plateTrailingInset: CGFloat {
+        get { self[PlateTrailingInsetKey.self] }
+        set { self[PlateTrailingInsetKey.self] = newValue }
     }
 }
 
-private struct BareTitleInsetKey: EnvironmentKey {
+/// One rule for every fading title: it has faded out `fadeGap` points before what stands at its right — a chip, the
+/// corner marks, or the plate's edge when there is nothing — whatever the layout, the widget or the text length.
+enum TitleFade {
+    /// Points a title keeps free at its right inside a plate whose own right inset is `plateInset`, with corner marks
+    /// reaching `corner` points from the plate's edge (0 = none).
+    static func trailing(corner: CGFloat, plateInset: CGFloat, gap: CGFloat) -> CGFloat {
+        max(0, corner + gap - plateInset)
+    }
+}
+
+private struct PlateTrailingInsetKey: EnvironmentKey {
     static let defaultValue: CGFloat = 0
 }

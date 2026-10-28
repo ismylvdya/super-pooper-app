@@ -5,6 +5,24 @@ extension View {
     func taskPlate(isDone: Bool = false) -> some View {
         modifier(TaskPlate(isDone: isDone))
     }
+
+    /// The insets of a row on its plate, the same whether the plate is its own or shared (a routine): the chips on the
+    /// right keep the same distance from the plate's top, bottom and right edge.
+    func rowPlatePadding() -> some View {
+        modifier(RowPlatePadding())
+    }
+}
+
+private struct RowPlatePadding: ViewModifier {
+    @Environment(\.tokens) private var tokens
+
+    func body(content: Content) -> some View {
+        content
+            .padding(.vertical, tokens.space(.rowVertical) / 2)
+            .padding(.leading, tokens.space(.plateInner) / 2)
+            .padding(.trailing, tokens.rowPlateTrailingInset)
+            .environment(\.plateTrailingInset, tokens.rowPlateTrailingInset)
+    }
 }
 
 private struct TaskPlate: ViewModifier {
@@ -13,12 +31,8 @@ private struct TaskPlate: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            // The chips on the right keep the same distance from the plate's top, bottom and right edge.
-            .padding(.vertical, tokens.space(.rowVertical) / 2)
-            .padding(.leading, tokens.space(.plateInner) / 2)
-            .padding(.trailing, tokens.space(.rowVertical) / 2)
-            .environment(\.bareTitleInset, tokens.space(.plateInner) / 2 - tokens.space(.rowVertical) / 2)
-            .background(tokens.color(.plateBackground), in: RoundedRectangle(cornerRadius: tokens.rowPlateRadius, style: .continuous))
+            .rowPlatePadding()
+            .background(tokens.color(.plateBackground), in: PlateShape(cornerRadius: tokens.rowPlateRadius))
             .opacity(isDone ? tokens.opacity(.past) : 1)
     }
 }

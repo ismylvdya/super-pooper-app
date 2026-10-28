@@ -30,7 +30,9 @@
   "notifications": {
     "limit": 60,
     "horizonDays": 7,
-    "imageFile": "notification-image.png"
+    "imageFile": "notification-image.png",
+    "signingWarningHours": 24,
+    "signingWarningID": "signing-expiry"
   },
   "eventLinks": {
     "resolveDaysBefore": 2,
