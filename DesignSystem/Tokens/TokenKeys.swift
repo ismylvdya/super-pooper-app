@@ -38,5 +38,5 @@ enum ColorToken: String, CaseIterable, Sendable {
     case accent, task, habit, high, energy, pleasant, heart, nowLine, problem, twice
     case past, swipeNeutral, screenBackground, plateBackground, chipBackground, primaryText, secondaryText, tertiaryText
     case bannerBackground, infoText, destructive, eventText, timelineGrid
-    case missed, success, warning, error, shadow, widgetPlate
+    case missed, success, warning, error, shadow, widgetPlate, widgetTop, widgetBottom
 }

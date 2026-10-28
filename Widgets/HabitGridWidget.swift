@@ -63,7 +63,7 @@ struct HabitGridEntryView: View {
                 Text("widget.habit.empty").font(tokens.font(.widgetCaption)).foregroundStyle(tokens.color(.secondaryText)).padding()
             }
         }
-        .containerBackground(tokens.color(.plateBackground), for: .widget)
+        .containerBackground(for: .widget) { WidgetBackground(light: .plateBackground) }
         .widgetURL(habit.flatMap { DeepLink.habit($0.name) } ?? DeepLink.habits)
         .environment(\.tokens, (entry.source.map { $0.config.tokens.applying($0.settings, limits: $0.config.rules.limits) } ?? tokens).forWidget())
         .environment(\.calendar, entry.source?.calendar ?? AppCalendar.make())

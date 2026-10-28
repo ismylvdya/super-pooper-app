@@ -59,7 +59,7 @@ struct TodayWidgetEntryView: View {
                 Text("widget.empty").font(tokens.font(.widgetCaption)).foregroundStyle(tokens.color(.secondaryText)).padding()
             }
         }
-        .containerBackground(tokens.color(.screenBackground), for: .widget)
+        .containerBackground(for: .widget) { WidgetBackground(light: .screenBackground) }
         .widgetURL(DeepLink.today)
         .environment(\.tokens, (entry.source.map { $0.config.tokens.applying($0.settings, limits: $0.config.rules.limits) } ?? tokens).forWidget())
         .environment(\.timelineBell, (entry.source?.settings ?? BundledConfig.settings).timeline.bellStyle)
