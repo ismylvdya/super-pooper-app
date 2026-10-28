@@ -26,6 +26,8 @@ enum TaskFieldChange: Hashable, Sendable {
     /// The raw recurrence rule, or `nil` to remove it.
     case recurrence(String?)
     case reminderTimes([LocalTime])
+    /// The zone of the item's times; nil = wall-clock times.
+    case timeZone(String?)
     case habitColor(String?)
     case harmful(Bool)
     case repeatable(Bool)

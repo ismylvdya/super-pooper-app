@@ -23,6 +23,7 @@ struct TaskPropertiesSection: View {
                 }
                 .labelsHidden()
             }
+            TimeZoneRow(editor: editor)
             PlateRow(icon: .feel, title: "taskPage.feel", info: "info.taskPage.feel") {}
             Picker("taskPage.feel", selection: binding(\.feel, change: TaskFieldChange.feel)) {
                 ForEach(TaskFeel.allCases, id: \.self) { Text(L10n.string("taskPage.feel." + $0.rawValue)).tag($0) }

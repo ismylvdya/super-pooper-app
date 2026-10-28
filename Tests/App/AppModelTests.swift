@@ -52,18 +52,19 @@ struct AppModelTests {
         let model = try makeModel()
         #expect(model.plan(at: model.clock.now).item(named: "Повесить полку")?.isBlocked == true)
         await model.perform(.done, on: "Повесить полку")
-        #expect(model.task(named: "Повесить полку")?.status == .done)
+        await model.loadFiledTasks()
+        #expect(model.filedTasks.first { $0.name == "Повесить полку" }?.status == .done)
     }
 
-    @Test func doneAndUnmarkCheckAndUncheckARegularTask() async throws {
+    /// A task marked done goes to the done folder at once, with its date; the Done list reads it from there.
+    @Test func aDoneTaskGoesToTheDoneFolderAtOnce() async throws {
         let model = try makeModel()
         let today = model.context().today
         await model.perform(.done, on: "Позвонить в банк")
-        #expect(model.task(named: "Позвонить в банк")?.status == .done)
-        #expect(model.task(named: "Позвонить в банк")?.completedDate == today)
-        await model.perform(.unmark, on: "Позвонить в банк")
-        #expect(model.task(named: "Позвонить в банк")?.status == .thisWeek)
-        #expect(model.task(named: "Позвонить в банк")?.completedDate == nil)
+        #expect(model.task(named: "Позвонить в банк") == nil)
+        await model.loadFiledTasks()
+        let filed = try #require(model.filedTasks.first { $0.name == "Позвонить в банк" })
+        #expect(filed.status == .done && filed.completedDate == today)
     }
 
     /// Settings and the day keep pointing at a renamed habit: its place in the list and the routine, Skip today.

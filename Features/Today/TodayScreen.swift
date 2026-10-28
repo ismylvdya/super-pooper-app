@@ -2,8 +2,8 @@ import SwiftUI
 
 /// Main screen: blocks from the arrangement's layout (`layouts/today-*.layout.json`), refreshed every
 /// minute so "now" and chains move. The pool and the timeline both pull to refresh (full sync).
-/// Top left: This week (the review) and the problems badge; top right: new task and search, in the app's own bar of
-/// glass bubbles with the day's name midway between them. In landscape the same buttons stand in a column along the physical top, each where it is upright on the
+/// Top left: This week (the review) and the problems badge; top right: new task and search, in the system navigation
+/// bar with the day's name as its title (so the bar's buttons flow into a pushed page's, as on the other tabs). In landscape the same buttons stand in a column along the physical top, each where it is upright on the
 /// physical screen (see `PhysicalBottom`); the layout is the landscape one from settings. The arrows next to the day's name
 /// slide the pool and the timeline together to yesterday / tomorrow (and further): another day shows its own
 /// events, reminders, dated tasks and habits; its name, or the Today tab, brings back today. With the paged
@@ -30,7 +30,6 @@ struct TodayScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if !isLandscape { portraitBar }
             HStack(alignment: .top, spacing: 0) {
                 if physicalBottom == .trailing { landscapeColumn(bottom: .trailing) }
                 content
@@ -39,9 +38,16 @@ struct TodayScreen: View {
         }
         .background(tokens.color(.screenBackground))
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
-        // Today draws its own bar (the same glass bubbles as the system one) so the day's name stands exactly between
-        // the button groups, whatever their widths and the text size.
-        .toolbar(.hidden, for: .navigationBar)
+        // Upright, the system bar; lying sideways the buttons stand in their own column along the physical top.
+        .toolbar(isLandscape ? .hidden : .visible, for: .navigationBar)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if !isLandscape {
+                ToolbarItemGroup(placement: .topBarLeading) { TodayButtons(placement: .leading) }
+                ToolbarItem(placement: .principal) { dayNavigation }
+                ToolbarItemGroup(placement: .topBarTrailing) { TodayButtons(placement: .trailing) }
+            }
+        }
         .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
         .environment(taskDrag)
         .onChange(of: router.todayTaps) { if dayOffset != 0 { withAnimation(tokens.animation) { dayOffset = 0 } } }
@@ -160,18 +166,6 @@ struct TodayScreen: View {
     }
 
     /// The bar upright: the button groups at the edges, the day's name with its arrows midway between them.
-    private var portraitBar: some View {
-        HStack(spacing: 0) {
-            bubble(.horizontal) { TodayButtons(placement: .leading) }
-            Spacer(minLength: tokens.space(.chipGap))
-            dayNavigation
-            Spacer(minLength: tokens.space(.chipGap))
-            bubble(.horizontal) { TodayButtons(placement: .trailing) }
-        }
-        .padding(.horizontal, tokens.space(.screenHorizontal))
-        .padding(.top, tokens.space(.todayBarTop))
-        .padding(.bottom, tokens.space(.todayBarBottom))
-    }
 
     /// The bar upright, from the physical left to the physical right.
     private enum LandscapeSlot: CaseIterable { case leading, day, trailing }

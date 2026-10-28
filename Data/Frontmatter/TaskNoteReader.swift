@@ -44,6 +44,7 @@ struct TaskNoteReader: Sendable {
         task.partialInstances = fields.dates(keys.partialInstances)
         task.twiceInstances = fields.dates(keys.twiceInstances)
         task.reminderTimes = fields.times(keys.reminderTimes)
+        task.timeZone = fields.string(keys.timeZone).flatMap { TimeZone(identifier: $0) == nil ? nil : $0 }
         task.habit = habitOptions(&fields)
         task.completedDate = fields.parsed(keys.completedDate, LocalDate.init(isoString:))
         task.dateCreated = fields.timestamp(keys.dateCreated, calendar: calendar)

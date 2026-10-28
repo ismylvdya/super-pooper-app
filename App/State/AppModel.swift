@@ -19,6 +19,8 @@ final class AppModel {
     let calendar: Calendar
 
     private(set) var tasks: [TaskNote] = []
+    /// The done folder's tasks, read when the Done list opens (`loadFiledTasks`).
+    var filedTasks: [TaskNote] = []
     private(set) var fileProblems: [FileProblem] = []
     private(set) var events: [CalendarEvent] = []
     private(set) var reminders: [ReminderItem] = []

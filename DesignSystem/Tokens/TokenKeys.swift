@@ -2,7 +2,7 @@ import Foundation
 
 /// Names of the design tokens in `tokens.json`. Screens never contain raw numbers or colors.
 enum SpacingToken: String, CaseIterable, Sendable {
-    case tabBarInner, landscapeBarInset, barButtonGap, todayBarTop, todayBarBottom, reviewTop, popoverRowVertical, fadeGap, scrollEndRoom, listRowVertical
+    case tabBarInner, landscapeBarInset, barButtonGap, reviewTop, popoverRowVertical, fadeGap, scrollEndRoom, listRowVertical
     case screenHorizontal, screenBottom, groupGap, plateInner, plateRowGap, headerToPlate, hintToPlate
     case iconTextGap, chipHorizontal, chipVertical, chipGap, infoPadding, nestedTitleInset, nestedTitleLift
     case childIndent, rowVertical, poolRowGap, blockGap, timelineLabelWidth, timelineItemGap, timelineItemPadding

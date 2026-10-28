@@ -2201,6 +2201,61 @@
         }
       }
     },
+    "info.taskPage.timeZone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Phone's time: 09:00 is 09:00 wherever you are. A zone: 09:00 there, at the matching time of your phone."
+          }
+        }
+      }
+    },
+    "intent.signing.description": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sends a notification when the app's signature runs out within a day. Put it on a daily automation."
+          }
+        }
+      }
+    },
+    "intent.signing.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check App Signature"
+          }
+        }
+      }
+    },
+    "intent.signing.unknown": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This build has no signature that runs out."
+          }
+        }
+      }
+    },
+    "intent.signing.until %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The signature runs out %@."
+          }
+        }
+      }
+    },
     "intent.sync.description": {
       "extractionState": "manual",
       "localizations": {
@@ -2241,6 +2296,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Needs energy"
+          }
+        }
+      }
+    },
+    "lists.filed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done folder"
           }
         }
       }
@@ -5552,6 +5618,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Subtasks"
+          }
+        }
+      }
+    },
+    "taskPage.timeZone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time zone"
+          }
+        }
+      }
+    },
+    "taskPage.timeZone.phone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Phone's time"
           }
         }
       }

@@ -128,6 +128,16 @@ actor VaultTaskRepository: TaskRepository {
         }
     }
 
+    func filedTasks() async throws -> [TaskNote] {
+        let settings = vaultSettings()
+        let scanner = scanner(settings)
+        return try await location.withRoot { root in
+            let folder = try VaultPaths.besideTasks(doneFolder, root: root, tasksFolder: settings.tasksFolder, fileSystem: fileSystem)
+            guard fileSystem.fileExists(folder) else { return [] }
+            return await scanner.scan(root: root, tasksFolder: VaultPaths.relative(folder, to: root)).result.tasks
+        }
+    }
+
     func create(named name: String, status: TaskStatus) async throws -> TaskNote {
         guard NoteNameRules.isValid(name) else { throw TaskRepositoryError.invalidName(name) }
         let settings = vaultSettings()

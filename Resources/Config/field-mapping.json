@@ -18,6 +18,7 @@
     "dateCreated": "date_created",
     "dateModified": "date_modified",
     "reminderTimes": "reminder_times",
+    "timeZone": "time_zone",
     "habitColor": "habit_color",
     "harmful": "harmful",
     "repeatable": "repeatable",
@@ -61,6 +62,7 @@
     "legacyProperties": ["superpooper"],
     "fields": [
       "reminderTimes",
+      "timeZone",
       "habitColor",
       "harmful",
       "repeatable",

@@ -14,6 +14,10 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
                 guard case .success(let container) = AppContainer.shared else { return }
                 await container.model.sync(announce: false)
             }
+            AppActionBridge.signingCheckHandler = {
+                guard case .success(let container) = AppContainer.shared else { return nil }
+                return await container.checkSigning()
+            }
             AppActionBridge.habitTapHandler = { name in
                 guard case .success(let container) = AppContainer.shared else { return }
                 await container.model.ensureLoaded()

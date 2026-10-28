@@ -66,6 +66,7 @@ extension AppModel {
             replace(result.task)
             reportClashes(result, name: task.name)
             await publishDerivedState()
+            if DoneFiling.isDue(result.task) { await fileAwayDoneTasks() }
             return true
         } catch {
             banners.show(Self.describe(error), style: .problem)

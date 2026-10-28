@@ -5,6 +5,8 @@ import AppIntents
 enum AppActionBridge {
     static var syncHandler: (() async -> Void)?
     static var habitTapHandler: ((String) async -> Void)?
+    /// Warns now if the signature runs out soon; the expiration, nil when the app has none.
+    static var signingCheckHandler: (() async -> Date?)?
 
     static func sync() async {
         await syncHandler?()
@@ -12,5 +14,9 @@ enum AppActionBridge {
 
     static func tapHabit(_ name: String) async {
         await habitTapHandler?(name)
+    }
+
+    static func checkSigning() async -> Date? {
+        await signingCheckHandler?()
     }
 }

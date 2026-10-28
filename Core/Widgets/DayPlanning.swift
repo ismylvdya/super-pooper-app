@@ -7,7 +7,7 @@ enum DayPlanning {
     static func plan(config: AppConfig, settings: AppSettings, tasks: [TaskNote], events: [CalendarEvent],
                      reminders: [ReminderItem], dayState: DayState, context: DayContext, eventsKnown: Bool = true) -> DayPlan {
         let state = dayState.day == context.today ? dayState : DayState(day: context.today)
-        let inputs = DayInputs(tasks: usable(tasks, config: config), events: events, reminders: reminders,
+        let inputs = DayInputs(tasks: usable(tasks, config: config, context: context), events: events, reminders: reminders,
                                skipped: Set(state.skipped), manualOrder: state.manualOrder,
                                routines: HabitRoutines(morning: settings.habits.morningRoutine, day: settings.habits.dayRoutine,
                                                       evening: settings.habits.eveningRoutine),
@@ -27,7 +27,7 @@ enum DayPlanning {
         }
         let day = context.today.adding(days: dayOffset)
         let dayContext = context.focused(on: OtherDay.moment(of: day, context: context, anchor: config.rules.timeline.otherDayAnchor))
-        let inputs = DayInputs(tasks: usable(tasks, config: config), events: events, reminders: reminders,
+        let inputs = DayInputs(tasks: usable(tasks, config: config, context: context), events: events, reminders: reminders,
                                skipped: [], manualOrder: nil, timelineFilter: settings.timeline.shown, isOtherDay: true,
                                eventsKnown: eventsKnown)
         var result = DayBuilder(rules: config.rules.day, sortCriteria: sortCriteria(config: config, settings: settings))
@@ -36,9 +36,10 @@ enum DayPlanning {
         return result
     }
 
-    /// Event links are dropped when the feature is off.
-    private static func usable(_ tasks: [TaskNote], config: AppConfig) -> [TaskNote] {
-        config.flags.eventLinks ? tasks : tasks.map(\.withoutEventLinks)
+    /// Times kept in a zone of their own moved to the phone's; event links dropped when the feature is off.
+    private static func usable(_ tasks: [TaskNote], config: AppConfig, context: DayContext) -> [TaskNote] {
+        let local = ZonedTimes.local(tasks, calendar: context.calendar, today: context.today)
+        return config.flags.eventLinks ? local : local.map(\.withoutEventLinks)
     }
 
     /// The user's order of the pool rules, or `sort.json`; unknown names are skipped.

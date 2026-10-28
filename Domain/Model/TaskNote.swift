@@ -30,6 +30,8 @@ struct TaskNote: Identifiable, Hashable, Codable, Sendable {
     var twiceInstances: [LocalDate] = []
     /// Habit reminders, several per day (`reminder_times`, `HH:mm`).
     var reminderTimes: [LocalTime] = []
+    /// The zone the due time and reminder times are kept in (IANA name); nil = wall-clock times (`ZonedTimes`).
+    var timeZone: String?
     var habit = HabitOptions()
     var completedDate: LocalDate?
     var dateCreated: Date?

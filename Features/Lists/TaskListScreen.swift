@@ -28,6 +28,7 @@ struct TaskListScreen: View {
                     row(task, group: StatusText.title(group.status), isFirst: index == 0, isLast: index == group.tasks.count - 1)
                 }
             }
+            if filter.statuses.contains(.done) { filedGroup(query: query) }
         }
         .listGroupStyle()
         .listGroupBacking(frames)
@@ -43,8 +44,35 @@ struct TaskListScreen: View {
                 SearchBarButton(isSearching: $isSearching, accessibilityID: "list.search")
             }
         }
-        .refreshable { await model.sync(announce: true) }
+        .task { if filter.statuses.contains(.done) { await model.loadFiledTasks() } }
+        .refreshable {
+            await model.sync(announce: true)
+            if filter.statuses.contains(.done) { await model.loadFiledTasks() }
+        }
         .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
+    }
+
+    /// The done folder's tasks, newest first: to look back at, not to change (a new task may have the same name).
+    @ViewBuilder private func filedGroup(query: String) -> some View {
+        let filed = model.filedTasks.filter { SearchMatcher.matches($0.name, query) }
+            .sorted { ($0.completedDate?.isoString ?? "") > ($1.completedDate?.isoString ?? "") }
+        if !filed.isEmpty {
+            ListGroupHeader(title: Text("lists.filed"))
+            ForEach(Array(filed.enumerated()), id: \.element.relativePath) { index, task in
+                HStack(spacing: tokens.space(.iconTextGap)) {
+                    TaggedTaskName(name: task.name)
+                    Spacer(minLength: 0)
+                    if let day = task.completedDate {
+                        Text(day.startDate(in: model.calendar).formatted(date: .abbreviated, time: .omitted))
+                            .font(tokens.font(.caption)).foregroundStyle(tokens.color(.secondaryText))
+                    }
+                }
+                .padding(.horizontal, tokens.space(.plateInner))
+                .padding(.vertical, tokens.space(.listRowVertical))
+                .listGroupRow(group: "filed", id: task.relativePath, isFirst: index == 0, isLast: index == filed.count - 1,
+                              frames: frames, separatorInset: tokens.space(.plateInner))
+            }
+        }
     }
 
     private var handler: TaskActionHandler {

@@ -26,6 +26,7 @@ enum WriteConflict {
         case .completedDate: return (keys.completedDate, { $0.completedDate })
         case .recurrence: return (keys.recurrence, { $0.recurrenceRaw })
         case .reminderTimes: return (keys.reminderTimes, { $0.reminderTimes })
+        case .timeZone: return (keys.timeZone, { $0.timeZone })
         case .habitColor: return (keys.habitColor, { $0.habit.color })
         case .harmful: return (keys.harmful, { $0.habit.harmful })
         case .repeatable: return (keys.repeatable, { $0.habit.repeatable })

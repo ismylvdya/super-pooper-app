@@ -9,6 +9,7 @@
   "energy": "bolt.fill",
   "pleasant": "heart.fill",
   "feel": "heart.circle",
+  "timeZone": "globe",
   "chipOrder": "line.3.horizontal",
   "high": "flag.fill",
   "due": "calendar",

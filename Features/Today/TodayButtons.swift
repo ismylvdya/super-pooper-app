@@ -25,10 +25,15 @@ struct TodayButtons: View {
 
     var body: some View {
         ForEach(PhysicalBottom.physicalOrder(placement.items.filter(isShown), bottom: bottom), id: \.self) { item in
-            // Each button takes the size of a system bar button in its bubble.
-            button(item)
-                .frame(minWidth: tokens.size(.barButton), minHeight: tokens.size(.barButton))
-                .contentShape(Capsule())
+            // In the system bar upright the bar sizes the buttons; in the column lying sideways each takes the size of
+            // a system bar button in its bubble.
+            if bottom == nil {
+                button(item)
+            } else {
+                button(item)
+                    .frame(minWidth: tokens.size(.barButton), minHeight: tokens.size(.barButton))
+                    .contentShape(Capsule())
+            }
         }
     }
 

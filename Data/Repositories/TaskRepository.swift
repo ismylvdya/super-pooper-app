@@ -45,6 +45,8 @@ protocol TaskRepository: Sendable {
     func moveToTrash(_ task: TaskNote) async throws
     /// Moves a done note into the done folder next to the tasks folder (`Name`, `Name 2`, … when taken there).
     func fileAway(_ task: TaskNote) async throws
+    /// The notes in the done folder, read-only.
+    func filedTasks() async throws -> [TaskNote]
     /// A new note in the tasks folder, written the way TaskNotes writes it. The name is made unique
     /// (`Name`, `Name 2`, …).
     func create(named name: String, status: TaskStatus) async throws -> TaskNote

@@ -103,6 +103,12 @@ final class AppContainer {
         if let arrangement = launch.arrangement { model.updateSettings { $0.today.arrangement = arrangement } }
     }
 
+    /// The Shortcuts check: warns now if the signature runs out soon; returns when it runs out.
+    func checkSigning() async -> Date? {
+        await signingReminder.notifyIfSoon(now: model.clock.now)
+        return SigningExpiryReminder.expiration()
+    }
+
     private var signingReminder: SigningExpiryReminder {
         let rules = config.rules.notifications
         return SigningExpiryReminder(identifier: rules.signingWarningID, leadHours: rules.signingWarningHours) { expiration in

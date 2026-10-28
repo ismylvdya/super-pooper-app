@@ -48,6 +48,8 @@ extension View {
 }
 
 actor InMemoryTaskRepository: TaskRepository {
+    /// Notes moved to the done folder.
+    private var filed: [TaskNote] = []
     private var tasks: [TaskNote]
     private var bodies: [String: String] = [:]
     /// Scans throw this (tests of a vault that cannot be read).
@@ -94,7 +96,11 @@ actor InMemoryTaskRepository: TaskRepository {
     }
 
     func moveToTrash(_ task: TaskNote) async throws { tasks.removeAll { $0.name == task.name } }
-    func fileAway(_ task: TaskNote) async throws { tasks.removeAll { $0.name == task.name } }
+    func fileAway(_ task: TaskNote) async throws {
+        tasks.removeAll { $0.name == task.name }
+        filed.append(task)
+    }
+    func filedTasks() async throws -> [TaskNote] { filed }
     func backup(_ tasks: [TaskNote], reason: String) async throws {}
 
     func create(named name: String, status: TaskStatus) async throws -> TaskNote {

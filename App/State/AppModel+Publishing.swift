@@ -40,6 +40,8 @@ extension AppModel {
         let planner = NotificationPlanner(horizonDays: rules.horizonDays, limit: rules.limit)
         // Skip today (habits) and Not today (tasks) both take an item out of today's notifications.
         let skipped = Set(dayState.day == context.today ? dayState.skipped + dayState.postponed : [])
+        // Times kept in a zone of their own ring at the phone's time for that moment.
+        let tasks = ZonedTimes.local(self.tasks, calendar: context.calendar, today: context.today)
         let planned = planner.plan(tasks: tasks, reminders: reminders, events: events, skipped: skipped, context: context)
         let valid = planner.stillValidToday(tasks: tasks, reminders: reminders, events: events, skipped: skipped, context: context)
         // Alerts moved into the past or added too late come right away, once.

@@ -24,6 +24,8 @@ struct FieldMapping: Codable, Hashable, Sendable {
         let dateCreated: String
         let dateModified: String
         let reminderTimes: String
+        /// The zone of the item's times (an app setting of the item, in its JSON).
+        let timeZone: String
         let habitColor: String
         let harmful: String
         let repeatable: String

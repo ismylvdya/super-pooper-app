@@ -20,6 +20,17 @@ struct SigningExpiryReminder: Sendable {
         return object["ExpirationDate"] as? Date
     }
 
+    /// The check of the Shortcuts action: the warning right away when the signature runs out soon.
+    func notifyIfSoon(now: Date, expiration: Date? = Self.expiration()) async {
+        guard let expiration, SigningExpiry.isSoon(expiration: expiration, leadHours: leadHours, now: now) else { return }
+        let text = content(expiration)
+        let request = UNMutableNotificationContent()
+        request.title = text.title
+        request.body = text.body
+        request.sound = .default
+        try? await UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: identifier + "|now", content: request, trigger: nil))
+    }
+
     func schedule(now: Date, expiration: Date? = Self.expiration()) async {
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: [identifier])
