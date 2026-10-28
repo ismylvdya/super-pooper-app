@@ -22,8 +22,8 @@
           "buildVersion": "14",
           "date": "2026-10-28",
           "downloadURL": "https://raw.githubusercontent.com/ismylvdya/super-pooper-app/main/dist/SuperPooperApp.ipa",
-          "size": 3303119,
-          "sha256": "2656713f76933160ee09d41a57d3a9bd98a116587cb22819dc29451208cbdbac",
+          "size": 3300196,
+          "sha256": "8ab78d8efcdf3990d94305ed671bedc6d2b50aacdbe76113fc9ab2f214d12964",
           "minOSVersion": "26.0"
         }
       ],

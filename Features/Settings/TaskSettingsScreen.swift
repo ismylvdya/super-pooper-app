@@ -13,6 +13,7 @@ struct TaskSettingsScreen: View {
             PoolSettingsSection()
             AppearanceSettingsSection()
             ColorSettingsSection()
+            WidgetColorsSection()
             NotificationSettingsSection()
         }
         .task { await model.refreshAccess() }

@@ -628,6 +628,28 @@
         }
       }
     },
+    "color.widgetBottom": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bottom"
+          }
+        }
+      }
+    },
+    "color.widgetTop": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Top"
+          }
+        }
+      }
+    },
     "common.cancel": {
       "extractionState": "manual",
       "localizations": {
@@ -4628,6 +4650,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "The widget keeps its own layout, independent from the app's."
+          }
+        }
+      }
+    },
+    "settings.widgetColors": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widgets in the dark theme"
+          }
+        }
+      }
+    },
+    "settings.widgetColors.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The background of the widgets goes from the top color to the bottom one. Empty = the gradient of Apple's own widgets."
           }
         }
       }
