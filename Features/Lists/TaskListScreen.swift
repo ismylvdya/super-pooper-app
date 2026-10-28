@@ -14,6 +14,7 @@ struct TaskListScreen: View {
     @State private var query = ""
     @State private var isSearching = false
     @State private var pendingAction: PendingAction?
+    @State private var frames = ListGroupFrames()
 
     var body: some View {
         let list = model.config.lists.list(listID)
@@ -21,14 +22,15 @@ struct TaskListScreen: View {
         let groups = filter.groups(of: model.tasks, query: query, rules: model.config.rules.day)
         List {
             ForEach(groups, id: \.status) { group in
-                Section {
-                    ForEach(group.tasks, id: \.name) { task in row(task) }
-                } header: {
-                    // A list of one planning level already says it in its title.
-                    if filter.statuses.count > 1 { Text(verbatim: StatusText.title(group.status)) }
+                // A list of one planning level already says it in its title.
+                if filter.statuses.count > 1 { ListGroupHeader(title: Text(verbatim: StatusText.title(group.status))) } else { ListGroupGap() }
+                ForEach(Array(group.tasks.enumerated()), id: \.element.name) { index, task in
+                    row(task, group: StatusText.title(group.status), isFirst: index == 0, isLast: index == group.tasks.count - 1)
                 }
             }
         }
+        .listGroupStyle()
+        .listGroupBacking(frames)
         .appList()
         .overlay { if groups.isEmpty { Text("lists.empty").foregroundStyle(tokens.color(.secondaryText)) } }
         .pageSearch(query: $query, isSearching: $isSearching, prompt: "search.prompt.tasks")
@@ -49,7 +51,7 @@ struct TaskListScreen: View {
         TaskActionHandler(model: model, router: router, openURL: openURL) { pendingAction = $0 }
     }
 
-    private func row(_ task: TaskNote) -> some View {
+    private func row(_ task: TaskNote, group: String, isFirst: Bool, isLast: Bool) -> some View {
         HStack(spacing: tokens.space(.iconTextGap)) {
             NavigationLink(value: Route.task(task.name)) {
                 TaggedTaskName(name: task.name)
@@ -64,8 +66,10 @@ struct TaskListScreen: View {
                     .accessibilityIdentifier("lists.toThisWeek.\(task.name)")
             }
         }
-        .cellFillingRow()
-        .listRowBackground(tokens.color(.plateBackground))
+        .padding(.horizontal, tokens.space(.plateInner))
+        .padding(.vertical, tokens.space(.listRowVertical))
+        .listGroupRow(group: group, id: task.name, isFirst: isFirst, isLast: isLast, frames: frames,
+                      separatorInset: tokens.space(.plateInner))
         // The pool's menu for the task (Not today has no place outside Today).
         .contextMenu {
             ActionMenuContent(menu: task.isHabit ? .habitContext : .taskContext, item: DayItem(listed: task), isToday: false) {

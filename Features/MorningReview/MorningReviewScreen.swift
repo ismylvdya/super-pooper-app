@@ -16,18 +16,19 @@ struct MorningReviewScreen: View {
     @Environment(\.openURL) private var openURL
     @State private var path: [Route] = []
     @State private var pendingAction: PendingAction?
+    @State private var frames = ListGroupFrames()
 
     var body: some View {
         NavigationStack(path: $path) {
             let plan = model.plan(at: model.clock.now)
             List {
-                Section {
+                Group {
                     let rows = ReviewGroups.rows(plan.pool)
                     let items = Dictionary(plan.pool.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
                     ForEach(Array(rows.enumerated()), id: \.element) { index, row in
                         switch row {
                         case .header(let group):
-                            GroupHeaderRow(title: LocalizedStringKey("review.group." + group.rawValue))
+                            ListGroupHeader(title: Text(LocalizedStringKey("review.group." + group.rawValue)))
                                 .moveDisabled(true)
                                 .accessibilityIdentifier("review.group.\(group.rawValue)")
                         case .item(let name):
@@ -36,17 +37,15 @@ struct MorningReviewScreen: View {
                                 ReviewRow(item: item, today: plan.today) { path.append(.task(item.id)) }
                                     // A subtask sits under its parent, shifted right, as in the pool.
                                     .padding(.leading, CGFloat(item.depth) * tokens.space(.subtaskIndent))
-                                    // The row fills its cell, so a long press lifts it at its own size.
                                     .padding(.horizontal, tokens.space(.plateInner))
-                                    .background(GroupRowBackground(isFirst: position.isFirst, isLast: position.isLast))
-                                    .liftedPlate()
+                                    .listGroupRow(group: ReviewGroups.group(of: index, in: rows)?.rawValue ?? "", id: name,
+                                                  isFirst: position.isFirst, isLast: position.isLast, frames: frames,
+                                                  separatorInset: tokens.space(.plateInner) + CGFloat(item.depth) * tokens.space(.subtaskIndent))
                                     .contextMenu {
                                         ActionMenuContent(menu: item.isHabit ? .habitContext : .taskContext, item: item) {
                                             perform($0, on: item.id)
                                         }
                                     }
-                                    .listRowInsets(EdgeInsets())
-                                    .groupRow(isFirst: position.isFirst, isLast: position.isLast)
                                     // The row is rebuilt when it becomes or stops being the group's first or last, so its
                                     // rounded corners follow a new order (the list keeps a moved row's old background).
                                     .id("\(name)|\(position.isFirst)|\(position.isLast)")
@@ -65,19 +64,20 @@ struct MorningReviewScreen: View {
                         Haptics.play(.medium)
                         model.applyReviewMove(ReviewGroups.move(rows, from: source, to: destination, pool: plan.pool))
                     }
-                } footer: {
-                    Text(model.dayState.manualOrder == nil ? "review.footer.auto" : "review.footer.manual")
-                        .accessibilityIdentifier("review.footer")
                 }
+                ListGroupFooter(text: Text(model.dayState.manualOrder == nil ? "review.footer.auto" : "review.footer.manual"))
+                    .accessibilityIdentifier("review.footer")
                 let postponed = model.postponedTasks
                 if !postponed.isEmpty {
-                    Section {
-                        GroupHeaderRow(title: "review.postponed")
+                    Group {
+                        ListGroupHeader(title: Text("review.postponed"))
                         ForEach(Array(postponed.enumerated()), id: \.element.name) { index, task in
                             ReviewRow(item: DayItem(task: task, state: .open, blockers: [], problems: []), today: plan.today) {
                                 path.append(.task(task.name))
                             }
-                            .groupRow(isFirst: index == 0, isLast: index == postponed.count - 1)
+                            .padding(.horizontal, tokens.space(.plateInner))
+                            .listGroupRow(group: "postponed", id: task.name, isFirst: index == 0, isLast: index == postponed.count - 1,
+                                          frames: frames, separatorInset: tokens.space(.plateInner))
                             .accessibilityIdentifier("review.notToday:\(task.name)")
                             .opacity(tokens.opacity(.blocked))
                             .swipeActions(edge: .leading, allowsFullSwipe: true) {
@@ -88,11 +88,13 @@ struct MorningReviewScreen: View {
                                 .accessibilityIdentifier("review.backToToday")
                             }
                         }
-                    } footer: {
-                        Text("review.postponed.hint")
+                        ListGroupFooter(text: Text("review.postponed.hint"))
                     }
                 }
             }
+            .listGroupStyle()
+            .listGroupBacking(frames)
+            .appList()
             // The first group starts closer to the bar than a list's own top gap.
             .contentMargins(.top, tokens.space(.reviewTop), for: .scrollContent)
             .bannerHost()
@@ -142,19 +144,6 @@ extension MorningReviewScreen {
     }
 }
 
-/// A group's title standing in the list as a row, so rows can be dragged across it.
-private struct GroupHeaderRow: View {
-    @Environment(\.tokens) private var tokens
-    let title: LocalizedStringKey
-
-    var body: some View {
-        Text(title)
-            .font(tokens.font(.sectionHeader))
-            .foregroundStyle(tokens.color(.tertiaryText))
-            .listRowBackground(Color.clear)
-            .listRowSeparator(.hidden)
-    }
-}
 
 /// One table row: title and editable chips: High, date, estimate, energy,
 /// pleasant, status, links.

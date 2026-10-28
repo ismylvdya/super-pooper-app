@@ -36,6 +36,14 @@ enum ReviewGroups {
         }
     }
 
+    /// The group a row stands in: the one of the header above it.
+    static func group(of index: Int, in rows: [Row]) -> Group? {
+        rows[...index].reversed().lazy.compactMap { row -> Group? in
+            if case .header(let group) = row { return group }
+            return nil
+        }.first
+    }
+
     /// The rows: each group's header, then its items in pool order.
     static func rows(_ pool: [DayItem]) -> [Row] {
         Group.allCases.flatMap { group in

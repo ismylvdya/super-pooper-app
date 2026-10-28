@@ -8,8 +8,6 @@ struct HabitRow: View {
     @Environment(\.icons) var icons
     let habit: TaskNote
     let today: LocalDate
-    var isFirst = true
-    var isLast = true
     /// The row's plate width: the history grid of a plate this wide sets the day mark's ring and gap.
     @State private var plateWidth: CGFloat?
 
@@ -37,11 +35,7 @@ struct HabitRow: View {
         .padding(.horizontal, tokens.space(.plateInner))
         .padding(.vertical, tokens.space(.rowVertical) / 2)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(GroupRowBackground(isFirst: isFirst, isLast: isLast))
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { plateWidth = $0 }
-        // A long press lifts the row as a whole plate and offers today's marks.
-        .liftedPlate()
-        .contextMenu { HabitDayMenu(habit: habit, day: today) }
     }
 }
 

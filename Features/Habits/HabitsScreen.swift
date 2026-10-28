@@ -13,6 +13,7 @@ struct HabitsScreen: View {
     @State private var titleHeight: CGFloat = 0
     @State private var query = ""
     @State private var isSearching = false
+    @State private var frames = ListGroupFrames()
 
     var body: some View {
         let today = model.context().today
@@ -23,10 +24,10 @@ struct HabitsScreen: View {
                 .frame(maxWidth: .infinity)
                 .padding(.top, tokens.space(.nestedTitleLift))
                 .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { titleHeight = $0 }
-                .pageCell()
+                .listGroupSpacer()
             if model.habits.isEmpty {
                 Text("habits.empty").font(tokens.font(.hint)).foregroundStyle(tokens.color(.secondaryText))
-                    .pageCell()
+                    .listGroupSpacer()
             }
             group(groups.tracked, header: nil, groups: groups, isRepeatable: false, today: today)
             group(groups.repeatable, header: "habits.repeatable", groups: groups, isRepeatable: true, today: today)
@@ -39,14 +40,11 @@ struct HabitsScreen: View {
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("habits.routines")
             }
-            .pageCell()
+            .listGroupSpacer()
         }
-        .listStyle(.plain)
+        .listGroupStyle()
+        .listGroupBacking(frames)
         .tracksLargeTitle($isLargeTitleVisible, titleHeight: titleHeight)
-        // The screen margins belong to the list, not to its cells: a lifted or dragged row is only its plate.
-        .contentMargins(.horizontal, tokens.space(.screenHorizontal), for: .scrollContent)
-        // Gaps are rows of their own height, not of a list row's minimum.
-        .environment(\.defaultMinListRowHeight, 0)
         .appList()
         // The title starts where the other tabs' page titles start, not under the list's own top margin.
         .contentMargins(.top, 0, for: .scrollContent)
@@ -66,26 +64,21 @@ struct HabitsScreen: View {
 
     /// The space between two plates of the page.
     private var gap: some View {
-        Color.clear.frame(height: tokens.space(.groupGap)).pageCell()
+        Color.clear.frame(height: tokens.space(.groupGap)).listGroupSpacer()
     }
 
     /// One group of rows; the rounded corners belong to its first and last row, as on every plate.
     @ViewBuilder private func group(_ habits: [TaskNote], header: LocalizedStringKey?, groups: HabitGroups, isRepeatable: Bool,
                                     today: LocalDate) -> some View {
         if !habits.isEmpty {
-            gap
-            if let header {
-                Text(header)
-                    .font(tokens.font(.sectionHeader))
-                    .foregroundStyle(tokens.color(.tertiaryText))
-                    .padding(.horizontal, tokens.space(.plateInner))
-                    .padding(.bottom, tokens.space(.headerToPlate))
-                    .pageCell()
-            }
+            if let header { ListGroupHeader(title: Text(header)) } else { gap }
             ForEach(Array(habits.enumerated()), id: \.element.name) { index, habit in
                 let isFirst = index == 0, isLast = index == habits.count - 1
-                HabitRow(habit: habit, today: today, isFirst: isFirst, isLast: isLast)
-                    .pageCell()
+                HabitRow(habit: habit, today: today)
+                    .listGroupRow(group: isRepeatable ? "repeatable" : "tracked", id: habit.name, isFirst: isFirst, isLast: isLast,
+                                  frames: frames, separatorInset: tokens.space(.plateInner) + tokens.size(.iconColumn) + tokens.space(.iconTextGap))
+                    // A long press lifts the row and offers today's marks.
+                    .contextMenu { HabitDayMenu(habit: habit, day: today) }
                     // Rebuilt when it becomes or stops being first or last, so the corners follow a new order.
                     .id("\(habit.name)|\(isFirst)|\(isLast)")
             }
@@ -98,11 +91,3 @@ struct HabitsScreen: View {
     }
 }
 
-private extension View {
-    /// A row of the plain list that draws its own plate: no inset, background or separator from the list.
-    func pageCell() -> some View {
-        listRowInsets(EdgeInsets())
-            .listRowBackground(Color.clear)
-            .listRowSeparator(.hidden)
-    }
-}
