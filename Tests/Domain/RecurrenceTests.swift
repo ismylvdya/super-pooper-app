@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 private func day(_ iso: String) -> LocalDate {
     guard let value = LocalDate(isoString: iso) else { preconditionFailure("Invalid fixture date \(iso)") }

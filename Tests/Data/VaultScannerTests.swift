@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Scanning the rendered test vault with the real coordinated file system (iCloud faked).
 /// The vault is rendered for Wednesday 2026-10-21 in Europe/Belgrade (UTC+2 that week).

@@ -1,5 +1,5 @@
 import Foundation
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Fixed time zone and calendar for every test: the user lives in Europe/Belgrade.
 /// The reference week is Monday 2026-10-19 … Sunday 2026-10-25; most tests use Wednesday 2026-10-21.

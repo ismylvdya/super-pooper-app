@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 private enum Notes {
     /// Frontmatter of a typical TaskNotes note plus unknown keys, comments, blank lines and a block scalar.

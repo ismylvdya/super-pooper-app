@@ -43,8 +43,8 @@
 		</dict>
 	</array>
 	<key>NSCalendarsFullAccessUsageDescription</key>
-	<string>SuperPooper shows your anchor calendar events on the Today timeline.</string>
+	<string>SuperPooperApp shows your anchor calendar events on the Today timeline.</string>
 	<key>NSRemindersFullAccessUsageDescription</key>
-	<string>SuperPooper shows timed reminders from the lists you choose.</string>
+	<string>SuperPooperApp shows timed reminders from the lists you choose.</string>
 </dict>
 </plist>

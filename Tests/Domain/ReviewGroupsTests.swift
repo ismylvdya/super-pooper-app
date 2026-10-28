@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// This week's Morning / Day / Evening groups: dragging a task across a header moves it into that group.
 struct ReviewGroupsTests {

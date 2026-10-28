@@ -1,6 +1,6 @@
 #!/bin/bash
 # Собирает .ipa для AltStore/SideStore без Apple ID: Release-сборка для устройства, ad-hoc подпись
-# с entitlements (App Group), Payload/SuperPooper.app → zip → dist/SuperPooper.ipa.
+# с entitlements (App Group), Payload/SuperPooperApp.app → zip → dist/SuperPooperApp.ipa.
 # AltStore при установке сам переподписывает приложение и виджет Apple ID пользователя.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -22,18 +22,18 @@ xcodebuild build -quiet \
   OTHER_SWIFT_FLAGS="-file-prefix-map $PWD=." \
   ${EXTRA[@]+"${EXTRA[@]}"}
 
-APP=.build/DerivedData-device/Build/Products/Release-iphoneos/SuperPooper.app
+APP=.build/DerivedData-device/Build/Products/Release-iphoneos/SuperPooperApp.app
 ENTITLEMENTS=.build/ipa-entitlements.plist
 sed "s/\$(SP_APP_GROUP)/$GROUP/" Config/SuperPooper.entitlements > "$ENTITLEMENTS"
-codesign --force --sign - --entitlements "$ENTITLEMENTS" "$APP/PlugIns/SuperPooperWidgets.appex"
+codesign --force --sign - --entitlements "$ENTITLEMENTS" "$APP/PlugIns/SuperPooperAppWidgets.appex"
 codesign --force --sign - --entitlements "$ENTITLEMENTS" "$APP"
 
 rm -rf .build/ipa && mkdir -p .build/ipa/Payload dist
 cp -R "$APP" .build/ipa/Payload/
-rm -f dist/SuperPooper.ipa
-(cd .build/ipa && /usr/bin/zip -qry ../../dist/SuperPooper.ipa Payload)
+rm -f dist/SuperPooperApp.ipa
+(cd .build/ipa && /usr/bin/zip -qry ../../dist/SuperPooperApp.ipa Payload)
 # Никаких следов машины сборки и чужого Apple ID: подпись ad-hoc, без Team ID и профилей, без путей.
-for BIN in "$APP/SuperPooper" "$APP/PlugIns/SuperPooperWidgets.appex/SuperPooperWidgets"; do
+for BIN in "$APP/SuperPooperApp" "$APP/PlugIns/SuperPooperAppWidgets.appex/SuperPooperAppWidgets"; do
   if grep -a -q "$HOME" "$BIN"; then echo "Ошибка: в $BIN есть путь машины сборки" >&2; exit 1; fi
   # Без пайпа: с pipefail `grep -q` обрывает вывод codesign и проверка ложно падает.
   [[ "$(codesign -dv "$BIN" 2>&1)" == *"TeamIdentifier=not set"* ]] || { echo "Ошибка: в $BIN есть Team ID" >&2; exit 1; }
@@ -41,4 +41,4 @@ done
 [ -z "$(find "$APP" -name '*.mobileprovision')" ] || { echo "Ошибка: в .ipa есть provisioning profile" >&2; exit 1; }
 
 scripts/update-altstore-source.sh
-echo "Готово: dist/SuperPooper.ipa ($(du -h dist/SuperPooper.ipa | cut -f1))"
+echo "Готово: dist/SuperPooperApp.ipa ($(du -h dist/SuperPooperApp.ipa | cut -f1))"

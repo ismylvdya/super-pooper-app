@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Reading single notes from text: the forms TaskNotes and people actually write, defaults for missing
 /// fields and problems (never failures) for unreadable ones.

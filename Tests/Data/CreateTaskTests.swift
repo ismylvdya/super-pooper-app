@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// New tasks from the app are TaskNotes notes in the tasks folder.
 @Suite("Creating tasks")

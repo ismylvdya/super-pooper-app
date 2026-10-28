@@ -1,5 +1,5 @@
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Notes are listed by name in one order everywhere: case does not matter and numbers read as numbers.
 struct NameOrderTests {

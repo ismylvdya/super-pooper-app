@@ -1,5 +1,5 @@
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// The timeline opens at the first shown hour also when the all-day strip appears after it.
 struct TimelineOpeningTests {

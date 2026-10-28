@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Which local notifications should be pending (`<notifications>`), with the real horizon and limit
 /// from `rules.json`. Wednesday 2026-10-21; the horizon is Wednesday … Tuesday 2026-10-27.

@@ -14,4 +14,5 @@ struct AppServices {
     let snapshotStore: SnapshotStore
     let alertStateStore: AlertStateStore
     let widgets: WidgetReloading
+    let notificationImage: NotificationImageStore
 }

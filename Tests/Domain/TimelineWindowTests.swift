@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Hour heights and positions on a timeline column: one rule for the app, the settings preview and widgets.
 struct TimelineWindowTests {

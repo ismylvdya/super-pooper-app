@@ -1,5 +1,5 @@
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Reading values with `YAMLSubsetParser` and writing them with `YAMLSerializer`.
 struct FrontmatterValueTests {

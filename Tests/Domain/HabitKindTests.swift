@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Habits as a kind of their own: `status: habit`, the rule alone decides the days, reminders decide the times.
 @Suite("Habit kind")

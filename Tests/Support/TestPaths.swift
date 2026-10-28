@@ -1,5 +1,5 @@
 import Foundation
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Project files the tests read: the test vault templates and the real JSON configs.
 /// The root is found by walking up from this file (symlinks resolved first), so the tests work

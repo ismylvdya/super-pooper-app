@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Which habits reach Today, archived notes leaving the day, the part-of-day sort and all-day events.
 @Suite("Habits in Today")

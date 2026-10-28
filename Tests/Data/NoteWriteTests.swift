@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Writing through `VaultTaskRepository` into a rendered copy of the test vault: only the changed keys
 /// and `date_modified` may differ, byte for byte (`<data_model>` "Запись в файлы").

@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Pool sorting with the real `sort.json` order and `rules.json` defaults.
 /// Wednesday 2026-10-21; Friday is the 23rd, Sunday the 25th; the energy hour is 14:00.

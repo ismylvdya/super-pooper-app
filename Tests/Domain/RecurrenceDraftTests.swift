@@ -1,5 +1,5 @@
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 @Suite struct RecurrenceDraftTests {
     private let start = LocalDate(year: 2026, month: 10, day: 23)!

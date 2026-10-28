@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AA0000000000000000000B01 /* SuperPooperWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000F02 /* SuperPooperWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		AA0000000000000000000B01 /* SuperPooperAppWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000F02 /* SuperPooperAppWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -41,7 +41,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				AA0000000000000000000B01 /* SuperPooperWidgets.appex in Embed Foundation Extensions */,
+				AA0000000000000000000B01 /* SuperPooperAppWidgets.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -51,8 +51,8 @@
 /* Begin PBXFileReference section */
 		AA0000000000000000000F04 /* SuperPooperUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SuperPooperUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0000000000000000000F19 /* UITests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = UITests.xcconfig; sourceTree = "<group>"; };
-		AA0000000000000000000F01 /* SuperPooper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SuperPooper.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		AA0000000000000000000F02 /* SuperPooperWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SuperPooperWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA0000000000000000000F01 /* SuperPooperApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SuperPooperApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA0000000000000000000F02 /* SuperPooperAppWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SuperPooperAppWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0000000000000000000F03 /* SuperPooperTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SuperPooperTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0000000000000000000F11 /* Shared.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Shared.xcconfig; sourceTree = "<group>"; };
 		AA0000000000000000000F12 /* App.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = App.xcconfig; sourceTree = "<group>"; };
@@ -156,8 +156,8 @@
 		AA0000000000000000000703 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				AA0000000000000000000F01 /* SuperPooper.app */,
-				AA0000000000000000000F02 /* SuperPooperWidgets.appex */,
+				AA0000000000000000000F01 /* SuperPooperApp.app */,
+				AA0000000000000000000F02 /* SuperPooperAppWidgets.appex */,
 				AA0000000000000000000F03 /* SuperPooperTests.xctest */,
 				AA0000000000000000000F04 /* SuperPooperUITests.xctest */,
 			);
@@ -218,8 +218,8 @@
 			name = SuperPooper;
 			packageProductDependencies = (
 			);
-			productName = SuperPooper;
-			productReference = AA0000000000000000000F01 /* SuperPooper.app */;
+			productName = SuperPooperApp;
+			productReference = AA0000000000000000000F01 /* SuperPooperApp.app */;
 			productType = "com.apple.product-type.application";
 		};
 		AA0000000000000000000602 /* SuperPooperWidgets */ = {
@@ -244,8 +244,8 @@
 			name = SuperPooperWidgets;
 			packageProductDependencies = (
 			);
-			productName = SuperPooperWidgets;
-			productReference = AA0000000000000000000F02 /* SuperPooperWidgets.appex */;
+			productName = SuperPooperAppWidgets;
+			productReference = AA0000000000000000000F02 /* SuperPooperAppWidgets.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 		AA0000000000000000000603 /* SuperPooperTests */ = {

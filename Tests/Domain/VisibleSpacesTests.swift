@@ -1,5 +1,5 @@
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 @Suite("Visible trailing spaces")
 struct VisibleSpacesTests {

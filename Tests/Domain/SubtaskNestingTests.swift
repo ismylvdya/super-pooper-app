@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Subtasks stay under their parent in the pool, indented, whichever order the other tasks get.
 struct SubtaskNestingTests {

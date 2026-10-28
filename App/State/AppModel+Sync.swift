@@ -43,6 +43,22 @@ extension AppModel {
         }
     }
 
+    /// Done tasks of earlier days go to the done folder; the tasks that waited for them lose those met links first.
+    private func fileAwayDoneTasks() async {
+        for task in DoneFiling.due(tasks, today: context().today) {
+            for dependent in DoneFiling.unlinking(task.name, from: tasks) {
+                await edit(dependent.name) { _ in [.removePreviousTask(task.name)] }
+            }
+            do {
+                if config.flags.backups { try await services.tasks.backup([task], reason: "done") }
+                try await services.tasks.fileAway(task)
+                remove(task)
+            } catch {
+                SyncLog.logger.error("filing \(task.name, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
+            }
+        }
+    }
+
     private func performSync(announce: Bool) async {
         setSyncing(true)
         defer { setSyncing(false) }
@@ -71,6 +87,7 @@ extension AppModel {
                 report.conflicts = result.conflicted
                 if config.flags.autoPromote { report.promoted = await autoPromote() }
                 await migrateLegacyFields()
+                if config.flags.fileDoneTasks { await fileAwayDoneTasks() }
             } catch {
                 setVaultState(.failed(Self.describe(error)))
                 scanFailed = true

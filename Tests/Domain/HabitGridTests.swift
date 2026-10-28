@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// The habit grid: weeks as rows ending with the current week, marks per day.
 struct HabitGridTests {

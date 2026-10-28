@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// The logical day around its boundary (04:00 by default), including the nights the clocks change.
 /// Belgrade: summer time ends on 2026-10-25 (03:00 → 02:00) and starts on 2026-03-29 (02:00 → 03:00).

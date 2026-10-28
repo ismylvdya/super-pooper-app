@@ -7,7 +7,7 @@ SIMULATOR="${SP_SIMULATOR:-SuperPooper Test}"
 UDID="$(xcrun simctl list devices available -j | /usr/bin/python3 -c "import json,sys; name=sys.argv[1]; print(next((d['udid'] for r in json.load(sys.stdin)['devices'].values() for d in r if d['name']==name), ''))" "$SIMULATOR")"
 [ -n "$UDID" ] || { echo "Симулятор '$SIMULATOR' не найден" >&2; exit 1; }
 BUNDLE_ID="$(grep -E '^SP_BUNDLE_ID' Config/Shared.xcconfig | sed 's/.*= *//')"
-APP=".build/DerivedData/Build/Products/Debug-iphonesimulator/SuperPooper.app"
+APP=".build/DerivedData/Build/Products/Debug-iphonesimulator/SuperPooperApp.app"
 
 case "${1:-}" in
   boot) xcrun simctl boot "$UDID" 2>/dev/null || true; xcrun simctl bootstatus "$UDID" -b >/dev/null ;;

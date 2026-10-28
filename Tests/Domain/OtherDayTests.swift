@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Another day browsed on Today (Thursday 2026-10-22, seen on Wednesday at 13:25): the same day rules,
 /// with "past" and blocking measured from the real now, and links resolved among all tasks.

@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// The date chip of a task counts logical days, like the Today / Tomorrow chips.
 @MainActor

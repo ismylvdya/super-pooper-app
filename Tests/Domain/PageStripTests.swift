@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// The Today pages: each leaves its neighbour's own peek in sight — the timeline's edge beside the pool, only a sliver
 /// of the pool (half of its last chip) beside the timeline.

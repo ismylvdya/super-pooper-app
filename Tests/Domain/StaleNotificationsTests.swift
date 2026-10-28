@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// A notification goes with its logical day: a habit not marked by the boundary does not wait into the next day.
 struct StaleNotificationsTests {

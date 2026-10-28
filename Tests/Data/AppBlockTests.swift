@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// The ```SuperPooperApp block in note bodies and the settings note in the vault.
 @Suite("App block and settings note")

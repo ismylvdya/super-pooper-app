@@ -1,7 +1,7 @@
 import Foundation
 @preconcurrency import UserNotifications
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// The app-state layer on in-memory services: the same calls menus and notification actions make.
 @MainActor

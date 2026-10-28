@@ -56,6 +56,8 @@ final class AppContainer {
                                         vaultSettings: { settingsStore.load().vault })
         let eventKit = EventKitAccess()
         self.eventKit = eventKit
+        let notificationImage = NotificationImageStore(url: shared.url(config.rules.notifications.imageFile),
+                                                       maxPixels: config.tokens.size(.notificationImagePixels))
         let notifications = UserNotificationScheduler(calendar: calendar, icons: config.icons, bodyText: { kind in
             switch kind {
             case .habit: L10n.string("notification.habit.body")
@@ -63,8 +65,9 @@ final class AppContainer {
             case .reminder: L10n.string("notification.reminder.body")
             case .event: L10n.string("notification.event.body")
             }
-        }, habitIcon: NotificationIcon(symbolName: config.icons[.habit], defaultColor: UIColor(config.tokens.color(.habit)),
-                                       pointSize: config.tokens.size(.notificationIcon)))
+        }, habitIcon: NotificationIcon(symbolName: config.icons[.habit], color: {
+            settingsStore.load().colors[ColorToken.habit.rawValue].flatMap { UIColor(hex: $0) } ?? UIColor(config.tokens.color(.habit))
+        }, pointSize: config.tokens.size(.notificationIcon), image: notificationImage))
         let services = AppServices(
             vault: vaultLocation, tasks: tasks,
             trash: VaultTrashRepository(location: vaultLocation, fileSystem: fileSystem, noteExtension: config.rules.vault.noteExtension,
@@ -79,7 +82,7 @@ final class AppContainer {
             notifications: notifications, settingsStore: settingsStore,
             dayStateStore: DayStateStore(store: shared), snapshotStore: SnapshotStore(store: shared),
             alertStateStore: AlertStateStore(store: shared),
-            widgets: WidgetKitReloader())
+            widgets: WidgetKitReloader(), notificationImage: notificationImage)
 
         let banners = BannerCenter()
         self.banners = banners

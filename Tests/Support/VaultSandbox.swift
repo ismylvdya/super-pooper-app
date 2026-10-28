@@ -1,5 +1,5 @@
 import Foundation
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// A rendered copy of the test vault in a fresh temporary folder, plus the real data-layer objects
 /// (coordinated file system, scanner, repository) wired to it with fakes for iCloud and time.
@@ -80,6 +80,7 @@ struct VaultSandbox {
                                       noteExtension: TestConfig.rules.vault.noteExtension,
                                       settingsFile: TestConfig.rules.vault.settingsFile,
                                       settingsNote: TestConfig.rules.vault.settingsNote,
+                                      doneFolder: TestConfig.rules.vault.doneFolder,
                                       obsidianVaultsFolder: TestConfig.rules.vault.obsidianVaultsFolder,
                                       settingsWriteDelaySeconds: TestConfig.rules.vault.settingsWriteDelaySeconds)
         return VaultTaskRepository(location: FixedVaultLocation(url: vault), fileSystem: fileSystem, ubiquity: ubiquity,

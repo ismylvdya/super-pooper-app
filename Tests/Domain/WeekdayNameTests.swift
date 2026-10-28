@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Weekday and month names come from the app calendar: Monday is "Monday", "Mon", "M" in English.
 struct WeekdayNameTests {

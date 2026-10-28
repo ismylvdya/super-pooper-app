@@ -15,6 +15,7 @@ actor VaultTaskRepository: TaskRepository {
     private let clock: Clock
     private let noteExtension: String
     private let obsidianVaultsFolder: String
+    private let doneFolder: String
     private var seenModification: [String: Date] = [:]
 
     init(location: VaultLocating, fileSystem: NoteFileSystem, ubiquity: UbiquityService, mapping: FieldMapping,
@@ -39,6 +40,7 @@ actor VaultTaskRepository: TaskRepository {
         self.clock = clock
         self.noteExtension = rules.noteExtension
         self.obsidianVaultsFolder = rules.obsidianVaultsFolder
+        self.doneFolder = rules.doneFolder
     }
 
     func scan() async throws -> VaultScanResult {
@@ -107,6 +109,20 @@ actor VaultTaskRepository: TaskRepository {
             let names = NoteFolder(trash, fileSystem: fileSystem)
             let name = UniqueName.free(source.deletingPathExtension().lastPathComponent, firstNumber: 1) { names.isTaken($0) }
             let target = trash.appendingPathComponent("\(name).\(noteExtension)")
+            try fileSystem.move(source, to: target)
+            guard fileSystem.isMoved(source, to: target) else { throw TaskRepositoryError.notConfirmed(task.name) }
+        }
+    }
+
+    func fileAway(_ task: TaskNote) async throws {
+        let settings = vaultSettings()
+        try await location.withRoot { root in
+            let source = try existingURL(of: task, root: root)
+            let folder = try VaultPaths.besideTasks(doneFolder, root: root, tasksFolder: settings.tasksFolder, fileSystem: fileSystem)
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            let names = NoteFolder(folder, fileSystem: fileSystem)
+            let name = UniqueName.free(source.deletingPathExtension().lastPathComponent) { names.isTaken($0) }
+            let target = folder.appendingPathComponent("\(name).\(noteExtension)")
             try fileSystem.move(source, to: target)
             guard fileSystem.isMoved(source, to: target) else { throw TaskRepositoryError.notConfirmed(task.name) }
         }

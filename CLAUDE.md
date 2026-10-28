@@ -8,7 +8,7 @@ scripts/xcb.sh build                                    # сборка под с
 scripts/xcb.sh test -only-testing:SuperPooperTests      # unit-тесты
 scripts/sim.sh load-vault && scripts/xcb.sh test -only-testing:SuperPooperUITests   # UI-тесты
 scripts/sim.sh install && scripts/sim.sh launch -SPVaultPath TestVault -SPSeedDemo -SPSkipOnboarding
-scripts/make-ipa.sh                                     # .ipa для AltStore (под iOS 26 — на Xcode 26, см. docs/IOS26-BUILD.md)
+scripts/make-ipa.sh                                     # dist/SuperPooperApp.ipa для AltStore (под iOS 26 — на Xcode 26, см. docs/IOS26-BUILD.md)
 ```
 `xcb.sh` = `xcodebuild … -derivedDataPath ./.build/DerivedData -clonedSourcePackagesDirPath ./.build/SourcePackages`. Симулятор задаётся `SP_SIMULATOR` (по умолчанию «SuperPooper Test»).
 

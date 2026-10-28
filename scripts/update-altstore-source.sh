@@ -1,12 +1,12 @@
 #!/bin/bash
-# Пересобирает dist/altstore-source.json под текущий dist/SuperPooper.ipa: версия и номер сборки из
+# Пересобирает dist/altstore-source.json под текущий dist/SuperPooperApp.ipa: версия и номер сборки из
 # Config/Shared.xcconfig, минимальная iOS из Info.plist внутри .ipa (18.0 из Xcode 16, 26.0 из Xcode 26), дата, размер,
 # sha256, ссылки на raw.githubusercontent.com из git remote origin.
 # Иконка приложения — design/icon/AppIcon-light.png; иконка источника (разработчика) — аватар аккаунта GitHub.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-IPA=dist/SuperPooper.ipa
+IPA=dist/SuperPooperApp.ipa
 [ -f "$IPA" ] || { echo "Нет $IPA — сначала scripts/make-ipa.sh" >&2; exit 1; }
 REMOTE="$(git remote get-url origin | sed -E 's#(git@github.com:|https://github.com/)##; s#\.git$##')"
 BRANCH="${SP_SOURCE_BRANCH:-main}"
@@ -25,7 +25,7 @@ icon = f"{base}/design/icon/AppIcon-light.png"
 source = {
     "name": "SuperPooperApp",
     "subtitle": "Day, tasks and habits over Obsidian",
-    "description": "Personal source for SuperPooper.",
+    "description": "Personal source for SuperPooperApp.",
     "iconURL": f"https://github.com/{os.environ['REMOTE'].split('/')[0]}.png",
     "website": f"https://github.com/{os.environ['REMOTE']}",
     "tintColor": "#FF2D55",
@@ -43,7 +43,7 @@ source = {
             "version": get("MARKETING_VERSION"),
             "buildVersion": get("CURRENT_PROJECT_VERSION"),
             "date": datetime.date.today().isoformat(),
-            "downloadURL": f"{base}/dist/SuperPooper.ipa",
+            "downloadURL": f"{base}/dist/SuperPooperApp.ipa",
             "size": len(data),
             "sha256": hashlib.sha256(data).hexdigest(),
             "minOSVersion": min_os,
@@ -51,8 +51,8 @@ source = {
         "appPermissions": {
             "entitlements": ["com.apple.security.application-groups"],
             "privacy": {
-                "NSCalendarsFullAccessUsageDescription": "SuperPooper shows your anchor calendar events on the Today timeline.",
-                "NSRemindersFullAccessUsageDescription": "SuperPooper shows timed reminders from the lists you choose.",
+                "NSCalendarsFullAccessUsageDescription": "SuperPooperApp shows your anchor calendar events on the Today timeline.",
+                "NSRemindersFullAccessUsageDescription": "SuperPooperApp shows timed reminders from the lists you choose.",
             },
         },
     }],

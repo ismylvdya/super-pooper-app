@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// The pool order the user dragged in the morning review (kept for today only).
 /// Auto order of the base tasks: A (high priority), B (2 min), C (1 h).

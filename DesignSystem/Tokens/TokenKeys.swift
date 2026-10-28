@@ -14,7 +14,7 @@ enum RadiusToken: String, CaseIterable, Sendable {
 }
 
 enum SizeToken: String, CaseIterable, Sendable {
-    case iconColumn, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, notificationIcon
+    case iconColumn, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, notificationIcon, notificationImagePixels
     case problemDot, sourceDot, fadeHeight, bannerLines, poolRowEstimate, poolCounter, poolWidth
     case habitRingRatio, habitPartialDot, habitHistoryMaxHeight, habitStatsBar, infoMaxHeightRatio, linkBadge, titleFade, hourDigitsWidth, pullThreshold, pullIcon, actionPopoverWidth, daySwipeStart, reviewChevron, timelineZoomMin, timelineZoomMax, wrapMinWidth, narrowFadeShift, liftOverhang, pagePeek, dropLine, dropMarkerHeight, screenHeightEstimate, bannerShadowRadius, bannerShadowY, bannerDismissDistance, bannerDismissFling, tapSlop, hexFieldWidth, pullArmedScale, pullStartScale, daySwipeAxisRatio, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, allDayFontDelta, previewHeight, previewRow, previewRows, previewHours, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewScale, timelinePreviewHalvesInset, subtaskDropLine, landscapeTabBarWidth, barButton
 }

@@ -142,7 +142,7 @@ struct UserNotificationScheduler: NotificationScheduling {
         } ?? bodyText(notification.kind)
         content.sound = Self.alertSound
         content.threadIdentifier = notification.key
-        if notification.kind == .habit, let icon = habitIcon?.attachment(colorHex: notification.colorHex) {
+        if notification.kind == .habit, let icon = habitIcon?.attachment() {
             content.attachments = [icon]
         }
         content.categoryIdentifier = switch notification.kind {

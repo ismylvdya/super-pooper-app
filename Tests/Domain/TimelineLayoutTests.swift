@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Chain placement, side-by-side columns and the visible timeline windows.
 @Suite("Timeline layout")

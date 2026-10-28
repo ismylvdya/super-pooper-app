@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// iCloud Drive specifics with a fake ubiquity service (`<data_model>` "Доступ к vault", "Конфликт правок").
 /// Real iCloud can't be exercised in the simulator, so these fakes are the only check of this behaviour.

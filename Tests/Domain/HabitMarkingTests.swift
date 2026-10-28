@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Taps, notification buttons and marks on past days.
 @Suite("Habit marking")

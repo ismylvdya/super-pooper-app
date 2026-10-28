@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 @Suite("Clock line and tag emoji")
 struct ClockLineTests {

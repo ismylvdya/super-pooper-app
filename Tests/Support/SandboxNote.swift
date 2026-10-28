@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// One scanned note of a fresh sandbox and the repository that scanned it; `task` follows every write.
 final class SandboxNote {

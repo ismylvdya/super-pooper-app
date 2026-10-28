@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Pool vs timeline (`<day_logic>` "Таймлайн", "Пул", "Расстановка на таймлайне").
 /// Wednesday 2026-10-21; "Call with dad" is 19:00–20:00; "now" is 13:25 unless a test says otherwise.

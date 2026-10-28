@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// The whole day built from the test vault, as the user would see it on Wednesday 2026-10-21.
 /// Calendar: a 10:00 standup, "Call with dad" 19:00–20:00 (the notes link it by title and time),

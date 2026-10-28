@@ -287,6 +287,17 @@
         }
       }
     },
+    "banner.notificationImageFailed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This picture could not be read."
+          }
+        }
+      }
+    },
     "banner.orderReset": {
       "extractionState": "manual",
       "localizations": {
@@ -370,7 +381,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "SuperPooper can see your whole vault. Choose only the TaskNotes folder in Settings → Tasks → TaskNotes folder."
+            "value": "SuperPooperApp can see your whole vault. Choose only the TaskNotes folder in Settings → Tasks → TaskNotes folder."
           }
         }
       }
@@ -3917,6 +3928,61 @@
         }
       }
     },
+    "settings.notificationImage": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notification picture"
+          }
+        }
+      }
+    },
+    "settings.notificationImage.choose": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose…"
+          }
+        }
+      }
+    },
+    "settings.notificationImage.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shown at the right of habit notifications: the habit symbol in the habit color above, or your own picture. Applies to notifications planned from now on."
+          }
+        }
+      }
+    },
+    "settings.notificationImage.picture": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Picture"
+          }
+        }
+      }
+    },
+    "settings.notificationImage.reset": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use the habit symbol"
+          }
+        }
+      }
+    },
     "settings.notifications": {
       "extractionState": "manual",
       "localizations": {
@@ -4517,7 +4583,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "# SuperPooper settings\n\nSettings of the SuperPooper app on iPhone. Change them in the app (Settings) or in the properties above; every device reads them.\n"
+            "value": "# SuperPooperApp settings\n\nSettings of the SuperPooperApp app on iPhone. Change them in the app (Settings) or in the properties above; every device reads them.\n"
           }
         }
       }
@@ -5562,7 +5628,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "SuperPooper reads tasks and habits from the TaskNotes folder of your Obsidian vault in iCloud Drive. Pick that folder (not the whole vault) to start."
+            "value": "SuperPooperApp reads tasks and habits from the TaskNotes folder of your Obsidian vault in iCloud Drive. Pick that folder (not the whole vault) to start."
           }
         }
       }
@@ -5628,7 +5694,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open SuperPooper once to load your day."
+            "value": "Open SuperPooperApp once to load your day."
           }
         }
       }
@@ -5683,7 +5749,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open SuperPooper to load your habits."
+            "value": "Open SuperPooperApp to load your habits."
           }
         }
       }

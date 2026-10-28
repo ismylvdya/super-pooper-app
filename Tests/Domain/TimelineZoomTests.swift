@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Pinching the timeline zooms around the point between the fingers, not around the top.
 struct TimelineZoomTests {

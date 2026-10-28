@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Event alerts, moves and the habit slot identifiers (today = Wednesday 2026-10-21).
 @Suite("Alert rules")

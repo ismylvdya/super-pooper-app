@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 @Suite("Timeline edits and search")
 struct TimelineEditsTests {

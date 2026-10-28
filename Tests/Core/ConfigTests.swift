@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// The bundled configs load and are complete; config typos produce readable errors.
 struct ConfigTests {

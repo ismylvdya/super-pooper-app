@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// The app's settings of a habit (`habit_color`, `harmful`, `show_in_today`, …) live in one JSON property
 /// (`fromSuperPooperApp`); notes with the older separate keys or property name are read and moved into it with the next change.

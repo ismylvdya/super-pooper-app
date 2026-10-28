@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Streaks, shares, missed days and the weekly goal (today = Wednesday 2026-10-21).
 @Suite("Habit statistics")

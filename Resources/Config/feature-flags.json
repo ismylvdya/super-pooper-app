@@ -1,5 +1,6 @@
 {
   "autoPromote": true,
+  "fileDoneTasks": true,
   "morningReviewAutoOpen": true,
   "notifications": true,
   "habitNotificationActions": true,

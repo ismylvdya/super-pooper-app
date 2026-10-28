@@ -1,7 +1,7 @@
 {
   "name": "SuperPooperApp",
   "subtitle": "Day, tasks and habits over Obsidian",
-  "description": "Personal source for SuperPooper.",
+  "description": "Personal source for SuperPooperApp.",
   "iconURL": "https://github.com/ismylvdya.png",
   "website": "https://github.com/ismylvdya/super-pooper-app",
   "tintColor": "#FF2D55",
@@ -20,10 +20,10 @@
         {
           "version": "0.6.1",
           "buildVersion": "14",
-          "date": "2026-10-27",
-          "downloadURL": "https://raw.githubusercontent.com/ismylvdya/super-pooper-app/main/dist/SuperPooper.ipa",
-          "size": 3230529,
-          "sha256": "4cde8e6aed7d411c2eefcccb4c528a373bca6b59b85910cb252862fee5486a29",
+          "date": "2026-10-28",
+          "downloadURL": "https://raw.githubusercontent.com/ismylvdya/super-pooper-app/main/dist/SuperPooperApp.ipa",
+          "size": 3260021,
+          "sha256": "89791ee473cb319b211e369be75e294e031678c2f0d89baefbccfce91bfc250d",
           "minOSVersion": "26.0"
         }
       ],
@@ -32,8 +32,8 @@
           "com.apple.security.application-groups"
         ],
         "privacy": {
-          "NSCalendarsFullAccessUsageDescription": "SuperPooper shows your anchor calendar events on the Today timeline.",
-          "NSRemindersFullAccessUsageDescription": "SuperPooper shows timed reminders from the lists you choose."
+          "NSCalendarsFullAccessUsageDescription": "SuperPooperApp shows your anchor calendar events on the Today timeline.",
+          "NSRemindersFullAccessUsageDescription": "SuperPooperApp shows timed reminders from the lists you choose."
         }
       }
     }

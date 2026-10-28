@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Time zones are shown as their offset from UTC, with the city in the list.
 struct TimeZoneNameTests {

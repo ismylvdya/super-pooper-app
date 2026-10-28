@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// The day's name on Today: "Today" or the date; in landscape "Tod" or the weekday in three letters.
 @MainActor

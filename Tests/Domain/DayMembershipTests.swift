@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// What gets into today (`<day_logic>` "В день попадают"). Wednesday 2026-10-21, 13:25, day boundary 04:00.
 @Suite("Day membership")

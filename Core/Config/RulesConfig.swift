@@ -12,6 +12,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         /// iOS keeps at most 64 pending local notifications.
         let limit: Int
         let horizonDays: Int
+        /// The user's own picture for habit notifications, in the app group.
+        let imageFile: String
     }
 
     struct EventLinks: Codable, Hashable, Sendable {
@@ -35,6 +37,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let settingsFile: String
         /// The older note with those settings, read until the file exists.
         let settingsNote: String
+        /// Where done tasks are moved, next to the tasks folder; Obsidian and TaskNotes are set to skip it.
+        let doneFolder: String
         /// Where Obsidian keeps its iCloud vaults: a folder under it names its vault and its path in it.
         let obsidianVaultsFolder: String
         /// The settings note is written this long after the last change.

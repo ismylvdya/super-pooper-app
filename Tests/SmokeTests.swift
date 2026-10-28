@@ -1,5 +1,5 @@
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 struct SmokeTests {
     @Test func localDateArithmetic() {

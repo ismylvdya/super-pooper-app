@@ -15,12 +15,16 @@ struct PoolBlock: View {
     @State private var rowHeights: [String: CGFloat] = [:]
     @State private var visibleRows: Set<String> = []
     @State private var rowMids: [String: CGFloat] = [:]
+    /// The rows' middles as they stood when the drag reached the pool. The rows that make room move, and measuring
+    /// them again would pull the dragged task back to where it was: the order is read against this layout instead.
+    @State private var dragMids: [String: CGFloat]?
     private static let dropSpace = "poolDrop"
 
     var body: some View {
         poolContent
             .coordinateSpace(.named(Self.dropSpace))
             .modifier(PoolDropTarget(drag: plan.isToday ? drag : nil, animation: tokens.animation, rows: dropRows, onDrop: dropped))
+            .onChange(of: drag?.item?.id) { _, dragged in if dragged == nil { dragMids = nil } }
     }
 
     /// While a task is dragged over the pool, the rows in the order it would make.
@@ -30,7 +34,9 @@ struct PoolBlock: View {
     }
 
     private func dropRows() -> [PoolDropOrder.Row] {
-        plan.pool.compactMap { item in rowMids[item.id].map { PoolDropOrder.Row(id: item.id, midY: Double($0)) } }
+        let mids = dragMids ?? rowMids
+        if dragMids == nil { dragMids = rowMids }
+        return plan.pool.compactMap { item in mids[item.id].map { PoolDropOrder.Row(id: item.id, midY: Double($0)) } }
     }
 
     private func dropped(_ item: DayItem, from source: TaskDragState.Source, order: [String]) {

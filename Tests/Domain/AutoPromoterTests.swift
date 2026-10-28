@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Auto-promotion to `this_week` (`<day_logic>` "Автоперевод"): backlog tasks whose `due` falls between
 /// today and Sunday. The week is Monday 2026-10-19 … Sunday 2026-10-25.

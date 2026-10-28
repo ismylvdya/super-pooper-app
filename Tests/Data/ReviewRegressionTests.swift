@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Regressions from the code review: concurrent edits, odd files and name collisions.
 @Suite("Review regressions")

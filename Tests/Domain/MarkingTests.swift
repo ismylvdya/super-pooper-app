@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Check-off marks (`<habits>` "Отметки", `<data_model>` `completed_date`). Today is 2026-10-21.
 @Suite("Marks")

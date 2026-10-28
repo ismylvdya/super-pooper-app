@@ -43,6 +43,8 @@ protocol TaskRepository: Sendable {
     func rename(_ task: TaskNote, to newName: String, dependents: [TaskNote]) async throws -> TaskNote
     /// Moves the note to the vault's `.trash` folder (Obsidian's trash).
     func moveToTrash(_ task: TaskNote) async throws
+    /// Moves a done note into the done folder next to the tasks folder (`Name`, `Name 2`, … when taken there).
+    func fileAway(_ task: TaskNote) async throws
     /// A new note in the tasks folder, written the way TaskNotes writes it. The name is made unique
     /// (`Name`, `Name 2`, …).
     func create(named name: String, status: TaskStatus) async throws -> TaskNote

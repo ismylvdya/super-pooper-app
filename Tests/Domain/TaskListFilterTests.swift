@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// The lists of the Lists tab: filters over all tasks, grouped by planning level.
 struct TaskListFilterTests {

@@ -29,7 +29,8 @@
   ],
   "notifications": {
     "limit": 60,
-    "horizonDays": 7
+    "horizonDays": 7,
+    "imageFile": "notification-image.png"
   },
   "eventLinks": {
     "resolveDaysBefore": 2,
@@ -44,6 +45,7 @@
     "noteExtension": "md",
     "settingsFile": "super-pooper-app-settings.json",
     "settingsNote": "SuperPooper Settings.md",
+    "doneFolder": "Done",
     "obsidianVaultsFolder": "iCloud~md~obsidian/Documents",
     "settingsWriteDelaySeconds": 1
   },

@@ -19,7 +19,8 @@ enum PreviewModel {
                                             fileName: config.rules.vault.settingsNote, vaultSettings: { settingsStore.load().vault }),
             calendars: StaticCalendarRepository(), reminders: reminders, notifications: notifications,
             settingsStore: settingsStore, dayStateStore: DayStateStore(store: store),
-            snapshotStore: SnapshotStore(store: store), alertStateStore: AlertStateStore(store: store), widgets: NoWidgets())
+            snapshotStore: SnapshotStore(store: store), alertStateStore: AlertStateStore(store: store), widgets: NoWidgets(),
+            notificationImage: NotificationImageStore(url: store.url(config.rules.notifications.imageFile), maxPixels: 1))
         let model = AppModel(config: config, services: services, banners: BannerCenter(),
                              clock: FixedClock(now: PreviewSamples.context.now), calendar: PreviewSamples.calendar)
         model.setScanResult(VaultScanResult(tasks: PreviewSamples.tasks, fileProblems: [], conflicted: []))
@@ -93,6 +94,7 @@ actor InMemoryTaskRepository: TaskRepository {
     }
 
     func moveToTrash(_ task: TaskNote) async throws { tasks.removeAll { $0.name == task.name } }
+    func fileAway(_ task: TaskNote) async throws { tasks.removeAll { $0.name == task.name } }
     func backup(_ tasks: [TaskNote], reason: String) async throws {}
 
     func create(named name: String, status: TaskStatus) async throws -> TaskNote {

@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Links, renaming, trash and backups on a rendered copy of the test vault.
 @Suite("Note operations")

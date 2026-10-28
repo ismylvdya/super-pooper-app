@@ -15,4 +15,6 @@ struct FeatureFlags: Codable, Hashable, Sendable {
     var syncBanner: Bool
     var archive: Bool
     var backgroundRefresh: Bool
+    /// Done tasks move to the done folder the day after (`DoneFiling`).
+    var fileDoneTasks: Bool
 }

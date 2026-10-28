@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// The chips of a pool row: a task waiting for another one shows only the link chip, not a grey row; chips follow
 /// the order from the settings.

@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Monthly repeats as in Apple Calendar: "Each" day number, or "On the" first … last day or weekday.
 struct MonthlyPatternTests {

@@ -60,7 +60,7 @@ struct NotificationPlanner: Sendable {
                         result.append(PlannedNotification(id: "habit|\(task.name)|\(day.isoString)|\(time.string)", kind: .habit,
                                                           title: task.name, fireDate: context.moment(time, onLogicalDay: day),
                                                           taskName: task.name, day: day,
-                                                          key: Self.habitSlot(task.name, time), colorHex: task.habit.color))
+                                                          key: Self.habitSlot(task.name, time)))
                     }
                 }
             } else if task.status == .thisWeek, let due = task.due, let time = due.time {
@@ -102,7 +102,7 @@ struct NotificationPlanner: Sendable {
             guard note.kind == .habit, used.insert(note.key).inserted else { return note }
             return PlannedNotification(id: note.key, kind: note.kind, title: note.title, fireDate: note.fireDate,
                                        taskName: note.taskName, day: note.day, reminderID: note.reminderID,
-                                       key: note.key, start: note.start, colorHex: note.colorHex)
+                                       key: note.key, start: note.start)
         }
     }
 }

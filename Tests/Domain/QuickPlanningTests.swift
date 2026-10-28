@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// The quick chips of a task, dragging tasks between the pool and the timeline, and swipes on Today.
 @Suite("Quick planning")

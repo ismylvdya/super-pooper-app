@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperPooper
+@testable import SuperPooperApp
 
 /// Blocking (`<day_logic>` "Блокировка", `<habits>` "Рутина"). Wednesday 2026-10-21, 13:25.
 @Suite("Blocking")
