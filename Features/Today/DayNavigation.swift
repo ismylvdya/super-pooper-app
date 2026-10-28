@@ -34,7 +34,8 @@ struct DayNavigation: View {
 
     private func arrow(_ icon: Icon, step: Int, label: LocalizedStringKey, id: String) -> some View {
         Button { onStep(step) } label: {
-            Image(systemName: icons[icon]).rotationEffect(PhysicalBottom.arrowTurn(bottom))
+            // Sideways (‹ ›) in every orientation, also when the arrows stand above and below the name.
+            Image(systemName: icons[icon])
         }
         .accessibilityLabel(Text(label))
         .accessibilityIdentifier(id)

@@ -12,6 +12,12 @@ struct HabitDotMetrics: Equatable {
     /// Neighbouring cells overlap by one ring width.
     var spacing: CGFloat { -ring }
 
+    /// A cell of the given outer size whose ring and gap are `ring` points (as in a grid of another size).
+    static func cell(_ cell: CGFloat, ring: CGFloat) -> HabitDotMetrics {
+        let dot = max(cell - 4 * ring, ring)
+        return HabitDotMetrics(dot: dot, ringRatio: ring / dot)
+    }
+
     /// The largest dot whose seven cells fit `width`.
     static func fitting(width: CGFloat, ringRatio: CGFloat) -> HabitDotMetrics {
         HabitDotMetrics(dot: max(width / (7 + 22 * ringRatio), 4), ringRatio: ringRatio)

@@ -10,12 +10,14 @@ struct HabitRow: View {
     let today: LocalDate
     var isFirst = true
     var isLast = true
+    /// The row's plate width: the history grid of a plate this wide sets the day mark's ring and gap.
+    @State private var plateWidth: CGFloat?
 
     var body: some View {
         HStack(spacing: tokens.space(.iconTextGap)) {
             // The mark sits in the icon column of the other plates, its circle as wide as an icon;
             // the outer ring of Twice may reach past it.
-            HabitDayButton(habit: habit, day: today)
+            HabitDayButton(habit: habit, day: today, plateWidth: plateWidth)
                 .frame(width: tokens.size(.iconColumn))
             // A button with the app's chevron, as the rows of the other tabs' plates (a list's link has its own).
             Button { router.open(.task(habit.name)) } label: {
@@ -36,6 +38,7 @@ struct HabitRow: View {
         .padding(.vertical, tokens.space(.rowVertical) / 2)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(GroupRowBackground(isFirst: isFirst, isLast: isLast))
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { plateWidth = $0 }
         // A long press lifts the row as a whole plate and offers today's marks.
         .liftedPlate()
         .contextMenu { HabitDayMenu(habit: habit, day: today) }
@@ -50,7 +53,7 @@ extension HabitRow {
         if !traits.isEmpty || bells > 0 {
             HStack(spacing: tokens.space(.badgeGap)) {
                 if !traits.isEmpty { Text(traits) }
-                ForEach(0..<bells, id: \.self) { _ in Image(systemName: icons[.reminder]) }
+                ForEach(0..<bells, id: \.self) { _ in Image(systemName: icons[.bell]) }
             }
             .font(tokens.font(.hint))
             .foregroundStyle(tokens.color(.secondaryText))
@@ -64,11 +67,20 @@ struct HabitDayButton: View {
     @Environment(\.tokens) private var tokens
     let habit: TaskNote
     let day: LocalDate
+    var plateWidth: CGFloat?
+
+    /// The ring and the gap of Twice as thick as in the habit's history grid; the dot inside is smaller instead.
+    private var metrics: HabitDotMetrics {
+        let ratio = tokens.size(.habitRingRatio)
+        let own = HabitDotMetrics(dot: tokens.size(.iconColumn), ringRatio: ratio)
+        guard let plateWidth else { return own }
+        let grid = HabitDotMetrics.fitting(width: plateWidth - tokens.space(.plateInner) * 2, ringRatio: ratio)
+        return .cell(own.cell, ring: grid.ring)
+    }
 
     var body: some View {
         let grid = HabitGrid(task: habit, weekCount: 1, today: day, days: model.context().days)
         let cell = grid.weeks.last?.first { $0.date == day }?.cell ?? .open
-        let metrics = HabitDotMetrics(dot: tokens.size(.iconColumn), ringRatio: tokens.size(.habitRingRatio))
         HabitDayCell(cell: cell, color: tokens.habitColor(habit), metrics: metrics)
             .contentShape(Circle())
             .onTapGesture {

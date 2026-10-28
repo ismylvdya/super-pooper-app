@@ -30,8 +30,9 @@ struct ActionPopoverButton: View {
                                 Text(LocalizedStringKey(action.title))
                                 Spacer(minLength: 0)
                             }
+                            .font(tokens.font(.popoverAction))
                             .foregroundStyle(action.destructive ? tokens.color(.destructive) : tokens.color(.primaryText))
-                            .padding(.vertical, tokens.space(.rowVertical))
+                            .padding(.vertical, tokens.space(.popoverRowVertical))
                             .padding(.horizontal, tokens.space(.plateInner))
                             .contentShape(Rectangle())
                         }

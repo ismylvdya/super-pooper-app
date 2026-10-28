@@ -93,6 +93,8 @@ struct MorningReviewScreen: View {
                     }
                 }
             }
+            // The first group starts closer to the bar than a list's own top gap.
+            .contentMargins(.top, tokens.space(.reviewTop), for: .scrollContent)
             .bannerHost()
             .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
             .navigationDestination(for: Route.self) { route in
@@ -172,7 +174,7 @@ struct ReviewRow: View {
         VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
             HStack(spacing: tokens.space(.chipGap)) {
                 if item.isHabit { Image(systemName: icons[.habit]).foregroundStyle(tokens.color(.habit)) }
-                Text(task.name).foregroundStyle(item.isDone ? tokens.color(.secondaryText) : tokens.color(.primaryText))
+                Text(task.name).font(tokens.font(.taskTitle)).foregroundStyle(item.isDone ? tokens.color(.secondaryText) : tokens.color(.primaryText))
                 if item.isBlocked { Image(systemName: icons[.links]).foregroundStyle(tokens.color(.secondaryText)) }
             }
             ChipFlow(spacing: tokens.space(.chipGap)) {

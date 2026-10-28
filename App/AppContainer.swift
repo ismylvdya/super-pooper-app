@@ -1,5 +1,6 @@
 @preconcurrency import EventKit
 import Foundation
+import SwiftUI
 import UserNotifications
 
 /// Composition root: every dependency is created here, once, and handed down.
@@ -55,14 +56,15 @@ final class AppContainer {
                                         vaultSettings: { settingsStore.load().vault })
         let eventKit = EventKitAccess()
         self.eventKit = eventKit
-        let notifications = UserNotificationScheduler(calendar: calendar, icons: config.icons) { kind in
+        let notifications = UserNotificationScheduler(calendar: calendar, icons: config.icons, bodyText: { kind in
             switch kind {
             case .habit: L10n.string("notification.habit.body")
             case .task: L10n.string("notification.task.body")
             case .reminder: L10n.string("notification.reminder.body")
             case .event: L10n.string("notification.event.body")
             }
-        }
+        }, habitIcon: NotificationIcon(symbolName: config.icons[.habit], defaultColor: UIColor(config.tokens.color(.habit)),
+                                       pointSize: config.tokens.size(.notificationIcon)))
         let services = AppServices(
             vault: vaultLocation, tasks: tasks,
             trash: VaultTrashRepository(location: vaultLocation, fileSystem: fileSystem, noteExtension: config.rules.vault.noteExtension,

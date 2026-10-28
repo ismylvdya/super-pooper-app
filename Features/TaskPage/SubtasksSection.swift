@@ -103,9 +103,17 @@ private struct SubtaskLabel: View {
     let name: String
     let isDone: Bool
 
+    /// A long name fades out before the chevron instead of pushing it to a line of its own.
     var body: some View {
-        PlateRow(icon: .subtask, title: Text(verbatim: name)) { DisclosureAccessory() }
-        .strikethrough(isDone)
+        HStack(spacing: tokens.space(.iconTextGap)) {
+            Image(icon: .subtask, icons: icons)
+                .renderingMode(.template)
+                .foregroundStyle(tokens.color(.accent))
+                .frame(width: tokens.size(.iconColumn))
+            FadingText(text: name, font: tokens.font(.rowTitle), lineHeight: tokens.uiFont(.rowTitle).lineHeight)
+                .strikethrough(isDone)
+            DisclosureAccessory()
+        }
         .contentShape(Rectangle())
     }
 }

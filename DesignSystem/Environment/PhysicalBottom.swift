@@ -24,15 +24,6 @@ enum PhysicalBottom {
         }
     }
 
-    /// The turn that keeps an arrow pointing the same physical way ("<" points down with the bottom on the right).
-    static func arrowTurn(_ bottom: HorizontalEdge?) -> Angle {
-        switch bottom {
-        case .trailing: .degrees(-90)
-        case .leading: .degrees(90)
-        case nil: .zero
-        }
-    }
-
     /// Items laid out along the physical left-to-right direction, top to bottom on screen: the physical left is
     /// at the bottom while the physical bottom is on the right.
     static func physicalOrder<Item>(_ items: [Item], bottom: HorizontalEdge?) -> [Item] {

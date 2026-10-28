@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// One list of the Lists tab: the matching tasks by planning level, searchable. A row opens the task page
+/// One list of the Lists tab: the matching tasks by planning level, searchable from the search button in the bar
+/// (as on Today), not by pulling the list down. A row opens the task page
 /// (every property can be changed there); "+" on a task of a later level brings it to this week, "+" in the
 /// bar creates a new this-week task.
 struct TaskListScreen: View {
@@ -10,6 +11,7 @@ struct TaskListScreen: View {
     @Environment(\.icons) private var icons
     let listID: String
     @State private var query = ""
+    @State private var isSearching = false
 
     var body: some View {
         let list = model.config.lists.list(listID)
@@ -27,13 +29,16 @@ struct TaskListScreen: View {
         }
         .appList()
         .overlay { if groups.isEmpty { Text("lists.empty").foregroundStyle(tokens.color(.secondaryText)) } }
-        .searchable(text: $query, prompt: Text("search.prompt.tasks"))
+        .modifier(ListSearch(query: $query, isSearching: $isSearching))
         .navigationTitle(Text(LocalizedStringKey(list?.title ?? "tab.lists")))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .topBarTrailing) {
                 Button { router.open(.newTask) } label: { Image(systemName: icons[.newTask]) }
                     .accessibilityLabel(Text("task.new.title"))
+                Button { isSearching = true } label: { Image(systemName: icons[.search]) }
+                    .accessibilityLabel(Text("search.title"))
+                    .accessibilityIdentifier("list.search")
             }
         }
         .refreshable { await model.sync(announce: true) }
@@ -55,5 +60,22 @@ struct TaskListScreen: View {
             }
         }
         .listRowBackground(tokens.color(.plateBackground))
+    }
+}
+
+/// The search field appears only after the search button: no field hides above the list to be pulled down. Closing
+/// it clears the query.
+private struct ListSearch: ViewModifier {
+    @Binding var query: String
+    @Binding var isSearching: Bool
+
+    func body(content: Content) -> some View {
+        if isSearching {
+            content
+                .searchable(text: $query, isPresented: $isSearching, placement: .navigationBarDrawer(displayMode: .always),
+                            prompt: Text("search.prompt.tasks"))
+        } else {
+            content.onAppear { query = "" }
+        }
     }
 }

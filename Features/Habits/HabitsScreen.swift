@@ -10,6 +10,7 @@ struct HabitsScreen: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
     @State private var isLargeTitleVisible = true
+    @State private var titleHeight: CGFloat = 0
 
     var body: some View {
         let today = model.context().today
@@ -19,7 +20,7 @@ struct HabitsScreen: View {
                 .font(tokens.font(.pageTitle))
                 .frame(maxWidth: .infinity)
                 .padding(.top, tokens.space(.nestedTitleLift))
-                .tracksLargeTitle($isLargeTitleVisible)
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { titleHeight = $0 }
                 .pageCell()
             if model.habits.isEmpty {
                 Text("habits.empty").font(tokens.font(.hint)).foregroundStyle(tokens.color(.secondaryText))
@@ -39,6 +40,7 @@ struct HabitsScreen: View {
             .pageCell()
         }
         .listStyle(.plain)
+        .tracksLargeTitle($isLargeTitleVisible, titleHeight: titleHeight)
         // The screen margins belong to the list, not to its cells: a lifted or dragged row is only its plate.
         .contentMargins(.horizontal, tokens.space(.screenHorizontal), for: .scrollContent)
         // Gaps are rows of their own height, not of a list row's minimum.

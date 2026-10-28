@@ -18,6 +18,8 @@ struct UserNotificationScheduler: NotificationScheduling {
     let calendar: Calendar
     let icons: IconSet
     let bodyText: @Sendable (PlannedNotification.Kind) -> String
+    /// The picture of habit notifications; nil = none.
+    var habitIcon: NotificationIcon?
 
     private var center: UNUserNotificationCenter { .current() }
 
@@ -140,6 +142,9 @@ struct UserNotificationScheduler: NotificationScheduling {
         } ?? bodyText(notification.kind)
         content.sound = Self.alertSound
         content.threadIdentifier = notification.key
+        if notification.kind == .habit, let icon = habitIcon?.attachment(colorHex: notification.colorHex) {
+            content.attachments = [icon]
+        }
         content.categoryIdentifier = switch notification.kind {
         case .habit: NotificationPayload.habitCategory
         case .task: NotificationPayload.taskCategory

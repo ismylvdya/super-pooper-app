@@ -10,6 +10,7 @@ struct PageScaffold<Content: View>: View {
     var titleView: AnyView?
     @ViewBuilder let content: Content
     @State private var isLargeTitleVisible = true
+    @State private var titleHeight: CGFloat = 0
 
     var body: some View {
         ScrollView {
@@ -22,12 +23,13 @@ struct PageScaffold<Content: View>: View {
                     .frame(maxWidth: .infinity)
                     .padding(.horizontal, isNested ? tokens.space(.nestedTitleInset) - tokens.space(.screenHorizontal) : 0)
                     .padding(.top, isNested ? 0 : tokens.space(.nestedTitleLift))
-                    .tracksLargeTitle($isLargeTitleVisible)
+                    .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { titleHeight = $0 }
                 content
             }
             .padding(.horizontal, tokens.space(.screenHorizontal))
             .padding(.bottom, tokens.space(.screenBottom))
         }
+        .tracksLargeTitle($isLargeTitleVisible, titleHeight: titleHeight)
         .background(tokens.color(.screenBackground))
         .barTitle(title, isHidden: isLargeTitleVisible)
     }
