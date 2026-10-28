@@ -64,7 +64,8 @@
     "showNewHabitsInToday": true,
     "morningRoutine": [],
     "dayRoutine": [],
-    "eveningRoutine": []
+    "eveningRoutine": [],
+    "notificationUsesHabitColor": false
   },
   "clock": {
     "timeZone": "Europe/Moscow",

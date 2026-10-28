@@ -18,6 +18,19 @@ struct NotificationImageSection: View {
                     PhotosPicker(selection: $picked, matching: .images) { Text("settings.notificationImage.choose") }
                 }
             }
+            PlateRow(icon: nil, title: "settings.notificationImage.habitColor", info: "info.settings.notificationImage.habitColor") {
+                Toggle("settings.notificationImage.habitColor", isOn: Binding(
+                    get: { model.settings.habits.notificationUsesHabitColor },
+                    set: { value in
+                        model.updateSettings { $0.habits.notificationUsesHabitColor = value }
+                        Task { await model.rescheduleNotifications(context: model.context()) }
+                    }
+                ))
+                .labelsHidden()
+            }
+            // Only the habit symbol has a color; one's own picture shows as it is.
+            .disabled(image != nil)
+            .opacity(image != nil ? tokens.opacity(.blocked) : 1)
             if image != nil {
                 Button("settings.notificationImage.reset") {
                     image = nil

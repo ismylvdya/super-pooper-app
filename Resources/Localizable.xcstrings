@@ -1827,6 +1827,17 @@
         }
       }
     },
+    "info.settings.notificationImage.habitColor": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On: the symbol on a habit notification takes the habit's own color (habits without one keep the habit color). Off: every habit has the habit color."
+          }
+        }
+      }
+    },
     "info.settings.notifications": {
       "extractionState": "manual",
       "localizations": {
@@ -3946,6 +3957,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choose…"
+          }
+        }
+      }
+    },
+    "settings.notificationImage.habitColor": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each habit in its color"
           }
         }
       }

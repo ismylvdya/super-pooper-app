@@ -67,7 +67,8 @@ final class AppContainer {
             }
         }, habitIcon: NotificationIcon(symbolName: config.icons[.habit], color: {
             settingsStore.load().colors[ColorToken.habit.rawValue].flatMap { UIColor(hex: $0) } ?? UIColor(config.tokens.color(.habit))
-        }, pointSize: config.tokens.size(.notificationIcon), image: notificationImage))
+        }, usesHabitColor: { settingsStore.load().habits.notificationUsesHabitColor },
+           pointSize: config.tokens.size(.notificationIcon), image: notificationImage))
         let services = AppServices(
             vault: vaultLocation, tasks: tasks,
             trash: VaultTrashRepository(location: vaultLocation, fileSystem: fileSystem, noteExtension: config.rules.vault.noteExtension,

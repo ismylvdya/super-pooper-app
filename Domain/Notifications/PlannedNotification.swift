@@ -26,4 +26,6 @@ struct PlannedNotification: Hashable, Sendable {
     var start: Date? = nil
     /// The calendar event an event alert deletes from its Delete event button.
     var eventID: String? = nil
+    /// A habit's own color (hex) for the picture on its notification, if the settings use it.
+    var colorHex: String? = nil
 }

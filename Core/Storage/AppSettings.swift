@@ -104,6 +104,8 @@ struct AppSettings: Codable, Equatable, Sendable {
         var morningRoutine: [String]
         var dayRoutine: [String]
         var eveningRoutine: [String]
+        /// The habit symbol on a notification in the habit's own color (when it has one) instead of the habits' color.
+        var notificationUsesHabitColor: Bool
     }
 
     struct Clock: Codable, Equatable, Sendable {
