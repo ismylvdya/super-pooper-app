@@ -19,6 +19,8 @@ final class ListGroupFrames {
         var frame: CGRect
         var isFirst: Bool
         var isLast: Bool
+        /// On screen now; a row out of sight keeps its last place but does not bound the backing.
+        var isVisible = true
     }
 
     private(set) var rows: [String: [String: Row]] = [:]
@@ -27,15 +29,26 @@ final class ListGroupFrames {
         guard rows[group]?[id] != row else { return }
         rows[group, default: [:]][id] = row
     }
+
+    func setVisible(_ isVisible: Bool, group: String, id: String) {
+        guard var row = rows[group]?[id], row.isVisible != isVisible else { return }
+        row.isVisible = isVisible
+        rows[group]?[id] = row
+    }
 }
 
-/// The backing of one group from its rows on screen: from the first row's top to the last row's bottom. A first or
-/// last row out of sight (a list only lays out what shows) leaves that side open past `visible`.
+/// The backing of one group from its rows on screen: from the first row's top, as tall as all its rows together —
+/// so a row dragged away (the last one too) never shrinks it — and at least to the last row's bottom. A first or last
+/// row out of sight (a list only lays out what shows) leaves that side open past `visible`.
 enum ListGroupGeometry {
     static func plate(of rows: [ListGroupFrames.Row], visible: ClosedRange<CGFloat>, overhang: CGFloat) -> CGRect? {
-        guard let any = rows.first else { return nil }
-        let top = rows.first { $0.isFirst }?.frame.minY ?? visible.lowerBound - overhang
-        let bottom = rows.first { $0.isLast }?.frame.maxY ?? visible.upperBound + overhang
+        let shown = rows.filter(\.isVisible)
+        guard let any = shown.first else { return nil }
+        let first = shown.first { $0.isFirst }
+        let last = shown.first { $0.isLast }
+        let top = first?.frame.minY ?? visible.lowerBound - overhang
+        var bottom = last?.frame.maxY ?? visible.upperBound + overhang
+        if first != nil, last != nil { bottom = max(bottom, top + shown.map(\.frame.height).reduce(0, +)) }
         guard bottom > top else { return nil }
         return CGRect(x: any.frame.minX, y: top, width: any.frame.width, height: bottom - top)
     }
@@ -94,7 +107,9 @@ private struct ListGroupRow: ViewModifier {
             .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { frame in
                 frames.set(.init(frame: frame, isFirst: isFirst, isLast: isLast), group: group, id: id)
             }
-            .onDisappear { frames.set(nil, group: group, id: id) }
+            // A list may hide and show a row again without moving it (no new frame comes then): the row keeps its place.
+            .onAppear { frames.setVisible(true, group: group, id: id) }
+            .onDisappear { frames.setVisible(false, group: group, id: id) }
             .listGroupSpacer()
     }
 }
