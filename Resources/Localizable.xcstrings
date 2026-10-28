@@ -4027,6 +4027,17 @@
         }
       }
     },
+    "settings.notificationImage.show": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show a picture"
+          }
+        }
+      }
+    },
     "settings.notifications": {
       "extractionState": "manual",
       "localizations": {

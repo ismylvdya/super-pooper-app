@@ -35,7 +35,7 @@ extension AppSettings {
         notifications: .init(enabled: false),
         onboarding: .init(completed: false),
         habits: .init(order: [], showNewHabitsInToday: true, morningRoutine: [], dayRoutine: [], eveningRoutine: [],
-                       notificationUsesHabitColor: false),
+                       showsNotificationPicture: true, notificationUsesHabitColor: false),
         clock: .init(timeZone: "Europe/Moscow", prefix: ""),
         appearance: .init(pastOpacity: 0.2),
         colors: [:]

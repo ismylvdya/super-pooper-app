@@ -8,12 +8,15 @@ struct NotificationIcon: @unchecked Sendable {
     let symbolName: String
     /// The habits' color as the settings have it now.
     let color: @Sendable () -> UIColor
+    /// Whether habit notifications have a picture at all (the settings now).
+    let isShown: @Sendable () -> Bool
     /// Whether a habit's own color wins over the habits' color (the settings now).
     let usesHabitColor: @Sendable () -> Bool
     let pointSize: CGFloat
     let image: NotificationImageStore
 
     func attachment(habitColor hex: String?) -> UNNotificationAttachment? {
+        guard isShown() else { return nil }
         let own = usesHabitColor() ? hex.flatMap { UIColor(hex: $0) } : nil
         guard let data = image.data() ?? symbolPNG(color: own ?? color()) else { return nil }
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".png")

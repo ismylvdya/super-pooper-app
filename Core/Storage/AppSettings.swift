@@ -104,6 +104,8 @@ struct AppSettings: Codable, Equatable, Sendable {
         var morningRoutine: [String]
         var dayRoutine: [String]
         var eveningRoutine: [String]
+        /// Habit notifications carry a picture at the right at all.
+        var showsNotificationPicture: Bool
         /// The habit symbol on a notification in the habit's own color (when it has one) instead of the habits' color.
         var notificationUsesHabitColor: Bool
     }
