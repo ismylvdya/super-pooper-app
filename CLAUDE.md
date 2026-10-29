@@ -4,13 +4,13 @@ iPhone-приложение (SwiftUI, iOS 26) над Obsidian TaskNotes, Apple C
 
 ## Команды (всё внутри проекта, DerivedData — в `.build/`)
 ```bash
-scripts/xcb.sh build                                    # сборка под симулятор "SuperPooper Test"
+scripts/xcb.sh build                                    # сборка под симулятор "🌭 iPhone 13 mini"
 scripts/xcb.sh test -only-testing:SuperPooperTests      # unit-тесты
 scripts/sim.sh load-vault && scripts/xcb.sh test -only-testing:SuperPooperUITests   # UI-тесты
 scripts/sim.sh install && scripts/sim.sh launch -SPVaultPath TestVault -SPSeedDemo -SPSkipOnboarding
 scripts/make-ipa.sh                                     # dist/SuperPooperApp.ipa для AltStore (под iOS 26 — на Xcode 26, см. docs/IOS26-BUILD.md)
 ```
-`xcb.sh` = `xcodebuild … -derivedDataPath ./.build/DerivedData -clonedSourcePackagesDirPath ./.build/SourcePackages`. Симулятор задаётся `SP_SIMULATOR` (по умолчанию «SuperPooper Test»).
+`xcb.sh` = `xcodebuild … -derivedDataPath ./.build/DerivedData -clonedSourcePackagesDirPath ./.build/SourcePackages`. Симулятор задаётся `SP_SIMULATOR` (по умолчанию «🌭 iPhone 13 mini»).
 
 ## Правила проекта
 - **Архитектура — главное требование.** Экраны → `AppModel` → `Domain` (чистые функции) → репозитории → источники. Экран не читает файлы и не зовёт EventKit.

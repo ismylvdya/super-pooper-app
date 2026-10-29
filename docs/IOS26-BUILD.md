@@ -19,7 +19,7 @@
 2. Взять актуальный `main`, работать в своей ветке (например `ios26-build`).
 3. Завести симулятор для скриптов (имя важно — его ждут `scripts/xcb.sh` и `scripts/sim.sh`):
    ```bash
-   xcrun simctl create "SuperPooper Test" "iPhone 17" "$(xcrun simctl list runtimes | grep -o 'com.apple.CoreSimulator.SimRuntime.iOS-26[-0-9]*' | tail -1)"
+   xcrun simctl create "🌭 iPhone 13 mini" "iPhone 13 mini" "$(xcrun simctl list runtimes | grep -o 'com.apple.CoreSimulator.SimRuntime.iOS-26[-0-9]*' | tail -1)"
    ```
 4. Собрать и прогнать тесты:
    ```bash

@@ -1,9 +1,9 @@
 #!/bin/bash
-# Работа с собственным симулятором "SuperPooper Test".
+# Работа с собственным симулятором "🌭 iPhone 13 mini".
 # scripts/sim.sh boot | install | load-vault | grant | launch [аргументы] | screenshot <файл> | seed
 set -euo pipefail
 cd "$(dirname "$0")/.."
-SIMULATOR="${SP_SIMULATOR:-SuperPooper Test}"
+SIMULATOR="${SP_SIMULATOR:-🌭 iPhone 13 mini}"
 UDID="$(xcrun simctl list devices available -j | /usr/bin/python3 -c "import json,sys; name=sys.argv[1]; print(next((d['udid'] for r in json.load(sys.stdin)['devices'].values() for d in r if d['name']==name), ''))" "$SIMULATOR")"
 [ -n "$UDID" ] || { echo "Симулятор '$SIMULATOR' не найден" >&2; exit 1; }
 BUNDLE_ID="$(grep -E '^SP_BUNDLE_ID' Config/Shared.xcconfig | sed 's/.*= *//')"
