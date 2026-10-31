@@ -77,8 +77,10 @@ struct VaultScanner: Sendable {
         }
         var pending = candidates.filter { !isReady($0) }
         for url in pending { try? ubiquity.startDownloading(url) }
-        let deadline = Date().addingTimeInterval(downloadTimeout)
-        while !pending.isEmpty, Date() < deadline {
+        // The timeout is a number of polls, so waiting needs no clock.
+        var polls = Int((downloadTimeout / max(downloadPoll, .leastNonzeroMagnitude)).rounded(.up))
+        while !pending.isEmpty, polls > 0 {
+            polls -= 1
             try? await Task.sleep(for: .seconds(downloadPoll))
             pending = pending.filter { !isReady($0) }
         }
