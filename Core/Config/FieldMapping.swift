@@ -152,6 +152,25 @@ struct FieldMapping: Codable, Hashable, Sendable {
         }
     }
 
+    /// The domain field each key holds, the one table between the two: the older feel keys hold the feel, the three
+    /// instance lists the marks.
+    var keyedFields: [(key: String, field: TaskField)] {
+        [(fields.status, .status), (fields.priority, .priority), (fields.due, .due), (fields.timeEstimate, .timeEstimate),
+         (fields.previousTasks, .previousTasks), (fields.projects, .projects), (fields.subtaskOrder, .subtaskOrder),
+         (fields.previousEvent, .previousEvent), (fields.nextEvent, .nextEvent), (fields.feel, .feel),
+         (legacyFields.needEnergy, .feel), (legacyFields.pleasant, .feel), (fields.recurrence, .recurrence),
+         (fields.completeInstances, .marks), (fields.partialInstances, .marks), (fields.twiceInstances, .marks),
+         (fields.completedDate, .completedDate), (fields.dateCreated, .created), (fields.dateModified, .modified),
+         (fields.reminderTimes, .reminderTimes), (fields.timeZone, .timeZone), (fields.habitColor, .habitColor),
+         (fields.harmful, .harmful), (fields.repeatable, .repeatable), (fields.showInToday, .showInToday),
+         (fields.timeOfDay, .timeOfDay), (fields.twiceADay, .twiceADay), (fields.twiceCountsDouble, .twiceCountsDouble),
+         (fields.weeklyGoal, .weeklyGoal), (fields.allowedSkips, .allowedSkips)]
+    }
+
+    func field(forKey key: String) -> TaskField? {
+        keyedFields.first { $0.key == key }?.field
+    }
+
     /// Every name in `itemSettings.fields` must be a field, so a typo stops the app instead of losing a setting.
     func validate(file: String) throws {
         if itemSettingsKeys.count != Set(itemSettings.fields).count {

@@ -102,8 +102,8 @@ extension AppModel {
 
     /// Merged edits are silent; a key changed both here and elsewhere gets a yellow banner.
     func reportClashes(_ result: TaskWriteResult, name: String) {
-        guard !result.clashingKeys.isEmpty else { return }
-        banners.show(L10n.format("banner.conflictSameKey", name), style: .warning, items: result.clashingKeys)
+        guard !result.clashingFields.isEmpty else { return }
+        banners.show(L10n.format("banner.conflictSameKey", name), style: .warning, items: result.clashingFields.map(TaskFieldText.title))
     }
 
     func delete(_ task: TaskItem) async {

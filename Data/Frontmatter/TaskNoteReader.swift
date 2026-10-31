@@ -18,7 +18,7 @@ struct TaskNoteReader: Sendable {
 
     func task(from document: FrontmatterDocument, name: String, relativePath: String) -> TaskItem {
         let settings = ItemSettingsProperty(mapping: mapping)
-        var fields = FieldReader(document: document, settings: settings.values(in: document) ?? [:])
+        var fields = FieldReader(document: document, settings: settings.values(in: document) ?? [:], field: mapping.field(forKey:))
         let keys = mapping.fields
 
         var task = TaskItem(id: TaskID(relativePath: relativePath), name: name,
@@ -90,7 +90,14 @@ struct TaskNoteReader: Sendable {
 private struct FieldReader {
     let document: FrontmatterDocument
     let settings: [String: YAMLValue]
+    /// The domain field of a key, for the problems.
+    let field: (String) -> TaskField?
     var problems: [TaskProblem] = []
+
+    private mutating func problem(_ key: String, _ value: String) {
+        guard let field = field(key) else { return }
+        problems.append(.invalidValue(field: field, value: value))
+    }
 
     mutating func value(_ key: String) -> YAMLValue? {
         if let value = settings[key] { return value == .null ? nil : value }
@@ -99,7 +106,7 @@ private struct FieldReader {
             if case .null = value { return nil }
             return value
         } catch {
-            problems.append(.invalidField(key: key, value: document.rawValue(for: key) ?? ""))
+            problem(key, document.rawValue(for: key) ?? "")
             return nil
         }
     }
@@ -108,14 +115,14 @@ private struct FieldReader {
         guard let value = value(key) else { return nil }
         if let text = value.string { return text }
         if let first = value.list?.first?.string { return first }
-        problems.append(.invalidField(key: key, value: document.rawValue(for: key) ?? ""))
+        problem(key, document.rawValue(for: key) ?? "")
         return nil
     }
 
     mutating func parsed<T>(_ key: String, _ parse: (String) -> T?) -> T? {
         guard let text = string(key)?.trimmingCharacters(in: .whitespaces), !text.isEmpty else { return nil }
         guard let result = parse(text) else {
-            problems.append(.invalidField(key: key, value: text))
+            problem(key, text)
             return nil
         }
         return result
@@ -124,7 +131,7 @@ private struct FieldReader {
     mutating func int(_ key: String) -> Int? {
         guard let value = value(key) else { return nil }
         guard let number = value.int ?? value.string.flatMap({ Double($0) }).map({ Int($0) }) else {
-            problems.append(.invalidField(key: key, value: value.string ?? ""))
+            problem(key, value.string ?? "")
             return nil
         }
         return number
@@ -133,7 +140,7 @@ private struct FieldReader {
     mutating func bool(_ key: String) -> Bool? {
         guard let value = value(key) else { return nil }
         if let flag = value.bool ?? value.string.flatMap({ ["true": true, "false": false][$0.lowercased()] }) { return flag }
-        problems.append(.invalidField(key: key, value: value.string ?? ""))
+        problem(key, value.string ?? "")
         return nil
     }
 
@@ -153,7 +160,7 @@ private struct FieldReader {
             if let date = LocalDate(isoString: text) {
                 if !result.contains(date) { result.append(date) }
             } else {
-                problems.append(.invalidField(key: key, value: text))
+                problem(key, text)
             }
         }
         return result
@@ -166,7 +173,7 @@ private struct FieldReader {
             if let time = LocalTime(string: text) {
                 if !result.contains(time) { result.append(time) }
             } else {
-                problems.append(.invalidField(key: key, value: text))
+                problem(key, text)
             }
         }
         return result.sorted()
@@ -183,7 +190,7 @@ private struct FieldReader {
             if text.count == 10 { return day.startDate(in: calendar) }
             if let due = TaskDue(rawValue: text) { return due.date(in: calendar) }
         }
-        problems.append(.invalidField(key: key, value: text))
+        problem(key, text)
         return nil
     }
 }

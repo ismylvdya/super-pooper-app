@@ -20,8 +20,8 @@ struct TaskWriteResult: Sendable {
     /// The item changed elsewhere since it was read (or had conflicting versions); the edit was applied to the latest
     /// version.
     let hadConflict: Bool
-    /// Keys this edit wrote that had also been changed elsewhere to something else (the edit won).
-    var clashingKeys: [String] = []
+    /// Fields this edit wrote that had also been changed elsewhere to something else (the edit won).
+    var clashingFields: [TaskField] = []
 }
 
 enum TaskStoreError: Error, Equatable, Sendable {

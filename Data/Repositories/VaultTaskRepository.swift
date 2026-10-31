@@ -216,7 +216,7 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
 
     /// Reads the latest version, lets `transform` produce the new text, writes it atomically.
     /// Before writing, the file is compared with what the app saw: if it changed meanwhile, the edit lands on
-    /// the latest version, and keys of `changes` that were changed there too are reported.
+    /// the latest version, and fields of `changes` that were changed there too are reported.
     private func edit(_ task: TaskItem, changes: [TaskEdit] = [],
                       transform: @escaping (inout FrontmatterDocument) -> String) async throws -> TaskWriteResult {
         let reader = readerFactory(vaultSettings())
@@ -236,8 +236,7 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
                 throw TaskStoreError.brokenFrontmatter(task.name)
             }
             let clashing = hadConflict
-                ? WriteConflict.keys(changes, seen: task, latest: reader.task(from: document, name: task.name, relativePath: task.id.relativePath),
-                                     mapping: mapping)
+                ? TaskConflicts.fields(changes, seen: task, latest: reader.task(from: document, name: task.name, relativePath: task.id.relativePath))
                 : []
             let text = transform(&document)
             // Never write a note that would no longer parse.
@@ -246,7 +245,7 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
             guard fileSystem.isWritten(text, at: url) else { throw TaskStoreError.notConfirmed(task.name) }
             seenModification[task.id.relativePath] = fileSystem.modificationDate(of: url)
             return TaskWriteResult(task: reader.task(from: updated, name: task.name, relativePath: task.id.relativePath),
-                                   hadConflict: hadConflict, clashingKeys: clashing)
+                                   hadConflict: hadConflict, clashingFields: clashing)
         }
     }
 

@@ -62,7 +62,8 @@ enum TaskProblem: Hashable, Codable, Sendable {
     case unknownRecurrence(String)
     /// A repeat with no start in the note (no DTSTART, `due` or `date_created`): its days are counted from a fixed day.
     case recurrenceWithoutStart
-    case invalidField(key: String, value: String)
+    /// A value the store could not read (as written there).
+    case invalidValue(field: TaskField, value: String)
     case linkedTaskNotFound(String)
     case eventNotFound(String)
     case dependencyCycle

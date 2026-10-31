@@ -76,11 +76,11 @@ struct TaskNoteReaderTests {
         #expect(task.due == nil && task.timeEstimate == nil && task.previousEvent == nil)
         #expect(task.marks == [LocalDate("2026-10-20"): .done])
         #expect(Set(task.problems) == [
-            .invalidField(key: "due", value: "tomorrow"),
-            .invalidField(key: "time_estimate", value: "lots"),
-            .invalidField(key: "need_energy", value: "maybe"),
-            .invalidField(key: "previous_event", value: "not a link"),
-            .invalidField(key: "complete_instances", value: "2026-13-01"),
+            .invalidValue(field: .due, value: "tomorrow"),
+            .invalidValue(field: .timeEstimate, value: "lots"),
+            .invalidValue(field: .feel, value: "maybe"),
+            .invalidValue(field: .previousEvent, value: "not a link"),
+            .invalidValue(field: .marks, value: "2026-13-01"),
         ])
     }
 
@@ -99,7 +99,7 @@ struct TaskNoteReaderTests {
         let zoned = try read("due: 2026-10-23T16:00Z\nfromSuperPooperApp: '{\"time_zone\":\"Asia/Jakarta\"}'")
         #expect(zoned.due == TaskDue("2026-10-23T23:00"))
         #expect(zoned.problems.isEmpty)
-        #expect(try read("due: 2026-10-23T16:00 in the evening").problems == [.invalidField(key: "due", value: "2026-10-23T16:00 in the evening")])
+        #expect(try read("due: 2026-10-23T16:00 in the evening").problems == [.invalidValue(field: .due, value: "2026-10-23T16:00 in the evening")])
     }
 
     private func read(_ frontmatter: String) throws -> TaskItem {
@@ -128,7 +128,7 @@ struct HabitFieldTests {
 
     @Test func aBadReminderTimeBecomesAProblem() throws {
         let task = reader.task(from: try document("reminder_times: [\"9am\"]"), name: "Pills", relativePath: "x.md")
-        #expect(task.problems == [.invalidField(key: "reminder_times", value: "9am")])
+        #expect(task.problems == [.invalidValue(field: .reminderTimes, value: "9am")])
     }
 
     /// TaskNotes keeps every marked day in `complete_instances`; `partial_instances` and `twice_instances` refine it.

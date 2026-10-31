@@ -91,7 +91,7 @@ struct WriteConflictTests {
         let note = try await SandboxNote("Купить молоко")
         try note.sandbox.write(try note.text().replacingOnce("time_estimate: 15", with: "time_estimate: 60"), to: note.task.name)
         let result = try await note.apply([.highPriority(true)])
-        #expect(result.hadConflict && result.clashingKeys.isEmpty)
+        #expect(result.hadConflict && result.clashingFields.isEmpty)
         #expect(result.task.timeEstimate == 60 && result.task.isHighPriority)
     }
 
@@ -99,7 +99,7 @@ struct WriteConflictTests {
         let note = try await SandboxNote("Купить молоко")
         try note.sandbox.write(try note.text().replacingOnce("time_estimate: 15", with: "time_estimate: 60"), to: note.task.name)
         let result = try await note.apply([.timeEstimate(2)])
-        #expect(result.clashingKeys == ["time_estimate"])
+        #expect(result.clashingFields == [.timeEstimate])
         #expect(result.task.timeEstimate == 2)
     }
 }
