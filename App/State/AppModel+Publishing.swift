@@ -11,7 +11,8 @@ extension AppModel {
             let widgets = config.rules.widgets
             let reach = context.dayEnd.addingTimeInterval(Double(widgets.entryCount * widgets.refreshMinutes) * 60)
             let snapshot = WidgetSnapshot(generatedAt: context.now, tasks: tasks, events: events,
-                                          reminders: reminders.filter { $0.due >= context.dayStart && $0.due < reach }, dayState: dayState)
+                                          reminders: reminders.filter { $0.due >= context.dayStart && $0.due < reach }, dayState: dayState,
+                                          eventsKnown: eventsKnown)
             try? services.snapshotStore.save(snapshot)
         }
         services.widgets.reloadAll()

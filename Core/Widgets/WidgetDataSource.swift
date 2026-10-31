@@ -31,7 +31,7 @@ struct WidgetDataSource: Sendable {
         let context = context(at: date)
         guard let snapshot else { return .empty(today: context.today, now: date) }
         return DayPlanning.plan(config: config, settings: settings, tasks: snapshot.tasks, events: snapshot.events, reminders: snapshot.reminders,
-                                dayState: snapshot.dayState, context: context)
+                                dayState: snapshot.dayState, context: context, eventsKnown: snapshot.eventsKnown ?? false)
     }
 
     /// Active habits in the user's list order.

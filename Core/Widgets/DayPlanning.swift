@@ -5,7 +5,7 @@ import Foundation
 enum DayPlanning {
     /// `eventsKnown`: the calendars are readable and chosen, so a linked event that is missing is a problem.
     static func plan(config: AppConfig, settings: AppSettings, tasks: [TaskNote], events: [CalendarEvent],
-                     reminders: [ReminderItem], dayState: DayState, context: DayContext, eventsKnown: Bool = true) -> DayPlan {
+                     reminders: [ReminderItem], dayState: DayState, context: DayContext, eventsKnown: Bool) -> DayPlan {
         let state = dayState.day == context.today ? dayState : DayState(day: context.today)
         let inputs = DayInputs(tasks: usable(tasks, config: config, context: context), events: events, reminders: reminders,
                                skipped: Set(state.skipped), manualOrder: state.manualOrder,
@@ -20,7 +20,7 @@ enum DayPlanning {
     /// tasks dated that day. "Past" and blocking are measured from the real now; links reach every task.
     static func plan(config: AppConfig, settings: AppSettings, tasks: [TaskNote], events: [CalendarEvent],
                      reminders: [ReminderItem], dayState: DayState, context: DayContext, dayOffset: Int,
-                     eventsKnown: Bool = true) -> DayPlan {
+                     eventsKnown: Bool) -> DayPlan {
         guard dayOffset != 0 else {
             return plan(config: config, settings: settings, tasks: tasks, events: events, reminders: reminders,
                         dayState: dayState, context: context, eventsKnown: eventsKnown)
