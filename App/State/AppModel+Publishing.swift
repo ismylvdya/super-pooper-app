@@ -47,8 +47,7 @@ extension AppModel {
         // Alerts moved into the past or added too late come right away, once.
         let all = planner.all(tasks: tasks, reminders: reminders, events: events, skipped: skipped, context: context)
         let previous = services.alertStateStore.load()
-        let late = LateAlerts.due(all, pending: previous?.pending ?? [:], known: previous.map { Set($0.known) },
-                                  now: context.now, calendar: calendar)
+        let late = LateAlerts.due(all, pending: previous?.pending ?? [:], known: previous.map { Set($0.known) }, context: context)
         try? services.alertStateStore.save(AlertState(
             pending: Dictionary(planned.map { ($0.key, $0.fireDate) }, uniquingKeysWith: min),
             known: Array(Set(all.map(\.key)))))

@@ -28,7 +28,7 @@ struct NotificationPlanner: Sendable {
             .filter { $0.day == context.today }
         // A delivered habit notification carries its slot identifier and its day: it stays while that day is
         // still open (an overdue day too), until the next one replaces it or the day gets marked.
-        let earlier = context.with(now: context.dayStart.addingTimeInterval(-Double(horizonDays) * 86_400))
+        let earlier = context.with(now: context.date(context.today.adding(days: -horizonDays), context.boundary))
         let openSlots = NotificationPlanner(horizonDays: horizonDays + 1, limit: limit)
             .all(tasks: tasks, reminders: [], skipped: skipped, context: earlier)
             .filter { $0.kind == .habit && $0.day <= context.today }
@@ -78,7 +78,8 @@ struct NotificationPlanner: Sendable {
         }
 
         let horizonEnd = context.today.adding(days: horizonDays).startDate(in: context.calendar, offset: context.boundary)
-        for event in events where event.end > context.dayStart.addingTimeInterval(-86_400) {
+        let yesterdayStart = context.date(context.today.adding(days: -1), context.boundary)
+        for event in events where event.end > yesterdayStart {
             for (index, fire) in event.alarmDates.enumerated() where fire < horizonEnd {
                 result.append(PlannedNotification(id: "event|\(event.eventIdentifier)|\(Int(event.start.timeIntervalSince1970))|\(index)",
                                                   kind: .event, title: event.title, fireDate: fire, taskName: nil,

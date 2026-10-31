@@ -36,7 +36,7 @@ struct AlertRulesTests {
         let now = TestCalendar.context(TestCalendar.wednesday, "18:55")
         let moved = planner.all(tasks: [], reminders: [], events: [event("19:00", alarmMinutes: -30)], skipped: [], context: now)
         let pending = [moved[0].key: TestCalendar.date(TestCalendar.wednesday, "19:20")]
-        let late = LateAlerts.due(moved, pending: pending, known: [moved[0].key], now: now.now, calendar: TestCalendar.calendar)
+        let late = LateAlerts.due(moved, pending: pending, known: [moved[0].key], context: now)
         #expect(late.map(\.key) == [moved[0].key])
     }
 
@@ -44,14 +44,35 @@ struct AlertRulesTests {
         let now = TestCalendar.context(TestCalendar.wednesday, "18:55")
         let alerts = planner.all(tasks: [], reminders: [], events: [event("19:00")], skipped: [], context: now)
         let pending = [alerts[0].key: alerts[0].fireDate]
-        #expect(LateAlerts.due(alerts, pending: pending, known: [alerts[0].key], now: now.now, calendar: TestCalendar.calendar).isEmpty)
+        #expect(LateAlerts.due(alerts, pending: pending, known: [alerts[0].key], context: now).isEmpty)
     }
 
     @Test func anAlertAddedToAStartedEventComesOnceButNotOnTheFirstSync() {
         let now = TestCalendar.context(TestCalendar.wednesday, "19:10")
         let alerts = planner.all(tasks: [], reminders: [], events: [event("19:00")], skipped: [], context: now)
-        #expect(LateAlerts.due(alerts, pending: [:], known: [], now: now.now, calendar: TestCalendar.calendar).count == 1)
-        #expect(LateAlerts.due(alerts, pending: [:], known: nil, now: now.now, calendar: TestCalendar.calendar).isEmpty)
+        #expect(LateAlerts.due(alerts, pending: [:], known: [], context: now).count == 1)
+        #expect(LateAlerts.due(alerts, pending: [:], known: nil, context: now).isEmpty)
+    }
+
+    /// At 01:00 the evening before is still today: an alert added to an event that started at 23:30 comes late, and
+    /// one of an event that started at 01:00 after a 04:00 boundary belongs to the night before.
+    @Test func aLateAlertCountsTheLogicalDay() {
+        let night = TestCalendar.context("2026-10-22", "01:00")
+        let lateEvening = makeEvent("Party", from: "23:30", to: "23:59")
+        let alerts = planner.all(tasks: [], reminders: [], events: [withAlarm(lateEvening)], skipped: [], context: night)
+        #expect(LateAlerts.due(alerts, pending: [:], known: [], context: night).count == 1)
+
+        let morning = TestCalendar.context("2026-10-22", "05:00")
+        let afterMidnight = makeEvent("Flight", day: "2026-10-22", from: "01:00", to: "02:00")
+        let early = planner.all(tasks: [], reminders: [], events: [withAlarm(afterMidnight)], skipped: [], context: morning)
+        #expect(LateAlerts.due(early, pending: [:], known: [], context: morning).isEmpty)
+    }
+
+    private func withAlarm(_ event: CalendarEvent) -> CalendarEvent {
+        var event = event
+        event.alarmDates = [event.start]
+        event.hasAlarm = true
+        return event
     }
 
     @Test func aHabitsNextNotificationReusesItsSlot() {

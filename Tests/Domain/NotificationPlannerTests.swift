@@ -153,6 +153,14 @@ struct NotificationPlannerTests {
         #expect(valid.allSatisfy { $0.day == LocalDate("2026-10-21") })
     }
 
+    /// The week after the clocks went forward (29 March) has an hour less: counted in calendar days, not in 24-hour
+    /// steps, today's delivered habit notification is still valid and stays in Notification Center.
+    @Test func todaysHabitNotificationStaysValidAfterTheClocksChange() {
+        let habit = makeHabit("Vitamins", rule: "DTSTART:20260101;FREQ=DAILY", time: "09:00")
+        let valid = planner.stillValidToday(tasks: [habit], reminders: [], skipped: [], context: TestCalendar.context("2026-03-30", "13:25"))
+        #expect(valid.contains { $0.id == NotificationPlanner.habitSlot("Vitamins", LocalTime("09:00")) && $0.day == LocalDate("2026-03-30") })
+    }
+
     // MARK: - Helpers
 
     private func plan(_ tasks: [TaskNote], at time: String, skipped: Set<String> = []) -> [PlannedNotification] {
