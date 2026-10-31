@@ -1,6 +1,6 @@
 import Foundation
 
-/// Reads a `TaskNote` from frontmatter using the field mapping. Missing fields get defaults;
+/// Reads a `TaskItem` from frontmatter using the field mapping. Missing fields get defaults;
 /// unreadable ones become problems on the task instead of failures.
 struct TaskNoteReader: Sendable {
     let mapping: FieldMapping
@@ -16,12 +16,12 @@ struct TaskNoteReader: Sendable {
         }
     }
 
-    func task(from document: FrontmatterDocument, name: String, relativePath: String) -> TaskNote {
+    func task(from document: FrontmatterDocument, name: String, relativePath: String) -> TaskItem {
         let settings = ItemSettingsProperty(mapping: mapping)
         var fields = FieldReader(document: document, settings: settings.values(in: document) ?? [:])
         let keys = mapping.fields
 
-        var task = TaskNote(id: TaskID(relativePath: relativePath), name: name,
+        var task = TaskItem(id: TaskID(relativePath: relativePath), name: name,
                             status: fields.string(keys.status).map(mapping.status(fromRaw:)) ?? .other(""))
         task.isHighPriority = fields.string(keys.priority) == mapping.priorities.high
         task.timeZone = fields.string(keys.timeZone).flatMap { TimeZone(identifier: $0) == nil ? nil : $0 }

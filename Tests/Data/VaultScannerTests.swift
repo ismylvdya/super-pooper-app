@@ -55,7 +55,7 @@ struct VaultScannerTests {
 
     @Test func aTaskWithAnEventLinkIsReadExactly() async throws {
         let task = try await scanned("Подготовить вопросы папе")
-        var expected = TaskNote(id: TaskID("TaskNotes/Tasks/Подготовить вопросы папе.md"), name: "Подготовить вопросы папе", status: .thisWeek)
+        var expected = TaskItem(id: TaskID("TaskNotes/Tasks/Подготовить вопросы папе.md"), name: "Подготовить вопросы папе", status: .thisWeek)
         expected.timeEstimate = 15
         expected.nextEvent = EventLink(eventIdentifier: "fixture-event", title: "Call with dad", start: TestCalendar.date("2026-10-21", "19:00"))
         try expectSame(task, expected, created: "2026-10-19", modified: "2026-10-20")
@@ -63,7 +63,7 @@ struct VaultScannerTests {
 
     @Test func aHabitWithHistoryIsReadExactly() async throws {
         let task = try await scanned("Медитация 🧘")
-        var expected = TaskNote(id: TaskID("TaskNotes/Tasks/Медитация 🧘.md"), name: "Медитация 🧘", status: .halfYear)
+        var expected = TaskItem(id: TaskID("TaskNotes/Tasks/Медитация 🧘.md"), name: "Медитация 🧘", status: .halfYear)
         expected.timeEstimate = 15
         expected.recurrence = try RecurrenceCodec.parse("DTSTART:20260921;FREQ=DAILY;INTERVAL=1").get()
         expected.marks = [LocalDate("2026-10-15"): .done, LocalDate("2026-10-16"): .partial, LocalDate("2026-10-17"): .done,
@@ -111,7 +111,7 @@ struct VaultScannerTests {
 
     @Test func unknownKeysDoNotDisturbReading() async throws {
         let task = try await scanned("Длинная заметка с незнакомыми ключами")
-        var expected = TaskNote(id: TaskID("TaskNotes/Tasks/Длинная заметка с незнакомыми ключами.md"), name: "Длинная заметка с незнакомыми ключами", status: .thisWeek)
+        var expected = TaskItem(id: TaskID("TaskNotes/Tasks/Длинная заметка с незнакомыми ключами.md"), name: "Длинная заметка с незнакомыми ключами", status: .thisWeek)
         expected.timeEstimate = 15
         // `projects` is read: it makes the note a TaskNotes subtask of «Ремонт».
         expected.projects = ["Ремонт"]
@@ -164,20 +164,20 @@ struct VaultScannerTests {
                 == WikiLink.make("Найти отвёртку").utf8.count)
     }
 
-    private func scannedTasks() async throws -> [TaskNote] {
+    private func scannedTasks() async throws -> [TaskItem] {
         try await VaultSandbox.make().scan().tasks
     }
 
-    private func tasksByName() async throws -> [String: TaskNote] {
+    private func tasksByName() async throws -> [String: TaskItem] {
         Dictionary(try await scannedTasks().map { ($0.name, $0) }, uniquingKeysWith: { first, _ in first })
     }
 
-    private func scanned(_ name: String) async throws -> TaskNote {
+    private func scanned(_ name: String) async throws -> TaskItem {
         try #require(try await tasksByName()[name])
     }
 
     /// Compares every field; the fixture timestamps are `YYYY-MM-DDT09:12:44.123+02:00`.
-    private func expectSame(_ task: TaskNote, _ expected: TaskNote, created: String, modified: String,
+    private func expectSame(_ task: TaskItem, _ expected: TaskItem, created: String, modified: String,
                             sourceLocation: SourceLocation = #_sourceLocation) throws {
         let stamp = { (day: String) in TestCalendar.date(day, "09:12").addingTimeInterval(44.123) }
         let createdDate = try #require(task.dateCreated, sourceLocation: sourceLocation)

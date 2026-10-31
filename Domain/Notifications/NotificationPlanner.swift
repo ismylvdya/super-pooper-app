@@ -13,7 +13,7 @@ struct NotificationPlanner: Sendable {
 
     /// Upcoming notifications, nearest first, at most `limit`. `skipped`: names taken out of today
     /// (Skip today for habits, Not today for tasks).
-    func plan(tasks: [TaskNote], reminders: [ReminderItem], events: [CalendarEvent] = [], skipped: Set<String>,
+    func plan(tasks: [TaskItem], reminders: [ReminderItem], events: [CalendarEvent] = [], skipped: Set<String>,
               context: DayContext) -> [PlannedNotification] {
         let upcoming = all(tasks: tasks, reminders: reminders, events: events, skipped: skipped, context: context)
             .filter { $0.fireDate > context.now }
@@ -22,7 +22,7 @@ struct NotificationPlanner: Sendable {
 
     /// Today's notifications regardless of time: a delivered one stays in Notification Center only while it is still in
     /// this list, so one of a day that is over goes, marked or not, as the widgets clear it at the boundary.
-    func stillValidToday(tasks: [TaskNote], reminders: [ReminderItem], events: [CalendarEvent] = [], skipped: Set<String>,
+    func stillValidToday(tasks: [TaskItem], reminders: [ReminderItem], events: [CalendarEvent] = [], skipped: Set<String>,
                          context: DayContext) -> [PlannedNotification] {
         let today = all(tasks: tasks, reminders: reminders, events: events, skipped: skipped, context: context)
             .filter { $0.day == context.today }
@@ -32,7 +32,7 @@ struct NotificationPlanner: Sendable {
     }
 
     /// Everything of today and the coming days, past times included (for late alerts).
-    func all(tasks: [TaskNote], reminders: [ReminderItem], events: [CalendarEvent] = [], skipped: Set<String>,
+    func all(tasks: [TaskItem], reminders: [ReminderItem], events: [CalendarEvent] = [], skipped: Set<String>,
              context: DayContext) -> [PlannedNotification] {
         let occurrence = TaskOccurrence(days: context.days)
         var result: [PlannedNotification] = []

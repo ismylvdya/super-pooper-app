@@ -6,7 +6,7 @@ import Testing
 final class SandboxNote {
     let sandbox: VaultSandbox
     let repository: VaultTaskRepository
-    private(set) var task: TaskNote
+    private(set) var task: TaskItem
 
     init(_ name: String, sandbox: VaultSandbox? = nil, ubiquity: UbiquityService = FakeUbiquityService(),
          calendar: CalendarSource = FixedCalendar(current: TestCalendar.calendar)) async throws {
@@ -19,7 +19,7 @@ final class SandboxNote {
     func text() throws -> String { try sandbox.text(of: task.name) }
 
     /// Scans again (after the file was changed behind the repository's back).
-    func reload() async throws -> TaskNote {
+    func reload() async throws -> TaskItem {
         let name = task.name
         task = try #require(try await repository.load().tasks.first { $0.name == name })
         return task
@@ -34,7 +34,7 @@ final class SandboxNote {
 
     /// The same changes the app writes for a tap or a menu mark today.
     @discardableResult
-    func mark(_ mark: HabitMark?) async throws -> TaskNote {
+    func mark(_ mark: HabitMark?) async throws -> TaskItem {
         try await apply(TaskMarking(today: LocalDate(sandbox.today)).changes(marking: task, as: mark)).task
     }
 }

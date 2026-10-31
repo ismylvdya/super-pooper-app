@@ -7,7 +7,7 @@ struct HabitRemindersSection: View {
     @Environment(\.rules) private var rules
     let editor: TaskEditor
 
-    private var task: TaskNote { editor.task }
+    private var task: TaskItem { editor.task }
 
     var body: some View {
         PlateSection(header: "taskPage.reminders", info: "info.taskPage.reminders", hint: times.isEmpty ? "taskPage.reminders.none" : nil) {

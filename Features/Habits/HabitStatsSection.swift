@@ -5,7 +5,7 @@ import SwiftUI
 struct HabitStatsSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
-    let habit: TaskNote
+    let habit: TaskItem
 
     var body: some View {
         let context = model.context()

@@ -9,12 +9,12 @@ struct TaskOccurrence: Sendable {
 
     let days: DayBoundary
 
-    func occurs(_ task: TaskNote, on day: LocalDate) -> Bool {
+    func occurs(_ task: TaskItem, on day: LocalDate) -> Bool {
         schedule(of: task).occurs(on: day)
     }
 
     /// Build it once per task and ask it about many days: a COUNT rule lists its days up front.
-    func schedule(of task: TaskNote) -> TaskSchedule {
+    func schedule(of task: TaskItem) -> TaskSchedule {
         guard task.isHabit else { return TaskSchedule(isRecurring: false, recurrence: nil) }
         let recurrence = task.recurrence.map { RecurrenceSchedule(rule: $0, fallbackStart: start(of: task) ?? Self.undatedStart) }
         return TaskSchedule(isRecurring: true, recurrence: recurrence)
@@ -22,12 +22,12 @@ struct TaskOccurrence: Sendable {
 
     /// The first day of the rule: DTSTART, else the `due` day, else the day the note was created (as written, not moved
     /// through the phone's zone); nil when the note has none of them.
-    func start(of task: TaskNote) -> LocalDate? {
+    func start(of task: TaskItem) -> LocalDate? {
         task.recurrence?.startDate ?? task.due?.day ?? task.created.map(days.day(of:))
     }
 
     /// A rule with nothing in the note to start its days from.
-    func hasNoStart(_ task: TaskNote) -> Bool {
+    func hasNoStart(_ task: TaskItem) -> Bool {
         task.isHabit && task.recurrence != nil && start(of: task) == nil
     }
 }

@@ -10,7 +10,7 @@ struct NotificationTriggerTests {
                                               limit: TestConfig.rules.notifications.limit)
     private let jakarta = TestCalendar.calendar(in: "Asia/Jakarta")
 
-    private func planned(tasks: [TaskNote] = [], reminders: [ReminderItem] = [], events: [CalendarEvent] = []) -> [PlannedNotification] {
+    private func planned(tasks: [TaskItem] = [], reminders: [ReminderItem] = [], events: [CalendarEvent] = []) -> [PlannedNotification] {
         planner.plan(tasks: tasks, reminders: reminders, events: events, skipped: [], context: TestCalendar.context(TestCalendar.wednesday, "08:00"))
     }
 

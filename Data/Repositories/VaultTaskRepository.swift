@@ -52,7 +52,7 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
         return output.result
     }
 
-    func apply(_ changes: [TaskEdit], to task: TaskNote) async throws -> TaskWriteResult {
+    func apply(_ changes: [TaskEdit], to task: TaskItem) async throws -> TaskWriteResult {
         try await edit(task, changes: changes) { document in
             self.writer.apply(changes, to: &document, now: self.clock.now)
             return document.text
@@ -60,7 +60,7 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
     }
 
     /// The text of the note without the app's ```SuperPooperApp block.
-    func text(of task: TaskNote) async throws -> String {
+    func text(of task: TaskItem) async throws -> String {
         try await location.withRoot { root in
             let file = try fileSystem.read(try existingURL(of: task, root: root))
             return AppBlock.split(try FrontmatterDocument(text: file.text).body).visible
@@ -68,7 +68,7 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
     }
 
     /// Replaces the text of the note; the app's block (if any) stays right after the frontmatter.
-    func setText(_ visible: String, of task: TaskNote) async throws -> TaskWriteResult {
+    func setText(_ visible: String, of task: TaskItem) async throws -> TaskWriteResult {
         try await edit(task) { document in
             let body = AppBlock.join(block: AppBlock.split(document.body).block, visible: visible)
             self.writer.apply([], to: &document, now: self.clock.now)
@@ -76,9 +76,9 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
         }
     }
 
-    func rename(_ task: TaskNote, to newName: String, dependents: [TaskNote]) async throws -> TaskNote {
+    func rename(_ task: TaskItem, to newName: String, dependents: [TaskItem]) async throws -> TaskItem {
         guard NoteNameRules.isValid(newName) else { throw TaskStoreError.invalidName(newName) }
-        let renamed: TaskNote = try await location.withRoot { root in
+        let renamed: TaskItem = try await location.withRoot { root in
             let source = try existingURL(of: task, root: root)
             let target = source.deletingLastPathComponent().appendingPathComponent("\(newName).\(noteExtension)")
             if NoteFolder(source.deletingLastPathComponent(), fileSystem: fileSystem).isTaken(newName, except: source) {
@@ -104,7 +104,7 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
     }
 
     /// Into the vault's trash folder (Obsidian's `.trash`).
-    func delete(_ task: TaskNote) async throws {
+    func delete(_ task: TaskItem) async throws {
         let trashFolder = vaultSettings().trashFolder
         try await location.withRoot { root in
             let source = try existingURL(of: task, root: root)
@@ -117,7 +117,7 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
         }
     }
 
-    func fileAway(_ task: TaskNote) async throws {
+    func fileAway(_ task: TaskItem) async throws {
         let settings = vaultSettings()
         try await location.withRoot { root in
             let source = try existingURL(of: task, root: root)
@@ -131,7 +131,7 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
         }
     }
 
-    func filedTasks() async throws -> [TaskNote] {
+    func filedTasks() async throws -> [TaskItem] {
         let settings = vaultSettings()
         let scanner = scanner(settings)
         return try await location.withRoot { root in
@@ -143,7 +143,7 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
 
     /// The note is written the way TaskNotes writes a new one (with the draft's status), then gets the draft's other
     /// fields and its text.
-    func create(_ draft: NoteDraft, named name: String) async throws -> TaskNote {
+    func create(_ draft: NoteDraft, named name: String) async throws -> TaskItem {
         var task = try await createNote(named: name, status: draft.note.status)
         let fields = draft.changes.filter { if case .status = $0 { false } else { true } }
         if !fields.isEmpty { task = try await apply(fields, to: task).task }
@@ -155,7 +155,7 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
         NoteNameRules.problem(in: name)
     }
 
-    private func createNote(named name: String, status: TaskStatus) async throws -> TaskNote {
+    private func createNote(named name: String, status: TaskStatus) async throws -> TaskItem {
         guard NoteNameRules.isValid(name) else { throw TaskStoreError.invalidName(name) }
         let settings = vaultSettings()
         let reader = readerFactory(settings)
@@ -175,14 +175,14 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
         }
     }
 
-    func backup(_ tasks: [TaskNote], reason: String) async throws {
+    func backup(_ tasks: [TaskItem], reason: String) async throws {
         try await location.withRoot { root in
             _ = try backups.backup(tasks.map { root.appendingPathComponent($0.id.relativePath) }, reason: reason)
         }
     }
 
     /// `obsidian://open?vault=…&file=…`.
-    func externalURL(for task: TaskNote) async -> URL? {
+    func externalURL(for task: TaskItem) async -> URL? {
         let settings = vaultSettings()
         return try? await location.withRoot { root in
             VaultPaths.obsidianURL(relativePath: task.id.relativePath, root: root, folder: chosenFolder(root: root),
@@ -191,11 +191,11 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
         }
     }
 
-    func versions(of task: TaskNote) async throws -> [NoteVersion] {
+    func versions(of task: TaskItem) async throws -> [NoteVersion] {
         try await location.withRoot { root in try ubiquity.versions(of: try existingURL(of: task, root: root)) }
     }
 
-    func keep(_ versionID: String, of task: TaskNote) async throws {
+    func keep(_ versionID: String, of task: TaskItem) async throws {
         try await location.withRoot { root in
             let url = try existingURL(of: task, root: root)
             try ubiquity.keep(versionID, of: url)
@@ -217,7 +217,7 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
     /// Reads the latest version, lets `transform` produce the new text, writes it atomically.
     /// Before writing, the file is compared with what the app saw: if it changed meanwhile, the edit lands on
     /// the latest version, and keys of `changes` that were changed there too are reported.
-    private func edit(_ task: TaskNote, changes: [TaskEdit] = [],
+    private func edit(_ task: TaskItem, changes: [TaskEdit] = [],
                       transform: @escaping (inout FrontmatterDocument) -> String) async throws -> TaskWriteResult {
         let reader = readerFactory(vaultSettings())
         return try await location.withRoot { root in
@@ -251,7 +251,7 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
     }
 
     /// Name check that also sees evicted iCloud files (`.Name.md.icloud`).
-    private func existingURL(of task: TaskNote, root: URL) throws -> URL {
+    private func existingURL(of task: TaskItem, root: URL) throws -> URL {
         let url = root.appendingPathComponent(task.id.relativePath)
         guard fileSystem.fileExists(url) else { throw TaskStoreError.fileMissing(task.name) }
         return url

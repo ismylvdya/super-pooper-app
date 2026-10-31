@@ -167,7 +167,7 @@ struct NotificationPlannerTests {
 
     // MARK: - Helpers
 
-    private func plan(_ tasks: [TaskNote], at time: String, skipped: Set<String> = []) -> [PlannedNotification] {
+    private func plan(_ tasks: [TaskItem], at time: String, skipped: Set<String> = []) -> [PlannedNotification] {
         planner.plan(tasks: tasks, reminders: [], skipped: skipped, context: TestCalendar.context(TestCalendar.wednesday, time))
     }
 

@@ -68,7 +68,7 @@ struct HabitsScreen: View {
     }
 
     /// One group of rows; the rounded corners belong to its first and last row, as on every plate.
-    @ViewBuilder private func group(_ habits: [TaskNote], header: LocalizedStringKey?, groups: HabitGroups, isRepeatable: Bool,
+    @ViewBuilder private func group(_ habits: [TaskItem], header: LocalizedStringKey?, groups: HabitGroups, isRepeatable: Bool,
                                     today: LocalDate) -> some View {
         if !habits.isEmpty {
             if let header { ListGroupHeader(title: Text(header)) } else { gap }

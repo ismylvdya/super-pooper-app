@@ -19,7 +19,7 @@ struct NotificationSchedulerTests {
     }
 
     /// The app's sync at `time` on `day` (Wednesday).
-    private func sync(_ tasks: [TaskNote], at time: String, on day: String = TestCalendar.wednesday) async {
+    private func sync(_ tasks: [TaskItem], at time: String, on day: String = TestCalendar.wednesday) async {
         let context = TestCalendar.context(day, time)
         await scheduler.sync(planned: planner.plan(tasks: tasks, reminders: [], skipped: [], context: context),
                              stillValid: planner.stillValidToday(tasks: tasks, reminders: [], skipped: [], context: context),

@@ -5,7 +5,7 @@ import Foundation
 /// domain code as the app.
 struct WidgetSnapshot: Codable, Sendable {
     let generatedAt: Date
-    let tasks: [TaskNote]
+    let tasks: [TaskItem]
     let events: [CalendarEvent]
     let reminders: [ReminderItem]
     let dayState: DayState

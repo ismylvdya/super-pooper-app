@@ -10,7 +10,7 @@ enum PreviewModel {
                      calendars: CalendarRepository = StaticCalendarRepository(),
                      calendar: CalendarSource = FixedCalendar(current: PreviewSamples.calendar),
                      clock: Clock = FixedClock(now: PreviewSamples.context.now),
-                     tasks: [TaskNote] = PreviewSamples.tasks,
+                     tasks: [TaskItem] = PreviewSamples.tasks,
                      delay: Delay = SleepDelay()) -> (model: AppModel, router: Router, config: AppConfig)? {
         guard let config = try? AppConfig.load() else { return nil }
         let store = JSONFileStore(directory: FileManager.default.temporaryDirectory

@@ -14,7 +14,7 @@ struct OtherDayTests {
         config = try AppConfig.load(bundle: .main)
     }
 
-    private func tomorrow(_ tasks: [TaskNote], events: [CalendarEvent] = []) -> DayPlan {
+    private func tomorrow(_ tasks: [TaskItem], events: [CalendarEvent] = []) -> DayPlan {
         DayPlanning.plan(config: config, settings: TestConfig.defaults, tasks: tasks, events: events, reminders: [],
                          dayState: DayState(day: LocalDate(TestCalendar.wednesday)), context: TestCalendar.context(), dayOffset: 1,
                          eventsKnown: true)

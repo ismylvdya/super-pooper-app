@@ -12,7 +12,7 @@ struct DayRules: Codable, Hashable, Sendable {
     var morningEnds: LocalTime
     var eveningStarts: LocalTime
 
-    func estimate(of task: TaskNote) -> Int {
+    func estimate(of task: TaskItem) -> Int {
         guard let minutes = task.timeEstimate, minutes > 0 else { return defaultEstimateMinutes }
         return minutes
     }

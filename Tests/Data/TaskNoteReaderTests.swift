@@ -102,7 +102,7 @@ struct TaskNoteReaderTests {
         #expect(try read("due: 2026-10-23T16:00 in the evening").problems == [.invalidField(key: "due", value: "2026-10-23T16:00 in the evening")])
     }
 
-    private func read(_ frontmatter: String) throws -> TaskNote {
+    private func read(_ frontmatter: String) throws -> TaskItem {
         let text = "---\ntags:\n  - 🔫делишка\n\(frontmatter)\n---\n"
         return reader.task(from: try FrontmatterDocument(text: text), name: "Задача", relativePath: "TaskNotes/Tasks/Задача.md")
     }

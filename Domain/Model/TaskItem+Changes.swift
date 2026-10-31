@@ -1,8 +1,8 @@
 import Foundation
 
-extension TaskNote {
+extension TaskItem {
     /// The in-memory result of applying changes (the file is the source of truth; this mirrors it).
-    func applying(_ changes: [TaskEdit]) -> TaskNote {
+    func applying(_ changes: [TaskEdit]) -> TaskItem {
         var task = self
         for change in changes {
             switch change {

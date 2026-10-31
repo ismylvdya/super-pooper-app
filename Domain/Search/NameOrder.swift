@@ -11,7 +11,7 @@ enum NameOrder {
         names.sorted(by: precedes)
     }
 
-    static func sorted(_ tasks: [TaskNote]) -> [TaskNote] {
+    static func sorted(_ tasks: [TaskItem]) -> [TaskItem] {
         tasks.sorted { precedes($0.name, $1.name) }
     }
 }

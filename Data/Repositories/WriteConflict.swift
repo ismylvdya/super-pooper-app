@@ -3,7 +3,7 @@ import Foundation
 /// Which of the keys an edit writes were also changed elsewhere since the app read the note.
 /// List edits are deltas (marks, links) and merge by themselves; only single-value keys can clash.
 enum WriteConflict {
-    static func keys(_ changes: [TaskEdit], seen: TaskNote, latest: TaskNote, mapping: FieldMapping) -> [String] {
+    static func keys(_ changes: [TaskEdit], seen: TaskItem, latest: TaskItem, mapping: FieldMapping) -> [String] {
         var result: [String] = []
         for change in changes {
             guard let (key, value) = field(change, mapping: mapping) else { continue }
@@ -13,7 +13,7 @@ enum WriteConflict {
     }
 
     /// The frontmatter key a change writes and how to read that field from a note.
-    private static func field(_ change: TaskEdit, mapping: FieldMapping) -> (String, (TaskNote) -> AnyHashable?)? {
+    private static func field(_ change: TaskEdit, mapping: FieldMapping) -> (String, (TaskItem) -> AnyHashable?)? {
         let keys = mapping.fields
         switch change {
         case .status, .complete, .reopen: return (keys.status, { $0.status })

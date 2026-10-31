@@ -10,7 +10,7 @@ struct SyncReport {
 
     init() {}
 
-    init(old: [TaskNote], new: [TaskNote]) {
+    init(old: [TaskItem], new: [TaskItem]) {
         let oldByName = Dictionary(old.map { ($0.name, $0) }, uniquingKeysWith: { first, _ in first })
         let newByName = Dictionary(new.map { ($0.name, $0) }, uniquingKeysWith: { first, _ in first })
         added = newByName.keys.filter { oldByName[$0] == nil }.sorted()
@@ -33,8 +33,8 @@ struct SyncReport {
     }
 }
 
-private extension TaskNote {
-    var withoutTimestamps: TaskNote {
+private extension TaskItem {
+    var withoutTimestamps: TaskItem {
         var copy = self
         copy.dateModified = nil
         return copy

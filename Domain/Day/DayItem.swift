@@ -21,7 +21,7 @@ enum Blocker: Hashable, Sendable {
 
 /// A task as it appears in today's pool or timeline.
 struct DayItem: Identifiable, Hashable, Sendable {
-    let task: TaskNote
+    let task: TaskItem
     let state: DayItemState
     let blockers: [Blocker]
     let problems: [TaskProblem]
@@ -43,7 +43,7 @@ struct DayItem: Identifiable, Hashable, Sendable {
 
 extension DayItem {
     /// A note as an item outside a day plan (a list of the Lists tab): done by its status, no blockers.
-    init(listed task: TaskNote) {
+    init(listed task: TaskItem) {
         self.init(task: task, state: task.status == .done ? .marked(.done) : .open, blockers: [], problems: task.problems)
     }
 }

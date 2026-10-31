@@ -4,7 +4,7 @@ import Testing
 
 @Suite("Habit groups")
 struct HabitGroupsTests {
-    private func habit(_ name: String, repeatable: Bool = false) -> TaskNote {
+    private func habit(_ name: String, repeatable: Bool = false) -> TaskItem {
         makeHabit(name) { $0.habit.repeatable = repeatable }
     }
 

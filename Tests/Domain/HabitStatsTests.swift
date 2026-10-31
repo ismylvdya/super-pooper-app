@@ -9,7 +9,7 @@ struct HabitStatsTests {
 
     /// A daily habit created `days` days ago with marks `offsets` days before today (0 = today).
     private func habit(createdDaysAgo days: Int = 30, done: [Int] = [], partial: [Int] = [], twice: [Int] = [],
-                       _ configure: (inout TaskNote) -> Void = { _ in }) -> TaskNote {
+                       _ configure: (inout TaskItem) -> Void = { _ in }) -> TaskItem {
         let start = today.adding(days: -days)
         var task = makeTask("Habit", status: .habit, created: start.isoString)
         task.recurrence = try? RecurrenceCodec.parse("DTSTART:\(start.isoString.replacingOccurrences(of: "-", with: ""));FREQ=DAILY").get()
@@ -20,7 +20,7 @@ struct HabitStatsTests {
         return task
     }
 
-    private func stats(_ task: TaskNote) -> HabitStats { HabitStats(task: task, today: today, days: TestCalendar.days) }
+    private func stats(_ task: TaskItem) -> HabitStats { HabitStats(task: task, today: today, days: TestCalendar.days) }
 
     @Test func currentStreakStartsYesterdayWhileTodayIsOpen() {
         #expect(stats(habit(done: [1, 2, 3, 5])).currentStreak == 3)

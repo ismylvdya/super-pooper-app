@@ -35,7 +35,7 @@ struct WidgetDataSource: Sendable {
     }
 
     /// Active habits in the user's list order.
-    var habits: [TaskNote] {
+    var habits: [TaskItem] {
         HabitOrder.sorted((snapshot?.tasks ?? []).filter { $0.isHabit && !$0.isArchived }, order: settings.habits.order)
     }
 
@@ -43,7 +43,7 @@ struct WidgetDataSource: Sendable {
 
     /// The chosen habit; the first one until a habit is chosen. A chosen habit that is gone (renamed, deleted)
     /// gives nil, so the widget asks to choose again instead of showing and marking another habit.
-    func habit(named name: String?) -> TaskNote? {
+    func habit(named name: String?) -> TaskItem? {
         guard let name else { return habits.first }
         return habits.first { $0.name.isSameNoteName(as: name) }
     }

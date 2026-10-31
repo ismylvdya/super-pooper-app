@@ -89,8 +89,8 @@ extension TaskDue {
 
 /// A regular task in `TaskNotes/Tasks`; `configure` sets the fields a test cares about.
 func makeTask(_ name: String, status: TaskStatus = .thisWeek, created: String = "2026-10-10",
-              _ configure: (inout TaskNote) -> Void = { _ in }) -> TaskNote {
-    var task = TaskNote(id: TaskID("TaskNotes/Tasks/\(name).md"), name: name, status: status)
+              _ configure: (inout TaskItem) -> Void = { _ in }) -> TaskItem {
+    var task = TaskItem(id: TaskID("TaskNotes/Tasks/\(name).md"), name: name, status: status)
     task.dateCreated = TestCalendar.date(created, "09:00")
     task.created = TaskDue("\(created)T09:00")
     configure(&task)
@@ -99,7 +99,7 @@ func makeTask(_ name: String, status: TaskStatus = .thisWeek, created: String = 
 
 /// A recurring task (habit). `time` goes into `due`, as TaskNotes stores the time of day of a habit.
 func makeHabit(_ name: String, rule: String = "DTSTART:20260901;FREQ=DAILY", time: String? = nil,
-               status: TaskStatus = .halfYear, _ configure: (inout TaskNote) -> Void = { _ in }) -> TaskNote {
+               status: TaskStatus = .halfYear, _ configure: (inout TaskItem) -> Void = { _ in }) -> TaskItem {
     makeTask(name, status: status, created: "2026-09-01") { task in
         if case .success(let parsed) = RecurrenceCodec.parse(rule) { task.recurrence = parsed } else { task.hasUnreadableRecurrence = true }
         if let time { task.due = TaskDue("2026-09-01T\(time)") }
@@ -127,7 +127,7 @@ func eventLink(to event: CalendarEvent, identifier: String? = nil) -> EventLink 
 
 /// Inputs of one day, built with the real rules and sort order from the configs.
 struct DayScenario {
-    var tasks: [TaskNote]
+    var tasks: [TaskItem]
     var events: [CalendarEvent] = []
     var reminders: [ReminderItem] = []
     var skipped: Set<String> = []

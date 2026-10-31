@@ -4,8 +4,8 @@ import Foundation
 /// Task notes in memory for previews and tests of the app state.
 actor InMemoryTaskStore: TaskStore, VersionConflictResolving, ExternalLinking, TaskBackups, FolderInspecting {
     /// Notes moved to the done folder.
-    private var filed: [TaskNote] = []
-    private var tasks: [TaskNote]
+    private var filed: [TaskItem] = []
+    private var tasks: [TaskItem]
     private var bodies: [String: String] = [:]
     /// Texts that cannot be read (not downloaded, broken YAML), and every text written, in order.
     private var unreadableBodies: Set<String> = []
@@ -16,7 +16,7 @@ actor InMemoryTaskStore: TaskStore, VersionConflictResolving, ExternalLinking, T
     private var scanGate: AsyncGate?
     private(set) var scanCount = 0
 
-    init(tasks: [TaskNote]) { self.tasks = tasks }
+    init(tasks: [TaskItem]) { self.tasks = tasks }
 
     func failScans(with error: Error?) { scanError = error }
     func setBodyReadable(_ readable: Bool, of name: String) {
@@ -33,24 +33,24 @@ actor InMemoryTaskStore: TaskStore, VersionConflictResolving, ExternalLinking, T
         return VaultScanResult(tasks: listed, fileProblems: [], conflicted: [])
     }
 
-    func apply(_ changes: [TaskEdit], to task: TaskNote) async throws -> TaskWriteResult {
+    func apply(_ changes: [TaskEdit], to task: TaskItem) async throws -> TaskWriteResult {
         let updated = task.applying(changes)
         tasks = tasks.map { $0.name == task.name ? updated : $0 }
         return TaskWriteResult(task: updated, hadConflict: false)
     }
 
-    func text(of task: TaskNote) async throws -> String {
+    func text(of task: TaskItem) async throws -> String {
         guard !unreadableBodies.contains(task.name) else { throw CocoaError(.fileReadCorruptFile) }
         return bodies[task.name] ?? "Заметка к задаче."
     }
 
-    func setText(_ body: String, of task: TaskNote) async throws -> TaskWriteResult {
+    func setText(_ body: String, of task: TaskItem) async throws -> TaskWriteResult {
         bodies[task.name] = body
         bodyWrites.append(body)
         return TaskWriteResult(task: task, hadConflict: false)
     }
 
-    func rename(_ task: TaskNote, to newName: String, dependents: [TaskNote]) async throws -> TaskNote {
+    func rename(_ task: TaskItem, to newName: String, dependents: [TaskItem]) async throws -> TaskItem {
         var renamed = task
         renamed.name = newName
         let rename = { (names: [String]) in NameReferences.renaming(names, from: task.name, to: newName) }
@@ -64,15 +64,15 @@ actor InMemoryTaskStore: TaskStore, VersionConflictResolving, ExternalLinking, T
         return renamed
     }
 
-    func delete(_ task: TaskNote) async throws { tasks.removeAll { $0.name == task.name } }
-    func fileAway(_ task: TaskNote) async throws {
+    func delete(_ task: TaskItem) async throws { tasks.removeAll { $0.name == task.name } }
+    func fileAway(_ task: TaskItem) async throws {
         tasks.removeAll { $0.name == task.name }
         filed.append(task)
     }
-    func filedTasks() async throws -> [TaskNote] { filed }
-    func backup(_ tasks: [TaskNote], reason: String) async throws {}
+    func filedTasks() async throws -> [TaskItem] { filed }
+    func backup(_ tasks: [TaskItem], reason: String) async throws {}
 
-    func create(_ draft: NoteDraft, named name: String) async throws -> TaskNote {
+    func create(_ draft: NoteDraft, named name: String) async throws -> TaskItem {
         var task = draft.note
         task.name = name
         task.id = TaskID("TaskNotes/Tasks/\(name).md")
@@ -81,9 +81,9 @@ actor InMemoryTaskStore: TaskStore, VersionConflictResolving, ExternalLinking, T
         return task
     }
     nonisolated func nameProblem(in name: String) -> NoteNameProblem? { NoteNameRules.problem(in: name) }
-    func externalURL(for task: TaskNote) async -> URL? { nil }
+    func externalURL(for task: TaskItem) async -> URL? { nil }
     func chosenFolder() async -> ChosenFolder { ChosenFolder() }
-    func versions(of task: TaskNote) async throws -> [NoteVersion] { [] }
-    func keep(_ versionID: String, of task: TaskNote) async throws {}
+    func versions(of task: TaskItem) async throws -> [NoteVersion] { [] }
+    func keep(_ versionID: String, of task: TaskItem) async throws {}
 }
 #endif

@@ -195,13 +195,13 @@ struct NoteWriteTests {
     @Test func aBrokenOrMissingFileIsAnErrorAndNothingIsWritten() async throws {
         let sandbox = try VaultSandbox.make()
         let repository = sandbox.repository()
-        let broken = TaskNote(id: TaskID("TaskNotes/Tasks/Битый YAML.md"), name: "Битый YAML", status: .thisWeek)
+        let broken = TaskItem(id: TaskID("TaskNotes/Tasks/Битый YAML.md"), name: "Битый YAML", status: .thisWeek)
         let original = try sandbox.text(of: "Битый YAML")
         await #expect(throws: TaskStoreError.brokenFrontmatter("Битый YAML")) {
             try await repository.apply([.highPriority(true)], to: broken)
         }
         #expect(try sandbox.text(of: "Битый YAML") == original)
-        let missing = TaskNote(id: TaskID("TaskNotes/Tasks/Нет такой.md"), name: "Нет такой", status: .thisWeek)
+        let missing = TaskItem(id: TaskID("TaskNotes/Tasks/Нет такой.md"), name: "Нет такой", status: .thisWeek)
         await #expect(throws: TaskStoreError.fileMissing("Нет такой")) {
             try await repository.apply([.highPriority(true)], to: missing)
         }

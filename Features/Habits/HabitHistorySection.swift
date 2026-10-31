@@ -8,7 +8,7 @@ struct HabitHistorySection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
     @Environment(\.rules) private var rules
-    let habit: TaskNote
+    let habit: TaskItem
     @State private var addedWeeks = 0
     /// The plate's width; the grid is laid out only once it is known, so the scroll starts at the real bottom
     /// (laid out for a guessed width first, the newest week would end up below the plate on a narrow phone).

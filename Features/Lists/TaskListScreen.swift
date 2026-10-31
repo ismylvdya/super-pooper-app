@@ -53,7 +53,7 @@ struct TaskListScreen: View {
     }
 
     /// The done folder's tasks, newest first: to look back at, not to change (a new task may have the same name).
-    @ViewBuilder private func filedGroup(_ filed: [TaskNote]) -> some View {
+    @ViewBuilder private func filedGroup(_ filed: [TaskItem]) -> some View {
         if !filed.isEmpty {
             ListGroupHeader(title: Text("lists.filed"))
             ForEach(Array(filed.enumerated()), id: \.element.id) { index, task in
@@ -77,7 +77,7 @@ struct TaskListScreen: View {
         TaskActionHandler(model: model, router: router, openURL: openURL) { pendingAction = $0 }
     }
 
-    private func row(_ task: TaskNote, group: String, isFirst: Bool, isLast: Bool) -> some View {
+    private func row(_ task: TaskItem, group: String, isFirst: Bool, isLast: Bool) -> some View {
         HStack(spacing: tokens.space(.iconTextGap)) {
             NavigationLink(value: Route.task(task.name)) {
                 TaggedTaskName(name: task.name)

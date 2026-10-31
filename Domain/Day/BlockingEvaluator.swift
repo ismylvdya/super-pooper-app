@@ -7,7 +7,7 @@ struct BlockingEvaluator: Sendable {
     let skipped: Set<String>
     let context: DayContext
 
-    func blockers(for task: TaskNote, previousEvent: CalendarEvent?) -> [Blocker] {
+    func blockers(for task: TaskItem, previousEvent: CalendarEvent?) -> [Blocker] {
         var result = graph.predecessors(of: task.name)
             .filter { !isSatisfied($0) }
             .map(Blocker.task)

@@ -22,9 +22,9 @@ final class AppModel {
     let calendarSource: CalendarSource
     private(set) var calendar: Calendar
 
-    private(set) var tasks: [TaskNote] = []
+    private(set) var tasks: [TaskItem] = []
     /// The done folder's tasks, read when the Lists tab or the Done list shows (`loadFiledTasks`).
-    var filedTasks: [TaskNote] = []
+    var filedTasks: [TaskItem] = []
     private(set) var fileProblems: [FileProblem] = []
     private(set) var events: [CalendarEvent] = []
     private(set) var reminders: [ReminderItem] = []
@@ -100,16 +100,16 @@ final class AppModel {
         await sync(announce: false)
     }
 
-    func task(named name: String) -> TaskNote? { tasks.first { $0.name.isSameNoteName(as: name) } }
+    func task(named name: String) -> TaskItem? { tasks.first { $0.name.isSameNoteName(as: name) } }
 
     /// The tasks as the day sees them: times kept in a zone of their own moved to the phone's clock (`ZonedTimes`). Logic
     /// that decides from times works on these; what it decides is written back with `writeLocal` / `setLocalDue`.
-    var localTasks: [TaskNote] {
+    var localTasks: [TaskItem] {
         let context = context()
         return ZonedTimes.local(tasks, calendar: context.calendar, today: context.today)
     }
 
-    func localTask(named name: String) -> TaskNote? {
+    func localTask(named name: String) -> TaskItem? {
         let context = context()
         return task(named: name).map { ZonedTimes.local($0, calendar: context.calendar, today: context.today) }
     }
@@ -119,7 +119,7 @@ final class AppModel {
         NameOrder.sorted(NameReferences.waiting(for: name, in: tasks).map(\.name))
     }
 
-    var archivedTasks: [TaskNote] {
+    var archivedTasks: [TaskItem] {
         NameOrder.sorted(tasks.filter { $0.isArchived && !$0.isHabit })
     }
 
@@ -233,7 +233,7 @@ final class AppModel {
 
     // MARK: - Internal state updates
 
-    func replace(_ task: TaskNote) {
+    func replace(_ task: TaskItem) {
         if let index = tasks.firstIndex(where: { $0.id == task.id || $0.name == task.name }) {
             tasks[index] = task
         } else {
@@ -241,7 +241,7 @@ final class AppModel {
         }
     }
 
-    func remove(_ task: TaskNote) {
+    func remove(_ task: TaskItem) {
         tasks.removeAll { $0.id == task.id }
         removedDuringSync?.insert(task.id)
     }
@@ -270,7 +270,7 @@ final class AppModel {
         writtenDuringSync = nil
         removedDuringSync = nil
     }
-    func noteWrite(_ task: TaskNote) { writtenDuringSync?.insert(task.id) }
+    func noteWrite(_ task: TaskItem) { writtenDuringSync?.insert(task.id) }
 
     func setVaultState(_ state: VaultState) {
         vaultState = state

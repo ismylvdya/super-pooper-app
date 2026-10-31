@@ -33,7 +33,7 @@ struct HabitStats: Sendable {
 
     enum StreakUnit: Sendable { case days, weeks }
 
-    init(task: TaskNote, today: LocalDate, days: DayBoundary) {
+    init(task: TaskItem, today: LocalDate, days: DayBoundary) {
         let history = HabitHistory(task: task, days: days)
         let start = history.start(today: today)
         let days = start <= today ? (0...start.days(until: today)).map { start.adding(days: $0) } : []

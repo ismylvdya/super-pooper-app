@@ -10,7 +10,7 @@ struct RecurrenceEditorSection: View {
     let editor: TaskEditor
     @State private var draft: RecurrenceDraft?
 
-    private var task: TaskNote { editor.task }
+    private var task: TaskItem { editor.task }
 
     var body: some View {
         if let rule = task.recurrence, draft == nil, !RecurrenceDraft.canEdit(rule, start: fallbackStart) {

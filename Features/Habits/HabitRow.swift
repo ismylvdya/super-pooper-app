@@ -6,7 +6,7 @@ struct HabitRow: View {
     @Environment(Router.self) private var router
     @Environment(\.tokens) var tokens
     @Environment(\.icons) var icons
-    let habit: TaskNote
+    let habit: TaskItem
     let today: LocalDate
     /// The row's plate width: the history grid of a plate this wide sets the day mark's ring and gap.
     @State private var plateWidth: CGFloat?
@@ -61,7 +61,7 @@ extension HabitRow {
 struct HabitDayButton: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
-    let habit: TaskNote
+    let habit: TaskItem
     let day: LocalDate
     var plateWidth: CGFloat?
 

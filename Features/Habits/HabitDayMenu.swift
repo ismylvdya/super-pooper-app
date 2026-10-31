@@ -4,7 +4,7 @@ import SwiftUI
 /// marks with their images, the current one not selectable. In the history the day is named ("17 Sep 2026").
 struct HabitDayMenu: View {
     @Environment(AppModel.self) private var model
-    let habit: TaskNote
+    let habit: TaskItem
     let day: LocalDate
     var showsDate = false
 

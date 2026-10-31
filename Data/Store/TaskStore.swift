@@ -9,14 +9,14 @@ enum FileProblem: Hashable, Sendable {
 }
 
 struct VaultScanResult: Sendable {
-    var tasks: [TaskNote]
+    var tasks: [TaskItem]
     var fileProblems: [FileProblem]
     /// Items with conflicting versions waiting for the user to pick one (names).
     var conflicted: [String]
 }
 
 struct TaskWriteResult: Sendable {
-    let task: TaskNote
+    let task: TaskItem
     /// The item changed elsewhere since it was read (or had conflicting versions); the edit was applied to the latest
     /// version.
     let hadConflict: Bool
@@ -42,38 +42,38 @@ protocol TaskStore: Sendable {
     func load() async throws -> VaultScanResult
     /// Writes `changes` onto the latest version of `task`, as the app saw it: what changed elsewhere meanwhile stays,
     /// and the fields changed on both sides are reported.
-    func apply(_ changes: [TaskEdit], to task: TaskNote) async throws -> TaskWriteResult
+    func apply(_ changes: [TaskEdit], to task: TaskItem) async throws -> TaskWriteResult
     /// A new item with every field and the text of the draft. The name is made unique (`Name`, `Name 2`, …).
-    func create(_ draft: NoteDraft, named name: String) async throws -> TaskNote
+    func create(_ draft: NoteDraft, named name: String) async throws -> TaskItem
     /// Renames the item; the items that refer to it (`dependents`) are rewritten to refer to the new name.
-    func rename(_ task: TaskNote, to newName: String, dependents: [TaskNote]) async throws -> TaskNote
+    func rename(_ task: TaskItem, to newName: String, dependents: [TaskItem]) async throws -> TaskItem
     /// Deletes the item (into the store's trash, where it has one).
-    func delete(_ task: TaskNote) async throws
+    func delete(_ task: TaskItem) async throws
     /// Puts a completed task away from the active ones; it is gone from `load` and listed by `filedTasks`.
-    func fileAway(_ task: TaskNote) async throws
+    func fileAway(_ task: TaskItem) async throws
     /// The tasks put away, read-only.
-    func filedTasks() async throws -> [TaskNote]
+    func filedTasks() async throws -> [TaskItem]
     /// The item's own text (the note body), without anything the app keeps in it for itself.
-    func text(of task: TaskNote) async throws -> String
-    func setText(_ text: String, of task: TaskNote) async throws -> TaskWriteResult
+    func text(of task: TaskItem) async throws -> String
+    func setText(_ text: String, of task: TaskItem) async throws -> TaskWriteResult
     /// What is wrong with `name` as the name of an item in this store; nil for a name it can take.
     func nameProblem(in name: String) -> NoteNameProblem?
 }
 
 /// Conflicting versions of an item (iCloud), and keeping the one the user picked.
 protocol VersionConflictResolving: Sendable {
-    func versions(of task: TaskNote) async throws -> [NoteVersion]
-    func keep(_ versionID: String, of task: TaskNote) async throws
+    func versions(of task: TaskItem) async throws -> [NoteVersion]
+    func keep(_ versionID: String, of task: TaskItem) async throws
 }
 
 /// A link that opens an item in the app the store belongs to (Obsidian).
 protocol ExternalLinking: Sendable {
-    func externalURL(for task: TaskNote) async -> URL?
+    func externalURL(for task: TaskItem) async -> URL?
 }
 
 /// Copies of items taken before risky changes (rename, delete, mass status changes).
 protocol TaskBackups: Sendable {
-    func backup(_ tasks: [TaskNote], reason: String) async throws
+    func backup(_ tasks: [TaskItem], reason: String) async throws
 }
 
 /// What the folder chosen for the store is: the tasks' own folder or a whole vault, and where it is in Obsidian.

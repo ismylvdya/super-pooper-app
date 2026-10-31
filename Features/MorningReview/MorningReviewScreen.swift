@@ -159,7 +159,7 @@ struct ReviewRow: View {
     let onOpen: () -> Void
     @State private var isPickingDate = false
 
-    private var task: TaskNote { item.task }
+    private var task: TaskItem { item.task }
 
     var body: some View {
         VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
@@ -190,7 +190,7 @@ struct ReviewRow: View {
     }
 
     /// The new value is decided from the note as it is when the edit runs (two quick taps go there and back).
-    private func toggleChip(_ icon: Icon, isOn: Bool, tint: Color, changes: @escaping (TaskNote) -> [TaskEdit]) -> some View {
+    private func toggleChip(_ icon: Icon, isOn: Bool, tint: Color, changes: @escaping (TaskItem) -> [TaskEdit]) -> some View {
         Button {
             Haptics.play(.light)
             Task { await model.edit(task.name, changes) }

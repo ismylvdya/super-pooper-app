@@ -7,7 +7,7 @@ struct TaskPropertiesSection: View {
     @Environment(\.tokens) private var tokens
     let editor: TaskEditor
 
-    private var task: TaskNote { editor.task }
+    private var task: TaskItem { editor.task }
 
     var body: some View {
         PlateSection(header: "taskPage.properties", info: "info.taskPage.properties") {
@@ -48,7 +48,7 @@ struct TaskPropertiesSection: View {
         }
     }
 
-    private func binding<Value>(_ keyPath: KeyPath<TaskNote, Value>, change: @escaping (Value) -> TaskEdit) -> Binding<Value> {
+    private func binding<Value>(_ keyPath: KeyPath<TaskItem, Value>, change: @escaping (Value) -> TaskEdit) -> Binding<Value> {
         Binding(get: { task[keyPath: keyPath] },
                 set: { value in editor.apply([change(value)]) })
     }
@@ -65,7 +65,7 @@ struct DueEditor: View {
     @Environment(\.rules) private var rules
     let editor: TaskEditor
 
-    private var task: TaskNote { editor.task }
+    private var task: TaskItem { editor.task }
 
     var body: some View {
         PlateRow(icon: .due, title: "taskPage.due", info: "info.taskPage.due") {

@@ -4,11 +4,11 @@ import SwiftUI
 /// or a draft that becomes a note only when the page is left with a name.
 @MainActor
 struct TaskEditor {
-    let task: TaskNote
+    let task: TaskItem
     /// The draft itself (its text and subtasks), nil for an existing note.
     let draft: Binding<NoteDraft>?
     /// Changes decided from the note as it is when they are applied (a toggle tapped twice quickly flips twice).
-    let edit: (@escaping (TaskNote) -> [TaskEdit]) -> Void
+    let edit: (@escaping (TaskItem) -> [TaskEdit]) -> Void
 
     var isDraft: Bool { draft != nil }
 
@@ -19,7 +19,7 @@ struct TaskEditor {
         edit { note in TaskMarking(today: today).changes(setting: status, on: note) }
     }
 
-    static func note(_ task: TaskNote, model: AppModel) -> TaskEditor {
+    static func note(_ task: TaskItem, model: AppModel) -> TaskEditor {
         TaskEditor(task: task, draft: nil) { changes in
             Task { await model.edit(task.name, changes) }
         }

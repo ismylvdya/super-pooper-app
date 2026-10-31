@@ -2,13 +2,13 @@ import Foundation
 
 extension AppModel {
     /// Active habits in the user's order; the rest alphabetically after them.
-    var habits: [TaskNote] {
+    var habits: [TaskItem] {
         HabitOrder.sorted(tasks.filter { $0.isHabit && !$0.isArchived }, order: settings.habits.order)
     }
 
     var archivedNotesCount: Int { archivedTasks.count + archivedHabits.count }
 
-    var archivedHabits: [TaskNote] {
+    var archivedHabits: [TaskItem] {
         NameOrder.sorted(tasks.filter { $0.isHabit && $0.isArchived })
     }
 
@@ -24,7 +24,7 @@ extension AppModel {
     }
 
     /// The new mark is chosen from the habit as the previous edit left it.
-    private func markHabit(_ name: String, on day: LocalDate, mark: @escaping (TaskNote) -> HabitMark?) async {
+    private func markHabit(_ name: String, on day: LocalDate, mark: @escaping (TaskItem) -> HabitMark?) async {
         let today = context().today
         guard day <= today else { return }
         await edit(name) { habit in TaskMarking(today: today).changes(marking: habit, as: mark(habit), on: day) }
@@ -77,7 +77,7 @@ extension AppModel {
     }
 
     /// Subtasks of a note (notes whose `projects` link to it), by name.
-    func subtasks(of parent: String) -> [TaskNote] {
+    func subtasks(of parent: String) -> [TaskItem] {
         SubtaskOrder.sorted(tasks.filter { $0.projects.contains { $0.isSameNoteName(as: parent) } })
     }
 

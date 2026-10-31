@@ -2,12 +2,12 @@ import Foundation
 
 /// A habit's days as facts: which days are scheduled, how each is marked, which ones count as missed.
 struct HabitHistory: Sendable {
-    let task: TaskNote
+    let task: TaskItem
     let days: DayBoundary
     /// Built once: the history asks about every day since the start.
     private let schedule: TaskSchedule
 
-    init(task: TaskNote, days: DayBoundary) {
+    init(task: TaskItem, days: DayBoundary) {
         self.task = task
         self.days = days
         self.schedule = TaskOccurrence(days: days).schedule(of: task)

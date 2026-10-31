@@ -68,7 +68,7 @@ struct HeaderNameField: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
-    let task: TaskNote
+    let task: TaskItem
     let onRenamed: (String) -> Void
     @State private var draft = ""
     @FocusState private var isEditing: Bool

@@ -58,13 +58,13 @@ extension AppModel {
 
     /// Changes decided on the day's view of `task` (`localTasks`) go back into the note's own zone before writing.
     @discardableResult
-    func writeLocal(_ task: TaskNote, _ changes: [TaskEdit]) async -> Bool {
+    func writeLocal(_ task: TaskItem, _ changes: [TaskEdit]) async -> Bool {
         await write(task, ZonedTimes.stored(changes, of: task, calendar: calendar))
     }
 
     /// Edits of one note run one after another, and each decides from the note as the edit before it left it:
     /// a second quick tap (a toggle, a habit mark) does not repeat the first one's decision.
-    func edit(_ name: String, _ changes: @escaping (TaskNote) -> [TaskEdit]) async {
+    func edit(_ name: String, _ changes: @escaping (TaskItem) -> [TaskEdit]) async {
         let edit = enqueueEdit(name, changes)
         await edit.value
         if pendingEdits[name] == edit { pendingEdits[name] = nil }
@@ -72,7 +72,7 @@ extension AppModel {
 
     /// The edit takes its place in the note's line at once and runs when the edits before it are done.
     @discardableResult
-    func enqueueEdit(_ name: String, _ changes: @escaping (TaskNote) -> [TaskEdit]) -> Task<Void, Never> {
+    func enqueueEdit(_ name: String, _ changes: @escaping (TaskItem) -> [TaskEdit]) -> Task<Void, Never> {
         let previous = pendingEdits[name]
         let edit = Task { @MainActor in
             await previous?.value
@@ -84,7 +84,7 @@ extension AppModel {
     }
 
     @discardableResult
-    func write(_ task: TaskNote, _ changes: [TaskEdit]) async -> Bool {
+    func write(_ task: TaskItem, _ changes: [TaskEdit]) async -> Bool {
         guard !changes.isEmpty else { return true }
         do {
             let result = try await services.tasks.apply(changes, to: task)
@@ -106,7 +106,7 @@ extension AppModel {
         banners.show(L10n.format("banner.conflictSameKey", name), style: .warning, items: result.clashingKeys)
     }
 
-    func delete(_ task: TaskNote) async {
+    func delete(_ task: TaskItem) async {
         do {
             try await backup([task], reason: "delete")
             try await services.tasks.delete(task)
@@ -167,7 +167,7 @@ extension AppModel {
     }
 
     /// A copy of the notes before a risky change, when backups are on and the store makes them.
-    func backup(_ tasks: [TaskNote], reason: String) async throws {
+    func backup(_ tasks: [TaskItem], reason: String) async throws {
         guard config.flags.backups, let backups = services.backups else { return }
         try await backups.backup(tasks, reason: reason)
     }
@@ -190,7 +190,7 @@ extension AppModel {
         Task { await publishDerivedState() }
     }
 
-    var postponedTasks: [TaskNote] {
+    var postponedTasks: [TaskItem] {
         let names = dayState.day == context().today ? dayState.postponed : []
         return names.compactMap(task(named:))
     }

@@ -7,7 +7,7 @@ struct TaskLinksSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.icons) private var icons
     @Environment(\.tokens) private var tokens
-    let task: TaskNote
+    let task: TaskItem
     @State private var picking: Side?
 
     enum Side: String, Identifiable {
@@ -75,7 +75,7 @@ struct TaskEventsSection: View {
     @Environment(\.tokens) private var tokens
     let editor: TaskEditor
 
-    private var task: TaskNote { editor.task }
+    private var task: TaskItem { editor.task }
     @State private var picking: Field?
 
     enum Field: String, Identifiable {

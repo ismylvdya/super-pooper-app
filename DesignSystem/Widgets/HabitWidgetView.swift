@@ -5,7 +5,7 @@ import SwiftUI
 /// habit without opening the app) and the last weeks of days at the bottom, the oldest week fading out.
 struct HabitWidgetView: View {
     @Environment(\.tokens) private var tokens
-    let habit: TaskNote
+    let habit: TaskItem
     let grid: HabitGrid
     let today: LocalDate
     var options = HabitWidgetOptions()

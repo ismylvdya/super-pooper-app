@@ -3,14 +3,14 @@ import Foundation
 /// A note that does not exist yet: its fields, the changes that will be written when it is created,
 /// its text and the subtasks created with it.
 struct NoteDraft: Equatable, Sendable {
-    var note: TaskNote
+    var note: TaskItem
     private(set) var changes: [TaskEdit] = []
     var body = ""
     /// Names of the subtasks; empty entries are the "add a subtask" field and are skipped.
     var subtasks: [String] = []
 
     init(status: TaskStatus, changes: [TaskEdit] = []) {
-        note = TaskNote(id: .unsaved, name: "", status: status)
+        note = TaskItem(id: .unsaved, name: "", status: status)
         apply(changes)
     }
 

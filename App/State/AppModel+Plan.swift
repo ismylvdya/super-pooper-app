@@ -29,7 +29,7 @@ extension AppModel {
 /// Everything a plan is worked out from. The lists compare in no time while they are the same arrays (unchanged
 /// since the last plan).
 struct PlanKey: Equatable {
-    let tasks: [TaskNote]
+    let tasks: [TaskItem]
     let events: [CalendarEvent]
     let reminders: [ReminderItem]
     let dayState: DayState

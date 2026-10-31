@@ -8,7 +8,7 @@ extension AppModel {
         for task in DoneFiling.due(tasks) { await fileAway(task) }
     }
 
-    private func fileAway(_ task: TaskNote) async {
+    private func fileAway(_ task: TaskItem) async {
         for dependent in DoneFiling.unlinking(task.name, from: tasks) {
             await edit(dependent.name) { _ in [.removePreviousTask(task.name)] }
         }

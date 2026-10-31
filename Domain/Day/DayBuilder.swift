@@ -2,7 +2,7 @@ import Foundation
 
 /// Raw material for one day.
 struct DayInputs: Sendable {
-    var tasks: [TaskNote]
+    var tasks: [TaskItem]
     /// Events of the anchor calendars around today (also used to resolve task links).
     var events: [CalendarEvent]
     /// Timed reminders for today from the selected lists.
@@ -90,7 +90,7 @@ struct DayBuilder: Sendable {
 
     // MARK: - Membership
 
-    private func isInDay(_ task: TaskNote, occurrence: TaskOccurrence, skipped: Set<String>, context: DayContext) -> Bool {
+    private func isInDay(_ task: TaskItem, occurrence: TaskOccurrence, skipped: Set<String>, context: DayContext) -> Bool {
         if task.isHabit {
             guard task.isInTodayHabits, !skipped.containsNoteName(task.name) else { return false }
             return occurrence.occurs(task, on: context.today) || task.mark(on: context.today) != nil
@@ -101,18 +101,18 @@ struct DayBuilder: Sendable {
 
     /// A task dated after today (Tomorrow, a day of next week) waits for its day, even this week.
     /// An overdue one stays in today.
-    private func isDatedLater(_ task: TaskNote, context: DayContext) -> Bool {
+    private func isDatedLater(_ task: TaskItem, context: DayContext) -> Bool {
         guard let due = task.due else { return false }
         return context.logicalDay(of: due) > context.today
     }
 
-    private func isOnOtherDay(_ task: TaskNote, occurrence: TaskOccurrence, context: DayContext) -> Bool {
+    private func isOnOtherDay(_ task: TaskItem, occurrence: TaskOccurrence, context: DayContext) -> Bool {
         if task.isHabit { return task.isInTodayHabits && occurrence.occurs(task, on: context.today) }
         guard task.status == .thisWeek, let due = task.due else { return false }
         return context.logicalDay(of: due) == context.today
     }
 
-    private func state(of task: TaskNote, today: LocalDate) -> DayItemState {
+    private func state(of task: TaskItem, today: LocalDate) -> DayItemState {
         if task.isHabit {
             return task.mark(on: today).map(DayItemState.marked) ?? .open
         }
@@ -120,7 +120,7 @@ struct DayBuilder: Sendable {
     }
 
     /// Habits are planned at their reminder times; other tasks need `due` with a time on today's logical day.
-    private func timesOfDay(of task: TaskNote, context: DayContext) -> [LocalTime] {
+    private func timesOfDay(of task: TaskItem, context: DayContext) -> [LocalTime] {
         if task.isHabit { return task.habitTimes }
         guard let due = task.due, let time = due.time, context.logicalDay(of: due) == context.today else { return [] }
         return [time]
@@ -143,7 +143,7 @@ struct DayBuilder: Sendable {
 
     /// Problems of done/archived tasks are not reported (see `build`); event links are checked only
     /// for tasks in the day, since only today's events are looked up around it.
-    private func problems(of task: TaskNote, graph: TaskGraph, occurrence: TaskOccurrence, previousEvent: CalendarEvent?,
+    private func problems(of task: TaskItem, graph: TaskGraph, occurrence: TaskOccurrence, previousEvent: CalendarEvent?,
                           nextEvent: CalendarEvent?, checkEvents: Bool) -> [TaskProblem] {
         var result = task.problems
         if occurrence.hasNoStart(task) { result.append(.recurrenceWithoutStart) }

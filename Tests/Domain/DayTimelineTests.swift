@@ -35,13 +35,13 @@ struct DayTimelineTests {
     /// A done habit leaves the timeline; with two reminders a day each mark takes away one block, earliest first.
     @Test func eachMarkOfAHabitTakesOneReminderBlockOffTheTimeline() {
         let today = LocalDate(isoString: "2026-10-21")!
-        func water(_ configure: (inout TaskNote) -> Void = { _ in }) -> TaskNote {
+        func water(_ configure: (inout TaskItem) -> Void = { _ in }) -> TaskItem {
             makeHabit("Water") { task in
                 task.reminderTimes = [LocalTime(string: "18:00")!, LocalTime(string: "09:00")!]
                 configure(&task)
             }
         }
-        func times(_ task: TaskNote) -> [String] {
+        func times(_ task: TaskItem) -> [String] {
             DayScenario(tasks: [task]).build().timeline.map { clockTime($0.start) }
         }
         #expect(times(water()) == ["09:00", "18:00"])

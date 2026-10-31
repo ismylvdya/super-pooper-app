@@ -2,10 +2,10 @@ import Foundation
 
 /// The two groups of the Habits tab: habits to keep track of, and tasks that simply repeat.
 struct HabitGroups: Equatable, Sendable {
-    let tracked: [TaskNote]
-    let repeatable: [TaskNote]
+    let tracked: [TaskItem]
+    let repeatable: [TaskItem]
 
-    init(_ habits: [TaskNote]) {
+    init(_ habits: [TaskItem]) {
         tracked = habits.filter { !$0.habit.repeatable }
         repeatable = habits.filter(\.habit.repeatable)
     }

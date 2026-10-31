@@ -6,7 +6,7 @@ import Testing
 @Suite("Habits in Today")
 struct HabitsInTodayTests {
     private func habit(_ name: String, times: [String] = [], showInToday: Bool = true,
-                       _ configure: (inout TaskNote) -> Void = { _ in }) -> TaskNote {
+                       _ configure: (inout TaskItem) -> Void = { _ in }) -> TaskItem {
         makeHabit(name, status: .habit) { task in
             task.reminderTimes = times.map { LocalTime($0) }
             task.habit.showInToday = showInToday
@@ -103,7 +103,7 @@ struct HabitsInTodayTests {
 /// Routines, the user's pool order and postponed tasks.
 @Suite("Routines and pool order")
 struct RoutineOrderTests {
-    private func habit(_ name: String, _ part: HabitTimeOfDay?) -> TaskNote {
+    private func habit(_ name: String, _ part: HabitTimeOfDay?) -> TaskItem {
         makeHabit(name, status: .habit) { $0.habit.timeOfDay = part }
     }
 

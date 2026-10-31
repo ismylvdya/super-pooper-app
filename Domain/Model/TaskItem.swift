@@ -1,8 +1,8 @@
 import Foundation
 
-/// One TaskNotes note as the app understands it. The note body is not part of the model;
-/// it is loaded on demand by the task repository.
-struct TaskNote: Identifiable, Hashable, Codable, Sendable {
+/// A task or habit as the app understands it, whatever format its store keeps it in. Its text is not part of the
+/// model; the store reads it on demand.
+struct TaskItem: Identifiable, Hashable, Codable, Sendable {
     /// Where the store keeps it; nothing outside the store looks inside.
     var id: TaskID
     /// The title, and the name other items refer to it by (TaskNotes: the file name without `.md`).

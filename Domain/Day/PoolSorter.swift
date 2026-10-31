@@ -40,7 +40,7 @@ struct PoolSorter: Sendable {
         return open + done
     }
 
-    private func key(_ criterion: PoolSortCriterion, _ task: TaskNote, _ context: DayContext) -> Double {
+    private func key(_ criterion: PoolSortCriterion, _ task: TaskItem, _ context: DayContext) -> Double {
         switch criterion {
         case .morningRoutine:
             return task.habit.timeOfDay == .morning ? 0 : 1

@@ -17,9 +17,9 @@ enum PreviewSamples {
                           energyHour: LocalTime(hour: 14, minute: 0) ?? .midnight)
     }
 
-    static var tasks: [TaskNote] {
+    static var tasks: [TaskItem] {
         let today = context.today
-        var water = TaskNote(id: TaskID("TaskNotes/Tasks/water.md"), name: "Выпить воды 💧", status: .halfYear)
+        var water = TaskItem(id: TaskID("TaskNotes/Tasks/water.md"), name: "Выпить воды 💧", status: .halfYear)
         water.recurrence = RecurrenceDraft(start: today.adding(days: -20)).rule
         water.marks = [today.adding(days: -2): .partial, today.adding(days: -1): .done]
         water.timeEstimate = 2
@@ -27,19 +27,19 @@ enum PreviewSamples {
         vitamins.name = "Витамины 💊"
         vitamins.id = TaskID("TaskNotes/Tasks/vitamins.md")
         vitamins.due = TaskDue(day: today.adding(days: -20), time: LocalTime(hour: 9, minute: 0))
-        var bank = TaskNote(id: TaskID("TaskNotes/Tasks/bank.md"), name: "Позвонить в банк", status: .thisWeek)
+        var bank = TaskItem(id: TaskID("TaskNotes/Tasks/bank.md"), name: "Позвонить в банк", status: .thisWeek)
         bank.isHighPriority = true
         bank.feel = .needEnergy
-        var report = TaskNote(id: TaskID("TaskNotes/Tasks/report.md"), name: "Сдать отчёт", status: .thisWeek)
+        var report = TaskItem(id: TaskID("TaskNotes/Tasks/report.md"), name: "Сдать отчёт", status: .thisWeek)
         report.due = TaskDue(day: today.adding(days: 2))
         report.timeEstimate = 60
         report.feel = .needEnergy
-        var shelf = TaskNote(id: TaskID("TaskNotes/Tasks/shelf.md"), name: "Повесить полку", status: .thisWeek)
+        var shelf = TaskItem(id: TaskID("TaskNotes/Tasks/shelf.md"), name: "Повесить полку", status: .thisWeek)
         shelf.previousTasks = ["Позвонить в банк"]
-        var parcel = TaskNote(id: TaskID("TaskNotes/Tasks/parcel.md"), name: "Забрать посылку", status: .thisWeek)
+        var parcel = TaskItem(id: TaskID("TaskNotes/Tasks/parcel.md"), name: "Забрать посылку", status: .thisWeek)
         parcel.due = TaskDue(day: today, time: LocalTime(hour: 16, minute: 0))
         parcel.timeEstimate = 60
-        var questions = TaskNote(id: TaskID("TaskNotes/Tasks/questions.md"), name: "Подготовить вопросы", status: .thisWeek)
+        var questions = TaskItem(id: TaskID("TaskNotes/Tasks/questions.md"), name: "Подготовить вопросы", status: .thisWeek)
         questions.nextEvent = EventLink(eventIdentifier: "call", title: "Call with dad", start: callStart)
         return [water, vitamins, bank, report, shelf, parcel, questions]
     }

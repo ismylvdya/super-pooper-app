@@ -6,7 +6,7 @@ import Testing
 /// days are counted from one fixed day, so it keeps its own days instead of matching every day it is asked about.
 @Suite("Repeat rules without a start")
 struct UndatedRecurrenceTests {
-    private func undated(_ rule: String) -> TaskNote {
+    private func undated(_ rule: String) -> TaskItem {
         makeHabit("Undated", rule: rule, status: .habit) { task in
             task.created = nil
             task.dateCreated = nil

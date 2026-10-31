@@ -52,5 +52,5 @@ struct AutoPromoterTests {
         #expect(names(promoter.candidates(in: tasks, context: TestCalendar.context("2026-10-26", "09:00"))) == ["Monday"])
     }
 
-    private func names(_ tasks: [TaskNote]) -> [String] { tasks.map(\.name) }
+    private func names(_ tasks: [TaskItem]) -> [String] { tasks.map(\.name) }
 }

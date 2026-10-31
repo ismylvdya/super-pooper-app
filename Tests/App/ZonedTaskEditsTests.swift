@@ -6,13 +6,13 @@ import Testing
 /// 2026-10-21 13:25): the day shows its times on the phone's clock, the note keeps them in Jakarta time.
 @MainActor
 struct ZonedTaskEditsTests {
-    private func makeModel(_ tasks: [TaskNote]) throws -> AppModel {
+    private func makeModel(_ tasks: [TaskItem]) throws -> AppModel {
         try #require(PreviewModel.make(calendar: FixedCalendar(current: TestCalendar.calendar),
                                        clock: FixedClock(now: TestCalendar.date(TestCalendar.wednesday, "13:25")),
                                        tasks: tasks)).model
     }
 
-    private func jakartaTask(_ name: String, due: String?, status: TaskStatus = .thisWeek) -> TaskNote {
+    private func jakartaTask(_ name: String, due: String?, status: TaskStatus = .thisWeek) -> TaskItem {
         makeTask(name, status: status) { task in
             task.timeZone = "Asia/Jakarta"
             task.due = due.map(TaskDue.init)

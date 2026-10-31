@@ -153,9 +153,9 @@ struct BlockingTests {
 
     // MARK: - Helpers
 
-    private var assemble: TaskNote { makeTask("Assemble wardrobe") { $0.previousTasks = ["Find screwdriver"] } }
+    private var assemble: TaskItem { makeTask("Assemble wardrobe") { $0.previousTasks = ["Find screwdriver"] } }
 
-    private func markedToday(_ habit: TaskNote) -> TaskNote {
+    private func markedToday(_ habit: TaskItem) -> TaskItem {
         habit.applying([.mark(.done, on: LocalDate("2026-10-21"))])
     }
 }

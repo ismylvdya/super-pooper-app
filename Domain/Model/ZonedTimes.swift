@@ -7,11 +7,11 @@ import Foundation
 /// (dropped on the timeline, moved to tomorrow, picked in This week) goes back into the item's zone before it is
 /// written (`stored`).
 enum ZonedTimes {
-    static func local(_ tasks: [TaskNote], calendar: Calendar, today: LocalDate) -> [TaskNote] {
+    static func local(_ tasks: [TaskItem], calendar: Calendar, today: LocalDate) -> [TaskItem] {
         tasks.map { local($0, calendar: calendar, today: today) }
     }
 
-    static func local(_ task: TaskNote, calendar: Calendar, today: LocalDate) -> TaskNote {
+    static func local(_ task: TaskItem, calendar: Calendar, today: LocalDate) -> TaskItem {
         guard let source = ownCalendar(of: task, phone: calendar) else { return task }
         var result = task
         result.due = task.due.map { convert($0, from: source, to: calendar) }
@@ -21,13 +21,13 @@ enum ZonedTimes {
     }
 
     /// A due on the phone's clock, as the task keeps it in its own zone.
-    static func stored(_ due: TaskDue?, of task: TaskNote, calendar: Calendar) -> TaskDue? {
+    static func stored(_ due: TaskDue?, of task: TaskItem, calendar: Calendar) -> TaskDue? {
         guard let due, let target = ownCalendar(of: task, phone: calendar) else { return due }
         return convert(due, from: calendar, to: target)
     }
 
     /// Changes decided on the local view of `task` (the note as written), with their dates and times in its own zone.
-    static func stored(_ changes: [TaskEdit], of task: TaskNote, calendar: Calendar) -> [TaskEdit] {
+    static func stored(_ changes: [TaskEdit], of task: TaskItem, calendar: Calendar) -> [TaskEdit] {
         changes.map { change in
             guard case .due(let due) = change else { return change }
             return .due(stored(due, of: task, calendar: calendar))
@@ -35,12 +35,12 @@ enum ZonedTimes {
     }
 
     /// The calendar on whose clock the task keeps its times: its own zone, or the phone's.
-    static func calendar(of task: TaskNote, phone calendar: Calendar) -> Calendar {
+    static func calendar(of task: TaskItem, phone calendar: Calendar) -> Calendar {
         ownCalendar(of: task, phone: calendar) ?? calendar
     }
 
     /// The task's own zone when it has one other than the phone's.
-    private static func ownCalendar(of task: TaskNote, phone calendar: Calendar) -> Calendar? {
+    private static func ownCalendar(of task: TaskItem, phone calendar: Calendar) -> Calendar? {
         guard let id = task.timeZone, let zone = TimeZone(identifier: id), zone.identifier != calendar.timeZone.identifier else {
             return nil
         }

@@ -8,7 +8,7 @@ import Testing
 struct WrittenDayTests {
     private let kiritimati = DayBoundary(calendar: TestCalendar.calendar(in: "Pacific/Kiritimati"), boundary: TestConfig.defaults.day.boundary)
 
-    private var habit: TaskNote {
+    private var habit: TaskItem {
         makeHabit("Every other day", rule: "FREQ=DAILY;INTERVAL=2") {
             $0.dateCreated = TestCalendar.date(TestCalendar.wednesday, "22:30")
             $0.created = TaskDue("2026-10-21T22:30")

@@ -8,7 +8,7 @@ struct NotificationActionTests {
     private let water = "Выпить воды 💧"
 
     private func model(waterReminders times: [LocalTime]) throws -> AppModel {
-        let tasks = PreviewSamples.tasks.map { task -> TaskNote in
+        let tasks = PreviewSamples.tasks.map { task -> TaskItem in
             guard task.name == water else { return task }
             var habit = task
             habit.reminderTimes = times
