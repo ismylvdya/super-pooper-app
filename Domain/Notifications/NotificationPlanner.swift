@@ -6,7 +6,7 @@ import Foundation
 ///
 /// A habit's next notification at each of its times reuses one identifier, so when it is delivered it
 /// replaces the one left from an earlier day: an overdue day just stays undone, and the buttons act on
-/// the new day.
+/// the new day. A notification lives its logical day (`StaleNotifications`): one of a day that is over is not kept.
 struct NotificationPlanner: Sendable {
     let horizonDays: Int
     let limit: Int
@@ -20,21 +20,15 @@ struct NotificationPlanner: Sendable {
         return Array(Self.reusingHabitSlots(upcoming).prefix(limit))
     }
 
-    /// Today's notifications regardless of time: a delivered one stays in Notification Center
-    /// only while it is still in this list.
+    /// Today's notifications regardless of time: a delivered one stays in Notification Center only while it is still in
+    /// this list, so one of a day that is over goes, marked or not, as the widgets clear it at the boundary.
     func stillValidToday(tasks: [TaskNote], reminders: [ReminderItem], events: [CalendarEvent] = [], skipped: Set<String>,
                          context: DayContext) -> [PlannedNotification] {
         let today = all(tasks: tasks, reminders: reminders, events: events, skipped: skipped, context: context)
             .filter { $0.day == context.today }
-        // A delivered habit notification carries its slot identifier and its day: it stays while that day is
-        // still open (an overdue day too), until the next one replaces it or the day gets marked.
-        let earlier = context.with(now: context.date(context.today.adding(days: -horizonDays), context.boundary))
-        let openSlots = NotificationPlanner(horizonDays: horizonDays + 1, limit: limit)
-            .all(tasks: tasks, reminders: [], skipped: skipped, context: earlier)
-            .filter { $0.kind == .habit && $0.day <= context.today }
-            .filter { !($0.day == context.today && skipped.contains($0.taskName ?? "")) }
-            .map { $0.identified(as: $0.key) }
-        return today + openSlots
+        // A delivered habit notification may carry its slot identifier: it stays while today's slot is open.
+        let slots = today.filter { $0.kind == .habit }.map { $0.identified(as: $0.key) }
+        return today + slots
     }
 
     /// Everything of today and the coming days, past times included (for late alerts).

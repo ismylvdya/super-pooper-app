@@ -125,10 +125,14 @@ struct NotificationPlannerTests {
         #expect(!afterMarking.contains { $0.day == LocalDate("2026-10-21") })
     }
 
-    @Test func yesterdaysOpenHabitNotificationStaysUntilTheNewOneComes() {
+    /// A notification lives its logical day (D-040): yesterday's open habit notification is not kept today, as the
+    /// widgets and the restore of a swiped one already decide (`StaleNotifications`).
+    @Test func yesterdaysHabitNotificationIsNotKeptToday() {
         let context = TestCalendar.context(TestCalendar.wednesday, "08:00")
         let valid = planner.stillValidToday(tasks: [vitamins], reminders: [], skipped: [], context: context)
-        #expect(valid.contains { $0.id == "habit|Vitamins 💊|09:00" && $0.day == LocalDate("2026-10-20") })
+        #expect(!valid.contains { $0.day < context.today })
+        #expect(valid.allSatisfy { !StaleNotifications.isOver($0.day, today: context.today) })
+        #expect(valid.contains { $0.id == "habit|Vitamins 💊|09:00" && $0.day == context.today })
     }
 
     /// An event alert knows its event and occurrence, for its Delete event button.
