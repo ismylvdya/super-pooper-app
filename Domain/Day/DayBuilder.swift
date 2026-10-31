@@ -44,8 +44,8 @@ struct DayBuilder: Sendable {
                 ? isOnOtherDay(task, occurrence: occurrence, context: context)
                 : isInDay(task, occurrence: occurrence, skipped: inputs.skipped, context: context)
                 && !inputs.postponed.contains(task.name)
-            let taskProblems = self.problems(of: task, graph: graph, previousEvent: previousEvent, nextEvent: nextEvent,
-                                             checkEvents: inDay && inputs.eventsKnown)
+            let taskProblems = self.problems(of: task, graph: graph, occurrence: occurrence, previousEvent: previousEvent,
+                                             nextEvent: nextEvent, checkEvents: inDay && inputs.eventsKnown)
             if inDay || (task.isHabit && !task.isArchived) || !task.status.isCompleted {
                 problems += taskProblems.map { PlanProblem(taskName: task.name, problem: $0) }
             }
@@ -142,9 +142,10 @@ struct DayBuilder: Sendable {
 
     /// Problems of done/archived tasks are not reported (see `build`); event links are checked only
     /// for tasks in the day, since only today's events are looked up around it.
-    private func problems(of task: TaskNote, graph: TaskGraph, previousEvent: CalendarEvent?, nextEvent: CalendarEvent?,
-                          checkEvents: Bool) -> [TaskProblem] {
+    private func problems(of task: TaskNote, graph: TaskGraph, occurrence: TaskOccurrence, previousEvent: CalendarEvent?,
+                          nextEvent: CalendarEvent?, checkEvents: Bool) -> [TaskProblem] {
         var result = task.problems
+        if occurrence.hasNoStart(task) { result.append(.recurrenceWithoutStart) }
         result += (graph.missingLinks[task.name] ?? []).map(TaskProblem.linkedTaskNotFound)
         if graph.cycleMembers.contains(task.name) { result.append(.dependencyCycle) }
         guard checkEvents else { return result }

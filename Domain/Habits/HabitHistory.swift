@@ -5,20 +5,21 @@ struct HabitHistory: Sendable {
     let task: TaskNote
     let days: DayBoundary
     private let instances: HabitInstances
-    private let occurrence: TaskOccurrence
+    /// Built once: the history asks about every day since the start.
+    private let schedule: TaskSchedule
 
     init(task: TaskNote, days: DayBoundary) {
         self.task = task
         self.days = days
         self.instances = HabitInstances(task: task)
-        self.occurrence = TaskOccurrence(days: days)
+        self.schedule = TaskOccurrence(days: days).schedule(of: task)
     }
 
     var options: HabitOptions { task.habit }
 
     func mark(on day: LocalDate) -> HabitMark? { instances.mark(on: day) }
 
-    func isScheduled(_ day: LocalDate) -> Bool { occurrence.occurs(task, on: day) }
+    func isScheduled(_ day: LocalDate) -> Bool { schedule.occurs(on: day) }
 
     /// The first day the habit counts from: its creation or its first mark, whichever is earlier.
     func start(today: LocalDate) -> LocalDate {
