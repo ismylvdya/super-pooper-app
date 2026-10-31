@@ -8,9 +8,7 @@ enum TaskScheduling {
 
     static func changes(scheduling task: TaskNote, at moment: Date, calendar: Calendar) -> [TaskFieldChange] {
         guard canMove(task) else { return [] }
-        let parts = calendar.dateComponents([.hour, .minute], from: moment)
-        let time = LocalTime(minutesSinceMidnight: (parts.hour ?? 0) * 60 + (parts.minute ?? 0))
-        return [.due(TaskDue(day: LocalDate(moment, in: calendar), time: time))]
+        return [.due(TaskDue(day: LocalDate(moment, in: calendar), time: LocalTime(moment, in: calendar)))]
     }
 
     /// Keeps the logical day: a task at 00:30 goes back to tonight's date, not tomorrow's.

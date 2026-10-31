@@ -20,6 +20,17 @@ struct TimeZoneNoteTests {
         #expect(text.contains("due: 2026-11-06\n"))
     }
 
+    /// An event link carries the event's start as a moment with an offset: the phone's zone at the time of writing.
+    @Test func anEventLinkWrittenAfterAZoneChangeCarriesTheNewOffset() async throws {
+        let calendar = TravellingCalendar("Europe/Belgrade")
+        let note = try await SandboxNote("Позвонить в банк", calendar: calendar)
+        let event = makeEvent("Call with dad", from: "19:00", to: "20:00", id: "EK1")
+        calendar.fly(to: "Asia/Jakarta")
+        try await note.apply([.previousEvent(eventLink(to: event))])
+        #expect(try note.text().contains("previous_event: \"EK1|Call with dad|2026-10-22T00:00:00+07:00\"\n"))
+        #expect(note.task.previousEvent?.start == event.start)
+    }
+
     /// A `due` written as a moment by someone else is read on the clock of the zone the phone has at the scan.
     @Test func aMomentInANoteIsReadInTheZoneOfTheScan() async throws {
         let calendar = TravellingCalendar("Europe/Belgrade")

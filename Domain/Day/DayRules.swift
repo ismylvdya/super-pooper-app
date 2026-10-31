@@ -19,8 +19,7 @@ struct DayRules: Codable, Hashable, Sendable {
 
     /// Hours after midnight (before the day boundary) still belong to the evening.
     func partOfDay(_ context: DayContext) -> HabitTimeOfDay {
-        let time = LocalTime(minutesSinceMidnight: context.calendar.component(.hour, from: context.now) * 60
-                             + context.calendar.component(.minute, from: context.now))
+        let time = LocalTime(context.now, in: context.calendar)
         if time < context.boundary || time >= eveningStarts { return .evening }
         return time < morningEnds ? .morning : .day
     }

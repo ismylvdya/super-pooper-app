@@ -11,6 +11,8 @@ struct WidgetDataSource: Sendable {
     static func load(bundle: Bundle = .main) -> WidgetDataSource? {
         guard let config = try? AppConfig.load(bundle: bundle) else { return nil }
         let store = JSONFileStore(directory: AppGroupContainer.directory(bundle: bundle))
+        // A widget process can outlive a time zone change: the system zone is read afresh for every timeline.
+        NSTimeZone.resetSystemTimeZone()
         let calendar = AppCalendar.make()
         // Everything in the widget reads `today.arrangement`, so it gets the widget's own one there.
         var settings = SettingsStore(store: store, defaults: config.defaultSettings).load()
