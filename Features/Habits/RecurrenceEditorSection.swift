@@ -1,7 +1,8 @@
 import SwiftUI
 
 /// Edits a habit's repeat rule the way Apple Calendar does: frequency, interval, weekdays or the day of
-/// the month, start and end. Every change is written to the note right away.
+/// the month, start and end. Every change is written to the note right away. A rule with more than the editor can
+/// show (several days of the month, several months…) is shown in words only: editing it would lose those parts.
 struct RecurrenceEditorSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
@@ -12,7 +13,24 @@ struct RecurrenceEditorSection: View {
     private var task: TaskNote { editor.task }
 
     var body: some View {
-        let draft = self.draft ?? initialDraft
+        if let rule = task.recurrence, draft == nil, !RecurrenceDraft.canEdit(rule, start: fallbackStart) {
+            readOnly(rule)
+        } else {
+            editingRows(draft ?? initialDraft)
+        }
+    }
+
+    private func readOnly(_ rule: RecurrenceRule) -> some View {
+        PlateSection(header: "recurrenceEditor.header", info: "info.recurrenceEditor", hint: Text("recurrenceEditor.readOnly")) {
+            PlateRow(icon: .recurrence, title: "recurrenceEditor.rule") {
+                Text(verbatim: RecurrenceText.describe(rule, calendar: model.calendar))
+                    .foregroundStyle(tokens.color(.secondaryText))
+                    .multilineTextAlignment(.trailing)
+            }
+        }
+    }
+
+    private func editingRows(_ draft: RecurrenceDraft) -> some View {
         PlateSection(header: "recurrenceEditor.header", info: "info.recurrenceEditor",
                      hint: Text(verbatim: RecurrenceText.describe(draft, calendar: model.calendar))) {
             PlateRow(icon: .recurrence, title: "recurrenceEditor.frequency") {
@@ -127,9 +145,15 @@ struct RecurrenceEditorSection: View {
     // MARK: - Editing
 
     private var initialDraft: RecurrenceDraft {
-        let today = model.context().today
-        if let rule = task.recurrence { return RecurrenceDraft(rule: rule, fallbackStart: today) }
-        return RecurrenceDraft(start: today)
+        if let rule = task.recurrence { return RecurrenceDraft(rule: rule, fallbackStart: fallbackStart) }
+        return RecurrenceDraft(start: model.context().today)
+    }
+
+    /// Where a rule without DTSTART starts its days (the `due` day or the note's creation), so that the first edit
+    /// writes that start and not today.
+    private var fallbackStart: LocalDate {
+        let context = model.context()
+        return TaskOccurrence(days: context.days).start(of: task) ?? context.today
     }
 
     private func edit<Value>(_ keyPath: WritableKeyPath<RecurrenceDraft, Value>) -> Binding<Value> {

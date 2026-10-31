@@ -8,7 +8,7 @@ enum RecurrenceText {
         return describe(rule, calendar: calendar)
     }
 
-    private static func describe(_ rule: RecurrenceRule, calendar: Calendar) -> String {
+    static func describe(_ rule: RecurrenceRule, calendar: Calendar) -> String {
         var text = base(rule, calendar: calendar)
         if let count = rule.count { text += L10n.format("recurrence.count", count) }
         if let until = rule.untilDate { text += L10n.format("recurrence.until", until.isoString) }

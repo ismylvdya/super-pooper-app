@@ -3334,6 +3334,28 @@
         }
       }
     },
+    "recurrenceEditor.readOnly": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This rule has parts the editor can’t show, such as several days of the month. Change it in Obsidian; editing it here would lose them."
+          }
+        }
+      }
+    },
+    "recurrenceEditor.rule": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rule"
+          }
+        }
+      }
+    },
     "recurrenceEditor.starts": {
       "extractionState": "manual",
       "localizations": {
