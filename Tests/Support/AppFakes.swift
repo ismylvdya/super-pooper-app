@@ -50,6 +50,16 @@ struct ListedReminders: RemindersRepository {
     }
 }
 
+/// The preview's reminders, every one of them deleted in Reminders meanwhile: checking one off fails.
+struct GoneReminders: RemindersRepository {
+    var access: SourceAccess { .granted }
+    func requestAccess() async -> Bool { true }
+    func lists() -> [SourceCollection] { [] }
+    func setCompleted(_ completed: Bool, reminderID: String) throws { throw ReminderEditError.reminderNotFound }
+    func changes() -> AsyncStream<Void> { AsyncStream { $0.finish() } }
+    func reminders(from start: Date, to end: Date, listIDs: [String]) async -> [ReminderItem] { [] }
+}
+
 /// One reminder an hour after the end of the logical day.
 struct EarlyReminder: RemindersRepository {
     var access: SourceAccess { .granted }

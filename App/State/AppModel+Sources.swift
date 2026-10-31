@@ -47,7 +47,7 @@ extension AppModel {
     /// own notice of the edit, in one go (`sourcesDidChange`).
     func toggleReminder(_ reminder: ReminderItem) async {
         do {
-            try services.reminders.setCompleted(!reminder.isCompleted, reminderID: reminder.id)
+            try await services.reminders.setCompleted(!reminder.isCompleted, reminderID: reminder.id)
             setSources(events: events, reminders: reminders.map { item in
                 guard item.id == reminder.id else { return item }
                 var toggled = item
@@ -78,7 +78,7 @@ extension AppModel {
     /// The event leaves the timeline at once; the calendars are read back with the store's own notice of the edit.
     func deleteEvent(_ event: CalendarEvent) async {
         do {
-            try services.calendars.delete(event)
+            try await services.calendars.delete(event)
             setSources(events: events.filter { $0.id != event.id }, reminders: reminders)
         } catch {
             banners.show(Self.describe(error), style: .problem)

@@ -980,6 +980,17 @@
         }
       }
     },
+    "error.reminder.notFound": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That reminder is no longer in Reminders."
+          }
+        }
+      }
+    },
     "error.rename.invalid": {
       "extractionState": "manual",
       "localizations": {

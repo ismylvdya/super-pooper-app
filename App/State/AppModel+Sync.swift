@@ -111,7 +111,7 @@ extension AppModel {
         let rules = config.rules
         let from = context.today.adding(days: -rules.eventLinks.resolveDaysBefore).startDate(in: calendar)
         let to = context.today.adding(days: rules.eventLinks.resolveDaysAfter + 1).startDate(in: calendar)
-        let events = services.calendars.events(from: from, to: to, calendarIDs: settings.sources.anchorCalendarIDs)
+        let events = await services.calendars.events(from: from, to: to, calendarIDs: settings.sources.anchorCalendarIDs)
         var reminders: [ReminderItem] = []
         if config.flags.reminders {
             let until = context.today.adding(days: rules.notifications.horizonDays).startDate(in: calendar, offset: settings.day.boundary)
@@ -166,6 +166,7 @@ extension AppModel {
         case TaskRepositoryError.fileMissing(let name): L10n.format("error.file.missing", name)
         case TaskRepositoryError.notConfirmed(let name): L10n.format("error.write.notConfirmed", name)
         case CalendarEditError.eventNotFound: L10n.string("error.event.notFound")
+        case ReminderEditError.reminderNotFound: L10n.string("error.reminder.notFound")
         // System errors would come in the phone's language; the app speaks English.
         default: L10n.format("error.generic", (error as NSError).domain, (error as NSError).code)
         }

@@ -8,9 +8,23 @@ enum SourceAccess: Sendable {
     case denied
 }
 
-/// One shared `EKEventStore` for calendars and reminders.
+/// One shared `EKEventStore` for calendars and reminders. Reads and edits run on a queue of their own, off the main
+/// thread: a calendar with many events takes a while to read.
 final class EventKitAccess: @unchecked Sendable {
     let store = EKEventStore()
+    private let queue = DispatchQueue(label: "SuperPooperApp.EventKit", qos: .userInitiated)
+
+    func read<T: Sendable>(_ work: @escaping @Sendable (EKEventStore) -> T) async -> T {
+        await withCheckedContinuation { continuation in
+            queue.async { continuation.resume(returning: work(self.store)) }
+        }
+    }
+
+    func write<T: Sendable>(_ work: @escaping @Sendable (EKEventStore) throws -> T) async throws -> T {
+        try await withCheckedThrowingContinuation { continuation in
+            queue.async { continuation.resume(with: Result { try work(self.store) }) }
+        }
+    }
 
     func access(for type: EKEntityType) -> SourceAccess {
         switch EKEventStore.authorizationStatus(for: type) {
