@@ -16,6 +16,8 @@ final class AppModel {
     let services: AppServices
     let banners: BannerCenter
     let clock: Clock
+    /// The wait of debounced work (note text, Calendar changes); tests end it themselves.
+    let delay: Delay
     /// Where the calendar comes from; `calendar` is its copy the screens observe, renewed by `timeDidChange`.
     let calendarSource: CalendarSource
     private(set) var calendar: Calendar
@@ -38,6 +40,11 @@ final class AppModel {
     private(set) var hasLoaded = false
     private(set) var settings: AppSettings
     var access = SourceAccessState()
+    /// The text of the notes open on their pages (see `openBody`).
+    var noteBodies: [String: NoteBody] = [:]
+    /// The write of each note's text waiting for typing to stop, and the writes running (one after another per note).
+    @ObservationIgnored var noteBodyDebounce: [String: Task<Void, Never>] = [:]
+    @ObservationIgnored var noteBodySaves: [String: Task<Void, Never>] = [:]
     /// Paths written while a scan was running; their scanned copies are stale.
     @ObservationIgnored private var writtenDuringSync: Set<String>?
     /// Notes trashed or renamed away while a sync runs (its scan may still list them).
@@ -54,11 +61,13 @@ final class AppModel {
     /// A settings change not written to the vault note yet.
     @ObservationIgnored var settingsNotePending = false
 
-    init(config: AppConfig, services: AppServices, banners: BannerCenter, clock: Clock, calendar: CalendarSource) {
+    init(config: AppConfig, services: AppServices, banners: BannerCenter, clock: Clock, calendar: CalendarSource,
+         delay: Delay = SleepDelay()) {
         self.config = config
         self.services = services
         self.banners = banners
         self.clock = clock
+        self.delay = delay
         self.calendarSource = calendar
         let calendar = calendar.current
         self.calendar = calendar

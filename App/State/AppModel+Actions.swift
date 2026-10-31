@@ -86,7 +86,7 @@ extension AppModel {
     }
 
     /// Merged edits are silent; a key changed both here and elsewhere gets a yellow banner.
-    private func reportClashes(_ result: TaskWriteResult, name: String) {
+    func reportClashes(_ result: TaskWriteResult, name: String) {
         guard !result.clashingKeys.isEmpty else { return }
         banners.show(L10n.format("banner.conflictSameKey", name, L10n.list(result.clashingKeys)), style: .warning)
     }
@@ -110,6 +110,7 @@ extension AppModel {
         guard let task = task(named: name) else { return false }
         let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed != name else { return true }
+        await flushBody(of: name)
         let dependents = tasks.filter { ($0.previousTasks + $0.projects).contains { $0.isSameNoteName(as: name) } }
         var renamed = false
         do {
@@ -141,23 +142,6 @@ extension AppModel {
             $0.skipped = rename($0.skipped)
             $0.postponed = rename($0.postponed)
             $0.manualOrder = $0.manualOrder.map(rename)
-        }
-    }
-
-    func body(of name: String) async -> String? {
-        guard let task = task(named: name) else { return nil }
-        return try? await services.tasks.body(of: task)
-    }
-
-    func setBody(_ body: String, of name: String) async {
-        guard let task = task(named: name) else { return }
-        do {
-            let result = try await services.tasks.setBody(body, of: task)
-            noteWrite(result.task)
-            replace(result.task)
-            reportClashes(result, name: task.name)
-        } catch {
-            banners.show(Self.describe(error), style: .problem)
         }
     }
 

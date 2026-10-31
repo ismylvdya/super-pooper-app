@@ -95,6 +95,7 @@ extension AppModel {
         let newProblems = problems > dayState.announcedProblems
         updateDayState { $0.announcedProblems = problems }
         announceResult(report, announce: announce, newProblems: newProblems)
+        await reopenUnavailableBodies()
     }
 
     func ensureLoaded() async {

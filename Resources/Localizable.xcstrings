@@ -5479,6 +5479,17 @@
         }
       }
     },
+    "taskPage.note.unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The text of this note can’t be read right now, so it can’t be edited here. Pull down to try again."
+          }
+        }
+      }
+    },
     "taskPage.pickEvent": {
       "extractionState": "manual",
       "localizations": {
