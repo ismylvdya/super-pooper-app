@@ -33,4 +33,20 @@ struct TaskListFilterTests {
         #expect(Set(all) == ["Read a novel", "Paint the door", "Reply to Anna", "Wait for the plumber"])
         #expect(TaskListFilter().groups(of: tasks, query: "PAINT", rules: rules).flatMap(\.tasks).map(\.name) == ["Paint the door"])
     }
+
+    /// Done tasks go to the done folder at once: the Done list counts and shows those too, and is not "No tasks here"
+    /// while it has them; other lists leave the folder out.
+    @Test func theDoneListHoldsTheDoneFolder() {
+        let filed = [
+            makeTask("Filed earlier", status: .done) { $0.completedDate = LocalDate("2026-10-19") },
+            makeTask("Filed today", status: .done) { $0.completedDate = LocalDate("2026-10-21") },
+        ]
+        let done = TaskListFilter(statuses: [.done])
+        let contents = done.contents(of: tasks.filter { $0.status != .done }, filed: filed, query: "", rules: rules)
+        #expect(!contents.isEmpty)
+        #expect(contents.count == 2)
+        #expect(contents.filed.map(\.name) == ["Filed today", "Filed earlier"])
+        #expect(done.contents(of: [], filed: filed, query: "earlier", rules: rules).count == 1)
+        #expect(TaskListFilter(statuses: [.someday]).contents(of: tasks, filed: filed, query: "", rules: rules).filed.isEmpty)
+    }
 }

@@ -54,6 +54,15 @@ struct AppModelTests {
         #expect(model.filedTasks.first { $0.name == "Повесить полку" }?.status == .done)
     }
 
+    /// The Done list's count sees a task done just now, before the folder is read again.
+    @Test func theDoneListCountsATaskDoneJustNow() async throws {
+        let model = try makeModel()
+        let done = TaskListFilter(statuses: [.done])
+        let before = model.listContents(done, query: "").count
+        await model.perform(.done, on: "Позвонить в банк")
+        #expect(model.listContents(done, query: "").count == before + 1)
+    }
+
     /// A task marked done goes to the done folder at once, with its date; the Done list reads it from there.
     @Test func aDoneTaskGoesToTheDoneFolderAtOnce() async throws {
         let model = try makeModel()

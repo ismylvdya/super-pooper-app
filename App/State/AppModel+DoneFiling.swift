@@ -16,14 +16,21 @@ extension AppModel {
             if config.flags.backups { try await services.tasks.backup([task], reason: "done") }
             try await services.tasks.fileAway(task)
             remove(task)
+            // The Done list and its count see it before the folder is read again.
+            filedTasks.append(task)
             await publishDerivedState()
         } catch {
             SyncLog.logger.error("filing \(task.name, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
         }
     }
 
-    /// The done folder's tasks, read-only, for the Done list.
+    /// The done folder's tasks, read-only, for the Done list and its count on the Lists tab.
     func loadFiledTasks() async {
         filedTasks = (try? await services.tasks.filedTasks()) ?? []
+    }
+
+    /// What a list of the Lists tab holds now, the done folder's tasks included.
+    func listContents(_ filter: TaskListFilter, query: String) -> TaskListContents {
+        filter.contents(of: tasks, filed: filedTasks, query: query, rules: config.rules.day)
     }
 }

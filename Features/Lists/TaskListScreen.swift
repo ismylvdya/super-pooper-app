@@ -19,21 +19,21 @@ struct TaskListScreen: View {
     var body: some View {
         let list = model.config.lists.list(listID)
         let filter = list?.filter ?? TaskListFilter()
-        let groups = filter.groups(of: model.tasks, query: query, rules: model.config.rules.day)
+        let contents = model.listContents(filter, query: query)
         List {
-            ForEach(groups, id: \.status) { group in
+            ForEach(contents.groups, id: \.status) { group in
                 // A list of one planning level already says it in its title.
                 if filter.statuses.count > 1 { ListGroupHeader(title: Text(verbatim: StatusText.title(group.status))) } else { ListGroupGap() }
                 ForEach(Array(group.tasks.enumerated()), id: \.element.name) { index, task in
                     row(task, group: StatusText.title(group.status), isFirst: index == 0, isLast: index == group.tasks.count - 1)
                 }
             }
-            if filter.statuses.contains(.done) { filedGroup(query: query) }
+            filedGroup(contents.filed)
         }
         .listGroupStyle()
         .listGroupBacking(frames)
         .appList()
-        .overlay { if groups.isEmpty { Text("lists.empty").foregroundStyle(tokens.color(.secondaryText)) } }
+        .overlay { if contents.isEmpty { Text("lists.empty").foregroundStyle(tokens.color(.secondaryText)) } }
         .pageSearch(query: $query, isSearching: $isSearching, prompt: "search.prompt.tasks")
         .navigationTitle(Text(LocalizedStringKey(list?.title ?? "tab.lists")))
         .navigationBarTitleDisplayMode(.inline)
@@ -44,18 +44,16 @@ struct TaskListScreen: View {
                 SearchBarButton(isSearching: $isSearching, accessibilityID: "list.search")
             }
         }
-        .task { if filter.statuses.contains(.done) { await model.loadFiledTasks() } }
+        .task { if filter.showsFiled { await model.loadFiledTasks() } }
         .refreshable {
             await model.sync(announce: true)
-            if filter.statuses.contains(.done) { await model.loadFiledTasks() }
+            if filter.showsFiled { await model.loadFiledTasks() }
         }
         .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
     }
 
     /// The done folder's tasks, newest first: to look back at, not to change (a new task may have the same name).
-    @ViewBuilder private func filedGroup(query: String) -> some View {
-        let filed = model.filedTasks.filter { SearchMatcher.matches($0.name, query) }
-            .sorted { ($0.completedDate?.isoString ?? "") > ($1.completedDate?.isoString ?? "") }
+    @ViewBuilder private func filedGroup(_ filed: [TaskNote]) -> some View {
         if !filed.isEmpty {
             ListGroupHeader(title: Text("lists.filed"))
             ForEach(Array(filed.enumerated()), id: \.element.relativePath) { index, task in

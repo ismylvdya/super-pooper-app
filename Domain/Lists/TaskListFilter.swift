@@ -24,4 +24,24 @@ struct TaskListFilter: Hashable, Sendable {
             return members.isEmpty ? nil : (status, members)
         }
     }
+
+    /// A list of done tasks also shows the done folder (done tasks are filed there at once).
+    var showsFiled: Bool { statuses.contains(.done) }
+
+    /// What the list holds: the matching tasks and, for a list of done ones, the done folder's tasks whose names contain
+    /// `query`, newest first.
+    func contents(of tasks: [TaskNote], filed: [TaskNote], query: String, rules: DayRules) -> TaskListContents {
+        let filed = showsFiled ? filed.filter { SearchMatcher.matches($0.name, query) } : []
+        return TaskListContents(groups: groups(of: tasks, query: query, rules: rules),
+                                filed: filed.sorted { ($0.completedDate?.isoString ?? "") > ($1.completedDate?.isoString ?? "") })
+    }
+}
+
+/// The tasks of one list of the Lists tab, by planning level, and the done folder's ones.
+struct TaskListContents: Sendable {
+    let groups: [(status: TaskStatus, tasks: [TaskNote])]
+    let filed: [TaskNote]
+
+    var count: Int { groups.reduce(0) { $0 + $1.tasks.count } + filed.count }
+    var isEmpty: Bool { count == 0 }
 }

@@ -23,7 +23,7 @@ final class AppModel {
     private(set) var calendar: Calendar
 
     private(set) var tasks: [TaskNote] = []
-    /// The done folder's tasks, read when the Done list opens (`loadFiledTasks`).
+    /// The done folder's tasks, read when the Lists tab or the Done list shows (`loadFiledTasks`).
     var filedTasks: [TaskNote] = []
     private(set) var fileProblems: [FileProblem] = []
     private(set) var events: [CalendarEvent] = []
