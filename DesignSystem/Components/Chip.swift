@@ -16,10 +16,7 @@ struct Chip: View {
         }
         .font(tokens.font(.chip))
         .foregroundStyle(isOn ? (tint ?? tokens.color(.secondaryText)) : tokens.color(.tertiaryText))
-        .padding(.horizontal, tokens.space(.chipHorizontal))
-        .padding(.vertical, tokens.space(.chipVertical))
-        // Rounded by half its height, like the row plates around it.
-        .background(tokens.color(.chipBackground), in: Capsule())
+        .chipCapsule(tokens.color(.chipBackground))
     }
 }
 
@@ -28,7 +25,7 @@ extension Chip {
     /// before any chip is drawn (the page peek).
     static func width(of icon: Icon, tokens: DesignTokens, icons: IconSet) -> CGFloat {
         let symbol = UIImage(systemName: icons[icon], withConfiguration: UIImage.SymbolConfiguration(font: tokens.uiFont(.chip)))
-        return (symbol?.size.width ?? 0) + tokens.space(.chipHorizontal) * 2
+        return (symbol?.size.width ?? 0) + ChipCapsule.standard.horizontalPadding(tokens) * 2
     }
 }
 

@@ -161,17 +161,17 @@ struct ReviewRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
             HStack(spacing: tokens.space(.chipGap)) {
-                if item.isHabit { Image(systemName: icons[.habit]).foregroundStyle(tokens.color(.habit)) }
+                if item.isHabit { Image(systemName: icons[ChipLook.habit.icon]).foregroundStyle(tokens.color(of: .habit)) }
                 Text(task.name).font(tokens.font(.taskTitle)).foregroundStyle(item.isDone ? tokens.color(.secondaryText) : tokens.color(.primaryText))
-                if item.isBlocked { Image(systemName: icons[.links]).foregroundStyle(tokens.color(.secondaryText)) }
+                if item.isBlocked { Image(systemName: icons[ChipLook.blocked.icon]).foregroundStyle(tokens.color(of: .blocked)) }
             }
             ChipFlow(spacing: tokens.space(.chipGap)) {
-                toggleChip(.high, isOn: task.isHighPriority, tint: tokens.color(.high)) { [.highPriority(!$0.isHighPriority)] }
+                toggleChip(.high, isOn: task.isHighPriority) { [.highPriority(!$0.isHighPriority)] }
                 dueChip
                 estimateChip
                 // One feel: turning one on turns the other off.
-                toggleChip(.energy, isOn: task.feel == .needEnergy, tint: tokens.color(.energy)) { [.feel($0.feel == .needEnergy ? .neutral : .needEnergy)] }
-                toggleChip(.pleasant, isOn: task.feel == .pleasant, tint: tokens.color(.heart)) { [.feel($0.feel == .pleasant ? .neutral : .pleasant)] }
+                toggleChip(.needEnergy, isOn: task.feel == .needEnergy) { [.feel($0.feel == .needEnergy ? .neutral : .needEnergy)] }
+                toggleChip(.pleasant, isOn: task.feel == .pleasant) { [.feel($0.feel == .pleasant ? .neutral : .pleasant)] }
                 if !task.isHabit { statusChip }
                 if !task.previousTasks.isEmpty || item.isBlocked {
                     Chip(icon: .previousTasks, text: "\(task.previousTasks.count)")
@@ -187,14 +187,11 @@ struct ReviewRow: View {
     }
 
     /// The new value is decided from the note as it is when the edit runs (two quick taps go there and back).
-    private func toggleChip(_ icon: Icon, isOn: Bool, tint: Color, changes: @escaping (TaskItem) -> [TaskEdit]) -> some View {
-        Button {
+    private func toggleChip(_ look: ChipLook, isOn: Bool, changes: @escaping (TaskItem) -> [TaskEdit]) -> some View {
+        ToggleChip(look, isOn: isOn, capsule: .standard) {
             Haptics.play(.select)
             Task { await model.edit(task.name, changes) }
-        } label: {
-            Chip(icon: icon, tint: tint, isOn: isOn)
         }
-        .buttonStyle(.borderless)
     }
 
     /// Today / Tomorrow / an exact date and time; the chosen one is checked, choosing it again

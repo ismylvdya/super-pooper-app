@@ -34,9 +34,7 @@ struct AllDayStrip: View {
             FadingText(text: event.title, font: font ?? tokens.font(.chip), lineHeight: lineHeight)
         }
         .foregroundStyle(tokens.color(.eventText))
-        .padding(.horizontal, tokens.space(.chipHorizontal))
-        .padding(.vertical, tokens.space(.chipVertical))
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(hex: event.colorHex).opacity(tokens.opacity(.eventFill)), in: Capsule())
+        .chipCapsule(Color(hex: event.colorHex).opacity(tokens.opacity(.eventFill)))
     }
 }

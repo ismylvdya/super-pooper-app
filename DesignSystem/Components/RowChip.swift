@@ -10,46 +10,43 @@ enum RowChipKind: String, CaseIterable, Hashable, Sendable {
         return saved + allCases.filter { !saved.contains($0) }
     }
 
-    /// The chip's icon (a feel chip shows the energy one or the heart).
-    var icon: Icon {
+    /// The looks a chip of this kind can have (a feel chip: the energy one or the heart).
+    var looks: [ChipLook] {
         switch self {
-        case .problem: .problem
-        case .blocked: .links
-        case .high: .high
-        case .feel: .energy
-        case .habit: .habit
+        case .problem: [.problem]
+        case .blocked: [.blocked]
+        case .high: [.high]
+        case .feel: [.needEnergy, .pleasant]
+        case .habit: [.habit]
         }
     }
+
+    /// The icon of its first look: the widest a layout has to leave room for (the page peek).
+    var icon: Icon { looks[0].icon }
 }
 
 /// The property chips shown at the right of a task title.
 struct RowChip: Identifiable {
     let kind: RowChipKind
-    let icon: Icon?
-    let text: String?
-    let tint: Color?
+    let look: ChipLook
 
     var id: String { kind.rawValue }
 
-    static func chips(for item: DayItem, order: [RowChipKind], tokens: DesignTokens) -> [RowChip] {
-        order.compactMap { chip(kind: $0, for: item, tokens: tokens) }
+    static func chips(for item: DayItem, order: [RowChipKind]) -> [RowChip] {
+        order.compactMap { kind in look(of: kind, for: item).map { RowChip(kind: kind, look: $0) } }
     }
 
-    private static func chip(kind: RowChipKind, for item: DayItem, tokens: DesignTokens) -> RowChip? {
+    private static func look(of kind: RowChipKind, for item: DayItem) -> ChipLook? {
         let task = item.task
         switch kind {
-        case .problem:
-            return item.problems.isEmpty ? nil : RowChip(kind: kind, icon: kind.icon, text: nil, tint: tokens.color(.problem))
-        case .blocked:
-            return item.isBlocked ? RowChip(kind: kind, icon: kind.icon, text: nil, tint: nil) : nil
-        case .high:
-            return task.isHighPriority ? RowChip(kind: kind, icon: kind.icon, text: nil, tint: tokens.color(.high)) : nil
-        case .habit:
-            return task.isHabit ? RowChip(kind: kind, icon: kind.icon, text: nil, tint: tokens.color(.habit)) : nil
+        case .problem: return item.problems.isEmpty ? nil : .problem
+        case .blocked: return item.isBlocked ? .blocked : nil
+        case .high: return task.isHighPriority ? .high : nil
+        case .habit: return task.isHabit ? .habit : nil
         case .feel:
             switch task.feel {
-            case .needEnergy: return RowChip(kind: kind, icon: .energy, text: nil, tint: tokens.color(.energy))
-            case .pleasant: return RowChip(kind: kind, icon: .pleasant, text: nil, tint: tokens.color(.heart))
+            case .needEnergy: return .needEnergy
+            case .pleasant: return .pleasant
             case .neutral: return nil
             }
         }

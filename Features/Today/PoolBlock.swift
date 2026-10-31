@@ -105,9 +105,7 @@ struct PoolBlock: View {
             Text(L10n.format("pool.more", hiddenBelow))
                 .font(tokens.font(.poolCounter))
                 .foregroundStyle(tokens.color(.secondaryText))
-                .padding(.horizontal, tokens.space(.chipHorizontal))
-                .padding(.vertical, tokens.space(.chipVertical))
-                .background(.regularMaterial, in: Capsule())
+                .chipCapsule(.regularMaterial)
                 .frame(maxWidth: .infinity)
                 .allowsHitTesting(false)
         }
