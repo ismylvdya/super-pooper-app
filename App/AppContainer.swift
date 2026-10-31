@@ -88,7 +88,8 @@ final class AppContainer {
         let banners = BannerCenter()
         self.banners = banners
         self.router = Router()
-        self.model = AppModel(config: config, services: services, banners: banners, clock: clock, calendar: calendar)
+        self.model = AppModel(config: config, services: services, appEvents: BannerPresenter(banners: banners), clock: clock,
+                              calendar: calendar)
         Haptics.isEnabled = config.flags.haptics
         notifications.registerCategories(config.actions, habitActionsEnabled: config.flags.habitNotificationActions)
 

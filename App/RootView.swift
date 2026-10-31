@@ -132,10 +132,10 @@ struct RootView: View {
 
     @ViewBuilder private func home(_ model: AppModel) -> some View {
         switch model.vaultState {
-        case .failed(let message):
-            NoVaultScreen(message: message)
+        case .failed(let failure):
+            NoVaultScreen(failure: failure)
         case .notSelected where !model.hasVault:
-            NoVaultScreen(message: nil)
+            NoVaultScreen(failure: nil)
         default:
             TodayScreen()
         }

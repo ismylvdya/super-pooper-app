@@ -10,7 +10,7 @@ extension AppModel {
             do {
                 try services.notificationImage.save(data)
             } catch {
-                banners.show(L10n.string("banner.notificationImageFailed"), style: .warning)
+                appEvents.send(.notificationImageFailed)
                 return
             }
         } else {

@@ -21,7 +21,7 @@ SuperPooper — iPhone-приложение-оболочка над тремя �
 
 | Папка | Что внутри | В каких таргетах |
 |---|---|---|
-| `App/` | точка входа, composition root (`AppContainer`), `RootView`, состояние приложения `State/` (`AppModel` + расширения по темам, `Router`, `BannerCenter`), делегат уведомлений и background refresh | приложение |
+| `App/` | точка входа, composition root (`AppContainer`), `RootView`, состояние приложения `State/` (`AppModel` + расширения по темам, `Router`, события `Events/`), баннеры `Banners/` (`BannerCenter`, `BannerPresenter`, `BannerOverlay`), делегат уведомлений и background refresh | приложение |
 | `Features/` | экраны: `Today/`, `Habits/` (список, страница привычки, история, статистика), `TaskPage/`, `Pickers/`, `MorningReview/`, `Settings/` (корень, Tasks, Habits, Clock), `Conflicts/`, `Trash/`, `Onboarding/`, `Archive/`, `Common/` (черновик новой заметки, `TaskEditor`) | приложение |
 | `DesignSystem/` | токены (`Tokens/`), общие компоненты (`Components/`, карта — §2.1), форматтеры текста (`Formatters/`: срок, оценка, диапазон времени), вью виджетов (`Widgets/`), превью (`Previews/`) | приложение + виджеты |
 | `Domain/` | чистая логика без SwiftUI/EventKit: модели и правила имён (`Model/`), день (`Day/`: план, сортировка, окно и открытие таймлайна), привычки (`Habits/`: отметки, история, сетка, статистика, порядок), RRULE (`Recurrence/`), часы (`Clock/`), план уведомлений, поиск и порядок по имени (`Search/`) | приложение + виджеты |
@@ -59,7 +59,7 @@ SuperPooper — iPhone-приложение-оболочка над тремя �
 | Затухание краёв прокрутки | `.edgeFades(color:bottomExtension:)` |
 | Превью на странице настроек | `.settingsPreviewFrame()` |
 | Пустой экран с одной кнопкой | `EmptyStateView` |
-| Баннер, у которого несколько фактов (числа по видам, список заметок) — каждый своим элементом, не строкой через запятую | `banners.show(_:counts:items:)`: `BannerCount` (иконка из `icons.json` + число, подпись для VoiceOver), `items` — по строке на заметку |
+| Баннер о том, что случилось | модель шлёт событие `AppEvent` (`appEvents.send`), слова, вид и страницу по нажатию решает `BannerPresenter` (`App/Banners/`); экран баннеры сам не показывает. Несколько фактов (числа по видам, список заметок) — каждый своим элементом: `BannerCount` (иконка из `icons.json` + число, подпись для VoiceOver), `items` — по строке на заметку |
 | Меню действий (контекстное, «…») | `ActionMenuContent(menu:)` для дел и привычек, `RegistryMenu(menu:)` для напоминаний и событий; состав и порядок — только `actions.json` |
 | Алерт над optional-значением | `.alert(…, isPresented: Binding(presenting: $item), presenting: item)` |
 | Высота часа и положение момента на таймлайне | `TimelineWindow.hourHeight(fitting:)`, `offset(of:hourHeight:)`; где открыть таймлайн — `TimelineOpening` |

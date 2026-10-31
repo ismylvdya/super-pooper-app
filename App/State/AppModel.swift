@@ -4,7 +4,7 @@ import Observation
 enum VaultState: Equatable {
     case notSelected
     case ready
-    case failed(String)
+    case failed(AppFailure)
 }
 
 /// App-wide state and use cases. Screens read it and call its methods; it talks to repositories
@@ -14,7 +14,8 @@ enum VaultState: Equatable {
 final class AppModel {
     let config: AppConfig
     let services: AppServices
-    let banners: BannerCenter
+    /// Where what the user should hear about goes; the frontend puts it in words.
+    let appEvents: AppEventSink
     let clock: Clock
     /// The wait of debounced work (note text, Calendar changes); tests end it themselves.
     let delay: Delay
@@ -69,11 +70,11 @@ final class AppModel {
     /// The last plan of each day asked for (0 = today), with what it was worked out from (`AppModel+Plan`).
     @ObservationIgnored var plans: [Int: CachedPlan] = [:]
 
-    init(config: AppConfig, services: AppServices, banners: BannerCenter, clock: Clock, calendar: CalendarSource,
+    init(config: AppConfig, services: AppServices, appEvents: AppEventSink, clock: Clock, calendar: CalendarSource,
          delay: Delay = SleepDelay()) {
         self.config = config
         self.services = services
-        self.banners = banners
+        self.appEvents = appEvents
         self.clock = clock
         self.delay = delay
         self.calendarSource = calendar

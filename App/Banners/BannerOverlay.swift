@@ -22,7 +22,7 @@ struct BannerOverlay: View {
                 BannerView(text: banner.text, icon: icon(banner.style), tint: tint(banner.style), counts: banner.counts,
                            items: banner.items, onDismiss: {
                     withAnimation(.easeInOut(duration: tokens.duration(.bannerAnimation))) { banners.dismiss(banner.id) }
-                }, onTap: banner.opens.map { route in { router.show(.settings, [route]) } })
+                }, onTap: banner.opens.map { target in { router.show(target.tab, target.routes) } })
                 .id(banner.id)
                 .transition(.move(edge: .top).combined(with: .opacity))
             }

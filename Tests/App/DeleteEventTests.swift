@@ -13,9 +13,11 @@ struct DeleteEventTests {
                              isAllDay: false, calendarID: "demo", calendarTitle: "Demo", colorHex: "#30B0C7")
     }
 
+    private let events = RecordingEvents()
+
     private func model(with events: [CalendarEvent]) throws -> (AppModel, FakeCalendars) {
         let calendars = FakeCalendars(events: events)
-        let model = try #require(PreviewModel.make(calendars: calendars, delay: NoDelay())).model
+        let model = try #require(PreviewModel.make(calendars: calendars, delay: NoDelay(), appEvents: self.events)).model
         return (model, calendars)
     }
 
@@ -40,8 +42,7 @@ struct DeleteEventTests {
         await model.refreshCalendarSources()
         await model.deleteEvent(identifier: "standup", start: standup(1, at: 10).start)
         #expect(calendars.deleted.isEmpty)
-        #expect(model.banners.current?.style == .problem)
-        #expect(model.banners.current?.text == L10n.string("error.event.notFound"))
+        #expect(events.sent == [.failure(.eventNotFound)])
     }
 
     /// An event not read yet (the alert came before the app read its calendars) is read and then found.

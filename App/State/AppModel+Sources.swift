@@ -55,7 +55,7 @@ extension AppModel {
                 return toggled
             })
         } catch {
-            banners.show(Self.describe(error), style: .problem)
+            appEvents.send(.failure(AppFailure(error)))
         }
         sourcesDidChange()
     }
@@ -69,7 +69,7 @@ extension AppModel {
             occurrence = EventOccurrence.find(identifier: identifier, start: start, in: events, context: context())
         }
         guard let occurrence else {
-            banners.show(L10n.string("error.event.notFound"), style: .problem)
+            appEvents.send(.failure(.eventNotFound))
             return
         }
         await deleteEvent(occurrence)
@@ -81,7 +81,7 @@ extension AppModel {
             try await services.calendars.delete(event)
             setSources(events: events.filter { $0.id != event.id }, reminders: reminders)
         } catch {
-            banners.show(Self.describe(error), style: .problem)
+            appEvents.send(.failure(AppFailure(error)))
         }
         sourcesDidChange()
     }
@@ -96,10 +96,10 @@ extension AppModel {
         do {
             try services.vault.select(url)
             await sync(announce: true)
-            if chosenFolder.isWholeVault { banners.show(L10n.string("banner.wholeVault"), style: .warning) }
+            if chosenFolder.isWholeVault { appEvents.send(.wholeVaultChosen) }
         } catch {
             SyncLog.logger.error("vault selection failed: \(String(describing: error), privacy: .public)")
-            banners.show(Self.describe(error), style: .problem)
+            appEvents.send(.failure(AppFailure(error)))
         }
     }
 }

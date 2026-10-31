@@ -7,11 +7,11 @@ import Testing
 struct ReminderEditTests {
     /// A reminder deleted in Reminders meanwhile: a problem banner, not a check mark that never reached Reminders.
     @Test func aReminderThatIsGoneIsNotShownAsDone() async throws {
-        let model = try #require(PreviewModel.make(reminders: GoneReminders(), delay: NoDelay())).model
+        let events = RecordingEvents()
+        let model = try #require(PreviewModel.make(reminders: GoneReminders(), delay: NoDelay(), appEvents: events)).model
         let reminder = try #require(model.reminders.first)
         await model.toggleReminder(reminder)
-        #expect(model.banners.current?.style == .problem)
-        #expect(model.banners.current?.text == L10n.string("error.reminder.notFound"))
+        #expect(events.sent == [.failure(.reminderNotFound)])
         await model.waitForSourceRefresh()
         #expect(model.reminders.isEmpty)
     }

@@ -48,6 +48,17 @@ extension AppModel {
         }
     }
 
+    /// The new task or habit page is left: its note is created (none for a page left untouched), or the user is told why
+    /// its name cannot be used. `unnamed`: the name of a note whose name was left empty. True once the page is done with.
+    func create(from page: NewNotePage, unnamed: String) async -> Bool {
+        if let problem = page.nameProblem(nameProblem(in:)) {
+            appEvents.send(.nameRejected(problem, name: page.name))
+            return false
+        }
+        guard let creation = page.creation(unnamed: unnamed, rules: nameProblem(in:)) else { return false }
+        return await create(creation.draft, named: creation.name) != nil
+    }
+
     /// Creates the note of a draft (a task or a habit) with all its fields, its text and its subtasks
     /// (each a task of its own linked to its parent). Returns the final name.
     func create(_ draft: NoteDraft, named name: String) async -> String? {
@@ -59,9 +70,10 @@ extension AppModel {
                 try await createSubtask(subtask, of: created.name)
             }
             await publishDerivedState()
+            appEvents.send(.created(created.name))
             return created.name
         } catch {
-            banners.show(Self.describe(error), style: .problem)
+            appEvents.send(.failure(AppFailure(error)))
             return nil
         }
     }
@@ -72,7 +84,7 @@ extension AppModel {
             try await createSubtask(name, of: parent)
             await publishDerivedState()
         } catch {
-            banners.show(Self.describe(error), style: .problem)
+            appEvents.send(.failure(AppFailure(error)))
         }
     }
 

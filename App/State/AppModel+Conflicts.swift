@@ -13,9 +13,9 @@ extension AppModel {
         do {
             try await backup([note], reason: "conflict")
             try await versions.keep(version.id, of: note)
-            banners.show(L10n.format("banner.conflictResolved", name), style: .success)
+            appEvents.send(.conflictResolved(name))
         } catch {
-            banners.show(Self.describe(error), style: .problem)
+            appEvents.send(.failure(AppFailure(error)))
         }
         if let result = try? await services.tasks.load() { setScanResult(result) }
         await publishDerivedState()

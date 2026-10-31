@@ -66,7 +66,7 @@ extension AppModel {
                 if config.flags.autoPromote { report.promoted = await autoPromote() }
                 await fileAwayDoneTasks()
             } catch {
-                setVaultState(.failed(Self.describe(error)))
+                setVaultState(.failed(AppFailure(error)))
                 scanFailed = true
             }
         } else {
@@ -134,33 +134,11 @@ extension AppModel {
     }
 
     private func announceResult(_ report: SyncReport, announce: Bool, newProblems: Bool) {
-        if !report.conflicts.isEmpty {
-            banners.show(L10n.string("banner.conflict"), style: .warning, opens: .conflicts, items: report.conflicts)
-        }
-        if !report.promoted.isEmpty {
-            banners.show(L10n.string("banner.promoted"), style: .success, items: report.promoted)
-        }
+        if !report.conflicts.isEmpty { appEvents.send(.conflictsFound(report.conflicts)) }
+        if !report.promoted.isEmpty { appEvents.send(.promoted(report.promoted)) }
         if announce, config.flags.syncBanner {
-            banners.show(report.summary, style: .synced, counts: report.counts)
+            appEvents.send(.synced(added: report.added.count, changed: report.changed.count, removed: report.removed.count))
         }
-        if newProblems, config.flags.problemBadge {
-            banners.show(L10n.format("banner.problems", problemCount), style: .problem)
-        }
-    }
-
-    static func describe(_ error: Error) -> String {
-        switch error {
-        case VaultAccessError.notSelected: L10n.string("error.vault.notSelected")
-        case VaultAccessError.bookmarkInvalid: L10n.string("error.vault.bookmark")
-        case VaultAccessError.accessDenied: L10n.string("error.vault.access")
-        case TaskStoreError.nameTaken(let name): L10n.format("error.rename.taken", name)
-        case TaskStoreError.invalidName(let name): L10n.format("error.rename.invalid", name)
-        case TaskStoreError.fileMissing(let name): L10n.format("error.file.missing", name)
-        case TaskStoreError.notConfirmed(let name): L10n.format("error.write.notConfirmed", name)
-        case CalendarEditError.eventNotFound: L10n.string("error.event.notFound")
-        case ReminderEditError.reminderNotFound: L10n.string("error.reminder.notFound")
-        // System errors would come in the phone's language; the app speaks English.
-        default: L10n.format("error.generic", (error as NSError).domain, (error as NSError).code)
-        }
+        if newProblems, config.flags.problemBadge { appEvents.send(.problemsFound(problemCount)) }
     }
 }

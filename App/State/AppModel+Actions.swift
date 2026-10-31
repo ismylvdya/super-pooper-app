@@ -23,9 +23,7 @@ extension AppModel {
             let changes = NotToday.changes(for: local, context: context())
             if changes.isEmpty { postpone(name) } else { await writeLocal(task, changes) }
         case .archive:
-            if await setStatus(.archived, of: name) {
-                banners.show(L10n.format("banner.archived", name), style: .success)
-            }
+            if await setStatus(.archived, of: name) { appEvents.send(.archived(name)) }
         case .restoreThisWeek:
             await setStatus(.thisWeek, of: name)
         case .restoreHalfYear:
@@ -95,15 +93,14 @@ extension AppModel {
             if DoneFiling.isDue(result.task) { await fileAwayDoneTasks() }
             return true
         } catch {
-            banners.show(Self.describe(error), style: .problem)
+            appEvents.send(.failure(AppFailure(error)))
             return false
         }
     }
 
-    /// Merged edits are silent; a key changed both here and elsewhere gets a yellow banner.
+    /// Merged edits are silent; a field changed both here and elsewhere is reported.
     func reportClashes(_ result: TaskWriteResult, name: String) {
-        guard !result.clashingFields.isEmpty else { return }
-        banners.show(L10n.format("banner.conflictSameKey", name), style: .warning, items: result.clashingFields.map(TaskFieldText.title))
+        if let clashes = AppEvent.clashes(in: result, of: name) { appEvents.send(clashes) }
     }
 
     func delete(_ task: TaskItem) async {
@@ -111,10 +108,10 @@ extension AppModel {
             try await backup([task], reason: "delete")
             try await services.tasks.delete(task)
             remove(task)
-            banners.show(L10n.format("banner.deleted", task.name), style: .success)
+            appEvents.send(.deleted(task.name))
             await publishDerivedState()
         } catch {
-            banners.show(Self.describe(error), style: .problem)
+            appEvents.send(.failure(AppFailure(error)))
         }
     }
 
@@ -136,8 +133,9 @@ extension AppModel {
             replace(result)
             renamed = true
             followRename(from: name, to: trimmed)
+            appEvents.send(.renamed(trimmed))
         } catch {
-            banners.show(Self.describe(error), style: .problem)
+            appEvents.send(.failure(AppFailure(error)))
         }
         // Whatever happened, the files are the truth: re-read them.
         if let result = try? await services.tasks.load() { setScanResult(result) }
@@ -212,13 +210,12 @@ extension AppModel {
     /// The weekly review on the phone: a task of a later planning level joins this week.
     func moveToThisWeek(_ name: String) async {
         guard let task = task(named: name), task.canPromote else { return }
-        if await setStatus(.thisWeek, of: name) {
-            banners.show(L10n.string("banner.promoted"), style: .success, items: [name])
-        }
+        if await setStatus(.thisWeek, of: name) { appEvents.send(.promoted([name])) }
     }
 
     func resetOrder() {
         updateDayState { $0.manualOrder = nil }
+        appEvents.send(.orderReset)
         Task { await publishDerivedState() }
     }
 

@@ -14,11 +14,11 @@ extension AppModel {
         do {
             guard let trash = services.trash else { return }
             let name = try await trash.restore(note)
-            banners.show(L10n.format("banner.restored", name), style: .success)
+            appEvents.send(.restored(name))
             if let result = try? await services.tasks.load() { setScanResult(result) }
             await publishDerivedState()
         } catch {
-            banners.show(Self.describe(error), style: .problem)
+            appEvents.send(.failure(AppFailure(error)))
         }
         await refreshTrash()
     }
@@ -26,9 +26,9 @@ extension AppModel {
     func deletePermanently(_ note: TrashedNote) async {
         do {
             try await services.trash?.deletePermanently(note)
-            banners.show(L10n.format("banner.deletedForever", note.name), style: .success)
+            appEvents.send(.deletedForever(note.name))
         } catch {
-            banners.show(Self.describe(error), style: .problem)
+            appEvents.send(.failure(AppFailure(error)))
         }
         await refreshTrash()
     }

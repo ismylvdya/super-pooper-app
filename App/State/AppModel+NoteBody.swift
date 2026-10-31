@@ -74,7 +74,7 @@ extension AppModel {
             reportClashes(result, name: task.name)
             return true
         } catch {
-            banners.show(Self.describe(error), style: .problem)
+            appEvents.send(.failure(AppFailure(error)))
             return false
         }
     }

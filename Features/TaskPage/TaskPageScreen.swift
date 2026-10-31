@@ -108,7 +108,6 @@ struct HeaderNameField: View {
             if await model.rename(task.name, to: newName) {
                 onRenamed(newName)
                 if let index = router.path.lastIndex(of: .task(task.name)) { router.path[index] = .task(newName) }
-                model.banners.show(L10n.format("banner.renamed", newName), style: .success)
             } else {
                 draft = task.name
             }

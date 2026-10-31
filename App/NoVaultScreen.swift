@@ -4,13 +4,13 @@ import SwiftUI
 /// DEBUG builds also offer the test vault that `sim.sh load-vault` puts into Documents.
 struct NoVaultScreen: View {
     @Environment(AppModel.self) private var model
-    let message: String?
+    let failure: AppFailure?
     @State private var isPickerPresented = false
 
     var body: some View {
         VStack {
-            EmptyStateView(icon: .emptyVault, title: message == nil ? "vault.empty.title" : "vault.error.title",
-                           message: message.map { Text(verbatim: $0) } ?? Text("vault.empty.message"),
+            EmptyStateView(icon: .emptyVault, title: failure == nil ? "vault.empty.title" : "vault.error.title",
+                           message: failure.map { Text(verbatim: FailureText.describe($0)) } ?? Text("vault.empty.message"),
                            actionTitle: "vault.choose") { isPickerPresented = true }
             #if DEBUG
             Button("vault.useTestVault") {

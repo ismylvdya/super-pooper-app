@@ -11,7 +11,8 @@ enum PreviewModel {
                      calendar: CalendarSource = FixedCalendar(current: PreviewSamples.calendar),
                      clock: Clock = FixedClock(now: PreviewSamples.context.now),
                      tasks: [TaskItem] = PreviewSamples.tasks,
-                     delay: Delay = SleepDelay()) -> (model: AppModel, router: Router, config: AppConfig)? {
+                     delay: Delay = SleepDelay(),
+                     appEvents: AppEventSink? = nil) -> (model: AppModel, router: Router, config: AppConfig, banners: BannerCenter)? {
         guard let config = try? AppConfig.load() else { return nil }
         let store = JSONFileStore(directory: FileManager.default.temporaryDirectory
             .appendingPathComponent("SuperPooperPreview-\(UUID().uuidString)"))
@@ -28,11 +29,12 @@ enum PreviewModel {
             settingsStore: settingsStore, dayStateStore: DayStateStore(store: store),
             snapshotStore: SnapshotStore(store: store), alertStateStore: AlertStateStore(store: store), widgets: NoWidgets(),
             notificationImage: NotificationImageStore(url: store.url(config.rules.notifications.imageFile), maxPixels: 1))
-        let model = AppModel(config: config, services: services, banners: BannerCenter(), clock: clock, calendar: calendar,
-                             delay: delay)
+        let banners = BannerCenter()
+        let model = AppModel(config: config, services: services, appEvents: appEvents ?? BannerPresenter(banners: banners), clock: clock,
+                             calendar: calendar, delay: delay)
         model.setScanResult(VaultScanResult(tasks: tasks, fileProblems: [], conflicted: []))
         model.setSources(events: PreviewSamples.events, reminders: PreviewSamples.reminders)
-        return (model, Router(), config)
+        return (model, Router(), config, banners)
     }
 }
 
@@ -45,7 +47,7 @@ extension View {
                 NavigationStack { self }
                     .environment(preview.model)
                     .environment(preview.router)
-                    .environment(preview.model.banners)
+                    .environment(preview.banners)
                     .appConfig(preview.config)
             } else {
                 Text(verbatim: "Config error")

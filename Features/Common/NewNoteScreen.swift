@@ -41,19 +41,13 @@ struct NewNoteScreen: View {
         kind == .task ? NoteDraft.newTask : model.newHabitDraft()
     }
 
-    /// Another tab was chosen: the page is still in its stack, only hidden. Otherwise the page is left for good.
+    /// Another tab was chosen: the page is still in its stack, only hidden. Otherwise the page is left for good, and the
+    /// draft goes once its note is created.
     private func leave() {
         if let tab, router.tab != tab { return }
         guard let page else { return }
-        if let problem = page.nameProblem(model.nameProblem(in:)) {
-            model.banners.show(NoteNameProblemText.describe(problem, name: page.name), style: .problem)
-            return
-        }
-        guard let creation = page.creation(unnamed: L10n.string("note.unnamed"), rules: model.nameProblem(in:)) else { return }
         Task {
-            guard let created = await model.create(creation.draft, named: creation.name) else { return }
-            self.page = nil
-            model.banners.show(L10n.format("banner.created", created), style: .success)
+            if await model.create(from: page, unnamed: L10n.string("note.unnamed")) { self.page = nil }
         }
     }
 }
