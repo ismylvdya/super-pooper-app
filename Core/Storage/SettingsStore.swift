@@ -7,12 +7,12 @@ struct SettingsStore: Sendable {
     let store: JSONFileStore
     let defaults: DefaultSettings
 
-    /// Stored values over defaults; a broken file falls back to defaults.
+    /// Stored values over defaults (what older versions stored, migrated); a broken file falls back to defaults.
     func load() -> AppSettings {
         guard let stored = store.readData(Self.fileName),
               let merged = try? JSONMerge.merge(base: defaults.json, overlay: stored),
               let settings = try? JSONDecoder.store.decode(AppSettings.self, from: merged) else { return defaults.values }
-        return settings
+        return SettingsMigration.migrated(settings)
     }
 
     func save(_ settings: AppSettings) throws {

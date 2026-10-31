@@ -7,7 +7,7 @@ struct ColorSettingsSection: View {
     @Environment(\.tokens) private var tokens
 
     /// The colors offered here (token names in tokens.json).
-    static let editable: [ColorToken] = [.task, .habit, .past, .high, .energy, .heart, .nowLine, .twice, .problem]
+    static let editable: [ColorToken] = [.task, .habit, .past, .high, .energy, .heart, .nowLine, .problem]
 
     var body: some View {
         PlateSection(header: "settings.colors", info: "info.settings.colors", hint: "settings.colors.hint") {

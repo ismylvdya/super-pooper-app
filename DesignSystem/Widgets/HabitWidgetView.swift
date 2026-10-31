@@ -20,7 +20,7 @@ struct HabitWidgetView: View {
     private func content(metrics: HabitDotMetrics) -> some View {
         let color = tokens.habitColor(habit)
         return VStack(alignment: .leading, spacing: tokens.space(.habitCellGap) * 2) {
-            HStack(alignment: .top, spacing: tokens.space(.chipGap)) {
+            HStack(alignment: .top, spacing: tokens.space(.widgetGap)) {
                 HabitWidgetTitle(text: habit.name, size: options.titleSize ?? Double(tokens.uiFont(.widgetTitle).pointSize),
                                  wrap: options.wrapTitle, breakWords: options.breakWords)
                     .foregroundStyle(color)

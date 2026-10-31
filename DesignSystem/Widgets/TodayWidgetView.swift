@@ -11,7 +11,7 @@ struct TodayWidgetView: View {
     let maxTimelineHours: Int
 
     var body: some View {
-        VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
+        VStack(alignment: .leading, spacing: tokens.space(.widgetGap)) {
             ScreenLayoutView(layout: layout) { id in
                 switch id {
                 case .pool: WidgetPoolBlock(plan: plan, visibleCount: settings.poolUsesVisibleCount ? settings.pool.visibleCount : nil)
@@ -31,10 +31,10 @@ struct WidgetPoolBlock: View {
     let visibleCount: Int?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
+        VStack(alignment: .leading, spacing: tokens.space(.widgetGap)) {
             // The same plates as Today, without chips; habits of one routine share a plate.
             ForEach(PoolSegments.make(visibleCount.map { Array(plan.pool.prefix($0)) } ?? plan.pool)) { segment in
-                VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
+                VStack(alignment: .leading, spacing: tokens.space(.widgetGap)) {
                     ForEach(segment.items) { item in
                         TaskRowView(item: item, today: plan.today, titleFont: tokens.font(.widgetTitle), showsDetails: false,
                                     isCompact: true, titleLineHeight: tokens.uiFont(.widgetTitle).lineHeight)
@@ -70,7 +70,7 @@ struct WidgetTimelineBlock: View {
     let maxHours: Int
 
     var body: some View {
-        VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
+        VStack(alignment: .leading, spacing: tokens.space(.widgetGap)) {
             if !plan.allDayEvents.isEmpty {
                 AllDayStrip(events: plan.allDayEvents, font: tokens.font(.widgetCaption), lineHeight: tokens.size(.widgetAllDayLine), onTap: nil)
             }
@@ -99,7 +99,7 @@ struct WidgetTimelineBlock: View {
     /// and nothing overlaps.
     private func style(hourHeight: CGFloat) -> TimelineStyle {
         // Half an hour in the current scale, but never less than one line of text.
-        let minimum = max(hourHeight / 2, tokens.uiFont(.widgetCaption).lineHeight + tokens.space(.timelineItemGap) * 2)
+        let minimum = max(hourHeight / 2, tokens.uiFont(.widgetCaption).lineHeight + tokens.space(.compactPlateVertical) * 2)
         let line = tokens.uiFont(.widgetCaption).lineHeight
         var style = TimelineStyle(eventFont: tokens.font(.widgetCaption), taskFont: tokens.font(.widgetCaption),
                                   eventLineHeight: line, taskLineHeight: line,

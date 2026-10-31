@@ -41,7 +41,7 @@ private struct PullToExtend: ViewModifier {
                     .foregroundStyle(tokens.color(.secondaryText))
                     .scaleEffect(isArmed ? tokens.ratio(.pullArmedScale) : start + (1 - start) * min(pull / threshold, 1))
                     .opacity(min(pull / threshold, 1))
-                    .offset(y: max(pull / 2 - tokens.size(.pullIcon) / 2, 0))
+                    .offset(y: max(pull / 2 - tokens.uiFont(.pullIcon).pointSize / 2, 0))
                     .animation(.easeOut(duration: tokens.duration(.animation)), value: isArmed)
                     .allowsHitTesting(false)
             }

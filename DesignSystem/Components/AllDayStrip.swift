@@ -30,7 +30,7 @@ struct AllDayStrip: View {
     /// Widgets have no buttons: the bar is plain there.
     private func bar(_ event: CalendarEvent) -> some View {
         HStack(spacing: tokens.space(.dotTextGap)) {
-            Circle().fill(Color(hex: event.colorHex)).frame(width: tokens.size(.problemDot), height: tokens.size(.problemDot))
+            Circle().fill(Color(hex: event.colorHex)).frame(width: tokens.size(.eventDot), height: tokens.size(.eventDot))
             FadingText(text: event.title, font: font ?? tokens.font(.chip), lineHeight: lineHeight)
         }
         .foregroundStyle(tokens.color(.eventText))

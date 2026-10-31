@@ -96,7 +96,7 @@ private struct SlotPlate: ViewModifier {
         let shape = PlateShape(cornerRadius: tokens.rowPlateRadius)
         content
             .environment(\.plateTrailingInset, tokens.slotPlateInset)
-            .padding(.vertical, isCompact ? tokens.space(.timelineItemGap) : tokens.space(.rowVertical) / 2)
+            .padding(.vertical, isCompact ? tokens.space(.compactPlateVertical) : tokens.space(.rowVertical) / 2)
             .padding(.horizontal, tokens.slotPlateInset)
             .background(isPast ? tokens.color(.past).opacity(tokens.opacity(.eventFill)) : tokens.color(.plateBackground), in: shape)
             .clipShape(shape)

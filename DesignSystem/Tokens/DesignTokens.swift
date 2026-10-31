@@ -53,8 +53,7 @@ struct DesignTokens: Decodable, Sendable {
     func overridingColors(_ hexByName: [String: String]) -> DesignTokens {
         var overrides: [ColorToken: ColorSpec] = [:]
         for (name, hex) in hexByName {
-            // The interface is black / white; an accent chosen in an older version is ignored.
-            guard let token = ColorToken(rawValue: name), token != .accent, UIColor(hex: hex) != nil else { continue }
+            guard let token = ColorToken(rawValue: name), UIColor(hex: hex) != nil else { continue }
             overrides[token] = ColorSpec(hex: hex)
         }
         var tokens = self

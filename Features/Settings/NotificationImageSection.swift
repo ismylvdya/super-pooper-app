@@ -64,7 +64,7 @@ struct NotificationImageSection: View {
         let side = tokens.size(.iconColumn)
         if let image {
             Image(uiImage: image).resizable().scaledToFill().frame(width: side, height: side)
-                .clipShape(RoundedRectangle(cornerRadius: tokens.radius(.widgetItem), style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: tokens.radius(.notificationImage), style: .continuous))
         } else {
             Image(systemName: icons[.habit]).foregroundStyle(tokens.color(.habit)).frame(width: side, height: side)
         }

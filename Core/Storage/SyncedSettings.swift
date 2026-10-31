@@ -58,7 +58,7 @@ struct SyncedSettings: Codable, Equatable, Sendable {
               let merged = try? JSONMerge.merge(base: current, overlay: json),
               var synced = try? JSONDecoder.store.decode(SyncedSettings.self, from: merged) else { return settings }
         if let colors = (try? JSONDecoder.store.decode(NoteColors.self, from: json))?.colors { synced.colors = colors }
-        return synced.applied(to: settings)
+        return SettingsMigration.migrated(synced.applied(to: settings))
     }
 
     private struct NoteColors: Decodable {

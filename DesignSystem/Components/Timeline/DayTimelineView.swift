@@ -28,7 +28,7 @@ struct DayTimelineView<TaskContent: View>: View {
                     block(for: item.slot)
                         .environment(\.titleReserve, cornerWidth(linked: isLinked, alerts: item.slot.alerts))
                         .overlay(alignment: .topTrailing) {
-                            HStack(spacing: tokens.space(.chipVertical)) {
+                            HStack(spacing: tokens.space(.cornerMarkGap)) {
                                 if isLinked { linkBadge(item.slot, isOn: style.highlightedSlot == item.slot.id) }
                                 if item.slot.alerts { AlertBell() }
                             }
@@ -57,9 +57,9 @@ struct DayTimelineView<TaskContent: View>: View {
     /// How far from the block's right edge the corner marks reach (their inset, the link mark, the bell and the gap
     /// between them); 0 without marks. The title fades out `fadeGap` before that (`TitleFade`).
     private func cornerWidth(linked: Bool, alerts: Bool) -> CGFloat {
-        let marks = [linked ? tokens.size(.linkBadge) : nil, alerts ? bell.size : nil].compactMap { $0 }
+        let marks = [linked ? tokens.uiFont(.linkBadge).pointSize : nil, alerts ? bell.size : nil].compactMap { $0 }
         guard !marks.isEmpty else { return 0 }
-        return cornerInset + marks.reduce(0, +) + tokens.space(.chipVertical) * CGFloat(marks.count - 1)
+        return cornerInset + marks.reduce(0, +) + tokens.space(.cornerMarkGap) * CGFloat(marks.count - 1)
     }
 
     private var labelWidth: CGFloat { style.showsHourLabels ? tokens.space(.timelineLabelWidth) : 0 }
