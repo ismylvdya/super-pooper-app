@@ -87,9 +87,7 @@ struct DayMembershipTests {
 
     @Test func aHabitMarkedTodayLeavesTheDay() {
         let habit = makeHabit("Meditation") { task in
-            task.completeInstances = [LocalDate("2026-10-20"), LocalDate("2026-10-21")]
-            task.partialInstances = [LocalDate("2026-10-21")]
-            task.twiceInstances = [LocalDate("2026-10-20")]
+            task.marks = [LocalDate("2026-10-20"): .twice, LocalDate("2026-10-21"): .partial]
         }
         #expect(DayScenario(tasks: [habit]).build().dayNames.isEmpty)
     }
@@ -97,12 +95,12 @@ struct DayMembershipTests {
     @Test func aTwiceADayHabitStaysUntilItsSecondMark() throws {
         let once = makeHabit("Brush teeth") { task in
             task.habit.twiceADay = true
-            task.completeInstances = [LocalDate("2026-10-21")]
+            task.marks = [LocalDate("2026-10-21"): .done]
         }
         let item = try #require(DayScenario(tasks: [once]).build().item(named: "Brush teeth"))
         #expect(item.state == .marked(.done))
         var twice = once
-        twice.twiceInstances = [LocalDate("2026-10-21")]
+        twice.marks = [LocalDate("2026-10-21"): .twice]
         #expect(DayScenario(tasks: [twice]).build().dayNames.isEmpty)
     }
 

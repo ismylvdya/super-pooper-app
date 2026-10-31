@@ -36,7 +36,7 @@ enum WriteConflict {
         case .weeklyGoal: return (keys.weeklyGoal, { $0.habit.weeklyGoal })
         case .allowedSkips: return (keys.allowedSkips, { $0.habit.allowedSkips })
         case .subtaskOrder: return (keys.subtaskOrder, { $0.subtaskOrder })
-        case .addPreviousTask, .removePreviousTask, .addProject, .markInstance: return nil
+        case .addPreviousTask, .removePreviousTask, .addProject, .mark: return nil
         }
     }
 }

@@ -23,7 +23,7 @@ struct BlockingEvaluator: Sendable {
         guard let task = graph.tasksByName[name] else { return true }
         guard task.isHabit else { return task.status.isCompleted }
         if skipped.containsNoteName(name) { return true }
-        if HabitInstances(task: task).mark(on: context.today) != nil { return true }
+        if task.mark(on: context.today) != nil { return true }
         return !occurrence.occurs(task, on: context.today)
     }
 }

@@ -45,13 +45,13 @@ struct BlockingTests {
         #expect(DayScenario(tasks: [stretch, shower]).build().item(named: "Shower")?.isBlocked == true)
 
         for mark in HabitMark.allCases {
-            let marked = stretch.applying([.markInstance(day: LocalDate("2026-10-21"), mark: mark)])
+            let marked = stretch.applying([.mark(mark, on: LocalDate("2026-10-21"))])
             #expect(DayScenario(tasks: [marked, shower]).build().item(named: "Shower")?.isBlocked == false, "\(mark)")
         }
     }
 
     @Test func aMarkFromAnotherDayDoesNotUnblock() {
-        let stretch = makeHabit("Stretch") { $0.completeInstances = [LocalDate("2026-10-20")] }
+        let stretch = makeHabit("Stretch") { $0.marks = [LocalDate("2026-10-20"): .done] }
         let shower = makeHabit("Shower") { $0.previousTasks = ["Stretch"] }
         #expect(DayScenario(tasks: [stretch, shower]).build().item(named: "Shower")?.isBlocked == true)
     }
@@ -156,6 +156,6 @@ struct BlockingTests {
     private var assemble: TaskNote { makeTask("Assemble wardrobe") { $0.previousTasks = ["Find screwdriver"] } }
 
     private func markedToday(_ habit: TaskNote) -> TaskNote {
-        habit.applying([.markInstance(day: LocalDate("2026-10-21"), mark: .done)])
+        habit.applying([.mark(.done, on: LocalDate("2026-10-21"))])
     }
 }

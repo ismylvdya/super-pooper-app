@@ -22,8 +22,8 @@ enum TaskEdit: Hashable, Sendable {
     case previousEvent(EventLink?)
     case nextEvent(EventLink?)
     case feel(TaskFeel)
-    /// Exactly one mark (or none) for `day` in the three instance lists.
-    case markInstance(day: LocalDate, mark: HabitMark?)
+    /// Exactly one mark (or none) of a recurring task for `day`.
+    case mark(HabitMark?, on: LocalDate)
     /// The repeat rule, or `nil` to remove it.
     case recurrence(RecurrenceRule?)
     case reminderTimes([LocalTime])

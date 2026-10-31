@@ -66,9 +66,8 @@ struct VaultScannerTests {
         var expected = TaskNote(name: "Медитация 🧘", relativePath: "TaskNotes/Tasks/Медитация 🧘.md", status: .halfYear)
         expected.timeEstimate = 15
         expected.recurrence = try RecurrenceCodec.parse("DTSTART:20260921;FREQ=DAILY;INTERVAL=1").get()
-        expected.completeInstances = ["2026-10-15", "2026-10-16", "2026-10-17", "2026-10-19", "2026-10-20"].map { LocalDate($0) }
-        expected.partialInstances = [LocalDate("2026-10-16")]
-        expected.twiceInstances = [LocalDate("2026-10-19")]
+        expected.marks = [LocalDate("2026-10-15"): .done, LocalDate("2026-10-16"): .partial, LocalDate("2026-10-17"): .done,
+                          LocalDate("2026-10-19"): .twice, LocalDate("2026-10-20"): .done]
         try expectSame(task, expected, created: "2026-09-21", modified: "2026-10-20")
     }
 
@@ -77,7 +76,7 @@ struct VaultScannerTests {
         #expect(task.due == TaskDue("2026-09-21T09:00"))
         #expect(task.recurrence?.frequency == .daily && task.recurrence?.startDate == LocalDate("2026-09-21"))
         #expect(task.recurrence?.startTime == LocalTime("09:00"))
-        #expect(task.completeInstances.isEmpty && task.timeEstimate == 2)
+        #expect(task.marks.isEmpty && task.timeEstimate == 2)
     }
 
     @Test func linksAreReadAsObjectsAndAsPlainStrings() async throws {

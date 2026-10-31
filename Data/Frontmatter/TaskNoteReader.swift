@@ -43,9 +43,8 @@ struct TaskNoteReader: Sendable {
                 fields.problems.append(.unknownRecurrence(raw))
             }
         }
-        task.completeInstances = fields.dates(keys.completeInstances)
-        task.partialInstances = fields.dates(keys.partialInstances)
-        task.twiceInstances = fields.dates(keys.twiceInstances)
+        task.marks = HabitInstances(complete: fields.dates(keys.completeInstances), partial: fields.dates(keys.partialInstances),
+                                    twice: fields.dates(keys.twiceInstances)).marks
         task.reminderTimes = fields.times(keys.reminderTimes)
         task.habit = habitOptions(&fields)
         task.completedDate = fields.parsed(keys.completedDate, LocalDate.init(isoString:))

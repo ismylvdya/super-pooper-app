@@ -29,11 +29,7 @@ extension TaskNote {
             case .nextEvent(let value): task.nextEvent = value
             case .feel(let value): task.feel = value
             case .timeZone(let value): task.timeZone = value
-            case .markInstance(let day, let mark):
-                let instances = HabitInstances(task: task).setting(mark, on: day)
-                task.completeInstances = instances.complete
-                task.partialInstances = instances.partial
-                task.twiceInstances = instances.twice
+            case .mark(let mark, let day): task.marks[day] = mark
             case .recurrence(let rule):
                 task.recurrence = rule
                 task.hasUnreadableRecurrence = false

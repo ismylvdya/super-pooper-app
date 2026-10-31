@@ -15,7 +15,7 @@ extension AppModel {
     /// Tap on a habit's day: none → Done (→ Twice) → none.
     func cycleHabit(_ name: String, on day: LocalDate) async {
         await markHabit(name, on: day) { habit in
-            HabitMarking.next(after: HabitInstances(task: habit).mark(on: day), twiceADay: habit.isTwiceADay)
+            HabitMarking.next(after: habit.mark(on: day), twiceADay: habit.isTwiceADay)
         }
     }
 
@@ -44,7 +44,7 @@ extension AppModel {
             return
         }
         await markHabit(name, on: day) { habit in
-            HabitMarking.notificationMark(pressed, current: HabitInstances(task: habit).mark(on: day), remindersPerDay: habit.habitTimes.count)
+            HabitMarking.notificationMark(pressed, current: habit.mark(on: day), remindersPerDay: habit.habitTimes.count)
         }
     }
 

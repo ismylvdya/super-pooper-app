@@ -4,27 +4,25 @@ import Foundation
 struct HabitHistory: Sendable {
     let task: TaskNote
     let days: DayBoundary
-    private let instances: HabitInstances
     /// Built once: the history asks about every day since the start.
     private let schedule: TaskSchedule
 
     init(task: TaskNote, days: DayBoundary) {
         self.task = task
         self.days = days
-        self.instances = HabitInstances(task: task)
         self.schedule = TaskOccurrence(days: days).schedule(of: task)
     }
 
     var options: HabitOptions { task.habit }
 
-    func mark(on day: LocalDate) -> HabitMark? { instances.mark(on: day) }
+    func mark(on day: LocalDate) -> HabitMark? { task.mark(on: day) }
 
     func isScheduled(_ day: LocalDate) -> Bool { schedule.occurs(on: day) }
 
     /// The first day the habit counts from: its creation or its first mark, whichever is earlier.
     func start(today: LocalDate) -> LocalDate {
         let created = task.created.map(days.day(of:)) ?? today
-        return ([created] + instances.complete).min() ?? today
+        return ([created] + task.marks.keys).min() ?? today
     }
 
     /// What a day is worth toward the goal and the percentages: Partially is half a day,

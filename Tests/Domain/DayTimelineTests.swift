@@ -45,9 +45,9 @@ struct DayTimelineTests {
             DayScenario(tasks: [task]).build().timeline.map { clockTime($0.start) }
         }
         #expect(times(water()) == ["09:00", "18:00"])
-        #expect(times(water { $0.completeInstances = [today] }) == ["18:00"])
-        #expect(times(water { $0.completeInstances = [today]; $0.twiceInstances = [today] }).isEmpty)
-        let once = makeHabit("Vitamins", time: "09:00") { $0.completeInstances = [today] }
+        #expect(times(water { $0.marks = [today: .done] }) == ["18:00"])
+        #expect(times(water { $0.marks = [today: .twice] }).isEmpty)
+        let once = makeHabit("Vitamins", time: "09:00") { $0.marks = [today: .done] }
         #expect(DayScenario(tasks: [once]).build().timeline.isEmpty)
     }
 
@@ -56,8 +56,7 @@ struct DayTimelineTests {
         let today = LocalDate(TestCalendar.wednesday)
         let drops = makeHabit("Eye drops") { task in
             task.reminderTimes = [LocalTime("09:00"), LocalTime("14:00"), LocalTime("20:00")]
-            task.completeInstances = [today]
-            task.twiceInstances = [today]
+            task.marks = [today: .twice]
         }
         #expect(DayScenario(tasks: [drops]).build().timeline.isEmpty)
     }
@@ -216,7 +215,7 @@ struct DayTimelineTests {
 
     @Test func onlyPastEventsAreGreyedOutWhileDoneEntriesLeave() throws {
         let morning = makeEvent("Standup", from: "10:00", to: "10:15")
-        let doneTimed = makeHabit("Vitamins", time: "09:00") { $0.completeInstances = [LocalDate("2026-10-21")] }
+        let doneTimed = makeHabit("Vitamins", time: "09:00") { $0.marks = [LocalDate("2026-10-21"): .done] }
         let openTimed = makeTask("Missed at noon") { $0.due = TaskDue("2026-10-21T12:00") }
         let doneChain = makeTask("Prepared", status: .done) { $0.completedDate = LocalDate("2026-10-21"); $0.nextEvent = eventLink(to: self.call) }
         let openChain = makeTask("To print") { $0.previousTasks = ["Prepared"] }

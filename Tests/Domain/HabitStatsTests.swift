@@ -14,9 +14,8 @@ struct HabitStatsTests {
         var task = makeTask("Habit", status: .habit, created: start.isoString)
         task.recurrence = try? RecurrenceCodec.parse("DTSTART:\(start.isoString.replacingOccurrences(of: "-", with: ""));FREQ=DAILY").get()
         let day = { (offset: Int) in self.today.adding(days: -offset) }
-        task.completeInstances = (done + partial + twice).map(day)
-        task.partialInstances = partial.map(day)
-        task.twiceInstances = twice.map(day)
+        task.marks = Dictionary(uniqueKeysWithValues: done.map { (day($0), HabitMark.done) } + partial.map { (day($0), .partial) }
+            + twice.map { (day($0), .twice) })
         configure(&task)
         return task
     }

@@ -30,18 +30,18 @@ struct NotificationPlannerTests {
     }
 
     @Test func markedDaysAreNotPlanned() {
-        let marked = vitamins.applying([.markInstance(day: LocalDate("2026-10-21"), mark: .done),
-                                        .markInstance(day: LocalDate("2026-10-23"), mark: .partial)])
+        let marked = vitamins.applying([.mark(.done, on: LocalDate("2026-10-21")),
+                                        .mark(.partial, on: LocalDate("2026-10-23"))])
         #expect(plan([marked], at: "08:00").map(\.day.isoString) == ["2026-10-22"] + days(24...27))
     }
 
     @Test func theNextReminderOfTheDayStillComesAfterTheFirstDone() {
         let twoReminders = makeHabit("Stretch", status: .habit) { $0.reminderTimes = [LocalTime("09:00"), LocalTime("09:01")] }
-        let doneOnce = twoReminders.applying([.markInstance(day: LocalDate("2026-10-21"), mark: .done)])
+        let doneOnce = twoReminders.applying([.mark(.done, on: LocalDate("2026-10-21"))])
         let today = plan([doneOnce], at: "09:00").filter { $0.day.isoString == "2026-10-21" }
         #expect(today.map { clockTime($0.fireDate) } == ["09:01"])
 
-        let doneTwice = twoReminders.applying([.markInstance(day: LocalDate("2026-10-21"), mark: .twice)])
+        let doneTwice = twoReminders.applying([.mark(.twice, on: LocalDate("2026-10-21"))])
         #expect(plan([doneTwice], at: "09:00").allSatisfy { $0.day.isoString != "2026-10-21" })
     }
 
@@ -119,7 +119,7 @@ struct NotificationPlannerTests {
         let todays = valid.filter { $0.day == LocalDate("2026-10-21") }
         #expect(Set(todays.map(\.id)) == ["habit|Vitamins 💊|2026-10-21|09:00", "habit|Vitamins 💊|09:00", "task|Parcel"])
 
-        let marked = vitamins.applying([.markInstance(day: LocalDate("2026-10-21"), mark: .done)])
+        let marked = vitamins.applying([.mark(.done, on: LocalDate("2026-10-21"))])
         let doneParcel = parcel.applying([.complete(on: LocalDate("2026-10-21"))])
         let afterMarking = planner.stillValidToday(tasks: [marked, doneParcel], reminders: [], skipped: [], context: context)
         #expect(!afterMarking.contains { $0.day == LocalDate("2026-10-21") })

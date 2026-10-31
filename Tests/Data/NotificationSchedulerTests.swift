@@ -50,7 +50,7 @@ struct NotificationSchedulerTests {
         await todayRang()
         #expect(center.delivered.map(\.identifier) == [slot])
         #expect(fireDate(slot) == TestCalendar.date("2026-10-22", "09:00"))
-        await sync([water.applying([.markInstance(day: LocalDate(TestCalendar.wednesday), mark: .done)])], at: "09:40")
+        await sync([water.applying([.mark(.done, on: LocalDate(TestCalendar.wednesday))])], at: "09:40")
         #expect(center.delivered.isEmpty)
     }
 
@@ -82,7 +82,7 @@ struct NotificationSchedulerTests {
         await todayRang()
         await scheduler.restore(try #require(center.dismiss(slot)))
         center.deliver(NotificationIdentifier.restored(slot))
-        await sync([water.applying([.markInstance(day: LocalDate(TestCalendar.wednesday), mark: .done)])], at: "09:40")
+        await sync([water.applying([.mark(.done, on: LocalDate(TestCalendar.wednesday))])], at: "09:40")
         #expect(center.delivered.isEmpty)
     }
 

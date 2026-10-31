@@ -59,7 +59,7 @@ struct TaskNoteWriter: Sendable {
                 set(keys.nextEvent, link.map { .scalar($0.rawValue(timeZone: timeZone), quoted: true) }, in: &document)
             case .feel(let value):
                 setFeel(value, in: &document)
-            case .markInstance(let day, let mark):
+            case .mark(let mark, let day):
                 setInstance(day, included: mark != nil, key: keys.completeInstances, keepEmpty: true, in: &document)
                 setInstance(day, included: mark == .partial, key: keys.partialInstances, keepEmpty: false, in: &document)
                 setInstance(day, included: mark == .twice, key: keys.twiceInstances, keepEmpty: false, in: &document)

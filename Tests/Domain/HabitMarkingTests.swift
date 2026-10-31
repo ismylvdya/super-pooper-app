@@ -64,9 +64,9 @@ struct HabitMarkingTests {
         let habit = makeHabit("Read", status: .habit)
         let yesterday = LocalDate("2026-10-20")
         let changes = TaskMarking(today: LocalDate(TestCalendar.wednesday)).changes(marking: habit, as: .partial, on: yesterday)
-        #expect(changes == [.markInstance(day: yesterday, mark: .partial)])
+        #expect(changes == [.mark(.partial, on: yesterday)])
         let marked = habit.applying(changes)
-        #expect(marked.completeInstances == [yesterday] && marked.partialInstances == [yesterday])
+        #expect(marked.marks == [yesterday: .partial])
     }
 
     @Test func habitOrderKeepsTheDraggedOrderThenAlphabetical() {

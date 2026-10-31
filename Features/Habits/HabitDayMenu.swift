@@ -12,7 +12,7 @@ struct HabitDayMenu: View {
         if showsDate {
             Text(DateText.format(day, .dateTime.day().month(.abbreviated).year(), calendar: model.calendar))
         }
-        let state = HabitInstances(task: habit).mark(on: day).map(DayItemState.marked) ?? .open
+        let state = habit.mark(on: day).map(DayItemState.marked) ?? .open
         ActionMenuContent(menu: .habitDay, item: DayItem(task: habit, state: state, blockers: [], problems: [])) { action in
             Task { await model.setHabitMark(habit.name, on: day, to: AppModel.habitMark(for: action.id)) }
         }

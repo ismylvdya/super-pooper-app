@@ -9,8 +9,7 @@ struct TaskMarking: Sendable {
     func changes(marking task: TaskNote, as mark: HabitMark?, on day: LocalDate? = nil) -> [TaskEdit] {
         if task.isHabit {
             let day = day ?? today
-            let current = HabitInstances(task: task)
-            return current.setting(mark, on: day) == current ? [] : [.markInstance(day: day, mark: mark)]
+            return task.mark(on: day) == mark ? [] : [.mark(mark, on: day)]
         }
         if mark != nil {
             return task.status == .done ? [] : [.complete(on: today)]
@@ -20,7 +19,7 @@ struct TaskMarking: Sendable {
 
     /// Tap: open → done, done → open.
     func changes(toggling task: TaskNote) -> [TaskEdit] {
-        let isMarked = task.isHabit ? HabitInstances(task: task).mark(on: today) != nil : task.status == .done
+        let isMarked = task.isHabit ? task.mark(on: today) != nil : task.status == .done
         return changes(marking: task, as: isMarked ? nil : .done)
     }
 

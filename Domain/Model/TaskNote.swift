@@ -23,9 +23,8 @@ struct TaskNote: Identifiable, Hashable, Codable, Sendable {
     var recurrence: RecurrenceRule?
     /// The item repeats by a rule the app cannot read (a problem on it): it never comes up in a day, yet it is a habit.
     var hasUnreadableRecurrence = false
-    var completeInstances: [LocalDate] = []
-    var partialInstances: [LocalDate] = []
-    var twiceInstances: [LocalDate] = []
+    /// A recurring task's mark of each day it was marked on.
+    var marks: [LocalDate: HabitMark] = [:]
     /// Habit reminders, several per day (`reminder_times`, `HH:mm`).
     var reminderTimes: [LocalTime] = []
     /// The zone the due time and reminder times are kept in (IANA name); nil = wall-clock times (`ZonedTimes`).
@@ -53,6 +52,8 @@ struct TaskNote: Identifiable, Hashable, Codable, Sendable {
         if !reminderTimes.isEmpty { return reminderTimes }
         return due?.time.map { [$0] } ?? []
     }
+    func mark(on day: LocalDate) -> HabitMark? { marks[day] }
+
     /// A habit done twice a day: the Twice option, or two or more reminders a day (the second Done is Twice).
     var isTwiceADay: Bool { habit.twiceADay || habitTimes.count >= 2 }
 }

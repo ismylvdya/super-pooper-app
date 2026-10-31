@@ -21,8 +21,7 @@ enum PreviewSamples {
         let today = context.today
         var water = TaskNote(name: "Выпить воды 💧", relativePath: "TaskNotes/Tasks/water.md", status: .halfYear)
         water.recurrence = RecurrenceDraft(start: today.adding(days: -20)).rule
-        water.completeInstances = [today.adding(days: -2), today.adding(days: -1)]
-        water.partialInstances = [today.adding(days: -2)]
+        water.marks = [today.adding(days: -2): .partial, today.adding(days: -1): .done]
         water.timeEstimate = 2
         var vitamins = water
         vitamins.name = "Витамины 💊"

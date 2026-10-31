@@ -14,7 +14,7 @@ struct ReviewRegressionTests {
         let onMac = try original.replacingOnce("complete_instances:\n", with: "complete_instances:\n  - 2026-10-18\n")
         try note.sandbox.write(onMac, to: note.task.name)
         try await note.mark(.done)
-        let instances = note.task.completeInstances.map(\.isoString)
+        let instances = note.task.marks.keys.map(\.isoString)
         #expect(instances.contains("2026-10-18"))
         #expect(instances.contains("2026-10-21"))
     }

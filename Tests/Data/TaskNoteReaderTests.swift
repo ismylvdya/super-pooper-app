@@ -45,7 +45,7 @@ struct TaskNoteReaderTests {
         #expect(task.status == .other(""))
         #expect(!task.isHighPriority && task.due == nil && task.timeEstimate == nil)
         #expect(task.feel == .neutral && !task.isHabit)
-        #expect(task.previousTasks.isEmpty && task.completeInstances.isEmpty && task.problems.isEmpty)
+        #expect(task.previousTasks.isEmpty && task.marks.isEmpty && task.problems.isEmpty)
     }
 
     @Test func statusesAndPrioritiesComeFromTheMapping() throws {
@@ -74,7 +74,7 @@ struct TaskNoteReaderTests {
         """)
         #expect(task.status == .thisWeek && task.feel == .neutral)
         #expect(task.due == nil && task.timeEstimate == nil && task.previousEvent == nil)
-        #expect(task.completeInstances == [LocalDate("2026-10-20")])
+        #expect(task.marks == [LocalDate("2026-10-20"): .done])
         #expect(Set(task.problems) == [
             .invalidField(key: "due", value: "tomorrow"),
             .invalidField(key: "time_estimate", value: "lots"),
@@ -129,6 +129,17 @@ struct HabitFieldTests {
     @Test func aBadReminderTimeBecomesAProblem() throws {
         let task = reader.task(from: try document("reminder_times: [\"9am\"]"), name: "Pills", relativePath: "x.md")
         #expect(task.problems == [.invalidField(key: "reminder_times", value: "9am")])
+    }
+
+    /// TaskNotes keeps every marked day in `complete_instances`; `partial_instances` and `twice_instances` refine it.
+    @Test func theThreeInstanceListsAreReadAsOneMarkPerDay() throws {
+        let task = reader.task(from: try document("""
+        status: habit
+        complete_instances: [2026-10-18, 2026-10-19, 2026-10-20]
+        partial_instances: [2026-10-19, 2026-10-20, 2026-10-21]
+        twice_instances: [2026-10-20]
+        """), name: "Read", relativePath: "x.md")
+        #expect(task.marks == [LocalDate("2026-10-18"): .done, LocalDate("2026-10-19"): .partial, LocalDate("2026-10-20"): .twice])
     }
 
     @Test func recurrenceAndRemindersAreWrittenAndRemoved() throws {

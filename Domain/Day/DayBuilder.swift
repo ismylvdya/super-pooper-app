@@ -93,7 +93,7 @@ struct DayBuilder: Sendable {
     private func isInDay(_ task: TaskNote, occurrence: TaskOccurrence, skipped: Set<String>, context: DayContext) -> Bool {
         if task.isHabit {
             guard task.isInTodayHabits, !skipped.containsNoteName(task.name) else { return false }
-            return occurrence.occurs(task, on: context.today) || HabitInstances(task: task).mark(on: context.today) != nil
+            return occurrence.occurs(task, on: context.today) || task.mark(on: context.today) != nil
         }
         return (task.status == .thisWeek && !isDatedLater(task, context: context))
             || (task.status == .done && task.completedDate == context.today)
@@ -114,7 +114,7 @@ struct DayBuilder: Sendable {
 
     private func state(of task: TaskNote, today: LocalDate) -> DayItemState {
         if task.isHabit {
-            return HabitInstances(task: task).mark(on: today).map(DayItemState.marked) ?? .open
+            return task.mark(on: today).map(DayItemState.marked) ?? .open
         }
         return task.status == .done ? .marked(.done) : .open
     }

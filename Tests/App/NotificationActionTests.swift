@@ -18,7 +18,7 @@ struct NotificationActionTests {
     }
 
     private func mark(_ model: AppModel, on day: LocalDate) -> HabitMark? {
-        model.task(named: water).flatMap { HabitInstances(task: $0).mark(on: day) }
+        model.task(named: water).flatMap { $0.mark(on: day) }
     }
 
     /// The habit's second reminder of the day pressed Done again: the day is Twice.

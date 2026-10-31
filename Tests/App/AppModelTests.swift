@@ -15,10 +15,9 @@ struct AppModelTests {
         let today = model.context().today
         await model.perform(.partial, on: "Выпить воды 💧")
         let habit = try #require(model.task(named: "Выпить воды 💧"))
-        #expect(habit.completeInstances.contains(today))
-        #expect(habit.partialInstances.contains(today))
+        #expect(habit.mark(on: today) == .partial)
         await model.perform(.unmark, on: "Выпить воды 💧")
-        #expect(model.task(named: "Выпить воды 💧")?.completeInstances.contains(today) == false)
+        #expect(model.task(named: "Выпить воды 💧")?.mark(on: today) == nil)
     }
 
     @Test func skipTodayHidesTheHabitWithoutWriting() async throws {
@@ -221,7 +220,7 @@ struct AppModelTests {
         async let second: Void = model.cycleHabit("Выпить воды 💧", on: today)
         _ = await (first, second)
         let habit = try #require(model.task(named: "Выпить воды 💧"))
-        #expect(HabitInstances(task: habit).mark(on: today) == nil)
+        #expect(habit.mark(on: today) == nil)
     }
 
     @Test func archiveAndDelete() async throws {
@@ -248,9 +247,9 @@ struct AppModelTests {
         let model = try makeModel()
         let today = model.context().today
         await model.perform(.done, on: "Выпить воды 💧", day: today.adding(days: -1))
-        #expect(model.task(named: "Выпить воды 💧")?.completeInstances.contains(today) == false)
+        #expect(model.task(named: "Выпить воды 💧")?.mark(on: today) == nil)
         await model.perform(.done, on: "Выпить воды 💧", day: today)
-        #expect(model.task(named: "Выпить воды 💧")?.completeInstances.contains(today) == true)
+        #expect(model.task(named: "Выпить воды 💧")?.mark(on: today) != nil)
     }
 
     @Test func overlappingSyncsRunOnce() async throws {
