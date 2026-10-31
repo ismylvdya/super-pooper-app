@@ -98,7 +98,7 @@ final class ScreenSnapshotUITests: XCTestCase {
         launch("superpooper://review")
         let row = app.descendants(matching: .any).matching(identifier: "review:Оплатить интернет").firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 10))
-        app.swipeUp()
+        app.scrollIntoView(row)
         row.swipeLeft()
         let postpone = app.buttons["review.postpone"]
         if postpone.waitForExistence(timeout: 2) { postpone.tap() }

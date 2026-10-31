@@ -27,8 +27,7 @@ final class NewTaskUITests: XCTestCase {
         if !app.navigationBars["This week"].waitForExistence(timeout: 6) { app.buttons["today.review"].tap() }
         // The list is long and lazy: scroll down to the row.
         let row = app.staticTexts["Позвонить в банк"]
-        for _ in 0..<4 where !row.waitForExistence(timeout: 2) { app.swipeUp() }
-        XCTAssertTrue(row.exists)
+        app.scrollIntoView(row)
         row.tap()
         XCTAssertTrue(app.textFields["taskPage.name"].waitForExistence(timeout: 5))
         app.navigationBars.buttons.element(boundBy: 0).tap()

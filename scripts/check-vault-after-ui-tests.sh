@@ -12,7 +12,7 @@ check() { if eval "$2"; then echo "OK    $1"; else echo "FAIL  $1"; FAILED=1; fi
 
 check "Habits: Done → complete_instances has today"  "grep -A20 '^complete_instances:' \"$TASKS/Медитация 🧘.md\" | grep -q \"$TODAY\""
 check "long press Done → status done + completed_date" "grep -q '^status: done' \"$TASKS/Оплатить интернет.md\" && grep -q \"^completed_date: $TODAY\" \"$TASKS/Оплатить интернет.md\""
-check "long press Partially → partial_instances"     "grep -A20 '^partial_instances:' \"$TASKS/Выпить воды 💧.md\" | grep -q \"$TODAY\""
+check "long press Done on a habit → complete_instances" "grep -A20 '^complete_instances:' \"$TASKS/Выпить воды 💧.md\" | grep -q \"$TODAY\""
 check "task page High → priority: high"              "grep -q '^priority: high' \"$TASKS/Распечатать вопросы.md\""
 check "rename → new file, old gone"                  "[ -f \"$TASKS/Записать идеи 2.md\" ] && [ ! -f \"$TASKS/Записать идеи.md\" ]"
 check "archive → status: archived"                   "grep -q '^status: archived' \"$TASKS/Купить батарейки 🔋.md\""

@@ -67,18 +67,20 @@ final class TodayUITests: XCTestCase {
         XCTAssertEqual(XCTWaiter().wait(for: [moved], timeout: 5), .completed)
     }
 
-    /// "Выпить воды" is the first pool row (the morning routine goes first), so it is always on screen.
-    /// It is not a twice-a-day habit, so its menu has no Twice.
-    func testLongPressHabitOffersPartiallyAndSkip() {
+    /// "Выпить воды" is the first pool row (the morning routine goes first), so it is always on screen. A habit's menu
+    /// in Today has Done and Skip today; Partially and Twice are only on the Habits tab (D-047).
+    func testLongPressHabitOffersDoneAndSkip() {
         launch()
         dismissBanners()
         let row = app.buttons["title:Выпить воды 💧"]
         XCTAssertTrue(row.waitForExistence(timeout: 10))
         row.press(forDuration: 1.2)
-        XCTAssertTrue(app.buttons["Partially"].waitForExistence(timeout: 5))
-        XCTAssertFalse(app.buttons["Twice"].exists)
+        let done = app.buttons["DONE"]
+        XCTAssertTrue(done.waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["Skip today"].exists)
-        app.buttons["Partially"].tap()
+        XCTAssertFalse(app.buttons["Partially"].exists)
+        XCTAssertFalse(app.buttons["Twice"].exists)
+        done.tap()
         expectLeftThePool(row)
     }
 
