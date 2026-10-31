@@ -35,14 +35,6 @@ extension AppModel {
         await sync(announce: false)
     }
 
-    /// Notes of an older format (separate setting keys, the old settings property, `need_energy`/`pleasant`) are
-    /// rewritten into the current fields once; no value changes.
-    private func migrateLegacyFields() async {
-        for task in tasks where task.hasLegacyFields {
-            await edit(task.name) { _ in [.migrateLegacyFields] }
-        }
-    }
-
     private func performSync(announce: Bool) async {
         setSyncing(true)
         defer { setSyncing(false) }
@@ -72,7 +64,6 @@ extension AppModel {
                 }
                 report.conflicts = result.conflicted
                 if config.flags.autoPromote { report.promoted = await autoPromote() }
-                await migrateLegacyFields()
                 await fileAwayDoneTasks()
             } catch {
                 setVaultState(.failed(Self.describe(error)))

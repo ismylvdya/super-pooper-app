@@ -29,7 +29,6 @@ extension TaskNote {
             case .nextEvent(let value): task.nextEvent = value
             case .feel(let value): task.feel = value
             case .timeZone(let value): task.timeZone = value
-            case .migrateLegacyFields: task.hasLegacyFields = false
             case .markInstance(let day, let mark):
                 let instances = HabitInstances(task: task).setting(mark, on: day)
                 task.completeInstances = instances.complete

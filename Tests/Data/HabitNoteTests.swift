@@ -58,9 +58,9 @@ struct HabitNoteTests {
         #expect(text.contains("\"habit_color\":\"#FF9500\"") && text.contains("\"weekly_goal\":2"))
     }
 
-    /// The sync's migration: the old property name, separate keys and the two feel booleans become the current
-    /// fields, values unchanged.
-    @Test func theMigrationRewritesEveryOlderField() async throws {
+    /// Any write of the note moves the old property name, separate keys and the two feel booleans into the current
+    /// fields, values unchanged; reading leaves them.
+    @Test func anyWriteRewritesEveryOlderField() async throws {
         let note = try await SandboxNote("Медитация 🧘")
         let old = try note.text().replacingOnce("\ntags:", with: """
 
@@ -72,10 +72,11 @@ struct HabitNoteTests {
         """)
         try note.sandbox.write(old, to: note.task.name)
         let before = try await note.reload()
-        #expect(before.hasLegacyFields && before.feel == .pleasant && before.habit.harmful)
-        let written = try await note.apply([.migrateLegacyFields]).task
+        #expect(before.feel == .pleasant && before.habit.harmful && before.habit.color == "#FF9500")
+        #expect(try note.text() == old)
+        let written = try await note.apply([.highPriority(true)]).task
         let text = try note.text()
-        #expect(!written.hasLegacyFields && written.feel == .pleasant && written.habit.harmful && written.habit.color == "#FF9500")
+        #expect(written.isHighPriority && written.feel == .pleasant && written.habit.harmful && written.habit.color == "#FF9500")
         for key in ["superpooper:", "habit_color:", "need_energy:", "pleasant:"] {
             #expect(!text.split(separator: "\n").contains { $0.hasPrefix(key) }, "no \(key) key")
         }

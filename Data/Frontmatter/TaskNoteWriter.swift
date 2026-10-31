@@ -1,8 +1,9 @@
 import Foundation
 
-/// Writes field changes into frontmatter, one key per change, plus `date_modified`
-/// (formatted like TaskNotes: `2026-10-22T18:01:02.456+02:00`, in the phone's zone at the time of writing).
-/// Everything else stays untouched. List changes are deltas applied to the lists as they are in the file right now.
+/// Writes edits into frontmatter, the keys of each edit, plus `date_modified` (formatted like TaskNotes:
+/// `2026-10-22T18:01:02.456+02:00`, in the phone's zone at the time of writing). Every write also moves the fields of an
+/// older format into the current ones, changing no value. Everything else stays untouched. List changes are deltas
+/// applied to the lists as they are in the file right now.
 struct TaskNoteWriter: Sendable {
     let mapping: FieldMapping
     let calendar: CalendarSource
@@ -17,6 +18,7 @@ struct TaskNoteWriter: Sendable {
     func apply(_ changes: [TaskEdit], to document: inout FrontmatterDocument, now: Date) {
         let keys = mapping.fields
         let timeZone = calendar.current.timeZone
+        migrateLegacyFields(in: &document)
         for change in changes {
             switch change {
             case .status(let status):
@@ -57,15 +59,6 @@ struct TaskNoteWriter: Sendable {
                 set(keys.nextEvent, link.map { .scalar($0.rawValue(timeZone: timeZone), quoted: true) }, in: &document)
             case .feel(let value):
                 setFeel(value, in: &document)
-            case .migrateLegacyFields:
-                settings.migrate(in: &document)
-                if hasLegacyFeel(document), (try? document.value(for: keys.feel)).flatMap({ $0 }) == nil {
-                    setFeel(.legacy(needEnergy: bool(mapping.legacyFields.needEnergy, in: document),
-                                    pleasant: bool(mapping.legacyFields.pleasant, in: document)), in: &document)
-                } else {
-                    document.remove(mapping.legacyFields.needEnergy)
-                    document.remove(mapping.legacyFields.pleasant)
-                }
             case .markInstance(let day, let mark):
                 setInstance(day, included: mark != nil, key: keys.completeInstances, keepEmpty: true, in: &document)
                 setInstance(day, included: mark == .partial, key: keys.partialInstances, keepEmpty: false, in: &document)
@@ -105,6 +98,7 @@ struct TaskNoteWriter: Sendable {
     /// `projects` links to it, other entries and their `reltype` stay.
     func renameLinks(from old: String, to new: String, in document: inout FrontmatterDocument, now: Date) {
         let keys = mapping.fields
+        migrateLegacyFields(in: &document)
         let previous = listItems(keys.previousTasks, in: document)
         let renamedPrevious = previous.map { linkName($0)?.isSameNoteName(as: old) == true ? relink($0, to: new) : $0 }
         if renamedPrevious != previous { document.set(keys.previousTasks, to: .list(renamedPrevious)) }
@@ -117,6 +111,20 @@ struct TaskNoteWriter: Sendable {
     private func stamp(_ document: inout FrontmatterDocument, now: Date) {
         document.set(mapping.fields.dateModified,
                      to: .scalar(ISO8601.formatWithMilliseconds(now, timeZone: calendar.current.timeZone), quoted: false))
+    }
+
+    /// Notes of an older format keep the item settings as separate keys or under an older property name, and the feel as
+    /// two booleans (`need_energy`, `pleasant`).
+    private func migrateLegacyFields(in document: inout FrontmatterDocument) {
+        settings.migrate(in: &document)
+        guard hasLegacyFeel(document) else { return }
+        if (try? document.value(for: mapping.fields.feel)).flatMap({ $0 }) == nil {
+            setFeel(.legacy(needEnergy: bool(mapping.legacyFields.needEnergy, in: document),
+                            pleasant: bool(mapping.legacyFields.pleasant, in: document)), in: &document)
+        } else {
+            document.remove(mapping.legacyFields.needEnergy)
+            document.remove(mapping.legacyFields.pleasant)
+        }
     }
 
     /// `feel` replaces the older `need_energy` and `pleasant` keys.

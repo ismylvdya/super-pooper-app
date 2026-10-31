@@ -20,9 +20,6 @@ struct TaskNote: Identifiable, Hashable, Codable, Sendable {
     var previousEvent: EventLink?
     var nextEvent: EventLink?
     var feel: TaskFeel = .neutral
-    /// The note still has fields of an older format (separate setting keys, `need_energy`/`pleasant`); the next
-    /// sync rewrites them.
-    var hasLegacyFields = false
     var recurrenceRaw: String?
     var recurrence: RecurrenceRule?
     var completeInstances: [LocalDate] = []

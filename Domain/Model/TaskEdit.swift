@@ -22,8 +22,6 @@ enum TaskEdit: Hashable, Sendable {
     case previousEvent(EventLink?)
     case nextEvent(EventLink?)
     case feel(TaskFeel)
-    /// Rewrites fields of an older format into the current one, changing no value.
-    case migrateLegacyFields
     /// Exactly one mark (or none) for `day` in the three instance lists.
     case markInstance(day: LocalDate, mark: HabitMark?)
     /// The raw recurrence rule, or `nil` to remove it.

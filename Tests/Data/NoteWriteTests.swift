@@ -99,6 +99,9 @@ struct NoteWriteTests {
 
     // MARK: - Habit marks
 
+    private static let legacyTimeOfDay = "time_of_day: morning\n"
+    private static let migratedTimeOfDay = "fromSuperPooperApp: '{\"time_of_day\":\"morning\"}'\n"
+
     @Test func habitMarksWriteExactlyTheListsOfTheSpec() async throws {
         let note = try await SandboxNote("Медитация 🧘")
         let history = ["2026-10-15", "2026-10-16", "2026-10-17", "2026-10-19", "2026-10-20"]
@@ -121,9 +124,10 @@ struct NoteWriteTests {
 
     @Test func anEmptyCompleteListIsFilledInPlaceAndEmptiedBackToBrackets() async throws {
         let note = try await SandboxNote("Утро — зарядка 🤸")
-        let original = try note.text()
+        // The note keeps `time_of_day` as a key of its own (an older format): the first write moves it into the JSON.
+        let original = try note.text().replacingOnce(Self.legacyTimeOfDay, with: "")
         let modified = "date_modified: 2026-10-20T09:12:44.123+02:00\n"
-        let written = "date_modified: \(note.sandbox.nowStamp)\n"
+        let written = "date_modified: \(note.sandbox.nowStamp)\n" + Self.migratedTimeOfDay
 
         try await note.mark(.done)
         expectSameBytes(try note.text(), try original
@@ -135,9 +139,9 @@ struct NoteWriteTests {
 
     @Test func extraListsAreAddedWhenNeededAndRemovedWhenEmpty() async throws {
         let note = try await SandboxNote("Выпить воды 💧")
-        let original = try note.text()
+        let original = try note.text().replacingOnce(Self.legacyTimeOfDay, with: "")
         let modified = "date_modified: 2026-10-20T09:12:44.123+02:00\n"
-        let written = "date_modified: \(note.sandbox.nowStamp)\n"
+        let written = "date_modified: \(note.sandbox.nowStamp)\n" + Self.migratedTimeOfDay
         let marked = try original.replacingOnce("  - 2026-10-20\n", with: "  - 2026-10-20\n  - 2026-10-21\n")
 
         try await note.mark(.partial)

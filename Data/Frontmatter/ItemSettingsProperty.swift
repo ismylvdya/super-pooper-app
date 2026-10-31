@@ -3,7 +3,7 @@ import Foundation
 /// The app's own settings of a task or habit (color, Show in Today, reminders, goal …) live in one property
 /// holding JSON (`fromSuperPooperApp: '{"habit_color":"#34C759","show_in_today":true}'`), keyed by the same names the
 /// separate properties had. Notes written before keep separate keys: they are read, and moved into the JSON
-/// with the next change of any setting (or by the sync's migration), as are notes with the property's older name.
+/// by the next write of the note, as are notes with the property's older name.
 struct ItemSettingsProperty: Sendable {
     let property: String
     var legacyProperties: [String] = []

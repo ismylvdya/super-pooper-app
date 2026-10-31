@@ -35,7 +35,6 @@ struct TaskNoteReader: Sendable {
         task.previousEvent = fields.parsed(keys.previousEvent, EventLink.init(rawValue:))
         task.nextEvent = fields.parsed(keys.nextEvent, EventLink.init(rawValue:))
         task.feel = feel(&fields)
-        task.hasLegacyFields = settings.hasLegacyKeys(in: document) || hasLegacyFeel(document)
         if let raw = fields.string(keys.recurrence), !raw.trimmingCharacters(in: .whitespaces).isEmpty {
             task.recurrenceRaw = raw
             switch RecurrenceRule.parse(raw) {
@@ -77,10 +76,6 @@ struct TaskNoteReader: Sendable {
     private func feel(_ fields: inout FieldReader) -> TaskFeel {
         if let feel = fields.parsed(mapping.fields.feel, mapping.feel(fromRaw:)) { return feel }
         return .legacy(needEnergy: fields.bool(mapping.legacyFields.needEnergy), pleasant: fields.bool(mapping.legacyFields.pleasant))
-    }
-
-    private func hasLegacyFeel(_ document: FrontmatterDocument) -> Bool {
-        [mapping.legacyFields.needEnergy, mapping.legacyFields.pleasant].contains { (try? document.value(for: $0)).flatMap({ $0 }) != nil }
     }
 
     private func normalizedTag(_ tag: String) -> String {
