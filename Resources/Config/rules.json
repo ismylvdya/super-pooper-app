@@ -7,7 +7,8 @@
       "someday"
     ],
     "morningEnds": "12:00",
-    "eveningStarts": "18:00"
+    "eveningStarts": "18:00",
+    "eventLinkToleranceSeconds": 60
   },
   "timeEstimates": [
     {
@@ -33,7 +34,9 @@
     "imageFile": "notification-image.png",
     "signingWarningHours": 24,
     "signingWarningID": "signing-expiry",
-    "imageMaxPixels": 400
+    "imageMaxPixels": 400,
+    "restoreDelaySeconds": 1,
+    "fireTimeToleranceSeconds": 30
   },
   "eventLinks": {
     "resolveDaysBefore": 2,

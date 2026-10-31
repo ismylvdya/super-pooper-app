@@ -30,7 +30,7 @@ struct DayBuilder: Sendable {
     func build(_ inputs: DayInputs, context: DayContext) -> DayPlan {
         let graph = TaskGraph(tasks: inputs.tasks)
         let occurrence = TaskOccurrence(days: context.days)
-        let resolver = EventLinkResolver(events: inputs.events, calendar: context.calendar)
+        let resolver = EventLinkResolver(events: inputs.events, calendar: context.calendar, tolerance: rules.eventLinkToleranceSeconds)
         let blocking = BlockingEvaluator(graph: graph, occurrence: occurrence, skipped: inputs.skipped, context: context)
         let sorter = PoolSorter(criteria: sortCriteria, rules: rules, routines: inputs.routines)
 

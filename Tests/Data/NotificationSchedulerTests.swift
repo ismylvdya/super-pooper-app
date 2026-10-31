@@ -13,7 +13,7 @@ struct NotificationSchedulerTests {
     private let slot = NotificationPayload.prefix + NotificationPlanner.habitSlot("Вода", LocalTime("09:00"))
 
     private var scheduler: UserNotificationScheduler {
-        UserNotificationScheduler(calendar: FixedCalendar(current: TestCalendar.calendar),
+        UserNotificationScheduler(calendar: FixedCalendar(current: TestCalendar.calendar), rules: TestConfig.rules.notifications,
                                   icons: TestConfig.decode(IconSet.self, "icons.json"),
                                   bodyText: { _ in "" }, actionTitle: { $0 }, center: center)
     }
@@ -63,7 +63,7 @@ struct NotificationSchedulerTests {
         #expect(fireDate(slot) == TestCalendar.date("2026-10-22", "09:00"))
         let restored = try #require(center.pending(NotificationIdentifier.restored(slot)))
         #expect(restored.content.sound == nil)
-        #expect(restored.trigger is UNTimeIntervalNotificationTrigger)
+        #expect((restored.trigger as? UNTimeIntervalNotificationTrigger)?.timeInterval == TestConfig.rules.notifications.restoreDelaySeconds)
     }
 
     /// A sync in the moment before the restored notification shows does not take it away.

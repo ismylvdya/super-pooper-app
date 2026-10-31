@@ -7,7 +7,7 @@ struct TimelineLinks: Sendable {
     /// Slot id → ids of the slots it is directly linked to.
     let neighbors: [String: Set<String>]
 
-    init(slots: [TimelineSlot], calendar: Calendar) {
+    init(slots: [TimelineSlot], calendar: Calendar, rules: DayRules) {
         var taskSlots: [NoteName: [String]] = [:]
         var eventSlots: [String: [String]] = [:]
         var events: [CalendarEvent] = []
@@ -20,7 +20,7 @@ struct TimelineLinks: Sendable {
             case .reminder: break
             }
         }
-        let resolver = EventLinkResolver(events: events, calendar: calendar)
+        let resolver = EventLinkResolver(events: events, calendar: calendar, tolerance: rules.eventLinkToleranceSeconds)
         var neighbors: [String: Set<String>] = [:]
         func link(_ ids: [String], _ others: [String]) {
             for id in ids {

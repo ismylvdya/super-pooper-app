@@ -7,6 +7,7 @@ struct DayTimelineView<TaskContent: View>: View {
     @Environment(\.icons) private var icons
     @Environment(\.timelineBell) private var bell
     @Environment(\.calendar) private var calendar
+    @Environment(\.rules) private var rules
     let slots: [TimelineSlot]
     let window: TimelineWindow
     let now: Date
@@ -15,7 +16,7 @@ struct DayTimelineView<TaskContent: View>: View {
     @ViewBuilder let taskContent: (DayItem, TimelineSlot) -> TaskContent
 
     var body: some View {
-        let links = TimelineLinks(slots: slots, calendar: calendar)
+        let links = TimelineLinks(slots: slots, calendar: calendar, rules: rules.day)
         let highlighted = style.highlightedSlot.map(links.connected(to:))
         let placements = layout.place(slots)
         GeometryReader { geometry in

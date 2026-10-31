@@ -14,6 +14,6 @@ extension AppModel {
 
     /// The calendar event a task's link points to, as the day finds it (`EventLinkResolver`); nil when it is not there.
     func event(for link: EventLink) -> CalendarEvent? {
-        EventLinkResolver(events: events, calendar: calendar).resolve(link)
+        EventLinkResolver(events: events, calendar: calendar, tolerance: config.rules.day.eventLinkToleranceSeconds).resolve(link)
     }
 }

@@ -19,6 +19,10 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let signingWarningID: String
         /// The user's picture is scaled down to at most this many pixels on its longer side.
         let imageMaxPixels: Double
+        /// A notification swiped away comes back (silently) this long after.
+        let restoreDelaySeconds: Double
+        /// A pending notification whose fire time is at most this far from the planned one is kept.
+        let fireTimeToleranceSeconds: Double
     }
 
     struct EventLinks: Codable, Hashable, Sendable {

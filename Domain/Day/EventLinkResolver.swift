@@ -5,6 +5,8 @@ import Foundation
 struct EventLinkResolver: Sendable {
     let events: [CalendarEvent]
     let calendar: Calendar
+    /// How far the start of an event found by its title may be from the link's (`day.eventLinkToleranceSeconds`).
+    let tolerance: TimeInterval
 
     func resolve(_ link: EventLink) -> CalendarEvent? {
         let linkDay = LocalDate(link.start, in: calendar)
@@ -14,6 +16,6 @@ struct EventLinkResolver: Sendable {
         if let match = sameIdentifier.min(by: { abs($0.start.timeIntervalSince(link.start)) < abs($1.start.timeIntervalSince(link.start)) }) {
             return match
         }
-        return events.first { $0.title == link.title && abs($0.start.timeIntervalSince(link.start)) < 60 }
+        return events.first { $0.title == link.title && abs($0.start.timeIntervalSince(link.start)) < tolerance }
     }
 }

@@ -17,6 +17,7 @@ protocol NotificationScheduling: Sendable {
 
 struct UserNotificationScheduler: NotificationScheduling {
     let calendar: CalendarSource
+    let rules: RulesConfig.Notifications
     let icons: IconSet
     let bodyText: @Sendable (PlannedNotification.Kind) -> String
     /// The words of an action button, by its title key in `actions.json`.
@@ -74,7 +75,7 @@ struct UserNotificationScheduler: NotificationScheduling {
         let current = Dictionary(pending.map { ($0.identifier, fireDate(of: $0)) }, uniquingKeysWith: { first, _ in first })
         let outdated = current.filter { id, date in
             guard let want = wanted[id] else { return true }
-            return date.map { abs($0.timeIntervalSince(want)) > 30 } ?? true
+            return date.map { abs($0.timeIntervalSince(want)) > rules.fireTimeToleranceSeconds } ?? true
         }
         center.removePendingRequests(withIdentifiers: Array(outdated.keys))
         for notification in planned {
@@ -121,7 +122,7 @@ struct UserNotificationScheduler: NotificationScheduling {
         guard original.identifier.hasPrefix(NotificationPayload.prefix) else { return }
         let content = (original.content.mutableCopy() as? UNMutableNotificationContent) ?? UNMutableNotificationContent()
         content.sound = nil
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: rules.restoreDelaySeconds, repeats: false)
         try? await center.add(UNNotificationRequest(identifier: NotificationIdentifier.restored(original.identifier),
                                                     content: content, trigger: trigger))
     }

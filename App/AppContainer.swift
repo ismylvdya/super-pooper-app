@@ -60,7 +60,7 @@ final class AppContainer {
         self.eventKit = eventKit
         let notificationImage = NotificationImageStore(url: shared.url(config.rules.notifications.imageFile),
                                                        maxPixels: config.rules.notifications.imageMaxPixels)
-        let notifications = UserNotificationScheduler(calendar: calendar, icons: config.icons, bodyText: { kind in
+        let notifications = UserNotificationScheduler(calendar: calendar, rules: config.rules.notifications, icons: config.icons, bodyText: { kind in
             switch kind {
             case .habit: L10n.string("notification.habit.body")
             case .task: L10n.string("notification.task.body")
