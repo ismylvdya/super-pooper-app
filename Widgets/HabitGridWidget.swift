@@ -47,13 +47,7 @@ struct HabitGridProvider: AppIntentTimelineProvider {
 }
 
 struct HabitGridEntryView: View {
-    @Environment(\.tokens) private var tokens
     let entry: HabitGridEntry
-
-    /// The tokens with the user's settings (colors, sizes), for the widget and its background.
-    private var widgetTokens: DesignTokens {
-        (entry.source.map { $0.config.tokens.applying($0.settings, limits: $0.config.rules.limits) } ?? tokens).forWidget()
-    }
 
     var body: some View {
         let habit = entry.source?.habit(named: entry.habitName)
@@ -65,12 +59,10 @@ struct HabitGridEntryView: View {
                                 grid: HabitGrid(task: habit, weekCount: entry.options.weeks, today: today, days: context.days),
                                 today: today, options: entry.options)
             } else {
-                Text("widget.habit.empty").font(tokens.font(.widgetCaption)).foregroundStyle(tokens.color(.secondaryText)).padding()
+                WidgetEmptyText(text: "widget.habit.empty")
             }
         }
-        .containerBackground(for: .widget) { WidgetBackground(tokens: widgetTokens, light: .plateBackground) }
+        .widgetChrome(entry.source, light: .plateBackground)
         .widgetURL(habit.flatMap { DeepLink.habit($0.name) } ?? DeepLink.habits)
-        .designTokens(widgetTokens)
-        .appCalendar(entry.source?.calendar ?? AppCalendar.make())
     }
 }

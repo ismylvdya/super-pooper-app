@@ -67,11 +67,10 @@ import SwiftUI
 }
 
 #Preview("Today widget") {
-    if let settings = try? AppConfig.load().defaultSettings.values {
-        TodayWidgetView(plan: PreviewSamples.plan, settings: settings,
-                        layout: ScreenLayout(axis: .vertical, spacing: "blockGap",
-                                             blocks: [.init(block: .pool, size: .fit, weight: nil), .init(block: .timeline, size: .fill, weight: 1)]),
-                        context: PreviewSamples.context, maxTimelineHours: 6)
+    if let config = BundledConfig.config {
+        TodayWidgetView(plan: PreviewSamples.plan, settings: BundledConfig.settings, arrangement: .stacked,
+                        layout: config.todayLayout(for: .stacked), context: PreviewSamples.context,
+                        maxTimelineHours: config.rules.widgets.timelineHours)
             .frame(width: 338, height: 354)
     } else {
         Text(verbatim: "Config error")

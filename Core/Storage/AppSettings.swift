@@ -162,25 +162,36 @@ enum TimelineMode: Equatable, Sendable {
 }
 
 extension AppSettings {
-    var timelineMode: TimelineMode {
-        switch today.arrangement {
+    /// The app's timeline, in the app's own arrangement.
+    var timelineMode: TimelineMode { timelineMode(in: today.arrangement) }
+
+    /// The timeline in an arrangement: the app's, or the widget's own (`TodayWidgetView`).
+    func timelineMode(in arrangement: TodayArrangement) -> TimelineMode {
+        switch arrangement {
         case .stacked: timeline.layout == .twoColumns ? .halves : .aroundNow
         case .sideBySide, .paged: timeline.range == .wholeDay ? .wholeDay : .aroundNow
         }
     }
 
-    /// What the timeline shows by these settings; `limits` cap the hours around now.
+    /// What the app's timeline shows by these settings; `limits` cap the hours around now.
     func timelineSpan(limits: TimelineSpan.Limits = TimelineSpan.Limits()) -> TimelineSpan {
+        timelineSpan(in: today.arrangement, limits: limits)
+    }
+
+    /// What a timeline in that arrangement shows by these settings.
+    func timelineSpan(in arrangement: TodayArrangement, limits: TimelineSpan.Limits = TimelineSpan.Limits()) -> TimelineSpan {
         func range(_ range: TimeRange) -> TimelineSpan.Range { TimelineSpan.Range(start: range.start, end: range.end) }
-        switch timelineMode {
+        switch timelineMode(in: arrangement) {
         case .aroundNow: return .aroundNow(hoursBefore: timeline.hoursBefore, hoursAfter: timeline.hoursAfter, limits: limits)
         case .wholeDay: return .range(range(timeline.wholeDay))
         case .halves: return .halves(range(timeline.firstHalf), range(timeline.secondHalf))
         }
     }
 
-    /// The pool shows a fixed number of rows only when it sits above the timeline.
-    var poolUsesVisibleCount: Bool { today.arrangement == .stacked }
+    /// The app's pool shows a fixed number of rows only when it sits above the timeline.
+    var poolUsesVisibleCount: Bool { poolUsesVisibleCount(in: today.arrangement) }
+
+    func poolUsesVisibleCount(in arrangement: TodayArrangement) -> Bool { arrangement == .stacked }
 
     /// A change that moves the day or what is planned in it: the day boundary and the energy hour, notifications on or
     /// off, other calendars or lists, another folder. The notifications and the widget snapshot follow only those.

@@ -6,6 +6,8 @@ struct TodayWidgetView: View {
     @Environment(\.tokens) private var tokens
     let plan: DayPlan
     let settings: AppSettings
+    /// The widget's own arrangement and its layout, not the app's.
+    let arrangement: AppSettings.TodayArrangement
     let layout: ScreenLayout
     let context: DayContext
     let maxTimelineHours: Int
@@ -14,12 +16,22 @@ struct TodayWidgetView: View {
         VStack(alignment: .leading, spacing: tokens.space(.widgetGap)) {
             ScreenLayoutView(layout: layout) { id in
                 switch id {
-                case .pool: WidgetPoolBlock(plan: plan, visibleCount: settings.poolUsesVisibleCount ? settings.pool.visibleCount : nil)
-                case .timeline: WidgetTimelineBlock(plan: plan, settings: settings, context: context, maxHours: maxTimelineHours)
+                case .pool:
+                    WidgetPoolBlock(plan: plan, visibleCount: settings.poolUsesVisibleCount(in: arrangement) ? settings.pool.visibleCount : nil)
+                case .timeline:
+                    WidgetTimelineBlock(plan: plan, settings: settings, arrangement: arrangement, context: context, maxHours: maxTimelineHours)
                 }
             }
         }
         .padding(tokens.space(.widgetPadding))
+    }
+}
+
+extension TodayWidgetView {
+    /// The widget's day at `date` from what the app left in the App Group.
+    init(source: WidgetDataSource, at date: Date) {
+        self.init(plan: source.plan(at: date), settings: source.settings, arrangement: source.arrangement, layout: source.widgetLayout,
+                  context: source.context(at: date), maxTimelineHours: source.config.rules.widgets.timelineHours)
     }
 }
 
@@ -34,15 +46,13 @@ struct WidgetPoolBlock: View {
         VStack(alignment: .leading, spacing: tokens.space(.widgetGap)) {
             // The same plates as Today, without chips; habits of one routine share a plate.
             ForEach(PoolSegments.make(visibleCount.map { Array(plan.pool.prefix($0)) } ?? plan.pool)) { segment in
-                VStack(alignment: .leading, spacing: tokens.space(.widgetGap)) {
-                    ForEach(segment.items) { item in
-                        TaskRowView(item: item, titleFont: tokens.font(.widgetTitle), showsDetails: false,
-                                    isCompact: true, titleLineHeight: tokens.uiFont(.widgetTitle).lineHeight)
-                    }
+                PoolSegmentView(segment: segment) { item, plate in
+                    TaskRowView(item: item, titleFont: tokens.font(.widgetTitle), showsDetails: false,
+                                isCompact: true, titleLineHeight: tokens.uiFont(.widgetTitle).lineHeight)
+                        .poolRowPlate(plate, isDone: item.isDone)
+                        // A subtask sits under its parent, shifted right, as in the app's pool.
+                        .padding(.leading, CGFloat(item.depth) * tokens.space(.subtaskIndent))
                 }
-                .taskPlate(isDone: segment.items.allSatisfy(\.isDone))
-                // A subtask sits under its parent, shifted right, as in the app's pool.
-                .padding(.leading, CGFloat(segment.items.first?.depth ?? 0) * tokens.space(.subtaskIndent))
             }
             if let visibleCount, plan.pool.count > visibleCount {
                 Text(L10n.format("pool.more", plan.pool.count - visibleCount))
@@ -66,6 +76,7 @@ struct WidgetTimelineBlock: View {
     @Environment(\.rules) private var rules
     let plan: DayPlan
     let settings: AppSettings
+    let arrangement: AppSettings.TodayArrangement
     let context: DayContext
     let maxHours: Int
 
@@ -84,7 +95,7 @@ struct WidgetTimelineBlock: View {
     private var scaledTimeline: some View {
         GeometryReader { geometry in
             let limits = TimelineSpan.Limits(hoursBefore: rules.widgets.maxHoursBefore, hours: maxHours)
-            let windows = TimelineWindow.windows(settings.timelineSpan(limits: limits), around: plan.now, context: context)
+            let windows = TimelineWindow.windows(settings.timelineSpan(in: arrangement, limits: limits), around: plan.now, context: context)
             if windows.count > 1 {
                 let hourHeight = geometry.size.height / CGFloat(max(windows.map(\.hours).max() ?? 1, 1))
                 HalvesTimeline(plan: plan, windows: windows, settings: settings.timeline, height: geometry.size.height,

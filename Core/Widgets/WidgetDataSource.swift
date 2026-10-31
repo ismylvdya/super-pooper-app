@@ -14,14 +14,17 @@ struct WidgetDataSource: Sendable {
         // A widget process can outlive a time zone change: the system zone is read afresh for every timeline.
         NSTimeZone.resetSystemTimeZone()
         let calendar = AppCalendar.make()
-        // Everything in the widget reads `today.arrangement`, so it gets the widget's own one there.
-        var settings = SettingsStore(store: store, defaults: config.defaultSettings).load()
-        settings.today.arrangement = settings.today.widgetArrangement.forWidget
         return WidgetDataSource(config: config,
-                                settings: settings,
+                                settings: SettingsStore(store: store, defaults: config.defaultSettings).load(),
                                 snapshot: SnapshotStore(store: store).load(),
                                 calendar: calendar)
     }
+
+    /// The Today widget's own arrangement, independent from the app's; a widget has no pages.
+    var arrangement: AppSettings.TodayArrangement { settings.today.widgetArrangement.forWidget }
+
+    /// The Today widget's layout of the pool and the timeline (`layouts/today-*.layout.json`).
+    var widgetLayout: ScreenLayout { config.todayLayout(for: arrangement) }
 
     func context(at date: Date) -> DayContext {
         DayContext(now: date, calendar: calendar, boundary: settings.day.boundary, energyHour: settings.day.energyHour)

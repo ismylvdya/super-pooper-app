@@ -72,16 +72,9 @@ struct PoolBlock: View {
     private var list: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: tokens.space(.poolRowGap)) {
+                // One plate for a whole routine; each habit keeps its own tap and long press.
                 ForEach(PoolSegments.make(items)) { segment in
-                    if segment.isRoutine {
-                        // One plate for the whole routine; each habit keeps its own tap and long press.
-                        VStack(alignment: .leading, spacing: 0) {
-                            ForEach(segment.items) { item in tracked(row(item, plate: .bare), item) }
-                        }
-                        .plate(.row, clipsContent: true)
-                    } else if let item = segment.items.first {
-                        tracked(row(item, plate: .pool), item)
-                    }
+                    PoolSegmentView(segment: segment) { item, plate in tracked(row(item, plate: .pool(plate)), item) }
                 }
             }
         }
@@ -141,7 +134,7 @@ struct PoolRow: View {
     let item: DayItem
     var isToday = true
     var isCompact = false
-    var plate: PoolRowContent.PlateKind = .pool
+    var plate: PoolRowContent.PlateKind = .pool(.own)
     let handler: TaskActionHandler
     var dragSource: TaskDragState.Source?
 
@@ -159,9 +152,8 @@ struct PoolRow: View {
 /// The row with its tap, title, long-press menu and drag wiring, on its plate.
 struct PoolRowContent: View {
     enum PlateKind {
-        case pool
-        /// Inside a shared routine plate: the row's own padding, no plate of its own.
-        case bare
+        /// In the pool: on its own plate or on its piece of a routine's plate.
+        case pool(PoolRowPlate)
         case slot(isPast: Bool, isCompact: Bool)
     }
 
@@ -176,7 +168,7 @@ struct PoolRowContent: View {
     var titleLineLimit: Int?
     var titleLineHeight: CGFloat?
     var showsDoneState = true
-    var plate: PlateKind = .pool
+    var plate: PlateKind = .pool(.own)
     /// Extra height under the content (pool rows of long tasks).
     var minimumHeight: CGFloat = 0
     let handler: TaskActionHandler
@@ -189,19 +181,12 @@ struct PoolRowContent: View {
                               onOpen: { handler.run(actions.definition(.open), taskName: item.id) })
         Group {
             switch plate {
-            case .pool:
+            case .pool(let plate):
                 VStack(alignment: .leading, spacing: 0) {
                     row
                     Spacer(minLength: minimumHeight)
                 }
-                .taskPlate(isDone: item.isDone)
-            case .bare:
-                VStack(alignment: .leading, spacing: 0) {
-                    row
-                    Spacer(minLength: minimumHeight)
-                }
-                .rowPlatePadding()
-                .plate(.piece)
+                .poolRowPlate(plate, isDone: item.isDone)
             case .slot(let isPast, let isCompact):
                 row.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading).slotPlate(isPast: isPast, isCompact: isCompact)
             }

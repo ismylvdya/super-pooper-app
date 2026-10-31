@@ -28,6 +28,24 @@ struct WidgetPlanTests {
         #expect(source(eventsKnown: true).plan(at: now).problems.map(\.problem) == [.eventNotFound("Call")])
     }
 
+    /// The widget has its own arrangement: its layout, pool and timeline follow it, and the settings it read keep the
+    /// app's arrangement as it is.
+    @Test func theWidgetHasItsOwnArrangement() {
+        var settings = TestConfig.defaults
+        settings.today.arrangement = .paged
+        settings.today.widgetArrangement = .stacked
+        settings.timeline.layout = .twoColumns
+        let source = WidgetDataSource(config: config, settings: settings, snapshot: nil, calendar: TestCalendar.calendar)
+        #expect(source.arrangement == .stacked)
+        #expect(source.settings.today.arrangement == .paged)
+        #expect(source.settings.timelineMode(in: source.arrangement) == .halves)
+        #expect(source.settings.timelineMode == .aroundNow)
+        #expect(source.settings.poolUsesVisibleCount(in: source.arrangement))
+        #expect(!source.settings.poolUsesVisibleCount)
+        settings.today.widgetArrangement = .paged
+        #expect(WidgetDataSource(config: config, settings: settings, snapshot: nil, calendar: TestCalendar.calendar).arrangement == .sideBySide)
+    }
+
     /// The app writes what it knows into the snapshot.
     @Test func theSnapshotSaysWhetherTheCalendarsWereRead() async throws {
         let model = try #require(PreviewModel.make()).model

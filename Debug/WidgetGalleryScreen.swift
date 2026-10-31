@@ -13,8 +13,7 @@ struct WidgetGalleryScreen: View {
                 if let source {
                     let now = AppContainer.sharedClockNow
                     widget(width: 338, height: 354) {
-                        TodayWidgetView(plan: source.plan(at: now), settings: source.settings, layout: source.config.todayLayout(for: source.settings.today.arrangement),
-                                        context: source.context(at: now), maxTimelineHours: source.config.rules.widgets.timelineHours)
+                        TodayWidgetView(source: source, at: now)
                     }
                     if let habit = source.habits.first {
                         let context = source.context(at: now)
