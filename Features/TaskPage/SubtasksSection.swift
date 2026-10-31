@@ -69,7 +69,7 @@ struct SubtasksSection: View {
     private func drop(onto name: String) -> Bool {
         defer { dragged = nil; target = nil }
         guard let dragged else { return false }
-        Haptics.play(.medium)
+        Haptics.play(.reorder)
         model.moveSubtask(dragged, onto: name, of: editor.task.name)
         return true
     }

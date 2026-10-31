@@ -118,8 +118,24 @@ struct ConfigTests {
         }
     }
 
+    /// Taps outside the actions go by what they do: moving rows and loading older weeks are medium, the rest light.
+    @Test func hapticRolesKeepTheirStyles() {
+        let haptics = TestConfig.actions.haptics
+        #expect(HapticRole.allCases.filter { haptics[$0] == .medium } == [.reorder, .extend])
+        #expect(HapticRole.allCases.filter { haptics[$0] == .light } == [.select, .mark, .drop, .move, .pullArmed])
+    }
+
+    /// A role missing from `haptics` or a misspelt style is a config error, not a silent tap.
+    @Test func aBadHapticRoleIsAConfigError() throws {
+        let json = try String(contentsOf: TestPaths.configFolder.appendingPathComponent("actions.json"), encoding: .utf8)
+        for (fragment, replacement) in [("\"extend\": \"medium\"", "\"extnd\": \"medium\""), ("\"extend\": \"medium\"", "\"extend\": \"strong\"")] {
+            let broken = Data(try json.replacingOnce(fragment, with: replacement).utf8)
+            #expect(throws: ConfigError.self) { try ConfigLoader.decode(ActionRegistry.self, from: broken, file: "actions.json") }
+        }
+    }
+
     @Test func missingActionDefinitionIsReported() throws {
-        let registry = ActionRegistry(actions: [], menus: [:])
+        let registry = ActionRegistry(actions: [], menus: [:], haptics: TestConfig.actions.haptics)
         #expect(throws: ConfigError.self) { try registry.validate(file: "actions.json") }
     }
 

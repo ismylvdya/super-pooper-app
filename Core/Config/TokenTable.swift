@@ -19,6 +19,9 @@ where Key.RawValue == String {
     }
 }
 
+extension TokenTable: Equatable where Value: Equatable {}
+extension TokenTable: Hashable where Value: Hashable {}
+
 extension TokenTable: Decodable where Value: Decodable {
     init(from decoder: Decoder) throws {
         let raw = try decoder.singleValueContainer().decode([String: Value].self)

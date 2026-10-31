@@ -55,7 +55,7 @@ struct ToggleChip: View {
 
     var body: some View {
         Button {
-            Haptics.play(.light)
+            Haptics.play(.select)
             action()
         } label: {
             HStack(spacing: tokens.space(.chipGap)) {

@@ -53,7 +53,7 @@ struct TimelineBlock: View {
                             TaskScheduling.moment(atOffset: Double(y), windowStart: day.start, hourHeight: Double(hourHeight),
                                                   stepMinutes: model.config.rules.timeline.dropStepMinutes, calendar: model.calendar)
                         }, onDrop: { item, moment in
-                            Haptics.play(.light)
+                            Haptics.play(.drop)
                             Task { await model.schedule(item.id, at: moment) }
                         }))
                         .padding(.vertical, contentTop)
@@ -173,11 +173,11 @@ struct TimelineBlock: View {
         style.highlightedSlot = highlightedSlot
         style.dropMarker = drag?.hoverMoment
         style.onLinkTap = { slot in
-            Haptics.play(.light)
+            Haptics.play(.select)
             withAnimation(tokens.animation) { highlightedSlot = highlightedSlot == slot.id ? nil : slot.id }
         }
         style.onReminderToggle = { reminder in
-            Haptics.play(.light)
+            Haptics.play(.mark)
             Task { await model.toggleReminder(reminder) }
         }
         return style

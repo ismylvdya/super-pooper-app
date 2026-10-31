@@ -157,5 +157,14 @@
     "eventContext": [
       "deleteEvent"
     ]
+  },
+  "haptics": {
+    "select": "light",
+    "mark": "light",
+    "drop": "light",
+    "reorder": "medium",
+    "move": "light",
+    "pullArmed": "light",
+    "extend": "medium"
   }
 }

@@ -60,7 +60,7 @@ struct RecurrenceEditorSection: View {
         return HStack(spacing: tokens.space(.chipGap)) {
             ForEach(Weekday.allCases, id: \.self) { day in
                 Button {
-                    Haptics.play(.light)
+                    Haptics.play(.select)
                     change { value in
                         var days = selected
                         if days.contains(day) { if days.count > 1 { days.remove(day) } } else { days.insert(day) }

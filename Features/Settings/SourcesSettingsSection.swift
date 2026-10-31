@@ -101,7 +101,7 @@ struct SourcePickerScreen: View {
     }
 
     private func toggle(_ id: String) {
-        Haptics.play(.light)
+        Haptics.play(.select)
         model.updateSettings { settings in
             var ids = kind == .calendars ? settings.sources.anchorCalendarIDs : settings.sources.reminderListIDs
             if ids.contains(id) { ids.removeAll { $0 == id } } else { ids.append(id) }

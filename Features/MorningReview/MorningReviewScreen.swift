@@ -63,7 +63,7 @@ struct MorningReviewScreen: View {
                         }
                     }
                     .onMove { source, destination in
-                        Haptics.play(.medium)
+                        Haptics.play(.reorder)
                         model.applyReviewMove(ReviewGroups.move(rows, from: source, to: destination, pool: plan.pool))
                     }
                 }
@@ -83,7 +83,7 @@ struct MorningReviewScreen: View {
                             .accessibilityIdentifier("review.notToday:\(task.name)")
                             .opacity(tokens.opacity(.blocked))
                             .swipeActions(edge: .leading, allowsFullSwipe: true) {
-                                Button { Haptics.play(.light); model.unpostpone(task.name) } label: {
+                                Button { Haptics.play(.move); model.unpostpone(task.name) } label: {
                                     Label("review.backToToday", systemImage: icons[.restore])
                                 }
                                 .tint(tokens.color(.success))
@@ -189,7 +189,7 @@ struct ReviewRow: View {
     /// The new value is decided from the note as it is when the edit runs (two quick taps go there and back).
     private func toggleChip(_ icon: Icon, isOn: Bool, tint: Color, changes: @escaping (TaskItem) -> [TaskEdit]) -> some View {
         Button {
-            Haptics.play(.light)
+            Haptics.play(.select)
             Task { await model.edit(task.name, changes) }
         } label: {
             Chip(icon: icon, tint: tint, isOn: isOn)

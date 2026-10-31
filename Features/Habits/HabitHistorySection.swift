@@ -44,7 +44,7 @@ struct HabitHistorySection: View {
                 WeekdayHeader(metrics: metrics).padding(.top, tokens.space(.plateInner))
                 ScrollView {
                     HabitGridView(grid: grid, color: tokens.habitColor(habit), metrics: metrics, onTap: { day in
-                        Haptics.play(.light)
+                        Haptics.play(.mark)
                         Task { await model.cycleHabit(habit.name, on: day) }
                     }) { day in
                         HabitDayMenu(habit: habit, day: day, showsDate: true)
@@ -60,7 +60,7 @@ struct HabitHistorySection: View {
                 .scrollIndicators(.hidden)
                 .edgeFades(color: tokens.color(.plateBackground), solidTop: true)
                 .pullToExtend(icon: .olderWeeks) {
-                    Haptics.play(.medium)
+                    Haptics.play(.extend)
                     addedWeeks += rules.habits.historyPullWeeks
                 }
                 .frame(maxHeight: tokens.size(.habitHistoryMaxHeight))

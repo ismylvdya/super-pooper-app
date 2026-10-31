@@ -1,9 +1,28 @@
 import Foundation
 
-enum HapticStyle: String, Codable, Sendable {
+enum HapticStyle: String, Codable, ConfigName {
     case none
     case light
     case medium
+}
+
+/// What a tap on screen feels like by what it does, outside the actions (which carry their own `haptic`); the style of
+/// each is in `actions.json` → `haptics`.
+enum HapticRole: String, ConfigName {
+    /// A choice is picked or switched (a setting, a chip, a weekday, a link highlight).
+    case select
+    /// A habit day or a reminder is marked.
+    case mark
+    /// A dragged task lands on the timeline or in the pool.
+    case drop
+    /// Rows of a list change places (a subtask moved under another one too).
+    case reorder
+    /// A task goes to another list or day (+ to This week, back to today).
+    case move
+    /// A pull past its threshold, before letting go.
+    case pullArmed
+    /// A pull let go loads more.
+    case extend
 }
 
 enum ActionMenu: String, Codable, CaseIterable, Sendable {
@@ -47,9 +66,10 @@ struct ActionDefinition: Codable, Hashable, Sendable {
 
 /// Every user action in one registry (`actions.json`): menus, swipes, notifications and widgets take titles, icons,
 /// confirmation and haptics from here. The actions themselves are `ActionID`.
-struct ActionRegistry: Codable, Hashable, Sendable {
+struct ActionRegistry: Decodable, Hashable, Sendable {
     let actions: [ActionDefinition]
     let menus: [String: [ActionID]]
+    let haptics: TokenTable<HapticRole, HapticStyle>
 
     func definition(_ id: ActionID) -> ActionDefinition {
         actions.first { $0.id == id } ?? ActionDefinition(id: id, title: id.rawValue, icon: "questionmark",

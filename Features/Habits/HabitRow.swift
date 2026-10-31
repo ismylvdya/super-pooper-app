@@ -80,7 +80,7 @@ struct HabitDayButton: View {
         HabitDayCell(cell: cell, color: tokens.habitMarkColor(habit), metrics: metrics)
             .contentShape(Circle())
             .onTapGesture {
-                Haptics.play(.light)
+                Haptics.play(.mark)
                 Task { await model.cycleHabit(habit.name, on: day) }
             }
             .accessibilityAddTraits(.isButton)

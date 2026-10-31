@@ -25,7 +25,7 @@ struct ChipOrderScreen: View {
                 .onMove { source, destination in
                     var names = kinds.map(\.rawValue)
                     names.move(fromOffsets: source, toOffset: destination)
-                    Haptics.play(.medium)
+                    Haptics.play(.reorder)
                     model.updateSettings { $0.pool.chipOrder = names }
                 }
             } footer: {

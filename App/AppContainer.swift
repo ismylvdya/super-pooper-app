@@ -94,6 +94,7 @@ final class AppContainer {
         notificationResponses = NotificationResponseHandler(model: model, router: NotificationResponseRouter(links: config.rules.eventLinks),
                                                             open: { await UIApplication.shared.open($0) })
         Haptics.isEnabled = config.flags.haptics
+        Haptics.styles = config.actions.haptics
         notifications.registerCategories(config.actions, habitActionsEnabled: config.flags.habitNotificationActions)
 
         applyLaunchOverrides()

@@ -25,7 +25,7 @@ struct TodaySettingsSection: View {
             Picker("settings.today.arrangement", selection: Binding(
                 get: { current },
                 set: { value in
-                    Haptics.play(.light)
+                    Haptics.play(.select)
                     model.updateSettings { $0.today[keyPath: keyPath] = value }
                 }
             )) {

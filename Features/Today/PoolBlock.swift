@@ -41,7 +41,7 @@ struct PoolBlock: View {
     }
 
     private func dropped(_ item: DayItem, from source: TaskDragState.Source, order: [String]) {
-        Haptics.play(.light)
+        Haptics.play(.drop)
         switch source {
         case .pool: model.setManualOrder(order)
         case .timeline: Task { await model.unschedule(item.id, poolOrder: order) }

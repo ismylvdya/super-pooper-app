@@ -25,7 +25,7 @@ private struct PullToExtend: ViewModifier {
                 pull = new
                 if new >= threshold, !isArmed {
                     isArmed = true
-                    Haptics.play(.light)
+                    Haptics.play(.pullArmed)
                 } else if new < threshold / 2 {
                     isArmed = false
                 }

@@ -82,7 +82,7 @@ struct TaskListScreen: View {
             }
             if task.canPromote {
                 Button {
-                    Haptics.play(.light)
+                    Haptics.play(.move)
                     Task { await model.moveToThisWeek(task.name) }
                 } label: { Image(systemName: icons[.add]) }
                     .buttonStyle(.borderless)

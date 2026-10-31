@@ -82,7 +82,7 @@ struct HabitsScreen: View {
             }
             // While a search filters the list the rows cannot move: the order is the order of every habit.
             .onMove(perform: query.isEmpty ? { source, destination in
-                Haptics.play(.medium)
+                Haptics.play(.reorder)
                 model.moveHabits(groups.order(moving: source, to: destination, inRepeatable: isRepeatable))
             } : nil)
         }
