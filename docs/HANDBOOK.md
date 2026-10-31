@@ -168,7 +168,7 @@ habits.morningRoutine:
 - `due` у привычек приложение **не двигает** (в отличие от TaskNotes, который при отметке переносит scheduled на следующий экземпляр) — см. DECISIONS.
 
 ### 4.8. RRULE (`Domain/Recurrence`)
-Поддерживается то, что генерирует TaskNotes: `DTSTART` (дата или дата-время; «Z» — фиктивная, время локальное, как в TaskNotes), `FREQ=DAILY|WEEKLY|MONTHLY|YEARLY`, `INTERVAL`, `BYDAY` (в т.ч. `2MO`, `-1FR`), `BYMONTHDAY` (в т.ч. отрицательные), `BYMONTH`, `COUNT`, `UNTIL`, `WKST`. Без `DTSTART` точка отсчёта — дата из `due`, затем `date_created`. Незнакомое правило — задача видна каждый день со значком проблемы (как в TaskNotes). Поведение сверено с кодом TaskNotes 4.13.8 / rrule.js на 9000 случайных правил.
+Поддерживается то, что генерирует TaskNotes: `DTSTART` (дата или дата-время; «Z» — фиктивная, время локальное, как в TaskNotes), `FREQ=DAILY|WEEKLY|MONTHLY|YEARLY`, `INTERVAL`, `BYDAY` (в т.ч. `2MO`, `-1FR`), `BYMONTHDAY` (в т.ч. отрицательные), `BYMONTH`, `COUNT`, `UNTIL`, `WKST`. Без `DTSTART` точка отсчёта — дата из `due`, затем `date_created`. `date_created` берётся так, как записан, по его часам (`TaskNote.created`, без перевода в пояс телефона; время до границы дня — ещё предыдущий день); с него же начинаются история и статистика привычки. Незнакомое правило — задача видна каждый день со значком проблемы (как в TaskNotes). Поведение сверено с кодом TaskNotes 4.13.8 / rrule.js на 9000 случайных правил.
 
 ## 5. Формат заметки (для Claude-скилла)
 

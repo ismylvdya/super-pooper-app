@@ -14,7 +14,8 @@ struct TaskOccurrence: Sendable {
 
     func schedule(of task: TaskNote, fallbackDay: LocalDate) -> RecurrenceSchedule? {
         guard let rule = task.recurrence else { return nil }
-        let created = task.dateCreated.map(days.day(of:))
+        // The day as the note was written, not moved through the phone's zone.
+        let created = task.created.map(days.day(of:))
         return RecurrenceSchedule(rule: rule, fallbackStart: task.due?.day ?? created ?? fallbackDay)
     }
 }

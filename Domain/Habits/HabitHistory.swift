@@ -22,7 +22,7 @@ struct HabitHistory: Sendable {
 
     /// The first day the habit counts from: its creation or its first mark, whichever is earlier.
     func start(today: LocalDate) -> LocalDate {
-        let created = task.dateCreated.map(days.day(of:)) ?? today
+        let created = task.created.map(days.day(of:)) ?? today
         return ([created] + instances.complete).min() ?? today
     }
 

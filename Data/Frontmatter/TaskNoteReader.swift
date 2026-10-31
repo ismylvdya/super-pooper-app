@@ -47,7 +47,10 @@ struct TaskNoteReader: Sendable {
         task.timeZone = fields.string(keys.timeZone).flatMap { TimeZone(identifier: $0) == nil ? nil : $0 }
         task.habit = habitOptions(&fields)
         task.completedDate = fields.parsed(keys.completedDate, LocalDate.init(isoString:))
-        task.dateCreated = fields.timestamp(keys.dateCreated, calendar: calendar)
+        if let created = fields.string(keys.dateCreated) {
+            task.dateCreated = fields.moment(created, key: keys.dateCreated, calendar: calendar)
+            task.created = TaskDue(writtenWallClockOf: created)
+        }
         task.dateModified = fields.timestamp(keys.dateModified, calendar: calendar)
         task.problems = fields.problems
         return task
@@ -174,6 +177,10 @@ private struct FieldReader {
 
     mutating func timestamp(_ key: String, calendar: Calendar) -> Date? {
         guard let text = string(key) else { return nil }
+        return moment(text, key: key, calendar: calendar)
+    }
+
+    mutating func moment(_ text: String, key: String, calendar: Calendar) -> Date? {
         if let date = ISO8601.parse(text) { return date }
         if let day = LocalDate(isoString: text) {
             if text.count == 10 { return day.startDate(in: calendar) }

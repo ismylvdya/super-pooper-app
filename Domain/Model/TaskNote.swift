@@ -35,6 +35,8 @@ struct TaskNote: Identifiable, Hashable, Codable, Sendable {
     var habit = HabitOptions()
     var completedDate: LocalDate?
     var dateCreated: Date?
+    /// `date_created` on the clock it was written by (no zone): where a habit's days and history start.
+    var created: TaskDue?
     var dateModified: Date?
     var problems: [TaskProblem] = []
 

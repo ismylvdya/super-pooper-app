@@ -12,7 +12,13 @@ struct TaskDue: Hashable, Codable, Sendable {
 
     /// Parses `YYYY-MM-DD` or `YYYY-MM-DDTHH:mm[:ss]` (local wall-clock time).
     init?(rawValue: String) {
-        let trimmed = rawValue.trimmingCharacters(in: .whitespaces)
+        self.init(writtenWallClockOf: rawValue)
+    }
+
+    /// The date and the time of day of a timestamp as it is written, whatever offset follows
+    /// (`2026-10-20T09:12:44.123+02:00` → 2026-10-20 09:12): the clock of the place it was written in.
+    init?(writtenWallClockOf text: String) {
+        let trimmed = text.trimmingCharacters(in: .whitespaces)
         guard let day = LocalDate(isoString: trimmed) else { return nil }
         self.day = day
         if trimmed.count > 10 {

@@ -187,8 +187,10 @@ struct VaultScannerTests {
         let modifiedDate = try #require(task.dateModified, sourceLocation: sourceLocation)
         #expect(abs(createdDate.timeIntervalSince(stamp(created))) < 0.001, sourceLocation: sourceLocation)
         #expect(abs(modifiedDate.timeIntervalSince(stamp(modified))) < 0.001, sourceLocation: sourceLocation)
+        #expect(task.created == TaskDue("\(created)T09:12"), sourceLocation: sourceLocation)
         var comparable = expected
         comparable.dateCreated = task.dateCreated
+        comparable.created = task.created
         comparable.dateModified = task.dateModified
         #expect(task == comparable, sourceLocation: sourceLocation)
     }

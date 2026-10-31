@@ -92,6 +92,7 @@ func makeTask(_ name: String, status: TaskStatus = .thisWeek, created: String = 
               _ configure: (inout TaskNote) -> Void = { _ in }) -> TaskNote {
     var task = TaskNote(name: name, relativePath: "TaskNotes/Tasks/\(name).md", status: status)
     task.dateCreated = TestCalendar.date(created, "09:00")
+    task.created = TaskDue("\(created)T09:00")
     configure(&task)
     return task
 }
