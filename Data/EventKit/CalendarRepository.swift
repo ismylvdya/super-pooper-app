@@ -9,6 +9,8 @@ protocol CalendarRepository: Sendable {
     func events(from start: Date, to end: Date, calendarIDs: [String]) -> [CalendarEvent]
     /// Deletes this occurrence of an event (a recurring event keeps its other occurrences).
     func delete(_ event: CalendarEvent) throws
+    /// Calendar data changed, here or elsewhere; a burst of changes comes as several signals.
+    func changes() -> AsyncStream<Void>
 }
 
 enum CalendarEditError: Error {
@@ -21,6 +23,8 @@ struct EventKitCalendarRepository: CalendarRepository {
     var access: SourceAccess { eventKit.access(for: .event) }
 
     func requestAccess() async -> Bool { await eventKit.requestAccess(for: .event) }
+
+    func changes() -> AsyncStream<Void> { eventKit.changes() }
 
     func calendars() -> [SourceCollection] {
         guard access == .granted else { return [] }

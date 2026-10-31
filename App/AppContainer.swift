@@ -1,4 +1,3 @@
-@preconcurrency import EventKit
 import Foundation
 import SwiftUI
 import UserNotifications
@@ -139,7 +138,7 @@ final class AppContainer {
         // The settings note read by the sync must not undo what the launch asked for.
         applyLaunchOverrides()
         if let url = launch.openURL { router.handle(url) }
-        observeCalendarChanges()
+        model.observeSourceChanges()
         observeTimeChanges()
     }
 
@@ -154,22 +153,6 @@ final class AppContainer {
                     calendar.refresh()
                     await model.timeDidChange()
                 }
-            }
-        }
-    }
-
-    /// Calendar and Reminders edits made elsewhere (moved, deleted, completed) reach the timeline and the
-    /// notifications right away while the app runs; otherwise at the next sync or background refresh.
-    private func observeCalendarChanges() {
-        let model = self.model
-        let eventKit = self.eventKit
-        Task { @MainActor in
-            // Filtered by sender instead of `object:`, which needs a Sendable object and EKEventStore is not one.
-            for await notification in NotificationCenter.default.notifications(named: .EKEventStoreChanged)
-            where (notification.object as AnyObject?) === eventKit.store {
-                try? await Task.sleep(for: .seconds(model.config.rules.timeline.externalChangeDelaySeconds))
-                await model.refreshCalendarSources()
-                await model.publishDerivedState()
             }
         }
     }

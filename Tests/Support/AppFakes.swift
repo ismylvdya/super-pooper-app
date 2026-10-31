@@ -40,6 +40,7 @@ struct ListedReminders: RemindersRepository {
     func requestAccess() async -> Bool { true }
     func lists() -> [SourceCollection] { [] }
     func setCompleted(_ completed: Bool, reminderID: String) throws {}
+    func changes() -> AsyncStream<Void> { AsyncStream { $0.finish() } }
 
     func reminders(from start: Date, to end: Date, listIDs: [String]) async -> [ReminderItem] {
         if listIDs == ["old"] {
@@ -55,9 +56,39 @@ struct EarlyReminder: RemindersRepository {
     func requestAccess() async -> Bool { true }
     func lists() -> [SourceCollection] { [] }
     func setCompleted(_ completed: Bool, reminderID: String) throws {}
+    func changes() -> AsyncStream<Void> { AsyncStream { $0.finish() } }
 
     func reminders(from start: Date, to end: Date, listIDs: [String]) async -> [ReminderItem] {
         let due = PreviewSamples.context.dayEnd.addingTimeInterval(3600)
         return [ReminderItem(id: "early", title: "Early", due: due, listID: "list", listTitle: "List", colorHex: "#000000", isCompleted: false)]
+    }
+}
+
+/// Calendars whose store changes the test sends; counts how often the events are read.
+final class ChangingCalendars: CalendarRepository, @unchecked Sendable {
+    private let lock = NSLock()
+    private var continuation: AsyncStream<Void>.Continuation?
+    private var readCount = 0
+
+    var reads: Int { lock.withLock { readCount } }
+
+    /// The store posts a change notice.
+    func change() {
+        _ = lock.withLock { continuation }?.yield()
+    }
+
+    var access: SourceAccess { .granted }
+    func requestAccess() async -> Bool { true }
+    func calendars() -> [SourceCollection] { [] }
+
+    func events(from start: Date, to end: Date, calendarIDs: [String]) -> [CalendarEvent] {
+        lock.withLock { readCount += 1 }
+        return []
+    }
+
+    func delete(_ event: CalendarEvent) throws {}
+
+    func changes() -> AsyncStream<Void> {
+        AsyncStream { continuation in lock.withLock { self.continuation = continuation } }
     }
 }

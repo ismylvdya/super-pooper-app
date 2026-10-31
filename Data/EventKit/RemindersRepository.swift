@@ -9,6 +9,8 @@ protocol RemindersRepository: Sendable {
     func lists() -> [SourceCollection]
     func reminders(from start: Date, to end: Date, listIDs: [String]) async -> [ReminderItem]
     func setCompleted(_ completed: Bool, reminderID: String) throws
+    /// Reminders changed, here or elsewhere; a burst of changes comes as several signals.
+    func changes() -> AsyncStream<Void>
 }
 
 struct EventKitRemindersRepository: RemindersRepository {
@@ -18,6 +20,8 @@ struct EventKitRemindersRepository: RemindersRepository {
     var access: SourceAccess { eventKit.access(for: .reminder) }
 
     func requestAccess() async -> Bool { await eventKit.requestAccess(for: .reminder) }
+
+    func changes() -> AsyncStream<Void> { eventKit.changes() }
 
     func setCompleted(_ completed: Bool, reminderID: String) throws {
         guard let reminder = eventKit.store.calendarItem(withIdentifier: reminderID) as? EKReminder else { return }

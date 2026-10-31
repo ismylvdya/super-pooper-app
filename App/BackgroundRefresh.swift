@@ -38,6 +38,7 @@ enum BackgroundRefresh {
         guard case .success(let container) = AppContainer.shared else { return }
         await container.model.ensureLoaded()
         await container.model.completeReminder(id: id)
+        await container.model.waitForSourceRefresh()
     }
 
     /// Delete event on an event alert: the occurrence that alert belongs to.
@@ -45,6 +46,7 @@ enum BackgroundRefresh {
         guard case .success(let container) = AppContainer.shared else { return }
         await container.model.ensureLoaded()
         await container.model.deleteEvent(identifier: identifier, start: start)
+        await container.model.waitForSourceRefresh()
     }
 
     /// A notification of a day that is over is not put back: it goes with its day.

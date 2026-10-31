@@ -55,7 +55,7 @@ struct ReminderItem: Identifiable, Hashable, Codable, Sendable {
     let listID: String
     let listTitle: String
     let colorHex: String
-    let isCompleted: Bool
+    var isCompleted: Bool
 }
 
 /// A calendar or a reminders list the user can pick as a source.

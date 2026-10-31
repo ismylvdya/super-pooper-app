@@ -7,6 +7,7 @@ import SwiftUI
 enum PreviewModel {
     static func make(notifications: NotificationScheduling = SilentNotifications(),
                      reminders: RemindersRepository = StaticRemindersRepository(),
+                     calendars: CalendarRepository = StaticCalendarRepository(),
                      calendar: CalendarSource = FixedCalendar(current: PreviewSamples.calendar),
                      clock: Clock = FixedClock(now: PreviewSamples.context.now),
                      tasks: [TaskNote] = PreviewSamples.tasks,
@@ -21,7 +22,7 @@ enum PreviewModel {
                                         noteExtension: config.rules.vault.noteExtension, vaultSettings: { settingsStore.load().vault }),
             settingsNote: VaultSettingsNote(location: FixedVaultLocation(url: store.directory), fileSystem: CoordinatedFileSystem(),
                                             fileName: config.rules.vault.settingsNote, vaultSettings: { settingsStore.load().vault }),
-            calendars: StaticCalendarRepository(), reminders: reminders, notifications: notifications,
+            calendars: calendars, reminders: reminders, notifications: notifications,
             settingsStore: settingsStore, dayStateStore: DayStateStore(store: store),
             snapshotStore: SnapshotStore(store: store), alertStateStore: AlertStateStore(store: store), widgets: NoWidgets(),
             notificationImage: NotificationImageStore(url: store.url(config.rules.notifications.imageFile), maxPixels: 1))
@@ -57,6 +58,7 @@ struct StaticCalendarRepository: CalendarRepository {
     func calendars() -> [SourceCollection] { [SourceCollection(id: "demo", title: "Demo", colorHex: "#30B0C7", sourceTitle: "iCloud")] }
     func events(from start: Date, to end: Date, calendarIDs: [String]) -> [CalendarEvent] { PreviewSamples.events }
     func delete(_ event: CalendarEvent) throws {}
+    func changes() -> AsyncStream<Void> { AsyncStream { $0.finish() } }
 }
 
 struct StaticRemindersRepository: RemindersRepository {
@@ -65,6 +67,7 @@ struct StaticRemindersRepository: RemindersRepository {
     func lists() -> [SourceCollection] { [SourceCollection(id: "list", title: "Remember", colorHex: "#FF9500", sourceTitle: "iCloud")] }
     func reminders(from start: Date, to end: Date, listIDs: [String]) async -> [ReminderItem] { PreviewSamples.reminders }
     func setCompleted(_ completed: Bool, reminderID: String) throws {}
+    func changes() -> AsyncStream<Void> { AsyncStream { $0.finish() } }
 }
 
 struct SilentNotifications: NotificationScheduling {

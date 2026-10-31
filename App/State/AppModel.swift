@@ -57,6 +57,9 @@ final class AppModel {
     /// Counts reads of the calendars and reminders; an older read that ends later is dropped.
     @ObservationIgnored var sourcesGeneration = 0
     @ObservationIgnored var notificationTask: Task<Void, Never>?
+    /// The read of Calendar and Reminders waiting for a burst of changes to end, and the loops that hear the changes.
+    @ObservationIgnored var sourcesRefresh: Task<Void, Never>?
+    @ObservationIgnored var sourceObservers: [Task<Void, Never>] = []
     @ObservationIgnored var settingsNoteWrite: Task<Void, Never>?
     /// A settings change not written to the vault note yet.
     @ObservationIgnored var settingsNotePending = false

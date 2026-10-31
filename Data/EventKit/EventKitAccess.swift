@@ -20,6 +20,17 @@ final class EventKitAccess: @unchecked Sendable {
         }
     }
 
+    /// Every change of the store (an edit here or elsewhere, a sync with iCloud); one edit can bring several.
+    func changes() -> AsyncStream<Void> {
+        let store = self.store
+        return AsyncStream { continuation in
+            let observer = NotificationCenter.default.addObserver(forName: .EKEventStoreChanged, object: store, queue: nil) { _ in
+                continuation.yield()
+            }
+            continuation.onTermination = { _ in NotificationCenter.default.removeObserver(observer) }
+        }
+    }
+
     func requestAccess(for type: EKEntityType) async -> Bool {
         do {
             switch type {
