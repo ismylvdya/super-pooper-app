@@ -1,36 +1,5 @@
 import Foundation
 
-/// Every user action in one registry (`actions.json`): menus, swipes, notifications
-/// and widgets take titles, icons, confirmation and haptics from here.
-enum ActionID: String, Codable, CaseIterable, Sendable {
-    case done
-    case partial
-    case twice
-    case skipToday
-    case notToday
-    case unmark
-    case open
-    case archive
-    case delete
-    case openInObsidian
-    case restoreThisWeek
-    case restoreHalfYear
-    case restoreHabit
-    case deleteEvent
-}
-
-extension ActionID {
-    /// The habit mark a menu or notification action sets (`nil`: Unmark, and the actions that set no mark).
-    var habitMark: HabitMark? {
-        switch self {
-        case .done: .done
-        case .partial: .partial
-        case .twice: .twice
-        default: nil
-        }
-    }
-}
-
 enum HapticStyle: String, Codable, Sendable {
     case none
     case light
@@ -76,6 +45,8 @@ struct ActionDefinition: Codable, Hashable, Sendable {
     var needsConfirmation: Bool { confirmTitle != nil }
 }
 
+/// Every user action in one registry (`actions.json`): menus, swipes, notifications and widgets take titles, icons,
+/// confirmation and haptics from here. The actions themselves are `ActionID`.
 struct ActionRegistry: Codable, Hashable, Sendable {
     let actions: [ActionDefinition]
     let menus: [String: [ActionID]]

@@ -78,7 +78,7 @@ extension AppModel {
     // MARK: - Trash and conflicts
 
     /// The store has a trash (otherwise deleting is for good and there is no trash screen).
-    var hasTrash: Bool { parts.trash.isAvailable }
+    var hasTrash: Bool { parts.capabilities.hasTrash }
     var trashCount: Int? { trashedNotes.isEmpty ? nil : trashedNotes.count }
     func refreshTrash() async { await parts.trash.refresh() }
     func trashedText(_ note: TrashedNote) async -> String { await parts.trash.text(of: note) }

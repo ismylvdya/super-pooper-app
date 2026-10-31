@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// Menu buttons for an item, taken from the action registry; only actions that make sense
-/// for the item's current state are shown.
+/// Menu buttons for an item, taken from the action registry; only actions that make sense for the item's current state
+/// and the task store are shown (`AppModel.menuEntries`).
 struct ActionMenuContent: View {
-    @Environment(\.actions) private var actions
+    @Environment(AppModel.self) private var model
     let menu: ActionMenu
     let item: DayItem?
     /// Skip today and Not today only make sense on today's page.
@@ -11,8 +11,8 @@ struct ActionMenuContent: View {
     let perform: (ActionDefinition) -> Void
 
     var body: some View {
-        ForEach(actions.actions(in: menu).filter(isAvailable), id: \.id) { action in
-            let isCurrent = isCurrentMark(action)
+        ForEach(model.menuEntries(menu, for: item, isToday: isToday), id: \.action.id) { entry in
+            let action = entry.action
             Button(role: action.destructive ? .destructive : nil) {
                 Haptics.play(action.haptic)
                 perform(action)
@@ -20,33 +20,7 @@ struct ActionMenuContent: View {
                 // Habit menus show the habit marks, as the habit notifications do.
                 ActionLabel(action: action, markIcon: menu.isHabitMenu ? HabitMarkIcon.icon(for: action.id) : nil)
             }
-            .disabled(isCurrent)
-        }
-    }
-
-    /// The mark the item already has: shown, but not selectable.
-    private func isCurrentMark(_ action: ActionDefinition) -> Bool {
-        guard let item else { return false }
-        switch action.id {
-        // Without Twice in the menu, Done on a twice-a-day habit done once goes on to Twice.
-        case .done: return item.state == .marked(.done) && !(item.task.isTwiceADay && !offersTwice)
-        case .partial: return item.state == .marked(.partial)
-        case .twice: return item.state == .marked(.twice)
-        default: return false
-        }
-    }
-
-    private var offersTwice: Bool { actions.actions(in: menu).contains { $0.id == .twice } }
-
-    private func isAvailable(_ action: ActionDefinition) -> Bool {
-        guard let item else { return true }
-        switch action.id {
-        case .done, .partial: return true
-        case .twice: return !item.isHabit || item.task.isTwiceADay || item.state == .marked(.twice)
-        case .unmark: return item.isDone
-        case .skipToday: return isToday && item.isHabit && !item.isDone
-        case .notToday: return isToday && NotToday.isAvailable(for: item)
-        default: return true
+            .disabled(entry.isCurrent)
         }
     }
 }

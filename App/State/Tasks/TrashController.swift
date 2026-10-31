@@ -21,8 +21,6 @@ final class TrashController {
         self.appEvents = appEvents
     }
 
-    var isAvailable: Bool { trash != nil }
-
     /// Re-reads the trash (the trash screen and the Settings counter).
     func refresh() async {
         notes = (try? await trash?.notes()) ?? []

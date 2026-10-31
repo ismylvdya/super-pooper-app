@@ -50,7 +50,7 @@ struct MorningReviewScreen: View {
                                     .accessibilityIdentifier("review:\(item.id)")
                                     // The pool menu's Not today, where that menu offers it.
                                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                        if NotToday.isAvailable(for: item) {
+                                        if model.offers(.notToday, for: item) {
                                             let action = actions.definition(.notToday)
                                             Button { Haptics.play(action.haptic); perform(action, on: item.id) } label: {
                                                 Label(LocalizedStringKey(action.title), systemImage: action.icon)

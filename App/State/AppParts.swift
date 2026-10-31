@@ -6,6 +6,8 @@ import Foundation
 struct AppParts {
     /// What the parts talk to (repositories and the store).
     let services: AppServices
+    /// What the task store can do beyond the basics.
+    let capabilities: StoreCapabilities
     let settings: SettingsController
     let day: DayStateController
     let tasks: TaskState
@@ -24,6 +26,7 @@ struct AppParts {
 
     init(config: AppConfig, services: AppServices, appEvents: AppEventSink, clock: Clock, calendar: CalendarSource, delay: Delay) {
         self.services = services
+        capabilities = StoreCapabilities(opensExternally: services.links != nil, hasTrash: services.trash != nil)
         let rules = config.rules
         let store = services.tasks
         let backups = BackupPolicy(isOn: config.flags.backups, backups: services.backups)
