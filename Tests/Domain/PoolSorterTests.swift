@@ -150,6 +150,18 @@ struct PoolSorterTests {
             == ["A breakfast", "C workout", "B shower"])
     }
 
+    /// A task a criterion knows nothing about (no creation date, no due date this week) comes after every task it knows,
+    /// however far the known value is.
+    @Test func aTaskACriterionKnowsNothingAboutComesLast() {
+        let undated = makeTask("A undated") { $0.dateCreated = nil }
+        let ancient = makeTask("B ancient") { $0.dateCreated = Date(timeIntervalSince1970: 0) }
+        let future = makeTask("C future") { $0.dateCreated = Date.distantFuture }
+        #expect(sortedNames([undated, future, ancient], at: morning) == ["B ancient", "C future", "A undated"])
+        let sunday = makeTask("D sunday") { $0.due = TaskDue("2026-10-25") }
+        let later = makeTask("A later") { $0.due = TaskDue("2026-11-30") }
+        #expect(sortedNames([later, sunday], at: morning) == ["D sunday", "A later"])
+    }
+
     // MARK: - Helpers
 
     private var sorter: PoolSorter { PoolSorter(criteria: TestConfig.sort.pool, rules: TestConfig.rules.day) }

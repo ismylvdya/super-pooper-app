@@ -40,34 +40,41 @@ struct PoolSorter: Sendable {
         return open + done
     }
 
-    private func key(_ criterion: PoolSortCriterion, _ task: TaskItem, _ context: DayContext) -> Double {
+    /// A criterion's place for a task; a task the criterion knows nothing about (no routine place, no due date this week,
+    /// no creation date) comes after every task it knows.
+    private enum SortKey: Comparable {
+        case known(Double)
+        case unknown
+    }
+
+    private func key(_ criterion: PoolSortCriterion, _ task: TaskItem, _ context: DayContext) -> SortKey {
         switch criterion {
         case .morningRoutine:
-            return task.habit.timeOfDay == .morning ? 0 : 1
+            return .known(task.habit.timeOfDay == .morning ? 0 : 1)
         case .routineOrder:
-            return routines.position(of: task).map(Double.init) ?? 10_000
+            return routines.position(of: task).map { .known(Double($0)) } ?? .unknown
         case .habitsFirst:
-            return task.isHabit && task.habitTimes.isEmpty ? 0 : 1
+            return .known(task.isHabit && task.habitTimes.isEmpty ? 0 : 1)
         case .habitTimeOfDay:
-            guard let part = task.habit.timeOfDay else { return 1 }
-            return part == rules.partOfDay(context) ? 0 : 2
+            guard let part = task.habit.timeOfDay else { return .known(1) }
+            return .known(part == rules.partOfDay(context) ? 0 : 2)
         case .dueToday:
-            return !task.isHabit && task.due.map(context.logicalDay(of:)) == context.today ? 0 : 1
+            return .known(!task.isHabit && task.due.map(context.logicalDay(of:)) == context.today ? 0 : 1)
         case .highPriority:
-            return task.isHighPriority ? 0 : 1
+            return .known(task.isHighPriority ? 0 : 1)
         case .nearestDueThisWeek:
-            guard !task.isHabit, let day = task.due.map(context.logicalDay(of:)), day >= context.today, day <= context.weekEnd else { return 1_000 }
-            return Double(context.today.days(until: day))
+            guard !task.isHabit, let day = task.due.map(context.logicalDay(of:)), day >= context.today, day <= context.weekEnd else { return .unknown }
+            return .known(Double(context.today.days(until: day)))
         case .energyBeforeEnergyHour:
-            guard task.feel == .needEnergy else { return 1 }
-            return context.isBeforeEnergyHour ? 0 : 2
+            guard task.feel == .needEnergy else { return .known(1) }
+            return .known(context.isBeforeEnergyHour ? 0 : 2)
         case .unpleasantFirst:
             // Pleasant tasks are a reward: they wait for the rest.
-            return task.feel == .pleasant ? 1 : 0
+            return .known(task.feel == .pleasant ? 1 : 0)
         case .shortFirst:
-            return Double(rules.estimate(of: task))
+            return .known(Double(rules.estimate(of: task)))
         case .olderFirst:
-            return task.dateCreated?.timeIntervalSince1970 ?? .greatestFiniteMagnitude
+            return task.dateCreated.map { .known($0.timeIntervalSince1970) } ?? .unknown
         }
     }
 }
