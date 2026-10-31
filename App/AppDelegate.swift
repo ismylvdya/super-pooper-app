@@ -46,7 +46,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
         let info = response.notification.request.content.userInfo
         if response.actionIdentifier == UNNotificationDismissActionIdentifier || response.actionIdentifier == UNNotificationDefaultActionIdentifier {
-            await BackgroundRefresh.restore(response.notification)
+            await BackgroundRefresh.restore(response.notification.request)
             if response.actionIdentifier == UNNotificationDefaultActionIdentifier,
                case .success(let container) = AppContainer.shared,
                let url = NotificationTapTarget.url(for: info, links: container.config.rules.eventLinks) {

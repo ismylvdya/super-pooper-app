@@ -2,10 +2,18 @@ import Foundation
 @preconcurrency import UserNotifications
 @testable import SuperPooperApp
 
-/// Notifications that remember the last plan; the first plan takes a while to arrive (a slow notification center).
+/// Notifications that remember the last plan and, in order, what reached the center. The first plan can be held at a
+/// gate the test opens (a slow notification center).
 actor RecordingNotifications: NotificationScheduling {
     private(set) var lastPlanned: [PlannedNotification] = []
     private(set) var calls = 0
+    /// "sync", or "restore" and the identifier.
+    private(set) var log: [String] = []
+    private let firstSync: AsyncGate?
+
+    init(firstSync: AsyncGate? = nil) {
+        self.firstSync = firstSync
+    }
 
     nonisolated func access() async -> SourceAccess { .granted }
     nonisolated func requestAccess() async -> Bool { true }
@@ -13,15 +21,17 @@ actor RecordingNotifications: NotificationScheduling {
 
     func sync(planned: [PlannedNotification], stillValid: [PlannedNotification], now immediate: [PlannedNotification]) async {
         calls += 1
-        // The real center does not stop when the task is cancelled: a wait that ignores cancellation.
-        if calls == 1 {
-            await withCheckedContinuation { done in DispatchQueue.global().asyncAfter(deadline: .now() + 0.4) { done.resume() } }
-        }
+        // The real center does not stop when the task is cancelled: the gate ignores cancellation too.
+        if calls == 1, let firstSync { await firstSync.pass() }
         lastPlanned = planned
+        log.append("sync")
     }
 
     func removeAll() async { lastPlanned = [] }
-    nonisolated func restore(_ notification: UNNotification) async {}
+
+    func restore(_ request: UNNotificationRequest) async {
+        log.append("restore " + request.identifier)
+    }
 }
 
 /// Reminders of the asked lists; the "old" list takes a while to read.

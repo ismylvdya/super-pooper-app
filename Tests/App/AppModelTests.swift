@@ -110,13 +110,15 @@ struct AppModelTests {
     /// Two plans in a row (a sync, then a mark): the newer one is what stays scheduled, even when the older one is
     /// slower to reach the notification center.
     @Test func theNewestNotificationPlanWins() async throws {
-        let recorder = RecordingNotifications()
+        let slowCenter = AsyncGate()
+        let recorder = RecordingNotifications(firstSync: slowCenter)
         let model = try #require(PreviewModel.make(notifications: recorder)).model
         await model.publishDerivedState()
         await model.perform(.done, on: "Забрать посылку")
+        await slowCenter.arrived()
+        await slowCenter.open()
         await model.waitForNotifications()
-        try await Task.sleep(for: .milliseconds(600))
-        #expect(await recorder.calls > 0)
+        #expect(await recorder.calls > 1)
         #expect(await !recorder.lastPlanned.contains { $0.taskName == "Забрать посылку" })
     }
 

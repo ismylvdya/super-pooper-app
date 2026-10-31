@@ -48,11 +48,9 @@ enum BackgroundRefresh {
     }
 
     /// A notification of a day that is over is not put back: it goes with its day.
-    static func restore(_ notification: UNNotification) async {
+    static func restore(_ request: UNNotificationRequest) async {
         guard case .success(let container) = AppContainer.shared else { return }
-        let day = (notification.request.content.userInfo[NotificationPayload.dayKey] as? String).flatMap(LocalDate.init(isoString:))
-        guard !StaleNotifications.isOver(day, today: container.model.context().today) else { return }
-        await container.model.services.notifications.restore(notification)
+        await container.model.restoreNotification(request)
     }
 
     nonisolated static func waitForPendingWork() async {

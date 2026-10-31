@@ -1,4 +1,5 @@
 import Foundation
+@preconcurrency import UserNotifications
 
 /// What follows every change of the data: the widget snapshot and reload, and the notification schedule.
 extension AppModel {
@@ -24,6 +25,21 @@ extension AppModel {
             guard !Task.isCancelled else { return }
             await rescheduleNotifications(context: context)
         }
+    }
+
+    /// A notification swiped away or tapped comes back (silently) while its day lasts. Put back in the same line as the
+    /// plans: a plan being scheduled finishes first, and a plan made after it waits, so a sync never takes away the
+    /// request just put back.
+    func restoreNotification(_ request: UNNotificationRequest) async {
+        let day = (request.content.userInfo[NotificationPayload.dayKey] as? String).flatMap(LocalDate.init(isoString:))
+        guard !StaleNotifications.isOver(day, today: context().today) else { return }
+        let previous = notificationTask
+        let restore = Task {
+            await previous?.value
+            await services.notifications.restore(request)
+        }
+        notificationTask = restore
+        await restore.value
     }
 
     /// Background refresh waits for the notification schedule before the app is suspended.

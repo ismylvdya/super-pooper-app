@@ -73,7 +73,7 @@ struct SilentNotifications: NotificationScheduling {
     func registerCategories(_ registry: ActionRegistry, habitActionsEnabled: Bool) {}
     func sync(planned: [PlannedNotification], stillValid: [PlannedNotification], now immediate: [PlannedNotification]) async {}
     func removeAll() async {}
-    func restore(_ notification: UNNotification) async {}
+    func restore(_ request: UNNotificationRequest) async {}
 }
 
 struct NoWidgets: WidgetReloading {
