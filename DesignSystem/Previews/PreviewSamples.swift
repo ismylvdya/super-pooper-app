@@ -1,20 +1,16 @@
 #if DEBUG
 import Foundation
 
-/// Sample data for SwiftUI previews: a small day built with the real domain logic.
+/// Sample data for SwiftUI previews: a small day at 11:30 today, built with the real domain logic, the app's calendar
+/// and the default settings.
 enum PreviewSamples {
-    static var calendar: Calendar {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = .current
-        calendar.firstWeekday = 2
-        return calendar
-    }
+    static var calendar: Calendar { AppCalendar.make() }
 
     static var context: DayContext {
-        let today = LocalDate(Date(), in: calendar)
+        let today = LocalDate(SystemClock().now, in: calendar)
+        let day = BundledConfig.settings.day
         return DayContext(now: today.startDate(in: calendar, offset: LocalTime(hour: 11, minute: 30) ?? .midnight),
-                          calendar: calendar, boundary: LocalTime(hour: 4, minute: 0) ?? .midnight,
-                          energyHour: LocalTime(hour: 14, minute: 0) ?? .midnight)
+                          calendar: calendar, boundary: day.boundary, energyHour: day.energyHour)
     }
 
     static var tasks: [TaskItem] {
