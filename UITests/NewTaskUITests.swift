@@ -25,6 +25,8 @@ final class NewTaskUITests: XCTestCase {
         launch("superpooper://review")
         // The link opens the review once the vault is read; if Today came first, open it from there.
         if !app.navigationBars["This week"].waitForExistence(timeout: 6) { app.buttons["today.review"].tap() }
+        // A banner over the row would take the tap.
+        app.dismissBanners()
         // The list is long and lazy: scroll down to the row.
         let row = app.staticTexts["Позвонить в банк"]
         app.scrollIntoView(row)

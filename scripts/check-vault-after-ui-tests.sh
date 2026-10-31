@@ -6,12 +6,14 @@ UDID="$(scripts/sim.sh udid)"
 BUNDLE_ID="$(grep -E '^SP_BUNDLE_ID' Config/Shared.xcconfig | sed 's/.*= *//')"
 VAULT="$(xcrun simctl get_app_container "$UDID" "$BUNDLE_ID" data)/Documents/TestVault"
 TASKS="$VAULT/TaskNotes/Tasks"
+# A task marked done goes to the done folder beside the tasks folder at once (rules.json → vault.doneFolder).
+DONE="$VAULT/TaskNotes/Done"
 TODAY="$(date +%Y-%m-%d)"
 FAILED=0
 check() { if eval "$2"; then echo "OK    $1"; else echo "FAIL  $1"; FAILED=1; fi; }
 
 check "Habits: Done → complete_instances has today"  "grep -A20 '^complete_instances:' \"$TASKS/Медитация 🧘.md\" | grep -q \"$TODAY\""
-check "long press Done → status done + completed_date" "grep -q '^status: done' \"$TASKS/Оплатить интернет.md\" && grep -q \"^completed_date: $TODAY\" \"$TASKS/Оплатить интернет.md\""
+check "long press Done → status done + completed_date, in Done" "grep -q '^status: done' \"$DONE/Оплатить интернет.md\" && grep -q \"^completed_date: $TODAY\" \"$DONE/Оплатить интернет.md\" && [ ! -f \"$TASKS/Оплатить интернет.md\" ]"
 check "long press Done on a habit → complete_instances" "grep -A20 '^complete_instances:' \"$TASKS/Выпить воды 💧.md\" | grep -q \"$TODAY\""
 check "task page High → priority: high"              "grep -q '^priority: high' \"$TASKS/Распечатать вопросы.md\""
 check "rename → new file, old gone"                  "[ -f \"$TASKS/Записать идеи 2.md\" ] && [ ! -f \"$TASKS/Записать идеи.md\" ]"
