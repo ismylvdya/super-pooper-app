@@ -59,6 +59,7 @@ SuperPooper — iPhone-приложение-оболочка над тремя �
 | Затухание краёв прокрутки | `.edgeFades(color:bottomExtension:)` |
 | Превью на странице настроек | `.settingsPreviewFrame()` |
 | Пустой экран с одной кнопкой | `EmptyStateView` |
+| Баннер, у которого несколько фактов (числа по видам, список заметок) — каждый своим элементом, не строкой через запятую | `banners.show(_:counts:items:)`: `BannerCount` (иконка из `icons.json` + число, подпись для VoiceOver), `items` — по строке на заметку |
 | Меню действий (контекстное, «…») | `ActionMenuContent(menu:)` для дел и привычек, `RegistryMenu(menu:)` для напоминаний и событий; состав и порядок — только `actions.json` |
 | Алерт над optional-значением | `.alert(…, isPresented: Binding(presenting: $item), presenting: item)` |
 | Высота часа и положение момента на таймлайне | `TimelineWindow.hourHeight(fitting:)`, `offset(of:hourHeight:)`; где открыть таймлайн — `TimelineOpening` |
@@ -159,7 +160,7 @@ habits.morningRoutine:
 При открытии и pull-to-refresh задачи `half_year`/`someday` без `recurrence` с `due` с сегодня по воскресенье получают `this_week` (перед этим — бэкап). Список статусов — `rules.json` → `day.autoPromoteFrom`. Статусы приложение никогда не понижает.
 
 ### 4.7. Привычки
-- **Вкладка Habits**: две группы — привычки и «Repeatable tasks» (флаг `repeatable`: просто повторяющееся дело, без грида истории на странице); порядок — перетаскиванием внутри группы, хранится в настройках `habits.order`, круглая кнопка дня (тап — Done → Twice → снять, долгое нажатие — меню), строка «N/цель this week», «+» — новая привычка, внизу архив привычек. Страница привычки: имя, история (недели до старта привычки, любой день отмечается), статистика, Color / Show in Today / Harmful / Repeatable task / Routine (Not, Morning, Day, Evening) / Twice a day, правило пропусков (Allowed skips или Weekly goal), повторение, напоминания, описание (= тело заметки).
+- **Вкладка Habits**: две группы — привычки и «Repeatable tasks» (флаг `repeatable`: просто повторяющееся дело, без грида истории на странице); порядок — перетаскиванием внутри группы, хранится в настройках `habits.order`, круглая кнопка дня (тап — Done → Twice → снять, долгое нажатие — меню), под именем — иконки рутины и «дважды в день» (`HabitTrait`, у каждой подпись для VoiceOver) и колокольчики, строка «N/цель this week», «+» — новая привычка, внизу архив привычек. Страница привычки: имя, история (недели до старта привычки, любой день отмечается), статистика, Color / Show in Today / Harmful / Repeatable task / Routine (Not, Morning, Day, Evening) / Twice a day, правило пропусков (Allowed skips или Weekly goal), повторение, напоминания, описание (= тело заметки).
 - Чекбоксы привычек везде одинаковые (SF Symbols, `icons.json` → `habitOpen/Done/Partial/Twice/NotScheduled`).
 - В Today попадает только привычка с `show_in_today` (нет ключа = да) и не в архиве. У новой привычки флаг включён (Settings → Habits → «Show new habits in Today»). Уведомления приходят независимо от этого флага.
 - Calendar и Reminders читаются и правятся не в главном потоке (`EventKitAccess.read`/`write`). Напоминания берутся за окно `eventLinks.resolveDaysBefore` дней назад … `notifications.horizonDays` вперёд: открытые — по сроку, выполненные — по дате выполнения. Отметка напоминания, которого уже нет, — красная плашка `error.reminder.notFound`.

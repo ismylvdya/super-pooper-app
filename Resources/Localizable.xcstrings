@@ -227,7 +227,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Version conflict in %@. Tap to choose which version to keep."
+            "value": "Version conflicts. Tap to choose which version to keep."
           }
         }
       }
@@ -249,7 +249,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "“%1$@” was also changed elsewhere: %2$@ now has your value."
+            "value": "“%@” was also changed elsewhere. Your value was kept for:"
           }
         }
       }
@@ -283,6 +283,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "“%@” deleted for good."
+          }
+        }
+      }
+    },
+    "banner.more": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld more"
           }
         }
       }
@@ -326,7 +337,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Moved to This week: %@"
+            "value": "Moved to This week:"
           }
         }
       }
@@ -353,13 +364,46 @@
         }
       }
     },
+    "banner.sync.added": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld new"
+          }
+        }
+      }
+    },
+    "banner.sync.changed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld changed"
+          }
+        }
+      }
+    },
     "banner.sync.changes": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Synced: %lld new, %lld changed, %lld removed."
+            "value": "Synced"
+          }
+        }
+      }
+    },
+    "banner.sync.removed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld removed"
           }
         }
       }
@@ -503,17 +547,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "UTC"
-          }
-        }
-      }
-    },
-    "clock.zoneItem": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ · %@"
           }
         }
       }
@@ -1603,17 +1636,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Repeatable tasks"
-          }
-        }
-      }
-    },
-    "habits.traits.separator": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": " · "
           }
         }
       }

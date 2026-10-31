@@ -21,13 +21,16 @@ final class BannerCenter {
         let style: Style
         /// Tapping the banner opens this page (in the Settings tab) instead of expanding the text.
         var opens: Route?
+        /// Under the text: a count per kind, and the notes the message is about, each on its own line.
+        var counts: [BannerCount] = []
+        var items: [String] = []
     }
 
     private(set) var current: Banner?
     private var queue: [Banner] = []
 
-    func show(_ text: String, style: Banner.Style = .info, opens: Route? = nil) {
-        let banner = Banner(text: text, style: style, opens: opens)
+    func show(_ text: String, style: Banner.Style = .info, opens: Route? = nil, counts: [BannerCount] = [], items: [String] = []) {
+        let banner = Banner(text: text, style: style, opens: opens, counts: counts, items: items)
         if current == nil { current = banner } else { queue.append(banner) }
     }
 

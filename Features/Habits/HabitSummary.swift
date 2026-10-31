@@ -3,12 +3,12 @@ import Foundation
 /// Short texts about a habit for lists.
 @MainActor
 enum HabitSummary {
-    /// What sets the habit apart in the Habits list: its routine and Twice ("Morning · Twice"); empty if neither.
-    static func traits(_ habit: TaskNote) -> String {
-        var parts: [String] = []
-        if let part = habit.habit.timeOfDay { parts.append(L10n.string("habitPage.timeOfDay." + part.rawValue)) }
-        if habit.isTwiceADay { parts.append(L10n.string("action.twice")) }
-        return parts.joined(separator: L10n.string("habits.traits.separator"))
+    /// What sets the habit apart in the Habits list: its routine and Twice, each shown as its own icon.
+    static func traits(_ habit: TaskNote) -> [HabitTrait] {
+        var traits: [HabitTrait] = []
+        if let part = habit.habit.timeOfDay { traits.append(.routine(part)) }
+        if habit.isTwiceADay { traits.append(.twiceADay) }
+        return traits
     }
 
     /// A bell per reminder of the day, two at most.

@@ -87,5 +87,12 @@
   "habitMarkOpen": "HabitMarkOpen",
   "habitMarkDone": "HabitMarkDone",
   "habitMarkPartial": "HabitMarkDot",
-  "habitMarkTwice": "HabitMarkTwice"
+  "habitMarkTwice": "HabitMarkTwice",
+  "syncAdded": "plus.circle",
+  "syncChanged": "pencil.circle",
+  "syncRemoved": "minus.circle",
+  "routineMorning": "sunrise",
+  "routineDay": "sun.max",
+  "routineEvening": "sunset",
+  "twiceADay": "2.circle"
 }

@@ -95,7 +95,7 @@ extension AppModel {
     /// Merged edits are silent; a key changed both here and elsewhere gets a yellow banner.
     func reportClashes(_ result: TaskWriteResult, name: String) {
         guard !result.clashingKeys.isEmpty else { return }
-        banners.show(L10n.format("banner.conflictSameKey", name, L10n.list(result.clashingKeys)), style: .warning)
+        banners.show(L10n.format("banner.conflictSameKey", name), style: .warning, items: result.clashingKeys)
     }
 
     func delete(_ task: TaskNote) async {
@@ -193,7 +193,7 @@ extension AppModel {
     func moveToThisWeek(_ name: String) async {
         guard let task = task(named: name), task.status != .thisWeek else { return }
         if await write(task, [.status(.thisWeek)]) {
-            banners.show(L10n.format("banner.promoted", name), style: .success)
+            banners.show(L10n.string("banner.promoted"), style: .success, items: [name])
         }
     }
 
@@ -202,12 +202,4 @@ extension AppModel {
         Task { await publishDerivedState() }
     }
 
-    func describe(_ blockers: [Blocker]) -> String {
-        L10n.list(blockers.map { blocker in
-            switch blocker {
-            case .task(let name): name
-            case .event(let title, _): title
-            }
-        })
-    }
 }

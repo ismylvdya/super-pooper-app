@@ -19,7 +19,8 @@ struct BannerOverlay: View {
     var body: some View {
         ZStack {
             if let banner = banners.current, tab == nil || tab == router.tab {
-                BannerView(text: banner.text, icon: icon(banner.style), tint: tint(banner.style), onDismiss: {
+                BannerView(text: banner.text, icon: icon(banner.style), tint: tint(banner.style), counts: banner.counts,
+                           items: banner.items, onDismiss: {
                     withAnimation(.easeInOut(duration: tokens.duration(.bannerAnimation))) { banners.dismiss(banner.id) }
                 }, onTap: banner.opens.map { route in { router.show(.settings, [route]) } })
                 .id(banner.id)

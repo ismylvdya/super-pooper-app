@@ -21,9 +21,15 @@ struct SyncReport {
         }.sorted()
     }
 
+    /// The banner's message: "Synced" and a count per kind of change, the kinds without one left out.
     var summary: String {
-        guard !added.isEmpty || !changed.isEmpty || !removed.isEmpty else { return L10n.string("banner.sync.upToDate") }
-        return L10n.format("banner.sync.changes", added.count, changed.count, removed.count)
+        counts.isEmpty ? L10n.string("banner.sync.upToDate") : L10n.string("banner.sync.changes")
+    }
+
+    var counts: [BannerCount] {
+        [(Icon.syncAdded, added, "banner.sync.added"), (.syncChanged, changed, "banner.sync.changed"), (.syncRemoved, removed, "banner.sync.removed")]
+            .filter { !$0.1.isEmpty }
+            .map { BannerCount(icon: $0.0, value: $0.1.count, label: L10n.format($0.2, $0.1.count)) }
     }
 }
 

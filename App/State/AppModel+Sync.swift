@@ -143,13 +143,13 @@ extension AppModel {
 
     private func announceResult(_ report: SyncReport, announce: Bool, newProblems: Bool) {
         if !report.conflicts.isEmpty {
-            banners.show(L10n.format("banner.conflict", L10n.list(report.conflicts)), style: .warning, opens: .conflicts)
+            banners.show(L10n.string("banner.conflict"), style: .warning, opens: .conflicts, items: report.conflicts)
         }
         if !report.promoted.isEmpty {
-            banners.show(L10n.format("banner.promoted", L10n.list(report.promoted)), style: .success)
+            banners.show(L10n.string("banner.promoted"), style: .success, items: report.promoted)
         }
         if announce, config.flags.syncBanner {
-            banners.show(report.summary, style: .synced)
+            banners.show(report.summary, style: .synced, counts: report.counts)
         }
         if newProblems, config.flags.problemBadge {
             banners.show(L10n.format("banner.problems", problemCount), style: .problem)
