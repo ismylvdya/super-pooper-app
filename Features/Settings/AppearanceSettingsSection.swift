@@ -32,7 +32,7 @@ struct AppearanceSettingsSection: View {
                                   calendarID: "", calendarTitle: "", colorHex: tokens.color(.task).hexValue)
         let slot = TimelineSlot(content: .event(event), start: event.start, end: event.end, isPast: true)
         return VStack(alignment: .leading, spacing: tokens.space(.poolRowGap)) {
-            TaskRowView(item: item, today: model.context().today, isCompact: true).taskPlate(isDone: true)
+            TaskRowView(item: item, isCompact: true).taskPlate(isDone: true)
             TimelineEventBlock(event: event, slot: slot, font: tokens.font(.rowTitle), lineHeight: tokens.uiFont(.rowTitle).lineHeight).fixedSize(horizontal: false, vertical: true)
         }
         .settingsPreviewFrame()

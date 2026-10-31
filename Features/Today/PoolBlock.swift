@@ -122,7 +122,7 @@ struct PoolBlock: View {
     }
 
     private func row(_ item: DayItem, plate: PoolRowContent.PlateKind) -> some View {
-        PoolRow(item: item, today: plan.today, isToday: plan.isToday, isCompact: fillsHeight, plate: plate, handler: handler,
+        PoolRow(item: item, isToday: plan.isToday, isCompact: fillsHeight, plate: plate, handler: handler,
                 dragSource: plan.isToday ? .pool : nil)
     }
 
@@ -143,7 +143,6 @@ struct PoolRow: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.rules) private var rules
     let item: DayItem
-    let today: LocalDate
     var isToday = true
     var isCompact = false
     var plate: PoolRowContent.PlateKind = .pool
@@ -152,7 +151,7 @@ struct PoolRow: View {
 
     var body: some View {
         let lines = item.hasSubtasks ? 0 : rules.pool.extraLines(forEstimate: rules.day.estimate(of: item.task))
-        PoolRowContent(item: item, today: today, isToday: isToday, isCompact: isCompact,
+        PoolRowContent(item: item, isToday: isToday, isCompact: isCompact,
                        titleLineLimit: item.hasSubtasks ? 1 : nil, plate: plate,
                        minimumHeight: CGFloat(lines) * tokens.uiFont(.taskTitle).lineHeight, handler: handler,
                        dragSource: dragSource)
@@ -174,7 +173,6 @@ struct PoolRowContent: View {
     @Environment(\.actions) private var actions
     @Environment(TaskDragState.self) private var drag: TaskDragState?
     let item: DayItem
-    let today: LocalDate
     var isToday = true
     var isCompact = true
     var titleFont: Font?
@@ -190,7 +188,7 @@ struct PoolRowContent: View {
     var dragSource: TaskDragState.Source?
 
     var body: some View {
-        let row = TaskRowView(item: item, today: today, titleFont: titleFont, showsDetails: showsDetails, isCompact: isCompact,
+        let row = TaskRowView(item: item, titleFont: titleFont, showsDetails: showsDetails, isCompact: isCompact,
                               titleLineLimit: titleLineLimit, titleLineHeight: titleLineHeight, showsDoneState: showsDoneState,
                               onOpen: { handler.run(actions.definition(.open), taskName: item.id) })
         Group {

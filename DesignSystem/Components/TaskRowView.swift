@@ -10,7 +10,6 @@ struct TaskRowView: View {
     @Environment(\.plateTrailingInset) private var plateInset
     @Environment(\.chipOrder) private var chipOrder
     let item: DayItem
-    let today: LocalDate
     var titleFont: Font?
     /// Chips; widgets hide them to stay compact.
     var showsDetails = true

@@ -4,7 +4,7 @@ import SwiftUI
 #Preview("Task rows") {
     let plan = PreviewSamples.plan
     return VStack(alignment: .leading, spacing: 12) {
-        ForEach(plan.pool) { TaskRowView(item: $0, today: plan.today, onOpen: {}) }
+        ForEach(plan.pool) { TaskRowView(item: $0, onOpen: {}) }
     }
     .padding()
 }
@@ -55,7 +55,7 @@ import SwiftUI
                                              eventLineHeight: UIFont.preferredFont(forTextStyle: .subheadline).lineHeight,
                                              taskLineHeight: UIFont.preferredFont(forTextStyle: .subheadline).lineHeight,
                                              minimumItemHeight: 34)) { item, _ in
-            TaskRowView(item: item, today: plan.today, showsDetails: false)
+            TaskRowView(item: item, showsDetails: false)
         }
         .padding()
     }
