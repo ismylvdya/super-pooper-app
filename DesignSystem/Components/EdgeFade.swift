@@ -15,7 +15,7 @@ struct EdgeFade: View {
         let base = color ?? tokens.color(.screenBackground)
         let stops: [Gradient.Stop] = [
             .init(color: isSolid ? base : base.opacity(tokens.opacity(.fadeTop)), location: 0),
-            .init(color: base.opacity(tokens.opacity(.fadeMiddle)), location: 0.75),
+            .init(color: base.opacity(tokens.opacity(.fadeMiddle)), location: tokens.ratio(.fadeMiddleStop)),
             .init(color: base.opacity(0), location: 1),
         ]
         LinearGradient(stops: stops, startPoint: edge == .top ? .top : .bottom, endPoint: edge == .top ? .bottom : .top)
@@ -94,7 +94,7 @@ private struct FadingEdgesMask: ViewModifier {
     private func gradient(_ edge: EdgeFade.Edge) -> some View {
         let stops: [Gradient.Stop] = [
             .init(color: .black.opacity(1 - tokens.opacity(.fadeTop)), location: 0),
-            .init(color: .black.opacity(1 - tokens.opacity(.fadeMiddle)), location: 0.75),
+            .init(color: .black.opacity(1 - tokens.opacity(.fadeMiddle)), location: tokens.ratio(.fadeMiddleStop)),
             .init(color: .black, location: 1),
         ]
         return LinearGradient(stops: stops, startPoint: edge == .top ? .top : .bottom, endPoint: edge == .top ? .bottom : .top)

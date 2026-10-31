@@ -37,4 +37,22 @@ struct DynamicTypeTokensTests {
         #expect(throws: ConfigError.self) { try ConfigLoader.decode(FontSpec.self, from: missing, file: "tokens.json") }
         #expect(throws: ConfigError.self) { try ConfigLoader.decode(FontSpec.self, from: needless, file: "tokens.json") }
     }
+
+    /// A size picked in settings (the timeline's fonts) is drawn as picked, in the token's weight, at any text size.
+    @Test func aPickedSizeIsUsedAsIs() {
+        let large = tokens.measured(at: .accessibility3)
+        #expect(large.uiFont(.timelineText, size: 17).pointSize == 17)
+        #expect(large.uiFont(.timelineEvent, size: 15).fontDescriptor.symbolicTraits.contains(.traitBold))
+    }
+
+    /// The habit dots never shrink below the token's minimum, however narrow the grid.
+    @Test func habitDotsHaveAMinimum() {
+        #expect(tokens.habitDots(fitting: 0).dot == tokens.size(.habitDotMinimum))
+    }
+
+    /// The habit widget's weeks start from the widget settings' own default.
+    @Test func theHabitWidgetWeeksDefaultIsTheIntents() {
+        #expect(HabitWidgetOptions().weeks == SelectHabitIntent().weeks)
+        #expect(HabitWidgetOptions().weeks == 4)
+    }
 }

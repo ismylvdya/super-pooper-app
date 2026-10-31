@@ -5,6 +5,7 @@ import SwiftUI
 struct ColorSettingsSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
+    @Environment(\.rules) private var rules
 
     var body: some View {
         PlateSection(header: "settings.colors", info: "info.settings.colors", hint: "settings.colors.hint") {
@@ -19,7 +20,8 @@ struct ColorSettingsSection: View {
 
     @ViewBuilder private var preview: some View {
         let plan = model.plan(at: model.clock.now)
-        let samples = Array(plan.pool.prefix(2)) + Array(plan.pool.filter(\.isHabit).prefix(1))
+        let preview = rules.settingsPreview
+        let samples = Array(plan.pool.prefix(preview.colorRows)) + Array(plan.pool.filter(\.isHabit).prefix(preview.colorHabitRows))
         VStack(spacing: tokens.space(.poolRowGap)) {
             ForEach(samples) { item in
                 TaskRowView(item: item, today: plan.today, isCompact: true).taskPlate(isDone: item.isDone)

@@ -23,11 +23,12 @@ struct HalvesTimeline<TaskContent: View>: View {
 
 extension TimelineStyle {
     static func make(_ settings: AppSettings.Timeline, tokens: DesignTokens) -> TimelineStyle {
-        let titleLine = UIFont.systemFont(ofSize: settings.taskFontSize).lineHeight + tokens.space(.timelineTitleExtra)
-        return TimelineStyle(eventFont: .system(size: settings.eventFontSize),
-                             taskFont: .system(size: settings.taskFontSize),
-                             eventLineHeight: UIFont.systemFont(ofSize: settings.eventFontSize, weight: .semibold).lineHeight,
-                             taskLineHeight: UIFont.systemFont(ofSize: settings.taskFontSize).lineHeight,
+        let taskLine = tokens.uiFont(.timelineText, size: settings.taskFontSize).lineHeight
+        let titleLine = taskLine + tokens.space(.timelineTitleExtra)
+        return TimelineStyle(eventFont: tokens.font(.timelineEvent, size: settings.eventFontSize),
+                             taskFont: tokens.font(.timelineText, size: settings.taskFontSize),
+                             eventLineHeight: tokens.uiFont(.timelineEvent, size: settings.eventFontSize).lineHeight,
+                             taskLineHeight: taskLine,
                              minimumItemHeight: titleLine + tokens.space(.timelineItemPadding),
                              // As high as the title row plus the plate padding: equal space above and below.
                              minimumTaskHeight: titleLine + tokens.space(.rowVertical))

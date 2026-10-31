@@ -20,7 +20,7 @@ struct WidgetGalleryScreen: View {
                         let context = source.context(at: now)
                         let today = context.today
                         widget(width: 158, height: 158) {
-                            HabitWidgetView(habit: habit, grid: HabitGrid(task: habit, weekCount: source.config.rules.widgets.habitGridWeeksSmall,
+                            HabitWidgetView(habit: habit, grid: HabitGrid(task: habit, weekCount: HabitWidgetOptions().weeks,
                                                                           today: today, days: context.days), today: today)
                         }
                     }

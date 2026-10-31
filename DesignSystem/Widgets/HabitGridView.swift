@@ -18,9 +18,16 @@ struct HabitDotMetrics: Equatable {
         return HabitDotMetrics(dot: dot, ringRatio: ring / dot)
     }
 
-    /// The largest dot whose seven cells fit `width`.
-    static func fitting(width: CGFloat, ringRatio: CGFloat) -> HabitDotMetrics {
-        HabitDotMetrics(dot: max(width / (7 + 22 * ringRatio), 4), ringRatio: ringRatio)
+    /// The largest dot whose seven cells fit `width`, not smaller than `minimumDot`.
+    static func fitting(width: CGFloat, ringRatio: CGFloat, minimumDot: CGFloat) -> HabitDotMetrics {
+        HabitDotMetrics(dot: max(width / (7 + 22 * ringRatio), minimumDot), ringRatio: ringRatio)
+    }
+}
+
+extension DesignTokens {
+    /// The habit dots of a grid as wide as `width`: the ring of the tokens, the dot as large as fits.
+    func habitDots(fitting width: CGFloat) -> HabitDotMetrics {
+        HabitDotMetrics.fitting(width: width, ringRatio: ratio(.habitRing), minimumDot: size(.habitDotMinimum))
     }
 }
 

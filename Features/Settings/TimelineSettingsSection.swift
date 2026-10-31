@@ -134,8 +134,8 @@ struct TimelinePreview: View {
     }
 
     private func row(_ item: DayItem, _ slot: TimelineSlot) -> some View {
-        TaskRowView(item: item, today: plan.today, titleFont: .system(size: settings.timeline.taskFontSize), showsDetails: false,
-                    titleLineLimit: 2, titleLineHeight: UIFont.systemFont(ofSize: settings.timeline.taskFontSize).lineHeight,
+        TaskRowView(item: item, today: plan.today, titleFont: tokens.font(.timelineText, size: settings.timeline.taskFontSize), showsDetails: false,
+                    titleLineLimit: 2, titleLineHeight: tokens.uiFont(.timelineText, size: settings.timeline.taskFontSize).lineHeight,
                     showsDoneState: false)
     }
 

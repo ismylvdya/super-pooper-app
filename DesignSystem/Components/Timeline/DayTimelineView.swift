@@ -52,7 +52,7 @@ struct DayTimelineView<TaskContent: View>: View {
 
     /// Dense widget plates: the bell sits as far from the right edge as from the top and bottom of a one-line block.
     private var cornerInset: CGFloat {
-        style.compactPlates ? max((style.minimumItemHeight - tokens.space(.timelineItemGap) - bell.size) / 2, 1) : tokens.space(.bellInset)
+        style.compactPlates ? max((style.minimumItemHeight - tokens.space(.timelineItemGap) - bell.size) / 2, tokens.size(.cornerInsetMinimum)) : tokens.space(.bellInset)
     }
 
     /// How far from the block's right edge the corner marks reach (their inset, the link mark, the bell and the gap

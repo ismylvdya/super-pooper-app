@@ -75,14 +75,14 @@ struct RulesConfig: Codable, Hashable, Sendable {
     struct Widgets: Codable, Hashable, Sendable {
         let refreshMinutes: Int
         let entryCount: Int
-        /// Weeks in the habit widget.
-        let habitGridWeeksSmall: Int
         /// Hours the one-column timeline shows in the Today widget.
         let timelineHours: Int
         /// The widget timeline starts at most this many hours before now.
         let maxHoursBefore: Int
         /// Background refresh (vault, widgets, notifications) is asked for this often.
         let backgroundRefreshMinutes: Int
+        /// The clock widget is given its minutes this far ahead at a time.
+        let clockTimelineMinutes: Int
     }
 
     struct Habits: Codable, Hashable, Sendable {
@@ -108,6 +108,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         }
 
         let extraLines: [ExtraLines]
+        /// A row counts as shown (for the rows left to scroll to) when this share of it is on screen.
+        let rowVisibleShare: Double
 
         func extraLines(forEstimate minutes: Int) -> Int {
             extraLines.filter { minutes >= $0.minutes }.map(\.lines).max() ?? 0
@@ -143,6 +145,9 @@ struct RulesConfig: Codable, Hashable, Sendable {
     struct SettingsPreview: Codable, Hashable, Sendable {
         let poolRows: Int
         let timelineHours: Int
+        /// The colors preview: the first rows of today's pool and then its first habits.
+        let colorRows: Int
+        let colorHabitRows: Int
     }
 
     /// Heights assumed until the real ones are measured.

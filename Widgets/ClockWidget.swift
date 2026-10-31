@@ -20,7 +20,7 @@ struct ClockEntry: TimelineEntry {
     let text: String
 }
 
-/// One entry per minute for the next hour; the line is computed from the stored settings.
+/// One entry per minute for the next `widgets.clockTimelineMinutes`; the line is computed from the stored settings.
 struct ClockProvider: TimelineProvider {
     private let clock: Clock = SystemClock()
 
@@ -30,13 +30,14 @@ struct ClockProvider: TimelineProvider {
         completion(placeholder(in: context))
     }
 
-    /// The stored settings are read once for the whole hour of entries.
+    /// The stored settings are read once for all the entries.
     func getTimeline(in context: Context, completion: @escaping (Timeline<ClockEntry>) -> Void) {
-        let settings = WidgetDataSource.load()?.settings.clock
-        let now = clock.now
-        let minute: TimeInterval = 60
-        let start = now.addingTimeInterval(-now.timeIntervalSince1970.truncatingRemainder(dividingBy: minute))
-        let entries = (0..<Int(3600 / minute)).map { entry(at: start.addingTimeInterval(Double($0) * minute), settings: settings) }
+        let source = WidgetDataSource.load()
+        let minutes = (source?.config.rules ?? BundledConfig.rules).widgets.clockTimelineMinutes
+        let calendar = AppCalendar.make()
+        let start = calendar.dateInterval(of: .minute, for: clock.now)?.start ?? clock.now
+        let entries = (0..<minutes).compactMap { calendar.date(byAdding: .minute, value: $0, to: start) }
+            .map { entry(at: $0, settings: source?.settings.clock) }
         completion(Timeline(entries: entries, policy: .atEnd))
     }
 

@@ -25,8 +25,10 @@ struct AppearanceSettingsSection: View {
         let now = model.clock.now
         let task = TaskItem(id: .unsaved, name: L10n.string("settings.pastOpacity.sampleTask"), status: .done)
         let item = DayItem(task: task, state: .marked(.done), blockers: [], problems: [])
+        // An hour-long event that ended an hour ago.
+        let end = now.addingTimeInterval(-TimelineWindow.hour)
         let event = CalendarEvent(eventIdentifier: "sample", title: L10n.string("settings.pastOpacity.sampleEvent"),
-                                  start: now.addingTimeInterval(-7200), end: now.addingTimeInterval(-3600), isAllDay: false,
+                                  start: end.addingTimeInterval(-TimelineWindow.hour), end: end, isAllDay: false,
                                   calendarID: "", calendarTitle: "", colorHex: tokens.color(.task).hexValue)
         let slot = TimelineSlot(content: .event(event), start: event.start, end: event.end, isPast: true)
         return VStack(alignment: .leading, spacing: tokens.space(.poolRowGap)) {

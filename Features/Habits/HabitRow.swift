@@ -70,7 +70,7 @@ struct HabitDayButton: View {
         let ratio = tokens.ratio(.habitRing)
         let own = HabitDotMetrics(dot: tokens.size(.iconColumn), ringRatio: ratio)
         guard let plateWidth else { return own }
-        let grid = HabitDotMetrics.fitting(width: plateWidth - tokens.space(.plateInner) * 2, ringRatio: ratio)
+        let grid = tokens.habitDots(fitting: plateWidth - tokens.space(.plateInner) * 2)
         return .cell(own.cell, ring: grid.ring)
     }
 

@@ -45,7 +45,6 @@ struct TimelineBlock: View {
                 let scale = { (factor: CGFloat) in base * min(max(factor, zoomLimits.min), zoomLimits.max) }
                 let hourHeight = scale(zoom * pinch)
                 let stripHeight = plan.allDayEvents.isEmpty ? 0 : allDayHeight
-                let contentTop = tokens.space(.groupGap) / 2
                 ScrollView {
                     DayTimelineView(slots: plan.timeline, window: day, now: plan.now,
                                     hourHeight: hourHeight, style: style, taskContent: taskRow)
@@ -56,7 +55,7 @@ struct TimelineBlock: View {
                             Haptics.play(.drop)
                             Task { await model.schedule(item.id, at: moment) }
                         }))
-                        .padding(.vertical, contentTop)
+                        .padding(.vertical, contentInset)
                 }
                 .scrollPosition($position)
                 .contentMargins(.bottom, bottomInset + tokens.space(.scrollEndRoom), for: .scrollContent)
@@ -77,7 +76,7 @@ struct TimelineBlock: View {
                             let start = pinchStart ?? (scrollOffset, value.startLocation.y, scale(zoom))
                             pinchStart = start
                             // The hours start under the top margin (the lift room and the all-day strip) and the padding.
-                            let hoursTop = tokens.space(.liftShadow) + stripHeight + contentTop
+                            let hoursTop = tokens.space(.liftShadow) + stripHeight + contentInset
                             let offset = TimelineZoom.offset(keeping: Double(start.y), startOffset: Double(start.offset),
                                                              contentTop: Double(hoursTop), from: Double(start.hourHeight),
                                                              to: Double(scale(zoom * value.magnification)))
@@ -122,7 +121,7 @@ struct TimelineBlock: View {
                                        height: geometry.size.height - bottomInset - tokens.space(.groupGap),
                                        style: style, taskContent: taskRow)
                     }
-                    .padding(.vertical, tokens.space(.groupGap) / 2)
+                    .padding(.vertical, contentInset)
                 }
                 .contentMargins(.bottom, bottomInset + tokens.space(.scrollEndRoom), for: .scrollContent)
                 .scrollBounceBehavior(.always)
@@ -132,17 +131,21 @@ struct TimelineBlock: View {
         }
     }
 
-    /// All-day bars are a little smaller than the event titles.
+    /// Half a group gap above the timeline's content and half below: a group gap in all, which the heights leave free.
+    private var contentInset: CGFloat { tokens.space(.groupGap) / 2 }
+
     private var zoomLimits: (min: CGFloat, max: CGFloat) { (CGFloat(rules.timeline.zoom.min), CGFloat(rules.timeline.zoom.max)) }
+    /// All-day bars are a little smaller than the event titles.
     private var allDayFontSize: CGFloat { model.settings.timeline.eventFontSize - tokens.size(.allDayFontDelta) }
 
     private var allDayStrip: some View {
-        AllDayStrip(events: plan.allDayEvents, font: .system(size: allDayFontSize), lineHeight: UIFont.systemFont(ofSize: allDayFontSize).lineHeight,
+        AllDayStrip(events: plan.allDayEvents, font: tokens.font(.timelineText, size: allDayFontSize),
+                    lineHeight: tokens.uiFont(.timelineText, size: allDayFontSize).lineHeight,
                     onTap: style.onEventTap, onDelete: style.onEventDelete)
     }
 
     private var allDayHeight: CGFloat {
-        let line = UIFont.systemFont(ofSize: allDayFontSize).lineHeight + tokens.space(.chipVertical) * 2
+        let line = tokens.uiFont(.timelineText, size: allDayFontSize).lineHeight + tokens.space(.chipVertical) * 2
         return CGFloat(plan.allDayEvents.count) * (line + tokens.space(.chipGap)) + tokens.space(.chipGap)
     }
 
@@ -194,9 +197,9 @@ struct TimelineBlock: View {
     /// by its own time (not a habit, not a chain) can be dragged to another time or back to the pool.
     private func taskRow(_ item: DayItem, _ slot: TimelineSlot) -> some View {
         let movable = slot.time != nil && TaskScheduling.canMove(item.task)
-        return PoolRowContent(item: item, today: plan.today, isToday: plan.isToday, isCompact: false, titleFont: .system(size: model.settings.timeline.taskFontSize),
+        return PoolRowContent(item: item, today: plan.today, isToday: plan.isToday, isCompact: false, titleFont: tokens.font(.timelineText, size: model.settings.timeline.taskFontSize),
                               showsDetails: false, titleLineLimit: 1,
-                              titleLineHeight: UIFont.systemFont(ofSize: model.settings.timeline.taskFontSize).lineHeight,
+                              titleLineHeight: tokens.uiFont(.timelineText, size: model.settings.timeline.taskFontSize).lineHeight,
                               showsDoneState: false, plate: .slot(isPast: slot.isPast, isCompact: false), handler: handler,
                               dragSource: movable ? .timeline : nil)
     }

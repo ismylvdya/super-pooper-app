@@ -127,12 +127,15 @@ struct TodayScreen: View {
 
     /// Yesterday / tomorrow: the pool and the timeline slide out to the side and the other day slides in.
     private func changeDay(by step: Int) {
-        withAnimation(.easeIn(duration: tokens.duration(.animation) / 2)) { dragX = step > 0 ? -width : width } completion: {
+        withAnimation(.easeIn(duration: daySlideHalf)) { dragX = step > 0 ? -width : width } completion: {
             dayOffset += step
             dragX = step > 0 ? width : -width
-            withAnimation(.easeOut(duration: tokens.duration(.animation) / 2)) { dragX = 0 }
+            withAnimation(.easeOut(duration: daySlideHalf)) { dragX = 0 }
         }
     }
+
+    /// The old day slides out and the new one in within one animation: each takes half of it.
+    private var daySlideHalf: Double { tokens.duration(.animation) / 2 }
 
     /// The arrows around the shown day's name; on another day, tapping the name goes back to today.
     private var dayNavigation: DayNavigation {

@@ -41,8 +41,15 @@ struct FontSpec: Decodable, Sendable {
     }
 
     func uiFont(at traits: UITraitCollection?) -> UIFont {
-        let pointSize = size.map { scaled($0, at: traits) }
-            ?? UIFont.preferredFont(forTextStyle: style.uiFont, compatibleWith: traits).pointSize
+        uiFont(size: size.map { scaled($0, at: traits) } ?? UIFont.preferredFont(forTextStyle: style.uiFont, compatibleWith: traits).pointSize)
+    }
+
+    /// This weight and design at `size`, as given.
+    func font(size: Double) -> Font {
+        .system(size: size, weight: weight.font, design: design.font)
+    }
+
+    func uiFont(size pointSize: CGFloat) -> UIFont {
         let base = UIFont.systemFont(ofSize: pointSize, weight: weight.uiFont)
         guard let systemDesign = design.uiFont, let descriptor = base.fontDescriptor.withDesign(systemDesign) else { return base }
         return UIFont(descriptor: descriptor, size: pointSize)

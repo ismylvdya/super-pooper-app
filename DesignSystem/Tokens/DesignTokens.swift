@@ -6,6 +6,7 @@ struct DesignTokens: Decodable, Sendable {
     let radius: TokenTable<RadiusToken, Double>
     let size: TokenTable<SizeToken, Double>
     let ratio: TokenTable<RatioToken, Double>
+    let count: TokenTable<CountToken, Int>
     private(set) var opacity: TokenTable<OpacityToken, Double>
     let duration: TokenTable<DurationToken, Double>
     let font: TokenTable<FontToken, FontSpec>
@@ -15,16 +16,20 @@ struct DesignTokens: Decodable, Sendable {
     /// The reader's text size where the tokens are used (`designTokens(_:)`); nil: the phone's own.
     private(set) var dynamicTypeSize: DynamicTypeSize?
 
-    private enum CodingKeys: String, CodingKey { case spacing, radius, size, ratio, opacity, duration, font, color, editableColors }
+    private enum CodingKeys: String, CodingKey { case spacing, radius, size, ratio, count, opacity, duration, font, color, editableColors }
 
     func space(_ token: SpacingToken) -> CGFloat { CGFloat(spacing[token]) }
     func radius(_ token: RadiusToken) -> CGFloat { CGFloat(radius[token]) }
     func size(_ token: SizeToken) -> CGFloat { CGFloat(size[token]) }
     func ratio(_ token: RatioToken) -> CGFloat { CGFloat(ratio[token]) }
+    func count(_ token: CountToken) -> Int { count[token] }
     func opacity(_ token: OpacityToken) -> Double { opacity[token] }
     func duration(_ token: DurationToken) -> Double { duration[token] }
     func font(_ token: FontToken) -> Font { font[token].font(at: traits) }
     func uiFont(_ token: FontToken) -> UIFont { font[token].uiFont(at: traits) }
+    /// The token's weight and design at a size given elsewhere (picked in settings, chosen in a widget): used as is.
+    func font(_ token: FontToken, size: Double) -> Font { font[token].font(size: size) }
+    func uiFont(_ token: FontToken, size: Double) -> UIFont { font[token].uiFont(size: size) }
     /// A length that belongs to a font's text (a label column, its line), grown with the reader's text size as the font is.
     func scaled(_ value: CGFloat, with token: FontToken) -> CGFloat { font[token].scaled(value, at: traits) }
     func color(_ token: ColorToken) -> Color { color[token].color }

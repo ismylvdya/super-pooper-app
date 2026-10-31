@@ -7,7 +7,7 @@ enum SpacingToken: String, CaseIterable, Sendable {
     case iconTextGap, chipHorizontal, chipVertical, chipGap, infoPadding, nestedTitleInset, nestedTitleLift
     case childIndent, rowVertical, poolRowGap, blockGap, timelineLabelWidth, timelineItemGap, timelineItemPadding
     case bannerTop, bannerPadding, widgetPadding, habitCellGap, hourLabelGap, bellInset, liftShadow, toggleChipHorizontal, toggleChipVertical, titleInfoGap, chipIconGap, dotTextGap, valueChevronGap, reviewRowVertical, markPadding, badgeGap, progressGap, timelineTitleExtra, previewRowGap, titleDetailGap, footerLineGap, subtaskIndent
-    case widgetGap, previewInset, cornerMarkGap, compactPlateVertical
+    case widgetGap, previewInset, cornerMarkGap, compactPlateVertical, emptyStateInset, widgetGridGap
 }
 
 enum RadiusToken: String, CaseIterable, Sendable {
@@ -16,13 +16,19 @@ enum RadiusToken: String, CaseIterable, Sendable {
 
 enum SizeToken: String, CaseIterable, Sendable {
     case iconColumn, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, notificationIcon
-    case eventDot, sourceDot, fadeHeight, poolCounter, poolWidth
+    case habitDotMinimum, cornerInsetMinimum, eventDot, sourceDot, fadeHeight, poolCounter, poolWidth
     case habitHistoryMaxHeight, habitStatsBar, titleFade, hourDigitsWidth, actionPopoverWidth, reviewChevron, wrapMinWidth, liftOverhang, pagePeek, dropLine, dropMarkerHeight, bannerShadowRadius, bannerShadowY, hexFieldWidth, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, allDayFontDelta, previewHeight, previewRow, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewHalvesInset, subtaskDropLine, landscapeTabBarWidth, barButton
 }
 
 /// Shares and scale factors: a part of another size, not a size of its own.
 enum RatioToken: String, CaseIterable, Sendable {
     case habitRing, habitPartialDot, infoMaxHeight, pullStartScale, pullArmedScale, timelinePreview, largeTitleVisible
+    case fadeMiddleStop, widgetWrappedTitle
+}
+
+/// How many of something a drawing has (lines of a wrapped title).
+enum CountToken: String, CaseIterable, Sendable {
+    case widgetTitleLines
 }
 
 enum OpacityToken: String, CaseIterable, Sendable {
@@ -38,6 +44,8 @@ enum FontToken: String, CaseIterable, Sendable {
     case pageTitle, navTitle, sectionHeader, rowTitle, hint, chip, info, timelineHour, banner, poolCounter
     case taskTitle, emptyTitle, emptyBody, footer, widgetTitle, widgetCaption, caption, noteEditor
     case statValue, toggleChip, pullIcon, emptyIcon, emptyAction, linkBadge, tabIcon, systemTabIcon, tabLabel, popoverAction, repeatableTitle, habitTitle
+    /// The timeline at the sizes picked in settings (`font(_:size:)`).
+    case timelineText, timelineEvent
 }
 
 enum ColorToken: String, ConfigName {

@@ -130,7 +130,7 @@ struct PoolBlock: View {
         view
             .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { rowHeights[item.id] = $0 }
             .onGeometryChange(for: CGFloat.self) { $0.frame(in: .named(Self.dropSpace)).midY } action: { rowMids[item.id] = $0 }
-            .onScrollVisibilityChange(threshold: 0.5) { visible in
+            .onScrollVisibilityChange(threshold: rules.pool.rowVisibleShare) { visible in
                 if visible { visibleRows.insert(item.id) } else { visibleRows.remove(item.id) }
             }
     }

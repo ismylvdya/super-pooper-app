@@ -71,10 +71,10 @@
   "widgets": {
     "refreshMinutes": 15,
     "entryCount": 24,
-    "habitGridWeeksSmall": 4,
     "timelineHours": 6,
     "maxHoursBefore": 1,
-    "backgroundRefreshMinutes": 30
+    "backgroundRefreshMinutes": 30,
+    "clockTimelineMinutes": 60
   },
   "habits": {
     "historyMinimumWeeks": 6,
@@ -104,7 +104,8 @@
         "minutes": 240,
         "lines": 2
       }
-    ]
+    ],
+    "rowVisibleShare": 0.5
   },
   "limits": {
     "poolVisibleCount": {
@@ -172,7 +173,9 @@
   },
   "settingsPreview": {
     "poolRows": 3,
-    "timelineHours": 6
+    "timelineHours": 6,
+    "colorRows": 2,
+    "colorHabitRows": 1
   },
   "layoutEstimates": {
     "poolRowHeight": 52,
