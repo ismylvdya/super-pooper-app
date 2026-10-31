@@ -60,13 +60,19 @@ extension AppModel {
         sourcesDidChange()
     }
 
-    /// The event of a notification: found again by its identifier and start, since a repeating event shares
-    /// the identifier with its other occurrences.
+    /// The event of a notification: the occurrence of the alert's day (`EventOccurrence`), read again if it is not
+    /// known yet. Without one nothing is deleted: another occurrence of a repeating event must never go instead.
     func deleteEvent(identifier: String, start: Date) async {
-        if !events.contains(where: { $0.eventIdentifier == identifier }) { await refreshCalendarSources() }
-        guard let event = events.first(where: { $0.eventIdentifier == identifier && $0.start == start })
-                ?? events.first(where: { $0.eventIdentifier == identifier }) else { return }
-        await deleteEvent(event)
+        var occurrence = EventOccurrence.find(identifier: identifier, start: start, in: events, context: context())
+        if occurrence == nil {
+            await refreshCalendarSources()
+            occurrence = EventOccurrence.find(identifier: identifier, start: start, in: events, context: context())
+        }
+        guard let occurrence else {
+            banners.show(L10n.string("error.event.notFound"), style: .problem)
+            return
+        }
+        await deleteEvent(occurrence)
     }
 
     /// The event leaves the timeline at once; the calendars are read back with the store's own notice of the edit.

@@ -8,7 +8,7 @@ struct SourceChangesTests {
     /// A sync of several events posts a notice per event: the sources were read (and the notifications planned) once per
     /// notice, now once for the burst.
     @Test func aBurstOfChangesIsReadOnce() async throws {
-        let calendars = ChangingCalendars()
+        let calendars = FakeCalendars()
         let delay = GatedDelay()
         let model = try #require(PreviewModel.make(calendars: calendars, delay: delay)).model
         model.observeSourceChanges()
@@ -21,7 +21,7 @@ struct SourceChangesTests {
 
     /// A reminder checked off shows at once; the store's own notice of that edit brings the one read that follows it.
     @Test func anOwnEditShowsAtOnceAndIsReadBackOnce() async throws {
-        let calendars = ChangingCalendars()
+        let calendars = FakeCalendars()
         let delay = GatedDelay()
         let model = try #require(PreviewModel.make(calendars: calendars, delay: delay)).model
         model.observeSourceChanges()

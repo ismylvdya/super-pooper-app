@@ -64,13 +64,20 @@ struct EarlyReminder: RemindersRepository {
     }
 }
 
-/// Calendars whose store changes the test sends; counts how often the events are read.
-final class ChangingCalendars: CalendarRepository, @unchecked Sendable {
+/// Calendars with the test's events, whose store changes the test sends; counts the reads and records deletes.
+final class FakeCalendars: CalendarRepository, @unchecked Sendable {
     private let lock = NSLock()
     private var continuation: AsyncStream<Void>.Continuation?
+    private var stored: [CalendarEvent]
     private var readCount = 0
+    private var deletedEvents: [CalendarEvent] = []
+
+    init(events: [CalendarEvent] = []) {
+        stored = events
+    }
 
     var reads: Int { lock.withLock { readCount } }
+    var deleted: [CalendarEvent] { lock.withLock { deletedEvents } }
 
     /// The store posts a change notice.
     func change() {
@@ -82,11 +89,18 @@ final class ChangingCalendars: CalendarRepository, @unchecked Sendable {
     func calendars() -> [SourceCollection] { [] }
 
     func events(from start: Date, to end: Date, calendarIDs: [String]) -> [CalendarEvent] {
-        lock.withLock { readCount += 1 }
-        return []
+        lock.withLock {
+            readCount += 1
+            return stored
+        }
     }
 
-    func delete(_ event: CalendarEvent) throws {}
+    func delete(_ event: CalendarEvent) throws {
+        try lock.withLock {
+            guard let index = stored.firstIndex(of: event) else { throw CalendarEditError.eventNotFound }
+            deletedEvents.append(stored.remove(at: index))
+        }
+    }
 
     func changes() -> AsyncStream<Void> {
         AsyncStream { continuation in lock.withLock { self.continuation = continuation } }

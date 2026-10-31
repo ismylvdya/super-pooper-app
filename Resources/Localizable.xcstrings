@@ -947,6 +947,17 @@
         }
       }
     },
+    "error.event.notFound": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That event is no longer in Calendar, so nothing was deleted."
+          }
+        }
+      }
+    },
     "error.file.missing": {
       "extractionState": "manual",
       "localizations": {
