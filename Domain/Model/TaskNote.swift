@@ -3,10 +3,10 @@ import Foundation
 /// One TaskNotes note as the app understands it. The note body is not part of the model;
 /// it is loaded on demand by the task repository.
 struct TaskNote: Identifiable, Hashable, Codable, Sendable {
-    /// File name without `.md`; TaskNotes stores the title in the file name.
+    /// Where the store keeps it; nothing outside the store looks inside.
+    var id: TaskID
+    /// The title, and the name other items refer to it by (TaskNotes: the file name without `.md`).
     var name: String
-    /// Path relative to the vault root, e.g. `TaskNotes/Tasks/Name.md`.
-    var relativePath: String
     var status: TaskStatus
     var isHighPriority: Bool = false
     var due: TaskDue?
@@ -37,7 +37,6 @@ struct TaskNote: Identifiable, Hashable, Codable, Sendable {
     var dateModified: Date?
     var problems: [TaskProblem] = []
 
-    var id: String { name }
     /// A habit has the habit status or repeats by a rule (even one that cannot be read).
     var isHabit: Bool { status == .habit || recurrence != nil || hasUnreadableRecurrence }
     var isArchived: Bool { status == .archived }

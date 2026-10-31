@@ -93,7 +93,7 @@ struct StatusChangeTests {
     private let today = LocalDate(year: 2026, month: 10, day: 21)!
 
     @Test func settingDoneAddsCompletedDateAndLeavingRemovesIt() {
-        let open = TaskNote(name: "Task", relativePath: "Task.md", status: .thisWeek)
+        let open = TaskNote(id: TaskID("Task.md"), name: "Task", status: .thisWeek)
         #expect(TaskMarking(today: today).changes(setting: .done, on: open) == [.complete(on: today)])
         var done = open
         done.status = .done
@@ -103,7 +103,7 @@ struct StatusChangeTests {
     }
 
     @Test func anyStatusOtherThanDoneDropsTheDayOfCompletion() {
-        var done = TaskNote(name: "Task", relativePath: "Task.md", status: .done)
+        var done = TaskNote(id: TaskID("Task.md"), name: "Task", status: .done)
         done.completedDate = today
         let changes = TaskMarking(today: today).changes(setting: .archived, on: done)
         #expect(changes == [.status(.archived)])
@@ -112,7 +112,7 @@ struct StatusChangeTests {
     }
 
     @Test func recurringTasksOnlyChangeStatus() {
-        var habit = TaskNote(name: "Habit", relativePath: "Habit.md", status: .halfYear)
+        var habit = TaskNote(id: TaskID("Habit.md"), name: "Habit", status: .halfYear)
         habit.recurrence = try? RecurrenceCodec.parse("FREQ=DAILY").get()
         #expect(TaskMarking(today: today).changes(setting: .done, on: habit) == [.status(.done)])
     }

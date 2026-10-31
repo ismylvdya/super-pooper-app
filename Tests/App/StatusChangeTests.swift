@@ -6,7 +6,7 @@ import Testing
 @MainActor
 struct AppStatusChangeTests {
     private func model(withDone name: String) throws -> AppModel {
-        var task = TaskNote(name: name, relativePath: "TaskNotes/Tasks/\(name).md", status: .done)
+        var task = TaskNote(id: TaskID("TaskNotes/Tasks/\(name).md"), name: name, status: .done)
         task.completedDate = LocalDate("2026-10-20")
         return try #require(PreviewModel.make(tasks: [task])).model
     }

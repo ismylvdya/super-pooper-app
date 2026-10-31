@@ -144,14 +144,14 @@ struct TaskNotesFolderTests {
         let sandbox = try VaultSandbox.make()
         #expect(VaultPaths.isWholeVault(sandbox.vault, exists: { FileManager.default.fileExists(atPath: $0.path) }))
         let note = try await SandboxNote("Купить молоко", sandbox: sandbox)
-        #expect(note.task.relativePath == "TaskNotes/Tasks/Купить молоко.md")
+        #expect(note.task.id.relativePath == "TaskNotes/Tasks/Купить молоко.md")
     }
 
     @Test func scanningTheTaskNotesFolderFindsTheTasks() async throws {
         let sandbox = try VaultSandbox.make()
         let root = sandbox.vault.appendingPathComponent("TaskNotes", isDirectory: true)
         let output = await sandbox.scanner().scan(root: root, tasksFolder: "TaskNotes/Tasks")
-        #expect(output.result.tasks.contains { $0.relativePath == "Tasks/Купить молоко.md" })
+        #expect(output.result.tasks.contains { $0.id.relativePath == "Tasks/Купить молоко.md" })
         #expect(output.result.fileProblems.allSatisfy { if case .tasksFolderMissing = $0 { false } else { true } })
     }
 }

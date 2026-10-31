@@ -75,7 +75,7 @@ actor InMemoryTaskStore: TaskStore, VersionConflictResolving, ExternalLinking, T
     func create(_ draft: NoteDraft, named name: String) async throws -> TaskNote {
         var task = draft.note
         task.name = name
-        task.relativePath = "TaskNotes/Tasks/\(name).md"
+        task.id = TaskID("TaskNotes/Tasks/\(name).md")
         tasks.append(task)
         if !draft.body.isEmpty { bodies[name] = draft.body }
         return task

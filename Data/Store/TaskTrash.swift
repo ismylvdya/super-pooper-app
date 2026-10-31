@@ -1,13 +1,12 @@
 import Foundation
 
-/// A note in the vault's trash folder (`.trash`), where the app moves deleted notes.
+/// An item in the store's trash (TaskNotes: a note in the vault's `.trash`).
 struct TrashedNote: Identifiable, Hashable, Sendable {
+    /// Where the trash keeps it; only the trash reads it.
+    let id: String
     let name: String
-    /// Path relative to the vault root, e.g. `.trash/Name.md`.
-    let relativePath: String
-    /// When it was moved there (the file's modification date).
+    /// When it was moved there.
     let trashedAt: Date?
-    var id: String { relativePath }
 }
 
 /// The store's trash, for the trash screen: list, read, restore among the tasks, delete for good. Optional: a store
@@ -34,8 +33,7 @@ struct VaultTrashRepository: TaskTrash {
             return try fileSystem.listFiles(in: folder)
                 .filter { $0.pathExtension == noteExtension && !$0.lastPathComponent.hasPrefix(".") }
                 .map { url in
-                    TrashedNote(name: url.deletingPathExtension().lastPathComponent,
-                                relativePath: VaultPaths.relative(url, to: root),
+                    TrashedNote(id: VaultPaths.relative(url, to: root), name: url.deletingPathExtension().lastPathComponent,
                                 trashedAt: fileSystem.modificationDate(of: url))
                 }
                 .sorted { ($0.trashedAt ?? .distantPast) > ($1.trashedAt ?? .distantPast) }
@@ -43,13 +41,13 @@ struct VaultTrashRepository: TaskTrash {
     }
 
     func text(of note: TrashedNote) async throws -> String {
-        try await location.withRoot { root in try fileSystem.read(root.appendingPathComponent(note.relativePath)).text }
+        try await location.withRoot { root in try fileSystem.read(root.appendingPathComponent(note.id)).text }
     }
 
     func restore(_ note: TrashedNote) async throws -> String {
         let settings = vaultSettings()
         return try await location.withRoot { root in
-            let source = root.appendingPathComponent(note.relativePath)
+            let source = root.appendingPathComponent(note.id)
             let folder = root.appendingPathComponent(VaultPaths.tasksFolder(settings.tasksFolder, in: root, exists: fileSystem.fileExists),
                                                      isDirectory: true)
             let names = NoteFolder(folder, fileSystem: fileSystem)
@@ -63,7 +61,7 @@ struct VaultTrashRepository: TaskTrash {
 
     func deletePermanently(_ note: TrashedNote) async throws {
         try await location.withRoot { root in
-            let url = root.appendingPathComponent(note.relativePath)
+            let url = root.appendingPathComponent(note.id)
             try fileSystem.remove(url)
             guard !fileSystem.fileExists(url) else { throw TaskStoreError.notConfirmed(note.name) }
         }

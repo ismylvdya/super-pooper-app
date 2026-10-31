@@ -10,7 +10,7 @@ struct NoteDraft: Equatable, Sendable {
     var subtasks: [String] = []
 
     init(status: TaskStatus, changes: [TaskEdit] = []) {
-        note = TaskNote(name: "", relativePath: "", status: status)
+        note = TaskNote(id: .unsaved, name: "", status: status)
         apply(changes)
     }
 

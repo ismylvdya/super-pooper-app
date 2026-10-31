@@ -8,7 +8,7 @@ struct HabitGridTests {
     private let today = LocalDate(year: 2026, month: 10, day: 21)!
 
     private func habit(_ rule: String, complete: [Int] = [], partial: [Int] = [], twice: [Int] = []) -> TaskNote {
-        var task = TaskNote(name: "Habit", relativePath: "Habit.md", status: .halfYear)
+        var task = TaskNote(id: TaskID("Habit.md"), name: "Habit", status: .halfYear)
         task.recurrence = try? RecurrenceCodec.parse(rule).get()
         let day = { (offset: Int) in self.today.adding(days: offset) }
         task.marks = Dictionary(uniqueKeysWithValues: complete.map { (day($0), HabitMark.done) } + partial.map { (day($0), .partial) }

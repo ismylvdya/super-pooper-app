@@ -45,7 +45,7 @@ struct ReviewRegressionTests {
         let tasks = try await repository.load().tasks
         let screwdriver = try #require(tasks.first { $0.name == "Найти отвёртку" })
         var ghost = try #require(tasks.first { $0.name == "Собрать шкаф" })
-        ghost.relativePath = "TaskNotes/Tasks/Нет такого файла.md"
+        ghost.id = TaskID(relativePath: "TaskNotes/Tasks/Нет такого файла.md")
         let renamed = try await repository.rename(screwdriver, to: "Найти отвёртку 2", dependents: [ghost])
         #expect(renamed.name == "Найти отвёртку 2")
         #expect(sandbox.exists("Найти отвёртку 2"))

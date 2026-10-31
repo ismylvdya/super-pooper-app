@@ -37,7 +37,7 @@ struct ICloudTests {
         #expect(result.fileProblems.count == 1)
         let milk = try #require(result.tasks.first { $0.name == "Купить молоко" })
         #expect(milk.status == .done && milk.completedDate == LocalDate("2026-10-21"))
-        #expect(milk.relativePath == "TaskNotes/Tasks/Купить молоко.md")
+        #expect(milk.id.relativePath == "TaskNotes/Tasks/Купить молоко.md")
         #expect(result.tasks.count == 36)
     }
 

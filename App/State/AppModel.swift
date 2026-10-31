@@ -45,10 +45,10 @@ final class AppModel {
     /// The write of each note's text waiting for typing to stop, and the writes running (one after another per note).
     @ObservationIgnored var noteBodyDebounce: [String: Task<Void, Never>] = [:]
     @ObservationIgnored var noteBodySaves: [String: Task<Void, Never>] = [:]
-    /// Paths written while a scan was running; their scanned copies are stale.
-    @ObservationIgnored private var writtenDuringSync: Set<String>?
+    /// Notes written while a scan was running; their scanned copies are stale.
+    @ObservationIgnored private var writtenDuringSync: Set<TaskID>?
     /// Notes trashed or renamed away while a sync runs (its scan may still list them).
-    @ObservationIgnored private var removedDuringSync: Set<String>?
+    @ObservationIgnored private var removedDuringSync: Set<TaskID>?
     @ObservationIgnored var runningSync: Task<Void, Never>?
     /// Another sync was asked for while one runs (`true`: with the banner).
     @ObservationIgnored var syncAgain: Bool?
@@ -234,7 +234,7 @@ final class AppModel {
     // MARK: - Internal state updates
 
     func replace(_ task: TaskNote) {
-        if let index = tasks.firstIndex(where: { $0.relativePath == task.relativePath || $0.name == task.name }) {
+        if let index = tasks.firstIndex(where: { $0.id == task.id || $0.name == task.name }) {
             tasks[index] = task
         } else {
             tasks.append(task)
@@ -242,8 +242,8 @@ final class AppModel {
     }
 
     func remove(_ task: TaskNote) {
-        tasks.removeAll { $0.relativePath == task.relativePath }
-        removedDuringSync?.insert(task.relativePath)
+        tasks.removeAll { $0.id == task.id }
+        removedDuringSync?.insert(task.id)
     }
 
     /// Notes written while the scan ran keep their in-memory version, and notes created or renamed meanwhile
@@ -251,10 +251,10 @@ final class AppModel {
     func setScanResult(_ result: VaultScanResult) {
         let freshlyWritten = writtenDuringSync ?? []
         let removed = removedDuringSync ?? []
-        let scannedPaths = Set(result.tasks.map(\.relativePath))
-        let newer = tasks.filter { freshlyWritten.contains($0.relativePath) && !scannedPaths.contains($0.relativePath) }
-        tasks = result.tasks.filter { !removed.contains($0.relativePath) }.map { scanned in
-            freshlyWritten.contains(scanned.relativePath) ? (tasks.first { $0.relativePath == scanned.relativePath } ?? scanned) : scanned
+        let scanned = Set(result.tasks.map(\.id))
+        let newer = tasks.filter { freshlyWritten.contains($0.id) && !scanned.contains($0.id) }
+        tasks = result.tasks.filter { !removed.contains($0.id) }.map { scanned in
+            freshlyWritten.contains(scanned.id) ? (tasks.first { $0.id == scanned.id } ?? scanned) : scanned
         } + newer
         fileProblems = result.fileProblems
         conflictedNotes = result.conflicted
@@ -270,7 +270,7 @@ final class AppModel {
         writtenDuringSync = nil
         removedDuringSync = nil
     }
-    func noteWrite(_ task: TaskNote) { writtenDuringSync?.insert(task.relativePath) }
+    func noteWrite(_ task: TaskNote) { writtenDuringSync?.insert(task.id) }
 
     func setVaultState(_ state: VaultState) {
         vaultState = state

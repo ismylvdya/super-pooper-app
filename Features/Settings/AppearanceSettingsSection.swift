@@ -23,7 +23,7 @@ struct AppearanceSettingsSection: View {
     /// A sample done task and a sample past event, drawn exactly as on Today.
     private var preview: some View {
         let now = model.clock.now
-        let task = TaskNote(name: L10n.string("settings.pastOpacity.sampleTask"), relativePath: "", status: .done)
+        let task = TaskNote(id: .unsaved, name: L10n.string("settings.pastOpacity.sampleTask"), status: .done)
         let item = DayItem(task: task, state: .marked(.done), blockers: [], problems: [])
         let event = CalendarEvent(eventIdentifier: "sample", title: L10n.string("settings.pastOpacity.sampleEvent"),
                                   start: now.addingTimeInterval(-7200), end: now.addingTimeInterval(-3600), isAllDay: false,

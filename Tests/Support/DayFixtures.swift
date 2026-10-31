@@ -90,7 +90,7 @@ extension TaskDue {
 /// A regular task in `TaskNotes/Tasks`; `configure` sets the fields a test cares about.
 func makeTask(_ name: String, status: TaskStatus = .thisWeek, created: String = "2026-10-10",
               _ configure: (inout TaskNote) -> Void = { _ in }) -> TaskNote {
-    var task = TaskNote(name: name, relativePath: "TaskNotes/Tasks/\(name).md", status: status)
+    var task = TaskNote(id: TaskID("TaskNotes/Tasks/\(name).md"), name: name, status: status)
     task.dateCreated = TestCalendar.date(created, "09:00")
     task.created = TaskDue("\(created)T09:00")
     configure(&task)

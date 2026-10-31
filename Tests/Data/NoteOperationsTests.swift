@@ -56,7 +56,7 @@ struct NoteOperationsTests {
 
         let renamed = try await repository.rename(screwdriver, to: "Найти отвёртку 🪛", dependents: dependents)
 
-        #expect(renamed.name == "Найти отвёртку 🪛" && renamed.relativePath == "TaskNotes/Tasks/Найти отвёртку 🪛.md")
+        #expect(renamed.name == "Найти отвёртку 🪛" && renamed.id.relativePath == "TaskNotes/Tasks/Найти отвёртку 🪛.md")
         #expect(!sandbox.exists("Найти отвёртку"))
         expectSameBytes(try sandbox.text(of: "Найти отвёртку 🪛"), content)
         let newLink = "  - uid: \"[[Найти отвёртку 🪛]]\"\n    reltype: FINISHTOSTART\n"

@@ -56,7 +56,7 @@ struct TaskListScreen: View {
     @ViewBuilder private func filedGroup(_ filed: [TaskNote]) -> some View {
         if !filed.isEmpty {
             ListGroupHeader(title: Text("lists.filed"))
-            ForEach(Array(filed.enumerated()), id: \.element.relativePath) { index, task in
+            ForEach(Array(filed.enumerated()), id: \.element.id) { index, task in
                 HStack(spacing: tokens.space(.iconTextGap)) {
                     TaggedTaskName(name: task.name)
                     Spacer(minLength: 0)
@@ -67,7 +67,7 @@ struct TaskListScreen: View {
                 }
                 .padding(.horizontal, tokens.space(.plateInner))
                 .padding(.vertical, tokens.space(.listRowVertical))
-                .listGroupRow(group: "filed", id: task.relativePath, isFirst: index == 0, isLast: index == filed.count - 1,
+                .listGroupRow(group: "filed", id: task.name, isFirst: index == 0, isLast: index == filed.count - 1,
                               frames: frames, separatorInset: tokens.space(.plateInner))
             }
         }

@@ -21,7 +21,7 @@ struct TaskNoteReader: Sendable {
         var fields = FieldReader(document: document, settings: settings.values(in: document) ?? [:])
         let keys = mapping.fields
 
-        var task = TaskNote(name: name, relativePath: relativePath,
+        var task = TaskNote(id: TaskID(relativePath: relativePath), name: name,
                             status: fields.string(keys.status).map(mapping.status(fromRaw:)) ?? .other(""))
         task.isHighPriority = fields.string(keys.priority) == mapping.priorities.high
         task.timeZone = fields.string(keys.timeZone).flatMap { TimeZone(identifier: $0) == nil ? nil : $0 }

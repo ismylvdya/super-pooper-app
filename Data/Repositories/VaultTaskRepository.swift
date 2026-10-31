@@ -88,8 +88,8 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
             guard fileSystem.isMoved(source, to: target) else { throw TaskStoreError.notConfirmed(newName) }
             var result = task
             result.name = newName
-            result.relativePath = VaultPaths.relative(target, to: root)
-            seenModification[result.relativePath] = fileSystem.modificationDate(of: target)
+            result.id = TaskID(relativePath: VaultPaths.relative(target, to: root))
+            seenModification[result.id.relativePath] = fileSystem.modificationDate(of: target)
             return result
         }
         // A dependent that moved or vanished meanwhile must not undo the rename; its link then shows
@@ -177,7 +177,7 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
 
     func backup(_ tasks: [TaskNote], reason: String) async throws {
         try await location.withRoot { root in
-            _ = try backups.backup(tasks.map { root.appendingPathComponent($0.relativePath) }, reason: reason)
+            _ = try backups.backup(tasks.map { root.appendingPathComponent($0.id.relativePath) }, reason: reason)
         }
     }
 
@@ -185,7 +185,7 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
     func externalURL(for task: TaskNote) async -> URL? {
         let settings = vaultSettings()
         return try? await location.withRoot { root in
-            VaultPaths.obsidianURL(relativePath: task.relativePath, root: root, folder: chosenFolder(root: root),
+            VaultPaths.obsidianURL(relativePath: task.id.relativePath, root: root, folder: chosenFolder(root: root),
                                    vaultName: settings.obsidianVault, pathPrefix: settings.obsidianPathPrefix,
                                    noteExtension: noteExtension)
         }
@@ -199,7 +199,7 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
         try await location.withRoot { root in
             let url = try existingURL(of: task, root: root)
             try ubiquity.keep(versionID, of: url)
-            seenModification[task.relativePath] = fileSystem.modificationDate(of: url)
+            seenModification[task.id.relativePath] = fileSystem.modificationDate(of: url)
         }
     }
 
@@ -224,7 +224,7 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
             let url = try existingURL(of: task, root: root)
             // iCloud conflict versions stay for the user to resolve; the edit goes into the current file.
             var hadConflict = ubiquity.hasConflicts(url)
-            if let seen = seenModification[task.relativePath], let current = fileSystem.modificationDate(of: url),
+            if let seen = seenModification[task.id.relativePath], let current = fileSystem.modificationDate(of: url),
                abs(current.timeIntervalSince(seen)) > 0.001 {
                 hadConflict = true
             }
@@ -236,7 +236,7 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
                 throw TaskStoreError.brokenFrontmatter(task.name)
             }
             let clashing = hadConflict
-                ? WriteConflict.keys(changes, seen: task, latest: reader.task(from: document, name: task.name, relativePath: task.relativePath),
+                ? WriteConflict.keys(changes, seen: task, latest: reader.task(from: document, name: task.name, relativePath: task.id.relativePath),
                                      mapping: mapping)
                 : []
             let text = transform(&document)
@@ -244,15 +244,15 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
             guard let updated = try? FrontmatterDocument(text: text) else { throw TaskStoreError.brokenFrontmatter(task.name) }
             try fileSystem.write(text, to: url)
             guard fileSystem.isWritten(text, at: url) else { throw TaskStoreError.notConfirmed(task.name) }
-            seenModification[task.relativePath] = fileSystem.modificationDate(of: url)
-            return TaskWriteResult(task: reader.task(from: updated, name: task.name, relativePath: task.relativePath),
+            seenModification[task.id.relativePath] = fileSystem.modificationDate(of: url)
+            return TaskWriteResult(task: reader.task(from: updated, name: task.name, relativePath: task.id.relativePath),
                                    hadConflict: hadConflict, clashingKeys: clashing)
         }
     }
 
     /// Name check that also sees evicted iCloud files (`.Name.md.icloud`).
     private func existingURL(of task: TaskNote, root: URL) throws -> URL {
-        let url = root.appendingPathComponent(task.relativePath)
+        let url = root.appendingPathComponent(task.id.relativePath)
         guard fileSystem.fileExists(url) else { throw TaskStoreError.fileMissing(task.name) }
         return url
     }

@@ -20,7 +20,7 @@ struct VaultScannerTests {
             return
         }
         #expect(file == "Битый YAML")
-        #expect(result.tasks.allSatisfy { $0.relativePath == "TaskNotes/Tasks/\($0.name).md" })
+        #expect(result.tasks.allSatisfy { $0.id.relativePath == "TaskNotes/Tasks/\($0.name).md" })
     }
 
     @Test func onlyTheUnknownRuleNoteHasAReadProblem() async throws {
@@ -55,7 +55,7 @@ struct VaultScannerTests {
 
     @Test func aTaskWithAnEventLinkIsReadExactly() async throws {
         let task = try await scanned("Подготовить вопросы папе")
-        var expected = TaskNote(name: "Подготовить вопросы папе", relativePath: "TaskNotes/Tasks/Подготовить вопросы папе.md", status: .thisWeek)
+        var expected = TaskNote(id: TaskID("TaskNotes/Tasks/Подготовить вопросы папе.md"), name: "Подготовить вопросы папе", status: .thisWeek)
         expected.timeEstimate = 15
         expected.nextEvent = EventLink(eventIdentifier: "fixture-event", title: "Call with dad", start: TestCalendar.date("2026-10-21", "19:00"))
         try expectSame(task, expected, created: "2026-10-19", modified: "2026-10-20")
@@ -63,7 +63,7 @@ struct VaultScannerTests {
 
     @Test func aHabitWithHistoryIsReadExactly() async throws {
         let task = try await scanned("Медитация 🧘")
-        var expected = TaskNote(name: "Медитация 🧘", relativePath: "TaskNotes/Tasks/Медитация 🧘.md", status: .halfYear)
+        var expected = TaskNote(id: TaskID("TaskNotes/Tasks/Медитация 🧘.md"), name: "Медитация 🧘", status: .halfYear)
         expected.timeEstimate = 15
         expected.recurrence = try RecurrenceCodec.parse("DTSTART:20260921;FREQ=DAILY;INTERVAL=1").get()
         expected.marks = [LocalDate("2026-10-15"): .done, LocalDate("2026-10-16"): .partial, LocalDate("2026-10-17"): .done,
@@ -111,8 +111,7 @@ struct VaultScannerTests {
 
     @Test func unknownKeysDoNotDisturbReading() async throws {
         let task = try await scanned("Длинная заметка с незнакомыми ключами")
-        var expected = TaskNote(name: "Длинная заметка с незнакомыми ключами",
-                                relativePath: "TaskNotes/Tasks/Длинная заметка с незнакомыми ключами.md", status: .thisWeek)
+        var expected = TaskNote(id: TaskID("TaskNotes/Tasks/Длинная заметка с незнакомыми ключами.md"), name: "Длинная заметка с незнакомыми ключами", status: .thisWeek)
         expected.timeEstimate = 15
         // `projects` is read: it makes the note a TaskNotes subtask of «Ремонт».
         expected.projects = ["Ремонт"]
