@@ -6,13 +6,14 @@ import SwiftUI
 /// manual order is kept for today. Reset sorting brings the sort back.
 /// Tapping a row (outside its chips) opens the task page; "+" creates a new this-week task.
 /// A long press opens the same menu as the row in the pool (and moving the finger then drags the row).
-/// Swiping a row left takes it out of today: it stays this week and waits in "Not Today" at the bottom
+/// Swiping a task left is the menu's Not today: it stays this week and waits in "Not Today" at the bottom
 /// (and in tomorrow's review); swiping it there to the right brings it back.
 struct MorningReviewScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
+    @Environment(\.actions) private var actions
     @Environment(\.openURL) private var openURL
     @State private var path: [Route] = []
     @State private var pendingAction: PendingAction?
@@ -50,12 +51,16 @@ struct MorningReviewScreen: View {
                                     // rounded corners follow a new order (the list keeps a moved row's old background).
                                     .id("\(name)|\(position.isFirst)|\(position.isLast)")
                                     .accessibilityIdentifier("review:\(item.id)")
+                                    // The pool menu's Not today, where that menu offers it.
                                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                        Button { Haptics.play(.light); model.postpone(item.id) } label: {
-                                            Label("review.postpone", systemImage: icons[.postpone])
+                                        if NotToday.isAvailable(for: item) {
+                                            let action = actions.definition(.notToday)
+                                            Button { Haptics.play(action.haptic); perform(action, on: item.id) } label: {
+                                                Label(LocalizedStringKey(action.title), systemImage: action.icon)
+                                            }
+                                            .tint(tokens.color(.swipeNeutral))
+                                            .accessibilityIdentifier("review.postpone")
                                         }
-                                        .tint(tokens.color(.swipeNeutral))
-                                        .accessibilityIdentifier("review.postpone")
                                     }
                             }
                         }

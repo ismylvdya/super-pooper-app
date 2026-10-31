@@ -20,7 +20,7 @@ extension AppModel {
             await publishDerivedState()
         case .notToday:
             guard day == nil || day == context().today, let local = localTask(named: name) else { return }
-            let changes = marking.notTodayChanges(for: local)
+            let changes = NotToday.changes(for: local, context: context())
             if changes.isEmpty { postpone(name) } else { await writeLocal(task, changes) }
         case .archive:
             if await write(task, [.status(.archived)]) {

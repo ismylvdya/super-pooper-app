@@ -3488,17 +3488,6 @@
         }
       }
     },
-    "review.postpone": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Not today"
-          }
-        }
-      }
-    },
     "review.postponed": {
       "extractionState": "manual",
       "localizations": {
