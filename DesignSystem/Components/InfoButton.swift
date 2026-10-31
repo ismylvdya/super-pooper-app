@@ -23,12 +23,13 @@ struct InfoButton: View {
     }
 }
 
-/// The bubble is as tall as its text (plus padding), but at most a third of the screen; longer texts scroll.
+/// The bubble is as tall as its text (plus padding), but at most a third of the window it is shown in; longer texts
+/// scroll.
 private struct InfoBubble: View {
     @Environment(\.tokens) private var tokens
-    @Environment(\.screenHeight) private var screenHeight
     let text: LocalizedStringKey
     @State private var textHeight: CGFloat = 0
+    @State private var windowHeight: CGFloat?
 
     var body: some View {
         ScrollView {
@@ -41,18 +42,7 @@ private struct InfoBubble: View {
         }
         .scrollBounceBehavior(.basedOnSize)
         .frame(width: tokens.size(.infoMaxWidth))
-        .frame(height: min(max(textHeight, 1), screenHeight * tokens.ratio(.infoMaxHeight)))
-    }
-}
-
-private struct ScreenHeightKey: EnvironmentKey {
-    static let defaultValue = CGFloat(BundledConfig.rules.layoutEstimates.screenHeight)
-}
-
-extension EnvironmentValues {
-    /// Height of the app's window, set by the root view (bubbles and sheets size against it).
-    var screenHeight: CGFloat {
-        get { self[ScreenHeightKey.self] }
-        set { self[ScreenHeightKey.self] = newValue }
+        .frame(height: min(max(textHeight, 1), (windowHeight ?? .infinity) * tokens.ratio(.infoMaxHeight)))
+        .background(WindowHeightReader { windowHeight = $0 })
     }
 }

@@ -7,6 +7,7 @@ struct TimelineBlock: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.rules) private var rules
     @Environment(\.openURL) private var openURL
+    @Environment(\.liftRoom) private var liftRoom
     @Environment(TaskDragState.self) private var drag: TaskDragState?
     @State private var eventToDelete: CalendarEvent?
     @State private var highlightedSlot: String?
@@ -66,7 +67,7 @@ struct TimelineBlock: View {
                 .scrollIndicators(.hidden)
                 .refreshable { await model.sync(announce: true) }
                 // The hours dissolve from the strip's bottom down.
-                .edgeFades(topInset: stripHeight == 0 ? 0 : tokens.space(.liftShadow) + stripHeight + pull, bottomExtension: bottomInset)
+                .edgeFades(topInset: stripHeight == 0 ? 0 : liftRoom.top + stripHeight + pull, bottomExtension: bottomInset)
                 .liftRoom(extraTop: stripRoom)
                 .simultaneousGesture(
                     MagnifyGesture()
@@ -75,7 +76,7 @@ struct TimelineBlock: View {
                             let start = pinchStart ?? (scrollOffset, value.startLocation.y, scale(zoom))
                             pinchStart = start
                             // The hours start under the top margin (the lift room and the all-day strip) and the padding.
-                            let hoursTop = tokens.space(.liftShadow) + stripRoom + contentInset
+                            let hoursTop = liftRoom.top + stripRoom + contentInset
                             let offset = TimelineZoom.offset(keeping: Double(start.y), startOffset: Double(start.offset),
                                                              contentTop: Double(hoursTop), from: Double(start.hourHeight),
                                                              to: Double(scale(zoom * value.magnification)))
@@ -91,7 +92,7 @@ struct TimelineBlock: View {
                 .overlay(alignment: .top) {
                     if !plan.allDayEvents.isEmpty {
                         allDayStrip
-                            .padding(.top, tokens.space(.liftShadow))
+                            .padding(.top, liftRoom.top)
                             .background(tokens.color(.screenBackground))
                             .offset(y: pull)
                     }

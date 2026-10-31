@@ -155,7 +155,6 @@ struct RulesConfig: Codable, Hashable, Sendable {
     /// Heights assumed until the real ones are measured.
     struct LayoutEstimates: Codable, Hashable, Sendable {
         let poolRowHeight: Double
-        let screenHeight: Double
     }
 
     /// Ranges of the number controls on settings and note pages.

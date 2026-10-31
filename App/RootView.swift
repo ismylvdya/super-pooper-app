@@ -6,7 +6,6 @@ struct RootView: View {
     let container: AppContainer
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
-    @State private var screenHeight = CGFloat(BundledConfig.rules.layoutEstimates.screenHeight)
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     /// Which side the physical bottom took the last time the phone lay sideways.
     @State private var landscapeBottom: HorizontalEdge = .trailing
@@ -71,10 +70,8 @@ struct RootView: View {
             }
         }
         .tint(tokens.color(.accent))
-        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { screenHeight = $0 }
         .onGeometryChange(for: CGSize.self) { $0.size } action: { _ in updateLandscapeBottom() }
         .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in updateLandscapeBottom() }
-        .environment(\.screenHeight, screenHeight)
         .environment(\.physicalBottom, physicalBottom)
         .environment(\.timelineBell, model.settings.timeline.bellStyle)
         .environment(\.chipOrder, RowChipKind.ordered(model.settings.pool.chipOrder))

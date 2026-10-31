@@ -51,6 +51,12 @@ struct TodayScreen: View {
         }
         .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
         .environment(taskDrag)
+        // A drag asks for a block; the pages of the layout shown now turn to it.
+        .onChange(of: taskDrag.turnRequest) { _, block in
+            guard let block else { return }
+            if let index = layout.blocks.firstIndex(where: { $0.block == block }) { turn(to: index) }
+            taskDrag.turnHandled()
+        }
         .onChange(of: router.todayTaps) { if dayOffset != 0 { withAnimation(tokens.animation) { dayOffset = 0 } } }
     }
 
@@ -86,14 +92,11 @@ struct TodayScreen: View {
                 .padding(.top, tokens.space(.headerToPlate))
                 // An empty pool still takes the swipe.
                 .contentShape(Rectangle())
+                // A lifted row's shadow fits above the first row; sideways it may reach over the margins and the next block.
+                .environment(\.liftRoom, LiftRoom(top: tokens.space(.liftShadow), sides: tokens.size(.liftOverhang)))
             }
             .ignoresSafeArea(.container, edges: .bottom)
             .simultaneousGesture(daySwipe(width: geometry.size.width))
-            .onAppear {
-                taskDrag.turn = { block in
-                    if let index = layout.blocks.firstIndex(where: { $0.block == block }) { turn(to: index) }
-                }
-            }
             .onChange(of: arrangement) { page = 0 }
         }
     }
@@ -193,7 +196,7 @@ private extension View {
 }
 
 private struct DaySlide: ViewModifier {
-    @Environment(\.tokens) private var tokens
+    @Environment(\.liftRoom) private var liftRoom
     let offset: CGFloat
     let fade: Double
 
@@ -201,7 +204,7 @@ private struct DaySlide: ViewModifier {
         content
             .offset(x: offset)
             .opacity(fade)
-            .clipShape(Rectangle().inset(by: offset == 0 ? -tokens.size(.liftOverhang) : 0))
+            .clipShape(Rectangle().inset(by: offset == 0 ? -liftRoom.sides : 0))
     }
 }
 

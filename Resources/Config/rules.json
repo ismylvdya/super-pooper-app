@@ -179,7 +179,6 @@
     "colorHabitRows": 1
   },
   "layoutEstimates": {
-    "poolRowHeight": 52,
-    "screenHeight": 800
+    "poolRowHeight": 52
   }
 }

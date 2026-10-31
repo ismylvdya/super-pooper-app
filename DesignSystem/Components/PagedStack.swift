@@ -31,15 +31,14 @@ struct PagedStack<Block: View>: View {
             .overlay(alignment: page == 0 ? .trailing : .leading) {
                 if let onTurn, slots.count > 1 {
                     let other = page == 0 ? 1 : page - 1
-                    // The visible edge of the other page turns to it instead of acting on what it shows.
-                    // Not `Color.clear`: a fully clear view is skipped when a drag looks for a drop target.
-                    Rectangle()
-                        .fill(Color.black.opacity(0.001))
+                    // The visible edge of the other page turns to it instead of acting on what it shows: a tap, or a
+                    // drag reaching it.
+                    Color.clear
                         .frame(width: max(pages.peek(of: other) + (page == 0 ? 0 : edgeInset), 0))
                         .padding(.leading, page == 0 ? 0 : -edgeInset)
                         .contentShape(Rectangle())
                         .onTapGesture { onTurn(other) }
-                        .onDrop(of: [.text], isTargeted: Binding(get: { false }, set: { if $0 { onTurn(other) } })) { _ in false }
+                        .onDrop(of: [.text], delegate: PageEdgeDrop { onTurn(other) })
                         .accessibilityElement()
                         .accessibilityLabel(Text(page == 0 ? "today.page.timeline" : "today.page.pool"))
                         .accessibilityAddTraits(.isButton)
@@ -47,6 +46,19 @@ struct PagedStack<Block: View>: View {
                 }
             }
         }
+    }
+}
+
+/// A drag that reaches the edge of the other page turns to it; nothing is dropped there.
+private struct PageEdgeDrop: DropDelegate {
+    let turn: () -> Void
+
+    func dropEntered(info: DropInfo) {
+        turn()
+    }
+
+    func performDrop(info: DropInfo) -> Bool {
+        false
     }
 }
 

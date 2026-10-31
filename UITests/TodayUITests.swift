@@ -118,6 +118,22 @@ final class TodayUITests: XCTestCase {
         XCTAssertEqual(XCTWaiter().wait(for: [auto], timeout: 5), .completed)
     }
 
+    /// On the pages, a row dragged onto the edge of the other page turns to it. A habit is dragged: the timeline does not
+    /// take habits, so letting go there changes nothing.
+    func testDraggingOntoThePageEdgeTurnsThePage() {
+        app.launchArguments += ["-SPArrangement", "paged"]
+        launch()
+        dismissBanners()
+        let edge = app.descendants(matching: .any)["today.pageEdge"]
+        XCTAssertTrue(edge.waitForExistence(timeout: 10))
+        XCTAssertEqual(edge.label, "Show the timeline")
+        let row = app.buttons["title:Выпить воды 💧"]
+        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        row.press(forDuration: 1.2, thenDragTo: edge, withVelocity: .slow, thenHoldForDuration: 1)
+        let turned = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == 'Show the pool'"), object: edge)
+        XCTAssertEqual(XCTWaiter().wait(for: [turned], timeout: 5), .completed, "the pages turned to the timeline")
+    }
+
     func testPullToRefreshShowsSyncBanner() {
         launch()
         dismissBanners()

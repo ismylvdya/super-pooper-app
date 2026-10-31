@@ -16,8 +16,8 @@ final class TaskDragState {
     var hoverMoment: Date?
     /// The pool with the task at the spot under the finger.
     var poolOrder: [String]?
-    /// Turns the Today pages to a block; set by the screen, nothing without pages.
-    var turn: (TodayBlockID) -> Void = { _ in }
+    /// The block a drag asks the Today pages to turn to; the screen turns by its layout of the moment and clears it.
+    private(set) var turnRequest: TodayBlockID?
 
     func begin(_ item: DayItem, from source: Source) -> NSItemProvider {
         self.item = item
@@ -25,6 +25,15 @@ final class TaskDragState {
         hoverMoment = nil
         poolOrder = nil
         return NSItemProvider(object: item.id as NSString)
+    }
+
+    /// The drag reached a block: the pages turn to it (nothing without pages).
+    func turn(_ block: TodayBlockID) {
+        turnRequest = block
+    }
+
+    func turnHandled() {
+        turnRequest = nil
     }
 
     func end() {
