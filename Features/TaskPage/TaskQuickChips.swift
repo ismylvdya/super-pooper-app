@@ -34,11 +34,10 @@ struct TaskQuickChips: View {
         let context = model.context()
         let selected = QuickDue.selection(of: editor.task, context: context)
         ForEach(QuickDue.allCases, id: \.self) { chip in
-            ToggleChip(icon: chip == .today ? .today : .tomorrow, title: chip == .today ? "taskPage.chip.today" : "taskPage.chip.tomorrow",
-                       tint: tokens.color(.task), isOn: selected == chip) {
+            ToggleChip(icon: chip.icon, title: chip.title, tint: tokens.color(.task), isOn: selected == chip) {
                 editor.edit { [.due(QuickDue.toggling(chip, task: $0, context: context))] }
             }
-            .accessibilityIdentifier(chip == .today ? "taskPage.chip.today" : "taskPage.chip.tomorrow")
+            .accessibilityIdentifier(chip.chipIdentifier)
         }
     }
 }

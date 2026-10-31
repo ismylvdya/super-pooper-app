@@ -82,7 +82,7 @@ struct DayBuilder: Sendable {
         timeline.sort { $0.start != $1.start ? $0.start < $1.start : $0.end > $1.end }
 
         let allDay = inputs.events.filter { $0.isAllDay && $0.covers(context.today, calendar: context.calendar) }
-            .sorted { $0.title < $1.title }
+            .sorted { NameOrder.precedes($0.title, $1.title) }
         var plan = DayPlan(today: context.today, now: context.now, pool: pool, timeline: timeline, problems: problems, allDayEvents: allDay)
         plan.focus = context.focus
         return plan

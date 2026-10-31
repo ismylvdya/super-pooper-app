@@ -202,9 +202,10 @@ final class NoteCommands {
         let rename = { (names: [String]) in NameReferences.renaming(names, from: old, to: new) }
         settings.update {
             $0.habits.order = rename($0.habits.order)
-            $0.habits.morningRoutine = rename($0.habits.morningRoutine)
-            $0.habits.dayRoutine = rename($0.habits.dayRoutine)
-            $0.habits.eveningRoutine = rename($0.habits.eveningRoutine)
+            for part in HabitTimeOfDay.allCases {
+                let routine = AppSettings.Habits.routine(part)
+                $0.habits[keyPath: routine] = rename($0.habits[keyPath: routine])
+            }
         }
         day.followRename(from: old, to: new)
     }

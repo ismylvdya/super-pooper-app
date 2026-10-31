@@ -9,9 +9,9 @@ struct RoutinesScreen: View {
 
     var body: some View {
         List {
-            section(.morning, title: "routines.morning", keyPath: \.morningRoutine)
-            section(.day, title: "routines.day", keyPath: \.dayRoutine)
-            section(.evening, title: "routines.evening", keyPath: \.eveningRoutine)
+            section(.morning, title: "routines.morning")
+            section(.day, title: "routines.day")
+            section(.evening, title: "routines.evening")
         }
         .listGroupStyle()
         .listGroupBacking(frames)
@@ -21,7 +21,8 @@ struct RoutinesScreen: View {
     }
 
     @ViewBuilder
-    private func section(_ part: HabitTimeOfDay, title: LocalizedStringKey, keyPath: WritableKeyPath<AppSettings.Habits, [String]>) -> some View {
+    private func section(_ part: HabitTimeOfDay, title: LocalizedStringKey) -> some View {
+        let keyPath = AppSettings.Habits.routine(part)
         let members = HabitRoutines.members(part, of: model.habits, order: model.settings.habits[keyPath: keyPath])
         ListGroupHeader(title: Text(title))
         if members.isEmpty {

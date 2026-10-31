@@ -108,6 +108,20 @@ struct AppSettings: Codable, Equatable, Sendable {
         var showsNotificationPicture: Bool
         /// The habit symbol on a notification in the habit's own color (when it has one) instead of the habits' color.
         var notificationUsesHabitColor: Bool
+
+        /// Where the order of one routine is kept: the one place that ties a part of the day to its setting.
+        static func routine(_ part: HabitTimeOfDay) -> WritableKeyPath<Habits, [String]> {
+            switch part {
+            case .morning: \.morningRoutine
+            case .day: \.dayRoutine
+            case .evening: \.eveningRoutine
+            }
+        }
+
+        /// The orders of all routines, for the day.
+        var routines: HabitRoutines {
+            HabitRoutines(morning: morningRoutine, day: dayRoutine, evening: eveningRoutine)
+        }
     }
 
     struct Clock: Codable, Equatable, Sendable {

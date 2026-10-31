@@ -5545,28 +5545,6 @@
         }
       }
     },
-    "taskPage.chip.today": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Today"
-          }
-        }
-      }
-    },
-    "taskPage.chip.tomorrow": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tomorrow"
-          }
-        }
-      }
-    },
     "taskPage.due": {
       "extractionState": "manual",
       "localizations": {

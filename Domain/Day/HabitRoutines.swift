@@ -1,6 +1,6 @@
 import Foundation
 
-/// The user's order of the morning and evening routines (habits with that part of the day).
+/// The user's order of the morning, day and evening routines (habits with that part of the day).
 /// Habits not in the order follow it by name.
 struct HabitRoutines: Hashable, Sendable {
     var morning: [String] = []

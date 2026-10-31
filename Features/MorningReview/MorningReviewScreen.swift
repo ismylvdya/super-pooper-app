@@ -204,7 +204,7 @@ struct ReviewRow: View {
         let selected = QuickDue.selection(of: task.due, context: context)
         return Menu {
             ForEach(QuickDue.allCases, id: \.self) { chip in
-                Toggle(chip == .today ? "due.today" : "due.tomorrow", isOn: Binding(
+                Toggle(chip.title, isOn: Binding(
                     get: { selected == chip },
                     set: { _ in setDue(QuickDue.toggling(chip, due: task.due, context: context)) }
                 ))

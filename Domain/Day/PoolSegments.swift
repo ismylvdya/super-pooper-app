@@ -1,6 +1,6 @@
 import Foundation
 
-/// The pool cut into runs: habits of one routine (morning or evening) that stand next to each other
+/// The pool cut into runs: habits of one routine (morning, day or evening) that stand next to each other
 /// share one plate; everything else is a run of one.
 enum PoolSegments {
     struct Segment: Identifiable, Hashable, Sendable {
