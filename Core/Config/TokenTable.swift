@@ -29,18 +29,11 @@ extension TokenTable: Decodable where Value: Decodable {
         var values: [Key: Value] = [:]
         for key in Key.allCases {
             guard let value = raw[key.rawValue] else {
-                throw DecodingError.keyNotFound(TokenCodingKey(stringValue: key.rawValue),
+                throw DecodingError.keyNotFound(ConfigCodingKey(stringValue: key.rawValue),
                                                 .init(codingPath: decoder.codingPath, debugDescription: "missing token"))
             }
             values[key] = value
         }
         self.values = values
     }
-}
-
-private struct TokenCodingKey: CodingKey {
-    let stringValue: String
-    var intValue: Int? { nil }
-    init(stringValue: String) { self.stringValue = stringValue }
-    init?(intValue: Int) { nil }
 }

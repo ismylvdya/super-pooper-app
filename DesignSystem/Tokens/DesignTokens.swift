@@ -54,90 +54,12 @@ struct DesignTokens: Decodable, Sendable {
         for (name, hex) in hexByName {
             // The interface is black / white; an accent chosen in an older version is ignored.
             guard let token = ColorToken(rawValue: name), token != .accent, UIColor(hex: hex) != nil else { continue }
-            overrides[token] = ColorSpec(light: hex, dark: hex, system: nil)
+            overrides[token] = ColorSpec(hex: hex)
         }
         guard !overrides.isEmpty else { return self }
         return DesignTokens(spacing: spacing, radius: radius, size: size, opacity: opacity, duration: duration,
                             font: font, color: color.replacing(overrides))
     }
-}
-
-/// `{"style": "title3", "weight": "bold", "design": "rounded"}` or `{"size": 34, …}`.
-struct FontSpec: Decodable, Sendable {
-    let style: String?
-    let size: Double?
-    let weight: String?
-    let design: String?
-
-    var font: Font {
-        let weight = FontSpec.weights[self.weight ?? "regular"] ?? .regular
-        let design = FontSpec.designs[self.design ?? "default"] ?? .default
-        if let size { return .system(size: size, weight: weight, design: design) }
-        return .system(FontSpec.styles[style ?? "body"] ?? .body, design: design, weight: weight)
-    }
-
-    var uiFont: UIFont {
-        let base: UIFont
-        let uiWeight = FontSpec.uiWeights[weight ?? "regular"] ?? .regular
-        if let size {
-            base = .systemFont(ofSize: size, weight: uiWeight)
-        } else {
-            let style = FontSpec.uiStyles[style ?? "body"] ?? .body
-            base = .systemFont(ofSize: UIFont.preferredFont(forTextStyle: style).pointSize, weight: uiWeight)
-        }
-        guard design == "rounded", let descriptor = base.fontDescriptor.withDesign(.rounded) else { return base }
-        return UIFont(descriptor: descriptor, size: base.pointSize)
-    }
-
-    private static let weights: [String: Font.Weight] = [
-        "regular": .regular, "medium": .medium, "semibold": .semibold, "bold": .bold, "heavy": .heavy, "light": .light,
-    ]
-    private static let uiWeights: [String: UIFont.Weight] = [
-        "regular": .regular, "medium": .medium, "semibold": .semibold, "bold": .bold, "heavy": .heavy, "light": .light,
-    ]
-    private static let designs: [String: Font.Design] = ["default": .default, "rounded": .rounded, "monospaced": .monospaced]
-    private static let styles: [String: Font.TextStyle] = [
-        "largeTitle": .largeTitle, "title": .title, "title2": .title2, "title3": .title3, "headline": .headline,
-        "body": .body, "callout": .callout, "subheadline": .subheadline, "footnote": .footnote,
-        "caption": .caption, "caption2": .caption2,
-    ]
-    private static let uiStyles: [String: UIFont.TextStyle] = [
-        "largeTitle": .largeTitle, "title": .title1, "title2": .title2, "title3": .title3, "headline": .headline,
-        "body": .body, "callout": .callout, "subheadline": .subheadline, "footnote": .footnote,
-        "caption": .caption1, "caption2": .caption2,
-    ]
-}
-
-/// `{"light": "#RRGGBB", "dark": "#RRGGBB"}` (each color picked per theme) or `{"system": "label"}`.
-struct ColorSpec: Decodable, Sendable {
-    init(light: String?, dark: String?, system: String?) {
-        self.light = light
-        self.dark = dark
-        self.system = system
-    }
-
-    let light: String?
-    let dark: String?
-    let system: String?
-
-    var color: Color { Color(uiColor: uiColor) }
-
-    var uiColor: UIColor {
-        if let system, let color = ColorSpec.systemColors[system] { return color }
-        let light = UIColor(hex: light ?? "#000000") ?? .label
-        let dark = UIColor(hex: dark ?? self.light ?? "#FFFFFF") ?? light
-        return UIColor { $0.userInterfaceStyle == .dark ? dark : light }
-    }
-
-    private static let systemColors: [String: UIColor] = [
-        "label": .label, "secondaryLabel": .secondaryLabel, "tertiaryLabel": .tertiaryLabel,
-        "systemBackground": .systemBackground, "secondarySystemBackground": .secondarySystemBackground,
-        "systemGroupedBackground": .systemGroupedBackground,
-        "secondarySystemGroupedBackground": .secondarySystemGroupedBackground,
-        "tertiarySystemFill": .tertiarySystemFill, "secondarySystemFill": .secondarySystemFill,
-        "quaternarySystemFill": .quaternarySystemFill, "separator": .separator, "systemRed": .systemRed,
-        "systemBlue": .systemBlue,
-    ]
 }
 
 extension Color {
