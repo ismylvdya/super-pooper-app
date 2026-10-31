@@ -9,6 +9,7 @@ final class AppContainer {
     let model: AppModel
     let router: Router
     let banners: BannerCenter
+    let notificationResponses: NotificationResponseHandler
     let launch: LaunchOptions
     let eventKit: EventKitAccess
     let calendar: LiveCalendar
@@ -90,6 +91,8 @@ final class AppContainer {
         self.router = Router()
         self.model = AppModel(config: config, services: services, appEvents: BannerPresenter(banners: banners), clock: clock,
                               calendar: calendar)
+        notificationResponses = NotificationResponseHandler(model: model, router: NotificationResponseRouter(links: config.rules.eventLinks),
+                                                            open: { await UIApplication.shared.open($0) })
         Haptics.isEnabled = config.flags.haptics
         notifications.registerCategories(config.actions, habitActionsEnabled: config.flags.habitNotificationActions)
 

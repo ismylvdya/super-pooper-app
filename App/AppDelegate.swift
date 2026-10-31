@@ -40,36 +40,14 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         [.banner, .sound, .list]
     }
 
-    /// Swiping or tapping a notification does nothing to the data: the item stays in the day, and the
-    /// notification comes back silently until it is marked. A tap on an event alert opens Calendar on its day, on a
-    /// reminder its list in Reminders. Buttons on it run their action.
+    /// A swipe, a tap or a button on one of the app's notifications (`NotificationResponseRouter`).
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
-        let info = response.notification.request.content.userInfo
-        if response.actionIdentifier == UNNotificationDismissActionIdentifier || response.actionIdentifier == UNNotificationDefaultActionIdentifier {
-            await BackgroundRefresh.restore(response.notification.request)
-            if response.actionIdentifier == UNNotificationDefaultActionIdentifier,
-               case .success(let container) = AppContainer.shared,
-               let url = NotificationTapTarget.url(for: info, links: container.config.rules.eventLinks) {
-                await UIApplication.shared.open(url)
-            }
-            return
-        }
-        if (info[NotificationPayload.kindKey] as? String) == PlannedNotification.Kind.reminder.rawValue,
-           let reminderID = info[NotificationPayload.reminderKey] as? String, !reminderID.isEmpty,
-           response.actionIdentifier == ActionID.done.rawValue {
-            await BackgroundRefresh.completeReminder(reminderID)
-            return
-        }
-        if response.actionIdentifier == ActionID.deleteEvent.rawValue,
-           let eventID = info[NotificationPayload.eventKey] as? String, !eventID.isEmpty,
-           let start = info[NotificationPayload.eventStartKey] as? Double {
-            await BackgroundRefresh.deleteEvent(eventID, start: Date(timeIntervalSince1970: start))
-            return
-        }
-        guard let action = ActionID(rawValue: response.actionIdentifier),
-              let taskName = info[NotificationPayload.taskKey] as? String, !taskName.isEmpty else { return }
-        let day = (info[NotificationPayload.dayKey] as? String).flatMap(LocalDate.init(isoString:))
-        await MainActor.run { BackgroundRefresh.performAction(action, taskName: taskName, day: day) }
-        await BackgroundRefresh.waitForPendingWork()
+        guard let responses = await notificationResponses() else { return }
+        await responses.handle(action: response.actionIdentifier, request: response.notification.request)
+    }
+
+    @MainActor private func notificationResponses() -> NotificationResponseHandler? {
+        guard case .success(let container) = AppContainer.shared else { return nil }
+        return container.notificationResponses
     }
 }
