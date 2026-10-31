@@ -16,7 +16,9 @@ final class AppModel {
     let services: AppServices
     let banners: BannerCenter
     let clock: Clock
-    let calendar: Calendar
+    /// Where the calendar comes from; `calendar` is its copy the screens observe, renewed by `timeDidChange`.
+    let calendarSource: CalendarSource
+    private(set) var calendar: Calendar
 
     private(set) var tasks: [TaskNote] = []
     /// The done folder's tasks, read when the Done list opens (`loadFiledTasks`).
@@ -52,11 +54,13 @@ final class AppModel {
     /// A settings change not written to the vault note yet.
     @ObservationIgnored var settingsNotePending = false
 
-    init(config: AppConfig, services: AppServices, banners: BannerCenter, clock: Clock, calendar: Calendar) {
+    init(config: AppConfig, services: AppServices, banners: BannerCenter, clock: Clock, calendar: CalendarSource) {
         self.config = config
         self.services = services
         self.banners = banners
         self.clock = clock
+        self.calendarSource = calendar
+        let calendar = calendar.current
         self.calendar = calendar
         let settings = services.settingsStore.load()
         self.settings = settings
@@ -69,6 +73,13 @@ final class AppModel {
 
     func context(at date: Date? = nil) -> DayContext {
         DayContext(now: date ?? clock.now, calendar: calendar, boundary: settings.day.boundary, energyHour: settings.day.energyHour)
+    }
+
+    /// The phone moved to another time zone or its clock jumped: the day is worked out again in the calendar as it is
+    /// now, and the widgets and the notifications follow (a full sync, as at launch).
+    func timeDidChange() async {
+        calendar = calendarSource.current
+        await sync(announce: false)
     }
 
     func plan(at date: Date, dayOffset: Int) -> DayPlan {

@@ -71,6 +71,6 @@ struct HabitGridEntryView: View {
         .containerBackground(for: .widget) { WidgetBackground(tokens: widgetTokens, light: .plateBackground) }
         .widgetURL(habit.flatMap { DeepLink.habit($0.name) } ?? DeepLink.habits)
         .environment(\.tokens, widgetTokens)
-        .environment(\.calendar, entry.source?.calendar ?? AppCalendar.make())
+        .appCalendar(entry.source?.calendar ?? AppCalendar.make())
     }
 }

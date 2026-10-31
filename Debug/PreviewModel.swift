@@ -6,13 +6,16 @@ import SwiftUI
 @MainActor
 enum PreviewModel {
     static func make(notifications: NotificationScheduling = SilentNotifications(),
-                     reminders: RemindersRepository = StaticRemindersRepository()) -> (model: AppModel, router: Router, config: AppConfig)? {
+                     reminders: RemindersRepository = StaticRemindersRepository(),
+                     calendar: CalendarSource = FixedCalendar(current: PreviewSamples.calendar),
+                     clock: Clock = FixedClock(now: PreviewSamples.context.now),
+                     tasks: [TaskNote] = PreviewSamples.tasks) -> (model: AppModel, router: Router, config: AppConfig)? {
         guard let config = try? AppConfig.load() else { return nil }
         let store = JSONFileStore(directory: FileManager.default.temporaryDirectory
             .appendingPathComponent("SuperPooperPreview-\(UUID().uuidString)"))
         let settingsStore = SettingsStore(store: store, defaults: config.defaultSettings)
         let services = AppServices(
-            vault: FixedVaultLocation(url: store.directory), tasks: InMemoryTaskRepository(tasks: PreviewSamples.tasks),
+            vault: FixedVaultLocation(url: store.directory), tasks: InMemoryTaskRepository(tasks: tasks),
             trash: VaultTrashRepository(location: FixedVaultLocation(url: store.directory), fileSystem: CoordinatedFileSystem(),
                                         noteExtension: config.rules.vault.noteExtension, vaultSettings: { settingsStore.load().vault }),
             settingsNote: VaultSettingsNote(location: FixedVaultLocation(url: store.directory), fileSystem: CoordinatedFileSystem(),
@@ -21,9 +24,8 @@ enum PreviewModel {
             settingsStore: settingsStore, dayStateStore: DayStateStore(store: store),
             snapshotStore: SnapshotStore(store: store), alertStateStore: AlertStateStore(store: store), widgets: NoWidgets(),
             notificationImage: NotificationImageStore(url: store.url(config.rules.notifications.imageFile), maxPixels: 1))
-        let model = AppModel(config: config, services: services, banners: BannerCenter(),
-                             clock: FixedClock(now: PreviewSamples.context.now), calendar: PreviewSamples.calendar)
-        model.setScanResult(VaultScanResult(tasks: PreviewSamples.tasks, fileProblems: [], conflicted: []))
+        let model = AppModel(config: config, services: services, banners: BannerCenter(), clock: clock, calendar: calendar)
+        model.setScanResult(VaultScanResult(tasks: tasks, fileProblems: [], conflicted: []))
         model.setSources(events: PreviewSamples.events, reminders: PreviewSamples.reminders)
         return (model, Router(), config)
     }

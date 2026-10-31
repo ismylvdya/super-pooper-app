@@ -12,6 +12,7 @@ final class AppContainer {
     let banners: BannerCenter
     let launch: LaunchOptions
     let eventKit: EventKitAccess
+    let calendar: LiveCalendar
 
     /// The single instance shared by the SwiftUI app and the UIKit delegate.
     static let shared: Result<AppContainer, ConfigError> = {
@@ -35,14 +36,15 @@ final class AppContainer {
     init(config: AppConfig, launch: LaunchOptions) {
         self.config = config
         self.launch = launch
-        let calendar = AppCalendar.make()
+        let calendar = LiveCalendar()
+        self.calendar = calendar
 
         let shared = JSONFileStore(directory: AppGroupContainer.directory())
         if launch.resetState {
             shared.remove(SettingsStore.fileName)
             shared.remove(DayStateStore.fileName)
         }
-        let clock = launch.clock(calendar: calendar)
+        let clock = launch.clock(calendar: calendar.current)
 
         let vaultLocation: VaultLocating = launch.vaultURL().map(FixedVaultLocation.init(url:))
             ?? BookmarkVaultLocation(store: shared)
@@ -138,6 +140,22 @@ final class AppContainer {
         applyLaunchOverrides()
         if let url = launch.openURL { router.handle(url) }
         observeCalendarChanges()
+        observeTimeChanges()
+    }
+
+    /// A new time zone (a flight, a manual change) or a clock that jumped: the app calendar is built again and the day,
+    /// the widgets and the notifications are worked out in it, without a relaunch.
+    private func observeTimeChanges() {
+        let model = self.model
+        let calendar = self.calendar
+        for name in [Notification.Name.NSSystemTimeZoneDidChange, UIApplication.significantTimeChangeNotification] {
+            Task { @MainActor in
+                for await _ in NotificationCenter.default.notifications(named: name) {
+                    calendar.refresh()
+                    await model.timeDidChange()
+                }
+            }
+        }
     }
 
     /// Calendar and Reminders edits made elsewhere (moved, deleted, completed) reach the timeline and the

@@ -1,4 +1,5 @@
 import Foundation
+import os
 @testable import SuperPooperApp
 
 /// Fixed time zone and calendar for every test: the user lives in Europe/Belgrade.
@@ -31,6 +32,34 @@ enum TestCalendar {
     static func context(_ day: String = wednesday, _ time: String = "13:25") -> DayContext {
         DayContext(now: date(day, time), calendar: calendar,
                    boundary: TestConfig.defaults.day.boundary, energyHour: TestConfig.defaults.day.energyHour)
+    }
+
+    /// The test calendar in another time zone (IANA name).
+    static func calendar(in zone: String) -> Calendar {
+        guard let timeZone = TimeZone(identifier: zone) else { preconditionFailure("No time zone \(zone)") }
+        var result = Self.calendar
+        result.timeZone = timeZone
+        return result
+    }
+}
+
+/// The app calendar of a phone that changes its time zone while the app runs (`LiveCalendar` with a zone set by the test).
+final class TravellingCalendar: CalendarSource {
+    private let zone: OSAllocatedUnfairLock<String>
+    private let live: LiveCalendar
+
+    init(_ zone: String) {
+        let box = OSAllocatedUnfairLock(initialState: zone)
+        self.zone = box
+        live = LiveCalendar { TestCalendar.calendar(in: box.withLock { $0 }) }
+    }
+
+    var current: Calendar { live.current }
+
+    /// The phone arrives in `zone`; the app hears of it (`NSSystemTimeZoneDidChange`) and rebuilds its calendar.
+    func fly(to zone: String) {
+        self.zone.withLock { $0 = zone }
+        live.refresh()
     }
 }
 

@@ -15,7 +15,7 @@ protocol NotificationScheduling: Sendable {
 }
 
 struct UserNotificationScheduler: NotificationScheduling {
-    let calendar: Calendar
+    let calendar: CalendarSource
     let icons: IconSet
     let bodyText: @Sendable (PlannedNotification.Kind) -> String
     /// The picture of habit notifications; nil = none.
@@ -120,7 +120,7 @@ struct UserNotificationScheduler: NotificationScheduling {
 
     private func request(for notification: PlannedNotification) -> UNNotificationRequest {
         let content = content(for: notification)
-        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: notification.fireDate)
+        let components = calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: notification.fireDate)
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
         return UNNotificationRequest(identifier: identifier(for: notification), content: content, trigger: trigger)
     }

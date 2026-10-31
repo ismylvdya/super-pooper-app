@@ -13,7 +13,7 @@ protocol RemindersRepository: Sendable {
 
 struct EventKitRemindersRepository: RemindersRepository {
     let eventKit: EventKitAccess
-    let calendar: Calendar
+    let calendar: CalendarSource
 
     var access: SourceAccess { eventKit.access(for: .reminder) }
 
@@ -37,7 +37,7 @@ struct EventKitRemindersRepository: RemindersRepository {
         let lists = eventKit.store.calendars(for: .reminder).filter { listIDs.contains($0.calendarIdentifier) }
         guard !lists.isEmpty else { return [] }
         let predicate = eventKit.store.predicateForReminders(in: lists)
-        let calendar = self.calendar
+        let calendar = self.calendar.current
         let reminders: [ReminderItem] = await withCheckedContinuation { continuation in
             eventKit.store.fetchReminders(matching: predicate) { found in
                 let items = (found ?? []).compactMap { reminder -> ReminderItem? in

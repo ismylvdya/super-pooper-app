@@ -78,7 +78,7 @@ struct RootView: View {
         .environment(\.physicalBottom, physicalBottom)
         .environment(\.timelineBell, model.settings.timeline.bellStyle)
         .environment(\.chipOrder, RowChipKind.ordered(model.settings.pool.chipOrder))
-        .environment(\.calendar, model.calendar)
+        .appCalendar(model.calendar)
         // The user's colors and opacity sit closest to the views, over the bundled tokens of `appConfig`.
         .environment(\.tokens, tokens)
         .environment(model)
@@ -102,7 +102,8 @@ struct RootView: View {
                 break
             }
         }
-        .task(id: model.context().today) { await model.syncWhenTheDayEnds() }
+        // Waits again when the day turns or its end moves (a new time zone).
+        .task(id: model.context().dayEnd) { await model.syncWhenTheDayEnds() }
         .onOpenURL { container.router.handle($0) }
     }
 

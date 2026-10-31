@@ -8,10 +8,11 @@ final class SandboxNote {
     let repository: VaultTaskRepository
     private(set) var task: TaskNote
 
-    init(_ name: String, sandbox: VaultSandbox? = nil, ubiquity: UbiquityService = FakeUbiquityService()) async throws {
+    init(_ name: String, sandbox: VaultSandbox? = nil, ubiquity: UbiquityService = FakeUbiquityService(),
+         calendar: CalendarSource = FixedCalendar(current: TestCalendar.calendar)) async throws {
         let sandbox = try sandbox ?? VaultSandbox.make()
         self.sandbox = sandbox
-        repository = sandbox.repository(ubiquity: ubiquity)
+        repository = sandbox.repository(ubiquity: ubiquity, calendar: calendar)
         task = try #require(try await repository.scan().tasks.first { $0.name == name })
     }
 

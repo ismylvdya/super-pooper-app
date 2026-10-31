@@ -1,21 +1,22 @@
 import Foundation
 
 /// Writes field changes into frontmatter, one key per change, plus `date_modified`
-/// (formatted like TaskNotes: `2026-10-22T18:01:02.456+02:00`). Everything else stays untouched.
-/// List changes are deltas applied to the lists as they are in the file right now.
+/// (formatted like TaskNotes: `2026-10-22T18:01:02.456+02:00`, in the phone's zone at the time of writing).
+/// Everything else stays untouched. List changes are deltas applied to the lists as they are in the file right now.
 struct TaskNoteWriter: Sendable {
     let mapping: FieldMapping
-    let timeZone: TimeZone
+    let calendar: CalendarSource
     private let settings: ItemSettingsProperty
 
-    init(mapping: FieldMapping, timeZone: TimeZone) {
+    init(mapping: FieldMapping, calendar: CalendarSource) {
         self.mapping = mapping
-        self.timeZone = timeZone
+        self.calendar = calendar
         settings = ItemSettingsProperty(mapping: mapping)
     }
 
     func apply(_ changes: [TaskFieldChange], to document: inout FrontmatterDocument, now: Date) {
         let keys = mapping.fields
+        let timeZone = calendar.current.timeZone
         for change in changes {
             switch change {
             case .status(let status):
@@ -174,7 +175,7 @@ struct TaskNoteWriter: Sendable {
     /// The frontmatter of a brand-new task note, in TaskNotes field order; the body is empty.
     func newNote(tag: String, status: TaskStatus, now: Date) -> String {
         let keys = mapping.fields
-        let stamp = YAMLValue.scalar(ISO8601.formatWithMilliseconds(now, timeZone: timeZone), quoted: false)
+        let stamp = YAMLValue.scalar(ISO8601.formatWithMilliseconds(now, timeZone: calendar.current.timeZone), quoted: false)
         let entries: [(String, YAMLValue)] = [
             (keys.tags, .list([.string(tag)])),
             (keys.status, .string(mapping.raw(status))),

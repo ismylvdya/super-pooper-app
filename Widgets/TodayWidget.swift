@@ -68,6 +68,6 @@ struct TodayWidgetEntryView: View {
         .widgetURL(DeepLink.today)
         .environment(\.tokens, widgetTokens)
         .environment(\.timelineBell, (entry.source?.settings ?? BundledConfig.settings).timeline.bellStyle)
-        .environment(\.calendar, entry.source?.calendar ?? AppCalendar.make())
+        .appCalendar(entry.source?.calendar ?? AppCalendar.make())
     }
 }

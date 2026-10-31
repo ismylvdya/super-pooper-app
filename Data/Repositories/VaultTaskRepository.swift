@@ -19,15 +19,15 @@ actor VaultTaskRepository: TaskRepository {
     private var seenModification: [String: Date] = [:]
 
     init(location: VaultLocating, fileSystem: NoteFileSystem, ubiquity: UbiquityService, mapping: FieldMapping,
-         calendar: Calendar, rules: RulesConfig.Vault, backups: BackupService, clock: Clock,
+         calendar: CalendarSource, rules: RulesConfig.Vault, backups: BackupService, clock: Clock,
          vaultSettings: @escaping @Sendable () -> AppSettings.Vault) {
         self.location = location
         self.fileSystem = fileSystem
         self.ubiquity = ubiquity
-        self.writer = TaskNoteWriter(mapping: mapping, timeZone: calendar.timeZone)
+        self.writer = TaskNoteWriter(mapping: mapping, calendar: calendar)
         self.mapping = mapping
         let readerFactory: @Sendable (AppSettings.Vault) -> TaskNoteReader = {
-            TaskNoteReader(mapping: mapping, taskTag: $0.taskTag, calendar: calendar)
+            TaskNoteReader(mapping: mapping, taskTag: $0.taskTag, calendar: calendar.current)
         }
         self.readerFactory = readerFactory
         self.scanner = { settings in
