@@ -49,4 +49,10 @@ struct TaskListFilterTests {
         #expect(done.contents(of: [], filed: filed, query: "earlier", rules: rules).count == 1)
         #expect(TaskListFilter(statuses: [.someday]).contents(of: tasks, filed: filed, query: "", rules: rules).filed.isEmpty)
     }
+
+    /// A list of one planning level says it in its title; a list of several titles each group by its level.
+    @Test func onlyAListOfSeveralLevelsNamesThem() {
+        #expect(TaskListFilter(statuses: [.someday]).contents(of: tasks, filed: [], query: "", rules: rules).namesLevels == false)
+        #expect(TaskListFilter().contents(of: tasks, filed: [], query: "", rules: rules).namesLevels)
+    }
 }

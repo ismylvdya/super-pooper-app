@@ -103,7 +103,7 @@ struct TaskEventsSection: View {
                 .accessibilityIdentifier("event.pick.\(field.rawValue)")
         }
         if let link {
-            let resolved = EventLinkResolver(events: model.events, calendar: model.calendar).resolve(link)
+            let resolved = model.event(for: link)
             HStack(spacing: tokens.space(.iconTextGap)) {
                 if let resolved { SourceDot(hex: resolved.colorHex) }
                 TitleDetailLabel(detail: Text(resolved == nil ? L10n.string("taskPage.eventNotFound")

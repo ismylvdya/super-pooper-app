@@ -31,7 +31,8 @@ struct TaskListFilter: Hashable, Sendable {
     func contents(of tasks: [TaskItem], filed: [TaskItem], query: String, rules: DayRules) -> TaskListContents {
         let filed = showsFiled ? filed.filter { SearchMatcher.matches($0.name, query) } : []
         return TaskListContents(groups: groups(of: tasks, query: query, rules: rules),
-                                filed: filed.sorted { ($0.completedDate?.isoString ?? "") > ($1.completedDate?.isoString ?? "") })
+                                filed: filed.sorted { ($0.completedDate?.isoString ?? "") > ($1.completedDate?.isoString ?? "") },
+                                namesLevels: statuses.count > 1)
     }
 }
 
@@ -39,6 +40,8 @@ struct TaskListFilter: Hashable, Sendable {
 struct TaskListContents: Sendable {
     let groups: [(status: TaskStatus, tasks: [TaskItem])]
     let filed: [TaskItem]
+    /// The groups are titled by their planning level; a list of one level already says it in its title.
+    let namesLevels: Bool
 
     var count: Int { groups.reduce(0) { $0 + $1.tasks.count } + filed.count }
     var isEmpty: Bool { count == 0 }

@@ -18,12 +18,10 @@ struct TaskListScreen: View {
 
     var body: some View {
         let list = model.config.lists.list(listID)
-        let filter = list?.filter ?? TaskListFilter()
-        let contents = model.listContents(filter, query: query)
+        let contents = model.listContents(listID, query: query)
         List {
             ForEach(contents.groups, id: \.status) { group in
-                // A list of one planning level already says it in its title.
-                if filter.statuses.count > 1 { ListGroupHeader(title: Text(verbatim: StatusText.title(group.status))) } else { ListGroupGap() }
+                if contents.namesLevels { ListGroupHeader(title: Text(verbatim: StatusText.title(group.status))) } else { ListGroupGap() }
                 ForEach(Array(group.tasks.enumerated()), id: \.element.name) { index, task in
                     row(task, group: StatusText.title(group.status), isFirst: index == 0, isLast: index == group.tasks.count - 1)
                 }
@@ -44,10 +42,10 @@ struct TaskListScreen: View {
                 SearchBarButton(isSearching: $isSearching, accessibilityID: "list.search")
             }
         }
-        .task { if filter.showsFiled { await model.loadFiledTasks() } }
+        .task { await model.openList(listID) }
         .refreshable {
             await model.sync(announce: true)
-            if filter.showsFiled { await model.loadFiledTasks() }
+            await model.openList(listID)
         }
         .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
     }

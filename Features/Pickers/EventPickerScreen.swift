@@ -10,18 +10,19 @@ struct EventPickerScreen: View {
     @State private var query = ""
 
     var body: some View {
+        let days = model.pickableEvents(matching: query)
         NavigationStack {
             List {
-                ForEach(days, id: \.self) { day in
+                ForEach(days, id: \.day) { group in
                     Section {
-                        ForEach(events(on: day)) { event in
+                        ForEach(group.events) { event in
                             Button {
                                 onPick(event)
                                 dismiss()
                             } label: { row(event) }
                         }
                     } header: {
-                        Text(DateText.format(day, .dateTime.weekday(.wide).day().month(.wide), calendar: model.calendar))
+                        Text(DateText.format(group.day, .dateTime.weekday(.wide).day().month(.wide), calendar: model.calendar))
                     }
                 }
             }
@@ -47,20 +48,5 @@ struct EventPickerScreen: View {
                 Text(event.title).foregroundStyle(tokens.color(.primaryText))
             }
         }
-    }
-
-    private var candidates: [CalendarEvent] {
-        let context = model.context()
-        let end = context.today.adding(days: model.config.rules.eventLinks.pickerDaysAhead).startDate(in: model.calendar)
-        return model.events.filter { $0.end > context.now && $0.start < end }
-            .filter { query.isEmpty || $0.title.localizedCaseInsensitiveContains(query) }
-    }
-
-    private var days: [LocalDate] {
-        Array(Set(candidates.map { LocalDate($0.start, in: model.calendar) })).sorted()
-    }
-
-    private func events(on day: LocalDate) -> [CalendarEvent] {
-        candidates.filter { LocalDate($0.start, in: model.calendar) == day }
     }
 }

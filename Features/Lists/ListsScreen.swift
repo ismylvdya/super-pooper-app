@@ -13,9 +13,10 @@ struct ListsScreen: View {
             ForEach(model.config.lists.groups) { group in
                 PlateSection(header: LocalizedStringKey(group.title)) {
                     ForEach(group.lists) { list in
-                        let count = model.listContents(list.filter, query: "").count
                         NavigationLink(value: Route.list(list.id)) {
-                            PlateRow(icon: list.icon, title: LocalizedStringKey(list.title)) { DisclosureAccessory(value: "\(count)") }
+                            PlateRow(icon: list.icon, title: LocalizedStringKey(list.title)) {
+                                DisclosureAccessory(value: "\(model.listCount(list.id))")
+                            }
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("lists.\(list.id)")
