@@ -75,7 +75,7 @@ struct VaultSandbox {
                     calendar: CalendarSource = FixedCalendar(current: TestCalendar.calendar)) -> VaultTaskRepository {
         let backupClock = TickingClock(start: now, step: 1)
         let backupService = BackupService(directory: backups, keepCount: keepBackups, fileSystem: fileSystem,
-                                          clock: { backupClock.now })
+                                          clock: { backupClock.now }, calendar: calendar)
         let settings = TestConfig.defaults.vault
         let rules = RulesConfig.Vault(downloadTimeoutSeconds: downloadTimeout, downloadPollSeconds: TestConfig.rules.vault.downloadPollSeconds,
                                       noteExtension: TestConfig.rules.vault.noteExtension,

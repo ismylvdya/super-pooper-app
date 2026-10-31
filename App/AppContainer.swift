@@ -50,7 +50,7 @@ final class AppContainer {
         let settingsStore = SettingsStore(store: shared, defaults: config.defaultSettings)
         let fileSystem = CoordinatedFileSystem()
         let backups = BackupService(directory: shared.url("Backups"), keepCount: config.rules.backups.keepCount,
-                                    fileSystem: fileSystem, clock: { clock.now })
+                                    fileSystem: fileSystem, clock: { clock.now }, calendar: calendar)
         let tasks = VaultTaskRepository(location: vaultLocation, fileSystem: fileSystem, ubiquity: ICloudUbiquityService(),
                                         mapping: config.fieldMapping, calendar: calendar, rules: config.rules.vault,
                                         backups: backups, clock: clock,

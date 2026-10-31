@@ -138,9 +138,33 @@ struct NoteOperationsTests {
     @Test func backupFoldersAreNamedInUTC() throws {
         let sandbox = try VaultSandbox.make()
         let moment = try #require(ISO8601.parse("2026-10-21T00:30:00Z"))
-        let service = BackupService(directory: sandbox.backups, keepCount: 1, fileSystem: CoordinatedFileSystem(), clock: { moment })
+        let service = BackupService(directory: sandbox.backups, keepCount: 1, fileSystem: CoordinatedFileSystem(), clock: { moment },
+                                    calendar: FixedCalendar(current: TestCalendar.calendar))
         let folder = try #require(try service.backup([sandbox.url(of: "Найти отвёртку")], reason: "first"))
-        #expect(folder.lastPathComponent == "20261021-003000-000-first")
+        #expect(folder.lastPathComponent == "20261021T003000.000Z-first")
+    }
+
+    /// Folders of older versions are named by the phone's clock. In Jakarta just after midnight their date is already
+    /// the 22nd while the new UTC names still say the 21st: by name the newest backup sorted oldest and was rotated away.
+    @Test func rotationGoesByTheMomentInTheNameOfBothKinds() throws {
+        let sandbox = try VaultSandbox.make()
+        let jakarta = FixedCalendar(current: TestCalendar.calendar(in: "Asia/Jakarta"))
+        for legacy in ["20261022-003000-000-older", "20261022-010000-000-newer"] {
+            try FileManager.default.createDirectory(at: sandbox.backups.appendingPathComponent(legacy), withIntermediateDirectories: true)
+        }
+        let moment = try #require(ISO8601.parse("2026-10-21T18:30:00Z"))
+        let service = BackupService(directory: sandbox.backups, keepCount: 2, fileSystem: CoordinatedFileSystem(), clock: { moment },
+                                    calendar: jakarta)
+        try service.backup([sandbox.url(of: "Найти отвёртку")], reason: "newest")
+        #expect(try backupFolders(sandbox) == ["20261021T183000.000Z-newest", "20261022-010000-000-newer"])
+    }
+
+    @Test func aFolderNameGivesTheMomentOfTheBackup() throws {
+        let belgrade = TestCalendar.timeZone
+        #expect(BackupFolderName.moment(of: "20261021T003000.250Z-delete", legacyZone: belgrade)
+                == ISO8601.parse("2026-10-21T00:30:00.250Z"))
+        #expect(BackupFolderName.moment(of: "20261021-023000-000-rename", legacyZone: belgrade) == ISO8601.parse("2026-10-21T00:30:00Z"))
+        #expect(BackupFolderName.moment(of: "notes", legacyZone: belgrade) == nil)
     }
 
     @Test func obsidianLinkOpensTheNoteInTheVault() async throws {
