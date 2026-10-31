@@ -7,7 +7,7 @@ import Testing
 /// Belgrade only; these repeat the essentials far east, far west and across the date line.
 @Suite("Time zones")
 struct TimeZoneMatrixTests {
-    static let zones = ["Europe/Belgrade", "Asia/Jakarta", "America/New_York", "Pacific/Kiritimati", "Pacific/Pago_Pago"]
+    static let zones = ["Europe/Belgrade", "Asia/Jakarta", "America/New_York", "Pacific/Kiritimati", "Pacific/Pago_Pago", "UTC"]
 
     private func context(_ zone: String, _ day: String = TestCalendar.wednesday, _ time: String = "08:00") -> DayContext {
         let calendar = TestCalendar.calendar(in: zone)
@@ -55,6 +55,9 @@ struct TimeZoneMatrixTests {
         #expect(try note.text().contains("due: 2026-11-06T09:00\n"))
         #expect(try await note.reload().due == TaskDue("2026-11-06T09:00"))
         let offset = ISO8601.formatWithMilliseconds(note.sandbox.now, timeZone: calendar.timeZone).suffix(6)
-        #expect(try note.text().contains("date_modified: ") && note.text().contains("\(offset)\n"))
+        let stamp = try #require(try note.text().split(separator: "\n").first { $0.hasPrefix("date_modified: ") })
+        #expect(stamp.hasSuffix(offset))
+        // An offset as TaskNotes writes it, `+00:00` at UTC+0 too, never `Z`.
+        #expect(stamp.suffix(6).wholeMatch(of: #/[+-]\d\d:\d\d/#) != nil)
     }
 }

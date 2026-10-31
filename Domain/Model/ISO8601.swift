@@ -9,7 +9,7 @@ enum ISO8601 {
         formatters.parse(text)
     }
 
-    /// `2026-10-23T19:00:00+02:00`
+    /// `2026-10-23T19:00:00+02:00`. At UTC+0 the offset is `+00:00`, as TaskNotes writes it, never `Z`.
     static func format(_ date: Date, timeZone: TimeZone) -> String {
         formatters.format(date, options: [.withInternetDateTime], timeZone: timeZone)
     }
@@ -45,7 +45,8 @@ private final class FormatterCache: @unchecked Sendable {
                 return formatter
             }()
             writers[key] = formatter
-            return formatter.string(from: date)
+            let text = formatter.string(from: date)
+            return text.hasSuffix("Z") ? text.dropLast() + "+00:00" : text
         }
     }
 }

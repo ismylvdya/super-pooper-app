@@ -202,7 +202,7 @@ partial_instances: [ ... ]   # дни с Partially (они же есть в comp
 twice_instances: [ ... ]     # дни с Twice (они же есть в complete_instances)
 completed_date: 2026-10-23   # ставится при отметке обычной задачи вместе с status: done
 date_created: 2026-10-20T09:12:44.123+02:00
-date_modified: 2026-10-22T18:01:02.456+02:00         # обновляется при каждой записи
+date_modified: 2026-10-22T18:01:02.456+02:00         # обновляется при каждой записи; в UTC+0 — +00:00, не Z
 ---
 Текст заметки.
 ```

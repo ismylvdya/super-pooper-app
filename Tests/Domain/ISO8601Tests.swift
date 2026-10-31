@@ -14,6 +14,17 @@ struct ISO8601Tests {
         #expect(ISO8601.format(moment, timeZone: TestCalendar.timeZone) == "2026-10-21T13:25:00+02:00")
     }
 
+    /// TaskNotes writes `+00:00` at UTC+0 (London in winter, Reykjavík, UTC itself); the formatter alone wrote `Z`.
+    @Test func aZeroOffsetIsWrittenAsTaskNotesWritesIt() throws {
+        let utc = try #require(TimeZone(identifier: "UTC"))
+        let london = try #require(TimeZone(identifier: "Europe/London"))
+        let winter = TestCalendar.date("2026-12-02", "13:25")
+        #expect(ISO8601.format(moment, timeZone: utc) == "2026-10-21T11:25:00+00:00")
+        #expect(ISO8601.formatWithMilliseconds(moment, timeZone: utc) == "2026-10-21T11:25:00.000+00:00")
+        #expect(ISO8601.formatWithMilliseconds(winter, timeZone: london) == "2026-12-02T12:25:00.000+00:00")
+        #expect(ISO8601.parse("2026-10-21T11:25:00.000+00:00") == moment)
+    }
+
     @Test func parsingFromManyTasksAtOnceAgrees() async {
         let texts = (0..<200).map { "2026-10-21T13:25:\(String(format: "%02d", $0 % 60)).\(String(format: "%03d", $0))+02:00" }
         let parsed = await withTaskGroup(of: (Int, Date?).self) { group in
