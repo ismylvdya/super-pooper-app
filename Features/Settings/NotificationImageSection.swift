@@ -18,7 +18,7 @@ struct NotificationImageSection: View {
                     get: { isShown },
                     set: { value in
                         model.updateSettings { $0.habits.showsNotificationPicture = value }
-                        Task { await model.rescheduleNotifications(context: model.context()) }
+                        Task { await model.replanWithNotificationPicture() }
                     }
                 ))
                 .labelsHidden()
@@ -50,7 +50,7 @@ struct NotificationImageSection: View {
                 get: { model.settings.habits.notificationUsesHabitColor },
                 set: { value in
                     model.updateSettings { $0.habits.notificationUsesHabitColor = value }
-                    Task { await model.rescheduleNotifications(context: model.context()) }
+                    Task { await model.replanWithNotificationPicture() }
                 }
             ))
             .labelsHidden()

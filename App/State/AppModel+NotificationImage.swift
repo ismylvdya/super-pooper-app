@@ -18,4 +18,11 @@ extension AppModel {
         }
         await rescheduleNotifications(context: context())
     }
+
+    /// A picture setting changed: the notifications planned from now on carry it. The picture is drawn from the settings
+    /// file, so the change is written first.
+    func replanWithNotificationPicture() async {
+        await flushSettings()
+        await rescheduleNotifications(context: context())
+    }
 }
