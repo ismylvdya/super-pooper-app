@@ -63,7 +63,7 @@ struct TaskListScreen: View {
                     TaggedTaskName(name: task.name)
                     Spacer(minLength: 0)
                     if let day = task.completedDate {
-                        Text(day.startDate(in: model.calendar).formatted(date: .abbreviated, time: .omitted))
+                        Text(DateText.format(day, Date.FormatStyle(date: .abbreviated, time: .omitted), calendar: model.calendar))
                             .font(tokens.font(.caption)).foregroundStyle(tokens.color(.secondaryText))
                     }
                 }

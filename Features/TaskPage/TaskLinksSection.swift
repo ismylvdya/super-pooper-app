@@ -110,7 +110,8 @@ struct TaskEventsSection: View {
             HStack(spacing: tokens.space(.iconTextGap)) {
                 if let resolved { SourceDot(hex: resolved.colorHex) }
                 TitleDetailLabel(detail: Text(resolved == nil ? L10n.string("taskPage.eventNotFound")
-                                                              : (resolved?.start ?? link.start).formatted(date: .abbreviated, time: .shortened)),
+                                                              : DateText.format(resolved?.start ?? link.start, Date.FormatStyle(date: .abbreviated, time: .shortened),
+                                                                               calendar: model.calendar)),
                                  detailTint: resolved == nil ? tokens.color(.problem) : nil) {
                     Text(link.title)
                 }

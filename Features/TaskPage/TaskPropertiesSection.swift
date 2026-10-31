@@ -78,11 +78,8 @@ struct DueEditor: View {
         }
         if let due = task.due {
             PlateRow(icon: nil, title: "taskPage.due.date", indent: true) {
-                DatePicker("taskPage.due.date", selection: Binding(
-                    get: { due.date(in: model.calendar) },
-                    set: { save(TaskDue(day: LocalDate($0, in: model.calendar), time: due.time)) }
-                ), displayedComponents: .date)
-                .labelsHidden()
+                DayField("taskPage.due.date", day: Binding(get: { due.day }, set: { save(TaskDue(day: $0, time: due.time)) }))
+                    .labelsHidden()
             }
             PlateRow(icon: nil, title: "taskPage.due.hasTime", info: "info.taskPage.time", indent: true) {
                 Toggle("taskPage.due.hasTime", isOn: Binding(
@@ -92,12 +89,8 @@ struct DueEditor: View {
             }
             if let time = due.time {
                 PlateRow(icon: nil, title: "taskPage.due.time", indent: true) {
-                    DatePicker("taskPage.due.time", selection: Binding(
-                        get: { due.day.startDate(in: model.calendar, offset: time) },
-                        set: { date in
-                            save(TaskDue(day: due.day, time: LocalTime(date, in: model.calendar)))
-                        }
-                    ), displayedComponents: .hourAndMinute)
+                    TimeField("taskPage.due.time", time: Binding(get: { time }, set: { save(TaskDue(day: due.day, time: $0)) }),
+                              on: due.day)
                     .labelsHidden()
                 }
             }

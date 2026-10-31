@@ -152,6 +152,8 @@ struct LocalTime: Hashable, Comparable, Codable, Sendable, CustomStringConvertib
     let minute: Int
 
     static let midnight = LocalTime(hour: 0, minute: 0)!
+    /// Half a day from either neighbouring date: a day kept as noon stays that day even read a few hours off.
+    static let noon = LocalTime(hour: 12, minute: 0)!
 
     init?(hour: Int, minute: Int) {
         guard (0...23).contains(hour), (0...59).contains(minute) else { return nil }

@@ -21,7 +21,7 @@ struct EventPickerScreen: View {
                             } label: { row(event) }
                         }
                     } header: {
-                        Text(day.startDate(in: model.calendar).formatted(.dateTime.weekday(.wide).day().month(.wide)))
+                        Text(DateText.format(day, .dateTime.weekday(.wide).day().month(.wide), calendar: model.calendar))
                     }
                 }
             }
@@ -43,7 +43,7 @@ struct EventPickerScreen: View {
     private func row(_ event: CalendarEvent) -> some View {
         HStack(spacing: tokens.space(.iconTextGap)) {
             SourceDot(hex: event.colorHex)
-            TitleDetailLabel(detail: Text(event.isAllDay ? L10n.string("picker.event.allDay") : TimeRangeText.format(event.start, event.end))) {
+            TitleDetailLabel(detail: Text(event.isAllDay ? L10n.string("picker.event.allDay") : TimeRangeText.format(event.start, event.end, calendar: model.calendar))) {
                 Text(event.title).foregroundStyle(tokens.color(.primaryText))
             }
         }

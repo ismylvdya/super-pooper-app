@@ -216,7 +216,7 @@ struct ReviewRow: View {
             Chip(icon: .due, text: task.due.map { DueText.format($0, context: context) }, isOn: task.due != nil)
         }
         .sheet(isPresented: $isPickingDate) {
-            DueDateSheet(due: task.due ?? TaskDue(day: today, time: rules.editing.defaultTime), calendar: model.calendar) { setDue($0) }
+            DueDateSheet(due: task.due ?? TaskDue(day: today, time: rules.editing.defaultTime)) { setDue($0) }
         }
     }
 

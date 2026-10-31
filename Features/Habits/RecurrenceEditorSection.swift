@@ -28,10 +28,8 @@ struct RecurrenceEditorSection: View {
             if draft.frequency == .weekly { weekdayRow(draft) }
             if draft.frequency == .monthly { monthlyRows(draft) }
             PlateRow(icon: nil, title: "recurrenceEditor.starts", indent: true) {
-                DatePicker("recurrenceEditor.starts", selection: Binding(
-                    get: { draft.start.startDate(in: model.calendar) },
-                    set: { date in change { $0.start = LocalDate(date, in: model.calendar) } }
-                ), displayedComponents: .date).labelsHidden()
+                DayField("recurrenceEditor.starts", day: Binding(get: { draft.start }, set: { day in change { $0.start = day } }))
+                    .labelsHidden()
             }
             endRows(draft)
         }
@@ -115,10 +113,8 @@ struct RecurrenceEditorSection: View {
             EmptyView()
         case .until(let day):
             PlateRow(icon: nil, title: "recurrenceEditor.endDate", indent: true) {
-                DatePicker("recurrenceEditor.endDate", selection: Binding(
-                    get: { day.startDate(in: model.calendar) },
-                    set: { date in change { $0.end = .until(LocalDate(date, in: model.calendar)) } }
-                ), displayedComponents: .date).labelsHidden()
+                DayField("recurrenceEditor.endDate", day: Binding(get: { day }, set: { value in change { $0.end = .until(value) } }))
+                    .labelsHidden()
             }
         case .count(let count):
             PlateRow(icon: nil, title: "recurrenceEditor.endCount", indent: true) {

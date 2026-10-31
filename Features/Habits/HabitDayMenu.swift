@@ -10,7 +10,7 @@ struct HabitDayMenu: View {
 
     var body: some View {
         if showsDate {
-            Text(day.startDate(in: model.calendar).formatted(.dateTime.day().month(.abbreviated).year()))
+            Text(DateText.format(day, .dateTime.day().month(.abbreviated).year(), calendar: model.calendar))
         }
         let state = HabitInstances(task: habit).mark(on: day).map(DayItemState.marked) ?? .open
         ActionMenuContent(menu: .habitDay, item: DayItem(task: habit, state: state, blockers: [], problems: [])) { action in

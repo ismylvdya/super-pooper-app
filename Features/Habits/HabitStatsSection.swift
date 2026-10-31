@@ -58,8 +58,8 @@ struct HabitStatsSection: View {
 
     private func range(_ streak: HabitStats.Streak) -> String {
         let style = Date.FormatStyle().day().month(.abbreviated)
-        return L10n.format("common.range", streak.first.startDate(in: model.calendar).formatted(style),
-                           streak.last.startDate(in: model.calendar).formatted(style))
+        return L10n.format("common.range", DateText.format(streak.first, style, calendar: model.calendar),
+                           DateText.format(streak.last, style, calendar: model.calendar))
     }
 }
 

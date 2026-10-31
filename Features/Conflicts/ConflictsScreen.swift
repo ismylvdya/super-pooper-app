@@ -69,6 +69,6 @@ struct ConflictVersionsScreen: View {
     }
 
     private func detail(_ version: NoteVersion) -> String {
-        version.modified.map { L10n.format("conflicts.saved", $0.formatted(date: .abbreviated, time: .standard)) } ?? ""
+        version.modified.map { L10n.format("conflicts.saved", DateText.format($0, Date.FormatStyle(date: .abbreviated, time: .standard), calendar: model.calendar)) } ?? ""
     }
 }

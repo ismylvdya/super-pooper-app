@@ -1,16 +1,18 @@
 import SwiftUI
 
-/// The system date (and optional time) picker for a task date.
+/// The system date (and optional time) picker for a task date. It keeps the wall-clock day and time it shows, so a
+/// time zone change while it is open does not move them.
 struct DueDateSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
-    @State private var date: Date
+    @State private var day: LocalDate
+    @State private var time: LocalTime
     @State private var hasTime: Bool
     let onSave: (TaskDue?) -> Void
 
-    init(due: TaskDue, calendar: Calendar, onSave: @escaping (TaskDue?) -> Void) {
-        _date = State(initialValue: due.date(in: calendar))
+    init(due: TaskDue, onSave: @escaping (TaskDue?) -> Void) {
+        _day = State(initialValue: due.day)
+        _time = State(initialValue: due.time ?? .midnight)
         _hasTime = State(initialValue: due.time != nil)
         self.onSave = onSave
     }
@@ -18,11 +20,11 @@ struct DueDateSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                DatePicker("taskPage.due.date", selection: $date, displayedComponents: .date)
+                DayField("taskPage.due.date", day: $day)
                     .datePickerStyle(.graphical)
                 Toggle("taskPage.due.hasTime", isOn: $hasTime)
                 if hasTime {
-                    DatePicker("taskPage.due.time", selection: $date, displayedComponents: .hourAndMinute)
+                    TimeField("taskPage.due.time", time: $time, on: day)
                 }
             }
             .navigationTitle(Text("review.due.exact"))
@@ -37,8 +39,7 @@ struct DueDateSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("common.save") {
-                        let time = hasTime ? LocalTime(date, in: model.calendar) : nil
-                        onSave(TaskDue(day: LocalDate(date, in: model.calendar), time: time))
+                        onSave(TaskDue(day: day, time: hasTime ? time : nil))
                         dismiss()
                     }
                     .font(tokens.font(.emptyAction))

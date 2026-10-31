@@ -43,7 +43,8 @@ struct SearchScreen: View {
                                 SourceDot(hex: event.colorHex)
                                 Text(event.title).foregroundStyle(tokens.color(.primaryText))
                                 Spacer()
-                                Text(event.start.formatted(date: .abbreviated, time: event.isAllDay ? .omitted : .shortened))
+                                Text(DateText.format(event.start, Date.FormatStyle(date: .abbreviated, time: event.isAllDay ? .omitted : .shortened),
+                                                     calendar: model.calendar))
                                     .font(tokens.font(.caption)).foregroundStyle(tokens.color(.secondaryText))
                             }
                         }

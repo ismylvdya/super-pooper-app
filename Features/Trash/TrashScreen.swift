@@ -50,7 +50,7 @@ private struct TrashRow: View {
                 VStack(alignment: .leading, spacing: tokens.space(.titleDetailGap)) {
                     Text(note.name).foregroundStyle(tokens.color(.primaryText)).multilineTextAlignment(.leading)
                     if let date = note.trashedAt {
-                        Text(date.formatted(date: .abbreviated, time: .shortened))
+                        Text(DateText.format(date, Date.FormatStyle(date: .abbreviated, time: .shortened), calendar: model.calendar))
                             .font(tokens.font(.caption)).foregroundStyle(tokens.color(.secondaryText))
                     }
                 }

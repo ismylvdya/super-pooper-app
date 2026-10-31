@@ -63,6 +63,8 @@ SuperPooper — iPhone-приложение-оболочка над тремя �
 | Высота часа и положение момента на таймлайне | `TimelineWindow.hourHeight(fitting:)`, `offset(of:hourHeight:)`; где открыть таймлайн — `TimelineOpening` |
 | Порядок по имени и поиск | `NameOrder`, `SearchMatcher` |
 | Названия дней недели и месяцев | `Weekday.name(_:in:)`, `MonthName.initial(_:in:)` |
+| Дата или время текстом (в поясе календаря приложения, не системном) | `DateText.format(_:_:calendar:)` |
+| Системный пикер дня или времени для «настенных» `LocalDate` / `LocalTime` | `DayField`, `TimeField` (`Features/Common/WallClockPickers.swift`): рисуют и переводят через один календарь окружения, день хранится как полдень — выбранное 6 ноября пишется как 6 ноября при любой истории поясов |
 | Ссылки «открыть в Calendar / Reminders» | `rules.eventLinks.calendarURL(at:)`, `reminderURL(id:)` |
 
 ## 3. Карта конфигов: чтобы изменить X — правь Y

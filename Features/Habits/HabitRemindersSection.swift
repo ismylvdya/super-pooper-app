@@ -13,7 +13,7 @@ struct HabitRemindersSection: View {
         PlateSection(header: "taskPage.reminders", info: "info.taskPage.reminders", hint: times.isEmpty ? "taskPage.reminders.none" : nil) {
             ForEach(Array(times.enumerated()), id: \.offset) { index, time in
                 PlateRow(icon: index == 0 ? .reminder : nil, title: "taskPage.reminders.time") {
-                    DatePicker("taskPage.reminders.time", selection: binding(at: index), displayedComponents: .hourAndMinute)
+                    TimeField("taskPage.reminders.time", time: binding(at: index), on: model.context().today)
                         .labelsHidden()
                     RemoveButton(label: "taskPage.reminders.remove") {
                         save(times.enumerated().filter { $0.offset != index }.map(\.element))
@@ -36,12 +36,12 @@ struct HabitRemindersSection: View {
         return LocalTime(minutesSinceMidnight: last.minutesSinceMidnight + rules.editing.nextReminderGapMinutes)
     }
 
-    private func binding(at index: Int) -> Binding<Date> {
+    private func binding(at index: Int) -> Binding<LocalTime> {
         Binding(
-            get: { model.context().today.startDate(in: model.calendar, offset: times[index]) },
-            set: { date in
+            get: { times[index] },
+            set: { time in
                 var updated = times
-                updated[index] = LocalTime(date, in: model.calendar)
+                updated[index] = time
                 save(updated)
             }
         )

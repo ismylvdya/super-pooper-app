@@ -11,7 +11,7 @@ enum DueText {
         case 1: dayText = L10n.string("due.tomorrow")
         case -1: dayText = L10n.string("due.yesterday")
         case 2...6: dayText = due.day.weekday.name(.short, in: calendar)
-        default: dayText = due.day.startDate(in: calendar).formatted(.dateTime.month(.abbreviated).day())
+        default: dayText = DateText.format(due.day, .dateTime.month(.abbreviated).day(), calendar: calendar)
         }
         guard let time = due.time else { return dayText }
         return distance == 0 ? time.string : L10n.format("due.dayAndTime", dayText, time.string)

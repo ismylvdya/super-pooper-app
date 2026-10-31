@@ -3,6 +3,7 @@ import SwiftUI
 /// A calendar event: tinted fill with the calendar color stripe (distinct from tasks).
 struct TimelineEventBlock: View {
     @Environment(\.tokens) private var tokens
+    @Environment(\.calendar) private var calendar
     @Environment(\.titleReserve) private var reserve
     let event: CalendarEvent
     let slot: TimelineSlot
@@ -20,7 +21,7 @@ struct TimelineEventBlock: View {
                 FadingText(text: event.title, font: font.weight(.semibold), lineHeight: lineHeight, lines: 2,
                            reserve: TitleFade.trailing(corner: reserve, plateInset: tokens.space(.timelineItemPadding),
                                                        gap: tokens.space(.fadeGap)))
-                Text(TimeRangeText.format(event.start, event.end)).font(tokens.font(.caption)).lineLimit(1)
+                Text(TimeRangeText.format(event.start, event.end, calendar: calendar)).font(tokens.font(.caption)).lineLimit(1)
                     .opacity(tokens.opacity(.eventTime))
             }
             .foregroundStyle(slot.isPast ? tokens.color(.secondaryText) : tokens.color(.eventText))

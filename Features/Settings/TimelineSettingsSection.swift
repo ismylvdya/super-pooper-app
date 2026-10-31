@@ -82,9 +82,9 @@ struct TimelineSettingsSection: View {
                          info: LocalizedStringKey = "info.settings.timeline.halves") -> some View {
         PlateRow(icon: .halves, title: title, info: info, indent: true) {
             HStack(spacing: tokens.space(.titleInfoGap)) {
-                TimeField(time: binding(keyPath.appending(path: \.start)))
+                TimeField(time: binding(keyPath.appending(path: \.start)), on: model.context().today).labelsHidden()
                 Text("common.dash")
-                TimeField(time: binding(keyPath.appending(path: \.end)))
+                TimeField(time: binding(keyPath.appending(path: \.end)), on: model.context().today).labelsHidden()
             }
         }
     }
