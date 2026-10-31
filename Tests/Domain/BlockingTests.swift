@@ -33,7 +33,7 @@ struct BlockingTests {
     }
 
     @Test func aDoneTaskLeavesTheDayInsteadOfShowingBlocked() {
-        let done = assemble.applying([.status(.done), .completedDate(LocalDate("2026-10-21"))])
+        let done = assemble.applying([.complete(on: LocalDate("2026-10-21"))])
         #expect(DayScenario(tasks: [makeTask("Find screwdriver"), done]).build().item(named: "Assemble wardrobe") == nil)
     }
 

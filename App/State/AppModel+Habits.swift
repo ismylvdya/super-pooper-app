@@ -95,17 +95,14 @@ extension AppModel {
     }
 
     private func createSubtask(_ name: String, of parent: String) async throws {
-        let subtask = try await services.tasks.create(NoteDraft(status: .thisWeek, changes: [.addProject(parent)]), named: name)
+        let subtask = try await services.tasks.create(.subtask(of: parent), named: name)
         noteWrite(subtask)
         replace(subtask)
     }
 
     /// A new habit: daily from today, shown in Today as the settings say.
     func newHabitDraft() -> NoteDraft {
-        NoteDraft(status: .habit, changes: [
-            .recurrence(RecurrenceDraft(start: context().today).raw),
-            .showInToday(settings.habits.showNewHabitsInToday),
-        ])
+        .newHabit(startingOn: context().today, showInToday: settings.habits.showNewHabitsInToday)
     }
 
     /// The mark a menu or notification action sets (`nil`: Unmark).

@@ -26,7 +26,7 @@ final class SandboxNote {
     }
 
     @discardableResult
-    func apply(_ changes: [TaskFieldChange]) async throws -> TaskWriteResult {
+    func apply(_ changes: [TaskEdit]) async throws -> TaskWriteResult {
         let result = try await repository.apply(changes, to: task)
         task = result.task
         return result

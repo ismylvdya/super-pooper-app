@@ -6,13 +6,13 @@ import Foundation
 enum TaskScheduling {
     static func canMove(_ task: TaskNote) -> Bool { !task.isHabit }
 
-    static func changes(scheduling task: TaskNote, at moment: Date, calendar: Calendar) -> [TaskFieldChange] {
+    static func changes(scheduling task: TaskNote, at moment: Date, calendar: Calendar) -> [TaskEdit] {
         guard canMove(task) else { return [] }
         return [.due(TaskDue(day: LocalDate(moment, in: calendar), time: LocalTime(moment, in: calendar)))]
     }
 
     /// Keeps the logical day: a task at 00:30 goes back to tonight's date, not tomorrow's.
-    static func changes(unscheduling task: TaskNote, context: DayContext) -> [TaskFieldChange] {
+    static func changes(unscheduling task: TaskNote, context: DayContext) -> [TaskEdit] {
         guard canMove(task), let due = task.due, due.time != nil else { return [] }
         return [.due(TaskDue(day: context.logicalDay(of: due)))]
     }

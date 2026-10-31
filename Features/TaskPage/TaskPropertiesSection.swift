@@ -25,7 +25,7 @@ struct TaskPropertiesSection: View {
             }
             TimeZoneRow(editor: editor)
             PlateRow(icon: .feel, title: "taskPage.feel", info: "info.taskPage.feel") {}
-            Picker("taskPage.feel", selection: binding(\.feel, change: TaskFieldChange.feel)) {
+            Picker("taskPage.feel", selection: binding(\.feel, change: TaskEdit.feel)) {
                 ForEach(TaskFeel.allCases, id: \.self) { Text(L10n.string("taskPage.feel." + $0.rawValue)).tag($0) }
             }
             .pickerStyle(.segmented)
@@ -39,9 +39,7 @@ struct TaskPropertiesSection: View {
         PlateRow(icon: .status, title: "taskPage.status", info: "info.taskPage.status") {
             Picker("taskPage.status", selection: Binding(
                 get: { task.status },
-                set: { status in
-                    editor.apply(TaskMarking(today: model.context().today).changes(setting: status, on: task))
-                }
+                set: { status in editor.setStatus(status, today: model.context().today) }
             )) {
                 ForEach(TaskStatus.known, id: \.self) { Text(StatusText.title($0)).tag($0) }
                 if case .other(let raw) = task.status { Text(verbatim: raw).tag(task.status) }
@@ -50,7 +48,7 @@ struct TaskPropertiesSection: View {
         }
     }
 
-    private func binding<Value>(_ keyPath: KeyPath<TaskNote, Value>, change: @escaping (Value) -> TaskFieldChange) -> Binding<Value> {
+    private func binding<Value>(_ keyPath: KeyPath<TaskNote, Value>, change: @escaping (Value) -> TaskEdit) -> Binding<Value> {
         Binding(get: { task[keyPath: keyPath] },
                 set: { value in editor.apply([change(value)]) })
     }

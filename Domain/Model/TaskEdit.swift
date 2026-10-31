@@ -1,19 +1,23 @@
 import Foundation
 
-/// One field edit of a task note. The data layer turns each into a single frontmatter key change.
-/// List fields change by deltas (mark one day, add/remove/rename one link): the writer applies
-/// them to the freshly read file, so entries added elsewhere meanwhile are never lost.
-enum TaskFieldChange: Hashable, Sendable {
+/// One edit of a task or habit, in the domain's terms; the store turns it into its own fields. List fields change by
+/// deltas (mark one day, add or remove one link): the store applies them to the latest stored version, so entries added
+/// elsewhere meanwhile are never lost.
+enum TaskEdit: Hashable, Sendable {
+    /// Moves the item to a planning level or the archive. A task that was done is no longer done (its day of completion
+    /// goes). Entering done is `complete(on:)`: every status change is decided by `TaskMarking.changes(setting:on:)`.
     case status(TaskStatus)
+    /// The task is done on `day`.
+    case complete(on: LocalDate)
+    /// A done task is open again, in this week.
+    case reopen
     case highPriority(Bool)
     case due(TaskDue?)
     case timeEstimate(Int?)
     case addPreviousTask(String)
     case removePreviousTask(String)
-    case renamePreviousTask(from: String, to: String)
-    /// Makes the note a subtask of another one (TaskNotes `projects`).
+    /// Makes the item a subtask of another one.
     case addProject(String)
-    case renameProject(from: String, to: String)
     case subtaskOrder(Int?)
     case previousEvent(EventLink?)
     case nextEvent(EventLink?)
@@ -22,7 +26,6 @@ enum TaskFieldChange: Hashable, Sendable {
     case migrateLegacyFields
     /// Exactly one mark (or none) for `day` in the three instance lists.
     case markInstance(day: LocalDate, mark: HabitMark?)
-    case completedDate(LocalDate?)
     /// The raw recurrence rule, or `nil` to remove it.
     case recurrence(String?)
     case reminderTimes([LocalTime])

@@ -77,14 +77,14 @@ struct MarkingTests {
 
     @Test func doneSetsStatusAndCompletedDate() {
         let task = makeTask("Pay for internet")
-        #expect(marking.changes(marking: task, as: .done) == [.status(.done), .completedDate(today)])
-        #expect(marking.changes(toggling: task) == [.status(.done), .completedDate(today)])
+        #expect(marking.changes(marking: task, as: .done) == [.complete(on: today)])
+        #expect(marking.changes(toggling: task) == [.complete(on: today)])
     }
 
     @Test func undoRevertsToThisWeekAndRemovesCompletedDate() {
         let done = makeTask("Buy milk", status: .done) { $0.completedDate = self.today }
-        #expect(marking.changes(marking: done, as: nil) == [.status(.thisWeek), .completedDate(nil)])
-        #expect(marking.changes(toggling: done) == [.status(.thisWeek), .completedDate(nil)])
+        #expect(marking.changes(marking: done, as: nil) == [.reopen])
+        #expect(marking.changes(toggling: done) == [.reopen])
         let reverted = done.applying(marking.changes(toggling: done))
         #expect(reverted.status == .thisWeek && reverted.completedDate == nil)
     }
@@ -128,12 +128,21 @@ struct StatusChangeTests {
 
     @Test func settingDoneAddsCompletedDateAndLeavingRemovesIt() {
         let open = TaskNote(name: "Task", relativePath: "Task.md", status: .thisWeek)
-        #expect(TaskMarking(today: today).changes(setting: .done, on: open) == [.status(.done), .completedDate(today)])
+        #expect(TaskMarking(today: today).changes(setting: .done, on: open) == [.complete(on: today)])
         var done = open
         done.status = .done
         done.completedDate = today
-        #expect(TaskMarking(today: today).changes(setting: .halfYear, on: done) == [.status(.halfYear), .completedDate(nil)])
+        #expect(TaskMarking(today: today).changes(setting: .halfYear, on: done) == [.status(.halfYear)])
         #expect(TaskMarking(today: today).changes(setting: .done, on: done).isEmpty)
+    }
+
+    @Test func anyStatusOtherThanDoneDropsTheDayOfCompletion() {
+        var done = TaskNote(name: "Task", relativePath: "Task.md", status: .done)
+        done.completedDate = today
+        let changes = TaskMarking(today: today).changes(setting: .archived, on: done)
+        #expect(changes == [.status(.archived)])
+        let archived = done.applying(changes)
+        #expect(archived.status == .archived && archived.completedDate == nil)
     }
 
     @Test func recurringTasksOnlyChangeStatus() {

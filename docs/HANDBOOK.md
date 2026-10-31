@@ -206,7 +206,7 @@ fromSuperPooperApp: '{"habit_color":"#34C759","reminder_times":["09:00","21:00"]
 complete_instances: [ ... ]  # дни с любой отметкой
 partial_instances: [ ... ]   # дни с Partially (они же есть в complete_instances)
 twice_instances: [ ... ]     # дни с Twice (они же есть в complete_instances)
-completed_date: 2026-10-23   # ставится при отметке обычной задачи вместе с status: done
+completed_date: 2026-10-23   # ставится при отметке обычной задачи вместе с status: done; любой другой статус его убирает
 date_created: 2026-10-20T09:12:44.123+02:00
 date_modified: 2026-10-22T18:01:02.456+02:00         # обновляется при каждой записи; в UTC+0 — +00:00, не Z
 ---

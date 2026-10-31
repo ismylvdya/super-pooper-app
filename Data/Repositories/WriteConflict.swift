@@ -3,7 +3,7 @@ import Foundation
 /// Which of the keys an edit writes were also changed elsewhere since the app read the note.
 /// List edits are deltas (marks, links) and merge by themselves; only single-value keys can clash.
 enum WriteConflict {
-    static func keys(_ changes: [TaskFieldChange], seen: TaskNote, latest: TaskNote, mapping: FieldMapping) -> [String] {
+    static func keys(_ changes: [TaskEdit], seen: TaskNote, latest: TaskNote, mapping: FieldMapping) -> [String] {
         var result: [String] = []
         for change in changes {
             guard let (key, value) = field(change, mapping: mapping) else { continue }
@@ -13,17 +13,16 @@ enum WriteConflict {
     }
 
     /// The frontmatter key a change writes and how to read that field from a note.
-    private static func field(_ change: TaskFieldChange, mapping: FieldMapping) -> (String, (TaskNote) -> AnyHashable?)? {
+    private static func field(_ change: TaskEdit, mapping: FieldMapping) -> (String, (TaskNote) -> AnyHashable?)? {
         let keys = mapping.fields
         switch change {
-        case .status: return (keys.status, { $0.status })
+        case .status, .complete, .reopen: return (keys.status, { $0.status })
         case .highPriority: return (keys.priority, { $0.isHighPriority })
         case .due: return (keys.due, { $0.due })
         case .timeEstimate: return (keys.timeEstimate, { $0.timeEstimate })
         case .previousEvent: return (keys.previousEvent, { $0.previousEvent })
         case .nextEvent: return (keys.nextEvent, { $0.nextEvent })
         case .feel: return (keys.feel, { $0.feel })
-        case .completedDate: return (keys.completedDate, { $0.completedDate })
         case .recurrence: return (keys.recurrence, { $0.recurrenceRaw })
         case .reminderTimes: return (keys.reminderTimes, { $0.reminderTimes })
         case .timeZone: return (keys.timeZone, { $0.timeZone })
@@ -37,7 +36,7 @@ enum WriteConflict {
         case .weeklyGoal: return (keys.weeklyGoal, { $0.habit.weeklyGoal })
         case .allowedSkips: return (keys.allowedSkips, { $0.habit.allowedSkips })
         case .subtaskOrder: return (keys.subtaskOrder, { $0.subtaskOrder })
-        case .addPreviousTask, .removePreviousTask, .renamePreviousTask, .addProject, .renameProject, .markInstance, .migrateLegacyFields: return nil
+        case .addPreviousTask, .removePreviousTask, .addProject, .markInstance, .migrateLegacyFields: return nil
         }
     }
 }

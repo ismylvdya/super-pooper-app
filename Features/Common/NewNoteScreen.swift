@@ -38,7 +38,7 @@ struct NewNoteScreen: View {
     private var titleKey: String { kind == .task ? "task.new.title" : "habits.new" }
 
     private var initialDraft: NoteDraft {
-        kind == .task ? NoteDraft(status: .thisWeek) : model.newHabitDraft()
+        kind == .task ? NoteDraft.newTask : model.newHabitDraft()
     }
 
     /// Another tab was chosen: the page is still in its stack, only hidden. Otherwise the page is left for good.

@@ -49,7 +49,7 @@ struct TaskListsConfig: Codable, Hashable, Sendable {
 
 extension TaskListsConfig.List {
     var filter: TaskListFilter {
-        TaskListFilter(statuses: statuses?.map(\.status) ?? TaskListFilter.openStatuses, feel: feel,
+        TaskListFilter(statuses: statuses?.map(\.status) ?? TaskStatus.open, feel: feel,
                        maxEstimate: maxEstimate)
     }
 }

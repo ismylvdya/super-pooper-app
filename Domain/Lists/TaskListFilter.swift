@@ -3,9 +3,7 @@ import Foundation
 /// Which task notes a list of the Lists tab holds: tasks (no habits) at the chosen planning levels and with the
 /// chosen properties, by name; grouped by planning level for the weekly review.
 struct TaskListFilter: Hashable, Sendable {
-    static let openStatuses: [TaskStatus] = [.thisWeek, .halfYear, .someday, .waiting]
-
-    var statuses: [TaskStatus] = openStatuses
+    var statuses: [TaskStatus] = TaskStatus.open
     var feel: TaskFeel?
     var maxEstimate: Int?
 

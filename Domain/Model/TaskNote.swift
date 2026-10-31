@@ -44,6 +44,10 @@ struct TaskNote: Identifiable, Hashable, Codable, Sendable {
     /// A habit is marked by `status: habit`; a note that only has a recurrence is read as one too.
     var isHabit: Bool { status == .habit || recurrenceRaw != nil }
     var isArchived: Bool { status == .archived }
+    /// A task of a later planning level (or done, or archived) can be brought to this week.
+    var canPromote: Bool { !isHabit && status != .thisWeek }
+    /// Another task can be linked to it (before or after it); archived notes are out of the way.
+    var isLinkable: Bool { !isArchived }
     /// Habits that are not archived, and only those switched on for Today, take part in the day.
     var isInTodayHabits: Bool { isHabit && !isArchived && habit.showInToday }
     /// Times of day a habit is planned at: its reminders, or the time of an older-style `due`.

@@ -14,13 +14,22 @@ struct TaskNoteWriter: Sendable {
         settings = ItemSettingsProperty(mapping: mapping)
     }
 
-    func apply(_ changes: [TaskFieldChange], to document: inout FrontmatterDocument, now: Date) {
+    func apply(_ changes: [TaskEdit], to document: inout FrontmatterDocument, now: Date) {
         let keys = mapping.fields
         let timeZone = calendar.current.timeZone
         for change in changes {
             switch change {
             case .status(let status):
+                // Only a done task has a completion day (the TaskNotes convention).
                 document.set(keys.status, to: .string(mapping.raw(status)))
+                if status != .done { set(keys.completedDate, nil, in: &document) }
+            case .complete(let day):
+                document.set(keys.status, to: .string(mapping.raw(.done)))
+                set(keys.completedDate, .scalar(day.isoString, quoted: false), in: &document)
+            case .reopen:
+                // TaskNotes keeps done as a status: a reopened task goes back to this week.
+                document.set(keys.status, to: .string(mapping.raw(.thisWeek)))
+                set(keys.completedDate, nil, in: &document)
             case .highPriority(let isHigh):
                 document.set(keys.priority, to: .string(isHigh ? mapping.priorities.high : mapping.priorities.normal))
             case .due(let due):
@@ -37,21 +46,11 @@ struct TaskNoteWriter: Sendable {
                 let kept = entries.filter { linkName($0)?.isSameNoteName(as: name) != true }
                 guard kept.count != entries.count else { continue }
                 set(keys.previousTasks, kept.isEmpty ? nil : .list(kept), in: &document)
-            case .renamePreviousTask(let old, let new):
-                let entries = listItems(keys.previousTasks, in: document)
-                let renamed = entries.map { linkName($0)?.isSameNoteName(as: old) == true ? relink($0, to: new) : $0 }
-                guard renamed != entries else { continue }
-                document.set(keys.previousTasks, to: .list(renamed))
             case .addProject(let name):
                 var entries = listItems(keys.projects, in: document)
                 guard !entries.contains(where: { linkName($0)?.isSameNoteName(as: name) == true }) else { continue }
                 entries.append(.scalar(WikiLink.make(name), quoted: true))
                 document.set(keys.projects, to: .list(entries))
-            case .renameProject(let old, let new):
-                let entries = listItems(keys.projects, in: document)
-                let renamed = entries.map { linkName($0)?.isSameNoteName(as: old) == true ? .scalar(WikiLink.make(new), quoted: true) : $0 }
-                guard renamed != entries else { continue }
-                document.set(keys.projects, to: .list(renamed))
             case .previousEvent(let link):
                 set(keys.previousEvent, link.map { .scalar($0.rawValue(timeZone: timeZone), quoted: true) }, in: &document)
             case .nextEvent(let link):
@@ -71,8 +70,6 @@ struct TaskNoteWriter: Sendable {
                 setInstance(day, included: mark != nil, key: keys.completeInstances, keepEmpty: true, in: &document)
                 setInstance(day, included: mark == .partial, key: keys.partialInstances, keepEmpty: false, in: &document)
                 setInstance(day, included: mark == .twice, key: keys.twiceInstances, keepEmpty: false, in: &document)
-            case .completedDate(let day):
-                set(keys.completedDate, day.map { .scalar($0.isoString, quoted: false) }, in: &document)
             case .recurrence(let raw):
                 set(keys.recurrence, raw.map { .scalar($0, quoted: false) }, in: &document)
             case .reminderTimes(let times):
@@ -101,7 +98,25 @@ struct TaskNoteWriter: Sendable {
                 set(keys.subtaskOrder, value.map(YAMLValue.int), in: &document)
             }
         }
-        document.set(keys.dateModified, to: .scalar(ISO8601.formatWithMilliseconds(now, timeZone: timeZone), quoted: false))
+        stamp(&document, now: now)
+    }
+
+    /// Links name notes by their file names (`[[Name]]`): a renamed note is renamed in the `previous_task` and
+    /// `projects` links to it, other entries and their `reltype` stay.
+    func renameLinks(from old: String, to new: String, in document: inout FrontmatterDocument, now: Date) {
+        let keys = mapping.fields
+        let previous = listItems(keys.previousTasks, in: document)
+        let renamedPrevious = previous.map { linkName($0)?.isSameNoteName(as: old) == true ? relink($0, to: new) : $0 }
+        if renamedPrevious != previous { document.set(keys.previousTasks, to: .list(renamedPrevious)) }
+        let projects = listItems(keys.projects, in: document)
+        let renamedProjects = projects.map { linkName($0)?.isSameNoteName(as: old) == true ? .scalar(WikiLink.make(new), quoted: true) : $0 }
+        if renamedProjects != projects { document.set(keys.projects, to: .list(renamedProjects)) }
+        stamp(&document, now: now)
+    }
+
+    private func stamp(_ document: inout FrontmatterDocument, now: Date) {
+        document.set(mapping.fields.dateModified,
+                     to: .scalar(ISO8601.formatWithMilliseconds(now, timeZone: calendar.current.timeZone), quoted: false))
     }
 
     /// `feel` replaces the older `need_energy` and `pleasant` keys.

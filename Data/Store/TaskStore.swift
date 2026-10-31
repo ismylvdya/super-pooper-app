@@ -42,7 +42,7 @@ protocol TaskStore: Sendable {
     func load() async throws -> VaultScanResult
     /// Writes `changes` onto the latest version of `task`, as the app saw it: what changed elsewhere meanwhile stays,
     /// and the fields changed on both sides are reported.
-    func apply(_ changes: [TaskFieldChange], to task: TaskNote) async throws -> TaskWriteResult
+    func apply(_ changes: [TaskEdit], to task: TaskNote) async throws -> TaskWriteResult
     /// A new item with every field and the text of the draft. The name is made unique (`Name`, `Name 2`, …).
     func create(_ draft: NoteDraft, named name: String) async throws -> TaskNote
     /// Renames the item; the items that refer to it (`dependents`) are rewritten to refer to the new name.

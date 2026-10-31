@@ -8,11 +8,16 @@ struct TaskEditor {
     /// The draft itself (its text and subtasks), nil for an existing note.
     let draft: Binding<NoteDraft>?
     /// Changes decided from the note as it is when they are applied (a toggle tapped twice quickly flips twice).
-    let edit: (@escaping (TaskNote) -> [TaskFieldChange]) -> Void
+    let edit: (@escaping (TaskNote) -> [TaskEdit]) -> Void
 
     var isDraft: Bool { draft != nil }
 
-    func apply(_ changes: [TaskFieldChange]) { edit { _ in changes } }
+    func apply(_ changes: [TaskEdit]) { edit { _ in changes } }
+
+    /// A status picked for the note, by the one rule of status changes (`TaskMarking`).
+    func setStatus(_ status: TaskStatus, today: LocalDate) {
+        edit { note in TaskMarking(today: today).changes(setting: status, on: note) }
+    }
 
     static func note(_ task: TaskNote, model: AppModel) -> TaskEditor {
         TaskEditor(task: task, draft: nil) { changes in

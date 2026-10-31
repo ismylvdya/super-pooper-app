@@ -133,8 +133,9 @@ extension AppModel {
         guard !candidates.isEmpty else { return [] }
         try? await backup(candidates, reason: "auto-promote")
         var promoted: [String] = []
+        let marking = TaskMarking(today: context().today)
         for task in candidates {
-            guard let result = try? await services.tasks.apply([.status(.thisWeek)], to: task) else { continue }
+            guard let result = try? await services.tasks.apply(marking.changes(setting: .thisWeek, on: task), to: task) else { continue }
             replace(result.task)
             promoted.append(task.name)
         }

@@ -216,8 +216,9 @@ struct SubtaskLinkTests {
         #expect(note.task.projects == ["Ремонт"])
         #expect(try note.text().contains("projects:\n  - \"[[Ремонт]]\"\n"))
 
-        try await note.apply([.renameProject(from: "Ремонт", to: "Ремонт кухни")])
-        #expect(note.task.projects == ["Ремонт кухни"])
-        #expect(try note.text().contains("  - \"[[Ремонт кухни]]\"\n"))
+        var document = try FrontmatterDocument(text: try note.text())
+        TaskNoteWriter(mapping: TestConfig.mapping, calendar: FixedCalendar(current: TestCalendar.calendar))
+            .renameLinks(from: "ремонт", to: "Ремонт кухни", in: &document, now: note.sandbox.now)
+        #expect(document.text.contains("projects:\n  - \"[[Ремонт кухни]]\"\n"))
     }
 }

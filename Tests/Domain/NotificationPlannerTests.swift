@@ -120,7 +120,7 @@ struct NotificationPlannerTests {
         #expect(Set(todays.map(\.id)) == ["habit|Vitamins 💊|2026-10-21|09:00", "habit|Vitamins 💊|09:00", "task|Parcel"])
 
         let marked = vitamins.applying([.markInstance(day: LocalDate("2026-10-21"), mark: .done)])
-        let doneParcel = parcel.applying([.status(.done), .completedDate(LocalDate("2026-10-21"))])
+        let doneParcel = parcel.applying([.complete(on: LocalDate("2026-10-21"))])
         let afterMarking = planner.stillValidToday(tasks: [marked, doneParcel], reminders: [], skipped: [], context: context)
         #expect(!afterMarking.contains { $0.day == LocalDate("2026-10-21") })
     }

@@ -33,7 +33,7 @@ actor InMemoryTaskStore: TaskStore, VersionConflictResolving, ExternalLinking, T
         return VaultScanResult(tasks: listed, fileProblems: [], conflicted: [])
     }
 
-    func apply(_ changes: [TaskFieldChange], to task: TaskNote) async throws -> TaskWriteResult {
+    func apply(_ changes: [TaskEdit], to task: TaskNote) async throws -> TaskWriteResult {
         let updated = task.applying(changes)
         tasks = tasks.map { $0.name == task.name ? updated : $0 }
         return TaskWriteResult(task: updated, hadConflict: false)
@@ -53,7 +53,14 @@ actor InMemoryTaskStore: TaskStore, VersionConflictResolving, ExternalLinking, T
     func rename(_ task: TaskNote, to newName: String, dependents: [TaskNote]) async throws -> TaskNote {
         var renamed = task
         renamed.name = newName
-        tasks = tasks.map { $0.name == task.name ? renamed : $0 }
+        let rename = { (names: [String]) in NameReferences.renaming(names, from: task.name, to: newName) }
+        tasks = tasks.map { item in
+            guard item.name != task.name else { return renamed }
+            var updated = item
+            updated.previousTasks = rename(item.previousTasks)
+            updated.projects = rename(item.projects)
+            return updated
+        }
         return renamed
     }
 

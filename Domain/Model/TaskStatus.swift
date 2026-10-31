@@ -12,7 +12,11 @@ enum TaskStatus: Hashable, Codable, Sendable {
     case habit
     case other(String)
 
-    static let known: [TaskStatus] = [.thisWeek, .halfYear, .someday, .waiting, .done, .archived]
+    /// The planning levels of open tasks.
+    static let open: [TaskStatus] = [.thisWeek, .halfYear, .someday, .waiting]
+    static let known: [TaskStatus] = open + [.done, .archived]
+    /// Where the review moves a task: a planning level or the archive (done is a check-off, not a move).
+    static let reviewChoices: [TaskStatus] = open + [.archived]
 
     var isCompleted: Bool { self == .done || self == .archived }
 }

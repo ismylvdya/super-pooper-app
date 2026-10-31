@@ -48,6 +48,6 @@ struct HabitRemindersSection: View {
     }
 
     private func save(_ updated: [LocalTime]) {
-        editor.apply(task.due == nil ? [.reminderTimes(updated)] : [.reminderTimes(updated), .due(nil)])
+        editor.edit { habit in HabitReminderTimes.changes(setting: updated, on: habit) }
     }
 }

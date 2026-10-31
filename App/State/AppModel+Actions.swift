@@ -23,15 +23,15 @@ extension AppModel {
             let changes = NotToday.changes(for: local, context: context())
             if changes.isEmpty { postpone(name) } else { await writeLocal(task, changes) }
         case .archive:
-            if await write(task, [.status(.archived)]) {
+            if await setStatus(.archived, of: name) {
                 banners.show(L10n.format("banner.archived", name), style: .success)
             }
         case .restoreThisWeek:
-            await write(task, [.status(.thisWeek)])
+            await setStatus(.thisWeek, of: name)
         case .restoreHalfYear:
-            await write(task, [.status(.halfYear)])
+            await setStatus(.halfYear, of: name)
         case .restoreHabit:
-            await write(task, [.status(.habit)])
+            await setStatus(.habit, of: name)
         case .delete:
             await delete(task)
         case .open, .openInObsidian, .deleteEvent:
@@ -39,7 +39,15 @@ extension AppModel {
         }
     }
 
-    func update(_ name: String, _ changes: [TaskFieldChange]) async {
+    /// The one way to change a status (archive, restore, promote, the review, the page): `TaskMarking` decides the edits,
+    /// so leaving done always drops the day of completion.
+    @discardableResult
+    func setStatus(_ status: TaskStatus, of name: String) async -> Bool {
+        guard let task = task(named: name) else { return false }
+        return await write(task, TaskMarking(today: context().today).changes(setting: status, on: task))
+    }
+
+    func update(_ name: String, _ changes: [TaskEdit]) async {
         await edit(name) { _ in changes }
     }
 
@@ -50,13 +58,13 @@ extension AppModel {
 
     /// Changes decided on the day's view of `task` (`localTasks`) go back into the note's own zone before writing.
     @discardableResult
-    func writeLocal(_ task: TaskNote, _ changes: [TaskFieldChange]) async -> Bool {
+    func writeLocal(_ task: TaskNote, _ changes: [TaskEdit]) async -> Bool {
         await write(task, ZonedTimes.stored(changes, of: task, calendar: calendar))
     }
 
     /// Edits of one note run one after another, and each decides from the note as the edit before it left it:
     /// a second quick tap (a toggle, a habit mark) does not repeat the first one's decision.
-    func edit(_ name: String, _ changes: @escaping (TaskNote) -> [TaskFieldChange]) async {
+    func edit(_ name: String, _ changes: @escaping (TaskNote) -> [TaskEdit]) async {
         let edit = enqueueEdit(name, changes)
         await edit.value
         if pendingEdits[name] == edit { pendingEdits[name] = nil }
@@ -64,7 +72,7 @@ extension AppModel {
 
     /// The edit takes its place in the note's line at once and runs when the edits before it are done.
     @discardableResult
-    func enqueueEdit(_ name: String, _ changes: @escaping (TaskNote) -> [TaskFieldChange]) -> Task<Void, Never> {
+    func enqueueEdit(_ name: String, _ changes: @escaping (TaskNote) -> [TaskEdit]) -> Task<Void, Never> {
         let previous = pendingEdits[name]
         let edit = Task { @MainActor in
             await previous?.value
@@ -76,7 +84,7 @@ extension AppModel {
     }
 
     @discardableResult
-    func write(_ task: TaskNote, _ changes: [TaskFieldChange]) async -> Bool {
+    func write(_ task: TaskNote, _ changes: [TaskEdit]) async -> Bool {
         guard !changes.isEmpty else { return true }
         do {
             let result = try await services.tasks.apply(changes, to: task)
@@ -110,15 +118,15 @@ extension AppModel {
         }
     }
 
-    /// Renames the note file; tasks that link to it get their `previous_task` and `projects` updated, and the
-    /// settings and today's state that name it follow the new name.
+    /// Renames the note; the store rewrites the tasks that refer to it, and the settings and today's state that name it
+    /// follow the new name.
     @discardableResult
     func rename(_ name: String, to newName: String) async -> Bool {
         guard let task = task(named: name) else { return false }
         let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed != name else { return true }
         await flushBody(of: name)
-        let dependents = tasks.filter { ($0.previousTasks + $0.projects).contains { $0.isSameNoteName(as: name) } }
+        let dependents = NameReferences.referring(to: name, in: tasks)
         var renamed = false
         do {
             try await backup([task] + dependents, reason: "rename")
@@ -203,8 +211,8 @@ extension AppModel {
 
     /// The weekly review on the phone: a task of a later planning level joins this week.
     func moveToThisWeek(_ name: String) async {
-        guard let task = task(named: name), task.status != .thisWeek else { return }
-        if await write(task, [.status(.thisWeek)]) {
+        guard let task = task(named: name), task.canPromote else { return }
+        if await setStatus(.thisWeek, of: name) {
             banners.show(L10n.string("banner.promoted"), style: .success, items: [name])
         }
     }

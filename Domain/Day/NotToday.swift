@@ -10,7 +10,7 @@ enum NotToday {
     /// A task with a time (it sits on the timeline) moves to the same time on the next logical day: 01:00 tonight
     /// still belongs to today, so it goes to 01:00 the night after. Without a time nothing is written; the task only
     /// leaves today (see `AppModel.postpone`).
-    static func changes(for task: TaskNote, context: DayContext) -> [TaskFieldChange] {
+    static func changes(for task: TaskNote, context: DayContext) -> [TaskEdit] {
         guard !task.isHabit, let time = task.due?.time else { return [] }
         return [.due(context.due(onLogicalDay: context.today.adding(days: 1), time: time))]
     }

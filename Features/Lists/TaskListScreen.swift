@@ -82,7 +82,7 @@ struct TaskListScreen: View {
             NavigationLink(value: Route.task(task.name)) {
                 TaggedTaskName(name: task.name)
             }
-            if task.status != .thisWeek {
+            if task.canPromote {
                 Button {
                     Haptics.play(.light)
                     Task { await model.moveToThisWeek(task.name) }

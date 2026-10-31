@@ -190,7 +190,7 @@ struct ReviewRow: View {
     }
 
     /// The new value is decided from the note as it is when the edit runs (two quick taps go there and back).
-    private func toggleChip(_ icon: Icon, isOn: Bool, tint: Color, changes: @escaping (TaskNote) -> [TaskFieldChange]) -> some View {
+    private func toggleChip(_ icon: Icon, isOn: Bool, tint: Color, changes: @escaping (TaskNote) -> [TaskEdit]) -> some View {
         Button {
             Haptics.play(.light)
             Task { await model.edit(task.name, changes) }
@@ -239,11 +239,8 @@ struct ReviewRow: View {
 
     private var statusChip: some View {
         Menu {
-            ForEach(TaskStatus.known.filter { $0 != .done }, id: \.self) { status in
-                Button(StatusText.title(status)) {
-                    let changes = TaskMarking(today: today).changes(setting: status, on: task)
-                    Task { await model.update(task.name, changes) }
-                }
+            ForEach(TaskStatus.reviewChoices, id: \.self) { status in
+                Button(StatusText.title(status)) { Task { await model.setStatus(status, of: task.name) } }
             }
         } label: {
             Chip(icon: .status, text: StatusText.title(task.status))

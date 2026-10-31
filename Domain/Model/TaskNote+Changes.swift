@@ -2,11 +2,19 @@ import Foundation
 
 extension TaskNote {
     /// The in-memory result of applying changes (the file is the source of truth; this mirrors it).
-    func applying(_ changes: [TaskFieldChange]) -> TaskNote {
+    func applying(_ changes: [TaskEdit]) -> TaskNote {
         var task = self
         for change in changes {
             switch change {
-            case .status(let value): task.status = value
+            case .status(let value):
+                task.status = value
+                if value != .done { task.completedDate = nil }
+            case .complete(let day):
+                task.status = .done
+                task.completedDate = day
+            case .reopen:
+                task.status = .thisWeek
+                task.completedDate = nil
             case .highPriority(let value): task.isHighPriority = value
             case .due(let value): task.due = value
             case .timeEstimate(let value): task.timeEstimate = value
@@ -14,12 +22,8 @@ extension TaskNote {
                 if !task.previousTasks.contains(where: { $0.isSameNoteName(as: name) }) { task.previousTasks.append(name) }
             case .removePreviousTask(let name):
                 task.previousTasks.removeAll { $0.isSameNoteName(as: name) }
-            case .renamePreviousTask(let old, let new):
-                task.previousTasks = task.previousTasks.map { $0.isSameNoteName(as: old) ? new : $0 }
             case .addProject(let name):
                 if !task.projects.contains(where: { $0.isSameNoteName(as: name) }) { task.projects.append(name) }
-            case .renameProject(let old, let new):
-                task.projects = task.projects.map { $0.isSameNoteName(as: old) ? new : $0 }
             case .subtaskOrder(let value): task.subtaskOrder = value
             case .previousEvent(let value): task.previousEvent = value
             case .nextEvent(let value): task.nextEvent = value
@@ -31,7 +35,6 @@ extension TaskNote {
                 task.completeInstances = instances.complete
                 task.partialInstances = instances.partial
                 task.twiceInstances = instances.twice
-            case .completedDate(let value): task.completedDate = value
             case .recurrence(let raw):
                 task.recurrenceRaw = raw
                 task.recurrence = raw.flatMap { try? RecurrenceRule.parse($0).get() }

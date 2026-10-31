@@ -52,7 +52,7 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
         return output.result
     }
 
-    func apply(_ changes: [TaskFieldChange], to task: TaskNote) async throws -> TaskWriteResult {
+    func apply(_ changes: [TaskEdit], to task: TaskNote) async throws -> TaskWriteResult {
         try await edit(task, changes: changes) { document in
             self.writer.apply(changes, to: &document, now: self.clock.now)
             return document.text
@@ -95,8 +95,10 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
         // A dependent that moved or vanished meanwhile must not undo the rename; its link then shows
         // up as "linked task not found" after the rescan.
         for dependent in dependents {
-            _ = try? await apply([.renamePreviousTask(from: task.name, to: newName), .renameProject(from: task.name, to: newName)],
-                                 to: dependent)
+            _ = try? await edit(dependent) { document in
+                self.writer.renameLinks(from: task.name, to: newName, in: &document, now: self.clock.now)
+                return document.text
+            }
         }
         return renamed
     }
@@ -215,7 +217,7 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
     /// Reads the latest version, lets `transform` produce the new text, writes it atomically.
     /// Before writing, the file is compared with what the app saw: if it changed meanwhile, the edit lands on
     /// the latest version, and keys of `changes` that were changed there too are reported.
-    private func edit(_ task: TaskNote, changes: [TaskFieldChange] = [],
+    private func edit(_ task: TaskNote, changes: [TaskEdit] = [],
                       transform: @escaping (inout FrontmatterDocument) -> String) async throws -> TaskWriteResult {
         let reader = readerFactory(vaultSettings())
         return try await location.withRoot { root in

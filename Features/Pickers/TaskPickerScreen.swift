@@ -33,7 +33,7 @@ struct TaskPickerScreen: View {
 
     private var results: [TaskNote] {
         NameOrder.sorted(model.tasks.filter {
-            !excluded.contains($0.name) && $0.status != .archived && SearchMatcher.matches($0.name, query)
+            !excluded.contains($0.name) && $0.isLinkable && SearchMatcher.matches($0.name, query)
         })
     }
 }

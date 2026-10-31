@@ -27,7 +27,7 @@ enum ZonedTimes {
     }
 
     /// Changes decided on the local view of `task` (the note as written), with their dates and times in its own zone.
-    static func stored(_ changes: [TaskFieldChange], of task: TaskNote, calendar: Calendar) -> [TaskFieldChange] {
+    static func stored(_ changes: [TaskEdit], of task: TaskNote, calendar: Calendar) -> [TaskEdit] {
         changes.map { change in
             guard case .due(let due) = change else { return change }
             return .due(stored(due, of: task, calendar: calendar))

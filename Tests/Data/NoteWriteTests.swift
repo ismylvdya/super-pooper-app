@@ -177,6 +177,17 @@ struct NoteWriteTests {
             .replacingOnce("date_modified: 2026-10-21T09:12:44.123+02:00\n", with: "date_modified: \(note.sandbox.nowStamp)\n"))
     }
 
+    @Test func archivingADoneTaskRemovesItsCompletedDateLine() async throws {
+        let note = try await SandboxNote("Купить молоко")
+        let original = try note.text()
+        try await note.apply(TaskMarking(today: LocalDate(note.sandbox.today)).changes(setting: .archived, on: note.task))
+        expectSameBytes(try note.text(), try original
+            .replacingOnce("status: done\n", with: "status: archived\n")
+            .replacingOnce("completed_date: 2026-10-21\n", with: "")
+            .replacingOnce("date_modified: 2026-10-21T09:12:44.123+02:00\n", with: "date_modified: \(note.sandbox.nowStamp)\n"))
+        #expect(note.task.status == .archived && note.task.completedDate == nil)
+    }
+
     @Test func aBrokenOrMissingFileIsAnErrorAndNothingIsWritten() async throws {
         let sandbox = try VaultSandbox.make()
         let repository = sandbox.repository()
