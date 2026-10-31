@@ -191,7 +191,7 @@ struct DayBuilder: Sendable {
         for item in timed {
             guard let time = openTimes(of: item, context: context).first else { continue }
             let start = context.moment(time, onLogicalDay: context.today)
-            result[item.id] = TimelineChain.Target(id: "task:\(item.id)", end: start.addingTimeInterval(Double(rules.estimate(of: item.task)) * 60))
+            result[item.id] = TimelineChain.Target(id: TimelineContent.task(item).id, end: start.addingTimeInterval(rules.duration(of: item.task)))
         }
         return result
     }
@@ -218,12 +218,12 @@ struct DayBuilder: Sendable {
         for item in timed {
             for time in openTimes(of: item, context: context) {
                 let start = context.moment(time, onLogicalDay: context.today)
-                let end = start.addingTimeInterval(Double(rules.estimate(of: item.task)) * 60)
+                let end = start.addingTimeInterval(rules.duration(of: item.task))
                 entries.append(TimelineSlot(content: .task(item), start: start, end: end, isPast: false, time: time, alerts: true))
             }
         }
         for reminder in reminders where context.contains(reminder.due) && !reminder.isCompleted {
-            let end = reminder.due.addingTimeInterval(Double(rules.reminderMinutes) * 60)
+            let end = reminder.due.addingTimeInterval(rules.reminderDuration)
             entries.append(TimelineSlot(content: .reminder(reminder), start: reminder.due, end: end, isPast: false, alerts: true))
         }
         return entries

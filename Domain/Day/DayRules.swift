@@ -19,6 +19,16 @@ struct DayRules: Codable, Hashable, Sendable {
         return minutes
     }
 
+    /// How long a task's block lasts on the timeline: its estimate.
+    func duration(of task: TaskItem) -> TimeInterval {
+        TimeInterval(estimate(of: task) * 60)
+    }
+
+    /// How long a reminder's block lasts on the timeline.
+    var reminderDuration: TimeInterval {
+        TimeInterval(reminderMinutes * 60)
+    }
+
     /// Hours after midnight (before the day boundary) still belong to the evening.
     func partOfDay(_ context: DayContext) -> HabitTimeOfDay {
         let time = LocalTime(context.now, in: context.calendar)

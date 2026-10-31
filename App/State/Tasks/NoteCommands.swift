@@ -55,7 +55,7 @@ final class NoteCommands {
     /// A button on a delivered notification of a habit: the second Done of a day with two reminders is Twice.
     func markFromNotification(_ name: String, pressed: HabitMark, on day: LocalDate) async {
         await markHabit(name, on: day) { habit in
-            HabitMarking.notificationMark(pressed, current: habit.mark(on: day), remindersPerDay: habit.habitTimes.count)
+            HabitMarking.notificationMark(pressed, current: habit.mark(on: day), twiceADay: habit.isTwiceADay)
         }
     }
 

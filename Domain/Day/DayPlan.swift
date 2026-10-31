@@ -5,6 +5,15 @@ enum TimelineContent: Hashable, Sendable {
     case event(CalendarEvent)
     case task(DayItem)
     case reminder(ReminderItem)
+
+    /// What the block shows, by kind and id: a block's id, and what a chain hangs on (`TimelineChain.Target`).
+    var id: String {
+        switch self {
+        case .event(let event): "event:\(event.id)"
+        case .task(let item): "task:\(item.id)"
+        case .reminder(let reminder): "reminder:\(reminder.id)"
+        }
+    }
 }
 
 struct TimelineSlot: Identifiable, Hashable, Sendable {
@@ -20,11 +29,7 @@ struct TimelineSlot: Identifiable, Hashable, Sendable {
     var alerts = false
 
     var id: String {
-        switch content {
-        case .event(let event): "event:\(event.id)"
-        case .task(let item): "task:\(item.id)" + (time.map { "@\($0.string)" } ?? "")
-        case .reminder(let reminder): "reminder:\(reminder.id)"
-        }
+        content.id + (time.map { "@\($0.string)" } ?? "")
     }
 }
 

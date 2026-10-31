@@ -48,7 +48,7 @@ struct HabitStats: Sendable {
             streakUnit = .weeks
             let weeks = Self.weekResults(history: history, start: start, today: today, goal: goal, rules: rules)
             currentStreak = Self.trailingRun(weeks.map(\.reached))
-            longestStreak = Self.longestRun(weeks.map { ($0.monday, $0.reached) }, lastDay: { $0.adding(days: 6) })
+            longestStreak = Self.longestRun(weeks.map { ($0.monday, $0.reached) }, lastDay: \.weekEnd)
         } else {
             streakUnit = .days
             // Allowed skips neither count nor break a streak; only missed days do.
@@ -110,11 +110,11 @@ struct HabitStats: Sendable {
     /// Finished weeks, plus the current one only if its goal is already reached.
     private static func weekResults(history: HabitHistory, start: LocalDate, today: LocalDate, goal: Int,
                                     rules: HabitStatsRules) -> [WeekResult] {
-        var monday = start.adding(days: -(start.weekday.rawValue - 1))
+        var monday = start.weekStart
         var result: [WeekResult] = []
         while monday <= today {
             let reached = history.weekUnits(containing: monday, today: today, rules: rules) >= Double(goal)
-            let finished = monday.adding(days: 6) < today
+            let finished = monday.weekEnd < today
             if finished || reached { result.append(WeekResult(monday: monday, reached: reached)) }
             monday = monday.adding(days: 7)
         }

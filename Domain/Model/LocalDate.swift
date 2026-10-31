@@ -77,6 +77,12 @@ struct LocalDate: Hashable, Comparable, Codable, Sendable, CustomStringConvertib
         return Weekday.allCases[index]
     }
 
+    /// The Monday of this day's week (weeks run Monday to Sunday).
+    var weekStart: LocalDate { adding(days: Weekday.monday.rawValue - weekday.rawValue) }
+
+    /// The Sunday of this day's week.
+    var weekEnd: LocalDate { adding(days: Weekday.sunday.rawValue - weekday.rawValue) }
+
     /// Start of this day in `calendar`, shifted by `offset` (e.g. a 04:00 day boundary).
     func startDate(in calendar: Calendar, offset: LocalTime = .midnight) -> Date {
         let components = DateComponents(year: year, month: month, day: day, hour: offset.hour, minute: offset.minute)

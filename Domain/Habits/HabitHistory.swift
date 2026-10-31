@@ -33,7 +33,7 @@ struct HabitHistory: Sendable {
 
     /// Units marked in the Monday–Sunday week of `day`, up to `today`.
     func weekUnits(containing day: LocalDate, today: LocalDate, rules: HabitStatsRules) -> Double {
-        let monday = day.adding(days: -(day.weekday.rawValue - 1))
+        let monday = day.weekStart
         return (0..<7).map { monday.adding(days: $0) }.filter { $0 <= today }.map { units(on: $0, rules: rules) }.reduce(0, +)
     }
 

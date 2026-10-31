@@ -40,6 +40,12 @@ enum ActionMenu: String, Codable, CaseIterable, Sendable {
     case habitDay
     case reminderContext
     case eventContext
+
+    /// The long-press menu of a task or a habit.
+    static func context(of task: TaskItem) -> ActionMenu { task.isHabit ? .habitContext : .taskContext }
+
+    /// The "…" menu on the page of a task or a habit.
+    static func page(of task: TaskItem) -> ActionMenu { task.isHabit ? .habitPage : .taskPage }
 }
 
 /// One menu of `actions.json`: its actions in order, and whether it is about a habit's day.

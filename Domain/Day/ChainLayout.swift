@@ -13,7 +13,7 @@ struct TimelineChain: Sendable {
         }
 
         init(event: CalendarEvent) {
-            self.init(id: "event:\(event.id)", end: event.end)
+            self.init(id: TimelineContent.event(event).id, end: event.end)
         }
     }
 
@@ -56,14 +56,10 @@ struct ChainLayout: Sendable {
         var entries: [TimelineSlot] = []
         var cursor = origin
         for item in chain.items where !item.isFinished {
-            let end = cursor.addingTimeInterval(duration(of: item))
+            let end = cursor.addingTimeInterval(rules.duration(of: item.task))
             entries.append(TimelineSlot(content: .task(item), start: cursor, end: end, isPast: false))
             cursor = end
         }
         return entries
-    }
-
-    private func duration(of item: DayItem) -> TimeInterval {
-        Double(rules.estimate(of: item.task)) * 60
     }
 }

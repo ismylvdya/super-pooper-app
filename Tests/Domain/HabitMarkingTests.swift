@@ -32,32 +32,41 @@ struct HabitMarkingTests {
     }
 
     @Test func secondDoneFromATwoReminderDayIsTwice() {
-        #expect(HabitMarking.notificationMark(.done, current: nil, remindersPerDay: 2) == .done)
-        #expect(HabitMarking.notificationMark(.done, current: .done, remindersPerDay: 2) == .twice)
-        #expect(HabitMarking.notificationMark(.done, current: .twice, remindersPerDay: 2) == .twice)
+        #expect(HabitMarking.notificationMark(.done, current: nil, twiceADay: true) == .done)
+        #expect(HabitMarking.notificationMark(.done, current: .done, twiceADay: true) == .twice)
+        #expect(HabitMarking.notificationMark(.done, current: .twice, twiceADay: true) == .twice)
     }
 
     @Test func aPartialDayBecomesTwiceOnTheNextDone() {
-        #expect(HabitMarking.notificationMark(.done, current: .partial, remindersPerDay: 2) == .twice)
+        #expect(HabitMarking.notificationMark(.done, current: .partial, twiceADay: true) == .twice)
     }
 
     @Test func withOneReminderDoneStaysDone() {
-        #expect(HabitMarking.notificationMark(.done, current: .done, remindersPerDay: 1) == .done)
-        #expect(HabitMarking.notificationMark(.done, current: .partial, remindersPerDay: 1) == .partial)
+        #expect(HabitMarking.notificationMark(.done, current: .done, twiceADay: false) == .done)
+        #expect(HabitMarking.notificationMark(.done, current: .partial, twiceADay: false) == .partial)
+    }
+
+    /// One rule of twice a day (D-037): a habit with the Twice option and a single reminder also takes Twice on the
+    /// notification's second Done, as in the menus. It used to count only the reminders and stayed Done.
+    @Test func theTwiceOptionWithOneReminderMakesTheSecondDoneTwice() {
+        let habit = makeTask("Stretch", status: .habit) { $0.reminderTimes = [LocalTime("09:00")]; $0.habit.twiceADay = true }
+        #expect(HabitMarking.notificationMark(.done, current: .done, twiceADay: habit.isTwiceADay) == .twice)
+        #expect(!HabitMarking.isDayClosed(.done, twiceADay: habit.isTwiceADay))
     }
 
     @Test func aDayWithSeveralRemindersClosesOnlyWithTwice() {
-        #expect(!HabitMarking.isDayClosed(nil, twiceADay: false, remindersPerDay: 1))
-        #expect(HabitMarking.isDayClosed(.done, twiceADay: false, remindersPerDay: 1))
-        #expect(!HabitMarking.isDayClosed(.done, twiceADay: false, remindersPerDay: 2))
-        #expect(!HabitMarking.isDayClosed(.partial, twiceADay: true, remindersPerDay: 0))
-        #expect(HabitMarking.isDayClosed(.twice, twiceADay: false, remindersPerDay: 2))
+        let two = makeTask("Push-ups", status: .habit) { $0.reminderTimes = [LocalTime("11:45"), LocalTime("17:45")] }
+        #expect(!HabitMarking.isDayClosed(nil, twiceADay: false))
+        #expect(HabitMarking.isDayClosed(.done, twiceADay: false))
+        #expect(!HabitMarking.isDayClosed(.done, twiceADay: two.isTwiceADay))
+        #expect(!HabitMarking.isDayClosed(.partial, twiceADay: true))
+        #expect(HabitMarking.isDayClosed(.twice, twiceADay: two.isTwiceADay))
     }
 
     @Test func partiallyNeverDowngrades() {
-        #expect(HabitMarking.notificationMark(.partial, current: nil, remindersPerDay: 2) == .partial)
-        #expect(HabitMarking.notificationMark(.partial, current: .done, remindersPerDay: 2) == .done)
-        #expect(HabitMarking.notificationMark(.partial, current: .twice, remindersPerDay: 2) == .twice)
+        #expect(HabitMarking.notificationMark(.partial, current: nil, twiceADay: true) == .partial)
+        #expect(HabitMarking.notificationMark(.partial, current: .done, twiceADay: true) == .done)
+        #expect(HabitMarking.notificationMark(.partial, current: .twice, twiceADay: true) == .twice)
     }
 
     @Test func aPastDayIsMarkedOnThatDay() {

@@ -43,7 +43,7 @@ struct MorningReviewScreen: View {
                                                   isFirst: position.isFirst, isLast: position.isLast, frames: frames, vertical: 0,
                                                   separatorIndent: CGFloat(item.depth) * tokens.space(.subtaskIndent))
                                     .contextMenu {
-                                        ActionMenuContent(menu: item.isHabit ? .habitContext : .taskContext, item: item) {
+                                        ActionMenuContent(menu: .context(of: item.task), item: item) {
                                             perform($0, on: item.id)
                                         }
                                     }
@@ -74,7 +74,7 @@ struct MorningReviewScreen: View {
                     Group {
                         ListGroupHeader(title: Text("review.postponed"))
                         ForEach(Array(postponed.enumerated()), id: \.element.name) { index, task in
-                            ReviewRow(item: DayItem(task: task, state: .open, blockers: [], problems: []), today: plan.today) {
+                            ReviewRow(item: DayItem(listed: task), today: plan.today) {
                                 path.append(.task(task.name))
                             }
                             .listGroupRow(group: "postponed", id: task.name, isFirst: index == 0, isLast: index == postponed.count - 1,

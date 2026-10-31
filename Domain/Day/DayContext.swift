@@ -34,7 +34,7 @@ struct DayContext: Sendable {
     var dayEnd: Date { today.adding(days: 1).startDate(in: calendar, offset: boundary) }
 
     /// Sunday of the current ISO week (inclusive end of "this week").
-    var weekEnd: LocalDate { today.adding(days: Weekday.sunday.rawValue - today.weekday.rawValue) }
+    var weekEnd: LocalDate { today.weekEnd }
 
     var isBeforeEnergyHour: Bool { now < date(today, energyHour) }
 

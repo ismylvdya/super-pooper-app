@@ -125,6 +125,18 @@ struct NotificationPlannerTests {
         #expect(!afterMarking.contains { $0.day == LocalDate("2026-10-21") })
     }
 
+    /// A habit's notification under its slot identifier is the same notification: it keeps the habit's color for its
+    /// picture. The slot copies used to be built field by field, and one of the two copies left the color out.
+    @Test func aSlotIdentifiedNotificationKeepsTheHabitsColor() {
+        let colored = makeHabit("Vitamins 💊", time: "09:00") { $0.habit.color = "#FF2D55" }
+        let upcoming = plan([colored], at: "08:00")
+        #expect(upcoming.first?.id == "habit|Vitamins 💊|09:00")
+        #expect(upcoming.allSatisfy { $0.colorHex == "#FF2D55" })
+        let valid = planner.stillValidToday(tasks: [colored], reminders: [], skipped: [], context: TestCalendar.context(TestCalendar.wednesday, "13:25"))
+        #expect(valid.contains { $0.id == "habit|Vitamins 💊|09:00" })
+        #expect(valid.allSatisfy { $0.colorHex == "#FF2D55" })
+    }
+
     /// A notification lives its logical day (D-040): yesterday's open habit notification is not kept today, as the
     /// widgets and the restore of a swiped one already decide (`StaleNotifications`).
     @Test func yesterdaysHabitNotificationIsNotKeptToday() {
