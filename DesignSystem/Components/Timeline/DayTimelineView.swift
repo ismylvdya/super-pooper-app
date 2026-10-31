@@ -62,7 +62,9 @@ struct DayTimelineView<TaskContent: View>: View {
         return cornerInset + marks.reduce(0, +) + tokens.space(.cornerMarkGap) * CGFloat(marks.count - 1)
     }
 
-    private var labelWidth: CGFloat { style.showsHourLabels ? tokens.space(.timelineLabelWidth) : 0 }
+    /// The hour column and the hour labels' line grow with the hour font.
+    private var labelWidth: CGFloat { style.showsHourLabels ? tokens.scaled(tokens.space(.timelineLabelWidth), with: .timelineHour) : 0 }
+    private var hourLabelHeight: CGFloat { tokens.scaled(tokens.size(.hourLabelHeight), with: .timelineHour) }
     private var totalHeight: CGFloat { CGFloat(window.hours) * hourHeight }
 
     private func y(_ date: Date) -> CGFloat {
@@ -144,8 +146,8 @@ struct DayTimelineView<TaskContent: View>: View {
                 }
                 Rectangle().fill(tokens.color(.timelineGrid)).frame(height: tokens.size(.gridLine))
             }
-            .frame(width: width, height: tokens.size(.hourLabelHeight))
-            .offset(y: y(mark) - tokens.size(.hourLabelHeight) / 2)
+            .frame(width: width, height: hourLabelHeight)
+            .offset(y: y(mark) - hourLabelHeight / 2)
         }
     }
 
@@ -173,7 +175,7 @@ struct DayTimelineView<TaskContent: View>: View {
     private func nowLine(width: CGFloat, blocks: [PlacedSlot]) -> some View {
         let dot = tokens.size(.nowDot)
         let centerX = style.showsHourLabels
-            ? labelWidth - tokens.space(.hourLabelGap) - tokens.size(.hourDigitsWidth) / 2
+            ? labelWidth - tokens.space(.hourLabelGap) - tokens.scaled(tokens.size(.hourDigitsWidth), with: .timelineHour) / 2
             : dot / 2
         let origin = CGPoint(x: centerX - dot / 2, y: y(now) - dot / 2)
         let gap = tokens.space(.timelineItemGap)

@@ -80,7 +80,7 @@ struct RootView: View {
         .environment(\.chipOrder, RowChipKind.ordered(model.settings.pool.chipOrder))
         .appCalendar(model.calendar)
         // The user's colors and opacity sit closest to the views, over the bundled tokens of `appConfig`.
-        .environment(\.tokens, tokens)
+        .designTokens(tokens)
         .environment(model)
         .environment(container.router)
         .environment(container.banners)

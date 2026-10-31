@@ -10,6 +10,10 @@ struct DesignTokens: Decodable, Sendable {
     let duration: TokenTable<DurationToken, Double>
     let font: TokenTable<FontToken, FontSpec>
     private(set) var color: TokenTable<ColorToken, ColorSpec>
+    /// The reader's text size where the tokens are used (`designTokens(_:)`); nil: the phone's own.
+    private(set) var dynamicTypeSize: DynamicTypeSize?
+
+    private enum CodingKeys: String, CodingKey { case spacing, radius, size, ratio, opacity, duration, font, color }
 
     func space(_ token: SpacingToken) -> CGFloat { CGFloat(spacing[token]) }
     func radius(_ token: RadiusToken) -> CGFloat { CGFloat(radius[token]) }
@@ -17,12 +21,25 @@ struct DesignTokens: Decodable, Sendable {
     func ratio(_ token: RatioToken) -> CGFloat { CGFloat(ratio[token]) }
     func opacity(_ token: OpacityToken) -> Double { opacity[token] }
     func duration(_ token: DurationToken) -> Double { duration[token] }
-    func font(_ token: FontToken) -> Font { font[token].font }
-    func uiFont(_ token: FontToken) -> UIFont { font[token].uiFont }
+    func font(_ token: FontToken) -> Font { font[token].font(at: traits) }
+    func uiFont(_ token: FontToken) -> UIFont { font[token].uiFont(at: traits) }
+    /// A length that belongs to a font's text (a label column, its line), grown with the reader's text size as the font is.
+    func scaled(_ value: CGFloat, with token: FontToken) -> CGFloat { font[token].scaled(value, at: traits) }
     func color(_ token: ColorToken) -> Color { color[token].color }
     func uiColor(_ token: ColorToken) -> UIColor { color[token].uiColor }
 
     var animation: Animation { .easeInOut(duration: duration(.animation)) }
+
+    /// The tokens as measured at a text size: fixed-size fonts and UIKit line heights follow it.
+    func measured(at dynamicTypeSize: DynamicTypeSize) -> DesignTokens {
+        var tokens = self
+        tokens.dynamicTypeSize = dynamicTypeSize
+        return tokens
+    }
+
+    private var traits: UITraitCollection? {
+        dynamicTypeSize.map { UITraitCollection(preferredContentSizeCategory: UIContentSizeCategory($0)) }
+    }
 
     /// A chip's height: its line and its padding.
     var chipHeight: CGFloat { uiFont(.chip).lineHeight + space(.chipVertical) * 2 }
