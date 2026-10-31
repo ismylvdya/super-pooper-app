@@ -18,7 +18,7 @@ struct TimelineEventBlock: View {
                 .fill(color)
                 .frame(width: tokens.size(.eventStripe))
             VStack(alignment: .leading, spacing: 0) {
-                FadingText(text: event.title, font: font.weight(.semibold), lineHeight: lineHeight, lines: 2,
+                FadingText(text: event.title, font: font, lineHeight: lineHeight, lines: 2,
                            reserve: TitleFade.trailing(corner: reserve, plateInset: tokens.space(.timelineItemPadding),
                                                        gap: tokens.space(.fadeGap)))
                 Text(TimeRangeText.format(event.start, event.end, calendar: calendar)).font(tokens.font(.caption)).lineLimit(1)

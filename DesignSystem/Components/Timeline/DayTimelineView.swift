@@ -96,7 +96,7 @@ struct DayTimelineView<TaskContent: View>: View {
         case .event(let event):
             if let onEventTap = style.onEventTap {
                 // A tap, not a Button: a button also fires when a swipe across the timeline ends on the event.
-                TimelineEventBlock(event: event, slot: slot, font: style.eventFont, lineHeight: style.eventLineHeight)
+                TimelineEventBlock(event: event, slot: slot, font: style.fonts.event, lineHeight: style.fonts.eventLineHeight)
                     .contentShape(Rectangle())
                     .onTapGesture { onEventTap(event) }
                     .accessibilityAddTraits(.isButton)
@@ -106,10 +106,10 @@ struct DayTimelineView<TaskContent: View>: View {
                         if let onEventDelete = style.onEventDelete { RegistryMenu(menu: .eventContext) { _ in onEventDelete(event) } }
                     }
             } else {
-                TimelineEventBlock(event: event, slot: slot, font: style.eventFont, lineHeight: style.eventLineHeight)
+                TimelineEventBlock(event: event, slot: slot, font: style.fonts.event, lineHeight: style.fonts.eventLineHeight)
             }
         case .reminder(let reminder):
-            TimelineReminderBlock(reminder: reminder, slot: slot, font: style.taskFont, lineHeight: style.taskLineHeight,
+            TimelineReminderBlock(reminder: reminder, slot: slot, font: style.fonts.task, lineHeight: style.fonts.taskLineHeight,
                                   isCompact: style.compactPlates,
                                   onToggle: style.onReminderToggle, onOpen: style.onReminderTap)
         case .task(let item):
@@ -208,36 +208,4 @@ struct DayTimelineView<TaskContent: View>: View {
         .allowsHitTesting(false)
         .accessibilityHidden(true)
     }
-}
-
-/// Visual parameters of a timeline column.
-struct TimelineStyle {
-    var eventFont: Font
-    var taskFont: Font
-    /// Line heights of the two fonts (titles fade on their last line).
-    var eventLineHeight: CGFloat
-    var taskLineHeight: CGFloat
-    /// At least one line of normal text.
-    var minimumItemHeight: CGFloat
-    /// Tasks get at least their title and chip lines (short tasks still show two lines).
-    var minimumTaskHeight: CGFloat?
-    var showsHourLabels = true
-    /// Tap on an event (the app opens Calendar on that day).
-    var onEventTap: ((CalendarEvent) -> Void)?
-    /// Long-press menu of an event (asks first).
-    var onEventDelete: ((CalendarEvent) -> Void)?
-    /// Reminder long-press menu (completes it in Reminders) and tap (opens it in Reminders).
-    var onReminderToggle: ((ReminderItem) -> Void)?
-    var onReminderTap: ((ReminderItem) -> Void)?
-    /// The block whose links are highlighted (the rest dims), and the tap on a block's link mark.
-    var highlightedSlot: String?
-    var onLinkTap: ((TimelineSlot) -> Void)?
-    /// Another day than today has no "now" cursor.
-    var showsNow = true
-    /// Task rows draw their own plates (and long-press highlight) instead of getting one here.
-    var rowsHaveOwnPlates = false
-    /// Dense widget timelines: plates with minimal vertical padding.
-    var compactPlates = false
-    /// Where a dragged task would land (its minutes are shown next to the hours).
-    var dropMarker: Date?
 }

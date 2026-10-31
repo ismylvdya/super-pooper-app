@@ -33,7 +33,7 @@ struct AppearanceSettingsSection: View {
         let slot = TimelineSlot(content: .event(event), start: event.start, end: event.end, isPast: true)
         return VStack(alignment: .leading, spacing: tokens.space(.poolRowGap)) {
             TaskRowView(item: item, isCompact: true).taskPlate(isDone: true)
-            TimelineEventBlock(event: event, slot: slot, font: tokens.font(.rowTitle), lineHeight: tokens.uiFont(.rowTitle).lineHeight).fixedSize(horizontal: false, vertical: true)
+            TimelineEventBlock(event: event, slot: slot, font: tokens.font(.timelineEvent), lineHeight: tokens.uiFont(.timelineEvent).lineHeight).fixedSize(horizontal: false, vertical: true)
         }
         .settingsPreviewFrame()
         .accessibilityHidden(true)

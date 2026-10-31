@@ -51,10 +51,7 @@ import SwiftUI
         DayTimelineView(slots: plan.timeline,
                         window: TimelineWindow.rolling(now: plan.now, hoursBefore: 2, hoursAfter: 9, calendar: context.calendar),
                         now: plan.now, hourHeight: 64,
-                        style: TimelineStyle(eventFont: .subheadline, taskFont: .subheadline,
-                                             eventLineHeight: UIFont.preferredFont(forTextStyle: .subheadline).lineHeight,
-                                             taskLineHeight: UIFont.preferredFont(forTextStyle: .subheadline).lineHeight,
-                                             minimumItemHeight: 34)) { item, _ in
+                        style: TimelineStyle.make(BundledConfig.settings.timeline, tokens: BundledConfig.tokens)) { item, _ in
             TaskRowView(item: item, showsDetails: false)
         }
         .padding()

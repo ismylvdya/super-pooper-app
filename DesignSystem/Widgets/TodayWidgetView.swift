@@ -72,12 +72,14 @@ struct WidgetTimelineBlock: View {
     var body: some View {
         VStack(alignment: .leading, spacing: tokens.space(.widgetGap)) {
             if !plan.allDayEvents.isEmpty {
-                AllDayStrip(events: plan.allDayEvents, font: tokens.font(.widgetCaption), lineHeight: tokens.size(.widgetAllDayLine), onTap: nil)
+                AllDayStrip(events: plan.allDayEvents, font: fonts.allDay, lineHeight: fonts.allDayLineHeight, onTap: nil)
             }
             // The widget shows a cut of the day: both ends fade.
             scaledTimeline.fadingEdges(top: true, bottom: true)
         }
     }
+
+    private var fonts: TimelineFonts { .widget(tokens: tokens) }
 
     private var scaledTimeline: some View {
         GeometryReader { geometry in
@@ -100,11 +102,8 @@ struct WidgetTimelineBlock: View {
     private func style(hourHeight: CGFloat) -> TimelineStyle {
         // That many minutes in the current scale, but never less than one line of text.
         let minutes = hourHeight * CGFloat(rules.widgets.minimumBlockMinutes) / CGFloat(TimelineWindow.hour / 60)
-        let minimum = max(minutes, tokens.uiFont(.widgetCaption).lineHeight + tokens.space(.compactPlateVertical) * 2)
-        let line = tokens.uiFont(.widgetCaption).lineHeight
-        var style = TimelineStyle(eventFont: tokens.font(.widgetCaption), taskFont: tokens.font(.widgetCaption),
-                                  eventLineHeight: line, taskLineHeight: line,
-                                  minimumItemHeight: minimum, minimumTaskHeight: minimum)
+        let minimum = max(minutes, fonts.taskLineHeight + tokens.space(.compactPlateVertical) * 2)
+        var style = TimelineStyle(fonts: fonts, minimumItemHeight: minimum, minimumTaskHeight: minimum)
         style.compactPlates = true
         return style
     }
@@ -112,7 +111,7 @@ struct WidgetTimelineBlock: View {
     /// As on the app's timeline: what is finished has left it, the rest is shown plainly (a twice-a-day habit after its
     /// first Done too).
     private func row(_ item: DayItem) -> some View {
-        TaskRowView(item: item, titleFont: tokens.font(.widgetCaption), showsDetails: false, titleLineLimit: 1,
-                    titleLineHeight: tokens.uiFont(.widgetCaption).lineHeight, showsDoneState: false)
+        TaskRowView(item: item, titleFont: fonts.task, showsDetails: false, titleLineLimit: 1,
+                    titleLineHeight: fonts.taskLineHeight, showsDoneState: false)
     }
 }
