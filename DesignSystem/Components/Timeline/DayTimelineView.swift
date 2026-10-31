@@ -17,11 +17,13 @@ struct DayTimelineView<TaskContent: View>: View {
     var body: some View {
         let links = TimelineLinks(slots: slots, calendar: calendar)
         let highlighted = style.highlightedSlot.map(links.connected(to:))
+        let placements = layout.place(slots)
         GeometryReader { geometry in
             let itemsWidth = max(geometry.size.width - labelWidth, 0)
+            let blocks = placements.map { PlacedSlot($0, width: itemsWidth) }
             ZStack(alignment: .topLeading) {
                 hourGrid(width: geometry.size.width)
-                ForEach(placed(width: itemsWidth)) { item in
+                ForEach(blocks) { item in
                     let isLinked = links.isLinked(item.slot.id)
                     block(for: item.slot)
                         .environment(\.titleReserve, cornerWidth(linked: isLinked, alerts: item.slot.alerts))
@@ -38,13 +40,13 @@ struct DayTimelineView<TaskContent: View>: View {
                                height: max(item.frame.height - tokens.space(.timelineItemGap), 0), alignment: .topLeading)
                         .offset(x: labelWidth + item.frame.minX, y: item.frame.minY)
                 }
-                if style.showsNow, window.contains(now) { nowLine(width: geometry.size.width, blocks: placed(width: itemsWidth)) }
+                if style.showsNow, window.contains(now) { nowLine(width: geometry.size.width, blocks: blocks) }
                 if let marker = style.dropMarker, window.contains(marker) {
                     TimelineDropMarker(moment: marker, labelWidth: labelWidth, width: geometry.size.width).offset(y: y(marker))
                 }
             }
         }
-        .frame(height: max(totalHeight, contentBottom))
+        .frame(height: max(totalHeight, CGFloat(placements.map(\.bottom).max() ?? 0)))
     }
 
     /// Dense widget plates: the bell sits as far from the right edge as from the top and bottom of a one-line block.
@@ -60,8 +62,6 @@ struct DayTimelineView<TaskContent: View>: View {
         return cornerInset + marks.reduce(0, +) + tokens.space(.chipVertical) * CGFloat(marks.count - 1)
     }
 
-    private var contentBottom: CGFloat { CGFloat(placed(width: 1).map(\.frame.maxY).max() ?? 0) }
-
     private var labelWidth: CGFloat { style.showsHourLabels ? tokens.space(.timelineLabelWidth) : 0 }
     private var totalHeight: CGFloat { CGFloat(window.hours) * hourHeight }
 
@@ -69,42 +69,23 @@ struct DayTimelineView<TaskContent: View>: View {
         CGFloat(window.offset(of: date, hourHeight: Double(hourHeight)))
     }
 
+    /// Where the blocks go (`TimelineBlockLayout`), worked out once per drawing.
+    private var layout: TimelineBlockLayout {
+        TimelineBlockLayout(window: window, hourHeight: Double(hourHeight), minimumEventHeight: Double(style.minimumItemHeight),
+                            minimumTaskHeight: Double(style.minimumTaskHeight ?? style.minimumItemHeight))
+    }
+
+    /// A placed block in a column of the drawn width.
     private struct PlacedSlot: Identifiable {
         let slot: TimelineSlot
         let frame: CGRect
         var id: String { slot.id }
-    }
 
-    /// Blocks get at least the minimum height. A block that does not overlap an earlier one in time
-    /// but would overlap it visually is pushed below it (so short chains read top to bottom);
-    /// blocks that really overlap in time share the width in columns, like in Calendar.
-    private func placed(width: CGFloat) -> [PlacedSlot] {
-        let visible = slots.filter { $0.end > window.start && $0.start < window.end }
-            .sorted { $0.start != $1.start ? $0.start < $1.start : $0.end > $1.end }
-        var extents: [(start: Double, end: Double)] = []
-        for (index, slot) in visible.enumerated() {
-            var top = y(max(slot.start, window.start))
-            let height = max(y(min(slot.end, window.end)) - top, minimumHeight(of: slot))
-            for earlier in visible.indices where earlier < index && visible[earlier].end <= slot.start {
-                top = max(top, CGFloat(extents[earlier].end))
-            }
-            extents.append((Double(top), Double(top + height)))
+        init(_ placement: TimelineBlockLayout.Placement, width: CGFloat) {
+            let horizontal = placement.horizontal(in: Double(width))
+            slot = placement.slot
+            frame = CGRect(x: horizontal.x, y: placement.top, width: horizontal.width, height: placement.height)
         }
-        let placements = ColumnAssigner.assign(extents)
-        return zip(visible, zip(extents, placements)).map { slot, pair in
-            let (extent, placement) = pair
-            let columnWidth = width / CGFloat(placement.columnCount)
-            return PlacedSlot(slot: slot, frame: CGRect(x: CGFloat(placement.column) * columnWidth, y: extent.start,
-                                                        width: columnWidth, height: extent.end - extent.start))
-        }
-    }
-
-    private func minimumHeight(of slot: TimelineSlot) -> CGFloat {
-        switch slot.content {
-        case .task, .reminder: return style.minimumTaskHeight ?? style.minimumItemHeight
-        case .event: break
-        }
-        return style.minimumItemHeight
     }
 
     @ViewBuilder private func block(for slot: TimelineSlot) -> some View {
