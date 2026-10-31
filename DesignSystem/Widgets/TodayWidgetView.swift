@@ -116,8 +116,10 @@ struct WidgetTimelineBlock: View {
         return style
     }
 
+    /// As on the app's timeline: what is finished has left it, the rest is shown plainly (a twice-a-day habit after its
+    /// first Done too).
     private func row(_ item: DayItem) -> some View {
         TaskRowView(item: item, today: plan.today, titleFont: tokens.font(.widgetCaption), showsDetails: false, titleLineLimit: 1,
-                    titleLineHeight: tokens.uiFont(.widgetCaption).lineHeight)
+                    titleLineHeight: tokens.uiFont(.widgetCaption).lineHeight, showsDoneState: false)
     }
 }
