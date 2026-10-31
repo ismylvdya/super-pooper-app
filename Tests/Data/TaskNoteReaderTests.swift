@@ -90,6 +90,18 @@ struct TaskNoteReaderTests {
         #expect(try read("due: 2026-10-23T16:00:00").due == TaskDue("2026-10-23T16:00"))
     }
 
+    /// A `due` written as a moment (a skill, another app) is moved to the phone's clock (Belgrade, UTC+2 on 23 October),
+    /// or to the item's own zone, instead of losing its offset.
+    @Test func aDueWithAnOffsetIsConvertedNotCut() throws {
+        #expect(try read("due: 2026-10-23T16:00Z").due == TaskDue("2026-10-23T18:00"))
+        #expect(try read("due: 2026-10-23T16:00:00.000+03:00").due == TaskDue("2026-10-23T15:00"))
+        #expect(try read("due: 2026-10-23T23:30-05:00").due == TaskDue("2026-10-24T06:30"))
+        let zoned = try read("due: 2026-10-23T16:00Z\nfromSuperPooperApp: '{\"time_zone\":\"Asia/Jakarta\"}'")
+        #expect(zoned.due == TaskDue("2026-10-23T23:00"))
+        #expect(zoned.problems.isEmpty)
+        #expect(try read("due: 2026-10-23T16:00 in the evening").problems == [.invalidField(key: "due", value: "2026-10-23T16:00 in the evening")])
+    }
+
     private func read(_ frontmatter: String) throws -> TaskNote {
         let text = "---\ntags:\n  - 🔫делишка\n\(frontmatter)\n---\n"
         return reader.task(from: try FrontmatterDocument(text: text), name: "Задача", relativePath: "TaskNotes/Tasks/Задача.md")

@@ -34,6 +34,11 @@ enum ZonedTimes {
         }
     }
 
+    /// The calendar on whose clock the task keeps its times: its own zone, or the phone's.
+    static func calendar(of task: TaskNote, phone calendar: Calendar) -> Calendar {
+        ownCalendar(of: task, phone: calendar) ?? calendar
+    }
+
     /// The task's own zone when it has one other than the phone's.
     private static func ownCalendar(of task: TaskNote, phone calendar: Calendar) -> Calendar? {
         guard let id = task.timeZone, let zone = TimeZone(identifier: id), zone.identifier != calendar.timeZone.identifier else {

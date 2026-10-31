@@ -24,7 +24,10 @@ struct TaskNoteReader: Sendable {
         var task = TaskNote(name: name, relativePath: relativePath,
                             status: fields.string(keys.status).map(mapping.status(fromRaw:)) ?? .other(""))
         task.isHighPriority = fields.string(keys.priority) == mapping.priorities.high
-        task.due = fields.parsed(keys.due, TaskDue.init(rawValue:))
+        task.timeZone = fields.string(keys.timeZone).flatMap { TimeZone(identifier: $0) == nil ? nil : $0 }
+        // TaskNotes writes a clock time; a moment with an offset (a skill, another app) is moved to the item's clock.
+        let dueCalendar = ZonedTimes.calendar(of: task, phone: calendar)
+        task.due = fields.parsed(keys.due) { TaskDue(rawValue: $0) ?? TaskDue(moment: $0, in: dueCalendar) }
         task.timeEstimate = fields.int(keys.timeEstimate)
         task.previousTasks = fields.links(keys.previousTasks)
         task.projects = fields.links(keys.projects)
@@ -44,7 +47,6 @@ struct TaskNoteReader: Sendable {
         task.partialInstances = fields.dates(keys.partialInstances)
         task.twiceInstances = fields.dates(keys.twiceInstances)
         task.reminderTimes = fields.times(keys.reminderTimes)
-        task.timeZone = fields.string(keys.timeZone).flatMap { TimeZone(identifier: $0) == nil ? nil : $0 }
         task.habit = habitOptions(&fields)
         task.completedDate = fields.parsed(keys.completedDate, LocalDate.init(isoString:))
         if let created = fields.string(keys.dateCreated) {
@@ -181,7 +183,7 @@ private struct FieldReader {
     }
 
     mutating func moment(_ text: String, key: String, calendar: Calendar) -> Date? {
-        if let date = ISO8601.parse(text) { return date }
+        if let date = ISO8601.parse(text) ?? WrittenTimestamp(text)?.moment { return date }
         if let day = LocalDate(isoString: text) {
             if text.count == 10 { return day.startDate(in: calendar) }
             if let due = TaskDue(rawValue: text) { return due.date(in: calendar) }
