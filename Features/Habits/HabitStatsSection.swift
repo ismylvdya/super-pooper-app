@@ -52,7 +52,7 @@ struct HabitStatsSection: View {
     private func value(_ text: String, title: Text, detail: String?) -> some View {
         VStack(alignment: .leading, spacing: tokens.space(.titleDetailGap)) {
             Text(verbatim: text).font(tokens.font(.statValue))
-            title.font(tokens.font(.caption)).foregroundStyle(tokens.color(.secondaryText))
+            title.secondaryText()
             if let detail { Text(verbatim: detail).font(tokens.font(.caption)).foregroundStyle(tokens.color(.tertiaryText)) }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -83,7 +83,7 @@ struct BarRow: View {
     var body: some View {
         let top = max(bars.map(\.value).max() ?? 0, 1)
         VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
-            Text(title).font(tokens.font(.caption)).foregroundStyle(tokens.color(.secondaryText))
+            Text(title).secondaryText()
             HStack(alignment: .bottom, spacing: tokens.space(.habitCellGap)) {
                 ForEach(Array(bars.enumerated()), id: \.offset) { _, bar in
                     VStack(spacing: tokens.space(.titleDetailGap)) {
@@ -91,7 +91,7 @@ struct BarRow: View {
                         RoundedRectangle(cornerRadius: tokens.radius(.habitCell), style: .continuous)
                             .fill(color.opacity(bar.value == 0 ? tokens.opacity(.habitEmpty) : 1))
                             .frame(height: max(tokens.size(.habitStatsBar) * CGFloat(bar.value) / CGFloat(top), 2))
-                        Text(verbatim: bar.label).font(tokens.font(.caption)).foregroundStyle(tokens.color(.secondaryText))
+                        Text(verbatim: bar.label).secondaryText()
                     }
                     .frame(maxWidth: .infinity)
                 }

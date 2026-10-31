@@ -26,10 +26,7 @@ struct ListsScreen: View {
         }
         // The Done list counts the filed tasks too.
         .task { await model.loadFiledTasks() }
-        .refreshable {
-            await model.sync(announce: true)
-            await model.loadFiledTasks()
-        }
+        .syncsOnPull { await model.loadFiledTasks() }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { router.open(.search(.tasks)) } label: { Image(systemName: icons[.search]) }

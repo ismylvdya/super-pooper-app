@@ -20,6 +20,14 @@ enum ActionID: String, Codable, CaseIterable, Sendable {
 }
 
 extension ActionID {
+    /// Done, Partially, Twice and Unmark: the actions that set a habit's mark for a day (Unmark: none).
+    var setsHabitMark: Bool {
+        switch self {
+        case .done, .partial, .twice, .unmark: true
+        default: false
+        }
+    }
+
     /// The habit mark a menu or notification action sets (`nil`: Unmark, and the actions that set no mark).
     var habitMark: HabitMark? {
         switch self {

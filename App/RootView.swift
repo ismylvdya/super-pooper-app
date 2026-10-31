@@ -35,7 +35,7 @@ struct RootView: View {
                                     .systemTabBar(isShown: physicalBottom == nil)
                                     .navigationDestination(for: Route.self) { route in
                                         destination(route, in: tab)
-                                            .refreshable { await model.sync(announce: true) }
+                                            .syncsOnPull()
                                             .systemTabBar(isShown: physicalBottom == nil)
                                     }
                             }

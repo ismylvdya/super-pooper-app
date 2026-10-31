@@ -52,8 +52,7 @@ struct PoolBlock: View {
         VStack(alignment: .leading, spacing: tokens.space(.poolRowGap)) {
             if plan.pool.isEmpty {
                 Text("pool.empty")
-                    .font(tokens.font(.hint))
-                    .foregroundStyle(tokens.color(.secondaryText))
+                    .secondaryText(.hint)
                     .frame(maxWidth: .infinity, minHeight: tokens.size(.poolCounter))
                 if fillsHeight { Spacer(minLength: 0) }
             } else {
@@ -82,7 +81,7 @@ struct PoolBlock: View {
         .contentMargins(.bottom, bottomInset + tokens.space(.scrollEndRoom), for: .scrollContent)
         .scrollBounceBehavior(.always)
         .scrollIndicators(.hidden)
-        .refreshable { await model.sync(announce: true) }
+        .syncsOnPull()
         .edgeFades(bottomExtension: bottomInset)
         .liftRoom()
     }
@@ -193,7 +192,7 @@ struct PoolRowContent: View {
         }
         .plateLift(.row, for: .contextMenuPreview)
         .contextMenu {
-            ActionMenuContent(menu: item.isHabit ? .habitContext : .taskContext, item: item, isToday: isToday) {
+            ActionMenuContent(menu: .context(of: item.task), item: item, isToday: isToday) {
                 handler.handle($0, taskName: item.id)
             }
         }

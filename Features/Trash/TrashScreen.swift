@@ -12,7 +12,7 @@ struct TrashScreen: View {
     var body: some View {
         PageScaffold(title: L10n.string("trash.title")) {
             if model.trashedNotes.isEmpty {
-                Text("trash.empty").font(tokens.font(.hint)).foregroundStyle(tokens.color(.secondaryText))
+                Text("trash.empty").secondaryText(.hint)
             } else {
                 PlateSection(header: nil, hint: "trash.hint") {
                     ForEach(model.trashedNotes.filter { SearchMatcher.matches($0.name, query) }) { note in
@@ -51,7 +51,7 @@ private struct TrashRow: View {
                     Text(note.name).foregroundStyle(tokens.color(.primaryText)).multilineTextAlignment(.leading)
                     if let date = note.trashedAt {
                         Text(DateText.format(date, Date.FormatStyle(date: .abbreviated, time: .shortened), calendar: model.calendar))
-                            .font(tokens.font(.caption)).foregroundStyle(tokens.color(.secondaryText))
+                            .secondaryText()
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)

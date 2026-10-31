@@ -1,21 +1,28 @@
 import SwiftUI
 
 extension View {
-    /// On the scroll view (or list): keeps `isVisible` true while the large page title at the top of its content
-    /// (`titleHeight` points with its top padding) still shows at least `largeTitleVisible` of itself.
-    /// Read from the scroll offset, so a page that opens shows no bar title for a moment, and list rows that are
-    /// reused do not lose it.
-    func tracksLargeTitle(_ isVisible: Binding<Bool>, titleHeight: CGFloat) -> some View {
-        modifier(LargeTitleTracking(isVisible: isVisible, titleHeight: titleHeight))
-    }
-
-    /// The page title in the navigation bar: clear while the large title is on screen, shown once it scrolls
-    /// away (shrinking to fit between the bar buttons).
-    func barTitle(_ title: String, isHidden: Bool) -> some View {
-        modifier(BarTitle(title: title, isHidden: isHidden))
+    /// On the scroll view (or list) whose content starts with a `LargePageTitle` `titleHeight` high: once the large
+    /// title scrolls away, `title` shows in the navigation bar.
+    func titleScrollsIntoBar(_ title: String, titleHeight: CGFloat) -> some View {
+        modifier(TitleIntoBar(title: title, titleHeight: titleHeight))
     }
 }
 
+private struct TitleIntoBar: ViewModifier {
+    let title: String
+    let titleHeight: CGFloat
+    @State private var isLargeTitleVisible = true
+
+    func body(content: Content) -> some View {
+        content
+            .modifier(LargeTitleTracking(isVisible: $isLargeTitleVisible, titleHeight: titleHeight))
+            .modifier(BarTitle(title: title, isHidden: isLargeTitleVisible))
+    }
+}
+
+/// Keeps `isVisible` true while the large title (`titleHeight` points with its top padding) still shows at least
+/// `largeTitleVisible` of itself. Read from the scroll offset, so a page that opens shows no bar title for a moment,
+/// and list rows that are reused do not lose it.
 private struct LargeTitleTracking: ViewModifier {
     @Environment(\.tokens) private var tokens
     @Binding var isVisible: Bool
@@ -32,6 +39,8 @@ private struct LargeTitleTracking: ViewModifier {
     }
 }
 
+/// The page title in the navigation bar: clear while the large title is on screen, shown once it scrolls away
+/// (shrinking to fit between the bar buttons).
 private struct BarTitle: ViewModifier {
     @Environment(\.tokens) private var tokens
     let title: String

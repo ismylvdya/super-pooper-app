@@ -63,13 +63,13 @@ struct SourcePickerScreen: View {
                 }
             }
             Text(kind.hint)
-                .font(tokens.font(.hint))
-                .foregroundStyle(tokens.color(.secondaryText))
+                .secondaryText(.hint)
         }
     }
 
     private var groups: [(title: String, items: [SourceCollection])] {
-        Dictionary(grouping: kind.available(in: model), by: \.sourceTitle).map { ($0.key, $0.value) }.sorted { $0.title < $1.title }
+        Dictionary(grouping: kind.available(in: model), by: \.sourceTitle).map { ($0.key, $0.value) }
+            .sorted { NameOrder.precedes($0.title, $1.title) }
     }
 
     private var selected: Set<String> {

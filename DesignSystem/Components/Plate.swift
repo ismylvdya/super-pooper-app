@@ -73,8 +73,7 @@ struct PlateHint: View {
 
     var body: some View {
         text
-            .font(tokens.font(.hint))
-            .foregroundStyle(tokens.color(.secondaryText))
+            .secondaryText(.hint)
             .padding(.horizontal, tokens.space(.plateInner))
             .padding(.top, tokens.space(.hintToPlate))
     }

@@ -14,7 +14,6 @@ struct TodayScreen: View {
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     @Environment(\.rules) private var rules
-    @Environment(\.icons) private var icons
     @Environment(\.openURL) private var openURL
     @Environment(\.physicalBottom) private var physicalBottom
     @State private var pendingAction: PendingAction?

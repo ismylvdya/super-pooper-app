@@ -88,8 +88,7 @@ struct WeekdayHeader: View {
         HStack(spacing: metrics.spacing) {
             ForEach(Weekday.allCases, id: \.self) { day in
                 Text(verbatim: day.name(.initial, in: calendar))
-                    .font(tokens.font(.caption))
-                    .foregroundStyle(tokens.color(.secondaryText))
+                    .secondaryText()
                     .frame(width: metrics.cell)
             }
         }
@@ -139,15 +138,9 @@ enum HabitMarkIcon {
         }
     }
 
-    /// The habit mark an action stands for, if it is one.
+    /// The habit mark an action sets, if it sets one (Unmark: the open mark).
     static func icon(for action: ActionID) -> Icon? {
-        switch action {
-        case .done: .habitMarkDone
-        case .partial: .habitMarkPartial
-        case .twice: .habitMarkTwice
-        case .unmark: .habitMarkOpen
-        default: nil
-        }
+        action.setsHabitMark ? icon(for: action.habitMark) : nil
     }
 }
 

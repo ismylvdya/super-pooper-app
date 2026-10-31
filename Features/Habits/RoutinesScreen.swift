@@ -26,7 +26,7 @@ struct RoutinesScreen: View {
         let members = HabitRoutines.members(part, of: model.habits, order: model.settings.habits[keyPath: keyPath])
         ListGroupHeader(title: Text(title))
         if members.isEmpty {
-            Text("routines.empty").font(tokens.font(.hint)).foregroundStyle(tokens.color(.secondaryText))
+            Text("routines.empty").secondaryText(.hint)
                 .listGroupRow(group: part.rawValue, id: "empty", isFirst: true, isLast: true, frames: frames)
         }
         ForEach(Array(members.enumerated()), id: \.element.name) { index, habit in

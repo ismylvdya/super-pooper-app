@@ -65,7 +65,7 @@ struct TimelineBlock: View {
                 .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y + $0.contentInsets.top } action: { _, new in scrollOffset = new }
                 .scrollBounceBehavior(.always)
                 .scrollIndicators(.hidden)
-                .refreshable { await model.sync(announce: true) }
+                .syncsOnPull()
                 // The hours dissolve from the strip's bottom down.
                 .edgeFades(topInset: stripHeight == 0 ? 0 : liftRoom.top + stripHeight + pull, bottomExtension: bottomInset)
                 .liftRoom(extraTop: stripRoom)
@@ -125,7 +125,7 @@ struct TimelineBlock: View {
                 .contentMargins(.bottom, bottomInset + tokens.space(.scrollEndRoom), for: .scrollContent)
                 .scrollBounceBehavior(.always)
                 .scrollIndicators(.hidden)
-                .refreshable { await model.sync(announce: true) }
+                .syncsOnPull()
             }
         }
     }

@@ -43,10 +43,7 @@ struct TaskListScreen: View {
             }
         }
         .task { await model.openList(listID) }
-        .refreshable {
-            await model.sync(announce: true)
-            await model.openList(listID)
-        }
+        .syncsOnPull { await model.openList(listID) }
         .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
     }
 
@@ -60,7 +57,7 @@ struct TaskListScreen: View {
                     Spacer(minLength: 0)
                     if let day = task.completedDate {
                         Text(DateText.format(day, Date.FormatStyle(date: .abbreviated, time: .omitted), calendar: model.calendar))
-                            .font(tokens.font(.caption)).foregroundStyle(tokens.color(.secondaryText))
+                            .secondaryText()
                     }
                 }
                 .listGroupRow(group: "filed", id: task.name, isFirst: index == 0, isLast: index == filed.count - 1,
@@ -91,7 +88,7 @@ struct TaskListScreen: View {
         .listGroupRow(group: group, id: task.name, isFirst: isFirst, isLast: isLast, frames: frames)
         // The pool's menu for the task (Not today has no place outside Today).
         .contextMenu {
-            ActionMenuContent(menu: task.isHabit ? .habitContext : .taskContext, item: DayItem(listed: task), isToday: false) {
+            ActionMenuContent(menu: .context(of: task), item: DayItem(listed: task), isToday: false) {
                 handler.handle($0, taskName: task.name)
             }
         }

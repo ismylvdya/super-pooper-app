@@ -9,7 +9,6 @@ struct NewNoteScreen: View {
 
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
-    @Environment(\.tokens) private var tokens
     let kind: Kind
     /// The tab whose stack shows the page; nil in the This week sheet, which no tab can hide.
     var tab: AppTab?
@@ -27,8 +26,7 @@ struct NewNoteScreen: View {
             case .habit: HabitSections(editor: editor)
             }
             Text(kind == .task ? "task.new.hint" : "habits.new.hint")
-                .font(tokens.font(.hint))
-                .foregroundStyle(tokens.color(.secondaryText))
+                .secondaryText(.hint)
         }
         .navigationBarBackButtonHidden(current.nameProblem(model.nameProblem(in:)) != nil)
         .onAppear { if page == nil { page = current } }

@@ -68,7 +68,7 @@ final class AppContainer {
             case .event: L10n.string("notification.event.body")
             }
         }, actionTitle: { L10n.string($0) }, habitIcon: NotificationIcon(symbolName: config.icons[.habit], color: {
-            settingsStore.load().colors[ColorToken.habit.rawValue].flatMap { UIColor(hex: $0) } ?? UIColor(config.tokens.color(.habit))
+            config.tokens.applying(settingsStore.load(), limits: config.rules.limits).uiColor(.habit)
         }, isShown: { settingsStore.load().habits.showsNotificationPicture },
            usesHabitColor: { settingsStore.load().habits.notificationUsesHabitColor },
            pointSize: config.tokens.size(.notificationIcon), image: notificationImage))

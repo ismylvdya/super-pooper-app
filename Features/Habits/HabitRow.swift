@@ -49,8 +49,7 @@ extension HabitRow {
                 }
                 ForEach(0..<bells, id: \.self) { _ in Image(systemName: icons[.bell]) }
             }
-            .font(tokens.font(.hint))
-            .foregroundStyle(tokens.color(.secondaryText))
+            .secondaryText(.hint)
         }
     }
 }

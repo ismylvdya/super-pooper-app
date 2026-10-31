@@ -9,7 +9,6 @@ struct HabitsScreen: View {
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
-    @State private var isLargeTitleVisible = true
     @State private var titleHeight: CGFloat = 0
     @State private var query = ""
     @State private var isSearching = false
@@ -19,14 +18,10 @@ struct HabitsScreen: View {
         let today = model.context().today
         let groups = HabitGroups(model.habits.filter { SearchMatcher.matches($0.name, query) })
         List {
-            Text("tab.habits")
-                .font(tokens.font(.pageTitle))
-                .frame(maxWidth: .infinity)
-                .padding(.top, tokens.space(.nestedTitleLift))
-                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { titleHeight = $0 }
+            LargePageTitle(isNested: false, height: $titleHeight) { Text("tab.habits") }
                 .listGroupSpacer()
             if model.habits.isEmpty {
-                Text("habits.empty").font(tokens.font(.hint)).foregroundStyle(tokens.color(.secondaryText))
+                Text("habits.empty").secondaryText(.hint)
                     .listGroupSpacer()
             }
             group(groups.tracked, header: nil, groups: groups, isRepeatable: false, today: today)
@@ -44,13 +39,12 @@ struct HabitsScreen: View {
         }
         .listGroupStyle()
         .listGroupBacking(frames)
-        .tracksLargeTitle($isLargeTitleVisible, titleHeight: titleHeight)
+        .titleScrollsIntoBar(L10n.string("tab.habits"), titleHeight: titleHeight)
         .appList()
         // The title starts where the other tabs' page titles start, not under the list's own top margin.
         .contentMargins(.top, 0, for: .scrollContent)
         .pageSearch(query: $query, isSearching: $isSearching, prompt: "search.prompt.tasks")
-        .refreshable { await model.sync(announce: true) }
-        .barTitle(L10n.string("tab.habits"), isHidden: isLargeTitleVisible)
+        .syncsOnPull()
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Button { router.open(.newHabit) } label: { Image(systemName: icons[.newTask]) }

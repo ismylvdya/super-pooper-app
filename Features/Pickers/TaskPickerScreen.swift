@@ -19,7 +19,7 @@ struct TaskPickerScreen: View {
                     HStack {
                         Text(task.name).foregroundStyle(tokens.color(.primaryText))
                         Spacer()
-                        Text(StatusText.title(task.status)).font(tokens.font(.hint)).foregroundStyle(tokens.color(.secondaryText))
+                        Text(StatusText.title(task.status)).secondaryText(.hint)
                     }
                 }
             }

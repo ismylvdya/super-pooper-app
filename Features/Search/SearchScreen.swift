@@ -28,7 +28,7 @@ struct SearchScreen: View {
                             HStack(spacing: tokens.space(.iconTextGap)) {
                                 TaggedTaskName(name: task.name)
                                 Spacer()
-                                Text(StatusText.title(task.status)).font(tokens.font(.caption)).foregroundStyle(tokens.color(.secondaryText))
+                                Text(StatusText.title(task.status)).secondaryText()
                             }
                         }
                         .listRowBackground(tokens.color(.plateBackground))
@@ -45,7 +45,7 @@ struct SearchScreen: View {
                                 Spacer()
                                 Text(DateText.format(event.start, Date.FormatStyle(date: .abbreviated, time: event.isAllDay ? .omitted : .shortened),
                                                      calendar: model.calendar))
-                                    .font(tokens.font(.caption)).foregroundStyle(tokens.color(.secondaryText))
+                                    .secondaryText()
                             }
                         }
                         .listRowBackground(tokens.color(.plateBackground))
