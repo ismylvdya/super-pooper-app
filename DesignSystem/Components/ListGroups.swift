@@ -95,11 +95,14 @@ enum ListGroupGeometry {
 }
 
 extension View {
-    /// One row of a group (see `ListGroupFrames`): its own plate, a separator under it unless it closes the group,
-    /// a lift of exactly its size and shape, and its place reported for the backing.
+    /// One row of a group (see `ListGroupFrames`): its own plate with the rows' insets, a separator under it unless it
+    /// closes the group, a lift of exactly its size and shape, and its place reported for the backing. The text starts
+    /// as far from the left as on the plates elsewhere; `vertical` is the inset above and below it (nil: a list row's),
+    /// `separatorIndent` how much further right than the text the separator starts (past an icon column).
     func listGroupRow(group: String, id: String, isFirst: Bool, isLast: Bool, frames: ListGroupFrames,
-                      separatorInset: CGFloat) -> some View {
-        modifier(ListGroupRow(group: group, id: id, isFirst: isFirst, isLast: isLast, frames: frames, separatorInset: separatorInset))
+                      vertical: CGFloat? = nil, separatorIndent: CGFloat = 0) -> some View {
+        modifier(ListGroupRow(group: group, id: id, isFirst: isFirst, isLast: isLast, frames: frames, vertical: vertical,
+                              separatorIndent: separatorIndent))
     }
 
     /// The backing plates of the list's groups, drawn behind it.
@@ -129,15 +132,19 @@ private struct ListGroupRow: ViewModifier {
     let isFirst: Bool
     let isLast: Bool
     let frames: ListGroupFrames
-    let separatorInset: CGFloat
+    let vertical: CGFloat?
+    let separatorIndent: CGFloat
 
     func body(content: Content) -> some View {
+        let inset = tokens.space(.plateInner)
         content
+            .padding(.horizontal, inset)
+            .padding(.vertical, vertical ?? tokens.space(.listRowVertical))
             .frame(maxWidth: .infinity, alignment: .leading)
             .plate(.group)
             .overlay(alignment: .bottom) {
                 if !isLast {
-                    Rectangle().fill(tokens.color(.listSeparator)).frame(height: 1 / displayScale).padding(.leading, separatorInset)
+                    Rectangle().fill(tokens.color(.listSeparator)).frame(height: 1 / displayScale).padding(.leading, inset + separatorIndent)
                 }
             }
             .contentShape(Rectangle())
@@ -191,19 +198,15 @@ private struct ListGroupStyle: ViewModifier {
     }
 }
 
-/// A group's title, standing in the list as a row of its own (so rows can be dragged across it), as far from the
-/// left as the rows' text and as high above its group as section headers on the plates elsewhere.
+/// A group's title, standing in the list as a row of its own (so rows can be dragged across it): a plate's header
+/// (`PlateHeader`) a group gap below the group above.
 struct ListGroupHeader: View {
     @Environment(\.tokens) private var tokens
     let title: Text
 
     var body: some View {
-        title
-            .font(tokens.font(.sectionHeader))
-            .foregroundStyle(tokens.color(.tertiaryText))
-            .padding(.horizontal, tokens.space(.plateInner))
+        PlateHeader(title: title)
             .padding(.top, tokens.space(.groupGap))
-            .padding(.bottom, tokens.space(.headerToPlate))
             .frame(maxWidth: .infinity, alignment: .leading)
             .listGroupSpacer()
     }
@@ -218,17 +221,12 @@ struct ListGroupGap: View {
     }
 }
 
-/// A hint under a group, as under the plates elsewhere.
+/// A hint under a group: a plate's hint (`PlateHint`).
 struct ListGroupFooter: View {
-    @Environment(\.tokens) private var tokens
     let text: Text
 
     var body: some View {
-        text
-            .font(tokens.font(.hint))
-            .foregroundStyle(tokens.color(.secondaryText))
-            .padding(.horizontal, tokens.space(.plateInner))
-            .padding(.top, tokens.space(.hintToPlate))
+        PlateHint(text: text)
             .frame(maxWidth: .infinity, alignment: .leading)
             .listGroupSpacer()
     }

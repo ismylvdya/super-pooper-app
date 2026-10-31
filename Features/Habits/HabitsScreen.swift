@@ -76,7 +76,8 @@ struct HabitsScreen: View {
                 let isFirst = index == 0, isLast = index == habits.count - 1
                 HabitRow(habit: habit, today: today)
                     .listGroupRow(group: isRepeatable ? "repeatable" : "tracked", id: habit.name, isFirst: isFirst, isLast: isLast,
-                                  frames: frames, separatorInset: tokens.space(.plateInner) + tokens.size(.iconColumn) + tokens.space(.iconTextGap))
+                                  frames: frames, vertical: tokens.space(.rowVertical) / 2,
+                                  separatorIndent: tokens.size(.iconColumn) + tokens.space(.iconTextGap))
                     // A long press lifts the row and offers today's marks.
                     .contextMenu { HabitDayMenu(habit: habit, day: today) }
             }

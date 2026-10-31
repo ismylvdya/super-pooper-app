@@ -75,24 +75,13 @@ struct HeaderNameField: View {
     @State private var isRenaming = false
 
     var body: some View {
-        TextField(task.isHabit ? "habitPage.name.placeholder" : "taskPage.name.field", text: $draft, axis: .vertical)
-            .multilineTextAlignment(.center)
-            // A habit's name is in its color, as in the Habits list.
-            .foregroundStyle(task.isHabit ? tokens.habitNameColor(task) : tokens.color(.primaryText))
-            .submitLabel(.done)
-            .focused($isEditing)
+        // A habit's name is in its color, as in the Habits list.
+        TitleTextField(placeholder: task.isHabit ? "habitPage.name.placeholder" : "taskPage.name.field", text: $draft,
+                       color: task.isHabit ? tokens.habitNameColor(task) : tokens.color(.primaryText), isFocused: $isEditing)
             .onSubmit { commit() }
-            .onChange(of: draft) { _, value in
-                // Return in a vertical field inserts a newline: treat it as "done".
-                if value.contains("\n") {
-                    draft = value.replacingOccurrences(of: "\n", with: "")
-                    isEditing = false
-                }
-            }
             .onAppear { draft = task.name }
             .onChange(of: task.name) { _, name in if !isEditing { draft = name } }
             .onChange(of: isEditing) { _, editing in if !editing { commit() } }
-            .accessibilityIdentifier("taskPage.name")
     }
 
     private func commit() {

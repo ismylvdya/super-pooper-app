@@ -34,13 +34,7 @@ struct PlateSection<Content: View>: View {
         VStack(alignment: .leading, spacing: 0) {
             if let header { PlateHeader(title: header, info: info) }
             Plate { content }
-            if let hint {
-                hint
-                    .font(tokens.font(.hint))
-                    .foregroundStyle(tokens.color(.secondaryText))
-                    .padding(.horizontal, tokens.space(.plateInner))
-                    .padding(.top, tokens.space(.hintToPlate))
-            }
+            if let hint { PlateHint(text: hint) }
         }
     }
 }
@@ -69,6 +63,20 @@ struct PlateHeader: View {
         }
         .padding(.horizontal, tokens.space(.plateInner))
         .padding(.bottom, tokens.space(.headerToPlate))
+    }
+}
+
+/// The hint under a plate (or under a group of a grouped list, `ListGroupFooter`).
+struct PlateHint: View {
+    @Environment(\.tokens) private var tokens
+    let text: Text
+
+    var body: some View {
+        text
+            .font(tokens.font(.hint))
+            .foregroundStyle(tokens.color(.secondaryText))
+            .padding(.horizontal, tokens.space(.plateInner))
+            .padding(.top, tokens.space(.hintToPlate))
     }
 }
 

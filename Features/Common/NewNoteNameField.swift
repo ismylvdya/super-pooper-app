@@ -12,18 +12,8 @@ struct NewNoteNameField: View {
 
     var body: some View {
         VStack(spacing: tokens.space(.titleDetailGap)) {
-            TextField(placeholder, text: $name, axis: .vertical)
-                .multilineTextAlignment(.center)
-                .foregroundStyle(problem == nil ? tokens.color(.primaryText) : tokens.color(.problem))
-                .submitLabel(.done)
-                .focused($isFocused)
-                .onChange(of: name) { _, value in
-                    // Return in a vertical field inserts a newline: it means "done".
-                    guard value.contains("\n") else { return }
-                    name = value.replacingOccurrences(of: "\n", with: "")
-                    isFocused = false
-                }
-                .accessibilityIdentifier("taskPage.name")
+            TitleTextField(placeholder: placeholder, text: $name,
+                           color: problem == nil ? tokens.color(.primaryText) : tokens.color(.problem), isFocused: $isFocused)
             if let problem {
                 Label(NoteNameProblemText.describe(problem, name: name), systemImage: icons[.problem])
                     .font(tokens.font(.hint))

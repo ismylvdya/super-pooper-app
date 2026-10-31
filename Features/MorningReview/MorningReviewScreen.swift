@@ -38,10 +38,10 @@ struct MorningReviewScreen: View {
                                 ReviewRow(item: item, today: plan.today) { path.append(.task(item.id)) }
                                     // A subtask sits under its parent, shifted right, as in the pool.
                                     .padding(.leading, CGFloat(item.depth) * tokens.space(.subtaskIndent))
-                                    .padding(.horizontal, tokens.space(.plateInner))
+                                    // The row keeps its top and bottom inset inside, where a tap opens the task.
                                     .listGroupRow(group: ReviewGroups.group(of: index, in: rows)?.rawValue ?? "", id: name,
-                                                  isFirst: position.isFirst, isLast: position.isLast, frames: frames,
-                                                  separatorInset: tokens.space(.plateInner) + CGFloat(item.depth) * tokens.space(.subtaskIndent))
+                                                  isFirst: position.isFirst, isLast: position.isLast, frames: frames, vertical: 0,
+                                                  separatorIndent: CGFloat(item.depth) * tokens.space(.subtaskIndent))
                                     .contextMenu {
                                         ActionMenuContent(menu: item.isHabit ? .habitContext : .taskContext, item: item) {
                                             perform($0, on: item.id)
@@ -77,9 +77,8 @@ struct MorningReviewScreen: View {
                             ReviewRow(item: DayItem(task: task, state: .open, blockers: [], problems: []), today: plan.today) {
                                 path.append(.task(task.name))
                             }
-                            .padding(.horizontal, tokens.space(.plateInner))
                             .listGroupRow(group: "postponed", id: task.name, isFirst: index == 0, isLast: index == postponed.count - 1,
-                                          frames: frames, separatorInset: tokens.space(.plateInner))
+                                          frames: frames, vertical: 0)
                             .accessibilityIdentifier("review.notToday:\(task.name)")
                             .opacity(tokens.opacity(.blocked))
                             .swipeActions(edge: .leading, allowsFullSwipe: true) {

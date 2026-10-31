@@ -8,14 +8,14 @@ struct HabitRow: View {
     @Environment(\.icons) var icons
     let habit: TaskItem
     let today: LocalDate
-    /// The row's plate width: the history grid of a plate this wide sets the day mark's ring and gap.
-    @State private var plateWidth: CGFloat?
+    /// The width inside the row's plate: the history grid of a plate this wide sets the day mark's ring and gap.
+    @State private var innerWidth: CGFloat?
 
     var body: some View {
         HStack(spacing: tokens.space(.iconTextGap)) {
             // The mark sits in the icon column of the other plates, its circle as wide as an icon;
             // the outer ring of Twice may reach past it.
-            HabitDayButton(habit: habit, day: today, plateWidth: plateWidth)
+            HabitDayButton(habit: habit, day: today, innerWidth: innerWidth)
                 .frame(width: tokens.size(.iconColumn))
             // A button with the app's chevron, as the rows of the other tabs' plates (a list's link has its own).
             Button { router.open(.task(habit.name)) } label: {
@@ -32,10 +32,8 @@ struct HabitRow: View {
             .buttonStyle(.plain)
             .accessibilityIdentifier("habit:\(habit.name)")
         }
-        .padding(.horizontal, tokens.space(.plateInner))
-        .padding(.vertical, tokens.space(.rowVertical) / 2)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { plateWidth = $0 }
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { innerWidth = $0 }
     }
 }
 
@@ -63,14 +61,15 @@ struct HabitDayButton: View {
     @Environment(\.tokens) private var tokens
     let habit: TaskItem
     let day: LocalDate
-    var plateWidth: CGFloat?
+    /// The width inside the row's plate (nil until measured).
+    var innerWidth: CGFloat?
 
     /// The ring and the gap of Twice as thick as in the habit's history grid; the dot inside is smaller instead.
     private var metrics: HabitDotMetrics {
         let ratio = tokens.ratio(.habitRing)
         let own = HabitDotMetrics(dot: tokens.size(.iconColumn), ringRatio: ratio)
-        guard let plateWidth else { return own }
-        let grid = tokens.habitDots(fitting: plateWidth - tokens.space(.plateInner) * 2)
+        guard let innerWidth else { return own }
+        let grid = tokens.habitDots(fitting: innerWidth)
         return .cell(own.cell, ring: grid.ring)
     }
 

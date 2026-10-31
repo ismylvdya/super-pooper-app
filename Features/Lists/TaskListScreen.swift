@@ -63,10 +63,8 @@ struct TaskListScreen: View {
                             .font(tokens.font(.caption)).foregroundStyle(tokens.color(.secondaryText))
                     }
                 }
-                .padding(.horizontal, tokens.space(.plateInner))
-                .padding(.vertical, tokens.space(.listRowVertical))
                 .listGroupRow(group: "filed", id: task.name, isFirst: index == 0, isLast: index == filed.count - 1,
-                              frames: frames, separatorInset: tokens.space(.plateInner))
+                              frames: frames)
             }
         }
     }
@@ -90,10 +88,7 @@ struct TaskListScreen: View {
                     .accessibilityIdentifier("lists.toThisWeek.\(task.name)")
             }
         }
-        .padding(.horizontal, tokens.space(.plateInner))
-        .padding(.vertical, tokens.space(.listRowVertical))
-        .listGroupRow(group: group, id: task.name, isFirst: isFirst, isLast: isLast, frames: frames,
-                      separatorInset: tokens.space(.plateInner))
+        .listGroupRow(group: group, id: task.name, isFirst: isFirst, isLast: isLast, frames: frames)
         // The pool's menu for the task (Not today has no place outside Today).
         .contextMenu {
             ActionMenuContent(menu: task.isHabit ? .habitContext : .taskContext, item: DayItem(listed: task), isToday: false) {

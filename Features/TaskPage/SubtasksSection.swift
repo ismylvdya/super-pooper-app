@@ -25,21 +25,11 @@ struct SubtasksSection: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .buttonStyle(.plain)
-                    // As a habit of a routine in the pool: the row covers its piece of the plate (over the plate's
-                    // inner margins and half the gaps) with the plate's color, and that whole piece lifts as a
-                    // rounded plate.
-                    .padding(.horizontal, tokens.space(.plateInner))
-                    .padding(.vertical, tokens.space(.plateRowGap) / 2)
-                    // The section's plate is the backing; the row is a plate of its own on it, lifted with the plate's
-                    // corner radius (capped at half its height, `PlateShape`).
-                    .plate(.group)
-                    .plateLift(.group, for: .dragPreview)
-                    .onDrag {
+                    // The section's plate is the backing; the row is a plate of its own on it.
+                    .plateBleedRow {
                         dragged = subtask.name
                         return NSItemProvider(object: subtask.name as NSString)
                     }
-                    .padding(.horizontal, -tokens.space(.plateInner))
-                    .padding(.vertical, -tokens.space(.plateRowGap) / 2)
                     .onDrop(of: TaskDragState.types, isTargeted: targetBinding(subtask.name)) { _ in
                         drop(onto: subtask.name)
                     }
