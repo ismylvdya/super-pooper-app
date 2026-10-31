@@ -37,7 +37,7 @@ struct TimeZoneChangeTests {
         let calendar = TravellingCalendar("Asia/Jakarta")
         let recorder = RecordingNotifications()
         let model = try makeModel(calendar: calendar, notifications: recorder)
-        await model.publishDerivedState()
+        await model.parts.derived.publish()
         await model.waitForNotifications()
         #expect(await !recorder.lastPlanned.contains { $0.taskName == "Late call" })
 

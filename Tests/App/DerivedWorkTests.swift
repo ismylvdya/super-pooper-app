@@ -19,11 +19,11 @@ struct DerivedWorkTests {
         let start = model.settings.timeline.taskFontSize
         for step in 1...5 { model.updateSettings { $0.timeline.taskFontSize = start + Double(step) } }
         #expect(model.settings.timeline.taskFontSize == start + 5)
-        #expect(model.services.settingsStore.load().timeline.taskFontSize == start)
+        #expect(model.parts.services.settingsStore.load().timeline.taskFontSize == start)
         await delay.gate.open()
-        await model.settingsSave?.value
+        await model.parts.settings.waitForSave()
         await model.waitForNotifications()
-        #expect(model.services.settingsStore.load().timeline.taskFontSize == start + 5)
+        #expect(model.parts.services.settingsStore.load().timeline.taskFontSize == start + 5)
         #expect(await recorder.calls == 0)
     }
 
@@ -35,9 +35,9 @@ struct DerivedWorkTests {
         model.updateSettings { $0.day.boundary = LocalTime("03:00") }
         model.updateSettings { $0.day.boundary = LocalTime("02:00") }
         await delay.gate.open()
-        await model.settingsSave?.value
+        await model.parts.settings.waitForSave()
         await model.waitForNotifications()
-        #expect(model.services.settingsStore.load().day.boundary == LocalTime("02:00"))
+        #expect(model.parts.services.settingsStore.load().day.boundary == LocalTime("02:00"))
         #expect(await recorder.calls == 1)
     }
 
@@ -45,9 +45,8 @@ struct DerivedWorkTests {
     @Test func aPictureSettingIsWrittenBeforeTheReplan() async throws {
         let model = try #require(PreviewModel.make(delay: GatedDelay())).model
         let shown = model.settings.habits.showsNotificationPicture
-        model.updateSettings { $0.habits.showsNotificationPicture = !shown }
-        await model.replanWithNotificationPicture()
-        #expect(model.services.settingsStore.load().habits.showsNotificationPicture == !shown)
+        await model.setNotificationPictureShown(!shown)
+        #expect(model.parts.services.settingsStore.load().habits.showsNotificationPicture == !shown)
     }
 
     /// The day plan is worked out once per minute and change of its data: asked again within the minute it is the same

@@ -10,7 +10,7 @@ struct NoteBodyTests {
 
     private func make(delay: Delay = NoDelay()) throws -> (model: AppModel, repository: InMemoryTaskStore) {
         let model = try #require(PreviewModel.make(delay: delay)).model
-        return (model, try #require(model.services.tasks as? InMemoryTaskStore))
+        return (model, try #require(model.parts.services.tasks as? InMemoryTaskStore))
     }
 
     /// The reported data loss: a text not downloaded (or with broken YAML) showed as an empty field, and the first
@@ -19,10 +19,10 @@ struct NoteBodyTests {
         let (model, repository) = try make()
         await repository.setBodyReadable(false, of: name)
         await model.openBody(of: name)
-        #expect(model.noteBodies[name]?.state == .unavailable)
+        #expect(model.noteBody(name)?.state == .unavailable)
 
         model.editBody("x", of: name)
-        #expect(model.noteBodies[name]?.text == "")
+        #expect(model.noteBody(name)?.text == "")
         model.closeBody(of: name)
         await model.flushBody(of: name)
         #expect(await repository.bodyWrites.isEmpty)
@@ -35,7 +35,7 @@ struct NoteBodyTests {
         await model.openBody(of: name)
         await repository.setBodyReadable(true, of: name)
         await model.sync(announce: true)
-        #expect(model.noteBodies[name] == .read("Заметка к задаче."))
+        #expect(model.noteBody(name) == .read("Заметка к задаче."))
     }
 
     @Test func typingIsWrittenOnceWhenItStops() async throws {
@@ -46,9 +46,9 @@ struct NoteBodyTests {
         model.editBody("Новый текст", of: name)
         await delay.gate.arrived(2)
         await delay.gate.open()
-        await model.noteBodyDebounce[name]?.value
+        await model.parts.texts.waitForTyping(in: name)
         #expect(await repository.bodyWrites == ["Новый текст"])
-        #expect(model.noteBodies[name]?.hasUnsavedChanges == false)
+        #expect(model.noteBody(name)?.hasUnsavedChanges == false)
     }
 
     /// Leaving the page before the pause is over writes the text at once; the page opened again reads it back.
@@ -57,9 +57,9 @@ struct NoteBodyTests {
         await model.openBody(of: name)
         model.editBody("Дописано", of: name)
         model.closeBody(of: name)
-        #expect(model.noteBodies[name] == nil)
+        #expect(model.noteBody(name) == nil)
         await model.openBody(of: name)
-        #expect(model.noteBodies[name] == .read("Дописано"))
+        #expect(model.noteBody(name) == .read("Дописано"))
         #expect(await repository.bodyWrites == ["Дописано"])
     }
 

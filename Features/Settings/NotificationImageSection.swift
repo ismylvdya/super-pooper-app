@@ -16,10 +16,7 @@ struct NotificationImageSection: View {
             PlateRow(icon: nil, title: "settings.notificationImage.show") {
                 Toggle("settings.notificationImage.show", isOn: Binding(
                     get: { isShown },
-                    set: { value in
-                        model.updateSettings { $0.habits.showsNotificationPicture = value }
-                        Task { await model.replanWithNotificationPicture() }
-                    }
+                    set: { value in Task { await model.setNotificationPictureShown(value) } }
                 ))
                 .labelsHidden()
             }
@@ -48,10 +45,7 @@ struct NotificationImageSection: View {
         PlateRow(icon: nil, title: "settings.notificationImage.habitColor", info: "info.settings.notificationImage.habitColor") {
             Toggle("settings.notificationImage.habitColor", isOn: Binding(
                 get: { model.settings.habits.notificationUsesHabitColor },
-                set: { value in
-                    model.updateSettings { $0.habits.notificationUsesHabitColor = value }
-                    Task { await model.replanWithNotificationPicture() }
-                }
+                set: { value in Task { await model.setNotificationPictureUsesHabitColor(value) } }
             ))
             .labelsHidden()
         }

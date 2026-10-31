@@ -19,6 +19,18 @@ enum ActionID: String, Codable, CaseIterable, Sendable {
     case deleteEvent
 }
 
+extension ActionID {
+    /// The habit mark a menu or notification action sets (`nil`: Unmark, and the actions that set no mark).
+    var habitMark: HabitMark? {
+        switch self {
+        case .done: .done
+        case .partial: .partial
+        case .twice: .twice
+        default: nil
+        }
+    }
+}
+
 enum HapticStyle: String, Codable, Sendable {
     case none
     case light

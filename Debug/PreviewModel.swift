@@ -32,8 +32,8 @@ enum PreviewModel {
         let banners = BannerCenter()
         let model = AppModel(config: config, services: services, appEvents: appEvents ?? BannerPresenter(banners: banners), clock: clock,
                              calendar: calendar, delay: delay)
-        model.setScanResult(VaultScanResult(tasks: tasks, fileProblems: [], conflicted: []))
-        model.setSources(events: PreviewSamples.events, reminders: PreviewSamples.reminders)
+        model.parts.tasks.setScanResult(VaultScanResult(tasks: tasks, fileProblems: [], conflicted: []))
+        model.parts.sources.replaceItems(events: PreviewSamples.events, reminders: PreviewSamples.reminders)
         return (model, Router(), config, banners)
     }
 }

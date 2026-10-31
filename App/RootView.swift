@@ -166,12 +166,9 @@ struct RootView: View {
 
     /// The morning review opens by itself on the first launch of the day.
     private func openReviewIfNeeded() {
-        let model = container.model
-        guard model.config.flags.morningReviewAutoOpen, model.settings.onboarding.completed,
-              model.vaultState == .ready, !model.dayState.reviewShown,
-              container.launch.openURL == nil else { return }
-        model.updateDayState { $0.reviewShown = true }
-        container.router.isReviewPresented = true
+        if container.model.claimMorningReview(openedForSomethingElse: container.launch.openURL != nil) {
+            container.router.isReviewPresented = true
+        }
     }
 }
 

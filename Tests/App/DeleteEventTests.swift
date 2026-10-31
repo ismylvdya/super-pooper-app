@@ -23,7 +23,7 @@ struct DeleteEventTests {
 
     @Test func theAlertsOccurrenceIsDeleted() async throws {
         let (model, calendars) = try model(with: [standup(0, at: 10), standup(1, at: 10)])
-        await model.refreshCalendarSources()
+        await model.parts.sources.refresh()
         await model.deleteEvent(identifier: "standup", start: standup(1, at: 10).start)
         #expect(calendars.deleted == [standup(1, at: 10)])
     }
@@ -31,7 +31,7 @@ struct DeleteEventTests {
     /// Moved within its day after the alert was planned: still that day's occurrence.
     @Test func anOccurrenceMovedWithinItsDayIsDeleted() async throws {
         let (model, calendars) = try model(with: [standup(0, at: 10), standup(1, at: 12)])
-        await model.refreshCalendarSources()
+        await model.parts.sources.refresh()
         await model.deleteEvent(identifier: "standup", start: standup(1, at: 10).start)
         #expect(calendars.deleted == [standup(1, at: 12)])
     }
@@ -39,7 +39,7 @@ struct DeleteEventTests {
     /// The bug: with tomorrow's occurrence gone, its alert deleted today's (the first event with that identifier).
     @Test func withoutTheAlertsOccurrenceNothingIsDeleted() async throws {
         let (model, calendars) = try model(with: [standup(0, at: 10)])
-        await model.refreshCalendarSources()
+        await model.parts.sources.refresh()
         await model.deleteEvent(identifier: "standup", start: standup(1, at: 10).start)
         #expect(calendars.deleted.isEmpty)
         #expect(events.sent == [.failure(.eventNotFound)])

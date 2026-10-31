@@ -13,16 +13,17 @@ struct NotificationRestoreTests {
     }
 
     /// The reported bug: a sync running in the second before the restored notification showed removed it. The restore
-    /// waits for the plan being scheduled, and the plan made after it waits for the restore.
+    /// waits for the plan being scheduled, and the plan made after it waits for the restore and never cancels it (it
+    /// used to: the newer plan cancelled whatever was last in line).
     @Test func aRestoreRunsInLineWithThePlans() async throws {
         let slowCenter = AsyncGate()
         let recorder = RecordingNotifications(firstSync: slowCenter)
         let model = try #require(PreviewModel.make(notifications: recorder)).model
-        await model.publishDerivedState()
-        let planning = model.notificationTask
+        await model.parts.derived.publish()
+        let jobs = model.parts.derived.notificationJobs
         let restoring = Task { await model.restoreNotification(swiped(on: model.context().today)) }
-        while model.notificationTask == planning { await Task.yield() }
-        await model.publishDerivedState()
+        while model.parts.derived.notificationJobs == jobs { await Task.yield() }
+        await model.parts.derived.publish()
         await slowCenter.open()
         await model.waitForNotifications()
         await restoring.value

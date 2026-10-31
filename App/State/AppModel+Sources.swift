@@ -1,105 +1,32 @@
 import Foundation
+@preconcurrency import UserNotifications
 
-/// Permission states of the system sources, refreshed on demand.
-struct SourceAccessState: Equatable {
-    var calendars: SourceAccess = .notDetermined
-    var reminders: SourceAccess = .notDetermined
-    var notifications: SourceAccess = .notDetermined
-}
-
+/// Calendar and Reminders, and the notifications: access, the items, edits there, and the waits background work needs.
 extension AppModel {
-    func refreshAccess() async {
-        let notifications = await services.notifications.access()
-        access = SourceAccessState(calendars: services.calendars.access, reminders: services.reminders.access,
-                                   notifications: notifications)
-    }
+    /// Without Calendar access or chosen calendars, a linked event cannot be looked up.
+    var eventsKnown: Bool { parts.sources.eventsKnown }
+    func availableCalendars() -> [SourceCollection] { parts.sources.availableCalendars() }
+    func availableReminderLists() -> [SourceCollection] { parts.sources.availableReminderLists() }
 
-    func requestCalendarAccess() async {
-        _ = await services.calendars.requestAccess()
-        await refreshAccess()
-        await refreshCalendarSources()
-    }
+    func refreshAccess() async { await parts.sources.refreshAccess() }
+    func requestCalendarAccess() async { await parts.sourceCommands.requestCalendarAccess() }
+    func requestRemindersAccess() async { await parts.sourceCommands.requestRemindersAccess() }
+    func requestNotificationAccess() async { await parts.sourceCommands.requestNotificationAccess() }
 
-    func requestRemindersAccess() async {
-        _ = await services.reminders.requestAccess()
-        await refreshAccess()
-        await refreshCalendarSources()
-    }
-
-    func requestNotificationAccess() async {
-        _ = await services.notifications.requestAccess()
-        await refreshAccess()
-        await publishDerivedState()
-    }
-
-    func availableCalendars() -> [SourceCollection] { services.calendars.calendars() }
-    func availableReminderLists() -> [SourceCollection] { services.reminders.lists() }
-    var vaultName: String? { services.vault.displayName }
-
-    /// Completes a reminder by id (the "Complete" button of its notification).
-    func completeReminder(id: String) async {
-        guard let reminder = reminders.first(where: { $0.id == id }) else { return }
-        guard !reminder.isCompleted else { return }
-        await toggleReminder(reminder)
-    }
-
-    /// Checks a reminder off (or back on) in Reminders. It shows at once; the reminders are read back with the store's
-    /// own notice of the edit, in one go (`sourcesDidChange`).
-    func toggleReminder(_ reminder: ReminderItem) async {
-        do {
-            try await services.reminders.setCompleted(!reminder.isCompleted, reminderID: reminder.id)
-            setSources(events: events, reminders: reminders.map { item in
-                guard item.id == reminder.id else { return item }
-                var toggled = item
-                toggled.isCompleted = !reminder.isCompleted
-                return toggled
-            })
-        } catch {
-            appEvents.send(.failure(AppFailure(error)))
-        }
-        sourcesDidChange()
-    }
-
-    /// The event of a notification: the occurrence of the alert's day (`EventOccurrence`), read again if it is not
-    /// known yet. Without one nothing is deleted: another occurrence of a repeating event must never go instead.
+    func completeReminder(id: String) async { await parts.sourceCommands.completeReminder(id: id) }
+    func toggleReminder(_ reminder: ReminderItem) async { await parts.sourceCommands.toggleReminder(reminder) }
+    func deleteEvent(_ event: CalendarEvent) async { await parts.sourceCommands.deleteEvent(event) }
     func deleteEvent(identifier: String, start: Date) async {
-        var occurrence = EventOccurrence.find(identifier: identifier, start: start, in: events, context: context())
-        if occurrence == nil {
-            await refreshCalendarSources()
-            occurrence = EventOccurrence.find(identifier: identifier, start: start, in: events, context: context())
-        }
-        guard let occurrence else {
-            appEvents.send(.failure(.eventNotFound))
-            return
-        }
-        await deleteEvent(occurrence)
+        await parts.sourceCommands.deleteEvent(identifier: identifier, start: start)
     }
 
-    /// The event leaves the timeline at once; the calendars are read back with the store's own notice of the edit.
-    func deleteEvent(_ event: CalendarEvent) async {
-        do {
-            try await services.calendars.delete(event)
-            setSources(events: events.filter { $0.id != event.id }, reminders: reminders)
-        } catch {
-            appEvents.send(.failure(AppFailure(error)))
-        }
-        sourcesDidChange()
-    }
-}
+    /// Edits made in Calendar and Reminders while the app runs reach the timeline and the notifications.
+    func observeSourceChanges() { parts.sourceCommands.observeChanges() }
 
-extension AppModel {
-    /// A vault folder is chosen (it may still be loading).
-    var hasVault: Bool { services.vault.hasVault }
+    /// A notification swiped away or tapped comes back silently while its day lasts.
+    func restoreNotification(_ request: UNNotificationRequest) async { await parts.derived.restore(request) }
 
-    func selectVault(_ url: URL) async {
-        SyncLog.logger.info("vault selected: \(url.path, privacy: .public)")
-        do {
-            try services.vault.select(url)
-            await sync(announce: true)
-            if chosenFolder.isWholeVault { appEvents.send(.wholeVaultChosen) }
-        } catch {
-            SyncLog.logger.error("vault selection failed: \(String(describing: error), privacy: .public)")
-            appEvents.send(.failure(AppFailure(error)))
-        }
-    }
+    /// Background work waits for these before the app is suspended.
+    func waitForNotifications() async { await parts.derived.waitForNotifications() }
+    func waitForSourceRefresh() async { await parts.sourceCommands.waitForRefresh() }
 }

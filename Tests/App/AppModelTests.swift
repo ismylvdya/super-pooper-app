@@ -106,7 +106,7 @@ struct AppModelTests {
         let order = ["Сдать отчёт", "Позвонить в банк"]
         model.applyReviewMove(ReviewGroups.Move(order: order, regrouped: ["Сдать отчёт": .evening]))
         #expect(model.dayState.manualOrder == order)
-        await model.pendingEdits["Сдать отчёт"]?.value
+        await model.parts.writer.waitForEdits(of: "Сдать отчёт")
         #expect(model.task(named: "Сдать отчёт")?.habit.timeOfDay == .evening)
         #expect(model.task(named: "Позвонить в банк")?.habit.timeOfDay == nil)
     }
@@ -116,19 +116,19 @@ struct AppModelTests {
     @Test func aFailedScanKeepsTheWidgetSnapshot() async throws {
         let model = try makeModel()
         await model.sync(announce: false)
-        let before = try #require(model.services.snapshotStore.load()).tasks.count
+        let before = try #require(model.parts.services.snapshotStore.load()).tasks.count
         #expect(before > 0)
-        let repository = try #require(model.services.tasks as? InMemoryTaskStore)
+        let repository = try #require(model.parts.services.tasks as? InMemoryTaskStore)
         await repository.failScans(with: CocoaError(.fileReadNoPermission))
         await model.sync(announce: false)
-        #expect(model.services.snapshotStore.load()?.tasks.count == before)
+        #expect(model.parts.services.snapshotStore.load()?.tasks.count == before)
     }
 
     /// A setting changed a moment before a sync is not undone by the older copy in the vault note.
     /// On the store the app uses: the settings file next to the tasks folder.
     @Test func aSettingChangedJustBeforeASyncStays() async throws {
         let model = try makeModel()
-        let root = try await model.services.vault.withRoot { $0 }
+        let root = try await model.parts.services.vault.withRoot { $0 }
         try FileManager.default.createDirectory(at: root.appendingPathComponent("TaskNotes/Tasks"), withIntermediateDirectories: true)
         await model.sync(announce: false)
         let file = root.appendingPathComponent("TaskNotes").appendingPathComponent(model.config.rules.vault.settingsFile)
@@ -146,7 +146,7 @@ struct AppModelTests {
         let slowCenter = AsyncGate()
         let recorder = RecordingNotifications(firstSync: slowCenter)
         let model = try #require(PreviewModel.make(notifications: recorder)).model
-        await model.publishDerivedState()
+        await model.parts.derived.publish()
         await model.perform(.done, on: "Забрать посылку")
         await slowCenter.arrived()
         await slowCenter.open()
@@ -159,13 +159,13 @@ struct AppModelTests {
     /// vault is read once more after the running sync.
     @Test func aSyncAskedForDuringASyncRunsAfterIt() async throws {
         let model = try makeModel()
-        let repository = try #require(model.services.tasks as? InMemoryTaskStore)
+        let repository = try #require(model.parts.services.tasks as? InMemoryTaskStore)
         let slowScan = AsyncGate()
         await repository.holdScans(at: slowScan)
         async let first: Void = model.sync(announce: false)
         await slowScan.arrived()
         let second = Task { await model.sync(announce: true) }
-        while model.syncAgain == nil { await Task.yield() }
+        while !model.parts.sync.isSyncQueued { await Task.yield() }
         await slowScan.open()
         await first
         await second.value
@@ -177,10 +177,10 @@ struct AppModelTests {
         let reminders = ListedReminders()
         let model = try #require(PreviewModel.make(reminders: reminders)).model
         model.updateSettings { $0.sources.reminderListIDs = ["old"] }
-        async let older: Void = model.refreshCalendarSources()
+        async let older: Void = model.parts.sources.refresh()
         await reminders.oldList.arrived()
         model.updateSettings { $0.sources.reminderListIDs = ["new"] }
-        await model.refreshCalendarSources()
+        await model.parts.sources.refresh()
         await reminders.oldList.open()
         await older
         #expect(model.reminders.map(\.listID) == ["new"])
@@ -190,16 +190,16 @@ struct AppModelTests {
     /// reminders are in it.
     @Test func theWidgetSnapshotReachesPastTheDayBoundary() async throws {
         let model = try #require(PreviewModel.make(reminders: EarlyReminder())).model
-        await model.refreshCalendarSources()
-        await model.publishDerivedState()
-        let reminders = try #require(model.services.snapshotStore.load()).reminders
+        await model.parts.sources.refresh()
+        await model.parts.derived.publish()
+        let reminders = try #require(model.parts.services.snapshotStore.load()).reminders
         #expect(reminders.map(\.title) == ["Early"])
     }
 
     /// "+" pressed while a slow sync reads the vault: the new task does not vanish when the sync finishes.
     @Test func aTaskCreatedDuringASyncStays() async throws {
         let model = try makeModel()
-        let repository = try #require(model.services.tasks as? InMemoryTaskStore)
+        let repository = try #require(model.parts.services.tasks as? InMemoryTaskStore)
         let slowScan = AsyncGate()
         await repository.holdScans(at: slowScan)
         async let running: Void = model.sync(announce: false)
@@ -258,6 +258,6 @@ struct AppModelTests {
         async let second: Void = model.sync(announce: false)
         _ = await (first, second)
         #expect(model.hasLoaded)
-        #expect(model.runningSync == nil)
+        #expect(!model.isSyncing)
     }
 }

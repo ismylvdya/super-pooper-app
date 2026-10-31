@@ -7,7 +7,7 @@ import Foundation
 actor RecordingNotifications: NotificationScheduling {
     private(set) var lastPlanned: [PlannedNotification] = []
     private(set) var calls = 0
-    /// "sync", or "restore" and the identifier.
+    /// "sync", or "restore" and the identifier ("cancelled restore" when the restore's task was cancelled).
     private(set) var log: [String] = []
     private let firstSync: AsyncGate?
 
@@ -30,7 +30,7 @@ actor RecordingNotifications: NotificationScheduling {
     func removeAll() async { lastPlanned = [] }
 
     func restore(_ request: UNNotificationRequest) async {
-        log.append("restore " + request.identifier)
+        log.append((Task.isCancelled ? "cancelled restore " : "restore ") + request.identifier)
     }
 }
 

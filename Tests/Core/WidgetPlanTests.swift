@@ -33,11 +33,11 @@ struct WidgetPlanTests {
         let model = try #require(PreviewModel.make()).model
         model.updateSettings { $0.sources.anchorCalendarIDs = [] }
         await model.flushSettings()
-        await model.publishDerivedState()
-        #expect(model.services.snapshotStore.load()?.eventsKnown == false)
+        await model.parts.derived.publish()
+        #expect(model.parts.services.snapshotStore.load()?.eventsKnown == false)
         model.updateSettings { $0.sources.anchorCalendarIDs = ["demo"] }
         await model.flushSettings()
-        await model.publishDerivedState()
-        #expect(model.services.snapshotStore.load()?.eventsKnown == true)
+        await model.parts.derived.publish()
+        #expect(model.parts.services.snapshotStore.load()?.eventsKnown == true)
     }
 }

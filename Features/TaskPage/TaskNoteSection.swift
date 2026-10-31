@@ -12,7 +12,7 @@ struct TaskNoteSection: View {
 
     var body: some View {
         PlateSection(header: header, info: "info.taskPage.note") {
-            if model.noteBodies[taskName]?.state == .unavailable {
+            if model.noteBody(taskName)?.state == .unavailable {
                 Label("taskPage.note.unavailable", systemImage: icons[.problem])
                     .font(tokens.font(.hint))
                     .foregroundStyle(tokens.color(.problem))
@@ -21,7 +21,7 @@ struct TaskNoteSection: View {
                 // One line when empty, growing with the text.
                 TextField(placeholder, text: text, axis: .vertical)
                     .font(tokens.font(.rowTitle))
-                    .disabled(model.noteBodies[taskName]?.state != .editing)
+                    .disabled(model.noteBody(taskName)?.state != .editing)
                     .accessibilityIdentifier("taskPage.note")
             }
         }
@@ -31,7 +31,7 @@ struct TaskNoteSection: View {
     }
 
     private var text: Binding<String> {
-        Binding(get: { model.noteBodies[taskName]?.text ?? "" }, set: { model.editBody($0, of: taskName) })
+        Binding(get: { model.noteBody(taskName)?.text ?? "" }, set: { model.editBody($0, of: taskName) })
     }
 }
 

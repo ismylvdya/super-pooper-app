@@ -14,7 +14,7 @@ struct HabitDayMenu: View {
         }
         let state = habit.mark(on: day).map(DayItemState.marked) ?? .open
         ActionMenuContent(menu: .habitDay, item: DayItem(task: habit, state: state, blockers: [], problems: [])) { action in
-            Task { await model.setHabitMark(habit.name, on: day, to: AppModel.habitMark(for: action.id)) }
+            Task { await model.setHabitMark(habit.name, on: day, to: action.id.habitMark) }
         }
     }
 }

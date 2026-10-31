@@ -1,0 +1,56 @@
+import Foundation
+
+/// The parts behind the app model, wired once for the app, the previews and the tests. Leaf state first (settings, the
+/// day, the tasks, Calendar and Reminders), then what is derived from it, then the commands and the sync that change it.
+@MainActor
+struct AppParts {
+    /// What the parts talk to (repositories and the store).
+    let services: AppServices
+    let settings: SettingsController
+    let day: DayStateController
+    let tasks: TaskState
+    let sources: SourcesController
+    let derived: DerivedStatePublisher
+    let writer: NoteWriter
+    let texts: NoteTextEditor
+    let notes: NoteCommands
+    let dayCommands: DayCommands
+    let sourceCommands: SourceCommands
+    let lists: TaskLists
+    let trash: TrashController
+    let conflicts: ConflictResolver
+    let picture: NotificationPictureController
+    let sync: SyncService
+
+    init(config: AppConfig, services: AppServices, appEvents: AppEventSink, clock: Clock, calendar: CalendarSource, delay: Delay) {
+        self.services = services
+        let rules = config.rules
+        let store = services.tasks
+        let backups = BackupPolicy(isOn: config.flags.backups, backups: services.backups)
+        settings = SettingsController(store: services.settingsStore, note: services.settingsNote, rules: rules, delay: delay)
+        day = DayStateController(clock: clock, calendar: calendar, store: services.dayStateStore, settings: settings)
+        tasks = TaskState()
+        sources = SourcesController(calendars: services.calendars, reminders: services.reminders,
+                                    notifications: services.notifications, config: config, settings: settings, day: day)
+        derived = DerivedStatePublisher(config: config, tasks: tasks, day: day, sources: sources, settings: settings,
+                                        services: services)
+        writer = NoteWriter(tasks: tasks, store: store, day: day, derived: derived, backups: backups, appEvents: appEvents,
+                            filesDoneTasks: config.flags.fileDoneTasks)
+        texts = NoteTextEditor(tasks: tasks, store: store, appEvents: appEvents, delay: delay,
+                               saveDelay: rules.editing.noteSaveDelaySeconds)
+        notes = NoteCommands(tasks: tasks, writer: writer, texts: texts, store: store, links: services.links, backups: backups,
+                             settings: settings, day: day, derived: derived, appEvents: appEvents)
+        dayCommands = DayCommands(day: day, tasks: tasks, writer: writer, derived: derived, appEvents: appEvents)
+        sourceCommands = SourceCommands(sources: sources, services: services, day: day, derived: derived, appEvents: appEvents,
+                                        delay: delay, quietSeconds: rules.timeline.externalChangeDelaySeconds)
+        lists = TaskLists(tasks: tasks, store: store, config: config)
+        trash = TrashController(trash: services.trash, tasks: tasks, store: store, derived: derived, appEvents: appEvents)
+        conflicts = ConflictResolver(versions: services.versions, tasks: tasks, store: store, backups: backups, derived: derived,
+                                     appEvents: appEvents)
+        picture = NotificationPictureController(images: services.notificationImage, settings: settings, derived: derived,
+                                                appEvents: appEvents)
+        sync = SyncService(config: config, services: services, tasks: tasks, settings: settings, day: day, sources: sources,
+                           writer: writer, texts: texts, derived: derived, backups: backups, appEvents: appEvents)
+        settings.observer = sync
+    }
+}
