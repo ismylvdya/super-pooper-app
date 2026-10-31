@@ -134,6 +134,15 @@ struct NoteOperationsTests {
         #expect(sandbox.exists("Найти отвёртку") && sandbox.exists("Медитация 🧘"))
     }
 
+    /// Named by the UTC time, whatever the phone's zone: the newest backup always sorts last and is never rotated away.
+    @Test func backupFoldersAreNamedInUTC() throws {
+        let sandbox = try VaultSandbox.make()
+        let moment = try #require(ISO8601.parse("2026-10-21T00:30:00Z"))
+        let service = BackupService(directory: sandbox.backups, keepCount: 1, fileSystem: CoordinatedFileSystem(), clock: { moment })
+        let folder = try #require(try service.backup([sandbox.url(of: "Найти отвёртку")], reason: "first"))
+        #expect(folder.lastPathComponent == "20261021-003000-000-first")
+    }
+
     @Test func obsidianLinkOpensTheNoteInTheVault() async throws {
         let sandbox = try VaultSandbox.make()
         let repository = sandbox.repository()

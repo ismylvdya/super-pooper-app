@@ -1,7 +1,8 @@
 import Foundation
 
 /// Copies notes into the App Group before risky operations (rename, delete, mass status changes)
-/// and keeps only the newest `keepCount` backups.
+/// and keeps only the newest `keepCount` backups. Folders are named by the UTC time, so their names sort in the order
+/// they were made even after the phone changed its zone (a local name made after a flight west sorts as older).
 struct BackupService: Sendable {
     let directory: URL
     let keepCount: Int
@@ -13,6 +14,7 @@ struct BackupService: Sendable {
         guard !files.isEmpty else { return nil }
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(identifier: "UTC")
         formatter.dateFormat = "yyyyMMdd-HHmmss-SSS"
         let folder = directory.appendingPathComponent("\(formatter.string(from: clock()))-\(reason)", isDirectory: true)
         for file in files where fileSystem.fileExists(file) {
