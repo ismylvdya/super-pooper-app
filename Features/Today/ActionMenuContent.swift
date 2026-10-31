@@ -4,6 +4,7 @@ import SwiftUI
 /// and the task store are shown (`AppModel.menuEntries`).
 struct ActionMenuContent: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.actions) private var actions
     let menu: ActionMenu
     let item: DayItem?
     /// Skip today and Not today only make sense on today's page.
@@ -18,7 +19,7 @@ struct ActionMenuContent: View {
                 perform(action)
             } label: {
                 // Habit menus show the habit marks, as the habit notifications do.
-                ActionLabel(action: action, markIcon: menu.isHabitMenu ? HabitMarkIcon.icon(for: action.id) : nil)
+                ActionLabel(action: action, markIcon: actions.menus[menu].habitMarks ? HabitMarkIcon.icon(for: action.id) : nil)
             }
             .disabled(entry.isCurrent)
         }

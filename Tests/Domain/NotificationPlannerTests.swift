@@ -142,7 +142,7 @@ struct NotificationPlannerTests {
         let planned = planner.plan(tasks: [], reminders: [], events: [call], skipped: [], context: TestCalendar.context())
         let alert = try #require(planned.first { $0.kind == .event })
         #expect(alert.eventID == "EK-call" && alert.start == call.start)
-        #expect(TestConfig.actions.menus["eventNotification"] == [.deleteEvent])
+        #expect(TestConfig.actions.menus[.eventNotification].actions == [.deleteEvent])
     }
 
     /// After midnight, before the day boundary, it is still Wednesday: a delivered 01:30 reminder or event alert

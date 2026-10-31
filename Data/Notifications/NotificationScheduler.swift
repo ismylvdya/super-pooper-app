@@ -42,7 +42,7 @@ struct UserNotificationScheduler: NotificationScheduling {
         func category(_ id: String, _ menu: ActionMenu) -> UNNotificationCategory {
             let actions = registry.actions(in: menu).map { definition in
                 // Habit buttons get the same mark images as the app's habit menus.
-                let icon = menu.isHabitMenu
+                let icon = registry.menus[menu].habitMarks
                     ? HabitMarkIcon.icon(for: definition.id).map { UNNotificationActionIcon(templateImageName: icons[$0]) }
                     : nil
                 return UNNotificationAction(identifier: definition.id.rawValue,

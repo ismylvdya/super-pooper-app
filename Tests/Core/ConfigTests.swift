@@ -7,17 +7,17 @@ struct ConfigTests {
     /// Partially and Twice are picked on the Habits page and in the history only; Today and the notifications offer
     /// Done (a twice-a-day habit's second Done is Twice) and Skip today, in red.
     @Test func partialAndTwiceStayOnTheHabitsPage() {
-        #expect(TestConfig.actions.menus["habitDay"] == [.unmark, .partial, .done, .twice])
-        #expect(TestConfig.actions.menus["habitContext"] == [.unmark, .done, .skipToday])
-        #expect(TestConfig.actions.menus["habitNotification"] == [.done, .skipToday])
+        #expect(TestConfig.actions.menus[.habitDay].actions == [.unmark, .partial, .done, .twice])
+        #expect(TestConfig.actions.menus[.habitContext].actions == [.unmark, .done, .skipToday])
+        #expect(TestConfig.actions.menus[.habitNotification].actions == [.done, .skipToday])
         #expect(TestConfig.actions.definition(.skipToday).destructive)
-        #expect(TestConfig.actions.menus["eventContext"] == [.deleteEvent])
+        #expect(TestConfig.actions.menus[.eventContext].actions == [.deleteEvent])
     }
 
     /// The pool menu of a task takes it out of today (Not today) rather than archiving it.
     @Test func thePoolMenuOfATaskOffersNotToday() {
-        #expect(TestConfig.actions.menus["taskContext"]?.contains(.notToday) == true)
-        #expect(TestConfig.actions.menus["taskContext"]?.contains(.archive) == false)
+        #expect(TestConfig.actions.menus[.taskContext].actions.contains(.notToday))
+        #expect(!TestConfig.actions.menus[.taskContext].actions.contains(.archive))
     }
 
     /// A tap on an event alert opens Calendar on its day, on a reminder its list; habits and tasks stay in the app.
@@ -134,8 +134,17 @@ struct ConfigTests {
         }
     }
 
+    /// The habit's menus and notification buttons show the habit marks; the flag is the menu's own in actions.json.
+    @Test func habitMenusAreMarkedInTheConfig() throws {
+        let marked = ActionMenu.allCases.filter { TestConfig.actions.menus[$0].habitMarks }
+        #expect(marked == [.habitContext, .habitNotification, .habitDay])
+        let json = try String(contentsOf: TestPaths.configFolder.appendingPathComponent("actions.json"), encoding: .utf8)
+        let missing = Data(try json.replacingOnce("\"eventContext\":", with: "\"eventContxt\":").utf8)
+        #expect(throws: ConfigError.self) { try ConfigLoader.decode(ActionRegistry.self, from: missing, file: "actions.json") }
+    }
+
     @Test func missingActionDefinitionIsReported() throws {
-        let registry = ActionRegistry(actions: [], menus: [:], haptics: TestConfig.actions.haptics)
+        let registry = ActionRegistry(actions: [], menus: TestConfig.actions.menus, haptics: TestConfig.actions.haptics)
         #expect(throws: ConfigError.self) { try registry.validate(file: "actions.json") }
     }
 

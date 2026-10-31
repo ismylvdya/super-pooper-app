@@ -102,61 +102,90 @@
     }
   ],
   "menus": {
-    "habitContext": [
-      "unmark",
-      "done",
-      "skipToday"
-    ],
-    "taskContext": [
-      "done",
-      "unmark",
-      "notToday",
-      "delete"
-    ],
-    "taskPage": [
-      "archive",
-      "openInObsidian",
-      "delete"
-    ],
-    "habitNotification": [
-      "done",
-      "skipToday"
-    ],
-    "taskNotification": [
-      "done"
-    ],
-    "reminderNotification": [
-      "done"
-    ],
-    "archiveRow": [
-      "restoreThisWeek",
-      "restoreHalfYear",
-      "delete"
-    ],
-    "habitPage": [
-      "archive",
-      "openInObsidian",
-      "delete"
-    ],
-    "habitArchiveRow": [
-      "restoreHabit",
-      "delete"
-    ],
-    "eventNotification": [
-      "deleteEvent"
-    ],
-    "habitDay": [
-      "unmark",
-      "partial",
-      "done",
-      "twice"
-    ],
-    "reminderContext": [
-      "done"
-    ],
-    "eventContext": [
-      "deleteEvent"
-    ]
+    "habitContext": {
+      "habitMarks": true,
+      "actions": [
+        "unmark",
+        "done",
+        "skipToday"
+      ]
+    },
+    "taskContext": {
+      "actions": [
+        "done",
+        "unmark",
+        "notToday",
+        "delete"
+      ]
+    },
+    "taskPage": {
+      "actions": [
+        "archive",
+        "openInObsidian",
+        "delete"
+      ]
+    },
+    "habitNotification": {
+      "habitMarks": true,
+      "actions": [
+        "done",
+        "skipToday"
+      ]
+    },
+    "taskNotification": {
+      "actions": [
+        "done"
+      ]
+    },
+    "reminderNotification": {
+      "actions": [
+        "done"
+      ]
+    },
+    "archiveRow": {
+      "actions": [
+        "restoreThisWeek",
+        "restoreHalfYear",
+        "delete"
+      ]
+    },
+    "habitPage": {
+      "actions": [
+        "archive",
+        "openInObsidian",
+        "delete"
+      ]
+    },
+    "habitArchiveRow": {
+      "actions": [
+        "restoreHabit",
+        "delete"
+      ]
+    },
+    "eventNotification": {
+      "actions": [
+        "deleteEvent"
+      ]
+    },
+    "habitDay": {
+      "habitMarks": true,
+      "actions": [
+        "unmark",
+        "partial",
+        "done",
+        "twice"
+      ]
+    },
+    "reminderContext": {
+      "actions": [
+        "done"
+      ]
+    },
+    "eventContext": {
+      "actions": [
+        "deleteEvent"
+      ]
+    }
   },
   "haptics": {
     "select": "light",
