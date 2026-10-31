@@ -10,10 +10,12 @@ struct DesignTokens: Decodable, Sendable {
     let duration: TokenTable<DurationToken, Double>
     let font: TokenTable<FontToken, FontSpec>
     private(set) var color: TokenTable<ColorToken, ColorSpec>
+    /// The colors each settings section lets the user pick.
+    let editableColors: TokenTable<ColorSettingsGroup, [ColorToken]>
     /// The reader's text size where the tokens are used (`designTokens(_:)`); nil: the phone's own.
     private(set) var dynamicTypeSize: DynamicTypeSize?
 
-    private enum CodingKeys: String, CodingKey { case spacing, radius, size, ratio, opacity, duration, font, color }
+    private enum CodingKeys: String, CodingKey { case spacing, radius, size, ratio, opacity, duration, font, color, editableColors }
 
     func space(_ token: SpacingToken) -> CGFloat { CGFloat(spacing[token]) }
     func radius(_ token: RadiusToken) -> CGFloat { CGFloat(radius[token]) }

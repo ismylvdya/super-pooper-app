@@ -44,6 +44,21 @@ struct TokenValidationTests {
         #expect(both.path == "color.primaryText")
     }
 
+    /// The colors a settings section offers are color tokens: a misspelt one is a config error, not a missing row.
+    @Test func anEditableColorIsAColorToken() throws {
+        let error = try #require(try configError(setting: ["editableColors", "habits"], to: ["habbit"]))
+        #expect(error.path == "editableColors.habits.[0]")
+    }
+
+    /// Every color a settings section offers has its row title.
+    @Test func everyEditableColorHasATitle() {
+        for group in ColorSettingsGroup.allCases {
+            for token in TestConfig.tokens.editableColors[group] {
+                #expect(Bundle.main.localizedString(forKey: "color." + token.rawValue, value: "∅", table: nil) != "∅", "\(token)")
+            }
+        }
+    }
+
     /// The message lists what the name can be.
     @Test func theMessageNamesTheKnownValues() throws {
         let error = try #require(try configError(setting: ["font", "pageTitle", "weight"], to: "bld"))

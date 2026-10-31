@@ -40,9 +40,14 @@ enum FontToken: String, CaseIterable, Sendable {
     case statValue, toggleChip, pullIcon, emptyIcon, emptyAction, linkBadge, tabIcon, systemTabIcon, tabLabel, popoverAction, repeatableTitle, habitTitle
 }
 
-enum ColorToken: String, CaseIterable, Sendable {
+enum ColorToken: String, ConfigName {
     case accent, task, habit, high, energy, pleasant, heart, nowLine, problem
     case past, swipeNeutral, screenBackground, plateBackground, chipBackground, primaryText, secondaryText, tertiaryText
     case bannerBackground, infoText, destructive, eventText, timelineGrid
     case success, warning, error, shadow, widgetPlate, widgetTop, widgetBottom, listSeparator
+}
+
+/// The settings sections where the user picks colors (`editableColors`: which colors each offers, in order).
+enum ColorSettingsGroup: String, CaseIterable, Sendable {
+    case general, habits, widgets
 }

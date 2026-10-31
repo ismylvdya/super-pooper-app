@@ -6,13 +6,10 @@ struct ColorSettingsSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
 
-    /// The colors offered here (token names in tokens.json).
-    static let editable: [ColorToken] = [.task, .habit, .past, .high, .energy, .heart, .nowLine, .problem]
-
     var body: some View {
         PlateSection(header: "settings.colors", info: "info.settings.colors", hint: "settings.colors.hint") {
             preview
-            ForEach(Self.editable, id: \.self) { token in
+            ForEach(tokens.editableColors[.general], id: \.self) { token in
                 PlateRow(icon: nil, title: LocalizedStringKey(String("color.") + token.rawValue)) {
                     ColorField(token: token)
                 }
