@@ -74,7 +74,8 @@
     "timelineHours": 6,
     "maxHoursBefore": 1,
     "backgroundRefreshMinutes": 30,
-    "clockTimelineMinutes": 60
+    "clockTimelineMinutes": 60,
+    "minimumBlockMinutes": 30
   },
   "habits": {
     "historyMinimumWeeks": 6,

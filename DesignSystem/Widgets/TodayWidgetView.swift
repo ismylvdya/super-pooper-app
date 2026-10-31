@@ -95,11 +95,12 @@ struct WidgetTimelineBlock: View {
         }
     }
 
-    /// Blocks are at least half an hour high in the current scale, so more hours = smaller blocks
+    /// Blocks are at least `widgets.minimumBlockMinutes` high in the current scale, so more hours = smaller blocks
     /// and nothing overlaps.
     private func style(hourHeight: CGFloat) -> TimelineStyle {
-        // Half an hour in the current scale, but never less than one line of text.
-        let minimum = max(hourHeight / 2, tokens.uiFont(.widgetCaption).lineHeight + tokens.space(.compactPlateVertical) * 2)
+        // That many minutes in the current scale, but never less than one line of text.
+        let minutes = hourHeight * CGFloat(rules.widgets.minimumBlockMinutes) / CGFloat(TimelineWindow.hour / 60)
+        let minimum = max(minutes, tokens.uiFont(.widgetCaption).lineHeight + tokens.space(.compactPlateVertical) * 2)
         let line = tokens.uiFont(.widgetCaption).lineHeight
         var style = TimelineStyle(eventFont: tokens.font(.widgetCaption), taskFont: tokens.font(.widgetCaption),
                                   eventLineHeight: line, taskLineHeight: line,

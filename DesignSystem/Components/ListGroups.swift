@@ -164,6 +164,8 @@ private struct ListGroupBacking: View {
     var body: some View {
         GeometryReader { proxy in
             let list = proxy.frame(in: .global)
+            // A side left open (its row out of sight) reaches past the visible part by more than the corner, so no
+            // rounded corner shows there.
             let overhang = tokens.radius(.plate) * 2
             ForEach(frames.rows.keys.sorted(), id: \.self) { group in
                 if let plate = ListGroupGeometry.plate(of: Array(frames.rows[group]?.values ?? [:].values),

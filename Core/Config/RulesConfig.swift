@@ -83,6 +83,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let backgroundRefreshMinutes: Int
         /// The clock widget is given its minutes this far ahead at a time.
         let clockTimelineMinutes: Int
+        /// A block on the widget's timeline is at least this long in its scale (more hours, smaller blocks).
+        let minimumBlockMinutes: Int
     }
 
     struct Habits: Codable, Hashable, Sendable {
