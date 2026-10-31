@@ -19,4 +19,17 @@ struct TimeZoneNoteTests {
         #expect(text.contains("date_modified: 2026-10-21T18:25:00.000+07:00\n"))
         #expect(text.contains("due: 2026-11-06\n"))
     }
+
+    /// A `due` written as a moment by someone else is read on the clock of the zone the phone has at the scan.
+    @Test func aMomentInANoteIsReadInTheZoneOfTheScan() async throws {
+        let calendar = TravellingCalendar("Europe/Belgrade")
+        let note = try await SandboxNote("Позвонить в банк", calendar: calendar)
+        let text = try note.text()
+        let line = try #require(text.split(separator: "\n").first { $0.hasPrefix("status:") })
+        try note.sandbox.write(try text.replacingOnce(String(line), with: "\(line)\ndue: 2026-11-06T08:00Z"), to: "Позвонить в банк")
+        #expect(try await note.reload().due == TaskDue("2026-11-06T09:00"))
+
+        calendar.fly(to: "Asia/Jakarta")
+        #expect(try await note.reload().due == TaskDue("2026-11-06T15:00"))
+    }
 }
