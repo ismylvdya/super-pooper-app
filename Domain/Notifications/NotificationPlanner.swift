@@ -33,10 +33,7 @@ struct NotificationPlanner: Sendable {
             .all(tasks: tasks, reminders: [], skipped: skipped, context: earlier)
             .filter { $0.kind == .habit && $0.day <= context.today }
             .filter { !($0.day == context.today && skipped.contains($0.taskName ?? "")) }
-            .map { note in
-                PlannedNotification(id: note.key, kind: note.kind, title: note.title, fireDate: note.fireDate,
-                                    taskName: note.taskName, day: note.day, key: note.key)
-            }
+            .map { $0.identified(as: $0.key) }
         return today + openSlots
     }
 
@@ -60,7 +57,8 @@ struct NotificationPlanner: Sendable {
                         result.append(PlannedNotification(id: "habit|\(task.name)|\(day.isoString)|\(time.string)", kind: .habit,
                                                           title: task.name, fireDate: context.moment(time, onLogicalDay: day),
                                                           taskName: task.name, day: day,
-                                                          key: Self.habitSlot(task.name, time), colorHex: task.habit.color))
+                                                          key: Self.habitSlot(task.name, time), colorHex: task.habit.color,
+                                                          isAbsolute: task.timeZone != nil))
                     }
                 }
             } else if task.status == .thisWeek, let due = task.due, let time = due.time {
@@ -68,7 +66,7 @@ struct NotificationPlanner: Sendable {
                 if day == context.today, skipped.contains(task.name) { continue }
                 result.append(PlannedNotification(id: "task|\(task.name)", kind: .task, title: task.name,
                                                   fireDate: context.date(due.day, time), taskName: task.name,
-                                                  day: day, key: "task|\(task.name)"))
+                                                  day: day, key: "task|\(task.name)", isAbsolute: task.timeZone != nil))
             }
         }
 
@@ -76,7 +74,7 @@ struct NotificationPlanner: Sendable {
             result.append(PlannedNotification(id: "reminder|\(reminder.id)|\(reminder.due.timeIntervalSince1970)", kind: .reminder,
                                               title: reminder.title, fireDate: reminder.due, taskName: nil,
                                               day: context.logicalDay(of: reminder.due), reminderID: reminder.id,
-                                              key: "reminder|\(reminder.id)"))
+                                              key: "reminder|\(reminder.id)", isAbsolute: true))
         }
 
         let horizonEnd = context.today.adding(days: horizonDays).startDate(in: context.calendar, offset: context.boundary)
@@ -86,7 +84,7 @@ struct NotificationPlanner: Sendable {
                                                   kind: .event, title: event.title, fireDate: fire, taskName: nil,
                                                   day: context.logicalDay(of: event.start),
                                                   key: "event|\(event.eventIdentifier)|\(index)", start: event.start,
-                                                  eventID: event.eventIdentifier))
+                                                  eventID: event.eventIdentifier, isAbsolute: true))
             }
         }
 
@@ -100,9 +98,7 @@ struct NotificationPlanner: Sendable {
         var used: Set<String> = []
         return upcoming.map { note in
             guard note.kind == .habit, used.insert(note.key).inserted else { return note }
-            return PlannedNotification(id: note.key, kind: note.kind, title: note.title, fireDate: note.fireDate,
-                                       taskName: note.taskName, day: note.day, reminderID: note.reminderID,
-                                       key: note.key, start: note.start, colorHex: note.colorHex)
+            return note.identified(as: note.key)
         }
     }
 }

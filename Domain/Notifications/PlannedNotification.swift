@@ -10,7 +10,7 @@ struct PlannedNotification: Hashable, Sendable {
         case event
     }
 
-    let id: String
+    var id: String
     let kind: Kind
     let title: String
     let fireDate: Date
@@ -28,4 +28,14 @@ struct PlannedNotification: Hashable, Sendable {
     var eventID: String? = nil
     /// A habit's own color (hex) for the picture on its notification, if the settings use it.
     var colorHex: String? = nil
+    /// The fire time is a moment, not a time on the clock: an event's alert, a timed reminder, an item with a time zone
+    /// of its own. It rings at that moment even if the phone changes its zone first; the rest ring at their clock time.
+    var isAbsolute = false
+
+    /// The same notification under another identifier.
+    func identified(as id: String) -> PlannedNotification {
+        var copy = self
+        copy.id = id
+        return copy
+    }
 }

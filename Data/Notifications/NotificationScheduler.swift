@@ -120,8 +120,8 @@ struct UserNotificationScheduler: NotificationScheduling {
 
     private func request(for notification: PlannedNotification) -> UNNotificationRequest {
         let content = content(for: notification)
-        let components = calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: notification.fireDate)
-        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: NotificationTrigger.components(for: notification, calendar: calendar.current),
+                                                    repeats: false)
         return UNNotificationRequest(identifier: identifier(for: notification), content: content, trigger: trigger)
     }
 
