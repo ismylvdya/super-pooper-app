@@ -61,6 +61,7 @@ SuperPooper — iPhone-приложение-оболочка над тремя �
 | Меню действий (контекстное, «…») | `ActionMenuContent(menu:)` для дел и привычек, `RegistryMenu(menu:)` для напоминаний и событий; состав и порядок — только `actions.json` |
 | Алерт над optional-значением | `.alert(…, isPresented: Binding(presenting: $item), presenting: item)` |
 | Высота часа и положение момента на таймлайне | `TimelineWindow.hourHeight(fitting:)`, `offset(of:hourHeight:)`; где открыть таймлайн — `TimelineOpening` |
+| Что показывает таймлайн (часы вокруг «сейчас», диапазон дня, две половины) — одно правило для приложения, виджета и превью настроек | `AppSettings.timelineSpan(limits:)` → `TimelineWindow.windows(_:around:context:)`: окна не выходят за логический день |
 | Порядок по имени и поиск | `NameOrder`, `SearchMatcher` |
 | Найти заметку по имени (связи, сабтаски, порядок привычек и рутин, Skip today, Not today, ручной порядок пула, Next tasks) | `NoteName` / `isSameNoteName`, `containsNoteName`: регистр не важен, как у ссылок Obsidian на Apple |
 | Названия дней недели и месяцев | `Weekday.name(_:in:)`, `MonthName.initial(_:in:)` |

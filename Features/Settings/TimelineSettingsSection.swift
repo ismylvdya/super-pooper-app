@@ -111,22 +111,19 @@ struct TimelinePreview: View {
         let timeline = settings.timeline
         let style = TimelineStyle.make(timeline, tokens: tokens)
         let height = tokens.size(.timelinePreviewHeight)
+        let windows = TimelineWindow.windows(settings.timelineSpan(), around: plan.now, context: model.context(at: plan.now))
         Group {
             switch settings.timelineMode {
             case .aroundNow:
                 ScrollView {
-                    DayTimelineView(slots: plan.timeline,
-                                    window: TimelineWindow.rolling(now: plan.now, hoursBefore: timeline.hoursBefore,
-                                                                   hoursAfter: timeline.hoursAfter, calendar: model.calendar),
-                                    now: plan.now, hourHeight: tokens.size(.hourHeight) * tokens.size(.timelinePreviewScale), style: style, taskContent: row)
+                    DayTimelineView(slots: plan.timeline, window: windows[0], now: plan.now,
+                                    hourHeight: tokens.size(.hourHeight) * tokens.size(.timelinePreviewScale), style: style, taskContent: row)
                 }
             case .wholeDay:
-                let window = TimelineWindow.fixed(start: timeline.wholeDay.start, end: timeline.wholeDay.end,
-                                                  context: model.context(at: plan.now))
-                DayTimelineView(slots: plan.timeline, window: window, now: plan.now,
-                                hourHeight: CGFloat(window.hourHeight(fitting: Double(height))), style: style, taskContent: row)
+                DayTimelineView(slots: plan.timeline, window: windows[0], now: plan.now,
+                                hourHeight: CGFloat(windows[0].hourHeight(fitting: Double(height))), style: style, taskContent: row)
             case .halves:
-                HalvesTimeline(plan: plan, settings: timeline, context: model.context(at: plan.now), height: height - tokens.size(.timelinePreviewHalvesInset),
+                HalvesTimeline(plan: plan, windows: windows, settings: timeline, height: height - tokens.size(.timelinePreviewHalvesInset),
                                taskContent: row)
             }
         }

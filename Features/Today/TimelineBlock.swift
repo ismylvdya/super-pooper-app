@@ -36,9 +36,7 @@ struct TimelineBlock: View {
             GeometryReader { geometry in
                 let context = model.context(at: plan.timelineFocus)
                 let day = TimelineWindow(start: context.dayStart, end: context.dayEnd)
-                let shown = model.settings.timelineMode == .wholeDay
-                    ? TimelineWindow.fixed(start: settings.wholeDay.start, end: settings.wholeDay.end, context: context)
-                    : rollingWindow(settings)
+                let shown = windows(context).first ?? day
                 let height = max(geometry.size.height - bottomInset - tokens.space(.groupGap), 1)
                 let base = model.settings.timelineMode == .wholeDay
                     ? CGFloat(shown.hourHeight(fitting: Double(height)))
@@ -119,7 +117,7 @@ struct TimelineBlock: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
                         if !plan.allDayEvents.isEmpty { allDayStrip }
-                        HalvesTimeline(plan: plan, settings: settings, context: model.context(at: plan.timelineFocus),
+                        HalvesTimeline(plan: plan, windows: windows(model.context(at: plan.timelineFocus)), settings: settings,
                                        height: geometry.size.height - bottomInset - tokens.space(.groupGap),
                                        style: style, taskContent: taskRow)
                     }
@@ -183,10 +181,10 @@ struct TimelineBlock: View {
         return style
     }
 
-    private func rollingWindow(_ settings: AppSettings.Timeline) -> TimelineWindow {
-        TimelineWindow.rolling(now: plan.timelineFocus, hoursBefore: settings.hoursBefore,
-                               hoursAfter: min(settings.hoursAfter, model.config.rules.timeline.maxHoursAfter),
-                               calendar: model.calendar)
+    /// What the settings show first (around now, the day range) or the two halves.
+    private func windows(_ context: DayContext) -> [TimelineWindow] {
+        let span = model.settings.timelineSpan(limits: TimelineSpan.Limits(hoursAfter: model.config.rules.timeline.maxHoursAfter))
+        return TimelineWindow.windows(span, around: plan.timelineFocus, context: context)
     }
 
     /// The same row as in the pool, without chips or a done mark, always on one line (a long title dissolves): what is

@@ -155,6 +155,16 @@ extension AppSettings {
         }
     }
 
+    /// What the timeline shows by these settings; `limits` cap the hours around now.
+    func timelineSpan(limits: TimelineSpan.Limits = TimelineSpan.Limits()) -> TimelineSpan {
+        func range(_ range: TimeRange) -> TimelineSpan.Range { TimelineSpan.Range(start: range.start, end: range.end) }
+        switch timelineMode {
+        case .aroundNow: return .aroundNow(hoursBefore: timeline.hoursBefore, hoursAfter: timeline.hoursAfter, limits: limits)
+        case .wholeDay: return .range(range(timeline.wholeDay))
+        case .halves: return .halves(range(timeline.firstHalf), range(timeline.secondHalf))
+        }
+    }
+
     /// The pool shows a fixed number of rows only when it sits above the timeline.
     var poolUsesVisibleCount: Bool { today.arrangement == .stacked }
 
@@ -165,13 +175,3 @@ extension AppSettings {
     }
 }
 
-extension AppSettings.Timeline {
-    /// Length of the longer half of the day, in hours (two-halves layout scale).
-    var halvesLongestHours: Double {
-        func hours(_ range: AppSettings.TimeRange) -> Double {
-            let minutes = range.end.minutesSinceMidnight - range.start.minutesSinceMidnight
-            return Double(minutes > 0 ? minutes : minutes + 24 * 60) / 60
-        }
-        return max(hours(firstHalf), hours(secondHalf))
-    }
-}

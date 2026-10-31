@@ -81,24 +81,16 @@ struct WidgetTimelineBlock: View {
 
     private var scaledTimeline: some View {
         GeometryReader { geometry in
-            let timeline = settings.timeline
-            switch settings.timelineMode {
-            case .aroundNow:
-                let before = min(timeline.hoursBefore, rules.widgets.maxHoursBefore)
-                let window = TimelineWindow.rolling(now: plan.now, hoursBefore: before,
-                                                    hoursAfter: max(min(timeline.hoursAfter, maxHours - before), 1), calendar: context.calendar)
-                let hourHeight = CGFloat(window.hourHeight(fitting: Double(geometry.size.height)))
-                DayTimelineView(slots: plan.timeline, window: window, now: plan.now, hourHeight: hourHeight,
-                                style: style(hourHeight: hourHeight), taskContent: { item, _ in row(item) })
-            case .wholeDay:
-                let window = TimelineWindow.fixed(start: timeline.wholeDay.start, end: timeline.wholeDay.end, context: context)
-                let hourHeight = CGFloat(window.hourHeight(fitting: Double(geometry.size.height)))
-                DayTimelineView(slots: plan.timeline, window: window, now: plan.now, hourHeight: hourHeight,
-                                style: style(hourHeight: hourHeight), taskContent: { item, _ in row(item) })
-            case .halves:
-                let hourHeight = geometry.size.height / CGFloat(max(timeline.halvesLongestHours, 1))
-                HalvesTimeline(plan: plan, settings: timeline, context: context, height: geometry.size.height,
+            let limits = TimelineSpan.Limits(hoursBefore: rules.widgets.maxHoursBefore, hours: maxHours)
+            let windows = TimelineWindow.windows(settings.timelineSpan(limits: limits), around: plan.now, context: context)
+            if windows.count > 1 {
+                let hourHeight = geometry.size.height / CGFloat(max(windows.map(\.hours).max() ?? 1, 1))
+                HalvesTimeline(plan: plan, windows: windows, settings: settings.timeline, height: geometry.size.height,
                                style: style(hourHeight: hourHeight), taskContent: { item, _ in row(item) })
+            } else if let window = windows.first {
+                let hourHeight = CGFloat(window.hourHeight(fitting: Double(geometry.size.height)))
+                DayTimelineView(slots: plan.timeline, window: window, now: plan.now, hourHeight: hourHeight,
+                                style: style(hourHeight: hourHeight), taskContent: { item, _ in row(item) })
             }
         }
     }
