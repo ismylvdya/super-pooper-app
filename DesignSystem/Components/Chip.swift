@@ -23,6 +23,15 @@ struct Chip: View {
     }
 }
 
+extension Chip {
+    /// The width of a chip with an icon only, from the symbol's size in the chip font: for a layout that needs it
+    /// before any chip is drawn (the page peek).
+    static func width(of icon: Icon, tokens: DesignTokens, icons: IconSet) -> CGFloat {
+        let symbol = UIImage(systemName: icons[icon], withConfiguration: UIImage.SymbolConfiguration(font: tokens.uiFont(.chip)))
+        return (symbol?.size.width ?? 0) + tokens.space(.chipHorizontal) * 2
+    }
+}
+
 /// A row of chips that wraps onto the next line when it does not fit.
 struct ChipFlow: Layout {
     var spacing: CGFloat

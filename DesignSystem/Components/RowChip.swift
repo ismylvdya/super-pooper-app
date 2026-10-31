@@ -9,6 +9,17 @@ enum RowChipKind: String, CaseIterable, Hashable, Sendable {
         let saved = names.compactMap(RowChipKind.init(rawValue:))
         return saved + allCases.filter { !saved.contains($0) }
     }
+
+    /// The chip's icon (a feel chip shows the energy one or the heart).
+    var icon: Icon {
+        switch self {
+        case .problem: .problem
+        case .blocked: .links
+        case .high: .high
+        case .feel: .energy
+        case .habit: .habit
+        }
+    }
 }
 
 /// The property chips shown at the right of a task title.
@@ -28,13 +39,13 @@ struct RowChip: Identifiable {
         let task = item.task
         switch kind {
         case .problem:
-            return item.problems.isEmpty ? nil : RowChip(kind: kind, icon: .problem, text: nil, tint: tokens.color(.problem))
+            return item.problems.isEmpty ? nil : RowChip(kind: kind, icon: kind.icon, text: nil, tint: tokens.color(.problem))
         case .blocked:
-            return item.isBlocked ? RowChip(kind: kind, icon: .links, text: nil, tint: nil) : nil
+            return item.isBlocked ? RowChip(kind: kind, icon: kind.icon, text: nil, tint: nil) : nil
         case .high:
-            return task.isHighPriority ? RowChip(kind: kind, icon: .high, text: nil, tint: tokens.color(.high)) : nil
+            return task.isHighPriority ? RowChip(kind: kind, icon: kind.icon, text: nil, tint: tokens.color(.high)) : nil
         case .habit:
-            return task.isHabit ? RowChip(kind: kind, icon: .habit, text: nil, tint: tokens.color(.habit)) : nil
+            return task.isHabit ? RowChip(kind: kind, icon: kind.icon, text: nil, tint: tokens.color(.habit)) : nil
         case .feel:
             switch task.feel {
             case .needEnergy: return RowChip(kind: kind, icon: .energy, text: nil, tint: tokens.color(.energy))
