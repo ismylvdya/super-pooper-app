@@ -1569,7 +1569,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The habit is created when you go back. Without a name it is called “Unnamed”; if nothing was set, nothing is created."
+            "value": "The habit is created when you go back; another tab keeps it here until you return. Without a name it is called “Unnamed”; if nothing was set, nothing is created."
           }
         }
       }
@@ -2373,6 +2373,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "Unnamed"
+          }
+        }
+      }
+    },
+    "noteName.problem.forbidden": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A note name can’t contain “%@”."
+          }
+        }
+      }
+    },
+    "noteName.problem.leadingDot": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A note name can’t start with a dot."
+          }
+        }
+      }
+    },
+    "noteName.problem.tooLong": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A note name can’t be longer than %lld characters."
           }
         }
       }
@@ -5166,7 +5199,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The task is created when you go back. Without a name it is called “Unnamed”; if nothing was set, nothing is created."
+            "value": "The task is created when you go back; another tab keeps it here until you return. Without a name it is called “Unnamed”; if nothing was set, nothing is created."
           }
         }
       }

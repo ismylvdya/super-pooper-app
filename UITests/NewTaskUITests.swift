@@ -73,6 +73,40 @@ final class NewTaskUITests: XCTestCase {
         XCTAssertEqual(name.value as? String, "Купить хлеб")
     }
 
+    /// Another tab only hides the new task page: coming back finds the name as typed, and Back then creates the task.
+    func testAnotherTabKeepsTheNewTaskDraft() {
+        launch("superpooper://today")
+        let plus = app.buttons["today.newTask"]
+        XCTAssertTrue(plus.waitForExistence(timeout: 10))
+        app.dismissBanners()
+        plus.tap()
+        let name = app.textFields["taskPage.name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        app.typeText("Полить цветы\n")
+        app.tabBars.buttons["Habits"].tap()
+        XCTAssertTrue(app.buttons["habits.new"].waitForExistence(timeout: 5))
+        app.tabBars.buttons["Today"].tap()
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        XCTAssertEqual(name.value as? String, "Полить цветы")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        expectCreatedBanner("Полить цветы")
+    }
+
+    /// A name a note cannot take is pointed out in the title while it is typed.
+    func testANameANoteCannotTakeIsShownInTheTitle() {
+        launch("superpooper://today")
+        let plus = app.buttons["today.newTask"]
+        XCTAssertTrue(plus.waitForExistence(timeout: 10))
+        app.dismissBanners()
+        plus.tap()
+        XCTAssertTrue(app.textFields["taskPage.name"].waitForExistence(timeout: 5))
+        app.typeText("Встреча: Анна")
+        XCTAssertTrue(app.descendants(matching: .any)["taskPage.name.problem"].waitForExistence(timeout: 5))
+        app.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 6))
+        app.typeText(" Анна")
+        XCTAssertTrue(app.descendants(matching: .any)["taskPage.name.problem"].waitForNonExistence(timeout: 5))
+    }
+
     /// A list of a later planning level in the Lists tab brings its task to this week.
     func testSomedayListAddsATaskToThisWeek() {
         launch("superpooper://lists/someday")
@@ -90,7 +124,7 @@ final class NewTaskUITests: XCTestCase {
         let day = app.descendants(matching: .any)["habitDay:Медитация 🧘"]
         XCTAssertTrue(day.waitForExistence(timeout: 10))
         day.press(forDuration: 1.2)
-        let done = app.buttons["Done"]
+        let done = app.buttons["DONE"]
         XCTAssertTrue(done.waitForExistence(timeout: 5))
         done.tap()
         XCTAssertTrue(day.waitForExistence(timeout: 5))

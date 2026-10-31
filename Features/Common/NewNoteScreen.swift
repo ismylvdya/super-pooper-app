@@ -1,37 +1,27 @@
 import SwiftUI
 
 /// A new task (from This week or Today) or habit (from the Habits tab): the usual page with an empty
-/// name, the cursor already in it; Return closes the keyboard and keeps the name. Nothing is written while
-/// it is open; leaving the page with Back creates the note with everything set here. Without a name it is called "Unnamed" if anything was set, and nothing is
-/// created if the page was left untouched.
+/// name, the cursor already in it. Nothing is written while it is open; leaving the page with Back creates the note with
+/// everything set here (see `NewNotePage`). Another tab only hides the page: the draft waits for the user to come back.
+/// A name a note cannot take is shown right in the title, and Back waits until it is changed.
 struct NewNoteScreen: View {
     enum Kind { case task, habit }
 
     @Environment(AppModel.self) private var model
+    @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     let kind: Kind
-    @State private var draft: NoteDraft?
-    @State private var untouched: NoteDraft?
-    @State private var name = ""
-    @FocusState private var isNameFocused: Bool
+    /// The tab whose stack shows the page; nil in the This week sheet, which no tab can hide.
+    var tab: AppTab?
+    @State private var page: NewNotePage?
 
     var body: some View {
-        let current = draft ?? initialDraft
-        let editor = TaskEditor.draft(Binding(get: { draft ?? initialDraft }, set: { draft = $0 }))
-        let placeholder: LocalizedStringKey = kind == .task ? "task.new.title" : "habits.new"
-        // The name is typed right in the title, as on the note's page.
-        PageScaffold(title: name.isEmpty ? L10n.string(kind == .task ? "task.new.title" : "habits.new") : name,
-                     titleView: AnyView(TextField(placeholder, text: $name, axis: .vertical)
-                        .multilineTextAlignment(.center)
-                        .submitLabel(.done)
-                        .focused($isNameFocused)
-                        .onChange(of: name) { _, value in
-                            // Return in a vertical field inserts a newline: it means "done".
-                            guard value.contains("\n") else { return }
-                            name = value.replacingOccurrences(of: "\n", with: "")
-                            isNameFocused = false
-                        }
-                        .accessibilityIdentifier("taskPage.name"))) {
+        let current = page ?? NewNotePage(draft: initialDraft)
+        let editor = TaskEditor.draft(Binding(get: { page?.draft ?? current.draft }, set: { page?.draft = $0 }))
+        PageScaffold(title: current.name.isEmpty ? L10n.string(titleKey) : current.name,
+                     titleView: AnyView(NewNoteNameField(placeholder: LocalizedStringKey(titleKey),
+                                                         name: Binding(get: { page?.name ?? "" }, set: { page?.name = $0 }),
+                                                         problem: current.nameProblem))) {
             switch kind {
             case .task: TaskSections(editor: editor)
             case .habit: HabitSections(editor: editor)
@@ -40,28 +30,30 @@ struct NewNoteScreen: View {
                 .font(tokens.font(.hint))
                 .foregroundStyle(tokens.color(.secondaryText))
         }
-        .onAppear {
-            if draft == nil { draft = current }
-            if untouched == nil { untouched = current }
-        }
-        .task { isNameFocused = true }
-        .onDisappear(perform: create)
+        .navigationBarBackButtonHidden(current.nameProblem != nil)
+        .onAppear { if page == nil { page = current } }
+        .onDisappear(perform: leave)
     }
+
+    private var titleKey: String { kind == .task ? "task.new.title" : "habits.new" }
 
     private var initialDraft: NoteDraft {
         kind == .task ? NoteDraft(status: .thisWeek) : model.newHabitDraft()
     }
 
-    private func create() {
-        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let draft, !trimmed.isEmpty || draft != untouched else { return }
-        let finalName = trimmed.isEmpty ? L10n.string("note.unnamed") : trimmed
-        self.draft = nil
-        name = ""
+    /// Another tab was chosen: the page is still in its stack, only hidden. Otherwise the page is left for good.
+    private func leave() {
+        if let tab, router.tab != tab { return }
+        guard let page else { return }
+        if let problem = page.nameProblem {
+            model.banners.show(NoteNameProblemText.describe(problem, name: page.name), style: .problem)
+            return
+        }
+        guard let creation = page.creation(unnamed: L10n.string("note.unnamed")) else { return }
         Task {
-            if let created = await model.create(draft, named: finalName) {
-                model.banners.show(L10n.format("banner.created", created), style: .success)
-            }
+            guard let created = await model.create(creation.draft, named: creation.name) else { return }
+            self.page = nil
+            model.banners.show(L10n.format("banner.created", created), style: .success)
         }
     }
 }

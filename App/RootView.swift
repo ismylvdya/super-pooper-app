@@ -35,7 +35,7 @@ struct RootView: View {
                                 root(tab, model: model)
                                     .systemTabBar(isShown: physicalBottom == nil)
                                     .navigationDestination(for: Route.self) { route in
-                                        destination(route)
+                                        destination(route, in: tab)
                                             .refreshable { await model.sync(announce: true) }
                                             .systemTabBar(isShown: physicalBottom == nil)
                                     }
@@ -140,11 +140,11 @@ struct RootView: View {
         }
     }
 
-    @ViewBuilder private func destination(_ route: Route) -> some View {
+    @ViewBuilder private func destination(_ route: Route, in tab: AppTab) -> some View {
         switch route {
         case .task(let name): TaskPageScreen(taskName: name)
-        case .newTask: NewNoteScreen(kind: .task)
-        case .newHabit: NewNoteScreen(kind: .habit)
+        case .newTask: NewNoteScreen(kind: .task, tab: tab)
+        case .newHabit: NewNoteScreen(kind: .habit, tab: tab)
         case .search(let scope): SearchScreen(scope: scope)
         case .taskSettings: TaskSettingsScreen()
         case .habitSettings: HabitSettingsScreen()

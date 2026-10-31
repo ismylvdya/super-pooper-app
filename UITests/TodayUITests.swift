@@ -55,7 +55,7 @@ final class TodayUITests: XCTestCase {
         let title = app.buttons["title:Оплатить интернет"]
         XCTAssertTrue(title.waitForExistence(timeout: 10))
         title.press(forDuration: 1.2)
-        let done = app.buttons["Done"]
+        let done = app.buttons["DONE"]
         XCTAssertTrue(done.waitForExistence(timeout: 5))
         done.tap()
         expectLeftThePool(title)
