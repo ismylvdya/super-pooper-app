@@ -101,6 +101,9 @@ final class AppModel {
 
     func task(named name: String) -> TaskItem? { tasks.first { $0.name.isSameNoteName(as: name) } }
 
+    /// The mark tasks stand after in lists and search: the emoji the task tag starts with (🔫 for `🔫делишка`).
+    var taskMark: String? { TagEmoji.leading(of: settings.vault.taskTag) }
+
     /// The tasks as the day sees them: times kept in a zone of their own moved to the phone's clock (`ZonedTimes`). Logic
     /// that decides from times works on these; what it decides is written back with `writeLocal` / `setLocalDue`.
     var localTasks: [TaskItem] {
