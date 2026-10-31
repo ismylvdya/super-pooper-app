@@ -166,7 +166,7 @@ final class AppModel {
         settingsNotePending = true
         settingsNoteWrite?.cancel()
         settingsNoteWrite = Task {
-            try? await Task.sleep(for: .seconds(config.rules.vault.settingsWriteDelaySeconds))
+            try? await delay.wait(config.rules.vault.settingsWriteDelaySeconds)
             guard !Task.isCancelled else { return }
             await writeSettingsNote()
         }

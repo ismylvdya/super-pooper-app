@@ -57,6 +57,14 @@ extension AppModel {
     /// Edits of one note run one after another, and each decides from the note as the edit before it left it:
     /// a second quick tap (a toggle, a habit mark) does not repeat the first one's decision.
     func edit(_ name: String, _ changes: @escaping (TaskNote) -> [TaskFieldChange]) async {
+        let edit = enqueueEdit(name, changes)
+        await edit.value
+        if pendingEdits[name] == edit { pendingEdits[name] = nil }
+    }
+
+    /// The edit takes its place in the note's line at once and runs when the edits before it are done.
+    @discardableResult
+    func enqueueEdit(_ name: String, _ changes: @escaping (TaskNote) -> [TaskFieldChange]) -> Task<Void, Never> {
         let previous = pendingEdits[name]
         let edit = Task { @MainActor in
             await previous?.value
@@ -64,8 +72,7 @@ extension AppModel {
             await self.write(note, changes(note))
         }
         pendingEdits[name] = edit
-        await edit.value
-        if pendingEdits[name] == edit { pendingEdits[name] = nil }
+        return edit
     }
 
     @discardableResult
@@ -178,7 +185,7 @@ extension AppModel {
     func applyReviewMove(_ move: ReviewGroups.Move) {
         setManualOrder(move.order)
         for (name, group) in move.regrouped {
-            Task { await update(name, [.timeOfDay(group.timeOfDay)]) }
+            enqueueEdit(name) { _ in [.timeOfDay(group.timeOfDay)] }
         }
     }
 

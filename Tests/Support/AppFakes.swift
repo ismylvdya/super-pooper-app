@@ -34,8 +34,10 @@ actor RecordingNotifications: NotificationScheduling {
     }
 }
 
-/// Reminders of the asked lists; the "old" list takes a while to read.
+/// Reminders of the asked lists; reading the "old" list waits at a gate the test opens.
 struct ListedReminders: RemindersRepository {
+    let oldList = AsyncGate()
+
     var access: SourceAccess { .granted }
     func requestAccess() async -> Bool { true }
     func lists() -> [SourceCollection] { [] }
@@ -43,9 +45,7 @@ struct ListedReminders: RemindersRepository {
     func changes() -> AsyncStream<Void> { AsyncStream { $0.finish() } }
 
     func reminders(from start: Date, to end: Date, listIDs: [String]) async -> [ReminderItem] {
-        if listIDs == ["old"] {
-            await withCheckedContinuation { done in DispatchQueue.global().asyncAfter(deadline: .now() + 0.4) { done.resume() } }
-        }
+        if listIDs == ["old"] { await oldList.pass() }
         return listIDs.map { ReminderItem(id: $0, title: $0, due: start, listID: $0, listTitle: $0, colorHex: "#000000", isCompleted: false) }
     }
 }

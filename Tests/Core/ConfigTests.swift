@@ -14,6 +14,12 @@ struct ConfigTests {
         #expect(TestConfig.actions.menus["eventContext"] == [.deleteEvent])
     }
 
+    /// The pool menu of a task takes it out of today (Not today) rather than archiving it.
+    @Test func thePoolMenuOfATaskOffersNotToday() {
+        #expect(TestConfig.actions.menus["taskContext"]?.contains(.notToday) == true)
+        #expect(TestConfig.actions.menus["taskContext"]?.contains(.archive) == false)
+    }
+
     /// A tap on an event alert opens Calendar on its day, on a reminder its list; habits and tasks stay in the app.
     @Test func notificationTapsLeadToCalendarAndReminders() {
         let links = TestConfig.rules.eventLinks

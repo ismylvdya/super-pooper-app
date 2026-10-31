@@ -12,8 +12,8 @@ actor InMemoryTaskRepository: TaskRepository {
     private(set) var bodyWrites: [String] = []
     /// Scans throw this (tests of a vault that cannot be read).
     private var scanError: Error?
-    /// How long a scan takes (tests of syncs that overlap) and how many ran.
-    private var scanSeconds: Double = 0
+    /// Scans wait here after listing the notes until the test opens it (tests of work that overlaps a sync); how many ran.
+    private var scanGate: AsyncGate?
     private(set) var scanCount = 0
 
     init(tasks: [TaskNote]) { self.tasks = tasks }
@@ -22,16 +22,13 @@ actor InMemoryTaskRepository: TaskRepository {
     func setBodyReadable(_ readable: Bool, of name: String) {
         if readable { unreadableBodies.remove(name) } else { unreadableBodies.insert(name) }
     }
-    func slowScans(by seconds: Double) { scanSeconds = seconds }
+    func holdScans(at gate: AsyncGate) { scanGate = gate }
 
     /// Like the vault scanner, the list of notes is taken first and read later.
     func scan() async throws -> VaultScanResult {
         scanCount += 1
         let listed = tasks
-        if scanSeconds > 0 {
-            let seconds = scanSeconds
-            await withCheckedContinuation { done in DispatchQueue.global().asyncAfter(deadline: .now() + seconds) { done.resume() } }
-        }
+        await scanGate?.pass()
         if let scanError { throw scanError }
         return VaultScanResult(tasks: listed, fileProblems: [], conflicted: [])
     }
