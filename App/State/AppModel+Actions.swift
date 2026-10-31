@@ -19,9 +19,9 @@ extension AppModel {
             updateDayState { if !$0.skipped.contains(name) { $0.skipped.append(name) } }
             await publishDerivedState()
         case .notToday:
-            guard day == nil || day == context().today else { return }
-            let changes = marking.notTodayChanges(for: task)
-            if changes.isEmpty { postpone(name) } else { await write(task, changes) }
+            guard day == nil || day == context().today, let local = localTask(named: name) else { return }
+            let changes = marking.notTodayChanges(for: local)
+            if changes.isEmpty { postpone(name) } else { await writeLocal(task, changes) }
         case .archive:
             if await write(task, [.status(.archived)]) {
                 banners.show(L10n.format("banner.archived", name), style: .success)
@@ -41,6 +41,17 @@ extension AppModel {
 
     func update(_ name: String, _ changes: [TaskFieldChange]) async {
         await edit(name) { _ in changes }
+    }
+
+    /// A date picked on the day's view of a task (This week): on the phone's clock, written in the note's own zone.
+    func setLocalDue(_ due: TaskDue?, of name: String) async {
+        await edit(name) { note in ZonedTimes.stored([.due(due)], of: note, calendar: self.calendar) }
+    }
+
+    /// Changes decided on the day's view of `task` (`localTasks`) go back into the note's own zone before writing.
+    @discardableResult
+    func writeLocal(_ task: TaskNote, _ changes: [TaskFieldChange]) async -> Bool {
+        await write(task, ZonedTimes.stored(changes, of: task, calendar: calendar))
     }
 
     /// Edits of one note run one after another, and each decides from the note as the edit before it left it:

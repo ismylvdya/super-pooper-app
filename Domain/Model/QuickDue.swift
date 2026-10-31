@@ -23,4 +23,15 @@ enum QuickDue: CaseIterable, Sendable {
         if selection(of: due, context: context) == chip { return nil }
         return context.due(onLogicalDay: chip.day(from: context.today), time: due?.time)
     }
+
+    /// The chip of a note as written, judged on the phone's day (a time kept in a zone of its own is moved first).
+    static func selection(of task: TaskNote, context: DayContext) -> QuickDue? {
+        selection(of: ZonedTimes.local(task, calendar: context.calendar, today: context.today).due, context: context)
+    }
+
+    /// Tapping a chip on a note as written: the day is chosen on the phone's clock, the `due` written in the note's zone.
+    static func toggling(_ chip: QuickDue, task: TaskNote, context: DayContext) -> TaskDue? {
+        let local = ZonedTimes.local(task, calendar: context.calendar, today: context.today)
+        return ZonedTimes.stored(toggling(chip, due: local.due, context: context), of: task, calendar: context.calendar)
+    }
 }

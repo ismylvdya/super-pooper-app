@@ -220,8 +220,9 @@ struct ReviewRow: View {
         }
     }
 
+    /// The row shows the day's view of the task (times on the phone's clock); the model writes it back in the note's zone.
     private func setDue(_ due: TaskDue?) {
-        Task { await model.update(task.name, [.due(due)]) }
+        Task { await model.setLocalDue(due, of: task.name) }
     }
 
     private var estimateChip: some View {

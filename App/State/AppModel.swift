@@ -99,6 +99,18 @@ final class AppModel {
 
     func task(named name: String) -> TaskNote? { tasks.first { $0.name == name } }
 
+    /// The tasks as the day sees them: times kept in a zone of their own moved to the phone's clock (`ZonedTimes`). Logic
+    /// that decides from times works on these; what it decides is written back with `writeLocal` / `setLocalDue`.
+    var localTasks: [TaskNote] {
+        let context = context()
+        return ZonedTimes.local(tasks, calendar: context.calendar, today: context.today)
+    }
+
+    func localTask(named name: String) -> TaskNote? {
+        let context = context()
+        return task(named: name).map { ZonedTimes.local($0, calendar: context.calendar, today: context.today) }
+    }
+
     var archivedTasks: [TaskNote] {
         NameOrder.sorted(tasks.filter { $0.isArchived && !$0.isHabit })
     }
