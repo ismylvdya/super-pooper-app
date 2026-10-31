@@ -32,4 +32,11 @@ struct PickingTests {
         #expect(LinkCandidates.tasks(tasks, excluding: ["Report", "Call bank"], matching: "").map(\.name) == ["Buy milk", "Water"])
         #expect(LinkCandidates.tasks(tasks, excluding: [], matching: "bank").map(\.name) == ["Call bank"])
     }
+
+    /// A link written in another letter case (`[[call bank]]` to "Call bank") is the same note (D-052): it is not offered
+    /// again, which would link the note twice.
+    @Test func aLinkInAnotherCaseIsNotOfferedAgain() {
+        let tasks = [makeTask("Report"), makeTask("Call bank"), makeTask("Buy milk")]
+        #expect(LinkCandidates.tasks(tasks, excluding: ["report", "call BANK"], matching: "").map(\.name) == ["Buy milk"])
+    }
 }
