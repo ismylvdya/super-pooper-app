@@ -19,6 +19,8 @@ struct UserNotificationScheduler: NotificationScheduling {
     let calendar: CalendarSource
     let icons: IconSet
     let bodyText: @Sendable (PlannedNotification.Kind) -> String
+    /// The words of an action button, by its title key in `actions.json`.
+    let actionTitle: @Sendable (String) -> String
     /// The picture of habit notifications; nil = none.
     var habitIcon: NotificationIcon?
     var center: NotificationCenterClient = SystemNotificationCenter()
@@ -43,7 +45,7 @@ struct UserNotificationScheduler: NotificationScheduling {
                     ? HabitMarkIcon.icon(for: definition.id).map { UNNotificationActionIcon(templateImageName: icons[$0]) }
                     : nil
                 return UNNotificationAction(identifier: definition.id.rawValue,
-                                            title: String(localized: String.LocalizationValue(definition.title)),
+                                            title: actionTitle(definition.title),
                                             options: definition.destructive ? [.destructive] : [],
                                             icon: icon ?? UNNotificationActionIcon(systemImageName: definition.icon))
             }

@@ -10,7 +10,7 @@ struct VaultSettingsFile: SettingsNoteRepository {
     let fileName: String
     let vaultSettings: @Sendable () -> AppSettings.Vault
     /// The older settings note, read while there is no file.
-    let legacy: SettingsNoteRepository?
+    let legacy: LegacySettingsReading?
 
     func read() async -> Data? {
         let file: Data?? = try? await location.withRoot { root in

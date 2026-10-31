@@ -32,15 +32,16 @@ struct AppConfig: Sendable {
     let rules: RulesConfig
     /// The lists of the Lists tab.
     let lists: TaskListsConfig
-    /// Raw `defaults.json`; user settings are merged over it.
-    let defaultSettings: Data
+    /// `defaults.json`; user settings are merged over it.
+    let defaultSettings: DefaultSettings
 
     static func load(bundle: Bundle = .main) throws -> AppConfig {
         let loader = ConfigLoader(bundle: bundle)
         let actions = try loader.load(ActionRegistry.self, from: File.actions)
         try actions.validate(file: File.actions)
-        let defaults = try loader.data(File.defaults)
-        _ = try ConfigLoader.decode(AppSettings.self, from: defaults, file: File.defaults)
+        let defaultsJSON = try loader.data(File.defaults)
+        let defaults = DefaultSettings(json: defaultsJSON,
+                                       values: try ConfigLoader.decode(AppSettings.self, from: defaultsJSON, file: File.defaults))
         func layout(_ file: String) throws -> ScreenLayout {
             let layout = try loader.load(ScreenLayout.self, from: file)
             try layout.validate(file: file)

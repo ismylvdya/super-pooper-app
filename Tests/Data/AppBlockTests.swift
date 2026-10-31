@@ -46,36 +46,29 @@ struct AppBlockTests {
         #expect(SyncedSettings.merged(note: Data("not json".utf8), over: settings) == settings)
     }
 
-    @Test func theSettingsNoteKeepsEverySettingAsAProperty() async throws {
+    @Test func theOldSettingsNoteIsReadFromItsProperties() async throws {
         let sandbox = try VaultSandbox.make()
         let note = settingsNote(in: sandbox)
         #expect(await note.read() == nil)
+        try writeNote("---\ntimeline.hoursBefore: 5\nclock.prefix: \"12\"\nhabits.morningRoutine:\n  - Душ\n  - Завтрак\n---\n",
+                      in: sandbox)
         var settings = TestConfig.defaults
         settings.timeline.hoursBefore = 5
         settings.clock.prefix = "12"
         settings.habits.morningRoutine = ["Душ", "Завтрак"]
-        try await note.write(try JSONEncoder.store.encode(SyncedSettings(settings)))
-
         let back = try #require(await note.read())
         #expect(SyncedSettings.merged(note: back, over: TestConfig.defaults) == settings)
-        let text = try String(contentsOf: noteURL(in: sandbox), encoding: .utf8)
-        #expect(text.hasPrefix("---\n"))
-        #expect(text.contains("timeline.hoursBefore: 5\n") && text.contains("clock.prefix: \"12\"\n"))
-        #expect(!text.contains("```"))
     }
 
-    @Test func anOldBlockIsReadAndReplacedByProperties() async throws {
+    @Test func anOldBlockIsReadAndItsPropertiesWin() async throws {
         let sandbox = try VaultSandbox.make()
-        let url = noteURL(in: sandbox)
-        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try ("```SuperPooperApp\n{\"appearance\":{\"pastOpacity\":0.5}}\n```\n\nМои заметки\n").write(to: url, atomically: true, encoding: .utf8)
-        let note = settingsNote(in: sandbox)
-
-        let old = try #require(await note.read())
+        try writeNote("```SuperPooperApp\n{\"appearance\":{\"pastOpacity\":0.5}}\n```\n\nМои заметки\n", in: sandbox)
+        let old = try #require(await settingsNote(in: sandbox).read())
         #expect(SyncedSettings.merged(note: old, over: TestConfig.defaults).appearance.pastOpacity == 0.5)
-        try await note.write(try JSONEncoder.store.encode(SyncedSettings(TestConfig.defaults)))
-        let text = try String(contentsOf: url, encoding: .utf8)
-        #expect(!text.contains("SuperPooperApp") && text.contains("appearance.pastOpacity: ") && text.hasSuffix("Мои заметки\n"))
+        try writeNote("---\nappearance.pastOpacity: 0.3\n---\n```SuperPooperApp\n{\"appearance\":{\"pastOpacity\":0.5}}\n```\n",
+                      in: sandbox)
+        let both = try #require(await settingsNote(in: sandbox).read())
+        #expect(SyncedSettings.merged(note: both, over: TestConfig.defaults).appearance.pastOpacity == 0.3)
     }
 
     /// A color reset on one device (no overrides left) is reset on the others too, not kept from their copy.
@@ -85,25 +78,19 @@ struct AppBlockTests {
         #expect(SyncedSettings.merged(note: Data(#"{"colors":{}}"#.utf8), over: colored).colors.isEmpty)
 
         let sandbox = try VaultSandbox.make()
-        let note = settingsNote(in: sandbox)
-        try await note.write(try JSONEncoder.store.encode(SyncedSettings(TestConfig.defaults)))
-        let back = try #require(await note.read())
+        try writeNote("---\ncolors: {}\n---\n", in: sandbox)
+        let back = try #require(await settingsNote(in: sandbox).read())
         #expect(SyncedSettings.merged(note: back, over: colored).colors.isEmpty)
     }
 
-    /// A settings note whose frontmatter does not parse is left alone (not wrapped in a new frontmatter).
-    @Test func aBrokenSettingsNoteIsNotOverwritten() async throws {
+    /// A settings note whose frontmatter does not parse holds no settings, and stays as it was.
+    @Test func aBrokenSettingsNoteIsReadAsNoneAndLeftAlone() async throws {
         let sandbox = try VaultSandbox.make()
-        let url = noteURL(in: sandbox)
-        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         // The closing `---` is missing: the frontmatter cannot be told from the text.
         let broken = "---\ntimeline.hoursBefore: 2\nМои заметки\n"
-        try broken.write(to: url, atomically: true, encoding: .utf8)
-        let note = settingsNote(in: sandbox)
-        await #expect(throws: (any Error).self) {
-            try await note.write(try JSONEncoder.store.encode(SyncedSettings(TestConfig.defaults)))
-        }
-        #expect(try String(contentsOf: url, encoding: .utf8) == broken)
+        try writeNote(broken, in: sandbox)
+        #expect(await settingsNote(in: sandbox).read() == nil)
+        #expect(try String(contentsOf: noteURL(in: sandbox), encoding: .utf8) == broken)
     }
 
     /// The shared settings go to `super-pooper-app-settings.json` next to the tasks folder; until it exists the older
@@ -131,6 +118,12 @@ struct AppBlockTests {
         let back = try #require(await file.read())
         #expect(SyncedSettings.merged(note: back, over: TestConfig.defaults).appearance.pastOpacity == 0.3)
         #expect(try String(contentsOf: url, encoding: .utf8) == old)
+    }
+
+    private func writeNote(_ text: String, in sandbox: VaultSandbox) throws {
+        let url = noteURL(in: sandbox)
+        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try text.write(to: url, atomically: true, encoding: .utf8)
     }
 
     private func settingsNote(in sandbox: VaultSandbox) -> VaultSettingsNote {

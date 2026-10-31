@@ -5127,17 +5127,6 @@
         }
       }
     },
-    "settingsNote.intro": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "# SuperPooperApp settings\n\nSettings of the SuperPooperApp app on iPhone. Change them in the app (Settings) or in the properties above; every device reads them.\n"
-          }
-        }
-      }
-    },
     "sort.dueToday": {
       "extractionState": "manual",
       "localizations": {

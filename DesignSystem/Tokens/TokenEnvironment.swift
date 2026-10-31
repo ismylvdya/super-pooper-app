@@ -75,9 +75,8 @@ enum BundledConfig {
     }
 
     /// `defaults.json` as settings (the values a view falls back to before the user's ones arrive).
-    static let settings: AppSettings = {
-        guard let config, let settings = try? ConfigLoader.decode(AppSettings.self, from: config.defaultSettings, file: AppConfig.File.defaults)
-        else { preconditionFailure("defaults.json is invalid") }
-        return settings
-    }()
+    static var settings: AppSettings {
+        guard let config else { preconditionFailure("defaults.json is invalid") }
+        return config.defaultSettings.values
+    }
 }

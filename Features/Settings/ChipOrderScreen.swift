@@ -45,7 +45,7 @@ struct ChipOrderScreen: View {
     }
 
     private var defaultOrder: [String] {
-        (try? JSONDecoder.store.decode(AppSettings.self, from: model.config.defaultSettings))?.pool.chipOrder ?? []
+        model.config.defaultSettings.values.pool.chipOrder
     }
 
     /// The symbols a chip of this kind can show.

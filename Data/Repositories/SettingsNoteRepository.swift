@@ -6,10 +6,15 @@ protocol SettingsNoteRepository: Sendable {
     func write(_ json: Data) async throws
 }
 
+/// Settings kept where an older version kept them, only read.
+protocol LegacySettingsReading: Sendable {
+    func read() async -> Data?
+}
+
 /// The older settings note: `SuperPooper Settings.md` next to the tasks folder, with every setting as a property of
 /// its own (see `SettingsProperties`); older still, the JSON in a ```SuperPooperApp block. Read by
-/// `VaultSettingsFile` until its JSON file exists.
-struct VaultSettingsNote: SettingsNoteRepository {
+/// `VaultSettingsFile` until its JSON file exists; never written.
+struct VaultSettingsNote: LegacySettingsReading {
     let location: VaultLocating
     let fileSystem: NoteFileSystem
     let fileName: String
@@ -29,30 +34,6 @@ struct VaultSettingsNote: SettingsNoteRepository {
             guard !properties.isEmpty else { return legacy }
             let json = try SettingsProperties.json(from: properties)
             return try legacy.map { try JSONMerge.merge(base: $0, overlay: json) } ?? json
-        }
-    }
-
-    /// Rewrites the settings properties; other properties and the text written in Obsidian stay. A note without
-    /// frontmatter gets one; a note whose frontmatter does not parse is not touched (the error is thrown), so what
-    /// the user wrote there never moves into the text.
-    func write(_ json: Data) async throws {
-        try await location.withRoot { root in
-            let url = try VaultPaths.besideTasks(fileName, root: root, tasksFolder: vaultSettings().tasksFolder, fileSystem: fileSystem)
-            let current = fileSystem.fileExists(url) ? try fileSystem.read(url).text : L10n.string("settingsNote.intro")
-            var document: FrontmatterDocument
-            do {
-                document = try FrontmatterDocument(text: current)
-            } catch FrontmatterError.noFrontmatter {
-                document = try FrontmatterDocument(text: "---\n---\n" + current)
-            }
-            let properties = try SettingsProperties.properties(from: json)
-            let roots = try SettingsProperties.roots(of: json)
-            let written = Set(properties.map(\.key))
-            for key in document.keys where roots.contains(SettingsProperties.root(of: key)) && !written.contains(key) {
-                document.remove(key)
-            }
-            for property in properties { document.set(property.key, to: property.value) }
-            try fileSystem.write(document.text(withBody: AppBlock.split(document.body).visible), to: url)
         }
     }
 }

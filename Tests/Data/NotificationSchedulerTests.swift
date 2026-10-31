@@ -15,7 +15,7 @@ struct NotificationSchedulerTests {
     private var scheduler: UserNotificationScheduler {
         UserNotificationScheduler(calendar: FixedCalendar(current: TestCalendar.calendar),
                                   icons: TestConfig.decode(IconSet.self, "icons.json"),
-                                  bodyText: { _ in "" }, center: center)
+                                  bodyText: { _ in "" }, actionTitle: { $0 }, center: center)
     }
 
     /// The app's sync at `time` on `day` (Wednesday).

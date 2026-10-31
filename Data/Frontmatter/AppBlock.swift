@@ -41,9 +41,4 @@ enum AppBlock {
         }
         return Data(block[block.index(after: start)..<end.lowerBound].utf8)
     }
-
-    /// A block holding `json`.
-    static func make(json: Data) -> String {
-        "\(fence)\(language)\n\(String(decoding: json, as: UTF8.self))\n\(fence)\n"
-    }
 }

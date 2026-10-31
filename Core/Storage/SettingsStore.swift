@@ -5,13 +5,14 @@ struct SettingsStore: Sendable {
     static let fileName = "settings.json"
 
     let store: JSONFileStore
-    let defaults: Data
+    let defaults: DefaultSettings
 
     /// Stored values over defaults; a broken file falls back to defaults.
     func load() -> AppSettings {
-        let merged = store.readData(Self.fileName).flatMap { try? JSONMerge.merge(base: defaults, overlay: $0) } ?? defaults
-        if let settings = try? JSONDecoder.store.decode(AppSettings.self, from: merged) { return settings }
-        return (try? JSONDecoder.store.decode(AppSettings.self, from: defaults)) ?? AppSettings.fallback
+        guard let stored = store.readData(Self.fileName),
+              let merged = try? JSONMerge.merge(base: defaults.json, overlay: stored),
+              let settings = try? JSONDecoder.store.decode(AppSettings.self, from: merged) else { return defaults.values }
+        return settings
     }
 
     func save(_ settings: AppSettings) throws {
@@ -19,25 +20,9 @@ struct SettingsStore: Sendable {
     }
 }
 
-extension AppSettings {
-    /// Only used if even the bundled defaults are unreadable (the app then shows the config error).
-    static let fallback = AppSettings(
-        vault: .init(tasksFolder: "TaskNotes/Tasks", taskTag: "", trashFolder: ".trash", obsidianVault: "", obsidianPathPrefix: ""),
-        today: .init(arrangement: .paged, landscapeArrangement: .sideBySide, widgetArrangement: .sideBySide),
-        sources: .init(anchorCalendarIDs: [], reminderListIDs: []),
-        day: .init(boundary: .midnight, energyHour: .midnight),
-        pool: .init(visibleCount: 3, criteria: [], chipOrder: []),
-        timeline: .init(layout: .oneColumn, range: .aroundNow,
-                        wholeDay: .init(start: .midnight, end: .midnight), hoursBefore: 2, hoursAfter: 8,
-                        firstHalf: .init(start: .midnight, end: .midnight),
-                        secondHalf: .init(start: .midnight, end: .midnight),
-                        eventFontSize: 15, taskFontSize: 15, bellSize: 11, bellOpacity: 0.45, shown: TimelineFilter()),
-        notifications: .init(enabled: false),
-        onboarding: .init(completed: false),
-        habits: .init(order: [], showNewHabitsInToday: true, morningRoutine: [], dayRoutine: [], eveningRoutine: [],
-                       showsNotificationPicture: true, notificationUsesHabitColor: false),
-        clock: .init(timeZone: "Europe/Moscow", prefix: ""),
-        appearance: .init(pastOpacity: 0.2),
-        colors: [:]
-    )
+/// The bundled `defaults.json`: the JSON user settings are merged over (new fields of a new version get their default),
+/// and its values, checked when the configs load.
+struct DefaultSettings: Sendable {
+    let json: Data
+    let values: AppSettings
 }
