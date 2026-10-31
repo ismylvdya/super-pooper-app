@@ -51,6 +51,17 @@ struct DayTimelineTests {
         #expect(DayScenario(tasks: [once]).build().timeline.isEmpty)
     }
 
+    /// Twice closes the day of a habit with three reminders too: no block (and no bell) is left for the third.
+    @Test func twiceTakesEveryBlockOfAHabitWithThreeReminders() {
+        let today = LocalDate(TestCalendar.wednesday)
+        let drops = makeHabit("Eye drops") { task in
+            task.reminderTimes = [LocalTime("09:00"), LocalTime("14:00"), LocalTime("20:00")]
+            task.completeInstances = [today]
+            task.twiceInstances = [today]
+        }
+        #expect(DayScenario(tasks: [drops]).build().timeline.isEmpty)
+    }
+
     @Test func aTimedHabitIsOnTheTimelineEveryDayItOccurs() throws {
         let vitamins = makeHabit("Vitamins", time: "09:00") { $0.timeEstimate = 2 }
         let plan = DayScenario(tasks: [vitamins]).build()

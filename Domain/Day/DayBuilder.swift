@@ -126,12 +126,13 @@ struct DayBuilder: Sendable {
         return [time]
     }
 
-    /// The times still to do today. Done leaves the timeline; a habit with several reminders loses one block per
-    /// mark, earliest first (Done the first of two, Twice both); one with a single time keeps it until the day
-    /// is closed (twice a day waits for Twice).
+    /// The times still to do today. A closed day leaves the timeline (Twice closes it however many reminders there
+    /// are); before that a habit with several reminders loses one block per mark, earliest first (Done the first
+    /// one); one with a single time keeps it until the day is closed (twice a day waits for Twice).
     private func openTimes(of item: DayItem, context: DayContext) -> [LocalTime] {
+        guard !item.isFinished else { return [] }
         let times = timesOfDay(of: item.task, context: context)
-        guard item.isHabit, times.count > 1 else { return item.isFinished ? [] : times }
+        guard item.isHabit, times.count > 1 else { return times }
         let ordered = times.sorted { context.moment($0, onLogicalDay: context.today) < context.moment($1, onLogicalDay: context.today) }
         return Array(ordered.dropFirst(HabitMarking.timesClosed(by: item.state.mark)))
     }
