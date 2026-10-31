@@ -60,7 +60,7 @@ struct VaultSandbox {
 
     func scanner(ubiquity: UbiquityService = FakeUbiquityService(), downloadTimeout: TimeInterval = 0.3) -> VaultScanner {
         VaultScanner(fileSystem: CoordinatedFileSystem(), ubiquity: ubiquity, reader: reader(),
-                     noteExtension: TestConfig.rules.vault.noteExtension, downloadTimeout: downloadTimeout,
+                     noteExtension: TestConfig.mapping.obsidian.noteExtension, downloadTimeout: downloadTimeout,
                      downloadPoll: TestConfig.rules.vault.downloadPollSeconds)
     }
 
@@ -78,12 +78,11 @@ struct VaultSandbox {
                                           clock: { backupClock.now }, calendar: calendar)
         let settings = TestConfig.defaults.vault
         let rules = RulesConfig.Vault(downloadTimeoutSeconds: downloadTimeout, downloadPollSeconds: TestConfig.rules.vault.downloadPollSeconds,
-                                      noteExtension: TestConfig.rules.vault.noteExtension,
                                       settingsFile: TestConfig.rules.vault.settingsFile,
                                       settingsNote: TestConfig.rules.vault.settingsNote,
                                       doneFolder: TestConfig.rules.vault.doneFolder,
-                                      obsidianVaultsFolder: TestConfig.rules.vault.obsidianVaultsFolder,
-                                      settingsWriteDelaySeconds: TestConfig.rules.vault.settingsWriteDelaySeconds)
+                                      settingsWriteDelaySeconds: TestConfig.rules.vault.settingsWriteDelaySeconds,
+                                      modificationToleranceSeconds: TestConfig.rules.vault.modificationToleranceSeconds)
         return TaskNotesStore(location: FixedVaultLocation(url: vault), fileSystem: fileSystem, ubiquity: ubiquity,
                                    mapping: TestConfig.mapping, calendar: calendar, rules: rules,
                                    backups: backupService, clock: FixedClock(now: now), vaultSettings: { settings })

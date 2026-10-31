@@ -16,7 +16,13 @@ actor InMemoryTaskStore: TaskStore, VersionConflictResolving, ExternalLinking, T
     private var scanGate: AsyncGate?
     private(set) var scanCount = 0
 
-    init(tasks: [TaskItem]) { self.tasks = tasks }
+    /// The names a note can take, as the TaskNotes store has them.
+    private let names: ObsidianNoteNames
+
+    init(tasks: [TaskItem], names: ObsidianNoteNames) {
+        self.tasks = tasks
+        self.names = names
+    }
 
     func failScans(with error: Error?) { scanError = error }
     func setBodyReadable(_ readable: Bool, of name: String) {
@@ -80,7 +86,7 @@ actor InMemoryTaskStore: TaskStore, VersionConflictResolving, ExternalLinking, T
         if !draft.body.isEmpty { bodies[name] = draft.body }
         return task
     }
-    nonisolated func nameProblem(in name: String) -> NoteNameProblem? { ObsidianNoteNames.problem(in: name) }
+    nonisolated func nameProblem(in name: String) -> NoteNameProblem? { names.problem(in: name) }
     func externalURL(for task: TaskItem) async -> URL? { nil }
     func chosenFolder() async -> ChosenFolder { ChosenFolder() }
     func versions(of task: TaskItem) async throws -> [NoteVersion] { [] }

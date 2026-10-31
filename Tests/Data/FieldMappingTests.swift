@@ -23,4 +23,14 @@ struct FieldMappingTests {
             #expect(bundle.localizedString(forKey: key, value: "∅", table: nil) != "∅", "missing text for \(key)")
         }
     }
+
+    /// Obsidian's own names come from the adapter's config: the note file extension a link may carry, the vault folder.
+    @Test func obsidianNamesComeFromTheMapping() {
+        let obsidian = TestConfig.mapping.obsidian
+        #expect(WikiLink.noteName(from: "[Alias](Tasks/Name.md)", noteExtension: obsidian.noteExtension) == "Name")
+        #expect(WikiLink.noteName(from: "Name.txt", noteExtension: "txt") == "Name")
+        #expect(WikiLink.noteName(from: "Name.md", noteExtension: "txt") == "Name.md")
+        #expect(obsidian.configFolder == ".obsidian")
+        #expect(obsidian.openURL.scheme == "obsidian")
+    }
 }

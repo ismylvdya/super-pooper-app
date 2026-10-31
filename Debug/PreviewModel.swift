@@ -13,15 +13,15 @@ enum PreviewModel {
                      tasks: [TaskItem] = PreviewSamples.tasks,
                      delay: Delay = SleepDelay(),
                      appEvents: AppEventSink? = nil) -> (model: AppModel, router: Router, config: AppConfig, banners: BannerCenter)? {
-        guard let config = try? AppConfig.load() else { return nil }
+        guard let config = try? AppConfig.load(), let mapping = try? FieldMapping.load() else { return nil }
         let store = JSONFileStore(directory: FileManager.default.temporaryDirectory
             .appendingPathComponent("SuperPooperPreview-\(UUID().uuidString)"))
         let settingsStore = SettingsStore(store: store, defaults: config.defaultSettings)
-        let memory = InMemoryTaskStore(tasks: tasks)
+        let memory = InMemoryTaskStore(tasks: tasks, names: ObsidianNoteNames(rules: mapping.obsidian.noteNames))
         let services = AppServices(
             vault: FixedVaultLocation(url: store.directory), tasks: memory,
             trash: TaskNotesTrash(location: FixedVaultLocation(url: store.directory), fileSystem: CoordinatedFileSystem(),
-                                        noteExtension: config.rules.vault.noteExtension, vaultSettings: { settingsStore.load().vault }),
+                                        noteExtension: mapping.obsidian.noteExtension, vaultSettings: { settingsStore.load().vault }),
             versions: memory, links: memory, backups: memory, folder: memory,
             settingsNote: VaultSettingsFile(location: FixedVaultLocation(url: store.directory), fileSystem: CoordinatedFileSystem(),
                                             rules: config.rules.vault, vaultSettings: { settingsStore.load().vault }),

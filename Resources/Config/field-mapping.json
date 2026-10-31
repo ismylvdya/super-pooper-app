@@ -74,5 +74,20 @@
       "allowedSkips",
       "subtaskOrder"
     ]
+  },
+  "obsidian": {
+    "noteExtension": "md",
+    "configFolder": ".obsidian",
+    "vaultsFolder": "iCloud~md~obsidian/Documents",
+    "openURL": {
+      "scheme": "obsidian",
+      "action": "open",
+      "vaultParameter": "vault",
+      "fileParameter": "file"
+    },
+    "noteNames": {
+      "forbiddenCharacters": "/\\:*?\"<>|#^[]",
+      "maxLength": 200
+    }
   }
 }

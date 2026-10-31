@@ -13,8 +13,11 @@ actor TaskNotesStore: TaskStore {
     let backups: BackupService
     let ubiquity: UbiquityService
     let noteExtension: String
-    let obsidianVaultsFolder: String
+    let obsidian: ObsidianConventions
+    let names: ObsidianNoteNames
     let doneFolder: String
+    /// A modification date further than this from the one seen means an edit elsewhere.
+    let modificationTolerance: TimeInterval
     private let writer: TaskNoteWriter
     private let readerFactory: @Sendable (AppSettings.Vault) -> TaskNoteReader
     private let clock: Clock
@@ -28,22 +31,24 @@ actor TaskNotesStore: TaskStore {
         self.fileSystem = fileSystem
         self.ubiquity = ubiquity
         self.writer = TaskNoteWriter(mapping: mapping, calendar: calendar)
-        self.folders = TaskNotesFolders(fileSystem: fileSystem, noteExtension: rules.noteExtension)
+        self.folders = TaskNotesFolders(fileSystem: fileSystem, noteExtension: mapping.obsidian.noteExtension)
         let readerFactory: @Sendable (AppSettings.Vault) -> TaskNoteReader = {
             TaskNoteReader(mapping: mapping, taskTag: $0.taskTag, calendar: calendar.current)
         }
         self.readerFactory = readerFactory
         self.scanner = { settings in
             VaultScanner(fileSystem: fileSystem, ubiquity: ubiquity, reader: readerFactory(settings),
-                         noteExtension: rules.noteExtension, downloadTimeout: rules.downloadTimeoutSeconds,
+                         noteExtension: mapping.obsidian.noteExtension, downloadTimeout: rules.downloadTimeoutSeconds,
                          downloadPoll: rules.downloadPollSeconds)
         }
         self.vaultSettings = vaultSettings
         self.backups = backups
         self.clock = clock
-        self.noteExtension = rules.noteExtension
-        self.obsidianVaultsFolder = rules.obsidianVaultsFolder
+        self.noteExtension = mapping.obsidian.noteExtension
+        self.obsidian = mapping.obsidian
+        self.names = ObsidianNoteNames(rules: mapping.obsidian.noteNames)
         self.doneFolder = rules.doneFolder
+        self.modificationTolerance = rules.modificationToleranceSeconds
     }
 
     func load() async throws -> VaultScanResult {
@@ -80,7 +85,7 @@ actor TaskNotesStore: TaskStore {
     }
 
     func rename(_ task: TaskItem, to newName: String, dependents: [TaskItem]) async throws -> TaskItem {
-        guard ObsidianNoteNames.isValid(newName) else { throw TaskStoreError.invalidName(newName) }
+        guard names.isValid(newName) else { throw TaskStoreError.invalidName(newName) }
         let renamed: TaskItem = try await location.withRoot { root in
             let source = try existingURL(of: task, root: root)
             let target = source.deletingLastPathComponent().appendingPathComponent("\(newName).\(noteExtension)")
@@ -117,11 +122,11 @@ actor TaskNotesStore: TaskStore {
     }
 
     nonisolated func nameProblem(in name: String) -> NoteNameProblem? {
-        ObsidianNoteNames.problem(in: name)
+        names.problem(in: name)
     }
 
     private func createNote(named name: String, status: TaskStatus) async throws -> TaskItem {
-        guard ObsidianNoteNames.isValid(name) else { throw TaskStoreError.invalidName(name) }
+        guard names.isValid(name) else { throw TaskStoreError.invalidName(name) }
         let settings = vaultSettings()
         let reader = readerFactory(settings)
         let text = writer.newNote(tag: settings.taskTag, status: status, now: clock.now)
@@ -150,7 +155,7 @@ actor TaskNotesStore: TaskStore {
             // iCloud conflict versions stay for the user to resolve; the edit goes into the current file.
             var hadConflict = ubiquity.hasConflicts(url)
             if let seen = seenModification[task.id.relativePath], let current = fileSystem.modificationDate(of: url),
-               abs(current.timeIntervalSince(seen)) > 0.001 {
+               abs(current.timeIntervalSince(seen)) > modificationTolerance {
                 hadConflict = true
             }
             let file = try fileSystem.read(url)

@@ -12,9 +12,10 @@ enum VaultPaths {
         return parts.dropFirst().joined(separator: "/")
     }
 
-    /// Whether the chosen folder is a whole Obsidian vault (it has `.obsidian`) rather than the TaskNotes folder.
-    static func isWholeVault(_ root: URL, exists: (URL) -> Bool) -> Bool {
-        exists(root.appendingPathComponent(".obsidian", isDirectory: true))
+    /// Whether the chosen folder is a whole Obsidian vault (it has the vault's `configFolder`, `.obsidian`) rather than
+    /// the TaskNotes folder.
+    static func isWholeVault(_ root: URL, configFolder: String, exists: (URL) -> Bool) -> Bool {
+        exists(root.appendingPathComponent(configFolder, isDirectory: true))
     }
 
     /// The vault of the chosen folder and the folder's path in it, read from where the folder is: a folder under

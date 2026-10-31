@@ -14,7 +14,7 @@ extension TaskNotesStore: VersionConflictResolving, ExternalLinking, TaskBackups
         let settings = vaultSettings()
         return try? await location.withRoot { root in
             ObsidianLink.url(relativePath: task.id.relativePath, root: root, folder: chosenFolder(root: root),
-                             vaultName: settings.obsidianVault, pathPrefix: settings.obsidianPathPrefix, noteExtension: noteExtension)
+                             vaultName: settings.obsidianVault, pathPrefix: settings.obsidianPathPrefix, obsidian: obsidian)
         }
     }
 
@@ -35,7 +35,7 @@ extension TaskNotesStore: VersionConflictResolving, ExternalLinking, TaskBackups
     }
 
     private func chosenFolder(root: URL) -> ChosenFolder {
-        ChosenFolder(isWholeVault: VaultPaths.isWholeVault(root, exists: fileSystem.fileExists),
-                     obsidianPlace: VaultPaths.obsidianPlace(of: root, vaultsFolder: obsidianVaultsFolder))
+        ChosenFolder(isWholeVault: VaultPaths.isWholeVault(root, configFolder: obsidian.configFolder, exists: fileSystem.fileExists),
+                     obsidianPlace: VaultPaths.obsidianPlace(of: root, vaultsFolder: obsidian.vaultsFolder))
     }
 }

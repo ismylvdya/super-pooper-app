@@ -41,17 +41,16 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let downloadTimeoutSeconds: Double
         /// While waiting for iCloud downloads, the files are checked this often.
         let downloadPollSeconds: Double
-        let noteExtension: String
         /// The JSON file with the app's shared settings, next to the tasks folder.
         let settingsFile: String
         /// The older note with those settings, read until the file exists.
         let settingsNote: String
         /// Where done tasks are moved, next to the tasks folder; Obsidian and TaskNotes are set to skip it.
         let doneFolder: String
-        /// Where Obsidian keeps its iCloud vaults: a folder under it names its vault and its path in it.
-        let obsidianVaultsFolder: String
         /// The settings note is written this long after the last change.
         let settingsWriteDelaySeconds: Double
+        /// A note's modification date further than this from the one the app saw means it was changed elsewhere.
+        let modificationToleranceSeconds: Double
     }
 
     struct Backups: Codable, Hashable, Sendable {

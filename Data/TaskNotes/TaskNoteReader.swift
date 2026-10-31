@@ -18,7 +18,8 @@ struct TaskNoteReader: Sendable {
 
     func task(from document: FrontmatterDocument, name: String, relativePath: String) -> TaskItem {
         let settings = ItemSettingsProperty(mapping: mapping)
-        var fields = FieldReader(document: document, settings: settings.values(in: document) ?? [:], field: mapping.field(forKey:))
+        var fields = FieldReader(document: document, settings: settings.values(in: document) ?? [:], field: mapping.field(forKey:),
+                                 noteExtension: mapping.obsidian.noteExtension)
         let keys = mapping.fields
 
         var task = TaskItem(id: TaskID(relativePath: relativePath), name: name,
@@ -92,6 +93,8 @@ private struct FieldReader {
     let settings: [String: YAMLValue]
     /// The domain field of a key, for the problems.
     let field: (String) -> TaskField?
+    /// Links may name a note's file with its extension.
+    let noteExtension: String
     var problems: [TaskProblem] = []
 
     private mutating func problem(_ key: String, _ value: String) {
@@ -149,7 +152,7 @@ private struct FieldReader {
         let items = value.list ?? [value]
         return items.compactMap { item in
             let uid = item.value(for: "uid") ?? item
-            return FieldValues.firstScalar(uid).flatMap(WikiLink.noteName(from:))
+            return FieldValues.firstScalar(uid).flatMap { WikiLink.noteName(from: $0, noteExtension: noteExtension) }
         }
     }
 

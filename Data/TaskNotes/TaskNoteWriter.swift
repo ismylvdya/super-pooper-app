@@ -177,7 +177,7 @@ struct TaskNoteWriter: Sendable {
     }
 
     private func linkName(_ entry: YAMLValue) -> String? {
-        FieldValues.firstScalar(entry.value(for: "uid") ?? entry).flatMap(WikiLink.noteName(from:))
+        FieldValues.firstScalar(entry.value(for: "uid") ?? entry).flatMap { WikiLink.noteName(from: $0, noteExtension: mapping.obsidian.noteExtension) }
     }
 
     /// The TaskNotes way: `{uid: "[[Name]]", reltype: FINISHTOSTART}`.

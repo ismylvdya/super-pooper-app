@@ -48,12 +48,11 @@
   "vault": {
     "downloadTimeoutSeconds": 20,
     "downloadPollSeconds": 0.25,
-    "noteExtension": "md",
     "settingsFile": "super-pooper-app-settings.json",
     "settingsNote": "SuperPooper Settings.md",
     "doneFolder": "Done",
-    "obsidianVaultsFolder": "iCloud~md~obsidian/Documents",
-    "settingsWriteDelaySeconds": 1
+    "settingsWriteDelaySeconds": 1,
+    "modificationToleranceSeconds": 0.001
   },
   "backups": {
     "keepCount": 20

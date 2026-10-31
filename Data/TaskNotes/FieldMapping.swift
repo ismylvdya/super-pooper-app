@@ -100,6 +100,7 @@ struct FieldMapping: Codable, Hashable, Sendable {
     let itemSettings: ItemSettings
     /// `reltype` written into new `previous_task` entries.
     let dependencyRelType: String
+    let obsidian: ObsidianConventions
 
     func status(fromRaw raw: String) -> TaskStatus {
         switch raw {

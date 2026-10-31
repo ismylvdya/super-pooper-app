@@ -74,7 +74,7 @@ final class AppContainer {
            pointSize: config.tokens.size(.notificationIcon), image: notificationImage))
         let services = AppServices(
             vault: vaultLocation, tasks: tasks,
-            trash: TaskNotesTrash(location: vaultLocation, fileSystem: fileSystem, noteExtension: config.rules.vault.noteExtension,
+            trash: TaskNotesTrash(location: vaultLocation, fileSystem: fileSystem, noteExtension: mapping.obsidian.noteExtension,
                                         vaultSettings: { settingsStore.load().vault }),
             versions: tasks, links: tasks, backups: tasks, folder: tasks,
             settingsNote: VaultSettingsFile(location: vaultLocation, fileSystem: fileSystem, rules: config.rules.vault,
