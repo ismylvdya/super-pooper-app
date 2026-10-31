@@ -1,6 +1,6 @@
 import Foundation
 
-/// The single date of a task (TaskNotes "scheduled", stored under `due`): a day, optionally with a time.
+/// The single date of a task: a day, optionally with a time.
 struct TaskDue: Hashable, Codable, Sendable {
     let day: LocalDate
     let time: LocalTime?

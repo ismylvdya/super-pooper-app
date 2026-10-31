@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import SuperPooperApp
 
-/// Writing through `VaultTaskRepository` into a rendered copy of the test vault: only the changed keys
+/// Writing through `TaskNotesStore` into a rendered copy of the test vault: only the changed keys
 /// and `date_modified` may differ, byte for byte (`<data_model>` "Запись в файлы").
 /// The vault is rendered for Wednesday 2026-10-21; "now" is 13:25 Belgrade time.
 @Suite("Note writing")

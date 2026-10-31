@@ -117,11 +117,11 @@ struct TaskNotesFolderTests {
     }
 
     @Test func obsidianLinksPointIntoTheVault() {
-        let url = VaultPaths.obsidianURL(relativePath: "Tasks/Купить молоко.md", root: folder, folder: ChosenFolder(),
+        let url = ObsidianLink.url(relativePath: "Tasks/Купить молоко.md", root: folder, folder: ChosenFolder(),
                                          vaultName: "", pathPrefix: "", noteExtension: "md")
         let items = URLComponents(url: url!, resolvingAgainstBaseURL: false)?.queryItems
         #expect(items == [URLQueryItem(name: "vault", value: "Vault"), URLQueryItem(name: "file", value: "TaskNotes/Tasks/Купить молоко")])
-        let custom = VaultPaths.obsidianURL(relativePath: "Tasks/A.md", root: folder, folder: ChosenFolder(),
+        let custom = ObsidianLink.url(relativePath: "Tasks/A.md", root: folder, folder: ChosenFolder(),
                                             vaultName: "Main", pathPrefix: "Work/TaskNotes", noteExtension: "md")
         #expect(URLComponents(url: custom!, resolvingAgainstBaseURL: false)?.queryItems?.last?.value == "Work/TaskNotes/Tasks/A")
     }
@@ -133,7 +133,7 @@ struct TaskNotesFolderTests {
                          isDirectory: true)
         let place = try #require(VaultPaths.obsidianPlace(of: nested, vaultsFolder: vaults))
         #expect(place == ObsidianPlace(vault: "Main", pathPrefix: "Work/TaskNotes"))
-        let url = VaultPaths.obsidianURL(relativePath: "Tasks/A.md", root: nested, folder: ChosenFolder(obsidianPlace: place),
+        let url = ObsidianLink.url(relativePath: "Tasks/A.md", root: nested, folder: ChosenFolder(obsidianPlace: place),
                                          vaultName: "", pathPrefix: "", noteExtension: "md")
         #expect(URLComponents(url: url!, resolvingAgainstBaseURL: false)?.queryItems
                 == [URLQueryItem(name: "vault", value: "Main"), URLQueryItem(name: "file", value: "Work/TaskNotes/Tasks/A")])

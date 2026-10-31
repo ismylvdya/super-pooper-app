@@ -16,7 +16,7 @@ final class AppContainer {
     /// The single instance shared by the SwiftUI app and the UIKit delegate.
     static let shared: Result<AppContainer, ConfigError> = {
         do {
-            return .success(try AppContainer(config: AppConfig.load(), launch: .current()))
+            return .success(try AppContainer(config: AppConfig.load(), mapping: FieldMapping.load(), launch: .current()))
         } catch let error as ConfigError {
             return .failure(error)
         } catch {
@@ -32,7 +32,7 @@ final class AppContainer {
     }
     #endif
 
-    init(config: AppConfig, launch: LaunchOptions) {
+    init(config: AppConfig, mapping: FieldMapping, launch: LaunchOptions) {
         self.config = config
         self.launch = launch
         let calendar = LiveCalendar()
@@ -51,8 +51,8 @@ final class AppContainer {
         let fileSystem = CoordinatedFileSystem()
         let backups = BackupService(directory: shared.url("Backups"), keepCount: config.rules.backups.keepCount,
                                     fileSystem: fileSystem, clock: { clock.now }, calendar: calendar)
-        let tasks = VaultTaskRepository(location: vaultLocation, fileSystem: fileSystem, ubiquity: ICloudUbiquityService(),
-                                        mapping: config.fieldMapping, calendar: calendar, rules: config.rules.vault,
+        let tasks = TaskNotesStore(location: vaultLocation, fileSystem: fileSystem, ubiquity: ICloudUbiquityService(),
+                                        mapping: mapping, calendar: calendar, rules: config.rules.vault,
                                         backups: backups, clock: clock,
                                         vaultSettings: { settingsStore.load().vault })
         let eventKit = EventKitAccess()
@@ -73,7 +73,7 @@ final class AppContainer {
            pointSize: config.tokens.size(.notificationIcon), image: notificationImage))
         let services = AppServices(
             vault: vaultLocation, tasks: tasks,
-            trash: VaultTrashRepository(location: vaultLocation, fileSystem: fileSystem, noteExtension: config.rules.vault.noteExtension,
+            trash: TaskNotesTrash(location: vaultLocation, fileSystem: fileSystem, noteExtension: config.rules.vault.noteExtension,
                                         vaultSettings: { settingsStore.load().vault }),
             versions: tasks, links: tasks, backups: tasks, folder: tasks,
             settingsNote: VaultSettingsFile(location: vaultLocation, fileSystem: fileSystem, rules: config.rules.vault,

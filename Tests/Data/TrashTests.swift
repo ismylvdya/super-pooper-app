@@ -14,7 +14,7 @@ struct TrashTests {
         try text.write(to: trash.appendingPathComponent("Задача.md"), atomically: true, encoding: .utf8)
         try Data().write(to: sandbox.tasksFolder.appendingPathComponent(".Задача.md.icloud"))
 
-        let repository = VaultTrashRepository(location: FixedVaultLocation(url: sandbox.vault), fileSystem: CoordinatedFileSystem(),
+        let repository = TaskNotesTrash(location: FixedVaultLocation(url: sandbox.vault), fileSystem: CoordinatedFileSystem(),
                                               noteExtension: TestConfig.rules.vault.noteExtension, vaultSettings: { TestConfig.defaults.vault })
         let note = try #require(try await repository.notes().first { $0.name == "Задача" })
         #expect(try await repository.restore(note) == "Задача 2")

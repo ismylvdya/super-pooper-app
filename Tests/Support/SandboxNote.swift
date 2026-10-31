@@ -5,7 +5,7 @@ import Testing
 /// One scanned note of a fresh sandbox and the repository that scanned it; `task` follows every write.
 final class SandboxNote {
     let sandbox: VaultSandbox
-    let repository: VaultTaskRepository
+    let repository: TaskNotesStore
     private(set) var task: TaskItem
 
     init(_ name: String, sandbox: VaultSandbox? = nil, ubiquity: UbiquityService = FakeUbiquityService(),

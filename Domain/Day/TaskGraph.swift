@@ -1,6 +1,6 @@
 import Foundation
 
-/// The `previous_task` links between tasks, resolved by name, with cycles (a link to itself included) broken.
+/// The previous-task links between tasks, resolved by name, with cycles (a link to itself included) broken.
 struct TaskGraph: Sendable {
     let tasksByName: [String: TaskItem]
     /// Resolved predecessors per task (edges that closed a cycle are dropped).

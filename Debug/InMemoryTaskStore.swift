@@ -80,7 +80,7 @@ actor InMemoryTaskStore: TaskStore, VersionConflictResolving, ExternalLinking, T
         if !draft.body.isEmpty { bodies[name] = draft.body }
         return task
     }
-    nonisolated func nameProblem(in name: String) -> NoteNameProblem? { NoteNameRules.problem(in: name) }
+    nonisolated func nameProblem(in name: String) -> NoteNameProblem? { ObsidianNoteNames.problem(in: name) }
     func externalURL(for task: TaskItem) async -> URL? { nil }
     func chosenFolder() async -> ChosenFolder { ChosenFolder() }
     func versions(of task: TaskItem) async throws -> [NoteVersion] { [] }

@@ -21,7 +21,7 @@ enum HabitSkipRule: Hashable, Sendable {
     }
 }
 
-/// Habit settings stored in the note next to the TaskNotes fields (`habit_color`, `harmful`, …).
+/// A habit's own settings: color, harmful, repeatable, Show in Today, routine, twice a day, the skip rule.
 struct HabitOptions: Hashable, Codable, Sendable {
     /// `#RRGGBB`, `nil` = the habit color from tokens.
     var color: String?

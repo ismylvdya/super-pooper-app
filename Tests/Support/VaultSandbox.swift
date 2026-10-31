@@ -72,7 +72,7 @@ struct VaultSandbox {
     func repository(ubiquity: UbiquityService = FakeUbiquityService(), downloadTimeout: TimeInterval = 0.3,
                     keepBackups: Int = TestConfig.rules.backups.keepCount,
                     fileSystem: NoteFileSystem = CoordinatedFileSystem(),
-                    calendar: CalendarSource = FixedCalendar(current: TestCalendar.calendar)) -> VaultTaskRepository {
+                    calendar: CalendarSource = FixedCalendar(current: TestCalendar.calendar)) -> TaskNotesStore {
         let backupClock = TickingClock(start: now, step: 1)
         let backupService = BackupService(directory: backups, keepCount: keepBackups, fileSystem: fileSystem,
                                           clock: { backupClock.now }, calendar: calendar)
@@ -84,7 +84,7 @@ struct VaultSandbox {
                                       doneFolder: TestConfig.rules.vault.doneFolder,
                                       obsidianVaultsFolder: TestConfig.rules.vault.obsidianVaultsFolder,
                                       settingsWriteDelaySeconds: TestConfig.rules.vault.settingsWriteDelaySeconds)
-        return VaultTaskRepository(location: FixedVaultLocation(url: vault), fileSystem: fileSystem, ubiquity: ubiquity,
+        return TaskNotesStore(location: FixedVaultLocation(url: vault), fileSystem: fileSystem, ubiquity: ubiquity,
                                    mapping: TestConfig.mapping, calendar: calendar, rules: rules,
                                    backups: backupService, clock: FixedClock(now: now), vaultSettings: { settings })
     }

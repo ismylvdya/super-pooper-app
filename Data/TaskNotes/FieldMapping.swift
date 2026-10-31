@@ -1,8 +1,17 @@
 import Foundation
 
-/// TaskNotes field names and status values (`field-mapping.json`).
+/// TaskNotes field names and status values (`field-mapping.json`), the TaskNotes store's own config.
 /// Renaming a field in TaskNotes = changing one line there.
 struct FieldMapping: Codable, Hashable, Sendable {
+    static let file = "field-mapping.json"
+
+    /// Loaded and checked at start-up by the composition root; a broken file is a config error.
+    static func load(bundle: Bundle = .main) throws -> FieldMapping {
+        let mapping = try ConfigLoader(bundle: bundle).load(FieldMapping.self, from: file)
+        try mapping.validate(file: file)
+        return mapping
+    }
+
     struct Fields: Codable, Hashable, Sendable {
         let tags: String
         let status: String

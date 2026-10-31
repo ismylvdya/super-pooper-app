@@ -1,7 +1,7 @@
 import Foundation
 
 /// Finds non-recurring tasks from the backlog whose `due` falls within the current week
-/// (today through Sunday); they move to `this_week`. Statuses are never lowered.
+/// (today through Sunday); they move to this week. Statuses are never lowered.
 struct AutoPromoter: Sendable {
     let promotableStatuses: Set<TaskStatus>
 

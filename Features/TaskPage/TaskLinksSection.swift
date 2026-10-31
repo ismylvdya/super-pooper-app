@@ -1,7 +1,6 @@
 import SwiftUI
 
-/// Previous tasks (this task's `previous_task`) and Next tasks (tasks whose `previous_task`
-/// contains this one), on task and habit pages alike; either side may be a task or a habit. Each link is stored
+/// Previous tasks (the ones this task waits for) and Next tasks (tasks that wait for this one), on task and habit pages alike; either side may be a task or a habit. Each link is stored
 /// once, in the later note, and edited from both sides.
 struct TaskLinksSection: View {
     @Environment(AppModel.self) private var model
@@ -48,7 +47,7 @@ struct TaskLinksSection: View {
         }
     }
 
-    /// The link is always stored in the later task's `previous_task`.
+    /// The link is always stored in the later task, as its previous task.
     private func add(_ name: String, side: Side) {
         Task {
             switch side {

@@ -23,7 +23,7 @@ struct ListsScreen: View {
                 }
             }
         }
-        // The Done list counts the done folder too.
+        // The Done list counts the filed tasks too.
         .task { await model.loadFiledTasks() }
         .refreshable {
             await model.sync(announce: true)

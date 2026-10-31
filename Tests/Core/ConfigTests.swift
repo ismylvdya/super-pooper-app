@@ -71,7 +71,7 @@ struct ConfigTests {
         #expect(config.todaySideBySide.axis == .horizontal)
         #expect(config.sort.pool == PoolSortCriterion.allCases)
         #expect(config.rules.timeEstimates.map(\.minutes) == [2, 15, 60, 240])
-        #expect(config.fieldMapping.fields.previousTasks == "previous_task")
+        #expect(try FieldMapping.load(bundle: Bundle(for: BundleToken.self).appHostBundle).fields.previousTasks == "previous_task")
     }
 
     @Test func everyConfigTextHasACatalogEntry() throws {

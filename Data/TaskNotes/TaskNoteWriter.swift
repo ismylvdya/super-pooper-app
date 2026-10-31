@@ -54,9 +54,9 @@ struct TaskNoteWriter: Sendable {
                 entries.append(.scalar(WikiLink.make(name), quoted: true))
                 document.set(keys.projects, to: .list(entries))
             case .previousEvent(let link):
-                set(keys.previousEvent, link.map { .scalar($0.rawValue(timeZone: timeZone), quoted: true) }, in: &document)
+                set(keys.previousEvent, link.map { .scalar(EventLinkCodec.format($0, timeZone: timeZone), quoted: true) }, in: &document)
             case .nextEvent(let link):
-                set(keys.nextEvent, link.map { .scalar($0.rawValue(timeZone: timeZone), quoted: true) }, in: &document)
+                set(keys.nextEvent, link.map { .scalar(EventLinkCodec.format($0, timeZone: timeZone), quoted: true) }, in: &document)
             case .feel(let value):
                 setFeel(value, in: &document)
             case .mark(let mark, let day):
@@ -119,8 +119,8 @@ struct TaskNoteWriter: Sendable {
         settings.migrate(in: &document)
         guard hasLegacyFeel(document) else { return }
         if (try? document.value(for: mapping.fields.feel)).flatMap({ $0 }) == nil {
-            setFeel(.legacy(needEnergy: bool(mapping.legacyFields.needEnergy, in: document),
-                            pleasant: bool(mapping.legacyFields.pleasant, in: document)), in: &document)
+            setFeel(LegacyFeel.feel(needEnergy: bool(mapping.legacyFields.needEnergy, in: document),
+                                    pleasant: bool(mapping.legacyFields.pleasant, in: document)), in: &document)
         } else {
             document.remove(mapping.legacyFields.needEnergy)
             document.remove(mapping.legacyFields.pleasant)

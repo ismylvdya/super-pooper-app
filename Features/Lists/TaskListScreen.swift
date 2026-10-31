@@ -52,7 +52,7 @@ struct TaskListScreen: View {
         .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
     }
 
-    /// The done folder's tasks, newest first: to look back at, not to change (a new task may have the same name).
+    /// The filed tasks, newest first: to look back at, not to change (a new task may have the same name).
     @ViewBuilder private func filedGroup(_ filed: [TaskItem]) -> some View {
         if !filed.isEmpty {
             ListGroupHeader(title: Text("lists.filed"))

@@ -1,7 +1,7 @@
 import Foundation
 
 /// A calendar day without time or time zone ("2026-10-23").
-/// TaskNotes stores days as floating local dates, so the domain works with them directly.
+/// Notes keep days as floating local dates, so the domain works with them directly.
 struct LocalDate: Hashable, Comparable, Codable, Sendable, CustomStringConvertible {
     let year: Int
     let month: Int

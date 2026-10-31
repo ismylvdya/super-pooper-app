@@ -19,7 +19,7 @@ enum PreviewModel {
         let memory = InMemoryTaskStore(tasks: tasks)
         let services = AppServices(
             vault: FixedVaultLocation(url: store.directory), tasks: memory,
-            trash: VaultTrashRepository(location: FixedVaultLocation(url: store.directory), fileSystem: CoordinatedFileSystem(),
+            trash: TaskNotesTrash(location: FixedVaultLocation(url: store.directory), fileSystem: CoordinatedFileSystem(),
                                         noteExtension: config.rules.vault.noteExtension, vaultSettings: { settingsStore.load().vault }),
             versions: memory, links: memory, backups: memory, folder: memory,
             settingsNote: VaultSettingsFile(location: FixedVaultLocation(url: store.directory), fileSystem: CoordinatedFileSystem(),

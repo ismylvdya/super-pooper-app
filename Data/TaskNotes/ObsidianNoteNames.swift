@@ -1,16 +1,8 @@
 import Foundation
 
-/// Why a name cannot be a note's name.
-enum NoteNameProblem: Equatable, Sendable {
-    case empty
-    case spacesAround
-    case leadingDot
-    case forbidden(Character)
-    case tooLong(limit: Int)
-}
-
-/// Obsidian-safe note names: not empty, no spaces around, not hidden, no path separators or link syntax characters.
-enum NoteNameRules {
+/// A TaskNotes item is named by its file: Obsidian-safe note names — not empty, no spaces around, not hidden, no path
+/// separators or link syntax characters, at most 200 characters.
+enum ObsidianNoteNames {
     static let forbidden = CharacterSet(charactersIn: "/\\:*?\"<>|#^[]")
     static let maxLength = 200
 

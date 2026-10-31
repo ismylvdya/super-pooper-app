@@ -2,7 +2,7 @@ import Foundation
 
 /// TaskNotes notes in the vault folder. Every write is coordinated and atomic, changes exactly
 /// the keys it was asked to, and is applied to the latest file version ("last edit wins").
-actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking, TaskBackups, FolderInspecting {
+actor TaskNotesStore: TaskStore, VersionConflictResolving, ExternalLinking, TaskBackups, FolderInspecting {
     private let location: VaultLocating
     private let fileSystem: NoteFileSystem
     private let scanner: @Sendable (AppSettings.Vault) -> VaultScanner
@@ -77,7 +77,7 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
     }
 
     func rename(_ task: TaskItem, to newName: String, dependents: [TaskItem]) async throws -> TaskItem {
-        guard NoteNameRules.isValid(newName) else { throw TaskStoreError.invalidName(newName) }
+        guard ObsidianNoteNames.isValid(newName) else { throw TaskStoreError.invalidName(newName) }
         let renamed: TaskItem = try await location.withRoot { root in
             let source = try existingURL(of: task, root: root)
             let target = source.deletingLastPathComponent().appendingPathComponent("\(newName).\(noteExtension)")
@@ -152,11 +152,11 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
     }
 
     nonisolated func nameProblem(in name: String) -> NoteNameProblem? {
-        NoteNameRules.problem(in: name)
+        ObsidianNoteNames.problem(in: name)
     }
 
     private func createNote(named name: String, status: TaskStatus) async throws -> TaskItem {
-        guard NoteNameRules.isValid(name) else { throw TaskStoreError.invalidName(name) }
+        guard ObsidianNoteNames.isValid(name) else { throw TaskStoreError.invalidName(name) }
         let settings = vaultSettings()
         let reader = readerFactory(settings)
         let text = writer.newNote(tag: settings.taskTag, status: status, now: clock.now)
@@ -185,7 +185,7 @@ actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking,
     func externalURL(for task: TaskItem) async -> URL? {
         let settings = vaultSettings()
         return try? await location.withRoot { root in
-            VaultPaths.obsidianURL(relativePath: task.id.relativePath, root: root, folder: chosenFolder(root: root),
+            ObsidianLink.url(relativePath: task.id.relativePath, root: root, folder: chosenFolder(root: root),
                                    vaultName: settings.obsidianVault, pathPrefix: settings.obsidianPathPrefix,
                                    noteExtension: noteExtension)
         }

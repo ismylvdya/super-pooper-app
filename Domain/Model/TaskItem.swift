@@ -11,9 +11,9 @@ struct TaskItem: Identifiable, Hashable, Codable, Sendable {
     var isHighPriority: Bool = false
     var due: TaskDue?
     var timeEstimate: Int?
-    /// Names of the tasks that come before this one (`previous_task`, TaskNotes "blocked by").
+    /// Names of the tasks that come before this one (it waits for them).
     var previousTasks: [String] = []
-    /// Names of the notes this one is a subtask of (`projects`, TaskNotes "subtask of").
+    /// Names of the items this one is a subtask of.
     var projects: [String] = []
     /// Its place among the parent's subtasks, once they were put in order; nil = after those, by name.
     var subtaskOrder: Int?

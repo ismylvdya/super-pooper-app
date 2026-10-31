@@ -1,7 +1,7 @@
 import Foundation
 
 extension AppModel {
-    /// Done tasks go to the done folder; the tasks that waited for them lose those met links first. Runs after every
+    /// Done tasks are filed away by the store; the tasks that waited for them lose those met links first. Runs after every
     /// write that marks a task done and at every sync (a task done in Obsidian).
     func fileAwayDoneTasks() async {
         guard config.flags.fileDoneTasks else { return }
@@ -24,12 +24,12 @@ extension AppModel {
         }
     }
 
-    /// The done folder's tasks, read-only, for the Done list and its count on the Lists tab.
+    /// The filed tasks, read-only, for the Done list and its count on the Lists tab.
     func loadFiledTasks() async {
         filedTasks = (try? await services.tasks.filedTasks()) ?? []
     }
 
-    /// What a list of the Lists tab holds now, the done folder's tasks included.
+    /// What a list of the Lists tab holds now, the filed tasks included.
     func listContents(_ filter: TaskListFilter, query: String) -> TaskListContents {
         filter.contents(of: tasks, filed: filedTasks, query: query, rules: config.rules.day)
     }

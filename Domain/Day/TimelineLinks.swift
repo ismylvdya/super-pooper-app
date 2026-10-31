@@ -1,7 +1,7 @@
 import Foundation
 
-/// Links between the blocks of a timeline: `previous_task` between tasks, `previous_event` / `next_event`
-/// between a task and an event. Used to badge linked blocks and to highlight everything connected to one. An event
+/// Links between the blocks of a timeline: previous tasks between tasks, the event before or after a task between a
+/// task and an event. Used to badge linked blocks and to highlight everything connected to one. An event
 /// link finds its event as the day does (`EventLinkResolver`: the identifier on that day, else the title and start).
 struct TimelineLinks: Sendable {
     /// Slot id → ids of the slots it is directly linked to.

@@ -23,16 +23,15 @@ final class AppModel {
     private(set) var calendar: Calendar
 
     private(set) var tasks: [TaskItem] = []
-    /// The done folder's tasks, read when the Lists tab or the Done list shows (`loadFiledTasks`).
+    /// The tasks the store filed away, read when the Lists tab or the Done list shows (`loadFiledTasks`).
     var filedTasks: [TaskItem] = []
     private(set) var fileProblems: [FileProblem] = []
     private(set) var events: [CalendarEvent] = []
     private(set) var reminders: [ReminderItem] = []
     private(set) var trashedNotes: [TrashedNote] = []
-    /// Notes with iCloud conflict versions the user has not resolved yet.
+    /// Notes with conflicting versions the user has not resolved yet.
     private(set) var conflictedNotes: [String] = []
-    /// The chosen folder is a whole Obsidian vault: the app asks to pick only the TaskNotes folder.
-    /// What the chosen folder is (the TaskNotes folder or a whole vault) and where it is in Obsidian.
+    /// What the chosen folder is (the tasks' folder or a whole vault) and where it is in Obsidian, where the store says.
     var chosenFolder = ChosenFolder()
     var dayState: DayState
     private(set) var vaultState: VaultState = .notSelected

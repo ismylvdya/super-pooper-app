@@ -49,7 +49,7 @@ extension AppModel {
     }
 
     /// Creates the note of a draft (a task or a habit) with all its fields, its text and its subtasks
-    /// (each a task of its own linked by `projects`, as TaskNotes does). Returns the final name.
+    /// (each a task of its own linked to its parent). Returns the final name.
     func create(_ draft: NoteDraft, named name: String) async -> String? {
         do {
             let created = try await services.tasks.create(draft, named: name)

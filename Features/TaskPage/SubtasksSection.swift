@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Subtasks, the TaskNotes way: each is a task note of its own that lists this one in `projects`.
+/// Subtasks: each is a task of its own that names this one as its parent.
 /// Under the existing ones there is always one empty field to add the next. A subtask picked up (long press)
 /// and dropped on another one takes its place; the pool follows that order.
 struct SubtasksSection: View {

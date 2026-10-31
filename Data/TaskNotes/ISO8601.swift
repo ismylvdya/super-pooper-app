@@ -1,6 +1,6 @@
 import Foundation
 
-/// ISO 8601 helpers shared by event links and TaskNotes timestamps. A formatter costs far more to make than to use, so
+/// ISO 8601 as TaskNotes writes it, for event links and timestamps. A formatter costs far more to make than to use, so
 /// each kind is made once (writers once per time zone) and used one call at a time.
 enum ISO8601 {
     private static let formatters = FormatterCache()

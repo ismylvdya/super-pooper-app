@@ -23,10 +23,10 @@ struct TaskListFilter: Hashable, Sendable {
         }
     }
 
-    /// A list of done tasks also shows the done folder (done tasks are filed there at once).
+    /// A list of done tasks also shows the filed ones (done tasks are filed away at once).
     var showsFiled: Bool { statuses.contains(.done) }
 
-    /// What the list holds: the matching tasks and, for a list of done ones, the done folder's tasks whose names contain
+    /// What the list holds: the matching tasks and, for a list of done ones, the filed tasks whose names contain
     /// `query`, newest first.
     func contents(of tasks: [TaskItem], filed: [TaskItem], query: String, rules: DayRules) -> TaskListContents {
         let filed = showsFiled ? filed.filter { SearchMatcher.matches($0.name, query) } : []
@@ -35,7 +35,7 @@ struct TaskListFilter: Hashable, Sendable {
     }
 }
 
-/// The tasks of one list of the Lists tab, by planning level, and the done folder's ones.
+/// The tasks of one list of the Lists tab, by planning level, and the filed ones.
 struct TaskListContents: Sendable {
     let groups: [(status: TaskStatus, tasks: [TaskItem])]
     let filed: [TaskItem]
