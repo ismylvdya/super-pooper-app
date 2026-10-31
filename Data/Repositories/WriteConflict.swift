@@ -23,7 +23,7 @@ enum WriteConflict {
         case .previousEvent: return (keys.previousEvent, { $0.previousEvent })
         case .nextEvent: return (keys.nextEvent, { $0.nextEvent })
         case .feel: return (keys.feel, { $0.feel })
-        case .recurrence: return (keys.recurrence, { $0.recurrenceRaw })
+        case .recurrence: return (keys.recurrence, { $0.recurrence })
         case .reminderTimes: return (keys.reminderTimes, { $0.reminderTimes })
         case .timeZone: return (keys.timeZone, { $0.timeZone })
         case .habitColor: return (keys.habitColor, { $0.habit.color })

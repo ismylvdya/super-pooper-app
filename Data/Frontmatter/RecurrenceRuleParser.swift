@@ -1,5 +1,12 @@
 import Foundation
 
+enum RecurrenceParseError: Error, Equatable, Sendable {
+    case empty
+    case missingFrequency
+    case unsupportedPart(String)
+    case invalidValue(part: String, value: String)
+}
+
 /// Parses a TaskNotes recurrence: an optional `DTSTART:` part and `KEY=VALUE` rule parts separated by
 /// `;` or line breaks. Keys are case-insensitive and rule parts may carry an `RRULE:` prefix.
 struct RecurrenceRuleParser {
@@ -16,7 +23,7 @@ struct RecurrenceRuleParser {
         for part in parts {
             if let error = draft.apply(part) { return .failure(error) }
         }
-        return draft.build(raw: raw)
+        return draft.build()
     }
 }
 
@@ -62,10 +69,9 @@ private struct RuleDraft {
         return apply(key, value: value)
     }
 
-    func build(raw: String) -> Result<RecurrenceRule, RecurrenceParseError> {
+    func build() -> Result<RecurrenceRule, RecurrenceParseError> {
         guard let frequency else { return .failure(.missingFrequency) }
         return .success(RecurrenceRule(
-            raw: raw,
             startDate: start?.date,
             startTime: start?.time,
             frequency: frequency,
@@ -112,7 +118,7 @@ private struct RuleDraft {
             guard let parsed = RuleValue.dateTime(value) else { return invalid }
             until = parsed
         case .weekStart:
-            guard let parsed = Weekday(icalCode: value) else { return invalid }
+            guard let parsed = RecurrenceCodec.weekday(value) else { return invalid }
             weekStart = parsed
         }
         return nil
@@ -149,7 +155,7 @@ private enum RuleValue {
 
     /// `MO`, `2MO`, `+2MO` or `-1FR`.
     static func recurrenceWeekday(_ text: String) -> RecurrenceWeekday? {
-        guard text.count >= 2, let weekday = Weekday(icalCode: String(text.suffix(2))) else { return nil }
+        guard text.count >= 2, let weekday = RecurrenceCodec.weekday(String(text.suffix(2))) else { return nil }
         let ordinalText = String(text.dropLast(2))
         if ordinalText.isEmpty { return RecurrenceWeekday(weekday: weekday, ordinal: nil) }
         guard let ordinal = integer(ordinalText, in: -maxOrdinal...maxOrdinal), ordinal != 0 else { return nil }
@@ -159,7 +165,7 @@ private enum RuleValue {
     /// `YYYYMMDD` or `YYYYMMDDTHHMMSS[Z]`. Seconds are dropped and `Z` is ignored: values are floating.
     static func dateTime(_ text: String) -> DateTime? {
         let value = text.uppercased()
-        guard let date = LocalDate(compactString: String(value.prefix(8))) else { return nil }
+        guard let date = RecurrenceCodec.date(String(value.prefix(8))) else { return nil }
         let rest = value.dropFirst(8)
         if rest.isEmpty { return (date, nil) }
 

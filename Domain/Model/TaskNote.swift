@@ -20,8 +20,9 @@ struct TaskNote: Identifiable, Hashable, Codable, Sendable {
     var previousEvent: EventLink?
     var nextEvent: EventLink?
     var feel: TaskFeel = .neutral
-    var recurrenceRaw: String?
     var recurrence: RecurrenceRule?
+    /// The item repeats by a rule the app cannot read (a problem on it): it never comes up in a day, yet it is a habit.
+    var hasUnreadableRecurrence = false
     var completeInstances: [LocalDate] = []
     var partialInstances: [LocalDate] = []
     var twiceInstances: [LocalDate] = []
@@ -38,8 +39,8 @@ struct TaskNote: Identifiable, Hashable, Codable, Sendable {
     var problems: [TaskProblem] = []
 
     var id: String { name }
-    /// A habit is marked by `status: habit`; a note that only has a recurrence is read as one too.
-    var isHabit: Bool { status == .habit || recurrenceRaw != nil }
+    /// A habit has the habit status or repeats by a rule (even one that cannot be read).
+    var isHabit: Bool { status == .habit || recurrence != nil || hasUnreadableRecurrence }
     var isArchived: Bool { status == .archived }
     /// A task of a later planning level (or done, or archived) can be brought to this week.
     var canPromote: Bool { !isHabit && status != .thisWeek }

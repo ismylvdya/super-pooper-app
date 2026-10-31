@@ -31,15 +31,6 @@ struct LocalDate: Hashable, Comparable, Codable, Sendable, CustomStringConvertib
         self.init(year: y, month: m, day: d)
     }
 
-    /// Parses the compact iCalendar form `YYYYMMDD`.
-    init?(compactString: String) {
-        guard compactString.count == 8, compactString.allSatisfy(\.isNumber),
-              let y = Int(compactString.prefix(4)),
-              let m = Int(compactString.dropFirst(4).prefix(2)),
-              let d = Int(compactString.suffix(2)) else { return nil }
-        self.init(year: y, month: m, day: d)
-    }
-
     /// The day of `date` as seen in `calendar` (whose time zone decides the boundary).
     init(_ date: Date, in calendar: Calendar) {
         let parts = calendar.dateComponents([.year, .month, .day], from: date)
@@ -122,26 +113,9 @@ struct LocalDate: Hashable, Comparable, Codable, Sendable, CustomStringConvertib
     }
 }
 
-/// ISO weekday, Monday first (matches iCalendar `MO`…`SU`).
+/// ISO weekday, Monday first.
 enum Weekday: Int, CaseIterable, Codable, Sendable, Comparable {
     case monday = 1, tuesday, wednesday, thursday, friday, saturday, sunday
-
-    init?(icalCode: String) {
-        guard let match = Weekday.allCases.first(where: { $0.icalCode == icalCode.uppercased() }) else { return nil }
-        self = match
-    }
-
-    var icalCode: String {
-        switch self {
-        case .monday: "MO"
-        case .tuesday: "TU"
-        case .wednesday: "WE"
-        case .thursday: "TH"
-        case .friday: "FR"
-        case .saturday: "SA"
-        case .sunday: "SU"
-        }
-    }
 
     static func < (lhs: Weekday, rhs: Weekday) -> Bool { lhs.rawValue < rhs.rawValue }
 }

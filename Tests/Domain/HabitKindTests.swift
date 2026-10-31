@@ -9,8 +9,7 @@ struct HabitKindTests {
         makeTask(name, status: .habit) { task in
             task.reminderTimes = times.compactMap(LocalTime.init(string:))
             guard let rule else { return }
-            task.recurrenceRaw = rule
-            if case .success(let parsed) = RecurrenceRule.parse(rule) { task.recurrence = parsed }
+            if case .success(let parsed) = RecurrenceCodec.parse(rule) { task.recurrence = parsed } else { task.hasUnreadableRecurrence = true }
         }
     }
 

@@ -19,10 +19,8 @@ enum PreviewSamples {
 
     static var tasks: [TaskNote] {
         let today = context.today
-        let daily = RecurrenceRule.parse("DTSTART:\(today.adding(days: -20).isoString.replacingOccurrences(of: "-", with: ""));FREQ=DAILY")
         var water = TaskNote(name: "Выпить воды 💧", relativePath: "TaskNotes/Tasks/water.md", status: .halfYear)
-        water.recurrenceRaw = "FREQ=DAILY"
-        water.recurrence = try? daily.get()
+        water.recurrence = RecurrenceDraft(start: today.adding(days: -20)).rule
         water.completeInstances = [today.adding(days: -2), today.adding(days: -1)]
         water.partialInstances = [today.adding(days: -2)]
         water.timeEstimate = 2

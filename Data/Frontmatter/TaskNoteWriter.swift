@@ -63,8 +63,8 @@ struct TaskNoteWriter: Sendable {
                 setInstance(day, included: mark != nil, key: keys.completeInstances, keepEmpty: true, in: &document)
                 setInstance(day, included: mark == .partial, key: keys.partialInstances, keepEmpty: false, in: &document)
                 setInstance(day, included: mark == .twice, key: keys.twiceInstances, keepEmpty: false, in: &document)
-            case .recurrence(let raw):
-                set(keys.recurrence, raw.map { .scalar($0, quoted: false) }, in: &document)
+            case .recurrence(let rule):
+                set(keys.recurrence, rule.map { .scalar(RecurrenceCodec.format($0), quoted: false) }, in: &document)
             case .reminderTimes(let times):
                 set(keys.reminderTimes, times.isEmpty ? nil : .list(times.sorted().map { .string($0.string) }), in: &document)
             case .timeZone(let id):

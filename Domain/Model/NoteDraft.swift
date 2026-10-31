@@ -24,7 +24,7 @@ struct NoteDraft: Equatable, Sendable {
 
     /// A new habit, daily from `start`.
     static func newHabit(startingOn start: LocalDate, showInToday: Bool) -> NoteDraft {
-        NoteDraft(status: .habit, changes: [.recurrence(RecurrenceDraft(start: start).raw), .showInToday(showInToday)])
+        NoteDraft(status: .habit, changes: [.recurrence(RecurrenceDraft(start: start).rule), .showInToday(showInToday)])
     }
 
     mutating func apply(_ new: [TaskEdit]) {

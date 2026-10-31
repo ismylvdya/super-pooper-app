@@ -1,7 +1,7 @@
 import Foundation
 
-/// What the recurrence editor edits: an Apple-Calendar-like choice that is written as a TaskNotes rule.
-/// `raw` builds the rule text; `init(rule:)` reads an existing rule back. A rule with parts the editor has no control
+/// What the recurrence editor edits: an Apple-Calendar-like choice that becomes a repeat rule.
+/// `rule` builds it; `init(rule:)` reads an existing rule back. A rule with parts the editor has no control
 /// for (several days of the month, several months, weekdays with a number outside a monthly rule) is not edited at
 /// all (`canEdit`); parts it keeps without showing them — the start's and the end's time, the week start — are
 /// written back as they were.
@@ -109,39 +109,35 @@ struct RecurrenceDraft: Equatable, Sendable {
         }
     }
 
-    var raw: String {
-        var parts = ["DTSTART:\(Self.compact(start, startTime ?? .midnight))", "FREQ=\(frequency.rawValue)"]
-        if interval > 1 { parts.append("INTERVAL=\(interval)") }
+    /// The rule the choice makes. The start always has a time (midnight when the rule had none).
+    var rule: RecurrenceRule {
+        var byDay: [RecurrenceWeekday] = []
+        var byMonthDay: [Int] = []
+        var byMonth: [Int] = []
         switch frequency {
         case .daily:
             break
         case .weekly:
-            let days = weekdays.isEmpty ? [start.weekday] : weekdays.sorted()
-            parts.append("BYDAY=" + days.map(\.icalCode).joined(separator: ","))
+            byDay = (weekdays.isEmpty ? [start.weekday] : weekdays.sorted()).map { RecurrenceWeekday(weekday: $0, ordinal: nil) }
         case .monthly:
             switch monthlyDay {
-            case .dayOfMonth(let day): parts.append("BYMONTHDAY=\(day)")
-            case .lastDayOfMonth: parts.append("BYMONTHDAY=-1")
-            case .weekday(let ordinal, let weekday): parts.append("BYDAY=\(ordinal)\(weekday.icalCode)")
+            case .dayOfMonth(let day): byMonthDay = [day]
+            case .lastDayOfMonth: byMonthDay = [-1]
+            case .weekday(let ordinal, let weekday): byDay = [RecurrenceWeekday(weekday: weekday, ordinal: ordinal)]
             }
         case .yearly:
-            parts += ["BYMONTH=\(start.month)", "BYMONTHDAY=\(start.day)"]
+            byMonth = [start.month]
+            byMonthDay = [start.day]
         }
+        var count: Int?
+        var until: LocalDate?
         switch end {
         case .never: break
-        case .until(let day): parts.append("UNTIL=" + (untilTime.map { Self.compact(day, $0) } ?? Self.compact(day)))
-        case .count(let count): parts.append("COUNT=\(count)")
+        case .until(let day): until = day
+        case .count(let value): count = value
         }
-        if weekStart != .monday { parts.append("WKST=\(weekStart.icalCode)") }
-        return parts.joined(separator: ";")
-    }
-
-    private static func compact(_ day: LocalDate) -> String {
-        String(format: "%04d%02d%02d", day.year, day.month, day.day)
-    }
-
-    /// A date-time as TaskNotes writes it: wall-clock time with a `Z` that means nothing.
-    private static func compact(_ day: LocalDate, _ time: LocalTime) -> String {
-        compact(day) + String(format: "T%02d%02d00Z", time.hour, time.minute)
+        return RecurrenceRule(startDate: start, startTime: startTime ?? .midnight, frequency: frequency, interval: interval,
+                              byDay: byDay, byMonthDay: byMonthDay, byMonth: byMonth, count: count, untilDate: until,
+                              untilTime: until == nil ? nil : untilTime, weekStart: weekStart)
     }
 }

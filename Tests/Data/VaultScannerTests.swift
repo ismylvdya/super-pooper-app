@@ -65,8 +65,7 @@ struct VaultScannerTests {
         let task = try await scanned("Медитация 🧘")
         var expected = TaskNote(name: "Медитация 🧘", relativePath: "TaskNotes/Tasks/Медитация 🧘.md", status: .halfYear)
         expected.timeEstimate = 15
-        expected.recurrenceRaw = "DTSTART:20260921;FREQ=DAILY;INTERVAL=1"
-        expected.recurrence = try RecurrenceRule.parse("DTSTART:20260921;FREQ=DAILY;INTERVAL=1").get()
+        expected.recurrence = try RecurrenceCodec.parse("DTSTART:20260921;FREQ=DAILY;INTERVAL=1").get()
         expected.completeInstances = ["2026-10-15", "2026-10-16", "2026-10-17", "2026-10-19", "2026-10-20"].map { LocalDate($0) }
         expected.partialInstances = [LocalDate("2026-10-16")]
         expected.twiceInstances = [LocalDate("2026-10-19")]

@@ -24,8 +24,8 @@ enum TaskEdit: Hashable, Sendable {
     case feel(TaskFeel)
     /// Exactly one mark (or none) for `day` in the three instance lists.
     case markInstance(day: LocalDate, mark: HabitMark?)
-    /// The raw recurrence rule, or `nil` to remove it.
-    case recurrence(String?)
+    /// The repeat rule, or `nil` to remove it.
+    case recurrence(RecurrenceRule?)
     case reminderTimes([LocalTime])
     /// The zone of the item's times; nil = wall-clock times.
     case timeZone(String?)

@@ -12,8 +12,7 @@ struct HabitStatsTests {
                        _ configure: (inout TaskNote) -> Void = { _ in }) -> TaskNote {
         let start = today.adding(days: -days)
         var task = makeTask("Habit", status: .habit, created: start.isoString)
-        task.recurrenceRaw = "DTSTART:\(start.isoString.replacingOccurrences(of: "-", with: ""));FREQ=DAILY"
-        task.recurrence = try? RecurrenceRule.parse(task.recurrenceRaw ?? "").get()
+        task.recurrence = try? RecurrenceCodec.parse("DTSTART:\(start.isoString.replacingOccurrences(of: "-", with: ""));FREQ=DAILY").get()
         let day = { (offset: Int) in self.today.adding(days: -offset) }
         task.completeInstances = (done + partial + twice).map(day)
         task.partialInstances = partial.map(day)

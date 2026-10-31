@@ -165,9 +165,9 @@ struct RecurrenceEditorSection: View {
         var updated = draft ?? initialDraft
         edit(&updated)
         draft = updated
-        let raw = updated.raw
-        guard raw != task.recurrenceRaw else { return }
-        editor.apply([.recurrence(raw)])
+        let rule = updated.rule
+        guard rule != task.recurrence else { return }
+        editor.apply([.recurrence(rule)])
     }
 }
 

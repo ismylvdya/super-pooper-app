@@ -34,9 +34,9 @@ extension TaskNote {
                 task.completeInstances = instances.complete
                 task.partialInstances = instances.partial
                 task.twiceInstances = instances.twice
-            case .recurrence(let raw):
-                task.recurrenceRaw = raw
-                task.recurrence = raw.flatMap { try? RecurrenceRule.parse($0).get() }
+            case .recurrence(let rule):
+                task.recurrence = rule
+                task.hasUnreadableRecurrence = false
             case .reminderTimes(let times): task.reminderTimes = times.sorted()
             case .habitColor(let value): task.habit.color = value
             case .harmful(let value): task.habit.harmful = value

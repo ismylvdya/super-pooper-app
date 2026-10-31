@@ -8,7 +8,7 @@ private func day(_ iso: String) -> LocalDate {
 }
 
 private func schedule(_ raw: String, fallback: String = "2026-01-01") throws -> RecurrenceSchedule {
-    RecurrenceSchedule(rule: try RecurrenceRule.parse(raw).get(), fallbackStart: day(fallback))
+    RecurrenceSchedule(rule: try RecurrenceCodec.parse(raw).get(), fallbackStart: day(fallback))
 }
 
 private func occurrences(

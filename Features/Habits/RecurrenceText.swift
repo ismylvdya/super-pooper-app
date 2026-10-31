@@ -4,8 +4,7 @@ import Foundation
 enum RecurrenceText {
     /// The rule the editor is building, in words.
     static func describe(_ draft: RecurrenceDraft, calendar: Calendar) -> String {
-        guard case .success(let rule) = RecurrenceRule.parse(draft.raw) else { return "" }
-        return describe(rule, calendar: calendar)
+        describe(draft.rule, calendar: calendar)
     }
 
     static func describe(_ rule: RecurrenceRule, calendar: Calendar) -> String {

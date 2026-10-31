@@ -134,12 +134,13 @@ struct HabitFieldTests {
     @Test func recurrenceAndRemindersAreWrittenAndRemoved() throws {
         var doc = try document("status: this_week")
         let writer = TaskNoteWriter(mapping: mapping, calendar: FixedCalendar(current: TestCalendar.calendar))
-        writer.apply([.status(.habit), .recurrence("DTSTART:20261023T000000Z;FREQ=DAILY"),
+        writer.apply([.status(.habit), .recurrence(RecurrenceDraft(start: LocalDate("2026-10-23")).rule),
                       .reminderTimes([LocalTime(hour: 21, minute: 0)!, LocalTime(hour: 9, minute: 0)!])],
                      to: &doc, now: TestCalendar.date("2026-10-23", "09:00"))
         let task = reader.task(from: doc, name: "Pills", relativePath: "x.md")
         #expect(task.status == .habit)
-        #expect(task.recurrenceRaw == "DTSTART:20261023T000000Z;FREQ=DAILY")
+        #expect(doc.text.contains("\nrecurrence: DTSTART:20261023T000000Z;FREQ=DAILY\n"))
+        #expect(task.recurrence == RecurrenceDraft(start: LocalDate("2026-10-23")).rule)
         #expect(task.reminderTimes.map(\.string) == ["09:00", "21:00"])
 
         writer.apply([.status(.thisWeek), .recurrence(nil), .reminderTimes([])], to: &doc, now: TestCalendar.date("2026-10-23", "10:00"))

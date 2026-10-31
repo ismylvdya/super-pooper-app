@@ -36,10 +36,11 @@ struct TaskNoteReader: Sendable {
         task.nextEvent = fields.parsed(keys.nextEvent, EventLink.init(rawValue:))
         task.feel = feel(&fields)
         if let raw = fields.string(keys.recurrence), !raw.trimmingCharacters(in: .whitespaces).isEmpty {
-            task.recurrenceRaw = raw
-            switch RecurrenceRule.parse(raw) {
+            switch RecurrenceCodec.parse(raw) {
             case .success(let rule): task.recurrence = rule
-            case .failure: fields.problems.append(.unknownRecurrence(raw))
+            case .failure:
+                task.hasUnreadableRecurrence = true
+                fields.problems.append(.unknownRecurrence(raw))
             }
         }
         task.completeInstances = fields.dates(keys.completeInstances)

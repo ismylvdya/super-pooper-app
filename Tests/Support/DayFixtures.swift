@@ -101,8 +101,7 @@ func makeTask(_ name: String, status: TaskStatus = .thisWeek, created: String = 
 func makeHabit(_ name: String, rule: String = "DTSTART:20260901;FREQ=DAILY", time: String? = nil,
                status: TaskStatus = .halfYear, _ configure: (inout TaskNote) -> Void = { _ in }) -> TaskNote {
     makeTask(name, status: status, created: "2026-09-01") { task in
-        task.recurrenceRaw = rule
-        if case .success(let parsed) = RecurrenceRule.parse(rule) { task.recurrence = parsed }
+        if case .success(let parsed) = RecurrenceCodec.parse(rule) { task.recurrence = parsed } else { task.hasUnreadableRecurrence = true }
         if let time { task.due = TaskDue("2026-09-01T\(time)") }
         configure(&task)
     }

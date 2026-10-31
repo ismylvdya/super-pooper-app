@@ -147,7 +147,7 @@ struct StatusChangeTests {
 
     @Test func recurringTasksOnlyChangeStatus() {
         var habit = TaskNote(name: "Habit", relativePath: "Habit.md", status: .halfYear)
-        habit.recurrenceRaw = "FREQ=DAILY"
+        habit.recurrence = try? RecurrenceCodec.parse("FREQ=DAILY").get()
         #expect(TaskMarking(today: today).changes(setting: .done, on: habit) == [.status(.done)])
     }
 }

@@ -11,9 +11,9 @@ private func day(_ iso: String) -> LocalDate {
 struct RecurrenceRuleParsingTests {
     @Test func parsesTimedDailyRuleWrittenByTaskNotes() throws {
         let raw = "DTSTART:20261001T090000Z;FREQ=DAILY"
-        let rule = try RecurrenceRule.parse(raw).get()
+        let rule = try RecurrenceCodec.parse(raw).get()
 
-        #expect(rule.raw == raw)
+        #expect(RecurrenceCodec.format(rule) == raw)
         #expect(rule.startDate == day("2026-10-01"))
         #expect(rule.startTime == LocalTime(hour: 9, minute: 0))
         #expect(rule.frequency == .daily)
@@ -25,7 +25,7 @@ struct RecurrenceRuleParsingTests {
     }
 
     @Test func parsesDateOnlyBiweeklyRuleWrittenByTaskNotes() throws {
-        let rule = try RecurrenceRule.parse("DTSTART:20261001;FREQ=WEEKLY;INTERVAL=2;BYDAY=SA").get()
+        let rule = try RecurrenceCodec.parse("DTSTART:20261001;FREQ=WEEKLY;INTERVAL=2;BYDAY=SA").get()
 
         #expect(rule.startDate == day("2026-10-01"))
         #expect(rule.startTime == nil)
@@ -35,7 +35,7 @@ struct RecurrenceRuleParsingTests {
     }
 
     @Test func parsesEverySupportedPart() throws {
-        let rule = try RecurrenceRule.parse(
+        let rule = try RecurrenceCodec.parse(
             "DTSTART:20260105T073000Z;FREQ=YEARLY;INTERVAL=3;BYDAY=2MO,-1FR,+1TU,SU;BYMONTHDAY=1,-1;"
                 + "BYMONTH=1,6;COUNT=10;UNTIL=20271231T235959Z;WKST=SU"
         ).get()
@@ -59,7 +59,7 @@ struct RecurrenceRuleParsingTests {
     }
 
     @Test func parsesDateOnlyUntilWithoutDtstart() throws {
-        let rule = try RecurrenceRule.parse("FREQ=MONTHLY;BYMONTHDAY=-1;UNTIL=20261231").get()
+        let rule = try RecurrenceCodec.parse("FREQ=MONTHLY;BYMONTHDAY=-1;UNTIL=20261231").get()
 
         #expect(rule.startDate == nil && rule.startTime == nil)
         #expect(rule.byMonthDay == [-1])
@@ -68,7 +68,7 @@ struct RecurrenceRuleParsingTests {
     }
 
     @Test func keysValuesAndPrefixesAreCaseInsensitive() throws {
-        let rule = try RecurrenceRule.parse("dtstart:20261001t090000z;rrule:freq=monthly;byday=-1fr;wkst=su").get()
+        let rule = try RecurrenceCodec.parse("dtstart:20261001t090000z;rrule:freq=monthly;byday=-1fr;wkst=su").get()
 
         #expect(rule.startDate == day("2026-10-01"))
         #expect(rule.startTime == LocalTime(hour: 9, minute: 0))
@@ -83,7 +83,7 @@ struct RecurrenceRuleParsingTests {
         "RRULE:FREQ=DAILY;INTERVAL=2\nDTSTART:20261001T090000Z",
     ])
     func acceptsDtstartOnItsOwnLine(raw: String) throws {
-        let rule = try RecurrenceRule.parse(raw).get()
+        let rule = try RecurrenceCodec.parse(raw).get()
 
         #expect(rule.startDate == day("2026-10-01"))
         #expect(rule.startTime == LocalTime(hour: 9, minute: 0))
@@ -92,7 +92,7 @@ struct RecurrenceRuleParsingTests {
     }
 
     @Test func ignoresWhitespaceAndEmptyParts() throws {
-        let rule = try RecurrenceRule.parse("  FREQ = WEEKLY ; ; BYDAY = MO, FR ;").get()
+        let rule = try RecurrenceCodec.parse("  FREQ = WEEKLY ; ; BYDAY = MO, FR ;").get()
 
         #expect(rule.frequency == .weekly)
         #expect(rule.byDay.map(\.weekday) == [.monday, .friday])
@@ -100,12 +100,12 @@ struct RecurrenceRuleParsingTests {
 
     @Test(arguments: ["", "   ", ";;", "\n"])
     func rejectsEmptyInput(raw: String) {
-        #expect(RecurrenceRule.parse(raw) == .failure(.empty))
+        #expect(RecurrenceCodec.parse(raw) == .failure(.empty))
     }
 
     @Test(arguments: ["DTSTART:20261001", "INTERVAL=2;BYDAY=MO"])
     func rejectsRuleWithoutFrequency(raw: String) {
-        #expect(RecurrenceRule.parse(raw) == .failure(.missingFrequency))
+        #expect(RecurrenceCodec.parse(raw) == .failure(.missingFrequency))
     }
 
     @Test(arguments: [
@@ -126,7 +126,7 @@ struct RecurrenceRuleParsingTests {
         ("every day", "every day"),
     ])
     func rejectsUnsupportedParts(raw: String, part: String) {
-        #expect(RecurrenceRule.parse(raw) == .failure(.unsupportedPart(part)))
+        #expect(RecurrenceCodec.parse(raw) == .failure(.unsupportedPart(part)))
     }
 
     @Test(arguments: [
@@ -158,17 +158,19 @@ struct RecurrenceRuleParsingTests {
         ("DTSTART:20261001;DTSTART:20261002;FREQ=DAILY", "DTSTART", "20261002"),
     ])
     func rejectsInvalidValues(raw: String, part: String, value: String) {
-        #expect(RecurrenceRule.parse(raw) == .failure(.invalidValue(part: part, value: value)))
+        #expect(RecurrenceCodec.parse(raw) == .failure(.invalidValue(part: part, value: value)))
     }
 
-    @Test func encodesAsRawStringAndDecodesByParsing() throws {
-        let rule = try RecurrenceRule.parse("DTSTART:20261001;FREQ=WEEKLY;INTERVAL=2;BYDAY=SA").get()
-
+    /// The widget snapshot keeps the rule as its structure, not as the text of a storage format.
+    @Test func encodesAndDecodesAsItsStructure() throws {
+        let rule = try RecurrenceCodec.parse("DTSTART:20261001;FREQ=WEEKLY;INTERVAL=2;BYDAY=SA;UNTIL=20261231T235900Z").get()
         let data = try JSONEncoder().encode([rule])
-        #expect(String(decoding: data, as: UTF8.self) == #"["DTSTART:20261001;FREQ=WEEKLY;INTERVAL=2;BYDAY=SA"]"#)
+        #expect(!String(decoding: data, as: UTF8.self).contains("DTSTART"))
         #expect(try JSONDecoder().decode([RecurrenceRule].self, from: data) == [rule])
-        #expect(throws: DecodingError.self) {
-            try JSONDecoder().decode([RecurrenceRule].self, from: Data(#"["FREQ=HOURLY"]"#.utf8))
-        }
+    }
+
+    @Test func aRuleWrittenByTheAppIsReadBackUnchanged() throws {
+        let text = "DTSTART:20261001T090000Z;FREQ=MONTHLY;INTERVAL=3;BYDAY=-1FR;UNTIL=20261231T235900Z;WKST=SU"
+        #expect(RecurrenceCodec.format(try RecurrenceCodec.parse(text).get()) == text)
     }
 }
