@@ -22,14 +22,13 @@ struct BackupService: Sendable {
     }
 
     private func rotate() {
-        let manager = FileManager.default
-        guard let folders = try? manager.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil) else { return }
+        guard let folders = try? fileSystem.contents(of: directory) else { return }
         let zone = calendar.current.timeZone
         let newestFirst = folders
             .map { (folder: $0, moment: BackupFolderName.moment(of: $0.lastPathComponent, legacyZone: zone) ?? .distantPast) }
             .sorted { $0.moment > $1.moment }
         for old in newestFirst.dropFirst(max(keepCount, 1)) {
-            try? manager.removeItem(at: old.folder)
+            try? fileSystem.remove(old.folder)
         }
     }
 }

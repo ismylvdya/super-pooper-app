@@ -1,22 +1,25 @@
 import Foundation
 
-/// TaskNotes notes in the vault folder. Every write is coordinated and atomic, changes exactly
-/// the keys it was asked to, and is applied to the latest file version ("last edit wins").
-actor TaskNotesStore: TaskStore, VersionConflictResolving, ExternalLinking, TaskBackups, FolderInspecting {
-    private let location: VaultLocating
-    private let fileSystem: NoteFileSystem
-    private let scanner: @Sendable (AppSettings.Vault) -> VaultScanner
+/// The TaskNotes store: one note per task in the vault's tasks folder, its fields in YAML frontmatter as TaskNotes
+/// writes them. Every write is coordinated and atomic, changes exactly the keys it was asked to, and is applied to the
+/// latest file version ("last edit wins"). Moving notes between folders is in `TaskNotesStore+Folders`, the optional
+/// capabilities (iCloud versions, Obsidian links, backups, the chosen folder) in `TaskNotesStore+Vault`.
+actor TaskNotesStore: TaskStore {
+    let location: VaultLocating
+    let fileSystem: NoteFileSystem
+    let folders: TaskNotesFolders
+    let scanner: @Sendable (AppSettings.Vault) -> VaultScanner
+    let vaultSettings: @Sendable () -> AppSettings.Vault
+    let backups: BackupService
+    let ubiquity: UbiquityService
+    let noteExtension: String
+    let obsidianVaultsFolder: String
+    let doneFolder: String
     private let writer: TaskNoteWriter
-    private let mapping: FieldMapping
     private let readerFactory: @Sendable (AppSettings.Vault) -> TaskNoteReader
-    private let vaultSettings: @Sendable () -> AppSettings.Vault
-    private let backups: BackupService
-    private let ubiquity: UbiquityService
     private let clock: Clock
-    private let noteExtension: String
-    private let obsidianVaultsFolder: String
-    private let doneFolder: String
-    private var seenModification: [String: Date] = [:]
+    /// The modification date of each note as the store last read or wrote it: a different one means an edit elsewhere.
+    var seenModification: [String: Date] = [:]
 
     init(location: VaultLocating, fileSystem: NoteFileSystem, ubiquity: UbiquityService, mapping: FieldMapping,
          calendar: CalendarSource, rules: RulesConfig.Vault, backups: BackupService, clock: Clock,
@@ -25,7 +28,7 @@ actor TaskNotesStore: TaskStore, VersionConflictResolving, ExternalLinking, Task
         self.fileSystem = fileSystem
         self.ubiquity = ubiquity
         self.writer = TaskNoteWriter(mapping: mapping, calendar: calendar)
-        self.mapping = mapping
+        self.folders = TaskNotesFolders(fileSystem: fileSystem, noteExtension: rules.noteExtension)
         let readerFactory: @Sendable (AppSettings.Vault) -> TaskNoteReader = {
             TaskNoteReader(mapping: mapping, taskTag: $0.taskTag, calendar: calendar.current)
         }
@@ -103,44 +106,6 @@ actor TaskNotesStore: TaskStore, VersionConflictResolving, ExternalLinking, Task
         return renamed
     }
 
-    /// Into the vault's trash folder (Obsidian's `.trash`).
-    func delete(_ task: TaskItem) async throws {
-        let trashFolder = vaultSettings().trashFolder
-        try await location.withRoot { root in
-            let source = try existingURL(of: task, root: root)
-            let trash = root.appendingPathComponent(trashFolder, isDirectory: true)
-            let names = NoteFolder(trash, fileSystem: fileSystem)
-            let name = UniqueName.free(source.deletingPathExtension().lastPathComponent, firstNumber: 1) { names.isTaken($0) }
-            let target = trash.appendingPathComponent("\(name).\(noteExtension)")
-            try fileSystem.move(source, to: target)
-            guard fileSystem.isMoved(source, to: target) else { throw TaskStoreError.notConfirmed(task.name) }
-        }
-    }
-
-    func fileAway(_ task: TaskItem) async throws {
-        let settings = vaultSettings()
-        try await location.withRoot { root in
-            let source = try existingURL(of: task, root: root)
-            let folder = try VaultPaths.besideTasks(doneFolder, root: root, tasksFolder: settings.tasksFolder, fileSystem: fileSystem)
-            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-            let names = NoteFolder(folder, fileSystem: fileSystem)
-            let name = UniqueName.free(source.deletingPathExtension().lastPathComponent) { names.isTaken($0) }
-            let target = folder.appendingPathComponent("\(name).\(noteExtension)")
-            try fileSystem.move(source, to: target)
-            guard fileSystem.isMoved(source, to: target) else { throw TaskStoreError.notConfirmed(task.name) }
-        }
-    }
-
-    func filedTasks() async throws -> [TaskItem] {
-        let settings = vaultSettings()
-        let scanner = scanner(settings)
-        return try await location.withRoot { root in
-            let folder = try VaultPaths.besideTasks(doneFolder, root: root, tasksFolder: settings.tasksFolder, fileSystem: fileSystem)
-            guard fileSystem.fileExists(folder) else { return [] }
-            return await scanner.scan(root: root, tasksFolder: VaultPaths.relative(folder, to: root)).result.tasks
-        }
-    }
-
     /// The note is written the way TaskNotes writes a new one (with the draft's status), then gets the draft's other
     /// fields and its text.
     func create(_ draft: NoteDraft, named name: String) async throws -> TaskItem {
@@ -161,55 +126,15 @@ actor TaskNotesStore: TaskStore, VersionConflictResolving, ExternalLinking, Task
         let reader = readerFactory(settings)
         let text = writer.newNote(tag: settings.taskTag, status: status, now: clock.now)
         return try await location.withRoot { root in
-            let folder = root.appendingPathComponent(VaultPaths.tasksFolder(settings.tasksFolder, in: root, exists: fileSystem.fileExists),
-                                                     isDirectory: true)
-            let names = NoteFolder(folder, fileSystem: fileSystem)
-            let finalName = UniqueName.free(name) { names.isTaken($0) }
-            let url = folder.appendingPathComponent("\(finalName).\(noteExtension)")
-            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            let folder = folders.tasks(settings, root: root)
+            let (finalName, url) = folders.freeFile(for: name, in: folder)
+            try fileSystem.createFolder(folder)
             try fileSystem.write(text, to: url)
             guard fileSystem.isWritten(text, at: url) else { throw TaskStoreError.notConfirmed(finalName) }
             let relativePath = VaultPaths.relative(url, to: root)
             seenModification[relativePath] = fileSystem.modificationDate(of: url)
             return reader.task(from: try FrontmatterDocument(text: text), name: finalName, relativePath: relativePath)
         }
-    }
-
-    func backup(_ tasks: [TaskItem], reason: String) async throws {
-        try await location.withRoot { root in
-            _ = try backups.backup(tasks.map { root.appendingPathComponent($0.id.relativePath) }, reason: reason)
-        }
-    }
-
-    /// `obsidian://open?vault=…&file=…`.
-    func externalURL(for task: TaskItem) async -> URL? {
-        let settings = vaultSettings()
-        return try? await location.withRoot { root in
-            ObsidianLink.url(relativePath: task.id.relativePath, root: root, folder: chosenFolder(root: root),
-                                   vaultName: settings.obsidianVault, pathPrefix: settings.obsidianPathPrefix,
-                                   noteExtension: noteExtension)
-        }
-    }
-
-    func versions(of task: TaskItem) async throws -> [NoteVersion] {
-        try await location.withRoot { root in try ubiquity.versions(of: try existingURL(of: task, root: root)) }
-    }
-
-    func keep(_ versionID: String, of task: TaskItem) async throws {
-        try await location.withRoot { root in
-            let url = try existingURL(of: task, root: root)
-            try ubiquity.keep(versionID, of: url)
-            seenModification[task.id.relativePath] = fileSystem.modificationDate(of: url)
-        }
-    }
-
-    func chosenFolder() async -> ChosenFolder {
-        (try? await location.withRoot { root in chosenFolder(root: root) }) ?? ChosenFolder()
-    }
-
-    private func chosenFolder(root: URL) -> ChosenFolder {
-        ChosenFolder(isWholeVault: VaultPaths.isWholeVault(root, exists: fileSystem.fileExists),
-                     obsidianPlace: VaultPaths.obsidianPlace(of: root, vaultsFolder: obsidianVaultsFolder))
     }
 
     // MARK: - Editing
@@ -250,7 +175,7 @@ actor TaskNotesStore: TaskStore, VersionConflictResolving, ExternalLinking, Task
     }
 
     /// Name check that also sees evicted iCloud files (`.Name.md.icloud`).
-    private func existingURL(of task: TaskItem, root: URL) throws -> URL {
+    func existingURL(of task: TaskItem, root: URL) throws -> URL {
         let url = root.appendingPathComponent(task.id.relativePath)
         guard fileSystem.fileExists(url) else { throw TaskStoreError.fileMissing(task.name) }
         return url

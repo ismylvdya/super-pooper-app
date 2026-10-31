@@ -29,6 +29,13 @@ enum VaultPaths {
         return ObsidianPlace(vault: parts[vault], pathPrefix: parts[(vault + 1)...].joined(separator: "/"))
     }
 
+    /// A file next to the tasks folder: in `TaskNotes/` when the vault is chosen, the chosen folder itself otherwise.
+    static func besideTasks(_ fileName: String, root: URL, tasksFolder: String, fileSystem: NoteFileSystem) throws -> URL {
+        let tasks = Self.tasksFolder(tasksFolder, in: root, exists: fileSystem.fileExists)
+        let parent = (tasks as NSString).deletingLastPathComponent
+        return root.appendingPathComponent(parent, isDirectory: true).appendingPathComponent(fileName)
+    }
+
     static func relative(_ url: URL, to root: URL) -> String {
         let rootPath = root.standardizedFileURL.resolvingSymlinksInPath().path
         let path = url.standardizedFileURL.resolvingSymlinksInPath().path

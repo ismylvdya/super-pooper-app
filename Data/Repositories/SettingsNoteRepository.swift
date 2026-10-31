@@ -56,12 +56,3 @@ struct VaultSettingsNote: SettingsNoteRepository {
         }
     }
 }
-
-extension VaultPaths {
-    /// A file next to the tasks folder: in `TaskNotes/` when the vault is chosen, the chosen folder itself otherwise.
-    static func besideTasks(_ fileName: String, root: URL, tasksFolder: String, fileSystem: NoteFileSystem) throws -> URL {
-        let tasks = VaultPaths.tasksFolder(tasksFolder, in: root, exists: fileSystem.fileExists)
-        let parent = (tasks as NSString).deletingLastPathComponent
-        return root.appendingPathComponent(parent, isDirectory: true).appendingPathComponent(fileName)
-    }
-}

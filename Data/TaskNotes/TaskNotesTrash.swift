@@ -28,16 +28,9 @@ struct TaskNotesTrash: TaskTrash {
 
     func restore(_ note: TrashedNote) async throws -> String {
         let settings = vaultSettings()
+        let folders = TaskNotesFolders(fileSystem: fileSystem, noteExtension: noteExtension)
         return try await location.withRoot { root in
-            let source = root.appendingPathComponent(note.id)
-            let folder = root.appendingPathComponent(VaultPaths.tasksFolder(settings.tasksFolder, in: root, exists: fileSystem.fileExists),
-                                                     isDirectory: true)
-            let names = NoteFolder(folder, fileSystem: fileSystem)
-            let name = UniqueName.free(note.name) { names.isTaken($0) }
-            let target = folder.appendingPathComponent("\(name).\(noteExtension)")
-            try fileSystem.move(source, to: target)
-            guard fileSystem.isMoved(source, to: target) else { throw TaskStoreError.notConfirmed(name) }
-            return name
+            try folders.move(root.appendingPathComponent(note.id), into: folders.tasks(settings, root: root)).name
         }
     }
 

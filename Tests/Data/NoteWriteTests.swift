@@ -224,6 +224,8 @@ private struct LosingFileSystem: NoteFileSystem {
     private let real = CoordinatedFileSystem()
 
     func listFiles(in folder: URL) throws -> [URL] { try real.listFiles(in: folder) }
+    func contents(of folder: URL) throws -> [URL] { try real.contents(of: folder) }
+    func createFolder(_ url: URL) throws { try real.createFolder(url) }
     func read(_ url: URL) throws -> NoteFile { try real.read(url) }
     func modificationDate(of url: URL) -> Date? { real.modificationDate(of: url) }
     func write(_ text: String, to url: URL) throws {}

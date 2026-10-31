@@ -10,16 +10,21 @@ enum NoteWriteError: Error, Equatable, Sendable {
     case notUTF8
 }
 
-/// File operations on notes, coordinated with other writers (iCloud, Obsidian).
+/// File operations on notes and the app's own copies of them, coordinated with other writers (iCloud, Obsidian).
+/// Nothing in the data layer touches files except through this.
 protocol NoteFileSystem: Sendable {
     func listFiles(in folder: URL) throws -> [URL]
+    /// The files and folders right inside `folder`.
+    func contents(of folder: URL) throws -> [URL]
+    func createFolder(_ url: URL) throws
     func read(_ url: URL) throws -> NoteFile
     func modificationDate(of url: URL) -> Date?
     func write(_ text: String, to url: URL) throws
     func move(_ url: URL, to destination: URL) throws
     func copy(_ url: URL, to destination: URL) throws
     func fileExists(_ url: URL) -> Bool
-    /// Deletes a file for good (only the trash screen does this, after the user confirms).
+    /// Deletes a file or folder for good: a note from the trash screen after the user confirms, a backup past the kept
+    /// number.
     func remove(_ url: URL) throws
 }
 
@@ -57,6 +62,14 @@ struct CoordinatedFileSystem: NoteFileSystem {
             }
         }
         return files
+    }
+
+    func contents(of folder: URL) throws -> [URL] {
+        try FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)
+    }
+
+    func createFolder(_ url: URL) throws {
+        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
     }
 
     func read(_ url: URL) throws -> NoteFile {
