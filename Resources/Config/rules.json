@@ -81,7 +81,16 @@
     "defaultWeeklyGoal": 3,
     "maxAllowedSkips": 14,
     "historyPullWeeks": 4,
-    "maxListBells": 2
+    "maxListBells": 2,
+    "stats": {
+      "partialUnits": 0.5,
+      "twiceUnits": 2,
+      "shareWindowsDays": [
+        7,
+        30
+      ],
+      "months": 12
+    }
   },
   "pool": {
     "extraLines": [

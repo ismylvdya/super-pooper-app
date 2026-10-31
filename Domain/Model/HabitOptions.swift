@@ -45,7 +45,4 @@ struct HabitOptions: Hashable, Codable, Sendable {
         if let allowedSkips, !harmful { return .missedDays(allowed: max(allowedSkips, 0)) }
         return .none
     }
-
-    /// Marks a single day is worth at most.
-    var unitsPerDay: Double { twiceADay && twiceCountsDouble ? 2 : 1 }
 }

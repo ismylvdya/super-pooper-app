@@ -32,7 +32,7 @@ struct HabitGoalSection: View {
             case .weeklyGoal(let times):
                 PlateRow(icon: nil, title: "habitPage.goal.timesAWeek", indent: true) {
                     Stepper(String(times), value: Binding(get: { times }, set: { editor.apply([.weeklyGoal($0)]) }),
-                            in: 1...(Weekday.allCases.count * Int(options.unitsPerDay)))
+                            in: 1...(Weekday.allCases.count * Int(rules.habits.stats.unitsPerDay(options))))
                         .fixedSize()
                 }
             }

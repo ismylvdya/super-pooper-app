@@ -94,6 +94,7 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let maxAllowedSkips: Int
         /// Bells under a habit's name in the Habits list (one per reminder, up to this many).
         let maxListBells: Int
+        let stats: HabitStatsRules
     }
 
     /// Pool rows of long tasks are taller: extra title lines from this estimate on.

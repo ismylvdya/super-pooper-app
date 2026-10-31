@@ -10,6 +10,12 @@ struct HabitStats: Sendable {
         let last: LocalDate
     }
 
+    /// The share of a recent period (`HabitStatsRules.shareWindowsDays`).
+    struct RecentShare: Hashable, Sendable {
+        let days: Int
+        let share: Double?
+    }
+
     struct MonthCount: Hashable, Sendable {
         let year: Int
         let month: Int
@@ -20,20 +26,19 @@ struct HabitStats: Sendable {
     let streakUnit: StreakUnit
     let currentStreak: Int
     let longestStreak: Streak?
-    let last7: Double?
-    let last30: Double?
+    let recentShares: [RecentShare]
     let allTime: Double?
     let doneCount: Int
     let partialCount: Int
     let twiceCount: Int
     /// Marked days per weekday, all time.
     let byWeekday: [Weekday: Int]
-    /// Marked days per month, the last 12 months, oldest first.
+    /// Marked days per month, the last `HabitStatsRules.months` months, oldest first.
     let byMonth: [MonthCount]
 
     enum StreakUnit: Sendable { case days, weeks }
 
-    init(task: TaskItem, today: LocalDate, days: DayBoundary) {
+    init(task: TaskItem, today: LocalDate, days: DayBoundary, rules: HabitStatsRules) {
         let history = HabitHistory(task: task, days: days)
         let start = history.start(today: today)
         let days = start <= today ? (0...start.days(until: today)).map { start.adding(days: $0) } : []
@@ -41,7 +46,7 @@ struct HabitStats: Sendable {
 
         if case .weeklyGoal(let goal) = task.habit.skipRule {
             streakUnit = .weeks
-            let weeks = Self.weekResults(history: history, start: start, today: today, goal: goal)
+            let weeks = Self.weekResults(history: history, start: start, today: today, goal: goal, rules: rules)
             currentStreak = Self.trailingRun(weeks.map(\.reached))
             longestStreak = Self.longestRun(weeks.map { ($0.monday, $0.reached) }, lastDay: { $0.adding(days: 6) })
         } else {
@@ -57,16 +62,17 @@ struct HabitStats: Sendable {
             longestStreak = Self.longestRun(flags, lastDay: { $0 })
         }
 
-        last7 = Self.share(of: counted.filter { $0 > today.adding(days: -7) }, history: history)
-        last30 = Self.share(of: counted.filter { $0 > today.adding(days: -30) }, history: history)
-        allTime = Self.share(of: counted, history: history)
+        recentShares = rules.shareWindowsDays.map { window in
+            RecentShare(days: window, share: Self.share(of: counted.filter { $0 > today.adding(days: -window) }, history: history, rules: rules))
+        }
+        allTime = Self.share(of: counted, history: history, rules: rules)
 
         let marked = days.compactMap { day in history.mark(on: day).map { (day, $0) } }
         doneCount = marked.filter { $0.1 == .done }.count
         partialCount = marked.filter { $0.1 == .partial }.count
         twiceCount = marked.filter { $0.1 == .twice }.count
         byWeekday = Dictionary(grouping: marked.map(\.0), by: \.weekday).mapValues(\.count)
-        byMonth = (0..<12).reversed().map { back in
+        byMonth = (0..<rules.months).reversed().map { back in
             var month = today.month - back
             var year = today.year
             while month < 1 { month += 12; year -= 1 }
@@ -80,18 +86,18 @@ struct HabitStats: Sendable {
     }
 
     /// Units over what the scheduled days could give (a weekly goal spreads the goal over the days).
-    private static func share(of days: [LocalDate], history: HabitHistory) -> Double? {
+    private static func share(of days: [LocalDate], history: HabitHistory, rules: HabitStatsRules) -> Double? {
         let scheduled = days.filter(history.isScheduled)
         guard !scheduled.isEmpty else { return nil }
         if history.options.harmful {
             return Double(scheduled.filter { history.mark(on: $0) == nil }.count) / Double(scheduled.count)
         }
-        let units = scheduled.map(history.units(on:)).reduce(0, +)
+        let units = scheduled.map { history.units(on: $0, rules: rules) }.reduce(0, +)
         let possible: Double
         if case .weeklyGoal(let goal) = history.options.skipRule {
             possible = Double(goal) * Double(days.count) / 7
         } else {
-            possible = Double(scheduled.count) * history.options.unitsPerDay
+            possible = Double(scheduled.count) * rules.unitsPerDay(history.options)
         }
         return possible > 0 ? min(units / possible, 1) : nil
     }
@@ -102,11 +108,12 @@ struct HabitStats: Sendable {
     }
 
     /// Finished weeks, plus the current one only if its goal is already reached.
-    private static func weekResults(history: HabitHistory, start: LocalDate, today: LocalDate, goal: Int) -> [WeekResult] {
+    private static func weekResults(history: HabitHistory, start: LocalDate, today: LocalDate, goal: Int,
+                                    rules: HabitStatsRules) -> [WeekResult] {
         var monday = start.adding(days: -(start.weekday.rawValue - 1))
         var result: [WeekResult] = []
         while monday <= today {
-            let reached = history.weekUnits(containing: monday, today: today) >= Double(goal)
+            let reached = history.weekUnits(containing: monday, today: today, rules: rules) >= Double(goal)
             let finished = monday.adding(days: 6) < today
             if finished || reached { result.append(WeekResult(monday: monday, reached: reached)) }
             monday = monday.adding(days: 7)

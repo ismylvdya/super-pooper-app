@@ -25,21 +25,16 @@ struct HabitHistory: Sendable {
         return ([created] + task.marks.keys).min() ?? today
     }
 
-    /// What a day is worth toward the goal and the percentages: Partially is half a day,
-    /// Twice is two when the habit counts it double.
-    func units(on day: LocalDate) -> Double {
-        switch mark(on: day) {
-        case nil: 0
-        case .partial: 0.5
-        case .done: 1
-        case .twice: options.unitsPerDay
-        }
+    /// What a day is worth toward the goal and the percentages (`HabitStatsRules`: Partially is part of a day, Twice
+    /// more than one when the habit counts it double).
+    func units(on day: LocalDate, rules: HabitStatsRules) -> Double {
+        rules.units(of: mark(on: day), options)
     }
 
     /// Units marked in the Monday–Sunday week of `day`, up to `today`.
-    func weekUnits(containing day: LocalDate, today: LocalDate) -> Double {
+    func weekUnits(containing day: LocalDate, today: LocalDate, rules: HabitStatsRules) -> Double {
         let monday = day.adding(days: -(day.weekday.rawValue - 1))
-        return (0..<7).map { monday.adding(days: $0) }.filter { $0 <= today }.map(units(on:)).reduce(0, +)
+        return (0..<7).map { monday.adding(days: $0) }.filter { $0 <= today }.map { units(on: $0, rules: rules) }.reduce(0, +)
     }
 
     /// Days beyond the allowed run of unmarked scheduled days, from the start up to `through`

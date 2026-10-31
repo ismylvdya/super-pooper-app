@@ -1706,24 +1706,13 @@
         }
       }
     },
-    "habitPage.stats.last30": {
+    "habitPage.stats.lastDays": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "30 days"
-          }
-        }
-      }
-    },
-    "habitPage.stats.last7": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "7 days"
+            "value": "%lld days"
           }
         }
       }
