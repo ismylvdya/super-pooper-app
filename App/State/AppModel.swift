@@ -63,6 +63,12 @@ final class AppModel {
     @ObservationIgnored var settingsNoteWrite: Task<Void, Never>?
     /// A settings change not written to the vault note yet.
     @ObservationIgnored var settingsNotePending = false
+    /// The settings file write and what the change brings, waiting for the changes to stop.
+    @ObservationIgnored var settingsSave: Task<Void, Never>?
+    /// The settings before the changes still waiting there; nil when nothing waits.
+    @ObservationIgnored var settingsBeforeSave: AppSettings?
+    /// The last plan of each day asked for (0 = today), with what it was worked out from (`AppModel+Plan`).
+    @ObservationIgnored var plans: [Int: CachedPlan] = [:]
 
     init(config: AppConfig, services: AppServices, banners: BannerCenter, clock: Clock, calendar: CalendarSource,
          delay: Delay = SleepDelay()) {
@@ -92,21 +98,6 @@ final class AppModel {
     func timeDidChange() async {
         calendar = calendarSource.current
         await sync(announce: false)
-    }
-
-    func plan(at date: Date, dayOffset: Int) -> DayPlan {
-        DayPlanning.plan(config: config, settings: settings, tasks: tasks, events: events, reminders: reminders,
-                         dayState: dayState, context: context(at: date), dayOffset: dayOffset, eventsKnown: eventsKnown)
-    }
-
-    func plan(at date: Date) -> DayPlan {
-        DayPlanning.plan(config: config, settings: settings, tasks: tasks, events: events, reminders: reminders, dayState: dayState,
-                         context: context(at: date), eventsKnown: eventsKnown)
-    }
-
-    /// Without Calendar access or chosen calendars, a linked event cannot be looked up.
-    private var eventsKnown: Bool {
-        services.calendars.access == .granted && !settings.sources.anchorCalendarIDs.isEmpty
     }
 
     func task(named name: String) -> TaskNote? { tasks.first { $0.name.isSameNoteName(as: name) } }
@@ -147,13 +138,44 @@ final class AppModel {
 
     // MARK: - Settings
 
+    /// The screens see a change at once. The file is written, and what the change brings is worked out, once the changes
+    /// stop (a slider sends one per step): see `settingsDidChange`.
     func updateSettings(_ change: (inout AppSettings) -> Void) {
         let old = settings
         change(&settings)
         guard settings != old else { return }
-        try? services.settingsStore.save(settings)
         if SyncedSettings(old) != SyncedSettings(settings) { scheduleSettingsNoteWrite() }
-        Task { await settingsDidChange(from: old) }
+        scheduleSettingsSave(from: old)
+    }
+
+    private func scheduleSettingsSave(from old: AppSettings) {
+        if settingsBeforeSave == nil { settingsBeforeSave = old }
+        settingsSave?.cancel()
+        settingsSave = Task {
+            try? await delay.wait(config.rules.editing.settingsSaveDelaySeconds)
+            guard !Task.isCancelled else { return }
+            await saveSettings()
+        }
+    }
+
+    /// A change still waiting is written and followed now (the app goes to the background).
+    func flushSettings() async {
+        guard settingsBeforeSave != nil else { return }
+        settingsSave?.cancel()
+        await saveSettings()
+    }
+
+    /// The file only, for a sync that reads the folder and the calendars from it; the rest follows after the wait.
+    func writeWaitingSettings() {
+        guard settingsBeforeSave != nil else { return }
+        try? services.settingsStore.save(settings)
+    }
+
+    private func saveSettings() async {
+        guard let old = settingsBeforeSave else { return }
+        settingsBeforeSave = nil
+        try? services.settingsStore.save(settings)
+        await settingsDidChange(from: old)
     }
 
     /// Settings changed in the vault note (another device, Obsidian) come in without being written back.
@@ -195,11 +217,18 @@ final class AppModel {
         }
     }
 
+    /// Other calendars or lists are read again, another folder synced; the notifications and the widget snapshot are
+    /// planned again only when the change moves the day or what is in it. Anything else only changes how things look,
+    /// and the widgets read that from the settings themselves.
     private func settingsDidChange(from old: AppSettings) async {
         if old.sources != settings.sources { await refreshCalendarSources() }
         if old.vault != settings.vault { await sync(announce: false) }
         rollDayIfNeeded()
-        await publishDerivedState()
+        if settings.replansDay(comparedTo: old) {
+            await publishDerivedState()
+        } else {
+            services.widgets.reloadAll()
+        }
     }
 
     // MARK: - Internal state updates

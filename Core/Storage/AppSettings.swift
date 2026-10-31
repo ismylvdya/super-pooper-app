@@ -157,6 +157,12 @@ extension AppSettings {
 
     /// The pool shows a fixed number of rows only when it sits above the timeline.
     var poolUsesVisibleCount: Bool { today.arrangement == .stacked }
+
+    /// A change that moves the day or what is planned in it: the day boundary and the energy hour, notifications on or
+    /// off, other calendars or lists, another folder. The notifications and the widget snapshot follow only those.
+    func replansDay(comparedTo old: AppSettings) -> Bool {
+        day != old.day || notifications != old.notifications || sources != old.sources || vault != old.vault
+    }
 }
 
 extension AppSettings.Timeline {

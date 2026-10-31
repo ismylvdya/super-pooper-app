@@ -98,6 +98,7 @@ struct RootView: View {
                 }
             case .background:
                 BackgroundRefresh.schedule()
+                Task { await model.flushSettings() }
             default:
                 break
             }

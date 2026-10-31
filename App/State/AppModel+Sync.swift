@@ -46,6 +46,8 @@ extension AppModel {
     private func performSync(announce: Bool) async {
         setSyncing(true)
         defer { setSyncing(false) }
+        // The scan and the calendars read the folder and the lists from the settings file.
+        writeWaitingSettings()
         rollDayIfNeeded()
 
         let previousTasks = tasks
@@ -122,8 +124,6 @@ extension AppModel {
         guard generation == sourcesGeneration else { return }
         setSources(events: events, reminders: reminders)
     }
-
-    var problemCount: Int { fileProblems.count + plan(at: clock.now).problems.count }
 
     private func autoPromote() async -> [String] {
         let statuses = Set(config.rules.day.autoPromoteFrom.map(config.fieldMapping.status(fromRaw:)))
