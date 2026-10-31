@@ -14,22 +14,9 @@ enum SettingsProperties {
     static func json(from properties: [Property]) throws -> Data {
         var root: [String: Any] = [:]
         for property in properties {
-            insert(jsonValue(property.value), at: property.key.split(separator: separator).map(String.init)[...], into: &root)
+            insert(YAMLJSON.json(property.value), at: property.key.split(separator: separator).map(String.init)[...], into: &root)
         }
         return try JSONSerialization.data(withJSONObject: root, options: [.sortedKeys])
-    }
-
-    // MARK: - Properties → JSON
-
-    private static func jsonValue(_ value: YAMLValue) -> Any {
-        switch value {
-        case .null: NSNull()
-        case .scalar(let text, quoted: true): text
-        case .scalar(let text, quoted: false):
-            value.bool.map { $0 as Any } ?? Int(text).map { $0 as Any } ?? Double(text).map { $0 as Any } ?? text
-        case .list(let items): items.map(jsonValue)
-        case .map(let entries): Dictionary(entries.map { ($0.key, jsonValue($0.value)) }, uniquingKeysWith: { first, _ in first })
-        }
     }
 
     private static func insert(_ value: Any, at path: ArraySlice<String>, into object: inout [String: Any]) {

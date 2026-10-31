@@ -31,8 +31,8 @@ enum YAMLLineSyntax {
         let value: Substring
     }
 
-    private static let plainKeyForbiddenStarts: Set<Unicode.Scalar> = ["[", "]", "{", "}", "#", "|", ">", "!", "&", "*", "%", "@", "`", ","]
-    private static let indicatorsNeedingSpace: Set<Unicode.Scalar> = ["-", "?", ":"]
+    private static let plainKeyForbiddenStarts = YAMLIndicators.flow.union(YAMLIndicators.nodeStarts)
+    private static let indicatorsNeedingSpace = YAMLIndicators.beforeSpace
 
     static func isWhitespace(_ scalar: Unicode.Scalar) -> Bool {
         scalar == " " || scalar == "\t"

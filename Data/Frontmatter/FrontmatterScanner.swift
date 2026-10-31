@@ -28,7 +28,6 @@ struct FrontmatterLayout: Sendable {
 enum FrontmatterScanner {
     static let firstBlockLineNumber = 2
     private static let byteOrderMark: Unicode.Scalar = "\u{FEFF}"
-    private static let valueOpeners: Set<Unicode.Scalar> = ["\"", "'", "[", "{"]
 
     static func scan(_ text: String) throws -> FrontmatterLayout {
         var reader = LineReader(text)
@@ -105,7 +104,7 @@ enum FrontmatterScanner {
                   let keyLine = block.lines.first,
                   let entry = YAMLLineSyntax.mappingEntry(in: Substring(keyLine.content)) else { continue }
             let value = YAMLLineSyntax.trimmed(entry.value)
-            guard let first = value.unicodeScalars.first, valueOpeners.contains(first) else { continue }
+            guard let first = value.unicodeScalars.first, YAMLIndicators.multilineOpeners.contains(first) else { continue }
             let text = ([String(value)] + block.lines.dropFirst().map(\.content)).joined(separator: "\n")
             if let problem = YAMLBalanceScanner.problem(in: text) {
                 throw FrontmatterError.malformedValue(key: key, line: lineNumber + problem.lineOffset, reason: problem.reason)

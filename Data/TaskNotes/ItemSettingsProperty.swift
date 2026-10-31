@@ -35,7 +35,7 @@ struct ItemSettingsProperty: Sendable {
     /// The settings stored in the JSON, as frontmatter values; nil when the property is missing or not JSON.
     func values(in document: FrontmatterDocument) -> [String: YAMLValue]? {
         guard let object = object(in: document) else { return nil }
-        return object.filter { keys.contains($0.key) }.compactMapValues(Self.yamlValue)
+        return object.filter { keys.contains($0.key) }.compactMapValues(YAMLJSON.yaml)
     }
 
     /// Sets (or with nil removes) one setting, moving the note's old separate setting keys into the JSON too.
@@ -75,25 +75,12 @@ struct ItemSettingsProperty: Sendable {
         return (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
     }
 
-    private static func yamlValue(_ json: Any) -> YAMLValue? {
-        switch json {
-        case let flag as NSNumber where CFGetTypeID(flag) == CFBooleanGetTypeID(): .bool(flag.boolValue)
-        case let number as NSNumber: .scalar(number.stringValue, quoted: false)
-        case let text as String: .scalar(text, quoted: true)
-        case let items as [Any]: .list(items.compactMap(yamlValue))
-        default: nil
-        }
-    }
-
+    /// A setting's value as JSON; nulls and maps have no place among the settings and are left out.
     private static func jsonValue(_ value: YAMLValue) -> Any? {
         switch value {
-        case .null, .map: return nil
-        case .list(let items): return items.compactMap(jsonValue)
-        case .scalar(let text, let quoted):
-            guard !quoted else { return text }
-            if let flag = value.bool { return flag }
-            if let number = Int(text) { return number }
-            return text
+        case .null, .map: nil
+        case .list(let items): items.compactMap(jsonValue)
+        case .scalar: YAMLJSON.json(value)
         }
     }
 }
