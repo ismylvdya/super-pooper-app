@@ -15,7 +15,7 @@ struct DayTimelineView<TaskContent: View>: View {
     @ViewBuilder let taskContent: (DayItem, TimelineSlot) -> TaskContent
 
     var body: some View {
-        let links = TimelineLinks(slots: slots)
+        let links = TimelineLinks(slots: slots, calendar: calendar)
         let highlighted = style.highlightedSlot.map(links.connected(to:))
         GeometryReader { geometry in
             let itemsWidth = max(geometry.size.width - labelWidth, 0)
