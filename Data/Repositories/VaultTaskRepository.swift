@@ -2,7 +2,7 @@ import Foundation
 
 /// TaskNotes notes in the vault folder. Every write is coordinated and atomic, changes exactly
 /// the keys it was asked to, and is applied to the latest file version ("last edit wins").
-actor VaultTaskRepository: TaskRepository {
+actor VaultTaskRepository: TaskStore, VersionConflictResolving, ExternalLinking, TaskBackups, FolderInspecting {
     private let location: VaultLocating
     private let fileSystem: NoteFileSystem
     private let scanner: @Sendable (AppSettings.Vault) -> VaultScanner
@@ -43,7 +43,7 @@ actor VaultTaskRepository: TaskRepository {
         self.doneFolder = rules.doneFolder
     }
 
-    func scan() async throws -> VaultScanResult {
+    func load() async throws -> VaultScanResult {
         let settings = vaultSettings()
         let scanner = scanner(settings)
         let output = try await location.withRoot { root in await scanner.scan(root: root, tasksFolder: settings.tasksFolder) }
@@ -60,7 +60,7 @@ actor VaultTaskRepository: TaskRepository {
     }
 
     /// The text of the note without the app's ```SuperPooperApp block.
-    func body(of task: TaskNote) async throws -> String {
+    func text(of task: TaskNote) async throws -> String {
         try await location.withRoot { root in
             let file = try fileSystem.read(try existingURL(of: task, root: root))
             return AppBlock.split(try FrontmatterDocument(text: file.text).body).visible
@@ -68,7 +68,7 @@ actor VaultTaskRepository: TaskRepository {
     }
 
     /// Replaces the text of the note; the app's block (if any) stays right after the frontmatter.
-    func setBody(_ visible: String, of task: TaskNote) async throws -> TaskWriteResult {
+    func setText(_ visible: String, of task: TaskNote) async throws -> TaskWriteResult {
         try await edit(task) { document in
             let body = AppBlock.join(block: AppBlock.split(document.body).block, visible: visible)
             self.writer.apply([], to: &document, now: self.clock.now)
@@ -77,15 +77,15 @@ actor VaultTaskRepository: TaskRepository {
     }
 
     func rename(_ task: TaskNote, to newName: String, dependents: [TaskNote]) async throws -> TaskNote {
-        guard NoteNameRules.isValid(newName) else { throw TaskRepositoryError.invalidName(newName) }
+        guard NoteNameRules.isValid(newName) else { throw TaskStoreError.invalidName(newName) }
         let renamed: TaskNote = try await location.withRoot { root in
             let source = try existingURL(of: task, root: root)
             let target = source.deletingLastPathComponent().appendingPathComponent("\(newName).\(noteExtension)")
             if NoteFolder(source.deletingLastPathComponent(), fileSystem: fileSystem).isTaken(newName, except: source) {
-                throw TaskRepositoryError.nameTaken(newName)
+                throw TaskStoreError.nameTaken(newName)
             }
             try fileSystem.move(source, to: target)
-            guard fileSystem.isMoved(source, to: target) else { throw TaskRepositoryError.notConfirmed(newName) }
+            guard fileSystem.isMoved(source, to: target) else { throw TaskStoreError.notConfirmed(newName) }
             var result = task
             result.name = newName
             result.relativePath = VaultPaths.relative(target, to: root)
@@ -101,7 +101,8 @@ actor VaultTaskRepository: TaskRepository {
         return renamed
     }
 
-    func moveToTrash(_ task: TaskNote) async throws {
+    /// Into the vault's trash folder (Obsidian's `.trash`).
+    func delete(_ task: TaskNote) async throws {
         let trashFolder = vaultSettings().trashFolder
         try await location.withRoot { root in
             let source = try existingURL(of: task, root: root)
@@ -110,7 +111,7 @@ actor VaultTaskRepository: TaskRepository {
             let name = UniqueName.free(source.deletingPathExtension().lastPathComponent, firstNumber: 1) { names.isTaken($0) }
             let target = trash.appendingPathComponent("\(name).\(noteExtension)")
             try fileSystem.move(source, to: target)
-            guard fileSystem.isMoved(source, to: target) else { throw TaskRepositoryError.notConfirmed(task.name) }
+            guard fileSystem.isMoved(source, to: target) else { throw TaskStoreError.notConfirmed(task.name) }
         }
     }
 
@@ -124,7 +125,7 @@ actor VaultTaskRepository: TaskRepository {
             let name = UniqueName.free(source.deletingPathExtension().lastPathComponent) { names.isTaken($0) }
             let target = folder.appendingPathComponent("\(name).\(noteExtension)")
             try fileSystem.move(source, to: target)
-            guard fileSystem.isMoved(source, to: target) else { throw TaskRepositoryError.notConfirmed(task.name) }
+            guard fileSystem.isMoved(source, to: target) else { throw TaskStoreError.notConfirmed(task.name) }
         }
     }
 
@@ -138,8 +139,22 @@ actor VaultTaskRepository: TaskRepository {
         }
     }
 
-    func create(named name: String, status: TaskStatus) async throws -> TaskNote {
-        guard NoteNameRules.isValid(name) else { throw TaskRepositoryError.invalidName(name) }
+    /// The note is written the way TaskNotes writes a new one (with the draft's status), then gets the draft's other
+    /// fields and its text.
+    func create(_ draft: NoteDraft, named name: String) async throws -> TaskNote {
+        var task = try await createNote(named: name, status: draft.note.status)
+        let fields = draft.changes.filter { if case .status = $0 { false } else { true } }
+        if !fields.isEmpty { task = try await apply(fields, to: task).task }
+        if !draft.body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { task = try await setText(draft.body, of: task).task }
+        return task
+    }
+
+    nonisolated func nameProblem(in name: String) -> NoteNameProblem? {
+        NoteNameRules.problem(in: name)
+    }
+
+    private func createNote(named name: String, status: TaskStatus) async throws -> TaskNote {
+        guard NoteNameRules.isValid(name) else { throw TaskStoreError.invalidName(name) }
         let settings = vaultSettings()
         let reader = readerFactory(settings)
         let text = writer.newNote(tag: settings.taskTag, status: status, now: clock.now)
@@ -151,7 +166,7 @@ actor VaultTaskRepository: TaskRepository {
             let url = folder.appendingPathComponent("\(finalName).\(noteExtension)")
             try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
             try fileSystem.write(text, to: url)
-            guard fileSystem.isWritten(text, at: url) else { throw TaskRepositoryError.notConfirmed(finalName) }
+            guard fileSystem.isWritten(text, at: url) else { throw TaskStoreError.notConfirmed(finalName) }
             let relativePath = VaultPaths.relative(url, to: root)
             seenModification[relativePath] = fileSystem.modificationDate(of: url)
             return reader.task(from: try FrontmatterDocument(text: text), name: finalName, relativePath: relativePath)
@@ -164,7 +179,8 @@ actor VaultTaskRepository: TaskRepository {
         }
     }
 
-    func obsidianURL(for task: TaskNote) async -> URL? {
+    /// `obsidian://open?vault=…&file=…`.
+    func externalURL(for task: TaskNote) async -> URL? {
         let settings = vaultSettings()
         return try? await location.withRoot { root in
             VaultPaths.obsidianURL(relativePath: task.relativePath, root: root, folder: chosenFolder(root: root),
@@ -215,7 +231,7 @@ actor VaultTaskRepository: TaskRepository {
             do {
                 document = try FrontmatterDocument(text: file.text)
             } catch {
-                throw TaskRepositoryError.brokenFrontmatter(task.name)
+                throw TaskStoreError.brokenFrontmatter(task.name)
             }
             let clashing = hadConflict
                 ? WriteConflict.keys(changes, seen: task, latest: reader.task(from: document, name: task.name, relativePath: task.relativePath),
@@ -223,9 +239,9 @@ actor VaultTaskRepository: TaskRepository {
                 : []
             let text = transform(&document)
             // Never write a note that would no longer parse.
-            guard let updated = try? FrontmatterDocument(text: text) else { throw TaskRepositoryError.brokenFrontmatter(task.name) }
+            guard let updated = try? FrontmatterDocument(text: text) else { throw TaskStoreError.brokenFrontmatter(task.name) }
             try fileSystem.write(text, to: url)
-            guard fileSystem.isWritten(text, at: url) else { throw TaskRepositoryError.notConfirmed(task.name) }
+            guard fileSystem.isWritten(text, at: url) else { throw TaskStoreError.notConfirmed(task.name) }
             seenModification[task.relativePath] = fileSystem.modificationDate(of: url)
             return TaskWriteResult(task: reader.task(from: updated, name: task.name, relativePath: task.relativePath),
                                    hadConflict: hadConflict, clashingKeys: clashing)
@@ -235,7 +251,7 @@ actor VaultTaskRepository: TaskRepository {
     /// Name check that also sees evicted iCloud files (`.Name.md.icloud`).
     private func existingURL(of task: TaskNote, root: URL) throws -> URL {
         let url = root.appendingPathComponent(task.relativePath)
-        guard fileSystem.fileExists(url) else { throw TaskRepositoryError.fileMissing(task.name) }
+        guard fileSystem.fileExists(url) else { throw TaskStoreError.fileMissing(task.name) }
         return url
     }
 }

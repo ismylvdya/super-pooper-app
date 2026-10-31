@@ -21,7 +21,7 @@ struct NewNoteScreen: View {
         PageScaffold(title: current.name.isEmpty ? L10n.string(titleKey) : current.name,
                      titleView: AnyView(NewNoteNameField(placeholder: LocalizedStringKey(titleKey),
                                                          name: Binding(get: { page?.name ?? "" }, set: { page?.name = $0 }),
-                                                         problem: current.nameProblem))) {
+                                                         problem: current.nameProblem(model.nameProblem(in:))))) {
             switch kind {
             case .task: TaskSections(editor: editor)
             case .habit: HabitSections(editor: editor)
@@ -30,7 +30,7 @@ struct NewNoteScreen: View {
                 .font(tokens.font(.hint))
                 .foregroundStyle(tokens.color(.secondaryText))
         }
-        .navigationBarBackButtonHidden(current.nameProblem != nil)
+        .navigationBarBackButtonHidden(current.nameProblem(model.nameProblem(in:)) != nil)
         .onAppear { if page == nil { page = current } }
         .onDisappear(perform: leave)
     }
@@ -45,11 +45,11 @@ struct NewNoteScreen: View {
     private func leave() {
         if let tab, router.tab != tab { return }
         guard let page else { return }
-        if let problem = page.nameProblem {
+        if let problem = page.nameProblem(model.nameProblem(in:)) {
             model.banners.show(NoteNameProblemText.describe(problem, name: page.name), style: .problem)
             return
         }
-        guard let creation = page.creation(unnamed: L10n.string("note.unnamed")) else { return }
+        guard let creation = page.creation(unnamed: L10n.string("note.unnamed"), rules: model.nameProblem(in:)) else { return }
         Task {
             guard let created = await model.create(creation.draft, named: creation.name) else { return }
             self.page = nil

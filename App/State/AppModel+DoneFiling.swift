@@ -13,7 +13,7 @@ extension AppModel {
             await edit(dependent.name) { _ in [.removePreviousTask(task.name)] }
         }
         do {
-            if config.flags.backups { try await services.tasks.backup([task], reason: "done") }
+            try await backup([task], reason: "done")
             try await services.tasks.fileAway(task)
             remove(task)
             // The Done list and its count see it before the folder is read again.

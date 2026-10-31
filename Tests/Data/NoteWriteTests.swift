@@ -75,26 +75,26 @@ struct NoteWriteTests {
     @Test func aWriteThatDidNotLandIsNotTakenForDone() async throws {
         let sandbox = try VaultSandbox.make()
         let repository = sandbox.repository(fileSystem: LosingFileSystem())
-        let task = try #require(try await repository.scan().tasks.first { $0.name == "Оплатить интернет" })
-        await #expect(throws: TaskRepositoryError.notConfirmed("Оплатить интернет")) {
+        let task = try #require(try await repository.load().tasks.first { $0.name == "Оплатить интернет" })
+        await #expect(throws: TaskStoreError.notConfirmed("Оплатить интернет")) {
             try await repository.apply([.highPriority(true)], to: task)
         }
-        await #expect(throws: TaskRepositoryError.notConfirmed("Оплатить интернет 2")) {
+        await #expect(throws: TaskStoreError.notConfirmed("Оплатить интернет 2")) {
             try await repository.rename(task, to: "Оплатить интернет 2", dependents: [])
         }
-        await #expect(throws: TaskRepositoryError.notConfirmed("Новое дело")) {
-            try await repository.create(named: "Новое дело", status: .thisWeek)
+        await #expect(throws: TaskStoreError.notConfirmed("Новое дело")) {
+            try await repository.create(NoteDraft(status: .thisWeek), named: "Новое дело")
         }
     }
 
     @Test func editingTheBodyKeepsTheFrontmatter() async throws {
         let note = try await SandboxNote("Длинная заметка с незнакомыми ключами")
         let frontmatter = try #require(splitNote(try note.text())).frontmatter
-        _ = try await note.repository.setBody("Новый текст 📝\n", of: note.task)
+        _ = try await note.repository.setText("Новый текст 📝\n", of: note.task)
         expectSameBytes(try note.text(), try frontmatter
             .replacingOnce("date_modified: 2026-10-19T09:12:44.123+02:00", with: "date_modified: \(note.sandbox.nowStamp)")
             + "Новый текст 📝\n")
-        #expect(try await note.repository.body(of: note.task) == "Новый текст 📝\n")
+        #expect(try await note.repository.text(of: note.task) == "Новый текст 📝\n")
     }
 
     // MARK: - Habit marks
@@ -182,12 +182,12 @@ struct NoteWriteTests {
         let repository = sandbox.repository()
         let broken = TaskNote(name: "Битый YAML", relativePath: "TaskNotes/Tasks/Битый YAML.md", status: .thisWeek)
         let original = try sandbox.text(of: "Битый YAML")
-        await #expect(throws: TaskRepositoryError.brokenFrontmatter("Битый YAML")) {
+        await #expect(throws: TaskStoreError.brokenFrontmatter("Битый YAML")) {
             try await repository.apply([.highPriority(true)], to: broken)
         }
         #expect(try sandbox.text(of: "Битый YAML") == original)
         let missing = TaskNote(name: "Нет такой", relativePath: "TaskNotes/Tasks/Нет такой.md", status: .thisWeek)
-        await #expect(throws: TaskRepositoryError.fileMissing("Нет такой")) {
+        await #expect(throws: TaskStoreError.fileMissing("Нет такой")) {
             try await repository.apply([.highPriority(true)], to: missing)
         }
         #expect(!sandbox.exists("Нет такой"))

@@ -12,15 +12,15 @@ struct NewNotePage: Equatable {
         untouched = draft
     }
 
-    /// What is wrong with the typed name; an empty name is fine (the note is called "Unnamed").
-    var nameProblem: NoteNameProblem? {
-        trimmedName.isEmpty ? nil : NoteNameRules.problem(in: trimmedName)
+    /// What is wrong with the typed name by the store's `rules`; an empty name is fine (the note is called "Unnamed").
+    func nameProblem(_ rules: (String) -> NoteNameProblem?) -> NoteNameProblem? {
+        trimmedName.isEmpty ? nil : rules(trimmedName)
     }
 
     /// The note leaving the page creates: none for a page left untouched or with a name a note cannot take.
     /// `unnamed`: the name of a note whose name was left empty.
-    func creation(unnamed: String) -> (draft: NoteDraft, name: String)? {
-        guard nameProblem == nil, !trimmedName.isEmpty || draft != untouched else { return nil }
+    func creation(unnamed: String, rules: (String) -> NoteNameProblem?) -> (draft: NoteDraft, name: String)? {
+        guard nameProblem(rules) == nil, !trimmedName.isEmpty || draft != untouched else { return nil }
         return (draft, trimmedName.isEmpty ? unnamed : trimmedName)
     }
 

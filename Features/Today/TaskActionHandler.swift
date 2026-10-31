@@ -25,7 +25,7 @@ struct TaskActionHandler {
             router.open(.task(taskName))
         case .openInObsidian:
             Task {
-                if let url = await model.obsidianURL(for: taskName) { openURL(url) }
+                if let url = await model.externalURL(for: taskName) { openURL(url) }
             }
         case .delete:
             Task {

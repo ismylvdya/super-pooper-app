@@ -6,13 +6,13 @@ struct NewNotePageTests {
     private let unnamed = "Unnamed"
 
     @Test func anUntouchedPageCreatesNothing() {
-        #expect(NewNotePage(draft: NoteDraft(status: .thisWeek)).creation(unnamed: unnamed) == nil)
+        #expect(NewNotePage(draft: NoteDraft(status: .thisWeek)).creation(unnamed: unnamed, rules: NoteNameRules.problem(in:)) == nil)
     }
 
     @Test func aNameTypedIsTheNoteNameWithoutSpacesAround() throws {
         var page = NewNotePage(draft: NoteDraft(status: .thisWeek))
         page.name = "  Купить хлеб "
-        let creation = try #require(page.creation(unnamed: unnamed))
+        let creation = try #require(page.creation(unnamed: unnamed, rules: NoteNameRules.problem(in:)))
         #expect(creation.name == "Купить хлеб")
         #expect(creation.draft == NoteDraft(status: .thisWeek))
     }
@@ -20,7 +20,7 @@ struct NewNotePageTests {
     @Test func aPageWithSomethingSetButNoNameIsUnnamed() throws {
         var page = NewNotePage(draft: NoteDraft(status: .thisWeek))
         page.draft.apply([.highPriority(true)])
-        let creation = try #require(page.creation(unnamed: unnamed))
+        let creation = try #require(page.creation(unnamed: unnamed, rules: NoteNameRules.problem(in:)))
         #expect(creation.name == unnamed)
         #expect(creation.draft.changes == [.highPriority(true)])
     }
@@ -31,10 +31,10 @@ struct NewNotePageTests {
         var page = NewNotePage(draft: NoteDraft(status: .thisWeek))
         page.draft.body = "Повестка"
         page.name = "Meet: Anna"
-        #expect(page.nameProblem == .forbidden(":"))
-        #expect(page.creation(unnamed: unnamed) == nil)
+        #expect(page.nameProblem(NoteNameRules.problem(in:)) == .forbidden(":"))
+        #expect(page.creation(unnamed: unnamed, rules: NoteNameRules.problem(in:)) == nil)
         page.name = "Meet Anna"
-        #expect(page.nameProblem == nil)
-        #expect(page.creation(unnamed: unnamed)?.draft.body == "Повестка")
+        #expect(page.nameProblem(NoteNameRules.problem(in:)) == nil)
+        #expect(page.creation(unnamed: unnamed, rules: NoteNameRules.problem(in:))?.draft.body == "Повестка")
     }
 }

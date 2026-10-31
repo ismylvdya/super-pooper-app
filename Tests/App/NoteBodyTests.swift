@@ -8,9 +8,9 @@ import Testing
 struct NoteBodyTests {
     private let name = "Сдать отчёт"
 
-    private func make(delay: Delay = NoDelay()) throws -> (model: AppModel, repository: InMemoryTaskRepository) {
+    private func make(delay: Delay = NoDelay()) throws -> (model: AppModel, repository: InMemoryTaskStore) {
         let model = try #require(PreviewModel.make(delay: delay)).model
-        return (model, try #require(model.services.tasks as? InMemoryTaskRepository))
+        return (model, try #require(model.services.tasks as? InMemoryTaskStore))
     }
 
     /// The reported data loss: a text not downloaded (or with broken YAML) showed as an empty field, and the first

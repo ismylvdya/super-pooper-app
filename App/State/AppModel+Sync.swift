@@ -58,10 +58,10 @@ extension AppModel {
             beginTrackingWrites()
             defer { endTrackingWrites() }
             do {
-                let result = try await services.tasks.scan()
+                let result = try await services.tasks.load()
                 SyncLog.logger.info("vault scan: \(result.tasks.count) tasks in \(Date().timeIntervalSince(started), format: .fixed(precision: 2)) s")
                 setScanResult(result)
-                chosenFolder = await services.tasks.chosenFolder()
+                if let folder = services.folder { chosenFolder = await folder.chosenFolder() }
                 // The vault's settings note wins over this device (after this device's unwritten change went
                 // there); the first time, this device writes it.
                 await flushSettingsNote()
@@ -131,7 +131,7 @@ extension AppModel {
         let candidates = AutoPromoter(promotableStatuses: statuses).candidates(in: localTasks, context: context())
             .compactMap { task(named: $0.name) }
         guard !candidates.isEmpty else { return [] }
-        if config.flags.backups { try? await services.tasks.backup(candidates, reason: "auto-promote") }
+        try? await backup(candidates, reason: "auto-promote")
         var promoted: [String] = []
         for task in candidates {
             guard let result = try? await services.tasks.apply([.status(.thisWeek)], to: task) else { continue }
@@ -161,10 +161,10 @@ extension AppModel {
         case VaultAccessError.notSelected: L10n.string("error.vault.notSelected")
         case VaultAccessError.bookmarkInvalid: L10n.string("error.vault.bookmark")
         case VaultAccessError.accessDenied: L10n.string("error.vault.access")
-        case TaskRepositoryError.nameTaken(let name): L10n.format("error.rename.taken", name)
-        case TaskRepositoryError.invalidName(let name): L10n.format("error.rename.invalid", name)
-        case TaskRepositoryError.fileMissing(let name): L10n.format("error.file.missing", name)
-        case TaskRepositoryError.notConfirmed(let name): L10n.format("error.write.notConfirmed", name)
+        case TaskStoreError.nameTaken(let name): L10n.format("error.rename.taken", name)
+        case TaskStoreError.invalidName(let name): L10n.format("error.rename.invalid", name)
+        case TaskStoreError.fileMissing(let name): L10n.format("error.file.missing", name)
+        case TaskStoreError.notConfirmed(let name): L10n.format("error.write.notConfirmed", name)
         case CalendarEditError.eventNotFound: L10n.string("error.event.notFound")
         case ReminderEditError.reminderNotFound: L10n.string("error.reminder.notFound")
         // System errors would come in the phone's language; the app speaks English.

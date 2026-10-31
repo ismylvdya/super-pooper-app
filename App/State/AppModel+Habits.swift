@@ -52,18 +52,14 @@ extension AppModel {
     /// (each a task of its own linked by `projects`, as TaskNotes does). Returns the final name.
     func create(_ draft: NoteDraft, named name: String) async -> String? {
         do {
-            let created = try await services.tasks.create(named: name, status: draft.note.status)
-            var result = try await services.tasks.apply(draft.changes.filter(\.isFieldOfNewNote), to: created)
-            if !draft.body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                result = try await services.tasks.setBody(draft.body, of: result.task)
-            }
-            noteWrite(result.task)
-            replace(result.task)
+            let created = try await services.tasks.create(draft, named: name)
+            noteWrite(created)
+            replace(created)
             for subtask in draft.subtasks.map({ $0.trimmingCharacters(in: .whitespacesAndNewlines) }) where !subtask.isEmpty {
-                try await createSubtask(subtask, of: result.task.name)
+                try await createSubtask(subtask, of: created.name)
             }
             await publishDerivedState()
-            return result.task.name
+            return created.name
         } catch {
             banners.show(Self.describe(error), style: .problem)
             return nil
@@ -99,8 +95,7 @@ extension AppModel {
     }
 
     private func createSubtask(_ name: String, of parent: String) async throws {
-        let created = try await services.tasks.create(named: name, status: .thisWeek)
-        let subtask = try await services.tasks.apply([.addProject(parent)], to: created).task
+        let subtask = try await services.tasks.create(NoteDraft(status: .thisWeek, changes: [.addProject(parent)]), named: name)
         noteWrite(subtask)
         replace(subtask)
     }
@@ -121,13 +116,5 @@ extension AppModel {
         case .twice: .twice
         default: nil
         }
-    }
-}
-
-private extension TaskFieldChange {
-    /// The status is written when the file is created.
-    var isFieldOfNewNote: Bool {
-        if case .status = self { return false }
-        return true
     }
 }

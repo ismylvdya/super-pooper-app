@@ -2,7 +2,7 @@
 import Foundation
 
 /// Task notes in memory for previews and tests of the app state.
-actor InMemoryTaskRepository: TaskRepository {
+actor InMemoryTaskStore: TaskStore, VersionConflictResolving, ExternalLinking, TaskBackups, FolderInspecting {
     /// Notes moved to the done folder.
     private var filed: [TaskNote] = []
     private var tasks: [TaskNote]
@@ -25,7 +25,7 @@ actor InMemoryTaskRepository: TaskRepository {
     func holdScans(at gate: AsyncGate) { scanGate = gate }
 
     /// Like the vault scanner, the list of notes is taken first and read later.
-    func scan() async throws -> VaultScanResult {
+    func load() async throws -> VaultScanResult {
         scanCount += 1
         let listed = tasks
         await scanGate?.pass()
@@ -39,12 +39,12 @@ actor InMemoryTaskRepository: TaskRepository {
         return TaskWriteResult(task: updated, hadConflict: false)
     }
 
-    func body(of task: TaskNote) async throws -> String {
+    func text(of task: TaskNote) async throws -> String {
         guard !unreadableBodies.contains(task.name) else { throw CocoaError(.fileReadCorruptFile) }
         return bodies[task.name] ?? "Заметка к задаче."
     }
 
-    func setBody(_ body: String, of task: TaskNote) async throws -> TaskWriteResult {
+    func setText(_ body: String, of task: TaskNote) async throws -> TaskWriteResult {
         bodies[task.name] = body
         bodyWrites.append(body)
         return TaskWriteResult(task: task, hadConflict: false)
@@ -57,7 +57,7 @@ actor InMemoryTaskRepository: TaskRepository {
         return renamed
     }
 
-    func moveToTrash(_ task: TaskNote) async throws { tasks.removeAll { $0.name == task.name } }
+    func delete(_ task: TaskNote) async throws { tasks.removeAll { $0.name == task.name } }
     func fileAway(_ task: TaskNote) async throws {
         tasks.removeAll { $0.name == task.name }
         filed.append(task)
@@ -65,12 +65,16 @@ actor InMemoryTaskRepository: TaskRepository {
     func filedTasks() async throws -> [TaskNote] { filed }
     func backup(_ tasks: [TaskNote], reason: String) async throws {}
 
-    func create(named name: String, status: TaskStatus) async throws -> TaskNote {
-        let task = TaskNote(name: name, relativePath: "TaskNotes/Tasks/\(name).md", status: status)
+    func create(_ draft: NoteDraft, named name: String) async throws -> TaskNote {
+        var task = draft.note
+        task.name = name
+        task.relativePath = "TaskNotes/Tasks/\(name).md"
         tasks.append(task)
+        if !draft.body.isEmpty { bodies[name] = draft.body }
         return task
     }
-    func obsidianURL(for task: TaskNote) async -> URL? { nil }
+    nonisolated func nameProblem(in name: String) -> NoteNameProblem? { NoteNameRules.problem(in: name) }
+    func externalURL(for task: TaskNote) async -> URL? { nil }
     func chosenFolder() async -> ChosenFolder { ChosenFolder() }
     func versions(of task: TaskNote) async throws -> [NoteVersion] { [] }
     func keep(_ versionID: String, of task: TaskNote) async throws {}

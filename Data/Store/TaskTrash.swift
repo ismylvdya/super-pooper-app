@@ -10,8 +10,9 @@ struct TrashedNote: Identifiable, Hashable, Sendable {
     var id: String { relativePath }
 }
 
-/// The trash screen's data: list, read, restore into the tasks folder, delete for good.
-protocol TrashRepository: Sendable {
+/// The store's trash, for the trash screen: list, read, restore among the tasks, delete for good. Optional: a store
+/// without a trash deletes for good and the app has no trash screen.
+protocol TaskTrash: Sendable {
     func notes() async throws -> [TrashedNote]
     func text(of note: TrashedNote) async throws -> String
     /// Moves the note back into the tasks folder (the name is made unique) and returns its new name.
@@ -19,7 +20,7 @@ protocol TrashRepository: Sendable {
     func deletePermanently(_ note: TrashedNote) async throws
 }
 
-struct VaultTrashRepository: TrashRepository {
+struct VaultTrashRepository: TaskTrash {
     let location: VaultLocating
     let fileSystem: NoteFileSystem
     let noteExtension: String
@@ -55,7 +56,7 @@ struct VaultTrashRepository: TrashRepository {
             let name = UniqueName.free(note.name) { names.isTaken($0) }
             let target = folder.appendingPathComponent("\(name).\(noteExtension)")
             try fileSystem.move(source, to: target)
-            guard fileSystem.isMoved(source, to: target) else { throw TaskRepositoryError.notConfirmed(name) }
+            guard fileSystem.isMoved(source, to: target) else { throw TaskStoreError.notConfirmed(name) }
             return name
         }
     }
@@ -64,7 +65,7 @@ struct VaultTrashRepository: TrashRepository {
         try await location.withRoot { root in
             let url = root.appendingPathComponent(note.relativePath)
             try fileSystem.remove(url)
-            guard !fileSystem.fileExists(url) else { throw TaskRepositoryError.notConfirmed(note.name) }
+            guard !fileSystem.fileExists(url) else { throw TaskStoreError.notConfirmed(note.name) }
         }
     }
 }

@@ -11,7 +11,7 @@ extension AppModel {
             return
         }
         do {
-            noteBodies[name] = .read(try await services.tasks.body(of: task))
+            noteBodies[name] = .read(try await services.tasks.text(of: task))
         } catch {
             SyncLog.logger.error("text of \(name, privacy: .public) unreadable: \(String(describing: error), privacy: .public)")
             noteBodies[name] = .unavailable
@@ -68,7 +68,7 @@ extension AppModel {
     func setBody(_ body: String, of name: String) async -> Bool {
         guard let task = task(named: name) else { return false }
         do {
-            let result = try await services.tasks.setBody(body, of: task)
+            let result = try await services.tasks.setText(body, of: task)
             noteWrite(result.task)
             replace(result.task)
             reportClashes(result, name: task.name)

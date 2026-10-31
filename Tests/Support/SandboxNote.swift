@@ -13,7 +13,7 @@ final class SandboxNote {
         let sandbox = try sandbox ?? VaultSandbox.make()
         self.sandbox = sandbox
         repository = sandbox.repository(ubiquity: ubiquity, calendar: calendar)
-        task = try #require(try await repository.scan().tasks.first { $0.name == name })
+        task = try #require(try await repository.load().tasks.first { $0.name == name })
     }
 
     func text() throws -> String { try sandbox.text(of: task.name) }
@@ -21,7 +21,7 @@ final class SandboxNote {
     /// Scans again (after the file was changed behind the repository's back).
     func reload() async throws -> TaskNote {
         let name = task.name
-        task = try #require(try await repository.scan().tasks.first { $0.name == name })
+        task = try #require(try await repository.load().tasks.first { $0.name == name })
         return task
     }
 

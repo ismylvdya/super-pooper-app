@@ -33,7 +33,7 @@ struct ReviewRegressionTests {
         let sandbox = try VaultSandbox.make()
         try sandbox.write("---\ntags:\n  - 🔫делишка\nstatus: this_week\n---", to: "Без перевода строки")
         let note = try await SandboxNote("Без перевода строки", sandbox: sandbox)
-        _ = try await note.repository.setBody("Hello", of: note.task)
+        _ = try await note.repository.setText("Hello", of: note.task)
         let text = try note.text()
         #expect(text.hasSuffix("\n---\nHello"))
         #expect(throws: Never.self) { try FrontmatterDocument(text: text) }
@@ -42,7 +42,7 @@ struct ReviewRegressionTests {
     @Test func renameSurvivesADependentThatVanished() async throws {
         let sandbox = try VaultSandbox.make()
         let repository = sandbox.repository()
-        let tasks = try await repository.scan().tasks
+        let tasks = try await repository.load().tasks
         let screwdriver = try #require(tasks.first { $0.name == "Найти отвёртку" })
         var ghost = try #require(tasks.first { $0.name == "Собрать шкаф" })
         ghost.relativePath = "TaskNotes/Tasks/Нет такого файла.md"
@@ -55,8 +55,8 @@ struct ReviewRegressionTests {
         let sandbox = try VaultSandbox.make()
         try "".write(to: sandbox.tasksFolder.appendingPathComponent(".Занято облаком.md.icloud"), atomically: true, encoding: .utf8)
         let repository = sandbox.repository()
-        let batteries = try #require(try await repository.scan().tasks.first { $0.name == "Купить батарейки 🔋" })
-        await #expect(throws: TaskRepositoryError.nameTaken("Занято облаком")) {
+        let batteries = try #require(try await repository.load().tasks.first { $0.name == "Купить батарейки 🔋" })
+        await #expect(throws: TaskStoreError.nameTaken("Занято облаком")) {
             _ = try await repository.rename(batteries, to: "Занято облаком", dependents: [])
         }
     }

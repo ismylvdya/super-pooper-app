@@ -30,8 +30,8 @@ struct AppBlockTests {
         let withBlock = try note.text().replacingOccurrences(of: "\n---\n", with: "\n---\n" + block, options: [], range: nil)
         try note.sandbox.write(withBlock, to: note.task.name)
         let reloaded = try await SandboxNote("Купить молоко", sandbox: note.sandbox)
-        #expect(!(try await reloaded.repository.body(of: reloaded.task)).contains("SuperPooperApp"))
-        _ = try await reloaded.repository.setBody("Новый текст\n", of: reloaded.task)
+        #expect(!(try await reloaded.repository.text(of: reloaded.task)).contains("SuperPooperApp"))
+        _ = try await reloaded.repository.setText("Новый текст\n", of: reloaded.task)
         let text = try reloaded.text()
         #expect(text.contains(block) && text.hasSuffix("Новый текст\n"))
     }

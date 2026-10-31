@@ -100,8 +100,8 @@ extension AppModel {
 
     func delete(_ task: TaskNote) async {
         do {
-            if config.flags.backups { try await services.tasks.backup([task], reason: "delete") }
-            try await services.tasks.moveToTrash(task)
+            try await backup([task], reason: "delete")
+            try await services.tasks.delete(task)
             remove(task)
             banners.show(L10n.format("banner.deleted", task.name), style: .success)
             await publishDerivedState()
@@ -121,7 +121,7 @@ extension AppModel {
         let dependents = tasks.filter { ($0.previousTasks + $0.projects).contains { $0.isSameNoteName(as: name) } }
         var renamed = false
         do {
-            if config.flags.backups { try await services.tasks.backup([task] + dependents, reason: "rename") }
+            try await backup([task] + dependents, reason: "rename")
             let result = try await services.tasks.rename(task, to: trimmed, dependents: dependents)
             remove(task)
             noteWrite(result)
@@ -132,7 +132,7 @@ extension AppModel {
             banners.show(Self.describe(error), style: .problem)
         }
         // Whatever happened, the files are the truth: re-read them.
-        if let result = try? await services.tasks.scan() { setScanResult(result) }
+        if let result = try? await services.tasks.load() { setScanResult(result) }
         await publishDerivedState()
         return renamed
     }
@@ -152,9 +152,21 @@ extension AppModel {
         }
     }
 
-    func obsidianURL(for name: String) async -> URL? {
-        guard let task = task(named: name) else { return nil }
-        return await services.tasks.obsidianURL(for: task)
+    /// The link that opens the note in the app its store belongs to (Obsidian); nil where the store has none.
+    func externalURL(for name: String) async -> URL? {
+        guard let task = task(named: name), let links = services.links else { return nil }
+        return await links.externalURL(for: task)
+    }
+
+    /// A copy of the notes before a risky change, when backups are on and the store makes them.
+    func backup(_ tasks: [TaskNote], reason: String) async throws {
+        guard config.flags.backups, let backups = services.backups else { return }
+        try await backups.backup(tasks, reason: reason)
+    }
+
+    /// What is wrong with a name a note is about to get; nil for a name it can take.
+    func nameProblem(in name: String) -> NoteNameProblem? {
+        services.tasks.nameProblem(in: name)
     }
 
     // MARK: - Pool order

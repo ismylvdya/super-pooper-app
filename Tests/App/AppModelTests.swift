@@ -119,7 +119,7 @@ struct AppModelTests {
         await model.sync(announce: false)
         let before = try #require(model.services.snapshotStore.load()).tasks.count
         #expect(before > 0)
-        let repository = try #require(model.services.tasks as? InMemoryTaskRepository)
+        let repository = try #require(model.services.tasks as? InMemoryTaskStore)
         await repository.failScans(with: CocoaError(.fileReadNoPermission))
         await model.sync(announce: false)
         #expect(model.services.snapshotStore.load()?.tasks.count == before)
@@ -160,7 +160,7 @@ struct AppModelTests {
     /// vault is read once more after the running sync.
     @Test func aSyncAskedForDuringASyncRunsAfterIt() async throws {
         let model = try makeModel()
-        let repository = try #require(model.services.tasks as? InMemoryTaskRepository)
+        let repository = try #require(model.services.tasks as? InMemoryTaskStore)
         let slowScan = AsyncGate()
         await repository.holdScans(at: slowScan)
         async let first: Void = model.sync(announce: false)
@@ -200,7 +200,7 @@ struct AppModelTests {
     /// "+" pressed while a slow sync reads the vault: the new task does not vanish when the sync finishes.
     @Test func aTaskCreatedDuringASyncStays() async throws {
         let model = try makeModel()
-        let repository = try #require(model.services.tasks as? InMemoryTaskRepository)
+        let repository = try #require(model.services.tasks as? InMemoryTaskStore)
         let slowScan = AsyncGate()
         await repository.holdScans(at: slowScan)
         async let running: Void = model.sync(announce: false)

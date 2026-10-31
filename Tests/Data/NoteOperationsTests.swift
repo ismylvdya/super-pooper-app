@@ -46,7 +46,7 @@ struct NoteOperationsTests {
     @Test func renameMovesTheFileAndRewritesLinksOfDependents() async throws {
         let sandbox = try VaultSandbox.make()
         let repository = sandbox.repository()
-        let tasks = try await repository.scan().tasks
+        let tasks = try await repository.load().tasks
         let screwdriver = try #require(tasks.first { $0.name == "Найти отвёртку" })
         let dependents = tasks.filter { $0.previousTasks.contains("Найти отвёртку") }
         #expect(dependents.map(\.name).sorted() == ["Связь без скобок", "Собрать шкаф"])
@@ -68,7 +68,7 @@ struct NoteOperationsTests {
             .replacingOnce("  - Найти отвёртку\n", with: newLink)
             .replacingOnce("date_modified: 2026-10-20T09:12:44.123+02:00", with: stamp))
 
-        let plan = DayScenario(tasks: try await repository.scan().tasks).build()
+        let plan = DayScenario(tasks: try await repository.load().tasks).build()
         #expect(plan.problems(of: "Собрать шкаф").isEmpty && plan.problems(of: "Связь без скобок").isEmpty)
         #expect(plan.item(named: "Собрать шкаф")?.blockers == [.task("Найти отвёртку 🪛")])
     }
@@ -76,14 +76,14 @@ struct NoteOperationsTests {
     @Test func aTakenOrInvalidNameIsRejectedWithoutTouchingFiles() async throws {
         let sandbox = try VaultSandbox.make()
         let repository = sandbox.repository()
-        let batteries = try #require(try await repository.scan().tasks.first { $0.name == "Купить батарейки 🔋" })
+        let batteries = try #require(try await repository.load().tasks.first { $0.name == "Купить батарейки 🔋" })
         let before = try sandbox.text(of: "Купить батарейки 🔋")
 
-        await #expect(throws: TaskRepositoryError.nameTaken("найти отвёртку")) {
+        await #expect(throws: TaskStoreError.nameTaken("найти отвёртку")) {
             try await repository.rename(batteries, to: "найти отвёртку", dependents: [])
         }
         for name in ["", " Пробел в начале", "Папка/Задача", "[[Ссылка]]", "Вопрос?", ".hidden", "Хэш#тег"] {
-            await #expect(throws: TaskRepositoryError.invalidName(name)) {
+            await #expect(throws: TaskStoreError.invalidName(name)) {
                 try await repository.rename(batteries, to: name, dependents: [])
             }
         }
@@ -96,17 +96,17 @@ struct NoteOperationsTests {
     @Test func moveToTrashMovesTheNoteIntoTheVaultTrashFolder() async throws {
         let sandbox = try VaultSandbox.make()
         let repository = sandbox.repository()
-        let ideas = try #require(try await repository.scan().tasks.first { $0.name == "Записать идеи" })
+        let ideas = try #require(try await repository.load().tasks.first { $0.name == "Записать идеи" })
         let content = try sandbox.text(of: "Записать идеи")
 
-        try await repository.moveToTrash(ideas)
+        try await repository.delete(ideas)
         #expect(!sandbox.exists("Записать идеи"))
         let trashed = sandbox.trashFolder.appendingPathComponent("Записать идеи.md")
         expectSameBytes(try String(contentsOf: trashed, encoding: .utf8), content)
-        #expect(try await repository.scan().tasks.count == 35)
+        #expect(try await repository.load().tasks.count == 35)
 
         try sandbox.write("---\ntags:\n  - 🔫делишка\nstatus: this_week\n---\nВторая\n", to: "Записать идеи")
-        try await repository.moveToTrash(ideas)
+        try await repository.delete(ideas)
         let second = sandbox.trashFolder.appendingPathComponent("Записать идеи 1.md")
         #expect(try String(contentsOf: second, encoding: .utf8).hasSuffix("Вторая\n"))
         expectSameBytes(try String(contentsOf: trashed, encoding: .utf8), content)
@@ -117,7 +117,7 @@ struct NoteOperationsTests {
     @Test func backupCopiesTheNotesAndKeepsOnlyTheNewestFolders() async throws {
         let sandbox = try VaultSandbox.make()
         let repository = sandbox.repository(keepBackups: 2)
-        let tasks = try await repository.scan().tasks
+        let tasks = try await repository.load().tasks
         let picked = tasks.filter { ["Найти отвёртку", "Медитация 🧘"].contains($0.name) }
 
         try await repository.backup(picked, reason: "first")
@@ -170,8 +170,8 @@ struct NoteOperationsTests {
     @Test func obsidianLinkOpensTheNoteInTheVault() async throws {
         let sandbox = try VaultSandbox.make()
         let repository = sandbox.repository()
-        let task = try #require(try await repository.scan().tasks.first { $0.name == "Утро — душ 🚿" })
-        let url = try #require(await repository.obsidianURL(for: task))
+        let task = try #require(try await repository.load().tasks.first { $0.name == "Утро — душ 🚿" })
+        let url = try #require(await repository.externalURL(for: task))
         let components = try #require(URLComponents(url: url, resolvingAgainstBaseURL: false))
         #expect(components.scheme == "obsidian" && components.host == "open")
         #expect(components.queryItems == [URLQueryItem(name: "vault", value: "Vault"),
