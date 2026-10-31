@@ -1,10 +1,11 @@
 import SwiftUI
 
-/// Top banner: up to two lines, tap expands/collapses, swipe up dismisses, hides itself after
-/// the token duration. Under the message each fact has its own element: a count per kind (icon and number), the notes
+/// Top banner: up to `banners.collapsedLines` lines, tap expands/collapses, swipe up dismisses, hides itself after
+/// `banners.autoHideSeconds`. Under the message each fact has its own element: a count per kind (icon and number), the notes
 /// it is about one per line (as many as the message's lines until it is expanded).
 struct BannerView: View {
     @Environment(\.tokens) private var tokens
+    @Environment(\.rules) private var rules
     @Environment(\.icons) private var icons
     let text: String
     let icon: Icon?
@@ -50,7 +51,7 @@ struct BannerView: View {
         .contentShape(Rectangle())
         .gesture(tapOrSwipe)
         .task(id: text + items.joined()) {
-            try? await Task.sleep(for: .seconds(tokens.duration(.bannerAutoHide)))
+            try? await Task.sleep(for: .seconds(rules.banners.autoHideSeconds))
             if !Task.isCancelled { onDismiss() }
         }
         .accessibilityElement(children: .combine)
@@ -59,7 +60,7 @@ struct BannerView: View {
         .accessibilityAction(named: Text("a11y.dismiss")) { onDismiss() }
     }
 
-    private var lines: Int { Int(tokens.size(.bannerLines)) }
+    private var lines: Int { rules.banners.collapsedLines }
 
     private var shownItems: [String] { isExpanded ? items : Array(items.prefix(lines)) }
 
@@ -69,10 +70,10 @@ struct BannerView: View {
             .onChanged { dragOffset = $0.translation.height }
             .onEnded { value in
                 let distance = value.translation.height
-                if distance < -tokens.size(.bannerDismissDistance) || value.predictedEndTranslation.height < -tokens.size(.bannerDismissFling) {
+                if distance < -rules.gestures.bannerDismissDistance || value.predictedEndTranslation.height < -rules.gestures.bannerDismissFling {
                     onDismiss()
                 } else {
-                    if abs(distance) < tokens.size(.tapSlop), abs(value.translation.width) < tokens.size(.tapSlop) {
+                    if abs(distance) < rules.gestures.tapSlop, abs(value.translation.width) < rules.gestures.tapSlop {
                         if let onTap {
                             onTap()
                             onDismiss()

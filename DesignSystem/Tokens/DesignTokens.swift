@@ -5,14 +5,16 @@ struct DesignTokens: Decodable, Sendable {
     let spacing: TokenTable<SpacingToken, Double>
     let radius: TokenTable<RadiusToken, Double>
     let size: TokenTable<SizeToken, Double>
-    let opacity: TokenTable<OpacityToken, Double>
+    let ratio: TokenTable<RatioToken, Double>
+    private(set) var opacity: TokenTable<OpacityToken, Double>
     let duration: TokenTable<DurationToken, Double>
     let font: TokenTable<FontToken, FontSpec>
-    let color: TokenTable<ColorToken, ColorSpec>
+    private(set) var color: TokenTable<ColorToken, ColorSpec>
 
     func space(_ token: SpacingToken) -> CGFloat { CGFloat(spacing[token]) }
     func radius(_ token: RadiusToken) -> CGFloat { CGFloat(radius[token]) }
     func size(_ token: SizeToken) -> CGFloat { CGFloat(size[token]) }
+    func ratio(_ token: RatioToken) -> CGFloat { CGFloat(ratio[token]) }
     func opacity(_ token: OpacityToken) -> Double { opacity[token] }
     func duration(_ token: DurationToken) -> Double { duration[token] }
     func font(_ token: FontToken) -> Font { font[token].font }
@@ -35,17 +37,16 @@ struct DesignTokens: Decodable, Sendable {
 
     /// The user's appearance settings over the bundled tokens: colors and the opacity of done/past items.
     func applying(_ settings: AppSettings, limits: RulesConfig.Limits) -> DesignTokens {
-        let colored = overridingColors(settings.colors)
-        let past = min(max(settings.appearance.pastOpacity, limits.pastOpacity.min), limits.pastOpacity.max)
-        return DesignTokens(spacing: spacing, radius: radius, size: size,
-                            opacity: colored.opacity.replacing([.past: past]),
-                            duration: duration, font: font, color: colored.color)
+        var tokens = overridingColors(settings.colors)
+        tokens.opacity = opacity.replacing([.past: min(max(settings.appearance.pastOpacity, limits.pastOpacity.min), limits.pastOpacity.max)])
+        return tokens
     }
 
     /// The widgets' plates: lighter than the app's in the dark, where a widget sits on a dark Home Screen.
     func forWidget() -> DesignTokens {
-        DesignTokens(spacing: spacing, radius: radius, size: size, opacity: opacity, duration: duration, font: font,
-                     color: color.replacing([.plateBackground: color[.widgetPlate]]))
+        var tokens = self
+        tokens.color = color.replacing([.plateBackground: color[.widgetPlate]])
+        return tokens
     }
 
     /// User color choices (settings) over the bundled palette; unknown names and bad hex are ignored.
@@ -56,9 +57,9 @@ struct DesignTokens: Decodable, Sendable {
             guard let token = ColorToken(rawValue: name), token != .accent, UIColor(hex: hex) != nil else { continue }
             overrides[token] = ColorSpec(hex: hex)
         }
-        guard !overrides.isEmpty else { return self }
-        return DesignTokens(spacing: spacing, radius: radius, size: size, opacity: opacity, duration: duration,
-                            font: font, color: color.replacing(overrides))
+        var tokens = self
+        tokens.color = color.replacing(overrides)
+        return tokens
     }
 }
 

@@ -41,12 +41,12 @@ private struct InfoBubble: View {
         }
         .scrollBounceBehavior(.basedOnSize)
         .frame(width: tokens.size(.infoMaxWidth))
-        .frame(height: min(max(textHeight, 1), screenHeight * tokens.size(.infoMaxHeightRatio)))
+        .frame(height: min(max(textHeight, 1), screenHeight * tokens.ratio(.infoMaxHeight)))
     }
 }
 
 private struct ScreenHeightKey: EnvironmentKey {
-    static let defaultValue = BundledConfig.tokens.size(.screenHeightEstimate)
+    static let defaultValue = CGFloat(BundledConfig.rules.layoutEstimates.screenHeight)
 }
 
 extension EnvironmentValues {

@@ -10,6 +10,7 @@ extension View {
 
 private struct PullToExtend: ViewModifier {
     @Environment(\.tokens) private var tokens
+    @Environment(\.rules) private var rules
     @Environment(\.icons) private var icons
     let icon: Icon
     let action: () -> Void
@@ -17,8 +18,8 @@ private struct PullToExtend: ViewModifier {
     @State private var isArmed = false
 
     func body(content: Content) -> some View {
-        let threshold = tokens.size(.pullThreshold)
-        let start = tokens.size(.pullStartScale)
+        let threshold = rules.gestures.pullThreshold
+        let start = tokens.ratio(.pullStartScale)
         content
             .onScrollGeometryChange(for: CGFloat.self) { max(0, -($0.contentOffset.y + $0.contentInsets.top)) } action: { _, new in
                 pull = new
@@ -38,7 +39,7 @@ private struct PullToExtend: ViewModifier {
                 Image(systemName: icons[icon])
                     .font(tokens.font(.pullIcon))
                     .foregroundStyle(tokens.color(.secondaryText))
-                    .scaleEffect(isArmed ? tokens.size(.pullArmedScale) : start + (1 - start) * min(pull / threshold, 1))
+                    .scaleEffect(isArmed ? tokens.ratio(.pullArmedScale) : start + (1 - start) * min(pull / threshold, 1))
                     .opacity(min(pull / threshold, 1))
                     .offset(y: max(pull / 2 - tokens.size(.pullIcon) / 2, 0))
                     .animation(.easeOut(duration: tokens.duration(.animation)), value: isArmed)

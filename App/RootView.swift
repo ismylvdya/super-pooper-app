@@ -6,7 +6,7 @@ struct RootView: View {
     let container: AppContainer
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
-    @State private var screenHeight = BundledConfig.tokens.size(.screenHeightEstimate)
+    @State private var screenHeight = CGFloat(BundledConfig.rules.layoutEstimates.screenHeight)
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     /// Which side the physical bottom took the last time the phone lay sideways.
     @State private var landscapeBottom: HorizontalEdge = .trailing

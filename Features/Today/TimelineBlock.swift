@@ -5,6 +5,7 @@ import SwiftUI
 struct TimelineBlock: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
+    @Environment(\.rules) private var rules
     @Environment(\.openURL) private var openURL
     @Environment(TaskDragState.self) private var drag: TaskDragState?
     @State private var eventToDelete: CalendarEvent?
@@ -41,7 +42,7 @@ struct TimelineBlock: View {
                 let base = model.settings.timelineMode == .wholeDay
                     ? CGFloat(shown.hourHeight(fitting: Double(height)))
                     : tokens.size(.hourHeight)
-                let scale = { (factor: CGFloat) in base * min(max(factor, tokens.size(.timelineZoomMin)), tokens.size(.timelineZoomMax)) }
+                let scale = { (factor: CGFloat) in base * min(max(factor, zoomLimits.min), zoomLimits.max) }
                 let hourHeight = scale(zoom * pinch)
                 let stripHeight = plan.allDayEvents.isEmpty ? 0 : allDayHeight
                 let contentTop = tokens.space(.groupGap) / 2
@@ -83,7 +84,7 @@ struct TimelineBlock: View {
                             position.scrollTo(y: CGFloat(offset))
                         }
                         .onEnded { value in
-                            zoom = min(max(zoom * value.magnification, tokens.size(.timelineZoomMin)), tokens.size(.timelineZoomMax))
+                            zoom = min(max(zoom * value.magnification, zoomLimits.min), zoomLimits.max)
                             pinchStart = nil
                         }
                 )
@@ -132,6 +133,7 @@ struct TimelineBlock: View {
     }
 
     /// All-day bars are a little smaller than the event titles.
+    private var zoomLimits: (min: CGFloat, max: CGFloat) { (CGFloat(rules.timeline.zoom.min), CGFloat(rules.timeline.zoom.max)) }
     private var allDayFontSize: CGFloat { model.settings.timeline.eventFontSize - tokens.size(.allDayFontDelta) }
 
     private var allDayStrip: some View {

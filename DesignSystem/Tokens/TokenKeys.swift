@@ -14,18 +14,23 @@ enum RadiusToken: String, CaseIterable, Sendable {
 }
 
 enum SizeToken: String, CaseIterable, Sendable {
-    case iconColumn, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, notificationIcon, notificationImagePixels
-    case problemDot, sourceDot, fadeHeight, bannerLines, poolRowEstimate, poolCounter, poolWidth
-    case habitRingRatio, habitPartialDot, habitHistoryMaxHeight, habitStatsBar, infoMaxHeightRatio, linkBadge, titleFade, hourDigitsWidth, pullThreshold, pullIcon, actionPopoverWidth, daySwipeStart, reviewChevron, timelineZoomMin, timelineZoomMax, wrapMinWidth, liftOverhang, pagePeek, dropLine, dropMarkerHeight, screenHeightEstimate, bannerShadowRadius, bannerShadowY, bannerDismissDistance, bannerDismissFling, tapSlop, hexFieldWidth, pullArmedScale, pullStartScale, daySwipeAxisRatio, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, allDayFontDelta, previewHeight, previewRow, previewRows, previewHours, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewScale, timelinePreviewHalvesInset, subtaskDropLine, landscapeTabBarWidth, barButton
+    case iconColumn, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, notificationIcon
+    case problemDot, sourceDot, fadeHeight, poolCounter, poolWidth
+    case habitHistoryMaxHeight, habitStatsBar, linkBadge, titleFade, hourDigitsWidth, pullIcon, actionPopoverWidth, reviewChevron, wrapMinWidth, liftOverhang, pagePeek, dropLine, dropMarkerHeight, bannerShadowRadius, bannerShadowY, hexFieldWidth, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, allDayFontDelta, previewHeight, previewRow, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewHalvesInset, subtaskDropLine, landscapeTabBarWidth, barButton
+}
+
+/// Shares and scale factors: a part of another size, not a size of its own.
+enum RatioToken: String, CaseIterable, Sendable {
+    case habitRing, habitPartialDot, infoMaxHeight, pullStartScale, pullArmedScale, timelinePreview, largeTitleVisible
 }
 
 enum OpacityToken: String, CaseIterable, Sendable {
     case blocked, past, eventFill, fadeTop, fadeMiddle, habitEmpty
-    case gridFadedWeek, unlinked, eventTime, nowOverBlocks, daySwipeThreshold, daySwipeFade, toggleChipFill, bannerShadow, previewBlock, largeTitleVisible
+    case gridFadedWeek, unlinked, eventTime, nowOverBlocks, daySwipeFade, toggleChipFill, bannerShadow, previewBlock
 }
 
 enum DurationToken: String, CaseIterable, Sendable {
-    case bannerAutoHide, animation, bannerAnimation, titleColorAnimation
+    case animation, bannerAnimation, titleColorAnimation
 }
 
 enum FontToken: String, CaseIterable, Sendable {

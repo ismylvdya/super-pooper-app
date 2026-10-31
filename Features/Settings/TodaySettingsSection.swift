@@ -50,6 +50,7 @@ struct TodaySettingsSection: View {
 struct ArrangementPreview: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
+    @Environment(\.rules) private var rules
     let arrangement: AppSettings.TodayArrangement
     var landscape = false
 
@@ -68,7 +69,7 @@ struct ArrangementPreview: View {
 
     private var pool: some View {
         VStack(spacing: tokens.space(.previewRowGap)) {
-            ForEach(0..<Int(tokens.size(.previewRows)), id: \.self) { _ in
+            ForEach(0..<rules.settingsPreview.poolRows, id: \.self) { _ in
                 RoundedRectangle(cornerRadius: tokens.radius(.previewItem), style: .continuous)
                     .fill(tokens.color(.plateBackground))
                     .frame(height: tokens.size(.previewRow))
@@ -80,7 +81,7 @@ struct ArrangementPreview: View {
 
     private var timeline: some View {
         VStack(spacing: 0) {
-            ForEach(0..<Int(tokens.size(.previewHours)), id: \.self) { _ in
+            ForEach(0..<rules.settingsPreview.timelineHours, id: \.self) { _ in
                 Rectangle().fill(tokens.color(.timelineGrid)).frame(height: tokens.size(.gridLine))
                 Spacer(minLength: 0)
             }

@@ -67,7 +67,7 @@ struct HabitDayButton: View {
 
     /// The ring and the gap of Twice as thick as in the habit's history grid; the dot inside is smaller instead.
     private var metrics: HabitDotMetrics {
-        let ratio = tokens.size(.habitRingRatio)
+        let ratio = tokens.ratio(.habitRing)
         let own = HabitDotMetrics(dot: tokens.size(.iconColumn), ringRatio: ratio)
         guard let plateWidth else { return own }
         let grid = HabitDotMetrics.fitting(width: plateWidth - tokens.space(.plateInner) * 2, ringRatio: ratio)

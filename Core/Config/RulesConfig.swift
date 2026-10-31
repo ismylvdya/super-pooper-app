@@ -17,6 +17,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         /// The warning that the app's signature runs out comes this many hours before.
         let signingWarningHours: Double
         let signingWarningID: String
+        /// The user's picture is scaled down to at most this many pixels on its longer side.
+        let imageMaxPixels: Double
     }
 
     struct EventLinks: Codable, Hashable, Sendable {
@@ -63,6 +65,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let otherDayAnchor: LocalTime
         /// A task dropped on the timeline lands on a multiple of this many minutes.
         let dropStepMinutes: Int
+        /// How far a pinch scales the hour height: at least `min` and at most `max` times the fitted one.
+        let zoom: Limits.Range
     }
 
     struct Widgets: Codable, Hashable, Sendable {
@@ -104,6 +108,43 @@ struct RulesConfig: Codable, Hashable, Sendable {
         func extraLines(forEstimate minutes: Int) -> Int {
             extraLines.filter { minutes >= $0.minutes }.map(\.lines).max() ?? 0
         }
+    }
+
+    /// When a finger's movement counts as a tap, a swipe or a pull (points, or a share of the width where named so).
+    struct Gestures: Codable, Hashable, Sendable {
+        /// A touch that moves less than this is still a tap.
+        let tapSlop: Double
+        /// A drag on Today starts deciding its direction after this distance.
+        let daySwipeMinimumDistance: Double
+        /// A drag is sideways when it moves this many times more across than up or down.
+        let daySwipeAxisRatio: Double
+        /// A sideways drag turns the page past this share of the width, or when flung past `daySwipeFlingShare` of it.
+        let daySwipeShare: Double
+        let daySwipeFlingShare: Double
+        /// A banner pulled up this far, or flung this far, goes away.
+        let bannerDismissDistance: Double
+        let bannerDismissFling: Double
+        /// Pulling a list down this far arms "load more".
+        let pullThreshold: Double
+    }
+
+    struct Banners: Codable, Hashable, Sendable {
+        /// A banner hides itself this long after it appears.
+        let autoHideSeconds: Double
+        /// Lines of the message (and notes under it) until the banner is expanded.
+        let collapsedLines: Int
+    }
+
+    /// The sketches of the Today arrangements on the settings page.
+    struct SettingsPreview: Codable, Hashable, Sendable {
+        let poolRows: Int
+        let timelineHours: Int
+    }
+
+    /// Heights assumed until the real ones are measured.
+    struct LayoutEstimates: Codable, Hashable, Sendable {
+        let poolRowHeight: Double
+        let screenHeight: Double
     }
 
     /// Ranges of the number controls on settings and note pages.
@@ -162,6 +203,10 @@ struct RulesConfig: Codable, Hashable, Sendable {
     let pool: Pool
     let limits: Limits
     let editing: Editing
+    let gestures: Gestures
+    let banners: Banners
+    let settingsPreview: SettingsPreview
+    let layoutEstimates: LayoutEstimates
 }
 
 /// Order of the pool sort criteria (`sort.json`).

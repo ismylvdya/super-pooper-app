@@ -7,6 +7,7 @@ import SwiftUI
 struct PoolBlock: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
+    @Environment(\.rules) private var rules
     @Environment(TaskDragState.self) private var drag: TaskDragState?
     let plan: DayPlan
     let handler: TaskActionHandler
@@ -116,7 +117,7 @@ struct PoolBlock: View {
 
     private var visibleHeight: CGFloat {
         let rows = plan.pool.prefix(visibleCount)
-        let heights = rows.map { rowHeights[$0.id] ?? tokens.size(.poolRowEstimate) }
+        let heights = rows.map { rowHeights[$0.id] ?? CGFloat(rules.layoutEstimates.poolRowHeight) }
         return heights.reduce(0, +) + tokens.space(.poolRowGap) * CGFloat(max(rows.count - 1, 0))
     }
 

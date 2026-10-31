@@ -24,7 +24,7 @@ private struct LargeTitleTracking: ViewModifier {
     func body(content: Content) -> some View {
         content.onScrollGeometryChange(for: Bool.self) { geometry in
             // Not measured yet: the page has just opened with its title on screen.
-            titleHeight == 0 || geometry.contentOffset.y + geometry.contentInsets.top < titleHeight * (1 - tokens.opacity(.largeTitleVisible))
+            titleHeight == 0 || geometry.contentOffset.y + geometry.contentInsets.top < titleHeight * (1 - tokens.ratio(.largeTitleVisible))
         } action: { _, visible in
             guard visible != isVisible else { return }
             withAnimation(.easeInOut(duration: tokens.duration(.titleColorAnimation))) { isVisible = visible }

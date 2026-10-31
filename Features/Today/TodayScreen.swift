@@ -13,6 +13,7 @@ struct TodayScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
+    @Environment(\.rules) private var rules
     @Environment(\.icons) private var icons
     @Environment(\.openURL) private var openURL
     @Environment(\.physicalBottom) private var physicalBottom
@@ -100,10 +101,10 @@ struct TodayScreen: View {
     /// On pages a horizontal drag moves them with the finger; far enough, it turns the page. Past the first or
     /// last page it does nothing: the day changes with the arrows.
     private func daySwipe(width: CGFloat) -> some Gesture {
-        DragGesture(minimumDistance: tokens.size(.daySwipeStart))
+        DragGesture(minimumDistance: rules.gestures.daySwipeMinimumDistance)
             .onChanged { value in
                 let axis = TodaySwipe.axis(locked: swipeAxis, width: value.translation.width, height: value.translation.height,
-                                           axisRatio: tokens.size(.daySwipeAxisRatio))
+                                           axisRatio: rules.gestures.daySwipeAxisRatio)
                 swipeAxis = axis
                 guard axis == .horizontal,
                       TodaySwipe.page(forward: value.translation.width < 0, page: page, pageCount: pageCount) != nil else { return }
@@ -112,10 +113,10 @@ struct TodayScreen: View {
             .onEnded { value in
                 let distance = value.translation.width
                 let axis = TodaySwipe.axis(locked: swipeAxis, width: distance, height: value.translation.height,
-                                           axisRatio: tokens.size(.daySwipeAxisRatio))
+                                           axisRatio: rules.gestures.daySwipeAxisRatio)
                 swipeAxis = nil
                 let isSwipe = TodaySwipe.isSwipe(axis: axis, width: distance, predictedWidth: value.predictedEndTranslation.width,
-                                                 containerWidth: width, threshold: tokens.opacity(.daySwipeThreshold))
+                                                 containerWidth: width, gestures: rules.gestures)
                 if isSwipe, let target = TodaySwipe.page(forward: distance < 0, page: page, pageCount: pageCount) {
                     turn(to: target)
                 } else {

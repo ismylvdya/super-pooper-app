@@ -117,7 +117,7 @@ struct TimelinePreview: View {
             case .aroundNow:
                 ScrollView {
                     DayTimelineView(slots: plan.timeline, window: windows[0], now: plan.now,
-                                    hourHeight: tokens.size(.hourHeight) * tokens.size(.timelinePreviewScale), style: style, taskContent: row)
+                                    hourHeight: tokens.size(.hourHeight) * tokens.ratio(.timelinePreview), style: style, taskContent: row)
                 }
             case .wholeDay:
                 DayTimelineView(slots: plan.timeline, window: windows[0], now: plan.now,

@@ -111,7 +111,7 @@ struct HabitDayCell: View {
                 Circle().strokeBorder(color, lineWidth: metrics.ring).frame(width: metrics.cell, height: metrics.cell)
             case .partial:
                 Circle().strokeBorder(color, lineWidth: metrics.ring).frame(width: dot, height: dot)
-                Circle().fill(color).frame(width: dot * tokens.size(.habitPartialDot), height: dot * tokens.size(.habitPartialDot))
+                Circle().fill(color).frame(width: dot * tokens.ratio(.habitPartialDot), height: dot * tokens.ratio(.habitPartialDot))
             case .open, .missed, .notScheduled:
                 Circle().strokeBorder(color, lineWidth: metrics.ring).frame(width: dot, height: dot)
             }

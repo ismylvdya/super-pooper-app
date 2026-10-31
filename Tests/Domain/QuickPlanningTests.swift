@@ -101,8 +101,11 @@ struct QuickPlanningTests {
         #expect(TodaySwipe.axis(locked: nil, width: 4, height: 30, axisRatio: 1.5) == .vertical)
         #expect(TodaySwipe.axis(locked: .vertical, width: 200, height: 30, axisRatio: 1.5) == .vertical)
         #expect(TodaySwipe.axis(locked: .horizontal, width: 40, height: 90, axisRatio: 1.5) == .horizontal)
-        #expect(!TodaySwipe.isSwipe(axis: .vertical, width: 300, predictedWidth: 300, containerWidth: 375, threshold: 0.25))
-        #expect(TodaySwipe.isSwipe(axis: .horizontal, width: 120, predictedWidth: 120, containerWidth: 375, threshold: 0.25))
+        let gestures = TestConfig.rules.gestures
+        #expect(!TodaySwipe.isSwipe(axis: .vertical, width: 300, predictedWidth: 300, containerWidth: 375, gestures: gestures))
+        #expect(TodaySwipe.isSwipe(axis: .horizontal, width: 120, predictedWidth: 120, containerWidth: 375, gestures: gestures))
+        #expect(!TodaySwipe.isSwipe(axis: .horizontal, width: 40, predictedWidth: 150, containerWidth: 375, gestures: gestures))
+        #expect(TodaySwipe.isSwipe(axis: .horizontal, width: 40, predictedWidth: 200, containerWidth: 375, gestures: gestures))
     }
 
     @Test func theWidgetHasNoPages() {

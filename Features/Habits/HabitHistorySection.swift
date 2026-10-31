@@ -27,7 +27,7 @@ struct HabitHistorySection: View {
             PlateHeader(title: "habitPage.history", info: "info.habitPage.history")
             Group {
                 if let width {
-                    history(grid, metrics: HabitDotMetrics.fitting(width: width - inner * 2, ringRatio: tokens.size(.habitRingRatio)))
+                    history(grid, metrics: HabitDotMetrics.fitting(width: width - inner * 2, ringRatio: tokens.ratio(.habitRing)))
                 } else {
                     Color.clear.frame(height: tokens.size(.habitHistoryMaxHeight))
                 }

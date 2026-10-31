@@ -13,7 +13,7 @@ struct HabitWidgetView: View {
     var body: some View {
         GeometryReader { geometry in
             content(metrics: HabitDotMetrics.fitting(width: geometry.size.width - tokens.space(.widgetPadding) * 2,
-                                                     ringRatio: tokens.size(.habitRingRatio)))
+                                                     ringRatio: tokens.ratio(.habitRing)))
         }
     }
 
