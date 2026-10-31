@@ -34,18 +34,23 @@ final class NotificationPictureController {
         await derived.replanNotifications()
     }
 
-    func setShown(_ isShown: Bool) async {
-        await change { $0.habits.showsNotificationPicture = isShown }
+    @discardableResult
+    func setShown(_ isShown: Bool) -> Task<Void, Never> {
+        change { $0.habits.showsNotificationPicture = isShown }
     }
 
-    func setUsesHabitColor(_ usesColor: Bool) async {
-        await change { $0.habits.notificationUsesHabitColor = usesColor }
+    @discardableResult
+    func setUsesHabitColor(_ usesColor: Bool) -> Task<Void, Never> {
+        change { $0.habits.notificationUsesHabitColor = usesColor }
     }
 
-    /// The picture is drawn from the settings file: the change is written before the replan.
-    private func change(_ edit: (inout AppSettings) -> Void) async {
+    /// The setting shows at once. The picture is drawn from the settings file: the change is written before the replan
+    /// (the returned work).
+    private func change(_ edit: (inout AppSettings) -> Void) -> Task<Void, Never> {
         settings.update(edit)
-        await settings.flush()
-        await derived.replanNotifications()
+        return Task {
+            await settings.flush()
+            await derived.replanNotifications()
+        }
     }
 }

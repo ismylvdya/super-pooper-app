@@ -45,7 +45,7 @@ struct DerivedWorkTests {
     @Test func aPictureSettingIsWrittenBeforeTheReplan() async throws {
         let model = try #require(PreviewModel.make(delay: GatedDelay())).model
         let shown = model.settings.habits.showsNotificationPicture
-        await model.setNotificationPictureShown(!shown)
+        await model.parts.picture.setShown(!shown).value
         #expect(model.parts.services.settingsStore.load().habits.showsNotificationPicture == !shown)
     }
 

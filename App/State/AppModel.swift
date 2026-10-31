@@ -76,8 +76,8 @@ final class AppModel {
     /// The user's own picture for habit notifications (this device), or nil for the habit symbol.
     var notificationImageData: Data? { parts.picture.imageData }
     func setNotificationImage(_ data: Data?) async { await parts.picture.setImage(data) }
-    func setNotificationPictureShown(_ isShown: Bool) async { await parts.picture.setShown(isShown) }
-    func setNotificationPictureUsesHabitColor(_ usesColor: Bool) async { await parts.picture.setUsesHabitColor(usesColor) }
+    func setNotificationPictureShown(_ isShown: Bool) { parts.picture.setShown(isShown) }
+    func setNotificationPictureUsesHabitColor(_ usesColor: Bool) { parts.picture.setUsesHabitColor(usesColor) }
 
     // MARK: - Sync
 
