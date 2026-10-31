@@ -152,6 +152,17 @@ final class ScreenSnapshotUITests: XCTestCase {
         snapTopAndBottom("settings-today")
     }
 
+    func testTimelineSettings() {
+        launch("superpooper://settings")
+        app.buttons["settings.link.taskSettings"].tap()
+        settle()
+        let preview = app.descendants(matching: .any)["Timeline preview"]
+        XCTAssertTrue(preview.waitForExistence(timeout: 10))
+        app.scrollIntoView(preview)
+        settle()
+        snap("settings-timeline")
+    }
+
     func testHabitSettings() {
         launch("superpooper://settings")
         app.buttons["settings.link.habitSettings"].tap()
