@@ -109,7 +109,7 @@ final class AppModel {
         services.calendars.access == .granted && !settings.sources.anchorCalendarIDs.isEmpty
     }
 
-    func task(named name: String) -> TaskNote? { tasks.first { $0.name == name } }
+    func task(named name: String) -> TaskNote? { tasks.first { $0.name.isSameNoteName(as: name) } }
 
     /// The tasks as the day sees them: times kept in a zone of their own moved to the phone's clock (`ZonedTimes`). Logic
     /// that decides from times works on these; what it decides is written back with `writeLocal` / `setLocalDue`.
@@ -121,6 +121,11 @@ final class AppModel {
     func localTask(named name: String) -> TaskNote? {
         let context = context()
         return task(named: name).map { ZonedTimes.local($0, calendar: context.calendar, today: context.today) }
+    }
+
+    /// The tasks that wait for `name`, by name: its Next tasks.
+    func nextTasks(of name: String) -> [String] {
+        NameOrder.sorted(NameReferences.waiting(for: name, in: tasks).map(\.name))
     }
 
     var archivedTasks: [TaskNote] {

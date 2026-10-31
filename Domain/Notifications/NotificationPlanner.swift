@@ -53,7 +53,7 @@ struct NotificationPlanner: Sendable {
                     guard schedule.occurs(on: day),
                           !HabitMarking.isDayClosed(instances.mark(on: day), twiceADay: task.habit.twiceADay,
                                                     remindersPerDay: task.habitTimes.count) else { continue }
-                    if day == context.today, skipped.contains(task.name) { continue }
+                    if day == context.today, skipped.containsNoteName(task.name) { continue }
                     for time in task.habitTimes {
                         result.append(PlannedNotification(id: "habit|\(task.name)|\(day.isoString)|\(time.string)", kind: .habit,
                                                           title: task.name, fireDate: context.moment(time, onLogicalDay: day),
@@ -64,7 +64,7 @@ struct NotificationPlanner: Sendable {
                 }
             } else if task.status == .thisWeek, let due = task.due, let time = due.time {
                 let day = context.logicalDay(of: due)
-                if day == context.today, skipped.contains(task.name) { continue }
+                if day == context.today, skipped.containsNoteName(task.name) { continue }
                 result.append(PlannedNotification(id: "task|\(task.name)", kind: .task, title: task.name,
                                                   fireDate: context.date(due.day, time), taskName: task.name,
                                                   day: day, key: "task|\(task.name)", isAbsolute: task.timeZone != nil))

@@ -5,11 +5,11 @@ import Foundation
 /// them in pool order. A subtask whose parent is not in the list stays where it was.
 enum SubtaskNesting {
     static func nested(_ items: [DayItem]) -> [DayItem] {
-        let byName = Dictionary(items.map { ($0.id.lowercased(), $0.id) }, uniquingKeysWith: { first, _ in first })
+        let byName = Dictionary(items.map { ($0.id.noteName, $0.id) }, uniquingKeysWith: { first, _ in first })
         var children: [String: [DayItem]] = [:]
         var roots: [DayItem] = []
         for item in items {
-            let parent = item.task.projects.lazy.compactMap { byName[$0.lowercased()] }.first { $0 != item.id }
+            let parent = item.task.projects.lazy.compactMap { byName[$0.noteName] }.first { $0 != item.id }
             if let parent { children[parent, default: []].append(item) } else { roots.append(item) }
         }
         var result: [DayItem] = []

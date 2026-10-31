@@ -22,7 +22,7 @@ struct BlockingEvaluator: Sendable {
     func isSatisfied(_ name: String) -> Bool {
         guard let task = graph.tasksByName[name] else { return true }
         guard task.isHabit else { return task.status.isCompleted }
-        if skipped.contains(name) { return true }
+        if skipped.containsNoteName(name) { return true }
         if HabitInstances(task: task).mark(on: context.today) != nil { return true }
         return !occurrence.occurs(task, on: context.today)
     }

@@ -22,8 +22,8 @@ struct PoolSorter: Sendable {
     /// right after their auto-sorted neighbour.
     func applyingManualOrder(_ manual: [String], to items: [DayItem], graph: TaskGraph, context: DayContext) -> [DayItem] {
         let auto = sorted(items, graph: graph, context: context)
-        let byName = Dictionary(items.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-        var result = manual.compactMap { byName[$0] }
+        let byName = Dictionary(items.map { ($0.id.noteName, $0) }, uniquingKeysWith: { first, _ in first })
+        var result = manual.compactMap { byName[$0.noteName] }
         let placed = Set(result.map(\.id))
         for (index, item) in auto.enumerated() where !placed.contains(item.id) {
             let previous = auto[..<index].last { result.contains($0) }

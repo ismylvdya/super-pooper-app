@@ -14,6 +14,6 @@ enum DoneFiling {
 
     /// The links to a filed task are met; they are removed from the tasks that wait for it.
     static func unlinking(_ name: String, from tasks: [TaskNote]) -> [TaskNote] {
-        tasks.filter { $0.previousTasks.contains { $0.isSameNoteName(as: name) } }
+        NameReferences.waiting(for: name, in: tasks)
     }
 }

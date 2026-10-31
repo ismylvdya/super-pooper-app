@@ -16,7 +16,7 @@ extension AppModel {
             await write(task, marking.changes(marking: task, as: nil, on: day))
         case .skipToday:
             guard day == nil || day == context().today else { return }
-            updateDayState { if !$0.skipped.contains(name) { $0.skipped.append(name) } }
+            updateDayState { if !$0.skipped.containsNoteName(name) { $0.skipped.append(name) } }
             await publishDerivedState()
         case .notToday:
             guard day == nil || day == context().today, let local = localTask(named: name) else { return }
@@ -161,12 +161,12 @@ extension AppModel {
 
     /// The morning review takes a task out of today; it stays this week and is back tomorrow.
     func postpone(_ name: String) {
-        updateDayState { if !$0.postponed.contains(name) { $0.postponed.append(name) } }
+        updateDayState { if !$0.postponed.containsNoteName(name) { $0.postponed.append(name) } }
         Task { await publishDerivedState() }
     }
 
     func unpostpone(_ name: String) {
-        updateDayState { $0.postponed.removeAll { $0 == name } }
+        updateDayState { $0.postponed.removeAll { $0.isSameNoteName(as: name) } }
         Task { await publishDerivedState() }
     }
 

@@ -43,7 +43,7 @@ struct DayBuilder: Sendable {
             let inDay = inputs.isOtherDay
                 ? isOnOtherDay(task, occurrence: occurrence, context: context)
                 : isInDay(task, occurrence: occurrence, skipped: inputs.skipped, context: context)
-                && !inputs.postponed.contains(task.name)
+                && !inputs.postponed.containsNoteName(task.name)
             let taskProblems = self.problems(of: task, graph: graph, occurrence: occurrence, previousEvent: previousEvent,
                                              nextEvent: nextEvent, checkEvents: inDay && inputs.eventsKnown)
             if inDay || (task.isHabit && !task.isArchived) || !task.status.isCompleted {
@@ -92,7 +92,7 @@ struct DayBuilder: Sendable {
 
     private func isInDay(_ task: TaskNote, occurrence: TaskOccurrence, skipped: Set<String>, context: DayContext) -> Bool {
         if task.isHabit {
-            guard task.isInTodayHabits, !skipped.contains(task.name) else { return false }
+            guard task.isInTodayHabits, !skipped.containsNoteName(task.name) else { return false }
             return occurrence.occurs(task, on: context.today) || HabitInstances(task: task).mark(on: context.today) != nil
         }
         return (task.status == .thisWeek && !isDatedLater(task, context: context))
