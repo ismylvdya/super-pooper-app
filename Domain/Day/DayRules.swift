@@ -6,8 +6,8 @@ struct DayRules: Codable, Hashable, Sendable {
     var defaultEstimateMinutes: Int
     /// Duration of a reminder block on the timeline.
     var reminderMinutes: Int
-    /// Which statuses are promoted to `this_week` when `due` falls in the current week.
-    var autoPromoteFrom: [String]
+    /// Which planning levels are promoted to this week when the date falls in the current week.
+    var autoPromoteFrom: [TaskStatus.Name]
     /// Parts of the day for habits' time of day: morning until `morningEnds`, evening from `eveningStarts`.
     var morningEnds: LocalTime
     var eveningStarts: LocalTime

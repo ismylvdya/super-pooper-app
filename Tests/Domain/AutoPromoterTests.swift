@@ -6,7 +6,7 @@ import Testing
 /// today and Sunday. The week is Monday 2026-10-19 … Sunday 2026-10-25.
 @Suite("Auto-promotion")
 struct AutoPromoterTests {
-    private let promoter = AutoPromoter(promotableStatuses: Set(TestConfig.rules.day.autoPromoteFrom.map(TestConfig.mapping.status(fromRaw:))))
+    private let promoter = AutoPromoter(promotableStatuses: Set(TestConfig.rules.day.autoPromoteFrom.map(\.status)))
 
     @Test func theConfigPromotesHalfYearAndSomeday() {
         #expect(promoter.promotableStatuses == [.halfYear, .someday])

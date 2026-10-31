@@ -1,6 +1,6 @@
 import Foundation
 
-/// Task level in the weekly planning flow. Raw TaskNotes values live in `FieldMapping`.
+/// Task level in the weekly planning flow. How a store writes each one is the store's business.
 enum TaskStatus: Hashable, Codable, Sendable {
     case thisWeek
     case halfYear
@@ -19,4 +19,21 @@ enum TaskStatus: Hashable, Codable, Sendable {
     static let reviewChoices: [TaskStatus] = open + [.archived]
 
     var isCompleted: Bool { self == .done || self == .archived }
+
+    /// A level as configs name it (`lists.json`, `rules.json`): a name that is not one of these stops the app with a
+    /// config error, instead of quietly matching nothing.
+    enum Name: String, Codable, Hashable, Sendable {
+        case thisWeek, halfYear, someday, waiting, done, archived
+
+        var status: TaskStatus {
+            switch self {
+            case .thisWeek: .thisWeek
+            case .halfYear: .halfYear
+            case .someday: .someday
+            case .waiting: .waiting
+            case .done: .done
+            case .archived: .archived
+            }
+        }
+    }
 }

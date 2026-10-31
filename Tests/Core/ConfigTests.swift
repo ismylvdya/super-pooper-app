@@ -42,6 +42,20 @@ struct ConfigTests {
         #expect(statuses == TaskStatus.known)
     }
 
+    /// A planning level misspelt in `day.autoPromoteFrom` stops the app with a config error naming the key; it used to
+    /// be read as an unknown status that promoted nothing.
+    @Test func aMisspeltAutoPromotionLevelIsAConfigError() throws {
+        let rules = try String(contentsOf: TestPaths.configFolder.appendingPathComponent("rules.json"), encoding: .utf8)
+        let misspelt = Data(try rules.replacingOnce("\"halfYear\"", with: "\"half_year\"").utf8)
+        #expect(TestConfig.rules.day.autoPromoteFrom.map(\.status) == [.halfYear, .someday])
+        do {
+            _ = try ConfigLoader.decode(RulesConfig.self, from: misspelt, file: "rules.json")
+            Issue.record("a misspelt level was accepted")
+        } catch let error as ConfigError {
+            #expect(error.path.hasPrefix("day.autoPromoteFrom"))
+        }
+    }
+
     /// "new|old" in icons.json: the newer symbol where the system has it, the fallback otherwise.
     @Test func iconFallbacksPickTheFirstAvailableSymbol() throws {
         let icons = TestConfig.decode(IconSet.self, "icons.json")

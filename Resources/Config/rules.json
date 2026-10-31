@@ -3,7 +3,7 @@
     "defaultEstimateMinutes": 15,
     "reminderMinutes": 15,
     "autoPromoteFrom": [
-      "half_year",
+      "halfYear",
       "someday"
     ],
     "morningEnds": "12:00",

@@ -18,26 +18,10 @@ struct TaskListsConfig: Codable, Hashable, Sendable {
         let icon: Icon
         /// Planning levels in the list; none = every open one (this week, half a year, someday, waiting). With several
         /// the list is split by level.
-        var statuses: [ListStatus]?
+        var statuses: [TaskStatus.Name]?
         var feel: TaskFeel?
         /// Only tasks estimated at most this many minutes (the default estimate counts).
         var maxEstimate: Int?
-    }
-
-    /// Planning levels by their names in `field-mapping.json` → `statuses`.
-    enum ListStatus: String, Codable, Hashable, Sendable {
-        case thisWeek, halfYear, someday, waiting, done, archived
-
-        var status: TaskStatus {
-            switch self {
-            case .thisWeek: .thisWeek
-            case .halfYear: .halfYear
-            case .someday: .someday
-            case .waiting: .waiting
-            case .done: .done
-            case .archived: .archived
-            }
-        }
     }
 
     let groups: [Group]

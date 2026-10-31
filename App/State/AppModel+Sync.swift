@@ -117,7 +117,7 @@ extension AppModel {
     }
 
     private func autoPromote() async -> [String] {
-        let statuses = Set(config.rules.day.autoPromoteFrom.map(config.fieldMapping.status(fromRaw:)))
+        let statuses = Set(config.rules.day.autoPromoteFrom.map(\.status))
         // Decided on the day's view (times on the phone's clock), written to the notes as they are.
         let candidates = AutoPromoter(promotableStatuses: statuses).candidates(in: localTasks, context: context())
             .compactMap { task(named: $0.name) }
