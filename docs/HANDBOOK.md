@@ -53,6 +53,7 @@ SuperPooper — iPhone-приложение-оболочка над тремя �
 | Красный минус «убрать из списка» | `RemoveButton(label:)` |
 | Чипы в строку с переносом (по левому краю или по центру) | `ChipFlow(spacing:alignment:)`; чип — `Chip`, чип-переключатель — `ToggleChip` |
 | Плашка строки задачи / блока таймлайна | `.taskPlate(isDone:)`, `.slotPlate(...)` |
+| Список групп строк с подложкой (This week, Lists, Habits, рутины) | `.listGroupRow(group:id:isFirst:isLast:frames:separatorInset:)` + `.listGroupBacking(frames)` (`ListGroups.swift`); края группы строка сообщает сама — `.id`-заплатки не нужны |
 | Страница с большим заголовком, уходящим в панель | `PageScaffold`; для `List` — `.tracksLargeTitle($visible)` на строке заголовка и `.barTitle(_:isHidden:)` |
 | Системный `List` на фоне экрана | `.appList()` |
 | Затухание краёв прокрутки | `.edgeFades(color:bottomExtension:)` |

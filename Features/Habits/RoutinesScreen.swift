@@ -39,8 +39,6 @@ struct RoutinesScreen: View {
             .padding(.vertical, tokens.space(.listRowVertical))
             .listGroupRow(group: part.rawValue, id: habit.name, isFirst: index == 0, isLast: index == members.count - 1,
                           frames: frames, separatorInset: tokens.space(.plateInner))
-            // Rebuilt when it becomes or stops being first or last, so the corners follow a new order.
-            .id("\(habit.name)|\(index == 0)|\(index == members.count - 1)")
         }
         .onMove { source, destination in
             var names = members.map(\.name)

@@ -79,8 +79,6 @@ struct HabitsScreen: View {
                                   frames: frames, separatorInset: tokens.space(.plateInner) + tokens.size(.iconColumn) + tokens.space(.iconTextGap))
                     // A long press lifts the row and offers today's marks.
                     .contextMenu { HabitDayMenu(habit: habit, day: today) }
-                    // Rebuilt when it becomes or stops being first or last, so the corners follow a new order.
-                    .id("\(habit.name)|\(isFirst)|\(isLast)")
             }
             // While a search filters the list the rows cannot move: the order is the order of every habit.
             .onMove(perform: query.isEmpty ? { source, destination in

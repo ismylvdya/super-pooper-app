@@ -47,9 +47,6 @@ struct MorningReviewScreen: View {
                                             perform($0, on: item.id)
                                         }
                                     }
-                                    // The row is rebuilt when it becomes or stops being the group's first or last, so its
-                                    // rounded corners follow a new order (the list keeps a moved row's old background).
-                                    .id("\(name)|\(position.isFirst)|\(position.isLast)")
                                     .accessibilityIdentifier("review:\(item.id)")
                                     // The pool menu's Not today, where that menu offers it.
                                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
