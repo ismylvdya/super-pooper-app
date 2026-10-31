@@ -132,18 +132,16 @@ private struct ListGroupRow: ViewModifier {
     let separatorInset: CGFloat
 
     func body(content: Content) -> some View {
-        let shape = PlateShape(cornerRadius: tokens.radius(.plate))
         content
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(tokens.color(.plateBackground), in: shape)
+            .plate(.group)
             .overlay(alignment: .bottom) {
                 if !isLast {
                     Rectangle().fill(tokens.color(.listSeparator)).frame(height: 1 / displayScale).padding(.leading, separatorInset)
                 }
             }
             .contentShape(Rectangle())
-            .contentShape(.contextMenuPreview, shape)
-            .contentShape(.dragPreview, shape)
+            .plateLift(.group)
             .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { frame in
                 frames.set(.init(frame: frame, isFirst: isFirst, isLast: isLast), group: group, id: id)
             }
@@ -171,8 +169,8 @@ private struct ListGroupBacking: View {
                 if let plate = ListGroupGeometry.plate(of: Array(frames.rows[group]?.values ?? [:].values),
                                                        visible: list.minY...list.maxY, overhang: overhang,
                                                        restingTop: frames.restingTops[group]) {
-                    PlateShape(cornerRadius: tokens.radius(.plate))
-                        .fill(tokens.color(.plateBackground))
+                    Color.clear
+                        .plate(.group)
                         .frame(width: plate.width, height: plate.height)
                         .position(x: plate.midX - list.minX, y: plate.midY - list.minY)
                 }

@@ -81,8 +81,7 @@ struct Plate<Content: View>: View {
         VStack(alignment: .leading, spacing: tokens.space(.plateRowGap)) { content }
             .padding(tokens.space(.plateInner))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(tokens.color(.plateBackground),
-                        in: RoundedRectangle(cornerRadius: tokens.radius(.plate), style: .continuous))
+            .plate(.group)
     }
 }
 

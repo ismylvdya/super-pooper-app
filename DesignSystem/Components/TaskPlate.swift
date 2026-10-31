@@ -32,7 +32,7 @@ private struct TaskPlate: ViewModifier {
     func body(content: Content) -> some View {
         content
             .rowPlatePadding()
-            .background(tokens.color(.plateBackground), in: PlateShape(cornerRadius: tokens.rowPlateRadius))
+            .plate(.row)
             .opacity(isDone ? tokens.opacity(.past) : 1)
     }
 }

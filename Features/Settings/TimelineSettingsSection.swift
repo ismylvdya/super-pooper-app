@@ -128,7 +128,6 @@ struct TimelinePreview: View {
             }
         }
         .frame(height: height)
-        .clipShape(RoundedRectangle(cornerRadius: tokens.radius(.previewFrame), style: .continuous))
         .settingsPreviewFrame()
         .accessibilityLabel(Text("settings.timeline.preview"))
     }

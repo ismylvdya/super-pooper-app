@@ -30,9 +30,7 @@ struct TimelineEventBlock: View {
         .padding(.vertical, tokens.space(.timelineItemPadding) / 2)
         .padding(.trailing, tokens.space(.timelineItemPadding))
         .frame(maxHeight: .infinity, alignment: .top)
-        .background(color.opacity(tokens.opacity(.eventFill)),
-                    in: PlateShape(cornerRadius: tokens.radius(.timelineItem)))
-        .clipShape(PlateShape(cornerRadius: tokens.radius(.timelineItem)))
+        .plate(.timelineItem, fill: color.opacity(tokens.opacity(.eventFill)), clipsContent: true)
         .opacity(slot.isPast ? tokens.opacity(.past) : 1)
     }
 }
@@ -58,7 +56,7 @@ struct TimelineReminderBlock: View {
             .slotPlate(isPast: slot.isPast, isCompact: isCompact)
         if let onToggle, let onOpen {
             plate
-                .contentShape(.contextMenuPreview, PlateShape(cornerRadius: tokens.rowPlateRadius))
+                .plateLift(.row, for: .contextMenuPreview)
                 .onTapGesture { onOpen(reminder) }
                 .contextMenu { RegistryMenu(menu: .reminderContext) { _ in onToggle(reminder) } }
         } else {
@@ -93,13 +91,11 @@ private struct SlotPlate: ViewModifier {
     let isCompact: Bool
 
     func body(content: Content) -> some View {
-        let shape = PlateShape(cornerRadius: tokens.rowPlateRadius)
         content
             .environment(\.plateTrailingInset, tokens.slotPlateInset)
             .padding(.vertical, isCompact ? tokens.space(.compactPlateVertical) : tokens.space(.rowVertical) / 2)
             .padding(.horizontal, tokens.slotPlateInset)
-            .background(isPast ? tokens.color(.past).opacity(tokens.opacity(.eventFill)) : tokens.color(.plateBackground), in: shape)
-            .clipShape(shape)
+            .plate(.row, fill: isPast ? tokens.color(.past).opacity(tokens.opacity(.eventFill)) : nil, clipsContent: true)
             .opacity(isPast ? tokens.opacity(.past) : 1)
     }
 }

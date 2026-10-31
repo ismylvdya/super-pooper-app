@@ -32,8 +32,8 @@ struct SubtasksSection: View {
                     .padding(.vertical, tokens.space(.plateRowGap) / 2)
                     // The section's plate is the backing; the row is a plate of its own on it, lifted with the plate's
                     // corner radius (capped at half its height, `PlateShape`).
-                    .background(tokens.color(.plateBackground), in: PlateShape(cornerRadius: tokens.radius(.plate)))
-                    .contentShape(.dragPreview, PlateShape(cornerRadius: tokens.radius(.plate)))
+                    .plate(.group)
+                    .plateLift(.group, for: .dragPreview)
                     .onDrag {
                         dragged = subtask.name
                         return NSItemProvider(object: subtask.name as NSString)

@@ -22,7 +22,6 @@ struct HabitHistorySection: View {
                                         extraWeeks: rules.habits.historyExtraWeeks) + addedWeeks
         let grid = HabitGrid(task: habit, weekCount: weeks, today: today, days: context.days)
         let inner = tokens.space(.plateInner)
-        let shape = RoundedRectangle(cornerRadius: tokens.radius(.plate), style: .continuous)
         VStack(alignment: .leading, spacing: 0) {
             PlateHeader(title: "habitPage.history", info: "info.habitPage.history")
             Group {
@@ -33,8 +32,7 @@ struct HabitHistorySection: View {
                 }
             }
             .frame(maxWidth: .infinity)
-            .background(tokens.color(.plateBackground), in: shape)
-            .clipShape(shape)
+            .plate(.group, clipsContent: true)
             .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         }
     }

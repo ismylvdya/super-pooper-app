@@ -78,9 +78,7 @@ struct PoolBlock: View {
                         VStack(alignment: .leading, spacing: 0) {
                             ForEach(segment.items) { item in tracked(row(item, plate: .bare), item) }
                         }
-                        .background(tokens.color(.plateBackground),
-                                    in: PlateShape(cornerRadius: tokens.rowPlateRadius))
-                        .clipShape(PlateShape(cornerRadius: tokens.rowPlateRadius))
+                        .plate(.row, clipsContent: true)
                     } else if let item = segment.items.first {
                         tracked(row(item, plate: .pool), item)
                     }
@@ -205,12 +203,12 @@ struct PoolRowContent: View {
                     Spacer(minLength: minimumHeight)
                 }
                 .rowPlatePadding()
-                .background(tokens.color(.plateBackground))
+                .plate(.piece)
             case .slot(let isPast, let isCompact):
                 row.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading).slotPlate(isPast: isPast, isCompact: isCompact)
             }
         }
-        .contentShape(.contextMenuPreview, PlateShape(cornerRadius: tokens.rowPlateRadius))
+        .plateLift(.row, for: .contextMenuPreview)
         .contextMenu {
             ActionMenuContent(menu: item.isHabit ? .habitContext : .taskContext, item: item, isToday: isToday) {
                 handler.handle($0, taskName: item.id)

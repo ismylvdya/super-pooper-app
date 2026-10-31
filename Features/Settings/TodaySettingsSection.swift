@@ -109,9 +109,9 @@ struct ArrangementPreview: View {
     private var pool: some View {
         VStack(spacing: tokens.space(.previewRowGap)) {
             ForEach(0..<rules.settingsPreview.poolRows, id: \.self) { _ in
-                RoundedRectangle(cornerRadius: tokens.radius(.previewItem), style: .continuous)
-                    .fill(tokens.color(.plateBackground))
+                Color.clear
                     .frame(height: tokens.size(.previewRow))
+                    .plate(.previewItem)
             }
             if arrangement != .stacked { Spacer(minLength: 0) }
         }

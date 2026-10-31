@@ -101,7 +101,7 @@ struct DayTimelineView<TaskContent: View>: View {
                     .onTapGesture { onEventTap(event) }
                     .accessibilityAddTraits(.isButton)
                     .accessibilityAction { onEventTap(event) }
-                    .contentShape(.contextMenuPreview, PlateShape(cornerRadius: tokens.radius(.timelineItem)))
+                    .plateLift(.timelineItem, for: .contextMenuPreview)
                     .contextMenu {
                         if let onEventDelete = style.onEventDelete { RegistryMenu(menu: .eventContext) { _ in onEventDelete(event) } }
                     }
@@ -166,9 +166,9 @@ struct DayTimelineView<TaskContent: View>: View {
     /// The corners the now line is cut out by: an event's own, or the plate of a task or reminder
     /// (smaller in widgets).
     private func cornerRadius(of slot: TimelineSlot) -> CGFloat {
-        if case .event = slot.content { return tokens.radius(.timelineItem) }
+        if case .event = slot.content { return tokens.plateRadius(.timelineItem) }
         // The same plate in the app and in widgets; a short slot is capped by `PlateShape`.
-        return tokens.rowPlateRadius
+        return tokens.plateRadius(.row)
     }
 
     /// The "now" cursor, as in the old Calendar widget: a dot in the middle of the hour numbers and a
