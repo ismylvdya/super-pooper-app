@@ -27,3 +27,13 @@ extension UIColor {
         return String(format: "#%02X%02X%02X", bytes[0], bytes[1], bytes[2])
     }
 }
+
+extension String {
+    /// The text as a color to store: `#RRGGBB` (or `#RRGGBBAA`) in capitals, the "#" added when it is missing; nil
+    /// when the text is not a color.
+    var storableHexColor: String? {
+        let text = trimmingCharacters(in: .whitespaces).uppercased()
+        let hex = text.hasPrefix("#") ? text : "#" + text
+        return UIColor(hex: hex) == nil ? nil : hex
+    }
+}

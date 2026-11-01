@@ -16,6 +16,7 @@ check "Habits: Done → complete_instances has today"  "grep -A20 '^complete_ins
 check "long press Done → status done + completed_date, in Done" "grep -q '^status: done' \"$DONE/Оплатить интернет.md\" && grep -q \"^completed_date: $TODAY\" \"$DONE/Оплатить интернет.md\" && [ ! -f \"$TASKS/Оплатить интернет.md\" ]"
 check "long press Done on a habit → complete_instances" "grep -A20 '^complete_instances:' \"$TASKS/Выпить воды 💧.md\" | grep -q \"$TODAY\""
 check "task page High → priority: high"              "grep -q '^priority: high' \"$TASKS/Распечатать вопросы.md\""
+check "habit page hex field → habit_color written"  "grep -qF '\"habit_color\":\"#34C759\"' \"$TASKS/Утро — завтрак 🥣.md\""
 check "rename → new file, old gone"                  "[ -f \"$TASKS/Записать идеи 2.md\" ] && [ ! -f \"$TASKS/Записать идеи.md\" ]"
 check "archive → status: archived"                   "grep -q '^status: archived' \"$TASKS/Купить батарейки 🔋.md\""
 check "delete → moved to .trash"                     "[ -f \"$VAULT/.trash/Посмотреть сериал 🍿.md\" ] && [ ! -f \"$TASKS/Посмотреть сериал 🍿.md\" ]"

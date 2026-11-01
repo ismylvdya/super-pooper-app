@@ -76,6 +76,7 @@ SuperPooper — iPhone-приложение-оболочка над тремя �
 | Заголовок с серой строкой под ним | `TitleDetailLabel` |
 | Значение и шеврон в конце строки, открывающей страницу | `DisclosureAccessory(value:)` |
 | Красный минус «убрать из списка» | `RemoveButton(label:)` |
+| Выбор цвета (Settings → Colors, Widgets, Habits; цвет привычки на её странице) | `HexColorField(color:stored:accessibilityID:onChange:)` (`Features/Common`): hex-поле, кружок системной палитры и сброс, пока задан свой цвет. Других пикеров цвета нет; что сохраняется из набранного — `String.storableHexColor` |
 | Чипы в строку с переносом (по левому краю или по центру) | `ChipFlow(spacing:alignment:)`; чип — `Chip`, чип-переключатель — `ToggleChip` (`DesignSystem`; `.large` на странице задачи, `.standard` иконкой в ряду чипов разбора; вибрацию играет вызывающий) |
 | Иконка и цвет свойства (проблема, связь, High, энергия, приятное, привычка) | `ChipLook` (`tokens.color(of:)`): одна таблица для чипов строк, порядка чипов в настройках и разбора; виды чипа строки — `RowChipKind.looks` |
 | Капсула чипа, полосы события на весь день | `.chipCapsule(_:_:)` (`ChipCapsule.standard` / `.large`); отступы чипа без заливки — `.chipInsets(_:)` |

@@ -28,6 +28,18 @@ final class TaskPageUITests: XCTestCase {
         item.tap()
     }
 
+    /// A habit's color is picked with the control of every color in Settings (.24481): a hex field before the system circle.
+    func testAHabitColorHasTheHexFieldOfEveryColorControl() {
+        open("Утро — завтрак 🥣")
+        let hex = app.textFields["habitPage.color.hex"]
+        app.scrollIntoView(hex)
+        XCTAssertTrue(app.descendants(matching: .any)["habitPage.color.picker"].exists, "the system circle stands beside it")
+        hex.tap()
+        hex.typeText("34c759\n")
+        XCTAssertTrue(app.buttons["habitPage.color.reset"].waitForExistence(timeout: 5), "an own color can be reset")
+        XCTAssertEqual(hex.value as? String, "#34C759")
+    }
+
     func testRenameChangesTheName() {
         open("Записать идеи")
         let field = app.textFields["taskPage.name"]

@@ -13,6 +13,7 @@ struct TrailingSpaceTextField: UIViewRepresentable {
     @Binding var text: String
     var font: UIFont = .preferredFont(forTextStyle: .body)
     var capitalization: Capitalization = .never
+    var accessibilityID: String?
     var onSubmit: () -> Void = {}
 
     func makeUIView(context: Context) -> UITextField {
@@ -34,6 +35,7 @@ struct TrailingSpaceTextField: UIViewRepresentable {
         if field.font != font { field.font = font }
         let capitalization: UITextAutocapitalizationType = self.capitalization == .characters ? .allCharacters : .none
         if field.autocapitalizationType != capitalization { field.autocapitalizationType = capitalization }
+        if field.accessibilityIdentifier != accessibilityID { field.accessibilityIdentifier = accessibilityID }
         if (field.text ?? "").withOrdinarySpaces != text, !field.isEditing { field.text = text }
     }
 
