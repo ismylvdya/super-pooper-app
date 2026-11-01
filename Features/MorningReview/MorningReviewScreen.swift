@@ -40,9 +40,8 @@ struct MorningReviewScreen: View {
                                     .padding(.leading, CGFloat(item.depth) * tokens.space(.subtaskIndent))
                                     // The row keeps its top and bottom inset inside, where a tap opens the task.
                                     .listGroupRow(group: ReviewGroups.group(of: index, in: rows)?.rawValue ?? "", id: name,
-                                                  isFirst: position.isFirst, isLast: position.isLast, frames: frames, vertical: 0,
-                                                  separatorIndent: CGFloat(item.depth) * tokens.space(.subtaskIndent))
-                                    .contextMenu {
+                                                  index: position.index, count: position.count, frames: frames, vertical: 0,
+                                                  separatorIndent: CGFloat(item.depth) * tokens.space(.subtaskIndent)) {
                                         ActionMenuContent(menu: .context(of: item.task), item: item) {
                                             perform($0, on: item.id)
                                         }
@@ -77,7 +76,7 @@ struct MorningReviewScreen: View {
                             ReviewRow(item: DayItem(listed: task), today: plan.today) {
                                 path.append(.task(task.name))
                             }
-                            .listGroupRow(group: "postponed", id: task.name, isFirst: index == 0, isLast: index == postponed.count - 1,
+                            .listGroupRow(group: "postponed", id: task.name, index: index, count: postponed.count,
                                           frames: frames, vertical: 0)
                             .accessibilityIdentifier("review.notToday:\(task.name)")
                             .opacity(tokens.opacity(.blocked))

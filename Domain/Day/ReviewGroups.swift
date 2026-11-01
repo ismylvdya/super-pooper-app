@@ -51,18 +51,24 @@ enum ReviewGroups {
         }
     }
 
-    /// Where an item row stands in its group: the first one opens the group's plate, the last one closes it.
+    /// Where an item row stands in its group: `index` of `count` items; the first one opens the group's plate, the last
+    /// one closes it.
     struct Position: Equatable, Sendable {
-        let isFirst: Bool
-        let isLast: Bool
+        let index: Int
+        let count: Int
+
+        var isFirst: Bool { index == 0 }
+        var isLast: Bool { index == count - 1 }
     }
 
     static func position(of index: Int, in rows: [Row]) -> Position {
-        func isEdge(_ index: Int) -> Bool {
-            guard rows.indices.contains(index), case .item = rows[index] else { return true }
-            return false
+        func isItem(_ index: Int) -> Bool {
+            guard rows.indices.contains(index), case .item = rows[index] else { return false }
+            return true
         }
-        return Position(isFirst: isEdge(index - 1), isLast: isEdge(index + 1))
+        let start = (rows.indices.prefix(index + 1).last { !isItem($0) } ?? -1) + 1
+        let end = rows.indices.suffix(from: index).first { !isItem($0) } ?? rows.count
+        return Position(index: index - start, count: end - start)
     }
 
     struct Move: Equatable, Sendable {

@@ -27,14 +27,13 @@ struct RoutinesScreen: View {
         ListGroupHeader(title: Text(title))
         if members.isEmpty {
             Text("routines.empty").secondaryText(.hint)
-                .listGroupRow(group: part.rawValue, id: "empty", isFirst: true, isLast: true, frames: frames)
+                .listGroupRow(group: part.rawValue, id: "empty", index: 0, count: 1, frames: frames)
         }
         ForEach(Array(members.enumerated()), id: \.element.name) { index, habit in
             NavigationLink(value: Route.task(habit.name)) {
                 Text(habit.name).foregroundStyle(tokens.habitNameColor(habit))
             }
-            .listGroupRow(group: part.rawValue, id: habit.name, isFirst: index == 0, isLast: index == members.count - 1,
-                          frames: frames)
+            .listGroupRow(group: part.rawValue, id: habit.name, index: index, count: members.count, frames: frames)
         }
         .onMove { source, destination in
             var names = members.map(\.name)

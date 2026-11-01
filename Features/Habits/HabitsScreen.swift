@@ -67,13 +67,13 @@ struct HabitsScreen: View {
         if !habits.isEmpty {
             if let header { ListGroupHeader(title: Text(header)) } else { gap }
             ForEach(Array(habits.enumerated()), id: \.element.name) { index, habit in
-                let isFirst = index == 0, isLast = index == habits.count - 1
                 HabitRow(habit: habit, today: today)
-                    .listGroupRow(group: isRepeatable ? "repeatable" : "tracked", id: habit.name, isFirst: isFirst, isLast: isLast,
+                    .listGroupRow(group: isRepeatable ? "repeatable" : "tracked", id: habit.name, index: index, count: habits.count,
                                   frames: frames, vertical: tokens.space(.rowVertical) / 2,
-                                  separatorIndent: tokens.size(.iconColumn) + tokens.space(.iconTextGap))
-                    // A long press lifts the row and offers today's marks.
-                    .contextMenu { HabitDayMenu(habit: habit, day: today) }
+                                  separatorIndent: tokens.size(.iconColumn) + tokens.space(.iconTextGap)) {
+                        // A long press lifts the row and offers today's marks.
+                        HabitDayMenu(habit: habit, day: today)
+                    }
             }
             // While a search filters the list the rows cannot move: the order is the order of every habit.
             .onMove(perform: query.isEmpty ? { source, destination in

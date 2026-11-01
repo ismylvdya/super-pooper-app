@@ -12,18 +12,34 @@ import SwiftUI
 
 extension View {
     /// One row of a group (see `ListGroupFrames`): its own plate with the rows' insets, a separator under it unless it
-    /// closes the group, a lift of exactly its size and shape, and its place reported for the backing. The text starts
-    /// as far from the left as on the plates elsewhere; `vertical` is the inset above and below it (nil: a list row's),
-    /// `separatorIndent` how much further right than the text the separator starts (past an icon column).
-    func listGroupRow(group: String, id: String, isFirst: Bool, isLast: Bool, frames: ListGroupFrames,
+    /// closes the group, a lift of exactly its size and shape, and its place reported for the backing — `index` of
+    /// `count` rows in the group's own order. The text starts as far from the left as on the plates elsewhere;
+    /// `vertical` is the inset above and below it (nil: a list row's), `separatorIndent` how much further right than
+    /// the text the separator starts (past an icon column).
+    func listGroupRow(group: String, id: String, index: Int, count: Int, frames: ListGroupFrames,
                       vertical: CGFloat? = nil, separatorIndent: CGFloat = 0) -> some View {
-        modifier(ListGroupRow(group: group, id: id, isFirst: isFirst, isLast: isLast, frames: frames, vertical: vertical,
-                              separatorIndent: separatorIndent))
+        modifier(ListGroupRow<EmptyView>(group: group, id: id, index: index, count: count, frames: frames, vertical: vertical,
+                                         separatorIndent: separatorIndent, menu: nil))
     }
 
-    /// The backing plates of the list's groups, drawn behind it.
+    /// A row of a group with a long-press menu: the menu lifts the row's plate, and so does a drag from it.
+    func listGroupRow<Menu: View>(group: String, id: String, index: Int, count: Int, frames: ListGroupFrames,
+                                  vertical: CGFloat? = nil, separatorIndent: CGFloat = 0,
+                                  @ViewBuilder menu: () -> Menu) -> some View {
+        modifier(ListGroupRow(group: group, id: id, index: index, count: count, frames: frames, vertical: vertical,
+                              separatorIndent: separatorIndent, menu: menu()))
+    }
+
+    /// The backing plates of the list's groups, drawn behind it; they follow the list's scrolling, not a drag.
     func listGroupBacking(_ frames: ListGroupFrames) -> some View {
         background { ListGroupBacking(frames: frames) }
+            .onGeometryChange(for: ClosedRange<CGFloat>.self) { proxy in
+                let frame = proxy.frame(in: .global)
+                return frame.minY...frame.maxY
+            } action: { frames.setViewport($0) }
+            .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y } action: { _, offset in
+                frames.setScrollOffset(offset)
+            }
     }
 
     /// A row of a grouped list that is not a group's row (a header, a gap, a hint): no insets, background or
@@ -40,16 +56,17 @@ extension View {
     }
 }
 
-private struct ListGroupRow: ViewModifier {
+private struct ListGroupRow<Menu: View>: ViewModifier {
     @Environment(\.tokens) private var tokens
     @Environment(\.displayScale) private var displayScale
     let group: String
     let id: String
-    let isFirst: Bool
-    let isLast: Bool
+    let index: Int
+    let count: Int
     let frames: ListGroupFrames
     let vertical: CGFloat?
     let separatorIndent: CGFloat
+    let menu: Menu?
 
     func body(content: Content) -> some View {
         let inset = tokens.space(.plateInner)
@@ -59,22 +76,38 @@ private struct ListGroupRow: ViewModifier {
             .frame(maxWidth: .infinity, alignment: .leading)
             .plate(.group)
             .overlay(alignment: .bottom) {
-                if !isLast {
+                if index < count - 1 {
                     Rectangle().fill(tokens.color(.listSeparator)).frame(height: 1 / displayScale).padding(.leading, inset + separatorIndent)
                 }
             }
             .contentShape(Rectangle())
             .plateLift(.group)
+            .modifier(ListGroupRowMenu(menu: menu))
+            // A drag lifts the whole cell, menu and all: its shape is set on the cell's own view too, so no lift falls
+            // back to a shape of the system's.
+            .plateLift(.group, for: .dragPreview)
             .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { frame in
-                frames.set(.init(frame: frame, isFirst: isFirst, isLast: isLast), group: group, id: id)
+                frames.set(.init(frame: frame, index: index, count: count), group: group, id: id)
             }
-            // Becoming the first or the last, or going to another group, does not always move the row.
-            .onChange(of: [isFirst, isLast]) { frames.setEnds(isFirst: isFirst, isLast: isLast, group: group, id: id) }
-            .onChange(of: group) { old, new in frames.move(id, from: old, to: new, isFirst: isFirst, isLast: isLast) }
+            // A new place in the group, or another group, does not always move the row.
+            .onChange(of: [index, count]) { frames.setPlace(index: index, count: count, group: group, id: id) }
+            .onChange(of: group) { old, new in frames.move(id, from: old, to: new, index: index, count: count) }
             // A list may hide and show a row again without moving it (no new frame comes then): the row keeps its place.
             .onAppear { frames.setVisible(true, group: group, id: id) }
             .onDisappear { frames.setVisible(false, group: group, id: id) }
             .listGroupSpacer()
+    }
+}
+
+private struct ListGroupRowMenu<Menu: View>: ViewModifier {
+    let menu: Menu?
+
+    func body(content: Content) -> some View {
+        if let menu {
+            content.contextMenu { menu }
+        } else {
+            content
+        }
     }
 }
 
@@ -89,9 +122,7 @@ private struct ListGroupBacking: View {
             // rounded corner shows there.
             let overhang = tokens.radius(.plate) * 2
             ForEach(frames.rows.keys.sorted(), id: \.self) { group in
-                if let plate = ListGroupGeometry.plate(of: Array(frames.rows[group]?.values ?? [:].values),
-                                                       visible: list.minY...list.maxY, overhang: overhang,
-                                                       restingTop: frames.restingTops[group]) {
+                if let plate = frames.plate(of: group, overhang: overhang) {
                     Color.clear
                         .plate(.group)
                         .frame(width: plate.width, height: plate.height)

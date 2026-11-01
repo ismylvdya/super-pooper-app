@@ -23,7 +23,7 @@ struct TaskListScreen: View {
             ForEach(contents.groups, id: \.status) { group in
                 if contents.namesLevels { ListGroupHeader(title: Text(verbatim: StatusText.title(group.status))) } else { ListGroupGap() }
                 ForEach(Array(group.tasks.enumerated()), id: \.element.name) { index, task in
-                    row(task, group: StatusText.title(group.status), isFirst: index == 0, isLast: index == group.tasks.count - 1)
+                    row(task, group: StatusText.title(group.status), index: index, count: group.tasks.count)
                 }
             }
             filedGroup(contents.filed)
@@ -60,8 +60,7 @@ struct TaskListScreen: View {
                             .secondaryText()
                     }
                 }
-                .listGroupRow(group: "filed", id: task.name, isFirst: index == 0, isLast: index == filed.count - 1,
-                              frames: frames)
+                .listGroupRow(group: "filed", id: task.name, index: index, count: filed.count, frames: frames)
             }
         }
     }
@@ -70,7 +69,7 @@ struct TaskListScreen: View {
         TaskActionHandler(model: model, router: router, openURL: openURL) { pendingAction = $0 }
     }
 
-    private func row(_ task: TaskItem, group: String, isFirst: Bool, isLast: Bool) -> some View {
+    private func row(_ task: TaskItem, group: String, index: Int, count: Int) -> some View {
         HStack(spacing: tokens.space(.iconTextGap)) {
             NavigationLink(value: Route.task(task.name)) {
                 TaggedTaskName(name: task.name)
@@ -85,9 +84,8 @@ struct TaskListScreen: View {
                     .accessibilityIdentifier("lists.toThisWeek.\(task.name)")
             }
         }
-        .listGroupRow(group: group, id: task.name, isFirst: isFirst, isLast: isLast, frames: frames)
         // The pool's menu for the task (Not today has no place outside Today).
-        .contextMenu {
+        .listGroupRow(group: group, id: task.name, index: index, count: count, frames: frames) {
             ActionMenuContent(menu: .context(of: task), item: DayItem(listed: task), isToday: false) {
                 handler.handle($0, taskName: task.name)
             }

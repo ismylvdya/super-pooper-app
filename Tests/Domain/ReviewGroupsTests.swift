@@ -34,6 +34,9 @@ struct ReviewGroupsTests {
             .map { ReviewGroups.position(of: $0, in: rows) }
         #expect(positions.map(\.isFirst) == [true, true, false, true])
         #expect(positions.map(\.isLast) == [true, false, true, true])
+        // The place in the group's own order: the backing keeps it while a drag moves the rows on screen.
+        #expect(positions.map(\.index) == [0, 0, 1, 0])
+        #expect(positions.map(\.count) == [1, 2, 2, 1])
     }
 
     @Test func nothingGoesAboveTheFirstHeader() {
