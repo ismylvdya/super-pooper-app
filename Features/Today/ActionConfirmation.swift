@@ -7,7 +7,7 @@ struct ActionConfirmation: ViewModifier {
 
     func body(content: Content) -> some View {
         content.alert(
-            Text(LocalizedStringKey(pending?.action.confirmTitle ?? "")),
+            Text(LocalizedStringKey(pending.flatMap { $0.action.confirmTitle(for: $0.kind) } ?? "")),
             isPresented: Binding(presenting: $pending),
             presenting: pending
         ) { pending in

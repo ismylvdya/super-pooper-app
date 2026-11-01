@@ -79,11 +79,16 @@ struct ActionDefinition: Codable, Hashable, Sendable {
     /// A color token for the icon and title (Done is blue); menus otherwise use the label color.
     var color: String?
     let haptic: HapticStyle
-    /// String Catalog keys of the confirmation dialog; `nil` = no confirmation.
+    /// String Catalog keys of the confirmation dialog; `nil` = no confirmation. The title is worded per kind of note:
+    /// its key is this one and the kind (`confirm.delete.title.habit`).
     let confirmTitle: String?
     let confirmMessage: String?
 
     var needsConfirmation: Bool { confirmTitle != nil }
+
+    func confirmTitle(for kind: NoteKind) -> String? {
+        confirmTitle.map { $0 + "." + kind.rawValue }
+    }
 }
 
 /// Every user action in one registry (`actions.json`): menus, swipes, notifications and widgets take titles, icons,

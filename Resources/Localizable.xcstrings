@@ -771,7 +771,29 @@
         }
       }
     },
-    "confirm.delete.title": {
+    "confirm.delete.title.habit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete habit?"
+          }
+        }
+      }
+    },
+    "confirm.delete.title.repeatable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete repeatable task?"
+          }
+        }
+      }
+    },
+    "confirm.delete.title.task": {
       "extractionState": "manual",
       "localizations": {
         "en": {

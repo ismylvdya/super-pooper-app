@@ -77,7 +77,8 @@ struct ConfigTests {
     @Test func everyConfigTextHasACatalogEntry() throws {
         let bundle = Bundle(for: BundleToken.self).appHostBundle
         let config = try AppConfig.load(bundle: bundle)
-        var keys = config.actions.actions.flatMap { [$0.title, $0.confirmTitle, $0.confirmMessage].compactMap { $0 } }
+        var keys = config.actions.actions.flatMap { [$0.title, $0.confirmMessage].compactMap { $0 } }
+        keys += config.actions.actions.flatMap { action in NoteKind.allCases.compactMap { action.confirmTitle(for: $0) } }
         keys += config.rules.timeEstimates.map(\.label)
         for key in keys {
             #expect(bundle.localizedString(forKey: key, value: "∅", table: nil) != "∅", "missing text for \(key)")
