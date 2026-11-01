@@ -43,8 +43,7 @@ struct BannerView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(tokens.space(.bannerPadding))
-        .background(tokens.color(.bannerBackground), in: RoundedRectangle(cornerRadius: tokens.radius(.banner), style: .continuous))
-        .shadow(color: tokens.color(.shadow).opacity(tokens.opacity(.bannerShadow)), radius: tokens.size(.bannerShadowRadius), y: tokens.size(.bannerShadowY))
+        .systemLook(.bannerCard)
         .padding(.horizontal, tokens.space(.screenHorizontal))
         .padding(.top, tokens.space(.bannerTop))
         .offset(y: min(dragOffset, 0))

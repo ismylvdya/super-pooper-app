@@ -97,7 +97,8 @@ struct PoolBlock: View {
             Text(L10n.format("pool.more", hiddenBelow))
                 .font(tokens.font(.poolCounter))
                 .foregroundStyle(tokens.color(.secondaryText))
-                .chipCapsule(.regularMaterial)
+                .chipInsets()
+                .systemLook(.floatingCapsule)
                 .frame(maxWidth: .infinity)
                 .allowsHitTesting(false)
         }

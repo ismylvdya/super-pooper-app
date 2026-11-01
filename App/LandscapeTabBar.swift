@@ -40,7 +40,7 @@ struct LandscapeTabBar: View {
         }
         .padding(tokens.space(.tabBarInner))
         .frame(width: tokens.size(.landscapeTabBarWidth))
-        .glassBubble()
+        .systemLook(.barCapsule)
         // Measured from the screen edges, not the safe area, so it sits as far from the edges as upright in both turns
         // (the root lays the column out from the screen edge at the physical bottom).
         .padding(.vertical, tokens.space(.landscapeBarInset))

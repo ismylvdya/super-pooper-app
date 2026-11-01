@@ -26,19 +26,22 @@ enum ChipCapsule {
 extension View {
     /// The content in a chip's capsule filled with `fill`, rounded by half its height like the row plates around it.
     func chipCapsule<Fill: ShapeStyle>(_ fill: Fill, _ capsule: ChipCapsule = .standard) -> some View {
-        modifier(ChipCapsuleFill(fill: fill, capsule: capsule))
+        chipInsets(capsule).background(fill, in: Capsule())
+    }
+
+    /// The content as far from the edges as in a chip's capsule, for a capsule the system look draws (`SystemLook`).
+    func chipInsets(_ capsule: ChipCapsule = .standard) -> some View {
+        modifier(ChipInsets(capsule: capsule))
     }
 }
 
-private struct ChipCapsuleFill<Fill: ShapeStyle>: ViewModifier {
+private struct ChipInsets: ViewModifier {
     @Environment(\.tokens) private var tokens
-    let fill: Fill
     let capsule: ChipCapsule
 
     func body(content: Content) -> some View {
         content
             .padding(.horizontal, capsule.horizontalPadding(tokens))
             .padding(.vertical, capsule.verticalPadding(tokens))
-            .background(fill, in: Capsule())
     }
 }

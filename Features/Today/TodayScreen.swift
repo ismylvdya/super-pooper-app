@@ -133,7 +133,7 @@ struct TodayScreen: View {
         return layout { buttons() }
             .buttonStyle(.plain)
             .foregroundStyle(tokens.color(.primaryText))
-            .glassBubble()
+            .systemLook(.barCapsule)
     }
 
     /// The bar upright: the button groups at the edges, the day's name with its arrows midway between them.
