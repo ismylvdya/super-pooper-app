@@ -4,6 +4,8 @@ enum HapticStyle: String, Codable, ConfigName {
     case none
     case light
     case medium
+    /// The tick of a picker wheel or a list row passing another while reordered.
+    case selection
 }
 
 /// What a tap on screen feels like by what it does, outside the actions (which carry their own `haptic`); the style of
@@ -19,6 +21,8 @@ enum HapticRole: String, ConfigName {
     case reorder
     /// A task goes to another list or day (+ to Soon, back to today).
     case move
+    /// A dragged row passes another row, or its landing spot on the timeline moves a drop step.
+    case dragStep
     /// A pull past its threshold, before letting go.
     case pullArmed
     /// A pull let go loads more.

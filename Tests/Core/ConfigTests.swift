@@ -137,11 +137,13 @@ struct ConfigTests {
         }
     }
 
-    /// Taps outside the actions go by what they do: moving rows and loading older weeks are medium, the rest light.
+    /// Taps outside the actions go by what they do: moving rows and loading older weeks are medium, each step of a drag a
+    /// selection tick, the rest light.
     @Test func hapticRolesKeepTheirStyles() {
         let haptics = TestConfig.actions.haptics
         #expect(HapticRole.allCases.filter { haptics[$0] == .medium } == [.reorder, .extend])
         #expect(HapticRole.allCases.filter { haptics[$0] == .light } == [.select, .mark, .drop, .move, .pullArmed])
+        #expect(HapticRole.allCases.filter { haptics[$0] == .selection } == [.dragStep])
     }
 
     /// A role missing from `haptics` or a misspelt style is a config error, not a silent tap.

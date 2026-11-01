@@ -35,6 +35,20 @@ final class TaskDragState {
         return NSItemProvider(object: item.id as NSString)
     }
 
+    /// The finger is over `moment` on the timeline (a drop step); true when the spot moved, a step to feel.
+    func hover(at moment: Date) -> Bool {
+        guard moment != hoverMoment else { return false }
+        hoverMoment = moment
+        return true
+    }
+
+    /// The pool in the order the finger makes; true when the row passed another, a step to feel.
+    func hover(poolOrder order: [String]) -> Bool {
+        guard order != poolOrder else { return false }
+        poolOrder = order
+        return true
+    }
+
     /// The drag reached a block: the pages turn to it (nothing without pages).
     func turn(_ block: TodayBlockID) {
         turnRequest = block
@@ -109,7 +123,7 @@ struct TimelineDropDelegate: DropDelegate {
     }
 
     func dropUpdated(info: DropInfo) -> DropProposal? {
-        drag.hoverMoment = moment(info.location.y)
+        if drag.hover(at: moment(info.location.y)) { Haptics.play(.dragStep) }
         return DropProposal(operation: .move)
     }
 
@@ -150,7 +164,8 @@ struct PoolDropDelegate: DropDelegate {
     func dropUpdated(info: DropInfo) -> DropProposal? {
         guard let item = drag.item else { return nil }
         let order = PoolDropOrder.order(rows: rows(), dragged: item.id, at: info.location.y)
-        if order != drag.poolOrder { withAnimation(animation) { drag.poolOrder = order } }
+        let moved = withAnimation(animation) { drag.hover(poolOrder: order) }
+        if moved { Haptics.play(.dragStep) }
         return DropProposal(operation: .move)
     }
 

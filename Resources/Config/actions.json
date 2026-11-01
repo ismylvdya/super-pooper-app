@@ -295,6 +295,7 @@
     "drop": "light",
     "reorder": "medium",
     "move": "light",
+    "dragStep": "selection",
     "pullArmed": "light",
     "extend": "medium"
   }
