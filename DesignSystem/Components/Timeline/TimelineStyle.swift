@@ -26,6 +26,9 @@ struct TimelineStyle {
     var compactPlates = false
     /// Where a dragged task would land (its minutes are shown next to the hours).
     var dropMarker: Date?
+    /// What lies under the timeline: a block lying over an earlier one is backed with it, so the earlier one does not show
+    /// through its see-through fill. Nil leaves it see-through (the widget's background is a gradient).
+    var backdrop: Color?
 }
 
 extension TimelineStyle {
@@ -33,9 +36,11 @@ extension TimelineStyle {
     static func make(_ settings: AppSettings.Timeline, tokens: DesignTokens) -> TimelineStyle {
         let fonts = TimelineFonts.app(settings, tokens: tokens)
         let titleLine = fonts.taskLineHeight + tokens.space(.timelineTitleExtra)
-        return TimelineStyle(fonts: fonts,
-                             minimumItemHeight: titleLine + tokens.space(.timelineItemPadding),
-                             // As high as the title row plus the plate padding: equal space above and below.
-                             minimumTaskHeight: titleLine + tokens.space(.rowVertical))
+        var style = TimelineStyle(fonts: fonts,
+                                  minimumItemHeight: titleLine + tokens.space(.timelineItemPadding),
+                                  // As high as the title row plus the plate padding: equal space above and below.
+                                  minimumTaskHeight: titleLine + tokens.space(.rowVertical))
+        style.backdrop = tokens.color(.screenBackground)
+        return style
     }
 }

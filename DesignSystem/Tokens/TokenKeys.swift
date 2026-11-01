@@ -8,6 +8,8 @@ enum SpacingToken: String, CaseIterable, Sendable {
     case childIndent, rowVertical, poolRowGap, blockGap, timelineLabelWidth, timelineItemGap, timelineItemPadding
     case bannerTop, bannerPadding, widgetMargin, habitCellGap, hourLabelGap, bellInset, liftShadow, toggleChipHorizontal, toggleChipVertical, titleInfoGap, chipIconGap, dotTextGap, valueChevronGap, reviewRowVertical, markPadding, badgeGap, progressGap, timelineTitleExtra, previewRowGap, titleDetailGap, footerLineGap, subtaskIndent
     case widgetGap, previewInset, cornerMarkGap, compactPlateVertical, emptyStateInset, widgetGridGap
+    /// How much further right a timeline block lying over an earlier one starts, per step.
+    case timelineCascadeIndent
 }
 
 enum RadiusToken: String, CaseIterable, Sendable {
@@ -28,6 +30,9 @@ enum RatioToken: String, CaseIterable, Sendable {
     /// A hand-drawn glyph standing in a line of text (the frog of Need energy): how tall its ink is, in cap heights of
     /// the text's font, as the wide SF Symbols (the heart, the warning triangle) stand there.
     case handGlyph
+    /// The room a timeline block's title needs under its top, in its minimum heights: a block starting closer under it
+    /// stands beside it rather than over it.
+    case timelineTitleRoom
 }
 
 /// How many of something a drawing has (lines of a wrapped title).

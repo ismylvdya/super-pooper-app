@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import SuperPooperApp
 
-/// Chain placement, side-by-side columns and the visible timeline windows.
+/// Chain placement, overlapping blocks and the visible timeline windows.
 @Suite("Timeline layout")
 struct TimelineLayoutTests {
     private let call = makeEvent("Call with dad", from: "19:00", to: "20:00")
@@ -27,26 +27,25 @@ struct TimelineLayoutTests {
         #expect(slots.map(\.label) == ["Open 13:25–13:40"])
     }
 
-    // MARK: - ColumnAssigner
+    // MARK: - CascadeAssigner
 
     @Test func separateBlocksTakeTheFullWidth() {
-        #expect(columns([(0, 10), (10, 20), (30, 40)]) == [[0, 1], [0, 1], [0, 1]])
+        #expect(cascade([(0, 10), (10, 20), (30, 40)]) == [[0, 0, 1], [0, 0, 1], [0, 0, 1]])
     }
 
-    @Test func overlappingBlocksShareTheWidthAndLaterOnesReuseFreeColumns() {
-        #expect(columns([(0, 10), (5, 15), (10, 20), (40, 50)]) == [[0, 2], [1, 2], [0, 2], [0, 1]])
+    /// Indent, column, column count: B starts past A's title and lies over it; C starts within B's title and stands
+    /// beside it, both one step in.
+    @Test func overlapsLieOverIndentedOrStandBesideWithinATitle() {
+        #expect(cascade([(0, 60), (20, 60), (25, 50)]) == [[0, 0, 1], [1, 0, 2], [1, 1, 2]])
     }
 
-    @Test func threeAtOnceGetThreeColumnsAndTheInputOrderIsKept() {
-        #expect(columns([(20, 30), (0, 60), (10, 25)]) == [[2, 3], [0, 3], [1, 3]])
-    }
-
-    @Test func theLongerBlockOfTwoWithTheSameStartTakesTheFirstColumn() {
-        #expect(columns([(0, 10), (0, 30)]) == [[1, 2], [0, 2]])
+    /// Past the earlier blocks' bottoms nothing is covered: back at the left edge.
+    @Test func afterTheOverlapEndsTheIndentStartsOver() {
+        #expect(cascade([(0, 60), (20, 60), (70, 90)]) == [[0, 0, 1], [1, 0, 1], [0, 0, 1]])
     }
 
     @Test func noBlocksNoPlacements() {
-        #expect(ColumnAssigner.assign([]).isEmpty)
+        #expect(CascadeAssigner.assign([]).isEmpty)
     }
 
     // MARK: - TimelineWindow
@@ -88,8 +87,10 @@ struct TimelineLayoutTests {
         ChainLayout(rules: TestConfig.rules.day).entries(for: TimelineChain(anchor: anchor, items: items), now: now ?? self.now)
     }
 
-    private func columns(_ intervals: [(Double, Double)]) -> [[Int]] {
-        ColumnAssigner.assign(intervals.map { (start: $0.0, end: $0.1) }).map { [$0.column, $0.columnCount] }
+    /// Blocks with a title room of 10 points: [indent, column, column count] each.
+    private func cascade(_ blocks: [(Double, Double)]) -> [[Int]] {
+        CascadeAssigner.assign(blocks.map { CascadeAssigner.Block(top: $0.0, bottom: $0.1, titleRoom: 10) })
+            .map { [$0.indent, $0.column, $0.columnCount] }
     }
 }
 

@@ -22,12 +22,13 @@ struct DayTimelineView<TaskContent: View>: View {
         let placements = layout.place(slots)
         GeometryReader { geometry in
             let itemsWidth = max(geometry.size.width - labelWidth, 0)
-            let blocks = placements.map { PlacedSlot($0, width: itemsWidth) }
+            let blocks = placements.map { PlacedSlot($0, width: itemsWidth, indentStep: tokens.space(.timelineCascadeIndent)) }
             ZStack(alignment: .topLeading) {
                 hourGrid(width: geometry.size.width)
                 ForEach(blocks) { item in
                     let isLinked = links.isLinked(item.slot.id)
                     block(for: item.slot)
+                        .background { if item.liesOver, let backdrop = style.backdrop { PlateShape(cornerRadius: cornerRadius(of: item.slot)).fill(backdrop) } }
                         .environment(\.titleReserve, cornerWidth(linked: isLinked, bell: item.slot.showsBell))
                         .overlay(alignment: .topTrailing) {
                             HStack(spacing: tokens.space(.cornerMarkGap)) {
@@ -76,19 +77,23 @@ struct DayTimelineView<TaskContent: View>: View {
     /// Where the blocks go (`TimelineBlockLayout`), worked out once per drawing.
     private var layout: TimelineBlockLayout {
         TimelineBlockLayout(window: window, hourHeight: Double(hourHeight), minimumEventHeight: Double(style.minimumItemHeight),
-                            minimumTaskHeight: Double(style.minimumTaskHeight ?? style.minimumItemHeight))
+                            minimumTaskHeight: Double(style.minimumTaskHeight ?? style.minimumItemHeight),
+                            titleRoomShare: Double(tokens.ratio(.timelineTitleRoom)))
     }
 
     /// A placed block in a column of the drawn width.
     private struct PlacedSlot: Identifiable {
         let slot: TimelineSlot
         let frame: CGRect
+        /// It lies over an earlier block (indented), so it needs an opaque backing under its see-through fill.
+        let liesOver: Bool
         var id: String { slot.id }
 
-        init(_ placement: TimelineBlockLayout.Placement, width: CGFloat) {
-            let horizontal = placement.horizontal(in: Double(width))
+        init(_ placement: TimelineBlockLayout.Placement, width: CGFloat, indentStep: CGFloat) {
+            let horizontal = placement.horizontal(in: Double(width), indentStep: Double(indentStep))
             slot = placement.slot
             frame = CGRect(x: horizontal.x, y: placement.top, width: horizontal.width, height: placement.height)
+            liesOver = placement.indent > 0
         }
     }
 
