@@ -25,10 +25,12 @@ private struct PlateFill: ViewModifier {
 
     func body(content: Content) -> some View {
         let shape = tokens.plateShape(corners)
+        let color = fill ?? plateColor
+        let surfaced = content.environment(\.plateSurface, color)
         if clipsContent {
-            content.background(fill ?? plateColor, in: shape).clipShape(shape)
+            surfaced.background(color, in: shape).clipShape(shape)
         } else {
-            content.background(fill ?? plateColor, in: shape)
+            surfaced.background(color, in: shape)
         }
     }
 
@@ -46,5 +48,18 @@ private struct PlateLift: ViewModifier {
 
     func body(content: Content) -> some View {
         content.contentShape(kinds, tokens.plateShape(corners))
+    }
+}
+
+private struct PlateSurfaceKey: EnvironmentKey {
+    static let defaultValue: Color? = nil
+}
+
+extension EnvironmentValues {
+    /// The color of the plate a view lies on (nil: on no plate). An element with see-through parts (a habit day's rings)
+    /// backs them with it, so lifted it never shows what lies under it.
+    var plateSurface: Color? {
+        get { self[PlateSurfaceKey.self] }
+        set { self[PlateSurfaceKey.self] = newValue }
     }
 }

@@ -2,9 +2,11 @@ import SwiftUI
 
 /// One day of a habit, the same everywhere (list, grid, widget, menus). Four looks only:
 /// not done = ring, Partially = ring with a dot, Done = filled circle, Twice = filled circle with an
-/// outer ring. Future days are empty.
+/// outer ring. Future days are empty. On a plate, a day is backed by the plate's color in the shape of its outer edge, so
+/// lifted by a long press it is opaque between its rings and dot, and the days under it never show through.
 struct HabitDayCell: View {
     @Environment(\.tokens) private var tokens
+    @Environment(\.plateSurface) private var surface
     let cell: HabitCell
     let color: Color
     let metrics: HabitDotMetrics
@@ -12,6 +14,9 @@ struct HabitDayCell: View {
     var body: some View {
         let dot = metrics.dot
         ZStack {
+            if let surface, let outline = metrics.outline(of: cell) {
+                Circle().fill(surface).frame(width: outline, height: outline)
+            }
             switch cell {
             case .future:
                 Color.clear

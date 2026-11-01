@@ -12,6 +12,15 @@ struct HabitDotMetrics: Equatable {
     /// Neighbouring cells overlap by one ring width.
     var spacing: CGFloat { -ring }
 
+    /// The diameter of a day's outer edge: the outer ring of Twice, the circle of every other mark; a future day has none.
+    func outline(of cell: HabitCell) -> CGFloat? {
+        switch cell {
+        case .future: nil
+        case .twice: self.cell
+        case .done, .partial, .open, .missed, .notScheduled: dot
+        }
+    }
+
     /// A cell of the given outer size whose ring and gap are `ring` points (as in a grid of another size).
     static func cell(_ cell: CGFloat, ring: CGFloat) -> HabitDotMetrics {
         let dot = max(cell - 4 * ring, ring)
