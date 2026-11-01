@@ -1,15 +1,6 @@
 import SwiftUI
 import UIKit
 
-extension String {
-    private static let noBreakSpace = "\u{00A0}"
-
-    /// The text as it is stored: no-break spaces (pasted, or typed on some keyboards) as ordinary ones.
-    var withOrdinarySpaces: String {
-        replacingOccurrences(of: Self.noBreakSpace, with: " ")
-    }
-}
-
 /// A settings field on the right of its row whose typed trailing space stays visible. Right-aligned text drops the
 /// spaces at the end of its line (whatever follows them invisibly), so the text is left-aligned in a field exactly
 /// as wide as the text with its spaces, and the field stands at the row's right edge: it reads as right-aligned and
