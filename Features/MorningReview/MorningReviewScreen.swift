@@ -1,19 +1,18 @@
 import SwiftUI
 
-/// This week (the review): the pool as a table — one row per task with property chips edited in place, in
+/// Soon (the review): the pool as a table — one row per task with property chips edited in place, in
 /// Morning, Day and Evening groups; rows reorder by dragging, also into another group (which sets their part
 /// of the day). Until the first drag the order follows the automatic sort after every edit; after it the
 /// manual order is kept for today. Reset sorting brings the sort back.
 /// Tapping a row (outside its chips) opens the task page; "+" creates a new this-week task.
 /// A long press opens the same menu as the row in the pool (and moving the finger then drags the row).
-/// Swiping a task left is the menu's Not today: it stays this week and waits in "Not Today" at the bottom
-/// (and in tomorrow's review); swiping it there to the right brings it back.
+/// Swiping a row right is Done; swiping a task left is the menu's Not today (then Delete): it stays this week and waits
+/// in "Not Today" at the bottom (and in tomorrow's review); swiping it there to the right brings it back.
 struct MorningReviewScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
-    @Environment(\.actions) private var actions
     @Environment(\.openURL) private var openURL
     @State private var path: [Route] = []
     @State private var pendingAction: PendingAction?
@@ -40,25 +39,15 @@ struct MorningReviewScreen: View {
                                     .padding(.leading, CGFloat(item.depth) * tokens.space(.subtaskIndent))
                                     // The row keeps its top and bottom inset inside, where a tap opens the task.
                                     .listGroupRow(group: ReviewGroups.group(of: index, in: rows)?.rawValue ?? "", id: name,
-                                                  isFirst: position.isFirst, isLast: position.isLast, frames: frames, vertical: 0,
-                                                  separatorIndent: CGFloat(item.depth) * tokens.space(.subtaskIndent))
-                                    .contextMenu {
+                                                  index: position.index, count: position.count, frames: frames, vertical: 0,
+                                                  separatorIndent: CGFloat(item.depth) * tokens.space(.subtaskIndent)) {
                                         ActionMenuContent(menu: .context(of: item.task), item: item) {
                                             perform($0, on: item.id)
                                         }
                                     }
                                     .accessibilityIdentifier("review:\(item.id)")
-                                    // The pool menu's Not today, where that menu offers it.
-                                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                        if model.offers(.notToday, for: item) {
-                                            let action = actions.definition(.notToday)
-                                            Button { Haptics.play(action.haptic); perform(action, on: item.id) } label: {
-                                                Label(LocalizedStringKey(action.title), systemImage: action.icon)
-                                            }
-                                            .tint(tokens.color(.swipeNeutral))
-                                            .accessibilityIdentifier("review.postpone")
-                                        }
-                                    }
+                                    // Done to the right; to the left the pool menu's Not today (a full swipe), then Delete.
+                                    .actionSwipes(.review, item: item) { perform($0, on: item.id) }
                             }
                         }
                     }
@@ -77,17 +66,12 @@ struct MorningReviewScreen: View {
                             ReviewRow(item: DayItem(listed: task), today: plan.today) {
                                 path.append(.task(task.name))
                             }
-                            .listGroupRow(group: "postponed", id: task.name, isFirst: index == 0, isLast: index == postponed.count - 1,
+                            .listGroupRow(group: "postponed", id: task.name, index: index, count: postponed.count,
                                           frames: frames, vertical: 0)
                             .accessibilityIdentifier("review.notToday:\(task.name)")
                             .opacity(tokens.opacity(.blocked))
-                            .swipeActions(edge: .leading, allowsFullSwipe: true) {
-                                Button { Haptics.play(.move); model.unpostpone(task.name) } label: {
-                                    Label("review.backToToday", systemImage: icons[.restore])
-                                }
-                                .tint(tokens.color(.success))
-                                .accessibilityIdentifier("review.backToToday")
-                            }
+                            // Back to today to the right, Delete to the left.
+                            .actionSwipes(.postponed, item: DayItem(listed: task)) { perform($0, on: task.name) }
                         }
                         ListGroupFooter(text: Text("review.postponed.hint"))
                     }
@@ -99,7 +83,7 @@ struct MorningReviewScreen: View {
             // The first group starts closer to the bar than a list's own top gap.
             .contentMargins(.top, tokens.space(.reviewTop), for: .scrollContent)
             .bannerHost()
-            .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
+            .actionConfirmation($pendingAction) { handler.run($0) }
             .navigationDestination(for: Route.self) { route in
                 switch route {
                 case .task(let name): TaskPageScreen(taskName: name).bannerHost()

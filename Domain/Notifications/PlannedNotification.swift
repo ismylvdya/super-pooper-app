@@ -31,11 +31,22 @@ struct PlannedNotification: Hashable, Sendable {
     /// The fire time is a moment, not a time on the clock: an event's alert, a timed reminder, an item with a time zone
     /// of its own. It rings at that moment even if the phone changes its zone first; the rest ring at their clock time.
     var isAbsolute = false
+    /// A habit's block dragged to another time for today only: it rings under an identifier of its own (with its time),
+    /// never the slot's, so the slot's request waits for the next day and a shown notification of the slot goes.
+    var isMoved = false
 
     /// The same notification under another identifier.
     func identified(as id: String) -> PlannedNotification {
         var copy = self
         copy.id = id
         return copy
+    }
+
+    /// The same notification again at `moment` (snoozed): the same title, text and buttons, at that moment wherever the
+    /// phone is, under an id of its own, so it never takes the place of a habit slot's pending request.
+    func snoozed(until moment: Date) -> PlannedNotification {
+        PlannedNotification(id: "snooze|\(key)|\(day.isoString)", kind: kind, title: title, fireDate: moment, taskName: taskName,
+                            day: day, reminderID: reminderID, key: key, start: start, eventID: eventID, colorHex: colorHex,
+                            isAbsolute: true)
     }
 }

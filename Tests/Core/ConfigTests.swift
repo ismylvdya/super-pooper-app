@@ -9,9 +9,19 @@ struct ConfigTests {
     @Test func partialAndTwiceStayOnTheHabitsPage() {
         #expect(TestConfig.actions.menus[.habitDay].actions == [.unmark, .partial, .done, .twice])
         #expect(TestConfig.actions.menus[.habitContext].actions == [.unmark, .done, .skipToday])
-        #expect(TestConfig.actions.menus[.habitNotification].actions == [.done, .skipToday])
+        #expect(TestConfig.actions.menus[.habitNotification].actions == [.done, .snooze, .skipToday])
         #expect(TestConfig.actions.definition(.skipToday).destructive)
         #expect(TestConfig.actions.menus[.eventContext].actions == [.deleteEvent])
+    }
+
+    /// Every kind of notification can be snoozed (.2910); the in-app menus cannot, and the snooze lasts an hour.
+    @Test func everyNotificationOffersSnooze() {
+        let notifications: [ActionMenu] = [.habitNotification, .taskNotification, .reminderNotification, .eventNotification]
+        for menu in ActionMenu.allCases {
+            #expect(TestConfig.actions.menus[menu].actions.contains(.snooze) == notifications.contains(menu), "\(menu)")
+        }
+        #expect(!TestConfig.actions.definition(.snooze).destructive)
+        #expect(TestConfig.rules.notifications.snoozeMinutes == 60)
     }
 
     /// The pool menu of a task takes it out of today (Not today) rather than archiving it.
@@ -77,11 +87,20 @@ struct ConfigTests {
     @Test func everyConfigTextHasACatalogEntry() throws {
         let bundle = Bundle(for: BundleToken.self).appHostBundle
         let config = try AppConfig.load(bundle: bundle)
-        var keys = config.actions.actions.flatMap { [$0.title, $0.confirmTitle, $0.confirmMessage].compactMap { $0 } }
+        var keys = config.actions.actions.flatMap { [$0.title, $0.confirmMessage, $0.confirmSubtasks].compactMap { $0 } }
+        keys += config.actions.actions.flatMap { action in NoteKind.allCases.compactMap { action.confirmTitle(for: $0) } }
         keys += config.rules.timeEstimates.map(\.label)
         for key in keys {
             #expect(bundle.localizedString(forKey: key, value: "∅", table: nil) != "∅", "missing text for \(key)")
         }
+    }
+
+    /// The Home Screen quick action is "🔫 New" and opens a new task.
+    @Test func theQuickActionIsNew() throws {
+        let items = try #require(Bundle(for: BundleToken.self).appHostBundle.object(forInfoDictionaryKey: "UIApplicationShortcutItems")
+            as? [[String: Any]])
+        #expect(items.map { $0["UIApplicationShortcutItemTitle"] as? String } == ["🔫 New"])
+        #expect(items.map { $0["UIApplicationShortcutItemType"] as? String } == ["new-task"])
     }
 
     /// A gap or peek name that is not a design token stops the app with the file and the key, not a zero gap.
@@ -144,7 +163,20 @@ struct ConfigTests {
     }
 
     @Test func missingActionDefinitionIsReported() throws {
-        let registry = ActionRegistry(actions: [], menus: TestConfig.actions.menus, haptics: TestConfig.actions.haptics)
+        let registry = ActionRegistry(actions: [], menus: TestConfig.actions.menus, swipes: TestConfig.actions.swipes,
+                                      haptics: TestConfig.actions.haptics)
+        #expect(throws: ConfigError.self) { try registry.validate(file: "actions.json") }
+    }
+
+    /// Every kind of row has its swipes in actions.json; a misspelt kind, side or swipe color is a config error.
+    @Test func swipesAreCheckedLikeMenus() throws {
+        let json = try String(contentsOf: TestPaths.configFolder.appendingPathComponent("actions.json"), encoding: .utf8)
+        for (fragment, replacement) in [("\"archivedHabit\": {", "\"archivedHabbit\": {"), ("\"trailing\": [\n        \"restoreFromTrash\"", "\"traling\": [\n        \"restoreFromTrash\"")] {
+            let broken = Data(try json.replacingOnce(fragment, with: replacement).utf8)
+            #expect(throws: ConfigError.self) { try ConfigLoader.decode(ActionRegistry.self, from: broken, file: "actions.json") }
+        }
+        let tinted = Data(try json.replacingOnce("\"swipeTint\": \"swipeNeutral\"", with: "\"swipeTint\": \"swipeNeutrl\"").utf8)
+        let registry = try ConfigLoader.decode(ActionRegistry.self, from: tinted, file: "actions.json")
         #expect(throws: ConfigError.self) { try registry.validate(file: "actions.json") }
     }
 

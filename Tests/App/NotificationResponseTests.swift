@@ -29,6 +29,13 @@ struct NotificationResponseTests {
         #expect(router.route(action: "deleteEvent", info: ["kind": "event", "event": "EV-1"]) == .ignore)
     }
 
+    /// Snooze on any notification names it by its key and day; one delivered before notifications carried a key is left.
+    @Test func snoozeCarriesTheNotificationsKeyAndDay() {
+        #expect(router.route(action: "snooze", info: ["kind": "event", "key": "event|EV-1|0", "day": "2026-10-21"])
+            == .snooze(key: "event|EV-1|0", day: LocalDate("2026-10-21")))
+        #expect(router.route(action: "snooze", info: ["kind": "habit", "task": "Water", "day": "2026-10-21"]) == .ignore)
+    }
+
     /// A task's or habit's button acts on the day of the notification (none written: today).
     @Test func theButtonsOfTasksAndHabitsCarryTheirDay() {
         #expect(router.route(action: "done", info: ["kind": "habit", "task": "Water", "day": "2026-10-20"])

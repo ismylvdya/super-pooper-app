@@ -25,6 +25,8 @@ enum SystemBarMetric: String, CaseIterable, Sendable {
     case tabIconLabelGap
     /// A bar button in its bubble, the gap between the buttons of a bubble and the bubbles' inset from the screen sides.
     case barButton, barButtonGap, barSideInset
+    /// The room the system bar's button style leaves on each side of a button's label upright.
+    case barButtonPadding
 }
 
 /// `systemBar.font`: a tab's symbol lying sideways (`tabIcon`) and upright in the system tab bar (`systemTabIcon`, only

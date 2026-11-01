@@ -18,7 +18,7 @@ final class RegressionUITests: XCTestCase {
     /// The morning review is a sheet with its own pages: a subtask tapped there opens there, not under the sheet.
     func testASubtaskOpensInsideTheMorningReview() {
         launch("superpooper://review")
-        if !app.navigationBars["This week"].waitForExistence(timeout: 6) { app.buttons["today.review"].tap() }
+        if !app.navigationBars["Soon"].waitForExistence(timeout: 6) { app.buttons["today.review"].tap() }
         // A banner over the row would take the tap.
         app.dismissBanners()
         let row = app.staticTexts["Позвонить в банк"]

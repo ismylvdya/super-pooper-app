@@ -58,4 +58,43 @@ struct ActionAvailabilityTests {
         #expect(full.entries(page, for: nil).map(\.action) == page)
         #expect(withoutLinks.entries(page, for: nil).map(\.action) == [.archive, .delete])
     }
+
+    // MARK: - Swipes (actions.json → swipes)
+
+    private func swipes(_ kind: ActionSwipes, _ item: DayItem?, isToday: Bool = true) -> (leading: [ActionID], trailing: [ActionID]) {
+        let availability = ActionAvailability(capabilities: full.capabilities, isToday: isToday)
+        let definition = TestConfig.actions.swipes[kind]
+        return (availability.swipe(definition.leading, for: item), availability.swipe(definition.trailing, for: item))
+    }
+
+    /// In a list a swipe to the right is Done, to the left Delete; a done task offers Return instead of Done.
+    @Test func aTaskSwipesRightToDoneAndLeftToDelete() {
+        #expect(swipes(.task, item(makeTask("Report"))).leading == [.done])
+        #expect(swipes(.task, item(makeTask("Report"))).trailing == [.delete])
+        #expect(swipes(.task, item(makeTask("Report", status: .done), .marked(.done))).leading == [.returnFromDone])
+    }
+
+    /// Done as the menu has it: a habit done today has no Done to swipe, a twice-a-day one done once swipes on to Twice.
+    @Test func aHabitSwipesDoneUntilTheDayIsMarked() {
+        #expect(swipes(.habit, item(makeHabit("Walk"))).leading == [.done])
+        #expect(swipes(.habit, item(makeHabit("Walk"), .marked(.done))).leading.isEmpty)
+        #expect(swipes(.habit, item(twiceADay("Water"), .marked(.done))).leading == [.done])
+        #expect(swipes(.habit, item(makeHabit("Walk"))).trailing == [.delete])
+    }
+
+    /// Soon: a task's full swipe to the left is Not today, then Delete; a habit (no Not today) has Delete only.
+    @Test func soonSwipesNotTodayBeforeDelete() {
+        #expect(swipes(.review, item(makeTask("Report"))).trailing == [.notToday, .delete])
+        #expect(swipes(.review, item(makeHabit("Walk"))).trailing == [.delete])
+        #expect(swipes(.review, item(makeTask("Report"))).leading == [.done])
+        #expect(swipes(.postponed, item(makeTask("Report"))).leading == [.backToToday])
+        #expect(swipes(.postponed, item(makeTask("Report"))).trailing == [.delete])
+    }
+
+    /// The archive and the trash put a note back with a swipe to the left; nothing to swipe to the right.
+    @Test func theArchiveAndTheTrashRestoreToTheLeft() {
+        #expect(swipes(.archivedTask, item(makeTask("Old", status: .archived))) == ([], [.restoreThisWeek]))
+        #expect(swipes(.archivedHabit, item(makeHabit("Old"))) == ([], [.restoreHabit]))
+        #expect(swipes(.trash, nil) == ([], [.restoreFromTrash]))
+    }
 }

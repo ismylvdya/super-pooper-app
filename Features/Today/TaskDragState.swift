@@ -6,7 +6,15 @@ import UniformTypeIdentifiers
 @MainActor
 @Observable
 final class TaskDragState {
-    enum Source { case pool, timeline }
+    enum Source: Equatable {
+        case pool
+        /// A block on the timeline; `slot`: its time as the note has it (a habit's block moves for today only).
+        case timeline(slot: LocalTime?)
+
+        var slot: LocalTime? {
+            if case .timeline(let slot) = self { slot } else { nil }
+        }
+    }
 
     static let types: [UTType] = [.text]
 
@@ -54,15 +62,16 @@ extension View {
     }
 }
 
-/// Dropping on the timeline: the task gets the time under the finger (habits cannot be dropped here).
+/// Dropping on the timeline: the task gets the time under the finger, a habit's block stands there today.
 @MainActor
 struct TimelineDropDelegate: DropDelegate {
     let drag: TaskDragState
     let moment: (CGFloat) -> Date
-    let onDrop: (DayItem, Date) -> Void
+    let canDrop: (DayItem, TaskDragState.Source) -> Bool
+    let onDrop: (DayItem, TaskDragState.Source, Date) -> Void
 
     func validateDrop(info: DropInfo) -> Bool {
-        drag.item.map { TaskScheduling.canMove($0.task) } ?? false
+        drag.item.map { canDrop($0, drag.source) } ?? false
     }
 
     func dropEntered(info: DropInfo) {
@@ -81,23 +90,27 @@ struct TimelineDropDelegate: DropDelegate {
     func performDrop(info: DropInfo) -> Bool {
         guard let item = drag.item else { return false }
         let landing = drag.hoverMoment ?? moment(info.location.y)
+        let source = drag.source
         drag.end()
-        onDrop(item, landing)
+        onDrop(item, source, landing)
         return true
     }
 }
 
-/// Dropping on the pool: rows make room under the finger; a task from the timeline loses its time.
+/// Dropping on the pool: rows make room under the finger; a task from the timeline loses its time, a habit's block
+/// leaves today's timeline.
 @MainActor
 struct PoolDropDelegate: DropDelegate {
     let drag: TaskDragState
     let animation: Animation
     let rows: () -> [PoolDropOrder.Row]
+    /// Whether a block from the timeline can land here.
+    let canDrop: (DayItem, TaskDragState.Source) -> Bool
     let onDrop: (DayItem, TaskDragState.Source, [String]) -> Void
 
     func validateDrop(info: DropInfo) -> Bool {
         guard let item = drag.item else { return false }
-        return drag.source == .pool || TaskScheduling.canMove(item.task)
+        return drag.source == .pool || canDrop(item, drag.source)
     }
 
     func dropEntered(info: DropInfo) {

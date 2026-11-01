@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Main screen: blocks from the arrangement's layout (`layouts/today-*.layout.json`), refreshed every
 /// minute so "now" and chains move. The pool and the timeline both pull to refresh (full sync).
-/// Top left: This week (the review) and the problems badge; top right: new task and search, in the system navigation
+/// Top left: Soon (the review) and the problems badge; top right: new task and search, in the system navigation
 /// bar with the day's name as its title (so the bar's buttons flow into a pushed page's, as on the other tabs). In landscape the same buttons stand in a column along the physical top, each where it is upright on the
 /// physical screen (see `PhysicalBottom`); the layout is the landscape one from settings. The arrows next to the day's name
 /// slide the pool and the timeline together to yesterday / tomorrow (and further): another day shows its own

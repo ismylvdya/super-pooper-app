@@ -12,12 +12,25 @@ extension AppModel {
         case .done, .partial, .twice, .unmark: await parts.notes.markFromMenu(name, as: action.habitMark, on: day)
         case .skipToday: await parts.dayCommands.skip(name, on: day)
         case .notToday: await parts.dayCommands.notToday(name, on: day)
+        case .backToToday: parts.dayCommands.unpostpone(name)
         case .archive: await parts.notes.archive(name)
         case .restoreThisWeek: await parts.notes.setStatus(.thisWeek, of: name)
         case .restoreHalfYear: await parts.notes.setStatus(.halfYear, of: name)
         case .restoreHabit: await parts.notes.setStatus(.habit, of: name)
+        case .returnFromDone: await parts.notes.returnToSoon(name)
         case .delete: await parts.notes.delete(name)
-        case .open, .openInObsidian, .deleteEvent: break
+        // Opening is the screen's; the trash restores its own notes, the timeline deletes its events, a notification
+        // snoozes itself.
+        case .open, .openInObsidian, .restoreFromTrash, .deleteEvent, .snooze: break
+        }
+    }
+
+    /// An action on a task of the done folder (the Done list): its name may also be an active note's, so it goes by id.
+    func perform(_ action: ActionID, onFiled id: TaskID) async {
+        switch action {
+        case .returnFromDone: await parts.notes.returnFiled(id)
+        case .delete: await parts.notes.deleteFiled(id)
+        default: break
         }
     }
 
@@ -38,7 +51,7 @@ extension AppModel {
     func edit(_ name: String, _ changes: @escaping (TaskItem) -> [TaskEdit]) async { await parts.writer.edit(name, changes) }
     func update(_ name: String, _ changes: [TaskEdit]) async { await parts.writer.edit(name) { _ in changes } }
 
-    /// A date picked on the day's view of a task (This week): on the phone's clock, written in the note's own zone.
+    /// A date picked on the day's view of a task (Soon): on the phone's clock, written in the note's own zone.
     func setLocalDue(_ due: TaskDue?, of name: String) async { await parts.writer.setLocalDue(due, of: name) }
 
     @discardableResult
@@ -58,6 +71,10 @@ extension AppModel {
     /// The new task or habit page is left; true once the page is done with (see `NoteCommands.create(from:unnamed:)`).
     func create(from page: NewNotePage, unnamed: String) async -> Bool { await parts.notes.create(from: page, unnamed: unnamed) }
     func create(_ draft: NoteDraft, named name: String) async -> String? { await parts.notes.create(draft, named: name) }
+    /// Return in the new task or habit page's name: the note is created at once; its name, or nil when nothing was saved.
+    func createOnReturn(from page: NewNotePage) async -> String? { await parts.notes.createOnReturn(from: page) }
+    /// A task named outside the app's pages (the New Task intent), with the new task page's defaults.
+    func createTask(named name: String) async -> NamedTaskCreation { await parts.notes.createTask(named: name) }
 
     @discardableResult
     func rename(_ name: String, to newName: String) async -> Bool { await parts.notes.rename(name, to: newName) }

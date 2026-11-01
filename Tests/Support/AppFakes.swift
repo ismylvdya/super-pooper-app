@@ -32,6 +32,10 @@ actor RecordingNotifications: NotificationScheduling {
     func restore(_ request: UNNotificationRequest) async {
         log.append((Task.isCancelled ? "cancelled restore " : "restore ") + request.identifier)
     }
+
+    func remove(shown identifier: String) async {
+        log.append("remove " + identifier)
+    }
 }
 
 /// Reminders of the asked lists; reading the "old" list waits at a gate the test opens.

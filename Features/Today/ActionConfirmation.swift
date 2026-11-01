@@ -7,7 +7,7 @@ struct ActionConfirmation: ViewModifier {
 
     func body(content: Content) -> some View {
         content.alert(
-            Text(LocalizedStringKey(pending?.action.confirmTitle ?? "")),
+            Text(LocalizedStringKey(pending.flatMap { $0.action.confirmTitle(for: $0.kind) } ?? "")),
             isPresented: Binding(presenting: $pending),
             presenting: pending
         ) { pending in
@@ -16,7 +16,7 @@ struct ActionConfirmation: ViewModifier {
             }
             Button("common.cancel", role: .cancel) {}
         } message: { pending in
-            Text(L10n.format(pending.action.confirmMessage ?? "", pending.taskName))
+            Text(verbatim: ConfirmationText.message(pending))
         }
     }
 }

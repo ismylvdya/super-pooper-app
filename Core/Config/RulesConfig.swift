@@ -23,6 +23,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let restoreDelaySeconds: Double
         /// A pending notification whose fire time is at most this far from the planned one is kept.
         let fireTimeToleranceSeconds: Double
+        /// A notification snoozed from its button comes again this many minutes later.
+        let snoozeMinutes: Int
     }
 
     struct EventLinks: Codable, Hashable, Sendable {
@@ -190,6 +192,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
     let day: DayRules
     let timeEstimates: [EstimateOption]
     let notifications: Notifications
+    /// The plate at the top of Settings that counts down to the end of the app's signature.
+    let signingPlate: SigningPlateRules
     let eventLinks: EventLinks
     let vault: Vault
     let backups: Backups

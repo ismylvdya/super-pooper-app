@@ -45,7 +45,7 @@ struct FixtureDayPlanTests {
         #expect(plan.dayNames.isDisjoint(with: hidden))
         // Due on Friday: it waits for its day.
         #expect(!plan.dayNames.contains("Сдать отчёт"))
-        #expect(plan.dayNames.count == 28)
+        #expect(plan.dayNames.count == 29)
     }
 
     @Test func timelineHoldsTimedTasksChainsEventsAndReminders() async throws {
@@ -64,6 +64,7 @@ struct FixtureDayPlanTests {
             "10:00–10:15 event Standup (past)",
             "13:25–13:40 Подготовить вопросы папе",
             "13:40–13:55 Распечатать вопросы",
+            "14:00–14:15 Прогулка 🚶",
             "15:00–15:15 reminder Take the laundry out",
             "16:00–17:00 Забрать посылку на почте",
             "19:00–20:00 event Call with dad",

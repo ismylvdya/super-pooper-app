@@ -54,8 +54,16 @@ final class AppModel {
     func setManualOrder(_ names: [String]) { parts.dayCommands.setManualOrder(names) }
     func resetOrder() { parts.dayCommands.resetOrder() }
     func applyReviewMove(_ move: ReviewGroups.Move) { parts.dayCommands.applyReviewMove(move) }
-    func schedule(_ name: String, at moment: Date) async { await parts.dayCommands.schedule(name, at: moment) }
-    func unschedule(_ name: String, poolOrder: [String]) async { await parts.dayCommands.unschedule(name, poolOrder: poolOrder) }
+    /// A drag between the pool and the timeline; `slot`: a habit block's time as its note has it, when it comes from the
+    /// timeline (a habit moves for today only).
+    func schedule(_ name: String, slot: LocalTime? = nil, at moment: Date) async {
+        await parts.dayCommands.schedule(name, slot: slot, at: moment)
+    }
+    func unschedule(_ name: String, slot: LocalTime? = nil, poolOrder: [String]) async {
+        await parts.dayCommands.unschedule(name, slot: slot, poolOrder: poolOrder)
+    }
+    func canDropOnTimeline(_ name: String, slot: LocalTime?) -> Bool { parts.dayCommands.canPlaceOnTimeline(name, slot: slot) }
+    func canDropInPool(_ name: String, slot: LocalTime?) -> Bool { parts.dayCommands.canSendToPool(name, slot: slot) }
 
     /// The morning review opens by itself once a day, on the first launch with a ready vault after onboarding, unless
     /// the app was opened for something else. True when it is to open now (it then counts as shown).
@@ -78,6 +86,12 @@ final class AppModel {
     func setNotificationImage(_ data: Data?) async { await parts.picture.setImage(data) }
     func setNotificationPictureShown(_ isShown: Bool) { parts.picture.setShown(isShown) }
     func setNotificationPictureUsesHabitColor(_ usesColor: Bool) { parts.picture.setUsesHabitColor(usesColor) }
+
+    // MARK: - Signature
+
+    /// How long the app's signature has left; nil while it is far off or unknown (no plate).
+    var signingCountdown: SigningCountdown? { parts.signing.countdown }
+    func refreshSigning() { parts.signing.refresh() }
 
     // MARK: - Sync
 

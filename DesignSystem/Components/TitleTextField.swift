@@ -7,6 +7,8 @@ struct TitleTextField: View {
     @Binding var text: String
     let color: Color
     var isFocused: FocusState<Bool>.Binding
+    /// Return was pressed (the editing has ended).
+    var onReturn: () -> Void = {}
 
     var body: some View {
         TextField(placeholder, text: $text, axis: .vertical)
@@ -18,6 +20,7 @@ struct TitleTextField: View {
                 guard value.contains("\n") else { return }
                 text = value.replacingOccurrences(of: "\n", with: "")
                 isFocused.wrappedValue = false
+                onReturn()
             }
             .accessibilityIdentifier("taskPage.name")
     }

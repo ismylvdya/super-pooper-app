@@ -1,6 +1,6 @@
 import Foundation
 
-/// "Not today", one rule for the pool menu and the swipe in This week: an open task (not a habit, which has Skip today)
+/// "Not today", one rule for the pool menu and the swipe in Soon: an open task (not a habit, which has Skip today)
 /// leaves today and stays this week.
 enum NotToday {
     static func isAvailable(for item: DayItem) -> Bool {

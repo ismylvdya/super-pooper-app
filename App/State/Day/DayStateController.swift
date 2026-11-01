@@ -1,8 +1,8 @@
 import Foundation
 import Observation
 
-/// The logical day and what the user decided about it today: Skip today, Not today, the pool's manual order, the morning
-/// review shown, the problems already announced. Kept in the App Group for this day only; a new day starts empty. The
+/// The logical day and what the user decided about it today: Skip today, Not today, the pool's manual order, the habit
+/// blocks dragged on the timeline, the morning review shown, the problems already announced. Kept in the App Group for this day only; a new day starts empty. The
 /// calendar is the app calendar as it is now: a new time zone renews it (`refreshCalendar`).
 @MainActor
 @Observable
@@ -51,6 +51,15 @@ final class DayStateController {
         dayState.day == context().today ? dayState.postponed : []
     }
 
+    /// Habit blocks dragged on the timeline today; none once the day is over.
+    var habitTimes: HabitDayTimes {
+        HabitDayTimes(dayState.day == context().today ? dayState.habitMoves : [])
+    }
+
+    func setHabitMoves(_ moves: [HabitTimeMove]) {
+        update { $0.habitMoves = moves }
+    }
+
     func rollDayIfNeeded() {
         let today = context().today
         guard dayState.day != today else { return }
@@ -93,6 +102,7 @@ final class DayStateController {
             $0.skipped = rename($0.skipped)
             $0.postponed = rename($0.postponed)
             $0.manualOrder = $0.manualOrder.map(rename)
+            $0.habitMoves = HabitDayTimes($0.habitMoves).renaming(from: old, to: new)
         }
     }
 

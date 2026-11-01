@@ -17,7 +17,7 @@ enum HapticRole: String, ConfigName {
     case drop
     /// Rows of a list change places (a subtask moved under another one too).
     case reorder
-    /// A task goes to another list or day (+ to This week, back to today).
+    /// A task goes to another list or day (+ to Soon, back to today).
     case move
     /// A pull past its threshold, before letting go.
     case pullArmed
@@ -35,6 +35,8 @@ enum ActionMenu: String, Codable, CaseIterable, Sendable {
     case archiveRow
     case habitPage
     case habitArchiveRow
+    /// A task of the done folder in the Done list.
+    case filedTask
     case eventNotification
     /// A habit's day in the Habits list and in the history.
     case habitDay
@@ -46,6 +48,46 @@ enum ActionMenu: String, Codable, CaseIterable, Sendable {
 
     /// The "…" menu on the page of a task or a habit.
     static func page(of task: TaskItem) -> ActionMenu { task.isHabit ? .habitPage : .taskPage }
+}
+
+/// The swipe buttons of a kind of list row (`actions.json` → `swipes`).
+enum ActionSwipes: String, Codable, CaseIterable, Sendable {
+    /// A task in a list (the Lists tab, the Done list, the search).
+    case task
+    /// A habit or a repeatable task in a list (Habits, Routines, the search).
+    case habit
+    /// A task or a habit in Soon.
+    case review
+    /// A task put off with Not today, at the bottom of Soon.
+    case postponed
+    case archivedTask
+    case archivedHabit
+    /// A note in the trash.
+    case trash
+
+    /// The row of a task or a habit in a list.
+    static func row(of task: TaskItem) -> ActionSwipes { task.isHabit ? .habit : .task }
+}
+
+/// The swipe buttons of a row: `leading` show on a swipe to the right, `trailing` on a swipe to the left, each from the
+/// edge in; the first one the row offers runs on a full swipe.
+struct SwipeDefinition: Decodable, Hashable, Sendable {
+    let leading: [ActionID]
+    let trailing: [ActionID]
+
+    private enum CodingKeys: String, CodingKey { case leading, trailing }
+
+    init(leading: [ActionID], trailing: [ActionID]) {
+        self.leading = leading
+        self.trailing = trailing
+    }
+
+    init(from decoder: Decoder) throws {
+        try decoder.rejectUnknownKeys(CodingKeys.self)
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        leading = try container.decode([ActionID].self, forKey: .leading)
+        trailing = try container.decode([ActionID].self, forKey: .trailing)
+    }
 }
 
 /// One menu of `actions.json`: its actions in order, and whether it is about a habit's day.
@@ -78,12 +120,21 @@ struct ActionDefinition: Codable, Hashable, Sendable {
     let destructive: Bool
     /// A color token for the icon and title (Done is blue); menus otherwise use the label color.
     var color: String?
+    /// A color token for the action's swipe button; none: a destructive action is the system's red, another the accent.
+    var swipeTint: String?
     let haptic: HapticStyle
-    /// String Catalog keys of the confirmation dialog; `nil` = no confirmation.
+    /// String Catalog keys of the confirmation dialog; `nil` = no confirmation. The title is worded per kind of note:
+    /// its key is this one and the kind (`confirm.delete.title.habit`).
     let confirmTitle: String?
     let confirmMessage: String?
+    /// How many subtasks go along, under the message (a plural text); none = not said.
+    var confirmSubtasks: String?
 
     var needsConfirmation: Bool { confirmTitle != nil }
+
+    func confirmTitle(for kind: NoteKind) -> String? {
+        confirmTitle.map { $0 + "." + kind.rawValue }
+    }
 }
 
 /// Every user action in one registry (`actions.json`): menus, swipes, notifications and widgets take titles, icons,
@@ -92,6 +143,8 @@ struct ActionRegistry: Decodable, Hashable, Sendable {
     let actions: [ActionDefinition]
     /// Every menu is there, and no other (checked as the file is read).
     let menus: TokenTable<ActionMenu, MenuDefinition>
+    /// Every kind of row's swipes, and no other.
+    let swipes: TokenTable<ActionSwipes, SwipeDefinition>
     let haptics: TokenTable<HapticRole, HapticStyle>
 
     /// The definition of an action; `validate` made sure every action has one.
@@ -112,8 +165,10 @@ struct ActionRegistry: Decodable, Hashable, Sendable {
             throw ConfigError(file: file, path: "actions", message: "no definition for action \"\(id.rawValue)\"")
         }
         for action in actions {
-            if let color = action.color, ColorToken(rawValue: color) == nil {
-                throw ConfigError(file: file, path: "actions.\(action.id.rawValue).color", message: "unknown color token \"\(color)\"")
+            for (key, token) in [("color", action.color), ("swipeTint", action.swipeTint)] {
+                if let token, ColorToken(rawValue: token) == nil {
+                    throw ConfigError(file: file, path: "actions.\(action.id.rawValue).\(key)", message: "unknown color token \"\(token)\"")
+                }
             }
         }
     }

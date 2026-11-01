@@ -1,7 +1,8 @@
 import SwiftUI
 
 /// Search across all TaskNotes (by name) and, from Today, the calendar events the app has loaded.
-/// A task opens its page; an event opens Calendar on its day.
+/// A task opens its page (a swipe to the right is Done, to the left Delete, as in its list); an event opens Calendar on
+/// its day.
 struct SearchScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
@@ -9,6 +10,7 @@ struct SearchScreen: View {
     @Environment(\.openURL) private var openURL
     let scope: SearchScope
     @State private var query = ""
+    @State private var pendingAction: PendingAction?
     @FocusState private var isFocused: Bool
 
     var body: some View {
@@ -32,6 +34,7 @@ struct SearchScreen: View {
                             }
                         }
                         .listRowBackground(tokens.color(.plateBackground))
+                        .actionSwipes(.row(of: task), item: item(task), isToday: false) { handler.handle($0, taskName: task.name) }
                     }
                 }
             }
@@ -59,6 +62,16 @@ struct SearchScreen: View {
         .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: Text(scope == .tasks ? "search.prompt.tasks" : "search.prompt"))
         .searchFocused($isFocused)
         .onAppear { isFocused = true }
+        .actionConfirmation($pendingAction) { handler.run($0) }
+    }
+
+    private var handler: TaskActionHandler {
+        TaskActionHandler(model: model, router: router, openURL: openURL) { pendingAction = $0 }
+    }
+
+    /// A habit is judged by today's mark, a task by its status.
+    private func item(_ task: TaskItem) -> DayItem {
+        task.isHabit ? DayItem(habit: task, on: model.context().today) : DayItem(listed: task)
     }
 
     private func open(_ event: CalendarEvent) {

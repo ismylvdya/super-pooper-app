@@ -1,11 +1,14 @@
 import SwiftUI
 
-/// The order of the morning, day and evening routines: drag habits within a routine; the pool follows it.
-/// Habits join a routine on their page (habit page → Routine).
+/// The order of the morning, day and evening routines: drag habits within a routine; the pool follows it. A swipe to
+/// the right is Done, to the left Delete, as in Habits. Habits join a routine on their page (habit page → Routine).
 struct RoutinesScreen: View {
     @Environment(AppModel.self) private var model
+    @Environment(Router.self) private var router
+    @Environment(\.openURL) private var openURL
     @Environment(\.tokens) private var tokens
     @State private var frames = ListGroupFrames()
+    @State private var pendingAction: PendingAction?
 
     var body: some View {
         List {
@@ -18,6 +21,11 @@ struct RoutinesScreen: View {
         .appList()
         .navigationTitle(Text("routines.title"))
         .navigationBarTitleDisplayMode(.inline)
+        .actionConfirmation($pendingAction) { handler.run($0) }
+    }
+
+    private var handler: TaskActionHandler {
+        TaskActionHandler(model: model, router: router, openURL: openURL) { pendingAction = $0 }
     }
 
     @ViewBuilder
@@ -27,14 +35,14 @@ struct RoutinesScreen: View {
         ListGroupHeader(title: Text(title))
         if members.isEmpty {
             Text("routines.empty").secondaryText(.hint)
-                .listGroupRow(group: part.rawValue, id: "empty", isFirst: true, isLast: true, frames: frames)
+                .listGroupRow(group: part.rawValue, id: "empty", index: 0, count: 1, frames: frames)
         }
         ForEach(Array(members.enumerated()), id: \.element.name) { index, habit in
             NavigationLink(value: Route.task(habit.name)) {
                 Text(habit.name).foregroundStyle(tokens.habitNameColor(habit))
             }
-            .listGroupRow(group: part.rawValue, id: habit.name, isFirst: index == 0, isLast: index == members.count - 1,
-                          frames: frames)
+            .listGroupRow(group: part.rawValue, id: habit.name, index: index, count: members.count, frames: frames)
+            .actionSwipes(.habit, item: DayItem(habit: habit, on: model.context().today)) { handler.handle($0, taskName: habit.name) }
         }
         .onMove { source, destination in
             var names = members.map(\.name)

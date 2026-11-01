@@ -70,12 +70,26 @@ actor InMemoryTaskStore: TaskStore, VersionConflictResolving, ExternalLinking, T
         return renamed
     }
 
-    func delete(_ task: TaskItem) async throws { tasks.removeAll { $0.name == task.name } }
-    func fileAway(_ task: TaskItem) async throws {
-        tasks.removeAll { $0.name == task.name }
-        filed.append(task)
+    func delete(_ task: TaskItem) async throws {
+        tasks.removeAll { $0.id == task.id }
+        filed.removeAll { $0.id == task.id }
+    }
+    /// The note moves to the done folder, as in the vault: the id says so.
+    func fileAway(_ task: TaskItem) async throws -> TaskItem {
+        tasks.removeAll { $0.id == task.id }
+        var moved = task
+        moved.id = TaskID("TaskNotes/Done/\(task.name).md")
+        filed.append(moved)
+        return moved
     }
     func filedTasks() async throws -> [TaskItem] { filed }
+    func unfile(_ task: TaskItem) async throws -> TaskItem {
+        filed.removeAll { $0.id == task.id }
+        var reopened = task.applying([.reopen])
+        reopened.id = TaskID("TaskNotes/Tasks/\(task.name).md")
+        tasks.append(reopened)
+        return reopened
+    }
     func backup(_ tasks: [TaskItem], reason: String) async throws {}
 
     func create(_ draft: NoteDraft, named name: String) async throws -> TaskItem {

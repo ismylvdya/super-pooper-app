@@ -38,14 +38,16 @@ struct HabitRow: View {
 }
 
 extension HabitRow {
-    /// The routine, Twice and a bell per reminder under the name, each its own icon; nothing when the habit has none.
+    /// The routine and Twice as one line ("Morning · Twice"), then a bell per reminder; nothing when the habit has none.
     @ViewBuilder var detail: some View {
-        let traits = HabitSummary.traits(habit)
+        let traits = HabitSummary.traitsLine(habit)
         let bells = HabitSummary.bellCount(habit, limit: model.config.rules.habits.maxListBells)
-        if !traits.isEmpty || bells > 0 {
+        if traits != nil || bells > 0 {
             HStack(spacing: tokens.space(.badgeGap)) {
-                ForEach(traits, id: \.self) { trait in
-                    Image(systemName: icons[trait.icon]).accessibilityLabel(Text(LocalizedStringKey(trait.titleKey)))
+                if let traits {
+                    Text(verbatim: traits.text)
+                        .accessibilityLabel(Text(verbatim: traits.spoken))
+                        .accessibilityIdentifier("habitTraits:\(habit.name)")
                 }
                 ForEach(0..<bells, id: \.self) { _ in Image(systemName: icons[.bell]) }
             }

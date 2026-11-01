@@ -1,26 +1,40 @@
 import SwiftUI
 
-/// Notes the app moved to the vault's trash: open one to read it, restore it into the tasks folder,
-/// or delete it for good after a confirmation.
+/// Notes the app moved to the vault's trash: open one to read it, restore it into the tasks folder (its button or a
+/// swipe to the left), or delete it for good after a confirmation.
 struct TrashScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
     @State private var toDelete: TrashedNote?
     @State private var query = ""
     @State private var isSearching = false
+    @State private var titleHeight: CGFloat = 0
+    @State private var frames = ListGroupFrames()
 
     var body: some View {
-        PageScaffold(title: L10n.string("trash.title")) {
+        let notes = model.trashedNotes.filter { SearchMatcher.matches($0.name, query) }
+        List {
+            LargePageTitle(height: $titleHeight) { Text("trash.title") }
+                .listGroupSpacer()
             if model.trashedNotes.isEmpty {
                 Text("trash.empty").secondaryText(.hint)
+                    .listGroupSpacer()
             } else {
-                PlateSection(header: nil, hint: "trash.hint") {
-                    ForEach(model.trashedNotes.filter { SearchMatcher.matches($0.name, query) }) { note in
-                        TrashRow(note: note) { toDelete = note }
-                    }
+                ListGroupGap()
+                ForEach(Array(notes.enumerated()), id: \.element.id) { index, note in
+                    TrashRow(note: note) { toDelete = note }
+                        .listGroupRow(group: "trash", id: note.id, index: index, count: notes.count, frames: frames)
+                        .actionSwipes(.trash, item: nil) { _ in Task { await model.restore(note) } }
                 }
+                ListGroupFooter(text: Text("trash.hint"))
             }
         }
+        .listGroupStyle()
+        .listGroupBacking(frames)
+        .titleScrollsIntoBar(L10n.string("trash.title"), titleHeight: titleHeight)
+        .appList()
+        // The title starts where the other pages' titles start, not under the list's own top margin.
+        .contentMargins(.top, 0, for: .scrollContent)
         .pageSearch(query: $query, isSearching: $isSearching, prompt: "search.prompt.tasks")
         .toolbar { ToolbarItem(placement: .topBarTrailing) { SearchBarButton(isSearching: $isSearching, accessibilityID: "trash.search") } }
         .task { await model.refreshTrash() }

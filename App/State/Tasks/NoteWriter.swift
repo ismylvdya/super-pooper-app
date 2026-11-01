@@ -2,8 +2,8 @@ import Foundation
 
 /// Every edit of a task's or habit's fields goes through here. The edits of one note run one after another, and each
 /// decides from the note as the edit before it left it: a second quick tap (a toggle, a habit mark) does not repeat the
-/// first one's decision. After a write the fields changed in two places are reported, the widgets and notifications
-/// follow, and a task written done is filed away.
+/// first one's decision. After a write the fields changed in two places are reported, a task written done takes its open
+/// subtasks along (`SubtaskCascade`), the widgets and notifications follow, and what is done is filed away.
 @MainActor
 final class NoteWriter {
     private let tasks: TaskState
@@ -54,16 +54,32 @@ final class NoteWriter {
     @discardableResult
     func write(_ task: TaskItem, _ changes: [TaskEdit]) async -> Bool {
         guard !changes.isEmpty else { return true }
+        guard let written = await apply(changes, to: task) else { return false }
+        if task.status != .done, written.status == .done, !written.isHabit { await completeSubtasks(of: written) }
+        await derived.publish()
+        if DoneFiling.isDue(written) { await fileAwayDoneTasks() }
+        return true
+    }
+
+    @discardableResult
+    private func apply(_ changes: [TaskEdit], to task: TaskItem) async -> TaskItem? {
         do {
             let result = try await store.apply(changes, to: task)
             tasks.written(result.task)
             if let clashes = AppEvent.clashes(in: result, of: task.name) { appEvents.send(clashes) }
-            await derived.publish()
-            if DoneFiling.isDue(result.task) { await fileAwayDoneTasks() }
-            return true
+            return result.task
         } catch {
             appEvents.send(.failure(AppFailure(error)))
-            return false
+            return nil
+        }
+    }
+
+    /// A task just completed takes its open subtasks along, all the way down, done the same day; reopening it later
+    /// leaves them done.
+    private func completeSubtasks(of parent: TaskItem) async {
+        let marking = TaskMarking(today: day.context().today)
+        for subtask in SubtaskCascade.subtasks(of: parent, in: tasks.tasks, change: .completion) {
+            await apply(marking.changes(marking: subtask, as: .done), to: subtask)
         }
     }
 
@@ -73,7 +89,7 @@ final class NoteWriter {
         await write(task, ZonedTimes.stored(changes, of: task, calendar: day.calendar))
     }
 
-    /// A date picked on the day's view of a task (This week): on the phone's clock, written in the note's own zone.
+    /// A date picked on the day's view of a task (Soon): on the phone's clock, written in the note's own zone.
     func setLocalDue(_ due: TaskDue?, of name: String) async {
         await edit(name) { note in ZonedTimes.stored([.due(due)], of: note, calendar: self.day.calendar) }
     }
@@ -91,9 +107,9 @@ final class NoteWriter {
         }
         do {
             try await backups.backup([task], reason: "done")
-            try await store.fileAway(task)
+            let filed = try await store.fileAway(task)
             tasks.remove(task)
-            tasks.addFiled(task)
+            tasks.addFiled(filed)
             await derived.publish()
         } catch {
             SyncLog.logger.error("filing \(task.name, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")

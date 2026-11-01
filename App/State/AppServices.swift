@@ -18,6 +18,8 @@ struct AppServices {
     let dayStateStore: DayStateStore
     let snapshotStore: SnapshotStore
     let alertStateStore: AlertStateStore
+    let snoozeStore: SnoozeStore
     let widgets: WidgetReloading
     let notificationImage: NotificationImageStore
+    let signature: AppSignatureReading
 }

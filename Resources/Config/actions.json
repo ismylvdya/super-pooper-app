@@ -5,7 +5,8 @@
       "title": "action.done",
       "icon": "checkmark.circle.fill",
       "destructive": false,
-      "haptic": "light"
+      "haptic": "light",
+      "swipeTint": "success"
     },
     {
       "id": "partial",
@@ -33,7 +34,16 @@
       "title": "action.notToday",
       "icon": "moon.zzz",
       "destructive": false,
-      "haptic": "light"
+      "haptic": "light",
+      "swipeTint": "swipeNeutral"
+    },
+    {
+      "id": "backToToday",
+      "title": "review.backToToday",
+      "icon": "arrow.uturn.backward",
+      "destructive": false,
+      "haptic": "light",
+      "swipeTint": "success"
     },
     {
       "id": "unmark",
@@ -63,7 +73,8 @@
       "destructive": true,
       "haptic": "medium",
       "confirmTitle": "confirm.delete.title",
-      "confirmMessage": "confirm.delete.message"
+      "confirmMessage": "confirm.delete.message",
+      "confirmSubtasks": "confirm.delete.subtasks"
     },
     {
       "id": "openInObsidian",
@@ -77,7 +88,8 @@
       "title": "action.restoreThisWeek",
       "icon": "arrow.uturn.up.circle",
       "destructive": false,
-      "haptic": "light"
+      "haptic": "light",
+      "swipeTint": "success"
     },
     {
       "id": "restoreHalfYear",
@@ -91,7 +103,24 @@
       "title": "action.restoreHabit",
       "icon": "arrow.uturn.up.circle",
       "destructive": false,
-      "haptic": "light"
+      "haptic": "light",
+      "swipeTint": "success"
+    },
+    {
+      "id": "returnFromDone",
+      "title": "action.returnFromDone",
+      "icon": "arrow.uturn.backward",
+      "destructive": false,
+      "haptic": "light",
+      "swipeTint": "accent"
+    },
+    {
+      "id": "restoreFromTrash",
+      "title": "action.restoreFromTrash",
+      "icon": "arrow.uturn.backward",
+      "destructive": false,
+      "haptic": "light",
+      "swipeTint": "success"
     },
     {
       "id": "deleteEvent",
@@ -99,6 +128,13 @@
       "icon": "trash",
       "destructive": true,
       "haptic": "medium"
+    },
+    {
+      "id": "snooze",
+      "title": "action.snooze",
+      "icon": "zzz",
+      "destructive": false,
+      "haptic": "light"
     }
   ],
   "menus": {
@@ -129,17 +165,20 @@
       "habitMarks": true,
       "actions": [
         "done",
+        "snooze",
         "skipToday"
       ]
     },
     "taskNotification": {
       "actions": [
-        "done"
+        "done",
+        "snooze"
       ]
     },
     "reminderNotification": {
       "actions": [
-        "done"
+        "done",
+        "snooze"
       ]
     },
     "archiveRow": {
@@ -162,8 +201,15 @@
         "delete"
       ]
     },
+    "filedTask": {
+      "actions": [
+        "returnFromDone",
+        "delete"
+      ]
+    },
     "eventNotification": {
       "actions": [
+        "snooze",
         "deleteEvent"
       ]
     },
@@ -184,6 +230,61 @@
     "eventContext": {
       "actions": [
         "deleteEvent"
+      ]
+    }
+  },
+  "swipes": {
+    "task": {
+      "leading": [
+        "done",
+        "returnFromDone"
+      ],
+      "trailing": [
+        "delete"
+      ]
+    },
+    "habit": {
+      "leading": [
+        "done"
+      ],
+      "trailing": [
+        "delete"
+      ]
+    },
+    "review": {
+      "leading": [
+        "done",
+        "returnFromDone"
+      ],
+      "trailing": [
+        "notToday",
+        "delete"
+      ]
+    },
+    "postponed": {
+      "leading": [
+        "backToToday"
+      ],
+      "trailing": [
+        "delete"
+      ]
+    },
+    "archivedTask": {
+      "leading": [],
+      "trailing": [
+        "restoreThisWeek"
+      ]
+    },
+    "archivedHabit": {
+      "leading": [],
+      "trailing": [
+        "restoreHabit"
+      ]
+    },
+    "trash": {
+      "leading": [],
+      "trailing": [
+        "restoreFromTrash"
       ]
     }
   },

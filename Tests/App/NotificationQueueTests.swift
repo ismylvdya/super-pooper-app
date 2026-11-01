@@ -9,7 +9,7 @@ struct NotificationQueueTests {
         let queue = NotificationQueue()
         let gate = AsyncGate()
         var log: [String] = []
-        await queue.restore { log.append("restore") }
+        await queue.run { log.append("restore") }
         queue.schedulePlan { await gate.pass(); log.append("first") }
         await gate.arrived()
         queue.schedulePlan { log.append("second") }
@@ -26,7 +26,7 @@ struct NotificationQueueTests {
         var log: [String] = []
         queue.schedulePlan { await gate.pass(); log.append("plan") }
         await gate.arrived()
-        let restoring = Task { await queue.restore { log.append(Task.isCancelled ? "cancelled restore" : "restore") } }
+        let restoring = Task { await queue.run { log.append(Task.isCancelled ? "cancelled restore" : "restore") } }
         while queue.enqueued < 2 { await Task.yield() }
         queue.schedulePlan { log.append("later plan") }
         await gate.open()

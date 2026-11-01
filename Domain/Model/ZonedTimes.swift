@@ -4,7 +4,7 @@ import Foundation
 /// or habit can keep its times in a zone of its own instead (its `timeZone`, set by the user); then its due time and
 /// reminder times are read in that zone and moved to the phone's zone here (`local`), once, before the day and the
 /// notifications are built — everything after that works with plain local times. A time decided on that local view
-/// (dropped on the timeline, moved to tomorrow, picked in This week) goes back into the item's zone before it is
+/// (dropped on the timeline, moved to tomorrow, picked in Soon) goes back into the item's zone before it is
 /// written (`stored`).
 enum ZonedTimes {
     static func local(_ tasks: [TaskItem], calendar: Calendar, today: LocalDate) -> [TaskItem] {

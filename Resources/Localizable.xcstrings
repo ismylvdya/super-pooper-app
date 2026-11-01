@@ -111,6 +111,17 @@
         }
       }
     },
+    "action.restoreFromTrash": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore"
+          }
+        }
+      }
+    },
     "action.restoreHabit": {
       "extractionState": "manual",
       "localizations": {
@@ -139,7 +150,18 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Back to This week"
+            "value": "Back to Soon"
+          }
+        }
+      }
+    },
+    "action.returnFromDone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Return"
           }
         }
       }
@@ -151,6 +173,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Skip today"
+          }
+        }
+      }
+    },
+    "action.snooze": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snooze"
           }
         }
       }
@@ -337,7 +370,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Moved to This week:"
+            "value": "Moved to Soon:"
           }
         }
       }
@@ -360,6 +393,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Restored “%@”."
+          }
+        }
+      }
+    },
+    "banner.returned": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Returned “%@” to Soon."
           }
         }
       }
@@ -771,7 +815,52 @@
         }
       }
     },
-    "confirm.delete.title": {
+    "confirm.delete.subtasks": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld subtask goes with it."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld subtasks go with it."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "confirm.delete.title.habit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete habit?"
+          }
+        }
+      }
+    },
+    "confirm.delete.title.repeatable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete repeatable task?"
+          }
+        }
+      }
+    },
+    "confirm.delete.title.task": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -1893,6 +1982,61 @@
         }
       }
     },
+    "habits.trait.day": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day"
+          }
+        }
+      }
+    },
+    "habits.trait.evening": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Evening"
+          }
+        }
+      }
+    },
+    "habits.trait.morning": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Morning"
+          }
+        }
+      }
+    },
+    "habits.trait.twice": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Twice"
+          }
+        }
+      }
+    },
+    "habits.traits.separator": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " · "
+          }
+        }
+      }
+    },
     "info.habitPage.goal": {
       "extractionState": "manual",
       "localizations": {
@@ -2339,7 +2483,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "One date per task. A backlog task whose date falls in the current week moves to This week. For recurring tasks the date gives the time of day."
+            "value": "One date per task. A backlog task whose date falls in the current week moves to Soon. For recurring tasks the date gives the time of day."
           }
         }
       }
@@ -2438,7 +2582,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This week — picked for the week, the day is built from these. Half year and Someday — backlog. Waiting — not in the day. The app never lowers a status."
+            "value": "Soon — picked to do soon, the day is built from these. Half year and Someday — backlog. Waiting — not in the day. The app never lowers a status."
           }
         }
       }
@@ -2472,6 +2616,94 @@
           "stringUnit": {
             "state": "translated",
             "value": "Phone's time: 09:00 is 09:00 wherever you are. A zone: 09:00 there, at the matching time of your phone."
+          }
+        }
+      }
+    },
+    "intent.newTask.created %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Added “%@” to Soon."
+          }
+        }
+      }
+    },
+    "intent.newTask.description": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Asks for a name and adds the task to Soon without opening the app."
+          }
+        }
+      }
+    },
+    "intent.newTask.failed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t add the task. Open the app to see why."
+          }
+        }
+      }
+    },
+    "intent.newTask.name": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
+          }
+        }
+      }
+    },
+    "intent.newTask.prompt": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What's the task?"
+          }
+        }
+      }
+    },
+    "intent.newTask.rejected %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ Nothing was added."
+          }
+        }
+      }
+    },
+    "intent.newTask.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New Task"
+          }
+        }
+      }
+    },
+    "intent.newTask.unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open the app and choose the TaskNotes folder first."
           }
         }
       }
@@ -2625,7 +2857,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Add to This week"
+            "value": "Add to Soon"
           }
         }
       }
@@ -3769,7 +4001,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Not in today's pool; they stay this week and show up in tomorrow's review. Swipe one right to bring it back."
+            "value": "Not in today's pool; they stay in Soon and show up in tomorrow's review. Swipe one right to bring it back."
           }
         }
       }
@@ -3791,7 +4023,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This week"
+            "value": "Soon"
           }
         }
       }
@@ -4621,6 +4853,85 @@
         }
       }
     },
+    "settings.signing.days %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld day left"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld days left"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "settings.signing.expired": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Expired"
+          }
+        }
+      }
+    },
+    "settings.signing.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Re-sign the app before then, or it stops opening."
+          }
+        }
+      }
+    },
+    "settings.signing.hours %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld hour left"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld hours left"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "settings.signing.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App signature"
+          }
+        }
+      }
+    },
     "settings.sources": {
       "extractionState": "manual",
       "localizations": {
@@ -5397,7 +5708,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This week"
+            "value": "Soon"
           }
         }
       }

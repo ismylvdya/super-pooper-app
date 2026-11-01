@@ -38,4 +38,18 @@ struct NewNotePageTests {
         #expect(page.nameProblem(names.problem(in:)) == nil)
         #expect(page.creation(unnamed: unnamed, rules: names.problem(in:))?.draft.body == "Повестка")
     }
+
+    /// Return in the name saves the note at once under the typed name; an empty name only closes the keyboard, a name a
+    /// note cannot take keeps the draft (.1571).
+    @Test func returnSavesOnlyANameANoteCanTake() throws {
+        var page = NewNotePage(draft: NoteDraft(status: .thisWeek))
+        page.draft.apply([.highPriority(true)])
+        #expect(page.savedOnReturn(rules: names.problem(in:)) == nil)
+        page.name = "Meet: Anna"
+        #expect(page.savedOnReturn(rules: names.problem(in:)) == nil)
+        page.name = " Meet Anna "
+        let saving = try #require(page.savedOnReturn(rules: names.problem(in:)))
+        #expect(saving.name == "Meet Anna")
+        #expect(saving.draft.changes == [.highPriority(true)])
+    }
 }

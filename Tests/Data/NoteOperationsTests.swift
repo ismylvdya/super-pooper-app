@@ -88,7 +88,7 @@ struct NoteOperationsTests {
             }
         }
         expectSameBytes(try sandbox.text(of: "Купить батарейки 🔋"), before)
-        #expect(try FileManager.default.contentsOfDirectory(atPath: sandbox.tasksFolder.path).count == 38)
+        #expect(try FileManager.default.contentsOfDirectory(atPath: sandbox.tasksFolder.path).count == 39)
     }
 
     // MARK: - Trash
@@ -103,7 +103,7 @@ struct NoteOperationsTests {
         #expect(!sandbox.exists("Записать идеи"))
         let trashed = sandbox.trashFolder.appendingPathComponent("Записать идеи.md")
         expectSameBytes(try String(contentsOf: trashed, encoding: .utf8), content)
-        #expect(try await repository.load().tasks.count == 35)
+        #expect(try await repository.load().tasks.count == 36)
 
         try sandbox.write("---\ntags:\n  - 🔫делишка\nstatus: this_week\n---\nВторая\n", to: "Записать идеи")
         try await repository.delete(ideas)

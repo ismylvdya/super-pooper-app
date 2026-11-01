@@ -37,7 +37,7 @@
 			<key>UIApplicationShortcutItemType</key>
 			<string>new-task</string>
 			<key>UIApplicationShortcutItemTitle</key>
-			<string>🔫 New делишка</string>
+			<string>🔫 New</string>
 			<key>UIApplicationShortcutItemIconSymbolName</key>
 			<string>plus</string>
 		</dict>

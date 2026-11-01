@@ -9,6 +9,8 @@ enum AppEvent: Equatable, Sendable {
     case deleted(String)
     /// A note put back from the trash, under the name it got there.
     case restored(String)
+    /// A done task back in Soon, under the name it got there.
+    case returned(String)
     case deletedForever(String)
     /// Tasks of later planning levels that joined this week (by the user or by auto-promotion).
     case promoted([String])

@@ -19,7 +19,7 @@ struct ICloudTests {
         #expect(Set(result.fileProblems.filter { if case .notDownloaded = $0 { true } else { false } })
             == [.notDownloaded(file: "Найти отвёртку"), .notDownloaded(file: "Облачная задача")])
         #expect(Set(ubiquity.downloadRequests) == ["Найти отвёртку.md", "Облачная задача.md"])
-        #expect(result.tasks.count == 35)
+        #expect(result.tasks.count == 36)
         #expect(!result.tasks.contains { $0.name == "Найти отвёртку" })
     }
 
@@ -38,7 +38,7 @@ struct ICloudTests {
         let milk = try #require(result.tasks.first { $0.name == "Купить молоко" })
         #expect(milk.status == .done && milk.completedDate == LocalDate("2026-10-21"))
         #expect(milk.id.relativePath == "TaskNotes/Tasks/Купить молоко.md")
-        #expect(result.tasks.count == 36)
+        #expect(result.tasks.count == 37)
     }
 
     @Test func downloadedFilesAreNotRequestedAgain() async throws {
@@ -56,7 +56,7 @@ struct ICloudTests {
         let result = await sandbox.scan(ubiquity: ubiquity)
 
         #expect(Set(result.conflicted) == ["Сдать отчёт", "Медитация 🧘"])
-        #expect(result.tasks.count == 36)
+        #expect(result.tasks.count == 37)
     }
 
     /// Only tasks get to the conflicts screen: a plain note in conflict there could never be resolved.
@@ -78,7 +78,7 @@ struct ICloudTests {
 
         let result = await sandbox.scan(ubiquity: ubiquity, downloadTimeout: 5)
 
-        #expect(result.tasks.count == 36)
+        #expect(result.tasks.count == 37)
         #expect(result.conflicted.isEmpty && ubiquity.conflictChecks.isEmpty)
         #expect(ubiquity.downloadRequests.isEmpty)
         #expect(result.fileProblems.count == 1)

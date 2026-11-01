@@ -13,10 +13,29 @@ struct TaskActionHandler {
 
     func handle(_ action: ActionDefinition, taskName: String) {
         if action.needsConfirmation {
-            requestConfirmation(PendingAction(action: action, taskName: taskName))
+            requestConfirmation(PendingAction(action: action, taskName: taskName, kind: model.task(named: taskName)?.kind ?? .task,
+                                              subtasks: model.subtasksGoingAlong(with: taskName, action: action.id)))
             return
         }
         run(action, taskName: taskName)
+    }
+
+    /// An action on a task of the done folder (the Done list).
+    func handle(_ action: ActionDefinition, filed task: TaskItem) {
+        if action.needsConfirmation {
+            requestConfirmation(PendingAction(action: action, taskName: task.name, kind: task.kind, subtasks: 0, filed: task.id))
+            return
+        }
+        Task { await model.perform(action.id, onFiled: task.id) }
+    }
+
+    /// A confirmed action.
+    func run(_ pending: PendingAction) {
+        if let filed = pending.filed {
+            Task { await model.perform(pending.action.id, onFiled: filed) }
+        } else {
+            run(pending.action, taskName: pending.taskName)
+        }
     }
 
     func run(_ action: ActionDefinition, taskName: String) {

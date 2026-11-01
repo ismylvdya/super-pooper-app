@@ -16,6 +16,7 @@ enum RadiusToken: String, CaseIterable, Sendable {
 
 enum SizeToken: String, CaseIterable, Sendable {
     case iconColumn, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, notificationIcon
+    case dayArrowTarget
     case habitDotMinimum, cornerInsetMinimum, eventDot, sourceDot, fadeHeight, poolCounter, poolWidth
     case habitHistoryMaxHeight, habitStatsBar, titleFade, hourDigitsWidth, actionPopoverWidth, reviewChevron, wrapMinWidth, liftOverhang, pagePeek, dropLine, dropMarkerHeight, bannerShadowRadius, bannerShadowY, hexFieldWidth, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, allDayFontDelta, previewHeight, previewRow, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewHalvesInset, subtaskDropLine
 }
@@ -33,7 +34,7 @@ enum CountToken: String, CaseIterable, Sendable {
 
 enum OpacityToken: String, CaseIterable, Sendable {
     case blocked, past, eventFill, fadeTop, fadeMiddle, habitEmpty
-    case gridFadedWeek, unlinked, eventTime, nowOverBlocks, daySwipeFade, toggleChipFill, bannerShadow, previewBlock, accentedPlate
+    case gridFadedWeek, unlinked, eventTime, nowOverBlocks, daySwipeFade, toggleChipFill, bannerShadow, previewBlock, accentedPlate, signingPlate
 }
 
 enum DurationToken: String, CaseIterable, Sendable {
@@ -53,6 +54,7 @@ enum ColorToken: String, ConfigName {
     case past, swipeNeutral, screenBackground, plateBackground, chipBackground, primaryText, secondaryText, tertiaryText
     case bannerBackground, infoText, destructive, eventText, timelineGrid
     case success, warning, error, shadow, widgetPlate, widgetTop, widgetBottom, listSeparator
+    case signingAhead, signingSoon, signingUrgent
 }
 
 /// The settings sections where the user picks colors (`editableColors`: which colors each offers, in order).

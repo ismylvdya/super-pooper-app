@@ -48,6 +48,29 @@ final class TodayUITests: XCTestCase {
         XCTAssertEqual(previous.frame, arrows.1)
     }
 
+    /// The arrows take taps across the whole bar height (`size.dayArrowTarget`, 44 pt), on the room around the glyph and
+    /// on the gap to the name: taps in the far corners of an arrow's area still turn the day.
+    func testTheDayArrowsAreEasyToHit() {
+        launch()
+        dismissBanners()
+        let next = app.buttons["today.nextDay"]
+        let previous = app.buttons["today.previousDay"]
+        for arrow in [next, previous] {
+            XCTAssertGreaterThanOrEqual(arrow.frame.height.rounded(), 44, arrow.identifier)
+            XCTAssertGreaterThan(arrow.frame.width, app.buttons["today.day"].frame.height / 2, arrow.identifier)
+        }
+        let date = NSPredicate(format: "identifier == 'today.day' AND label MATCHES '^[0-9]{1,2} [A-Za-z]{3}$'")
+        let today = NSPredicate(format: "identifier == 'today.day' AND label == 'Today'")
+        let corners = [(next, CGVector(dx: 0.95, dy: 0.08)), (next, CGVector(dx: 0.05, dy: 0.92)),
+                       (previous, CGVector(dx: 0.05, dy: 0.08)), (previous, CGVector(dx: 0.95, dy: 0.92))]
+        for (arrow, corner) in corners {
+            arrow.coordinate(withNormalizedOffset: corner).tap()
+            XCTAssertTrue(app.buttons.matching(date).firstMatch.waitForExistence(timeout: 5), "\(arrow.identifier) at \(corner)")
+            app.tabBars.buttons["Today"].tap()
+            XCTAssertTrue(app.buttons.matching(today).firstMatch.waitForExistence(timeout: 5))
+        }
+    }
+
     /// Pool rows have no checkboxes: a long press offers Done, and the done task leaves the pool.
     func testLongPressMarksATaskDone() {
         launch()
@@ -101,9 +124,10 @@ final class TodayUITests: XCTestCase {
         launch()
         let edit = app.buttons["today.review"]
         XCTAssertTrue(edit.waitForExistence(timeout: 5))
+        XCTAssertEqual(edit.label, "Soon", "the review is named Soon (.6461)")
         dismissBanners()
         edit.tap()
-        XCTAssertTrue(app.navigationBars["This week"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.navigationBars["Soon"].waitForExistence(timeout: 5))
         // Row 0 is the Morning header; the tasks start at row 1.
         let first = app.cells.element(boundBy: 1)
         let third = app.cells.element(boundBy: 3)
@@ -118,8 +142,8 @@ final class TodayUITests: XCTestCase {
         XCTAssertEqual(XCTWaiter().wait(for: [auto], timeout: 5), .completed)
     }
 
-    /// On the pages, a row dragged onto the edge of the other page turns to it. A habit is dragged: the timeline does not
-    /// take habits, so letting go there changes nothing.
+    /// On the pages, a row dragged onto the edge of the other page turns to it. A habit without reminder times is
+    /// dragged: the timeline does not take it, so letting go there changes nothing.
     func testDraggingOntoThePageEdgeTurnsThePage() {
         app.launchArguments += ["-SPArrangement", "paged"]
         launch()
@@ -132,6 +156,34 @@ final class TodayUITests: XCTestCase {
         row.press(forDuration: 1.2, thenDragTo: edge, withVelocity: .slow, thenHoldForDuration: 1)
         let turned = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == 'Show the pool'"), object: edge)
         XCTAssertEqual(XCTWaiter().wait(for: [turned], timeout: 5), .completed, "the pages turned to the timeline")
+    }
+
+    /// A habit's block dragged from the timeline into the pool stands in the pool today, and dragged back from the pool it
+    /// is on the timeline again (.3267). Side by side, both columns are in sight. The note keeps its time: no write
+    /// (`check-vault-after-ui-tests.sh`); the notifications are covered by unit tests.
+    func testAHabitBlockGoesToThePoolAndBackForToday() {
+        app.launchArguments += ["-SPArrangement", "sideBySide"]
+        launch()
+        dismissBanners()
+        let walk = app.buttons["title:Прогулка 🚶"]
+        let now = app.buttons["title:Подготовить вопросы папе"]
+        let pool = app.buttons["title:Утро — зарядка 🤸"]
+        XCTAssertTrue(walk.waitForExistence(timeout: 10))
+        XCTAssertTrue(now.waitForExistence(timeout: 5) && pool.waitForExistence(timeout: 5))
+        XCTAssertGreaterThan(walk.frame.midX, pool.frame.maxX, "the 14:00 block is on the timeline")
+
+        walk.press(forDuration: 1.2, thenDragTo: pool, withVelocity: .slow, thenHoldForDuration: 0.5)
+        expect(walk, toBe: { $0.frame.midX < now.frame.minX }, "in the pool")
+
+        walk.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+            .press(forDuration: 1.2, thenDragTo: now.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 5)), withVelocity: .slow,
+                   thenHoldForDuration: 0.5)
+        expect(walk, toBe: { $0.frame.midX > pool.frame.maxX }, "back on the timeline")
+    }
+
+    private func expect(_ element: XCUIElement, toBe condition: @escaping (XCUIElement) -> Bool, _ message: String) {
+        let met = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in element.exists && condition(element) }, object: nil)
+        XCTAssertEqual(XCTWaiter().wait(for: [met], timeout: 5), .completed, message)
     }
 
     func testPullToRefreshShowsSyncBanner() {

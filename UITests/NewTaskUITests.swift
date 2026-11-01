@@ -1,7 +1,7 @@
 import XCTest
 
 /// "+" in the morning review creates a task and "+" in Habits creates a habit: an empty page whose note
-/// is written when the page is left with Back.
+/// is written when the page is left with Back, or at once on Return in its name (.1571).
 final class NewTaskUITests: XCTestCase {
     private var app: XCUIApplication!
 
@@ -24,7 +24,7 @@ final class NewTaskUITests: XCTestCase {
     func testReviewRowOpensTheTaskAndPlusCreatesOne() {
         launch("superpooper://review")
         // The link opens the review once the vault is read; if Today came first, open it from there.
-        if !app.navigationBars["This week"].waitForExistence(timeout: 6) { app.buttons["today.review"].tap() }
+        if !app.navigationBars["Soon"].waitForExistence(timeout: 6) { app.buttons["today.review"].tap() }
         // A banner over the row would take the tap.
         app.dismissBanners()
         // The list is long and lazy: scroll down to the row.
@@ -33,7 +33,7 @@ final class NewTaskUITests: XCTestCase {
         row.tap()
         XCTAssertTrue(app.textFields["taskPage.name"].waitForExistence(timeout: 5))
         app.navigationBars.buttons.element(boundBy: 0).tap()
-        let plus = app.navigationBars["This week"].buttons["task.new"]
+        let plus = app.navigationBars["Soon"].buttons["task.new"]
         XCTAssertTrue(plus.waitForExistence(timeout: 5))
         plus.tap()
         let name = app.textFields["taskPage.name"]
@@ -59,8 +59,10 @@ final class NewTaskUITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["habitDay:Читать 20 минут"].waitForExistence(timeout: 5))
     }
 
-    /// A new task opens with the cursor in its name; Return closes the keyboard and keeps the name.
-    func testNewTaskNameIsFocusedAndReturnClosesTheKeyboard() {
+    /// A new task opens with the cursor in its name. Return saves the note at once ("Created"), closes the keyboard and
+    /// stays on the page, which is the task's own page from then on: an edit there is written to the note, and Back
+    /// creates no second note (`scripts/check-vault-after-ui-tests.sh` checks the file).
+    func testReturnInTheNameSavesTheTaskAndStaysOnItsPage() {
         launch("superpooper://today")
         let plus = app.buttons["today.newTask"]
         XCTAssertTrue(plus.waitForExistence(timeout: 10))
@@ -71,11 +73,41 @@ final class NewTaskUITests: XCTestCase {
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5), "the keyboard is up without a tap")
         app.typeText("Купить хлеб\n")
         XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout: 5), "Return closes the keyboard")
+        expectCreatedBanner("Купить хлеб")
+        XCTAssertTrue(app.buttons["taskPage.more"].waitForExistence(timeout: 5), "the page is the task's own page now")
         XCTAssertEqual(name.value as? String, "Купить хлеб")
+        let high = app.switches["taskPage.high"]
+        app.scrollIntoView(high)
+        high.switches.firstMatch.tap()
+        let switchedOn = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == '1'"), object: high)
+        XCTAssertEqual(XCTWaiter().wait(for: [switchedOn], timeout: 5), .completed)
+        // The first banner goes first, so a second one would show.
+        app.dismissBanners()
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(app.buttons["today.newTask"].waitForExistence(timeout: 5))
+        let second = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == 'banner' AND label BEGINSWITH 'Created'")).firstMatch
+        XCTAssertFalse(second.waitForExistence(timeout: 3), "Back creates no second note")
     }
 
-    /// Another tab only hides the new task page: coming back finds the name as typed, and Back then creates the task.
-    func testAnotherTabKeepsTheNewTaskDraft() {
+    /// Return with a name a note cannot take saves nothing: the title keeps pointing at the problem, the page stays a draft.
+    func testReturnWithANameANoteCannotTakeSavesNothing() {
+        launch("superpooper://today")
+        let plus = app.buttons["today.newTask"]
+        XCTAssertTrue(plus.waitForExistence(timeout: 10))
+        app.dismissBanners()
+        plus.tap()
+        XCTAssertTrue(app.textFields["taskPage.name"].waitForExistence(timeout: 5))
+        app.typeText("Встреча: Пётр\n")
+        XCTAssertTrue(app.descendants(matching: .any)["taskPage.name.problem"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.descendants(matching: .any).matching(identifier: "banner").firstMatch.waitForExistence(timeout: 3),
+                       "nothing is saved")
+        XCTAssertFalse(app.buttons["taskPage.more"].exists, "still the new task page")
+    }
+
+    /// Another tab only hides the new task page: coming back finds it as it was left — after Return, the task's own
+    /// page — and Back then creates no second note.
+    func testAnotherTabKeepsTheNewTaskPage() {
         launch("superpooper://today")
         let plus = app.buttons["today.newTask"]
         XCTAssertTrue(plus.waitForExistence(timeout: 10))
@@ -84,13 +116,18 @@ final class NewTaskUITests: XCTestCase {
         let name = app.textFields["taskPage.name"]
         XCTAssertTrue(name.waitForExistence(timeout: 5))
         app.typeText("Полить цветы\n")
+        expectCreatedBanner("Полить цветы")
         app.tabBars.buttons["Habits"].tap()
         XCTAssertTrue(app.buttons["habits.new"].waitForExistence(timeout: 5))
         app.tabBars.buttons["Today"].tap()
         XCTAssertTrue(name.waitForExistence(timeout: 5))
         XCTAssertEqual(name.value as? String, "Полить цветы")
+        XCTAssertTrue(app.buttons["taskPage.more"].exists)
+        app.dismissBanners()
         app.navigationBars.buttons.element(boundBy: 0).tap()
-        expectCreatedBanner("Полить цветы")
+        let second = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == 'banner' AND label BEGINSWITH 'Created'")).firstMatch
+        XCTAssertFalse(second.waitForExistence(timeout: 3), "Back creates no second note")
     }
 
     /// A name a note cannot take is pointed out in the title while it is typed.
@@ -108,14 +145,15 @@ final class NewTaskUITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["taskPage.name.problem"].waitForNonExistence(timeout: 5))
     }
 
-    /// A list of a later planning level in the Lists tab brings its task to this week.
-    func testSomedayListAddsATaskToThisWeek() {
+    /// A list of a later planning level in the Lists tab brings its task to Soon ("Add to Soon").
+    func testSomedayListAddsATaskToSoon() {
         launch("superpooper://lists/someday")
         let add = app.buttons["lists.toThisWeek.Выучить испанский"]
         for _ in 0..<4 where !add.waitForExistence(timeout: 3) { app.swipeUp() }
+        XCTAssertEqual(add.label, "Add to Soon")
         add.tap()
         let banner = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "identifier == 'banner' AND label CONTAINS 'Выучить испанский'")).firstMatch
+            .matching(NSPredicate(format: "identifier == 'banner' AND label CONTAINS 'Moved to Soon' AND label CONTAINS 'Выучить испанский'")).firstMatch
         XCTAssertTrue(banner.waitForExistence(timeout: 25))
         XCTAssertTrue(add.waitForNonExistence(timeout: 5), "a this-week task has no + any more")
     }

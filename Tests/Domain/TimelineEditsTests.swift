@@ -43,6 +43,6 @@ struct TimelineEditsTests {
     @Test func tasksCanBeMarkedFromTheirLongPressMenu() {
         let menu = TestConfig.actions.actions(in: .taskContext).map(\.id)
         #expect(menu.contains(.done) && menu.contains(.unmark))
-        #expect(TestConfig.actions.actions(in: .reminderNotification).map(\.id) == [.done])
+        #expect(TestConfig.actions.actions(in: .reminderNotification).map(\.id) == [.done, .snooze])
     }
 }

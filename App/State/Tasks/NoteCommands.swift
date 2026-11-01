@@ -78,6 +78,26 @@ final class NoteCommands {
         if await setStatus(.archived, of: name) { appEvents.send(.archived(name)) }
     }
 
+    /// A done task back in Soon (Return in the Done list): reopened, as Unmark does.
+    func returnToSoon(_ name: String) async {
+        guard let task = tasks.task(named: name), !task.isHabit, task.status == .done else { return }
+        if await setStatus(.thisWeek, of: name) { appEvents.send(.returned(name)) }
+    }
+
+    /// A task of the done folder back among the active ones, in Soon (the store reopens it).
+    func returnFiled(_ id: TaskID) async {
+        guard let task = tasks.filedTask(id) else { return }
+        do {
+            let back = try await store.unfile(task)
+            tasks.removeFiled(task)
+            tasks.written(back)
+            appEvents.send(.returned(back.name))
+        } catch {
+            appEvents.send(.failure(AppFailure(error)))
+        }
+        await derived.publish()
+    }
+
     /// The weekly review on the phone: a task of a later planning level joins this week.
     func moveToThisWeek(_ name: String) async {
         guard let task = tasks.task(named: name), task.canPromote else { return }
@@ -105,6 +125,24 @@ final class NoteCommands {
         }
         guard let creation = page.creation(unnamed: unnamed, rules: nameProblem(in:)) else { return false }
         return await create(creation.draft, named: creation.name) != nil
+    }
+
+    /// Return in the name of the new task or habit page: its note is created at once (`NewNotePage.savedOnReturn`), and
+    /// the page goes on as the note's own. Returns the note's name; nil when nothing was saved.
+    func createOnReturn(from page: NewNotePage) async -> String? {
+        guard let saving = page.savedOnReturn(rules: nameProblem(in:)) else { return nil }
+        return await create(saving.draft, named: saving.name)
+    }
+
+    /// A task named outside the app's pages (the New Task intent): created as Return in the new task page's name would
+    /// create it, with the same defaults; an empty name is rejected rather than called "Unnamed".
+    func createTask(named name: String) async -> NamedTaskCreation {
+        var page = NewNotePage(draft: .newTask)
+        page.name = name
+        guard let saving = page.savedOnReturn(rules: nameProblem(in:)) else {
+            return .rejected(page.nameProblem(nameProblem(in:)) ?? .empty)
+        }
+        return await create(saving.draft, named: saving.name).map(NamedTaskCreation.created) ?? .failed
     }
 
     /// Creates the note of a draft (a task or a habit) with all its fields, its text and its subtasks (each a task of its
@@ -153,14 +191,31 @@ final class NoteCommands {
 
     // MARK: - Rename and delete
 
+    /// The note goes, and its subtasks with it, all the way down (`SubtaskCascade`), after one backup of them all.
     func delete(_ name: String) async {
         guard let task = tasks.task(named: name) else { return }
+        let notes = [task] + SubtaskCascade.subtasks(of: task, in: tasks.tasks, change: .deletion)
+        do {
+            try await backups.backup(notes, reason: "delete")
+            for note in notes {
+                try await store.delete(note)
+                tasks.remove(note)
+            }
+            appEvents.send(.deleted(task.name))
+        } catch {
+            appEvents.send(.failure(AppFailure(error)))
+        }
+        await derived.publish()
+    }
+
+    /// A task of the done folder goes to the trash, after a backup.
+    func deleteFiled(_ id: TaskID) async {
+        guard let task = tasks.filedTask(id) else { return }
         do {
             try await backups.backup([task], reason: "delete")
             try await store.delete(task)
-            tasks.remove(task)
+            tasks.removeFiled(task)
             appEvents.send(.deleted(task.name))
-            await derived.publish()
         } catch {
             appEvents.send(.failure(AppFailure(error)))
         }

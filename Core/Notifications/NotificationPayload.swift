@@ -11,6 +11,8 @@ enum NotificationPayload {
     static let eventKey = "event"
     /// The event's start, seconds since 1970: a repeating event shares its identifier with its other occurrences.
     static let eventStartKey = "eventStart"
+    /// The notification's key (`PlannedNotification.key`): with its day, what a snooze remembers.
+    static let keyKey = "key"
     static let habitCategory = "habit"
     static let taskCategory = "task"
     static let reminderCategory = "reminder"
