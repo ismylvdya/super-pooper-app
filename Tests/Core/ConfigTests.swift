@@ -85,6 +85,14 @@ struct ConfigTests {
         }
     }
 
+    /// The Home Screen quick action is "🔫 New" and opens a new task.
+    @Test func theQuickActionIsNew() throws {
+        let items = try #require(Bundle(for: BundleToken.self).appHostBundle.object(forInfoDictionaryKey: "UIApplicationShortcutItems")
+            as? [[String: Any]])
+        #expect(items.map { $0["UIApplicationShortcutItemTitle"] as? String } == ["🔫 New"])
+        #expect(items.map { $0["UIApplicationShortcutItemType"] as? String } == ["new-task"])
+    }
+
     /// A gap or peek name that is not a design token stops the app with the file and the key, not a zero gap.
     @Test func layoutTokenTypoIsReported() throws {
         let json = Data(#"{"axis": "horizontal", "spacing": "screenHorizontl", "blocks": [{"block": "pool", "size": "fill"}]}"#.utf8)
