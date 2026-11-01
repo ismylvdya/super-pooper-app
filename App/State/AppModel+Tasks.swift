@@ -19,8 +19,9 @@ extension AppModel {
         case .restoreHabit: await parts.notes.setStatus(.habit, of: name)
         case .returnFromDone: await parts.notes.returnToSoon(name)
         case .delete: await parts.notes.delete(name)
-        // Opening is the screen's; the trash restores its own notes, the timeline deletes its events.
-        case .open, .openInObsidian, .restoreFromTrash, .deleteEvent: break
+        // Opening is the screen's; the trash restores its own notes, the timeline deletes its events, a notification
+        // snoozes itself.
+        case .open, .openInObsidian, .restoreFromTrash, .deleteEvent, .snooze: break
         }
     }
 

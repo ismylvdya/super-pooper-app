@@ -28,7 +28,8 @@ enum PreviewModel {
                                             rules: config.rules.vault, vaultSettings: { settingsStore.load().vault }),
             calendars: calendars, reminders: reminders, notifications: notifications,
             settingsStore: settingsStore, dayStateStore: DayStateStore(store: store),
-            snapshotStore: SnapshotStore(store: store), alertStateStore: AlertStateStore(store: store), widgets: NoWidgets(),
+            snapshotStore: SnapshotStore(store: store), alertStateStore: AlertStateStore(store: store),
+            snoozeStore: SnoozeStore(store: store), widgets: NoWidgets(),
             notificationImage: NotificationImageStore(url: store.url(config.rules.notifications.imageFile), maxPixels: 1),
             signature: signature)
         let banners = BannerCenter()
@@ -83,6 +84,7 @@ struct SilentNotifications: NotificationScheduling {
     func sync(planned: [PlannedNotification], stillValid: [PlannedNotification], now immediate: [PlannedNotification]) async {}
     func removeAll() async {}
     func restore(_ request: UNNotificationRequest) async {}
+    func remove(shown identifier: String) async {}
 }
 
 struct NoWidgets: WidgetReloading {

@@ -38,4 +38,12 @@ struct PlannedNotification: Hashable, Sendable {
         copy.id = id
         return copy
     }
+
+    /// The same notification again at `moment` (snoozed): the same title, text and buttons, at that moment wherever the
+    /// phone is, under an id of its own, so it never takes the place of a habit slot's pending request.
+    func snoozed(until moment: Date) -> PlannedNotification {
+        PlannedNotification(id: "snooze|\(key)|\(day.isoString)", kind: kind, title: title, fireDate: moment, taskName: taskName,
+                            day: day, reminderID: reminderID, key: key, start: start, eventID: eventID, colorHex: colorHex,
+                            isAbsolute: true)
+    }
 }

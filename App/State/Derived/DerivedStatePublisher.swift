@@ -13,6 +13,7 @@ final class DerivedStatePublisher {
     private let settings: SettingsController
     private let snapshotStore: SnapshotStore
     private let alertStateStore: AlertStateStore
+    private let snoozeStore: SnoozeStore
     private let widgets: WidgetReloading
     private let notifications: NotificationScheduling
     private let queue = NotificationQueue()
@@ -28,6 +29,7 @@ final class DerivedStatePublisher {
         self.settings = settings
         snapshotStore = services.snapshotStore
         alertStateStore = services.alertStateStore
+        snoozeStore = services.snoozeStore
         widgets = services.widgets
         notifications = services.notifications
     }
@@ -82,7 +84,21 @@ final class DerivedStatePublisher {
         let day = (request.content.userInfo[NotificationPayload.dayKey] as? String).flatMap(LocalDate.init(isoString:))
         guard !StaleNotifications.isOver(day, today: self.day.context().today) else { return }
         let notifications = notifications
-        await queue.restore { await notifications.restore(request) }
+        await queue.run { await notifications.restore(request) }
+    }
+
+    /// A notification snoozed from its button leaves Notification Center and comes again, the same, after
+    /// `notifications.snoozeMinutes`, while its day lasts and its item stays open (`NotificationSnoozing`). Its item does
+    /// not change. Returns when the plan with it is scheduled, so the app is not suspended before.
+    func snooze(key: String, day: LocalDate, shown identifier: String) async {
+        let context = self.day.context()
+        guard !StaleNotifications.isOver(day, today: context.today) else { return }
+        let until = context.now.addingTimeInterval(Double(config.rules.notifications.snoozeMinutes) * 60)
+        let snooze = NotificationSnooze(key: key, day: day, until: until)
+        try? snoozeStore.save(NotificationSnoozing.adding(snooze, to: snoozeStore.load(), today: context.today))
+        let notifications = notifications
+        await queue.run { await notifications.remove(shown: identifier) }
+        await replanNotifications()
     }
 
     /// Background work waits for the notification schedule before the app is suspended.
@@ -117,6 +133,16 @@ final class DerivedStatePublisher {
         try? alertStateStore.save(AlertState(
             pending: Dictionary(planned.map { ($0.key, $0.fireDate) }, uniquingKeysWith: min),
             known: Array(Set(all.map(\.key)))))
-        await notifications.sync(planned: planned, stillValid: valid + late, now: late)
+        let snoozed = NotificationSnoozing.notifications(currentSnoozes(today: context.today), valid: valid, context: context)
+        await notifications.sync(planned: planned + snoozed.filter { $0.fireDate > context.now }, stillValid: valid + late + snoozed,
+                                 now: late)
+    }
+
+    /// The snoozes of today; those of days that are over are forgotten.
+    private func currentSnoozes(today: LocalDate) -> [NotificationSnooze] {
+        let stored = snoozeStore.load()
+        let current = NotificationSnoozing.current(stored, today: today)
+        if current.count != stored.count { try? snoozeStore.save(current) }
+        return current
     }
 }

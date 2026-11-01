@@ -177,6 +177,17 @@
         }
       }
     },
+    "action.snooze": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snooze"
+          }
+        }
+      }
+    },
     "action.twice": {
       "extractionState": "manual",
       "localizations": {

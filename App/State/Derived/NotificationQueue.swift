@@ -1,8 +1,8 @@
 import Foundation
 
-/// The notification work in one line: a plan or a restore starts only when the work before it is done. A newer plan
-/// replaces the one still waiting or running (a running plan stops adding requests); a restore is never cancelled, so a
-/// plan asked for after it finds the request it put back.
+/// The notification work in one line: a plan or a job on a shown notification (put back, taken away when snoozed) starts
+/// only when the work before it is done. A newer plan replaces the one still waiting or running (a running plan stops
+/// adding requests); a job on a shown notification is never cancelled, so a plan asked for after it finds what it did.
 @MainActor
 final class NotificationQueue {
     private var tail: Task<Void, Never>?
@@ -20,7 +20,7 @@ final class NotificationQueue {
         plan = job
     }
 
-    func restore(_ work: @escaping @MainActor () async -> Void) async {
+    func run(_ work: @escaping @MainActor () async -> Void) async {
         await enqueue { previous in
             await previous?.value
             await work()

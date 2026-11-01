@@ -13,6 +13,8 @@ protocol NotificationScheduling: Sendable {
     /// Puts a notification the user swiped away or tapped back into Notification Center (silently), under an
     /// identifier of its own: it never takes the place of the pending request of the same slot (tomorrow's).
     func restore(_ request: UNNotificationRequest) async
+    /// Takes a shown notification out of Notification Center (it was snoozed), with a copy put back that may still wait.
+    func remove(shown identifier: String) async
 }
 
 struct UserNotificationScheduler: NotificationScheduling {
@@ -127,6 +129,11 @@ struct UserNotificationScheduler: NotificationScheduling {
                                                     content: content, trigger: trigger))
     }
 
+    func remove(shown identifier: String) async {
+        center.removeDeliveredNotifications(withIdentifiers: [identifier])
+        center.removePendingRequests(withIdentifiers: [NotificationIdentifier.restored(identifier)])
+    }
+
     /// Habits keep one identifier per time slot (the new day's notification replaces the old one);
     /// everything else carries its fire time, so a moved item gets a fresh notification.
     private func identifier(for notification: PlannedNotification) -> String {
@@ -174,6 +181,7 @@ struct UserNotificationScheduler: NotificationScheduling {
             NotificationPayload.reminderKey: notification.reminderID ?? "",
             NotificationPayload.eventKey: notification.eventID ?? "",
             NotificationPayload.eventStartKey: notification.start?.timeIntervalSince1970 ?? 0,
+            NotificationPayload.keyKey: notification.key,
         ]
         return content
     }

@@ -9,6 +9,8 @@ enum NotificationResponse: Equatable {
     case completeReminder(id: String)
     /// Delete event on an event alert: the occurrence that alert belongs to.
     case deleteEvent(identifier: String, start: Date)
+    /// Snooze on any notification: the notification of this key and day comes again later.
+    case snooze(key: String, day: LocalDate)
     /// A button on a task's or habit's notification, for the day the notification belongs to.
     case perform(ActionID, taskName: String, day: LocalDate?)
     case ignore
@@ -23,6 +25,11 @@ struct NotificationResponseRouter {
             let opens = action == UNNotificationDefaultActionIdentifier ? NotificationTapTarget.url(for: info, links: links) : nil
             return .putBack(opening: opens)
         }
+        let day = (info[NotificationPayload.dayKey] as? String).flatMap(LocalDate.init(isoString:))
+        if action == ActionID.snooze.rawValue {
+            guard let key = info[NotificationPayload.keyKey] as? String, !key.isEmpty, let day else { return .ignore }
+            return .snooze(key: key, day: day)
+        }
         if (info[NotificationPayload.kindKey] as? String) == PlannedNotification.Kind.reminder.rawValue,
            let reminderID = info[NotificationPayload.reminderKey] as? String, !reminderID.isEmpty,
            action == ActionID.done.rawValue {
@@ -35,7 +42,6 @@ struct NotificationResponseRouter {
         }
         guard let chosen = ActionID(rawValue: action),
               let taskName = info[NotificationPayload.taskKey] as? String, !taskName.isEmpty else { return .ignore }
-        let day = (info[NotificationPayload.dayKey] as? String).flatMap(LocalDate.init(isoString:))
         return .perform(chosen, taskName: taskName, day: day)
     }
 }

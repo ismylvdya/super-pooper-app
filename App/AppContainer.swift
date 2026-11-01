@@ -83,7 +83,7 @@ final class AppContainer {
             reminders: EventKitRemindersRepository(eventKit: eventKit, calendar: calendar),
             notifications: notifications, settingsStore: settingsStore,
             dayStateStore: DayStateStore(store: shared), snapshotStore: SnapshotStore(store: shared),
-            alertStateStore: AlertStateStore(store: shared),
+            alertStateStore: AlertStateStore(store: shared), snoozeStore: SnoozeStore(store: shared),
             widgets: WidgetKitReloader(), notificationImage: notificationImage, signature: launch.signature(now: clock.now))
 
         let banners = BannerCenter()

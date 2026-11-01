@@ -9,9 +9,19 @@ struct ConfigTests {
     @Test func partialAndTwiceStayOnTheHabitsPage() {
         #expect(TestConfig.actions.menus[.habitDay].actions == [.unmark, .partial, .done, .twice])
         #expect(TestConfig.actions.menus[.habitContext].actions == [.unmark, .done, .skipToday])
-        #expect(TestConfig.actions.menus[.habitNotification].actions == [.done, .skipToday])
+        #expect(TestConfig.actions.menus[.habitNotification].actions == [.done, .snooze, .skipToday])
         #expect(TestConfig.actions.definition(.skipToday).destructive)
         #expect(TestConfig.actions.menus[.eventContext].actions == [.deleteEvent])
+    }
+
+    /// Every kind of notification can be snoozed (.2910); the in-app menus cannot, and the snooze lasts an hour.
+    @Test func everyNotificationOffersSnooze() {
+        let notifications: [ActionMenu] = [.habitNotification, .taskNotification, .reminderNotification, .eventNotification]
+        for menu in ActionMenu.allCases {
+            #expect(TestConfig.actions.menus[menu].actions.contains(.snooze) == notifications.contains(menu), "\(menu)")
+        }
+        #expect(!TestConfig.actions.definition(.snooze).destructive)
+        #expect(TestConfig.rules.notifications.snoozeMinutes == 60)
     }
 
     /// The pool menu of a task takes it out of today (Not today) rather than archiving it.

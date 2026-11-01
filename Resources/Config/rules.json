@@ -36,7 +36,8 @@
     "signingWarningID": "signing-expiry",
     "imageMaxPixels": 400,
     "restoreDelaySeconds": 1,
-    "fireTimeToleranceSeconds": 30
+    "fireTimeToleranceSeconds": 30,
+    "snoozeMinutes": 60
   },
   "signingPlate": {
     "showWithinDays": 7,

@@ -23,6 +23,9 @@ enum ActionID: String, Codable, CaseIterable, Sendable {
     /// A note in the trash back among the tasks.
     case restoreFromTrash
     case deleteEvent
+    /// A notification's button: the same notification comes again later (`rules.json` → `notifications.snoozeMinutes`);
+    /// nothing about its item changes.
+    case snooze
 }
 
 extension ActionID {
