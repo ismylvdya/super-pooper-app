@@ -1,4 +1,3 @@
-import CoreGraphics
 import SwiftUI
 import Testing
 @testable import SuperPooperApp
@@ -34,16 +33,7 @@ struct HabitDayCellTests {
 
     /// The alpha of each pixel in the middle row of the rendered view (one pixel per point).
     private func middleRowAlphas(_ view: some View) throws -> [UInt8] {
-        let renderer = ImageRenderer(content: view)
-        renderer.scale = 1
-        let image = try #require(renderer.cgImage)
-        let width = image.width
-        var pixels = [UInt8](repeating: 0, count: width * image.height * 4)
-        let context = try #require(CGContext(data: &pixels, width: width, height: image.height, bitsPerComponent: 8,
-                                             bytesPerRow: width * 4, space: CGColorSpaceCreateDeviceRGB(),
-                                             bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
-        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: image.height))
-        let row = image.height / 2
-        return (0..<width).map { pixels[(row * width + $0) * 4 + 3] }
+        let rendered = try RenderedAlpha(view)
+        return rendered.row(rendered.height / 2)
     }
 }
