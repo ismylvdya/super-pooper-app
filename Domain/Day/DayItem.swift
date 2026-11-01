@@ -1,24 +1,5 @@
 import Foundation
 
-/// The state of a task for today.
-enum DayItemState: Hashable, Sendable {
-    case open
-    /// Regular tasks are always `.done`; recurring ones carry their mark.
-    case marked(HabitMark)
-
-    var isDone: Bool { self != .open }
-    var mark: HabitMark? {
-        if case .marked(let mark) = self { return mark }
-        return nil
-    }
-}
-
-/// What keeps a task from being checked off.
-enum Blocker: Hashable, Sendable {
-    case task(String)
-    case event(title: String, end: Date)
-}
-
 /// A task as it appears in today's pool or timeline.
 struct DayItem: Identifiable, Hashable, Sendable {
     let task: TaskItem

@@ -25,7 +25,8 @@ enum DayPlanning {
                         dayState: dayState, context: context, eventsKnown: eventsKnown)
         }
         let day = context.today.adding(days: dayOffset)
-        let dayContext = context.focused(on: OtherDay.moment(of: day, context: context, anchor: config.rules.timeline.otherDayAnchor))
+        // "Now" inside another day: the hour its timeline centres on (no cursor is drawn there).
+        let dayContext = context.focused(on: context.moment(config.rules.timeline.otherDayAnchor, onLogicalDay: day))
         let inputs = DayInputs(tasks: usable(tasks, config: config, context: context), events: events, reminders: reminders,
                                skipped: [], manualOrder: nil, timelineFilter: settings.timeline.shown, isOtherDay: true,
                                eventsKnown: eventsKnown)

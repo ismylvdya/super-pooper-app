@@ -147,6 +147,15 @@ struct DayScenario {
 extension DayPlan {
     var poolNames: [String] { pool.map(\.id) }
 
+    /// The item of a task in the pool or on the timeline.
+    func item(named name: String) -> DayItem? {
+        if let item = pool.first(where: { $0.id == name }) { return item }
+        for entry in timeline {
+            if case .task(let item) = entry.content, item.id == name { return item }
+        }
+        return nil
+    }
+
     var timelineTaskNames: [String] {
         timeline.compactMap { slot in
             if case .task(let item) = slot.content { return item.id }

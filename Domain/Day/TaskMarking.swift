@@ -17,12 +17,6 @@ struct TaskMarking: Sendable {
         return task.status == .done ? [.reopen] : []
     }
 
-    /// Tap: open → done, done → open.
-    func changes(toggling task: TaskItem) -> [TaskEdit] {
-        let isMarked = task.isHabit ? task.mark(on: today) != nil : task.status == .done
-        return changes(marking: task, as: isMarked ? nil : .done)
-    }
-
     /// A status change (the task page, the review, the archive and its restore, promotion to this week): entering done
     /// completes the task today; any other status leaves done. Recurring tasks only change the status.
     func changes(setting status: TaskStatus, on task: TaskItem) -> [TaskEdit] {

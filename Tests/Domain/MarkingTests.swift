@@ -41,11 +41,11 @@ struct MarkingTests {
         #expect(marking.changes(marking: habit, as: nil).isEmpty)
     }
 
-    @Test func tapTogglesBetweenDoneAndNoMark() {
-        let done = habit.applying(marking.changes(toggling: habit))
+    @Test func aHabitIsMarkedAndUnmarkedForTheDay() {
+        let done = habit.applying(marking.changes(marking: habit, as: .done))
         #expect(done.mark(on: today) == .done)
         let partial = habit.applying(marking.changes(marking: habit, as: .partial))
-        let cleared = partial.applying(marking.changes(toggling: partial))
+        let cleared = partial.applying(marking.changes(marking: partial, as: nil))
         #expect(cleared.mark(on: today) == nil)
         #expect(cleared.marks == habit.marks)
     }
@@ -66,14 +66,12 @@ struct MarkingTests {
     @Test func doneSetsStatusAndCompletedDate() {
         let task = makeTask("Pay for internet")
         #expect(marking.changes(marking: task, as: .done) == [.complete(on: today)])
-        #expect(marking.changes(toggling: task) == [.complete(on: today)])
     }
 
     @Test func undoRevertsToThisWeekAndRemovesCompletedDate() {
         let done = makeTask("Buy milk", status: .done) { $0.completedDate = self.today }
         #expect(marking.changes(marking: done, as: nil) == [.reopen])
-        #expect(marking.changes(toggling: done) == [.reopen])
-        let reverted = done.applying(marking.changes(toggling: done))
+        let reverted = done.applying(marking.changes(marking: done, as: nil))
         #expect(reverted.status == .thisWeek && reverted.completedDate == nil)
     }
 
