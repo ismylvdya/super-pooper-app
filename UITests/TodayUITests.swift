@@ -147,12 +147,13 @@ final class TodayUITests: XCTestCase {
     func testAPoolRowDraggedUpTakesThePlaceAbove() {
         launch()
         dismissBanners()
-        let pay = app.buttons["title:Оплатить интернет"]
-        let above = app.buttons["title:Медитация 🧘"]
-        XCTAssertTrue(pay.waitForExistence(timeout: 10) && above.waitForExistence(timeout: 5))
-        XCTAssertLessThan(above.frame.midY, pay.frame.midY)
-        pay.press(forDuration: 1.2, thenDragTo: above, withVelocity: .slow, thenHoldForDuration: 0.5)
-        expect(pay, toBe: { $0.frame.midY < above.frame.midY }, "it stands above the row it was dropped on")
+        // Rows no other test marks or moves, so the suite's order does not matter.
+        let resume = app.buttons["title:Обновить резюме"]
+        let above = app.buttons["title:Неизвестное правило"]
+        XCTAssertTrue(resume.waitForExistence(timeout: 10) && above.waitForExistence(timeout: 5))
+        XCTAssertLessThan(above.frame.midY, resume.frame.midY)
+        resume.press(forDuration: 1.2, thenDragTo: above, withVelocity: .slow, thenHoldForDuration: 0.5)
+        expect(resume, toBe: { $0.frame.midY < above.frame.midY }, "it stands above the row it was dropped on")
     }
 
     /// On the pages, a row dragged onto the edge of the other page turns to it. A habit without reminder times is

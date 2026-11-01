@@ -106,7 +106,7 @@ final class SwipeUITests: XCTestCase {
         launch("superpooper://review")
         XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 10))
         app.dismissBanners()
-        let habit = app.cells.containing(.any, identifier: "review:Медитация 🧘").firstMatch
+        let habit = app.cells.containing(.any, identifier: "review:Утро — зарядка 🤸").firstMatch
         app.scrollIntoView(habit)
         reveal(habit, right: false)
         XCTAssertTrue(app.buttons["swipe.skipToday"].waitForExistence(timeout: 3))
