@@ -771,6 +771,29 @@
         }
       }
     },
+    "confirm.delete.subtasks": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld subtask goes with it."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld subtasks go with it."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "confirm.delete.title.habit": {
       "extractionState": "manual",
       "localizations": {

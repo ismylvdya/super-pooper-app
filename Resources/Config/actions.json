@@ -63,7 +63,8 @@
       "destructive": true,
       "haptic": "medium",
       "confirmTitle": "confirm.delete.title",
-      "confirmMessage": "confirm.delete.message"
+      "confirmMessage": "confirm.delete.message",
+      "confirmSubtasks": "confirm.delete.subtasks"
     },
     {
       "id": "openInObsidian",

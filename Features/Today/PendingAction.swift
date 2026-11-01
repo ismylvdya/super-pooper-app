@@ -6,5 +6,7 @@ struct PendingAction: Identifiable, Equatable {
     let taskName: String
     /// The title names the kind of note ("Delete habit?").
     let kind: NoteKind
+    /// How many subtasks go along with the note.
+    let subtasks: Int
     var id: String { "\(action.id.rawValue)|\(taskName)" }
 }

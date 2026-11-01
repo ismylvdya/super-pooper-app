@@ -153,17 +153,21 @@ final class NoteCommands {
 
     // MARK: - Rename and delete
 
+    /// The note goes, and its subtasks with it, all the way down (`SubtaskCascade`), after one backup of them all.
     func delete(_ name: String) async {
         guard let task = tasks.task(named: name) else { return }
+        let notes = [task] + SubtaskCascade.subtasks(of: task, in: tasks.tasks, change: .deletion)
         do {
-            try await backups.backup([task], reason: "delete")
-            try await store.delete(task)
-            tasks.remove(task)
+            try await backups.backup(notes, reason: "delete")
+            for note in notes {
+                try await store.delete(note)
+                tasks.remove(note)
+            }
             appEvents.send(.deleted(task.name))
-            await derived.publish()
         } catch {
             appEvents.send(.failure(AppFailure(error)))
         }
+        await derived.publish()
     }
 
     /// Renames the note; the store rewrites the tasks that refer to it, and the settings and today's state that name it

@@ -16,7 +16,7 @@ struct ActionConfirmation: ViewModifier {
             }
             Button("common.cancel", role: .cancel) {}
         } message: { pending in
-            Text(L10n.format(pending.action.confirmMessage ?? "", pending.taskName))
+            Text(verbatim: ConfirmationText.message(pending))
         }
     }
 }

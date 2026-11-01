@@ -83,6 +83,8 @@ struct ActionDefinition: Codable, Hashable, Sendable {
     /// its key is this one and the kind (`confirm.delete.title.habit`).
     let confirmTitle: String?
     let confirmMessage: String?
+    /// How many subtasks go along, under the message (a plural text); none = not said.
+    var confirmSubtasks: String?
 
     var needsConfirmation: Bool { confirmTitle != nil }
 

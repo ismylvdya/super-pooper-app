@@ -23,6 +23,12 @@ extension AppModel {
     /// Subtasks of a note (notes whose `projects` link to it), in their order.
     func subtasks(of parent: String) -> [TaskItem] { parts.tasks.subtasks(of: parent) }
 
+    /// How many subtasks an action on the note takes along (Delete, Done; the delete confirmation says so).
+    func subtasksGoingAlong(with name: String, action: ActionID) -> Int {
+        guard let change = action.subtaskChange, let task = task(named: name) else { return 0 }
+        return SubtaskCascade.subtasks(of: task, in: tasks, change: change).count
+    }
+
     // MARK: - Lists tab
 
     /// What a list holds now, the filed tasks included.

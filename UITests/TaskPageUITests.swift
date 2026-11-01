@@ -55,6 +55,25 @@ final class TaskPageUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'to trash'")).firstMatch.waitForExistence(timeout: 5))
     }
 
+    /// A parent's subtasks go with it (.1965): the confirmation says how many.
+    func testDeletingAParentSaysItsSubtasksGoAlong() {
+        open("Повесить зеркало")
+        let field = app.textFields["taskPage.subtask"].firstMatch
+        for name in ["Купить дюбели", "Найти уровень"] {
+            app.scrollIntoView(field)
+            field.tap()
+            field.typeText(name + "\n")
+            XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "subtask:\(name)").firstMatch.waitForExistence(timeout: 5))
+        }
+        app.dismissBanners()
+        moreMenu("action.delete")
+        let alert = app.alerts["Delete task?"]
+        XCTAssertTrue(alert.waitForExistence(timeout: 5))
+        XCTAssertTrue(alert.staticTexts.matching(NSPredicate(format: "label CONTAINS '2 subtasks go with it.'")).firstMatch.exists)
+        alert.buttons["Delete"].tap()
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'to trash'")).firstMatch.waitForExistence(timeout: 5))
+    }
+
     func testLinkPreviousTaskThroughPicker() {
         open("Помыть окна")
         app.buttons["link.add.previous"].tap()

@@ -20,6 +20,7 @@ check "rename → new file, old gone"                  "[ -f \"$TASKS/Запис
 check "archive → status: archived"                   "grep -q '^status: archived' \"$TASKS/Купить батарейки 🔋.md\""
 check "delete → moved to .trash"                     "[ -f \"$VAULT/.trash/Посмотреть сериал 🍿.md\" ] && [ ! -f \"$TASKS/Посмотреть сериал 🍿.md\" ]"
 check "delete from Habits → repeatable task in .trash" "[ -f \"$VAULT/.trash/Витамины 💊.md\" ] && [ ! -f \"$TASKS/Витамины 💊.md\" ] && grep -qF '\"repeatable\":true' \"$VAULT/.trash/Витамины 💊.md\""
+check "delete a parent → its subtasks in .trash too"  "[ -f \"$VAULT/.trash/Повесить зеркало.md\" ] && [ -f \"$VAULT/.trash/Купить дюбели.md\" ] && [ -f \"$VAULT/.trash/Найти уровень.md\" ] && [ ! -f \"$TASKS/Купить дюбели.md\" ]"
 check "picker → previous_task link written"          "grep -qF 'uid: \"[[Найти отвёртку]]\"' \"$TASKS/Помыть окна.md\""
 check "event picker → previous_event written"        "grep -q '^previous_event: \".*|Call with dad|' \"$TASKS/Сходить к стоматологу.md\""
 check "plus in Habits → new habit, in Today"         "grep -q '^status: habit' \"$TASKS/Читать 20 минут.md\" && grep -qF '\"show_in_today\":true' \"$TASKS/Читать 20 минут.md\" && grep -q '^recurrence: ' \"$TASKS/Читать 20 минут.md\""

@@ -13,7 +13,8 @@ struct TaskActionHandler {
 
     func handle(_ action: ActionDefinition, taskName: String) {
         if action.needsConfirmation {
-            requestConfirmation(PendingAction(action: action, taskName: taskName, kind: model.task(named: taskName)?.kind ?? .task))
+            requestConfirmation(PendingAction(action: action, taskName: taskName, kind: model.task(named: taskName)?.kind ?? .task,
+                                              subtasks: model.subtasksGoingAlong(with: taskName, action: action.id)))
             return
         }
         run(action, taskName: taskName)
