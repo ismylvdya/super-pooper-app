@@ -28,6 +28,8 @@ struct NotificationsDebugScreen: View {
             }
         }
         .navigationTitle("Notifications")
+        // Inline like every page of the app: a large title would lie over the first section.
+        .navigationBarTitleDisplayMode(.inline)
         .task {
             let center = UNUserNotificationCenter.current()
             requests = await center.pendingNotificationRequests().sorted { fireDate($0) < fireDate($1) }

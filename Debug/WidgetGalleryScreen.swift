@@ -31,6 +31,8 @@ struct WidgetGalleryScreen: View {
         }
         .background(tokens.color(.chipBackground))
         .navigationTitle("Widgets")
+        // Inline like every page of the app: a large title would lie over the first widget.
+        .navigationBarTitleDisplayMode(.inline)
     }
 
     private func widget<Content: View>(width: CGFloat, height: CGFloat, @ViewBuilder content: () -> Content) -> some View {
