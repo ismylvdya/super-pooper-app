@@ -16,6 +16,7 @@ enum RadiusToken: String, CaseIterable, Sendable {
 
 enum SizeToken: String, CaseIterable, Sendable {
     case iconColumn, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, notificationIcon
+    case dayArrowTarget
     case habitDotMinimum, cornerInsetMinimum, eventDot, sourceDot, fadeHeight, poolCounter, poolWidth
     case habitHistoryMaxHeight, habitStatsBar, titleFade, hourDigitsWidth, actionPopoverWidth, reviewChevron, wrapMinWidth, liftOverhang, pagePeek, dropLine, dropMarkerHeight, bannerShadowRadius, bannerShadowY, hexFieldWidth, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, allDayFontDelta, previewHeight, previewRow, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewHalvesInset, subtaskDropLine
 }

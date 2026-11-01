@@ -48,6 +48,29 @@ final class TodayUITests: XCTestCase {
         XCTAssertEqual(previous.frame, arrows.1)
     }
 
+    /// The arrows take taps across the whole bar height (`size.dayArrowTarget`, 44 pt), on the room around the glyph and
+    /// on the gap to the name: taps in the far corners of an arrow's area still turn the day.
+    func testTheDayArrowsAreEasyToHit() {
+        launch()
+        dismissBanners()
+        let next = app.buttons["today.nextDay"]
+        let previous = app.buttons["today.previousDay"]
+        for arrow in [next, previous] {
+            XCTAssertGreaterThanOrEqual(arrow.frame.height.rounded(), 44, arrow.identifier)
+            XCTAssertGreaterThan(arrow.frame.width, app.buttons["today.day"].frame.height / 2, arrow.identifier)
+        }
+        let date = NSPredicate(format: "identifier == 'today.day' AND label MATCHES '^[0-9]{1,2} [A-Za-z]{3}$'")
+        let today = NSPredicate(format: "identifier == 'today.day' AND label == 'Today'")
+        let corners = [(next, CGVector(dx: 0.95, dy: 0.08)), (next, CGVector(dx: 0.05, dy: 0.92)),
+                       (previous, CGVector(dx: 0.05, dy: 0.08)), (previous, CGVector(dx: 0.95, dy: 0.92))]
+        for (arrow, corner) in corners {
+            arrow.coordinate(withNormalizedOffset: corner).tap()
+            XCTAssertTrue(app.buttons.matching(date).firstMatch.waitForExistence(timeout: 5), "\(arrow.identifier) at \(corner)")
+            app.tabBars.buttons["Today"].tap()
+            XCTAssertTrue(app.buttons.matching(today).firstMatch.waitForExistence(timeout: 5))
+        }
+    }
+
     /// Pool rows have no checkboxes: a long press offers Done, and the done task leaves the pool.
     func testLongPressMarksATaskDone() {
         launch()

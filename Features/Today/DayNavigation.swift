@@ -3,6 +3,8 @@ import SwiftUI
 /// The arrows around the shown day's name ("Today", "26 Oct"; lying sideways "Mon", "Tod"); on another day, tapping the
 /// name goes back to today. The name's frame is as wide as the widest name, so the arrows stay put; it shrinks if
 /// the room is short. Sideways it is a column in physical order whose arrows point the same physical way as upright.
+/// An arrow takes taps far beyond its glyph while everything stays where it was: the whole height of the bar
+/// (`size.dayArrowTarget`), the room the bar's button style used to leave around the glyph and the gap to the name.
 struct DayNavigation: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
@@ -19,24 +21,47 @@ struct DayNavigation: View {
         let style: DayName.Style = bottom == nil ? .date : .weekday
         let title = DayName.title(today.adding(days: dayOffset), offset: dayOffset, style: style, calendar: model.calendar)
         let names = DayName.all(style, around: today, calendar: model.calendar)
-        let layout = bottom == nil ? AnyLayout(HStackLayout(spacing: tokens.space(.chipGap))) : AnyLayout(VStackLayout(spacing: tokens.space(.chipGap)))
+        let layout = bottom == nil ? AnyLayout(HStackLayout(spacing: 0)) : AnyLayout(VStackLayout(spacing: 0))
+        let order = PhysicalBottom.physicalOrder([Part.previous, .name, .next], bottom: bottom)
+        let nameIndex = order.firstIndex(of: .name) ?? 0
         layout {
-            ForEach(PhysicalBottom.physicalOrder([Part.previous, .name, .next], bottom: bottom), id: \.self) { part in
+            ForEach(Array(order.enumerated()), id: \.element) { index, part in
+                let towardName = edgeTowardName(beforeName: index < nameIndex)
                 switch part {
-                case .previous: arrow(.previousDay, step: -1, label: "today.previousDay", id: "today.previousDay")
+                case .previous: arrow(.previousDay, step: -1, label: "today.previousDay", id: "today.previousDay", towardName: towardName)
                 case .name: name(title, names: names)
-                case .next: arrow(.nextDay, step: 1, label: "today.nextDay", id: "today.nextDay")
+                case .next: arrow(.nextDay, step: 1, label: "today.nextDay", id: "today.nextDay", towardName: towardName)
                 }
             }
         }
         .tint(tokens.color(.accent))
     }
 
-    private func arrow(_ icon: Icon, step: Int, label: LocalizedStringKey, id: String) -> some View {
-        Button { onStep(step) } label: {
+    /// The side of an arrow that faces the name: upright beside it, sideways above or below it.
+    private func edgeTowardName(beforeName: Bool) -> Edge {
+        switch (bottom == nil, beforeName) {
+        case (true, true): .trailing
+        case (true, false): .leading
+        case (false, true): .bottom
+        case (false, false): .top
+        }
+    }
+
+    private func arrow(_ icon: Icon, step: Int, label: LocalizedStringKey, id: String, towardName edge: Edge) -> some View {
+        let upright = bottom == nil
+        return Button { onStep(step) } label: {
             // Sideways (‹ ›) in every orientation, also when the arrows stand above and below the name.
             Image(systemName: icons[icon])
+                .padding(.horizontal, upright ? tokens.bar(.barButtonPadding) : 0)
+                .padding(Edge.Set(edge), tokens.space(.chipGap))
+                // Sideways as wide as the bar buttons of the column, and as long as the bar is high upright.
+                .frame(width: upright ? nil : tokens.bar(.barButton), height: tokens.size(.dayArrowTarget), alignment: Alignment(edge))
+                .contentShape(Rectangle())
         }
+        // The bar's own button style pads the glyph with room that takes no taps; the plain style leaves the padding to
+        // the label above, so all of it takes taps (the glyph keeps the bar's font and the tint's color).
+        .buttonStyle(.plain)
+        .foregroundStyle(.tint)
         .accessibilityLabel(Text(label))
         .accessibilityIdentifier(id)
     }
@@ -55,5 +80,17 @@ struct DayNavigation: View {
             .fixedSize(horizontal: bottom != nil, vertical: false)
         }
         .accessibilityIdentifier("today.day")
+    }
+}
+
+private extension Alignment {
+    /// Against that edge, centered along it.
+    init(_ edge: Edge) {
+        switch edge {
+        case .top: self = .top
+        case .bottom: self = .bottom
+        case .leading: self = .leading
+        case .trailing: self = .trailing
+        }
     }
 }
