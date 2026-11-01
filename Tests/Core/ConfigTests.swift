@@ -175,7 +175,8 @@ struct ConfigTests {
             let broken = Data(try json.replacingOnce(fragment, with: replacement).utf8)
             #expect(throws: ConfigError.self) { try ConfigLoader.decode(ActionRegistry.self, from: broken, file: "actions.json") }
         }
-        let tinted = Data(try json.replacingOnce("\"swipeTint\": \"swipeNeutral\"", with: "\"swipeTint\": \"swipeNeutrl\"").utf8)
+        let tinted = Data(try json.replacingOnce("\"moon.zzz\",\n      \"destructive\": false,\n      \"haptic\": \"light\",\n      \"swipeTint\": \"swipeNeutral\"",
+                                                 with: "\"moon.zzz\",\n      \"destructive\": false,\n      \"haptic\": \"light\",\n      \"swipeTint\": \"swipeNeutrl\"").utf8)
         let registry = try ConfigLoader.decode(ActionRegistry.self, from: tinted, file: "actions.json")
         #expect(throws: ConfigError.self) { try registry.validate(file: "actions.json") }
     }

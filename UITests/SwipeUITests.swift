@@ -101,15 +101,25 @@ final class SwipeUITests: XCTestCase {
         XCTAssertTrue(milk.waitForNonExistence(timeout: 10))
     }
 
-    /// Soon: to the left Not today (the full swipe) and Delete, to the right Done.
-    func testSoonOffersNotTodayDeleteAndDone() {
+    /// Soon: to the left exactly one button, Not today for a task and Skip today for a habit (no Delete); to the right Done.
+    func testSoonOffersOneButtonToTheLeftAndDoneToTheRight() {
         launch("superpooper://review")
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 10))
+        app.dismissBanners()
+        let habit = app.cells.containing(.any, identifier: "review:Медитация 🧘").firstMatch
+        app.scrollIntoView(habit)
+        reveal(habit, right: false)
+        XCTAssertTrue(app.buttons["swipe.skipToday"].waitForExistence(timeout: 3))
+        XCTAssertFalse(app.buttons["swipe.delete"].exists, "no Delete in Soon")
+        XCTAssertFalse(app.buttons["swipe.notToday"].exists)
+        reveal(habit, right: true)
+        XCTAssertTrue(app.buttons["swipe.skipToday"].waitForNonExistence(timeout: 3))
+
         let task = find("Сдать отчёт")
         reveal(task, right: false)
         XCTAssertTrue(app.buttons["swipe.notToday"].waitForExistence(timeout: 3))
-        XCTAssertTrue(app.buttons["swipe.delete"].exists)
-        XCTAssertLessThan(app.buttons["swipe.delete"].frame.minX, app.buttons["swipe.notToday"].frame.minX,
-                          "Not today stands at the edge, Delete after it")
+        XCTAssertFalse(app.buttons["swipe.delete"].exists, "no Delete in Soon")
+        XCTAssertFalse(app.buttons["swipe.skipToday"].exists)
         // A drag back closes the buttons; the next one shows the other side.
         reveal(task, right: true)
         XCTAssertTrue(app.buttons["swipe.notToday"].waitForNonExistence(timeout: 3))

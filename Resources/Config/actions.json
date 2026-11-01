@@ -27,7 +27,8 @@
       "title": "action.skipToday",
       "icon": "forward.end",
       "destructive": true,
-      "haptic": "light"
+      "haptic": "light",
+      "swipeTint": "swipeNeutral"
     },
     {
       "id": "notToday",
@@ -258,7 +259,7 @@
       ],
       "trailing": [
         "notToday",
-        "delete"
+        "skipToday"
       ]
     },
     "postponed": {
