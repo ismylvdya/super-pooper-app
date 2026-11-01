@@ -123,14 +123,14 @@ struct TodayScreen: View {
             }
         }
         // As far from the physical sides as the bubbles upright: measured from the screen edges in both turns.
-        .padding(.vertical, tokens.space(.screenHorizontal))
+        .padding(.vertical, tokens.bar(.barSideInset))
         .ignoresSafeArea(.container, edges: .vertical)
     }
 
     /// A group of bar buttons in the glass capsule the system draws around them upright.
     private func bubble(_ axis: Axis, @ViewBuilder _ buttons: () -> some View) -> some View {
-        let layout = axis == .horizontal ? AnyLayout(HStackLayout(spacing: tokens.space(.barButtonGap)))
-            : AnyLayout(VStackLayout(spacing: tokens.space(.barButtonGap)))
+        let layout = axis == .horizontal ? AnyLayout(HStackLayout(spacing: tokens.bar(.barButtonGap)))
+            : AnyLayout(VStackLayout(spacing: tokens.bar(.barButtonGap)))
         return layout { buttons() }
             .buttonStyle(.plain)
             .foregroundStyle(tokens.color(.primaryText))

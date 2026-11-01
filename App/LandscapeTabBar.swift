@@ -13,7 +13,7 @@ struct LandscapeTabBar: View {
         VStack(spacing: 0) {
             ForEach(PhysicalBottom.physicalOrder(AppTab.allCases, bottom: bottom), id: \.self) { tab in
                 Button { router.select(tab) } label: {
-                    VStack(spacing: tokens.space(.badgeGap)) {
+                    VStack(spacing: tokens.bar(.tabIconLabelGap)) {
                         // The symbol as `icons.json` names it and the small label, as in the tab bar upright.
                         TabIconImage.image(icons[tab.icon], font: tokens.uiFont(.tabIcon), others: AppTab.allCases.map { icons[$0.icon] },
                                            matching: .width)
@@ -27,7 +27,7 @@ struct LandscapeTabBar: View {
                         .frame(maxWidth: .infinity)
                         .fixedSize(horizontal: false, vertical: true)
                     }
-                    .padding(.horizontal, tokens.space(.tabBarInner))
+                    .padding(.horizontal, tokens.bar(.tabBarInner))
                     .foregroundStyle(tokens.color(.primaryText))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background(tokens.color(.chipBackground).opacity(router.tab == tab ? 1 : 0), in: Capsule())
@@ -38,13 +38,13 @@ struct LandscapeTabBar: View {
                 .accessibilityIdentifier("landscapeTab.\(tab.rawValue)")
             }
         }
-        .padding(tokens.space(.tabBarInner))
-        .frame(width: tokens.size(.landscapeTabBarWidth))
+        .padding(tokens.bar(.tabBarInner))
+        .frame(width: tokens.bar(.landscapeTabBarWidth))
         .systemLook(.barCapsule)
         // Measured from the screen edges, not the safe area, so it sits as far from the edges as upright in both turns
         // (the root lays the column out from the screen edge at the physical bottom).
-        .padding(.vertical, tokens.space(.landscapeBarInset))
-        .padding(side, tokens.space(.landscapeBarInset))
+        .padding(.vertical, tokens.bar(.landscapeBarInset))
+        .padding(side, tokens.bar(.landscapeBarInset))
         .ignoresSafeArea(.container, edges: .vertical)
     }
 

@@ -2,7 +2,7 @@ import Foundation
 
 /// Names of the design tokens in `tokens.json`. Screens never contain raw numbers or colors.
 enum SpacingToken: String, CaseIterable, Sendable {
-    case tabBarInner, landscapeBarInset, barButtonGap, reviewTop, popoverRowVertical, fadeGap, scrollEndRoom, listRowVertical
+    case reviewTop, popoverRowVertical, fadeGap, scrollEndRoom, listRowVertical
     case screenHorizontal, screenBottom, groupGap, plateInner, plateRowGap, headerToPlate, hintToPlate
     case iconTextGap, chipHorizontal, chipVertical, chipGap, infoPadding, nestedTitleInset, nestedTitleLift
     case childIndent, rowVertical, poolRowGap, blockGap, timelineLabelWidth, timelineItemGap, timelineItemPadding
@@ -17,7 +17,7 @@ enum RadiusToken: String, CaseIterable, Sendable {
 enum SizeToken: String, CaseIterable, Sendable {
     case iconColumn, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, notificationIcon
     case habitDotMinimum, cornerInsetMinimum, eventDot, sourceDot, fadeHeight, poolCounter, poolWidth
-    case habitHistoryMaxHeight, habitStatsBar, titleFade, hourDigitsWidth, actionPopoverWidth, reviewChevron, wrapMinWidth, liftOverhang, pagePeek, dropLine, dropMarkerHeight, bannerShadowRadius, bannerShadowY, hexFieldWidth, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, allDayFontDelta, previewHeight, previewRow, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewHalvesInset, subtaskDropLine, landscapeTabBarWidth, barButton
+    case habitHistoryMaxHeight, habitStatsBar, titleFade, hourDigitsWidth, actionPopoverWidth, reviewChevron, wrapMinWidth, liftOverhang, pagePeek, dropLine, dropMarkerHeight, bannerShadowRadius, bannerShadowY, hexFieldWidth, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, allDayFontDelta, previewHeight, previewRow, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewHalvesInset, subtaskDropLine
 }
 
 /// Shares and scale factors: a part of another size, not a size of its own.
@@ -43,7 +43,7 @@ enum DurationToken: String, CaseIterable, Sendable {
 enum FontToken: String, CaseIterable, Sendable {
     case pageTitle, navTitle, sectionHeader, rowTitle, hint, chip, info, timelineHour, banner, poolCounter
     case taskTitle, emptyTitle, emptyBody, footer, widgetTitle, widgetCaption, widgetEvent, caption, noteEditor
-    case statValue, toggleChip, pullIcon, emptyIcon, emptyAction, linkBadge, tabIcon, systemTabIcon, tabLabel, popoverAction, repeatableTitle, habitTitle
+    case statValue, toggleChip, pullIcon, emptyIcon, emptyAction, linkBadge, popoverAction, repeatableTitle, habitTitle
     /// The timeline at the sizes picked in settings (`font(_:size:)`).
     case timelineText, timelineEvent
 }

@@ -59,6 +59,18 @@ struct TokenValidationTests {
         }
     }
 
+    /// The system bars' metrics and fonts are one group: a misspelt or missing one is a config error too.
+    @Test(arguments: [(["systemBar", "metric", "barButon"], 42 as Any), (["systemBar", "font", "tabLabel", "weight"], "bld")])
+    func aBadSystemBarTokenIsAConfigError(path: [String], value: Any) throws {
+        let error = try #require(try configError(setting: path, to: value))
+        #expect(error.path.hasPrefix("systemBar."))
+    }
+
+    @Test func aMissingSystemBarMetricIsAConfigError() throws {
+        let error = try #require(try configError(setting: ["systemBar", "metric", "barButton"], to: nil))
+        #expect(error.path.hasPrefix("systemBar.metric"))
+    }
+
     /// The message lists what the name can be.
     @Test func theMessageNamesTheKnownValues() throws {
         let error = try #require(try configError(setting: ["font", "pageTitle", "weight"], to: "bld"))

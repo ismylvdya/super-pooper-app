@@ -2,17 +2,19 @@ import SwiftUI
 
 /// `{"style": "title3", "weight": "bold", "design": "rounded"}` or `{"size": 34, "relativeTo": "largeTitle", …}`. A text
 /// style follows the reader's text size by itself; a fixed size grows and shrinks with it as its `relativeTo` style does
-/// (`UIFontMetrics`). Every name is checked when tokens.json loads: a misspelt weight, style, design or key is a config
-/// error, not a silent regular body font.
+/// (`UIFontMetrics`), or stays as it is with `"fixed": true` (as the system tab bar's labels do). Every name is checked
+/// when tokens.json loads: a misspelt weight, style, design or key is a config error, not a silent regular body font.
 struct FontSpec: Decodable, Sendable {
     let style: Style
     let size: Double?
     /// The text style a fixed size scales with.
     let relativeTo: Style?
+    /// The fixed size stays the same at every text size.
+    let isFixed: Bool
     let weight: Weight
     let design: Design
 
-    private enum CodingKeys: String, CodingKey { case style, size, relativeTo, weight, design }
+    private enum CodingKeys: String, CodingKey { case style, size, relativeTo, fixed, weight, design }
 
     init(from decoder: Decoder) throws {
         try decoder.rejectUnknownKeys(CodingKeys.self)
@@ -22,15 +24,20 @@ struct FontSpec: Decodable, Sendable {
         weight = try container.decodeIfPresent(Weight.self, forKey: .weight) ?? .regular
         design = try container.decodeIfPresent(Design.self, forKey: .design) ?? .default
         relativeTo = try container.decodeIfPresent(Style.self, forKey: .relativeTo)
+        isFixed = try container.decodeIfPresent(Bool.self, forKey: .fixed) ?? false
         if let size, size <= 0 {
             throw DecodingError.dataCorruptedError(forKey: .size, in: container, debugDescription: "a font size must be positive")
         }
-        if size != nil, relativeTo == nil {
+        if size != nil, relativeTo == nil, !isFixed {
             throw DecodingError.dataCorrupted(.init(codingPath: decoder.codingPath,
-                                                    debugDescription: "a fixed size needs \"relativeTo\": the text style it scales with"))
+                                                    debugDescription: "a fixed size needs \"relativeTo\" (the text style it scales with) or \"fixed\": true"))
         }
         if size == nil, relativeTo != nil {
             throw DecodingError.dataCorruptedError(forKey: .relativeTo, in: container, debugDescription: "only a fixed size scales relative to a style")
+        }
+        if isFixed, size == nil || relativeTo != nil {
+            throw DecodingError.dataCorruptedError(forKey: .fixed, in: container,
+                                                   debugDescription: "only a fixed size without \"relativeTo\" stays fixed")
         }
     }
 
@@ -57,7 +64,8 @@ struct FontSpec: Decodable, Sendable {
 
     /// A length drawn next to this font (a column for its digits, the line it sits in), grown as the font grows.
     func scaled(_ value: CGFloat, at traits: UITraitCollection?) -> CGFloat {
-        UIFontMetrics(forTextStyle: (relativeTo ?? style).uiFont).scaledValue(for: value, compatibleWith: traits)
+        guard !isFixed else { return value }
+        return UIFontMetrics(forTextStyle: (relativeTo ?? style).uiFont).scaledValue(for: value, compatibleWith: traits)
     }
 
     enum Weight: String, ConfigName {

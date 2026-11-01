@@ -30,12 +30,25 @@ struct DynamicTypeTokensTests {
         #expect(tokens.measured(at: .accessibility1).scaled(width, with: .timelineHour) > width)
     }
 
-    /// A fixed size must name the text style it scales with; a text style needs none.
-    @Test func aFixedSizeNamesTheStyleItScalesWith() {
+    /// A fixed size must name the text style it scales with, or say it stays fixed; a text style needs neither.
+    @Test func aFixedSizeNamesTheStyleItScalesWith() throws {
         let missing = Data(#"{"size": 34, "weight": "bold"}"#.utf8)
         let needless = Data(#"{"style": "body", "relativeTo": "body"}"#.utf8)
         #expect(throws: ConfigError.self) { try ConfigLoader.decode(FontSpec.self, from: missing, file: "tokens.json") }
         #expect(throws: ConfigError.self) { try ConfigLoader.decode(FontSpec.self, from: needless, file: "tokens.json") }
+        _ = try ConfigLoader.decode(FontSpec.self, from: Data(#"{"size": 10, "fixed": true}"#.utf8), file: "tokens.json")
+    }
+
+    /// Only a size of its own can stay fixed, and then it scales with no style.
+    @Test(arguments: [#"{"style": "body", "fixed": true}"#, #"{"size": 10, "relativeTo": "caption2", "fixed": true}"#])
+    func onlyAPlainSizeStaysFixed(json: String) {
+        #expect(throws: ConfigError.self) { try ConfigLoader.decode(FontSpec.self, from: Data(json.utf8), file: "tokens.json") }
+    }
+
+    /// The tab label lying sideways stays at its size, as the system tab bar's labels do, whatever the text size.
+    @Test(arguments: [DynamicTypeSize.xSmall, .large, .xxxLarge, .accessibility3])
+    func theLandscapeTabLabelKeepsItsSize(size: DynamicTypeSize) {
+        #expect(tokens.measured(at: size).uiFont(.tabLabel).pointSize == 10)
     }
 
     /// A size picked in settings (the timeline's fonts) is drawn as picked, in the token's weight, at any text size.

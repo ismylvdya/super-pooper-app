@@ -10,13 +10,14 @@ struct DesignTokens: Decodable, Sendable {
     private(set) var opacity: TokenTable<OpacityToken, Double>
     let duration: TokenTable<DurationToken, Double>
     let font: TokenTable<FontToken, FontSpec>
+    let systemBar: SystemBarTokens
     private(set) var color: TokenTable<ColorToken, ColorSpec>
     /// The colors each settings section lets the user pick.
     let editableColors: TokenTable<ColorSettingsGroup, [ColorToken]>
     /// The reader's text size where the tokens are used (`designTokens(_:)`); nil: the phone's own.
     private(set) var dynamicTypeSize: DynamicTypeSize?
 
-    private enum CodingKeys: String, CodingKey { case spacing, radius, size, ratio, count, opacity, duration, font, color, editableColors }
+    private enum CodingKeys: String, CodingKey { case spacing, radius, size, ratio, count, opacity, duration, font, systemBar, color, editableColors }
 
     func space(_ token: SpacingToken) -> CGFloat { CGFloat(spacing[token]) }
     func radius(_ token: RadiusToken) -> CGFloat { CGFloat(radius[token]) }
@@ -32,6 +33,9 @@ struct DesignTokens: Decodable, Sendable {
     func uiFont(_ token: FontToken, size: Double) -> UIFont { font[token].uiFont(size: size) }
     /// A length that belongs to a font's text (a label column, its line), grown with the reader's text size as the font is.
     func scaled(_ value: CGFloat, with token: FontToken) -> CGFloat { font[token].scaled(value, at: traits) }
+    func bar(_ metric: SystemBarMetric) -> CGFloat { CGFloat(systemBar.metric[metric]) }
+    func font(_ token: SystemBarFont) -> Font { systemBar.font[token].font(at: traits) }
+    func uiFont(_ token: SystemBarFont) -> UIFont { systemBar.font[token].uiFont(at: traits) }
     func color(_ token: ColorToken) -> Color { color[token].color }
     func uiColor(_ token: ColorToken) -> UIColor { color[token].uiColor }
 
