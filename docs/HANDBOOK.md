@@ -87,7 +87,7 @@ SuperPooper — iPhone-приложение-оболочка над тремя �
 | Потянуть вниз — синхронизировать | `.syncsOnPull(then:)` (`then` — что ещё перечитать экрану) |
 | Меню дела или привычки | `ActionMenu.context(of:)`, `ActionMenu.page(of:)` |
 | Системный `List` на фоне экрана | `.appList()` |
-| Затухание краёв прокрутки | `.edgeFades(color:bottomExtension:)` |
+| Затухание краёв прокрутки | `.edgeFades(color:topInset:bottomExtension:solidTop:barEdges:)`; края под системной панелью (низ блока Today у таб-бара, только вертикально) — `barEdges`: на iOS 26 там системный scroll edge effect вместо ручного затухания (`SystemLook.scrollUnderBars`, `.fadeUnderBar`), внутренние края затухают сами на обеих версиях |
 | Превью на странице настроек | `.settingsPreviewFrame()` (обрезает содержимое само; таймлайну своя обрезка не нужна) |
 | Шрифты таймлайна (события, задачи, полоса all-day) и их высоты строк | `TimelineFonts.app(_:tokens:)` — приложение и превью настроек, `TimelineFonts.widget(tokens:)` — виджет; вес заголовка события — в токене (`timelineEvent`, `widgetEvent`); стиль колонки — `TimelineStyle.make` |
 | Высота полосы событий на весь день | `AllDayStrip.height(count:lineHeight:tokens:)` — столько полоса и занимает (тест сверяет с измеренной) |

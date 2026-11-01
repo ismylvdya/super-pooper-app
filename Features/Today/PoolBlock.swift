@@ -13,6 +13,8 @@ struct PoolBlock: View {
     let handler: TaskActionHandler
     /// Space under the block that belongs to the home indicator (the list scrolls under it).
     let bottomInset: CGFloat
+    /// The edges of the list that lie under a system bar (`edgeFades`).
+    let barEdges: Edge.Set
     @State private var rowHeights: [String: CGFloat] = [:]
     @State private var visibleRows: Set<String> = []
     @State private var rowMids: [String: CGFloat] = [:]
@@ -82,7 +84,7 @@ struct PoolBlock: View {
         .scrollBounceBehavior(.always)
         .scrollIndicators(.hidden)
         .syncsOnPull()
-        .edgeFades(bottomExtension: bottomInset)
+        .edgeFades(bottomExtension: bottomInset, barEdges: barEdges)
         .liftRoom()
     }
 

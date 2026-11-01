@@ -15,6 +15,8 @@ struct TimelineBlock: View {
     let handler: TaskActionHandler
     /// Space under the block that belongs to the home indicator (the timeline scrolls under it).
     let bottomInset: CGFloat
+    /// The edges of the timeline that lie under a system bar (`edgeFades`).
+    let barEdges: Edge.Set
 
     @State private var zoom: CGFloat = 1
     @GestureState private var pinch: CGFloat = 1
@@ -67,7 +69,8 @@ struct TimelineBlock: View {
                 .scrollIndicators(.hidden)
                 .syncsOnPull()
                 // The hours dissolve from the strip's bottom down.
-                .edgeFades(topInset: stripHeight == 0 ? 0 : liftRoom.top + stripHeight + pull, bottomExtension: bottomInset)
+                .edgeFades(topInset: stripHeight == 0 ? 0 : liftRoom.top + stripHeight + pull, bottomExtension: bottomInset,
+                           barEdges: barEdges)
                 .liftRoom(extraTop: stripRoom)
                 .simultaneousGesture(
                     MagnifyGesture()

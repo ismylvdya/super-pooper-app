@@ -75,8 +75,9 @@ struct TodayScreen: View {
                 let fade = 1 - min(abs(pager.daySlide) / geometry.size.width, 1) * tokens.opacity(.daySwipeFade)
                 ScreenLayoutView(layout: layout, page: pager.page, pageDrag: pager.pageDrag, edgeInset: tokens.space(.screenHorizontal),
                                  onTurn: turn) { id in
-                    TodayBlock(id: id, plan: plan, handler: handler,
-                               bottomInset: Self.touchesBottom(id, in: layout) ? bottomInset : 0)
+                    let reachesBottom = Self.touchesBottom(id, in: layout)
+                    TodayBlock(id: id, plan: plan, handler: handler, bottomInset: reachesBottom ? bottomInset : 0,
+                               barEdges: reachesBottom && !isLandscape ? .bottom : [])
                         .daySlide(pager.daySlide, fade: fade)
                 }
                 .padding(.horizontal, tokens.space(.screenHorizontal))
@@ -178,11 +179,14 @@ struct TodayBlock: View {
     let plan: DayPlan
     let handler: TaskActionHandler
     let bottomInset: CGFloat
+    /// The edges under the system tab bar: upright, the bottom of a block that reaches the screen's bottom (lying sideways
+    /// the app's own tab bar stands beside the blocks).
+    let barEdges: Edge.Set
 
     var body: some View {
         switch id {
-        case .pool: PoolBlock(plan: plan, handler: handler, bottomInset: bottomInset)
-        case .timeline: TimelineBlock(plan: plan, handler: handler, bottomInset: bottomInset)
+        case .pool: PoolBlock(plan: plan, handler: handler, bottomInset: bottomInset, barEdges: barEdges)
+        case .timeline: TimelineBlock(plan: plan, handler: handler, bottomInset: bottomInset, barEdges: barEdges)
         }
     }
 }

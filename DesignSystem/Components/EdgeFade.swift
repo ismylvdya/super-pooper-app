@@ -29,8 +29,12 @@ extension View {
     /// `topInset`: something solid covers the top of the scroll view (the all-day strip); the top fade starts
     /// under it. `bottomExtension`: the scroll view reaches under the home indicator; the bottom fade
     /// then runs all the way down to the screen edge. `solidTop`: nothing of the content shows at the top edge.
-    func edgeFades(color: Color? = nil, topInset: CGFloat = 0, bottomExtension: CGFloat = 0, solidTop: Bool = false) -> some View {
-        modifier(ScrollEdgeFades(color: color, topInset: topInset, bottomExtension: bottomExtension, solidTop: solidTop))
+    /// `barEdges`: the edges that lie under a system bar (the tab bar upright), where the system look decides the fade
+    /// (`SystemLook.scrollUnderBars`): from iOS 26 the system's scroll edge effect instead of this one.
+    func edgeFades(color: Color? = nil, topInset: CGFloat = 0, bottomExtension: CGFloat = 0, solidTop: Bool = false,
+                   barEdges: Edge.Set = []) -> some View {
+        modifier(ScrollEdgeFades(color: color, topInset: topInset, bottomExtension: bottomExtension, solidTop: solidTop,
+                                 barEdges: barEdges))
     }
 }
 
@@ -42,6 +46,7 @@ private struct ScrollEdgeFades: ViewModifier {
     let topInset: CGFloat
     let bottomExtension: CGFloat
     let solidTop: Bool
+    let barEdges: Edge.Set
     @State private var edges = ScrollEdges()
 
     struct ScrollEdges: Equatable {
@@ -59,11 +64,18 @@ private struct ScrollEdgeFades: ViewModifier {
                                        - geometry.contentOffset.y - geometry.containerSize.height, 0))
             } action: { _, new in edges = new }
             .overlay(alignment: .top) {
-                EdgeFade(edge: .top, color: color, isSolid: solidTop).opacity(min(edges.above / length, 1)).padding(.top, topInset)
+                fade(EdgeFade(edge: .top, color: color, isSolid: solidTop).opacity(min(edges.above / length, 1)).padding(.top, topInset),
+                     at: .top)
             }
             .overlay(alignment: .bottom) {
-                EdgeFade(edge: .bottom, color: color, overhang: bottomExtension).opacity(min(edges.below / length, 1))
+                fade(EdgeFade(edge: .bottom, color: color, overhang: bottomExtension).opacity(min(edges.below / length, 1)), at: .bottom)
             }
+            .systemLook(.scrollUnderBars(barEdges))
+    }
+
+    /// An edge under a system bar is faded as the system look says.
+    @ViewBuilder private func fade(_ fade: some View, at edge: Edge.Set) -> some View {
+        if barEdges.contains(edge) { fade.systemLook(.fadeUnderBar) } else { fade }
     }
 }
 
