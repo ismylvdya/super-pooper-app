@@ -20,4 +20,5 @@ struct AppServices {
     let alertStateStore: AlertStateStore
     let widgets: WidgetReloading
     let notificationImage: NotificationImageStore
+    let signature: AppSignatureReading
 }

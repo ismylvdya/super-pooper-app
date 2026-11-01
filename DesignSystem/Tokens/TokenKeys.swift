@@ -33,7 +33,7 @@ enum CountToken: String, CaseIterable, Sendable {
 
 enum OpacityToken: String, CaseIterable, Sendable {
     case blocked, past, eventFill, fadeTop, fadeMiddle, habitEmpty
-    case gridFadedWeek, unlinked, eventTime, nowOverBlocks, daySwipeFade, toggleChipFill, bannerShadow, previewBlock, accentedPlate
+    case gridFadedWeek, unlinked, eventTime, nowOverBlocks, daySwipeFade, toggleChipFill, bannerShadow, previewBlock, accentedPlate, signingPlate
 }
 
 enum DurationToken: String, CaseIterable, Sendable {
@@ -53,6 +53,7 @@ enum ColorToken: String, ConfigName {
     case past, swipeNeutral, screenBackground, plateBackground, chipBackground, primaryText, secondaryText, tertiaryText
     case bannerBackground, infoText, destructive, eventText, timelineGrid
     case success, warning, error, shadow, widgetPlate, widgetTop, widgetBottom, listSeparator
+    case signingAhead, signingSoon, signingUrgent
 }
 
 /// The settings sections where the user picks colors (`editableColors`: which colors each offers, in order).

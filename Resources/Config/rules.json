@@ -38,6 +38,11 @@
     "restoreDelaySeconds": 1,
     "fireTimeToleranceSeconds": 30
   },
+  "signingPlate": {
+    "showWithinDays": 7,
+    "soonWithinDays": 2,
+    "urgentWithinDays": 1
+  },
   "eventLinks": {
     "resolveDaysBefore": 2,
     "resolveDaysAfter": 14,

@@ -79,6 +79,12 @@ final class AppModel {
     func setNotificationPictureShown(_ isShown: Bool) { parts.picture.setShown(isShown) }
     func setNotificationPictureUsesHabitColor(_ usesColor: Bool) { parts.picture.setUsesHabitColor(usesColor) }
 
+    // MARK: - Signature
+
+    /// How long the app's signature has left; nil while it is far off or unknown (no plate).
+    var signingCountdown: SigningCountdown? { parts.signing.countdown }
+    func refreshSigning() { parts.signing.refresh() }
+
     // MARK: - Sync
 
     /// Full sync: the tasks, auto-promotion, Calendar and Reminders, then widgets and notifications. `announce` reports

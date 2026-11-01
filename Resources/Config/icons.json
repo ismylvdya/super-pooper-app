@@ -90,5 +90,6 @@
   "habitMarkTwice": "HabitMarkTwice",
   "syncAdded": "plus.circle",
   "syncChanged": "pencil.circle",
-  "syncRemoved": "minus.circle"
+  "syncRemoved": "minus.circle",
+  "signing": "signature"
 }

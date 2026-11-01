@@ -84,7 +84,7 @@ final class AppContainer {
             notifications: notifications, settingsStore: settingsStore,
             dayStateStore: DayStateStore(store: shared), snapshotStore: SnapshotStore(store: shared),
             alertStateStore: AlertStateStore(store: shared),
-            widgets: WidgetKitReloader(), notificationImage: notificationImage)
+            widgets: WidgetKitReloader(), notificationImage: notificationImage, signature: launch.signature(now: clock.now))
 
         let banners = BannerCenter()
         self.banners = banners
@@ -110,12 +110,13 @@ final class AppContainer {
     /// The Shortcuts check: warns now if the signature runs out soon; returns when it runs out.
     func checkSigning() async -> Date? {
         await signingReminder.notifyIfSoon(now: model.clock.now)
-        return SigningExpiryReminder.expiration()
+        return signingReminder.signature.expiration()
     }
 
     private var signingReminder: SigningExpiryReminder {
         let rules = config.rules.notifications
-        return SigningExpiryReminder(identifier: rules.signingWarningID, leadHours: rules.signingWarningHours) { expiration in
+        return SigningExpiryReminder(identifier: rules.signingWarningID, leadHours: rules.signingWarningHours,
+                                     signature: ProvisioningProfileSignature()) { expiration in
             (L10n.string("notification.signing.title"),
              L10n.format("notification.signing.body", expiration.formatted(date: .abbreviated, time: .shortened)))
         }

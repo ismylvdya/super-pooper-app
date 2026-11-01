@@ -12,6 +12,7 @@ enum PreviewModel {
                      clock: Clock = FixedClock(now: PreviewSamples.context.now),
                      tasks: [TaskItem] = PreviewSamples.tasks,
                      delay: Delay = SleepDelay(),
+                     signature: AppSignatureReading = FixedSignature(date: nil),
                      appEvents: AppEventSink? = nil) -> (model: AppModel, router: Router, config: AppConfig, banners: BannerCenter)? {
         guard let config = try? AppConfig.load(), let mapping = try? FieldMapping.load() else { return nil }
         let store = JSONFileStore(directory: FileManager.default.temporaryDirectory
@@ -28,7 +29,8 @@ enum PreviewModel {
             calendars: calendars, reminders: reminders, notifications: notifications,
             settingsStore: settingsStore, dayStateStore: DayStateStore(store: store),
             snapshotStore: SnapshotStore(store: store), alertStateStore: AlertStateStore(store: store), widgets: NoWidgets(),
-            notificationImage: NotificationImageStore(url: store.url(config.rules.notifications.imageFile), maxPixels: 1))
+            notificationImage: NotificationImageStore(url: store.url(config.rules.notifications.imageFile), maxPixels: 1),
+            signature: signature)
         let banners = BannerCenter()
         let model = AppModel(config: config, services: services, appEvents: appEvents ?? BannerPresenter(banners: banners), clock: clock,
                              calendar: calendar, delay: delay)

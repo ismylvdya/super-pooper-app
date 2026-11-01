@@ -22,6 +22,7 @@ struct AppParts {
     let trash: TrashController
     let conflicts: ConflictResolver
     let picture: NotificationPictureController
+    let signing: SigningController
     let sync: SyncService
 
     init(config: AppConfig, services: AppServices, appEvents: AppEventSink, clock: Clock, calendar: CalendarSource, delay: Delay) {
@@ -52,6 +53,7 @@ struct AppParts {
                                      appEvents: appEvents)
         picture = NotificationPictureController(images: services.notificationImage, settings: settings, derived: derived,
                                                 appEvents: appEvents)
+        signing = SigningController(signature: services.signature, clock: clock, rules: rules.signingPlate)
         sync = SyncService(config: config, services: services, tasks: tasks, settings: settings, day: day, sources: sources,
                            writer: writer, texts: texts, derived: derived, backups: backups, appEvents: appEvents)
         settings.observer = sync

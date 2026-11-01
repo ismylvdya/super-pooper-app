@@ -190,6 +190,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
     let day: DayRules
     let timeEstimates: [EstimateOption]
     let notifications: Notifications
+    /// The plate at the top of Settings that counts down to the end of the app's signature.
+    let signingPlate: SigningPlateRules
     let eventLinks: EventLinks
     let vault: Vault
     let backups: Backups

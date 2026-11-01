@@ -17,7 +17,7 @@ enum Icon: String, CaseIterable, Codable, Sendable {
     case habitMarkOpen, habitMarkDone, habitMarkPartial, habitMarkTwice
     case today, harmful, timeOfDay, goal, trash, restore, links, opacity, obsidian, habitSettings, taskSettings, clockSettings
     case tomorrow, subtask, addSubtask, selected, previousDay, nextDay
-    case syncAdded, syncChanged, syncRemoved
+    case syncAdded, syncChanged, syncRemoved, signing
 }
 
 typealias IconSet = TokenTable<Icon, String>

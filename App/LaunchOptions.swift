@@ -10,7 +10,9 @@ import Foundation
 /// - `-SPTimeline oneColumn|twoColumns`: override the timeline layout;
 /// - `-SPArrangement stacked|sideBySide|paged`: override the Today arrangement (also over the settings note);
 /// - `-SPOpen <superpooper://…>`: open a deep link after start;
-/// - `-SPProvisionalNotifications`: get quiet notification permission without the system prompt.
+/// - `-SPProvisionalNotifications`: get quiet notification permission without the system prompt;
+/// - `-SPSignatureHoursLeft <hours>`: the Settings plate counts down to a signature ending that many hours after start
+///   (the signature notification still reads the real one, so the simulator stays silent).
 struct LaunchOptions {
     var vaultPath: String?
     var seedDemo = false
@@ -22,6 +24,7 @@ struct LaunchOptions {
     var arrangement: AppSettings.TodayArrangement?
     var openURL: URL?
     var provisionalNotifications = false
+    var signatureHoursLeft: Double?
 
     static func current(_ arguments: [String] = ProcessInfo.processInfo.arguments) -> LaunchOptions {
         var options = LaunchOptions()
@@ -40,6 +43,7 @@ struct LaunchOptions {
         options.arrangement = value("-SPArrangement").flatMap(AppSettings.TodayArrangement.init(rawValue:))
         options.openURL = value("-SPOpen").flatMap(URL.init(string:))
         options.provisionalNotifications = arguments.contains("-SPProvisionalNotifications")
+        options.signatureHoursLeft = value("-SPSignatureHoursLeft").flatMap(Double.init)
         #endif
         return options
     }
@@ -50,6 +54,12 @@ struct LaunchOptions {
         let real = Date()
         let day = today ?? LocalDate(real, in: calendar)
         return ShiftedClock(startingAt: day.startDate(in: calendar, offset: now ?? LocalTime(real, in: calendar)))
+    }
+
+    /// The signature the Settings plate counts down to: the installed one, or the one `-SPSignatureHoursLeft` asks for.
+    func signature(now: Date) -> AppSignatureReading {
+        guard let signatureHoursLeft else { return ProvisioningProfileSignature() }
+        return FixedSignature(date: now.addingTimeInterval(signatureHoursLeft * 3600))
     }
 
     func vaultURL() -> URL? {
