@@ -45,8 +45,11 @@ struct DayBuilder: Sendable {
         let timed = items.filter { inputs.timelineFilter.shows($0) && !times.times(of: $0.task).isEmpty }
         let shownTimed = timed.filter { !times.openTimes(of: $0).isEmpty }
         let timedNames = Set(timed.map(\.id))
-        let targets = Dictionary(shownTimed.compactMap { item in times.target(of: item, rules: rules).map { (item.id, $0) } },
-                                 uniquingKeysWith: { first, _ in first })
+        // Overdue tasks ride on the cursor of today only; on another day "now" is not on its timeline.
+        let overdue = inputs.isOtherDay ? [:] : OverdueTasks(rules: rules, times: times).starts(of: shownTimed)
+        let targets = Dictionary(shownTimed.compactMap { item in
+            times.target(of: item, rules: rules, start: overdue[item.id]).map { (item.id, $0) }
+        }, uniquingKeysWith: { first, _ in first })
         let chainAnchors = ChainAnchors.propagate(anchors, timed: targets, through: items.filter { !timedNames.contains($0.id) },
                                                   graph: graph)
         // Done today: it leaves the pool and the timeline instead of staying greyed out. A habit block dragged to the pool
@@ -58,7 +61,7 @@ struct DayBuilder: Sendable {
         let pool = SubtaskNesting.nested(inputs.manualOrder.map { sorter.applyingManualOrder($0, to: poolItems, graph: graph, context: context) }
             ?? sorter.sorted(poolItems, graph: graph, context: context))
 
-        var timeline = FixedSlots(rules: rules, times: times)
+        var timeline = FixedSlots(rules: rules, times: times, overdue: overdue)
             .slots(timed: shownTimed, events: inputs.timelineFilter.events ? inputs.events : [],
                    reminders: inputs.timelineFilter.reminders ? inputs.reminders : [])
         let chainLayout = ChainLayout(rules: rules)

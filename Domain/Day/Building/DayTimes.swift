@@ -35,11 +35,12 @@ struct DayTimes: Sendable {
         context.moment(block.time, onLogicalDay: context.today)
     }
 
-    /// The first open block of a timed task or habit today: what a chain hangs on.
-    func target(of item: DayItem, rules: DayRules) -> TimelineChain.Target? {
+    /// The first open block of a timed task or habit today: what a chain hangs on. `start`: where an overdue task's block
+    /// stands now (`OverdueTasks`), if it is not at its own time.
+    func target(of item: DayItem, rules: DayRules, start: Date? = nil) -> TimelineChain.Target? {
         guard let block = openTimes(of: item).first else { return nil }
         return TimelineChain.Target(id: TimelineContent.task(item).id,
-                                    end: moment(of: block).addingTimeInterval(rules.duration(of: item.task)))
+                                    end: (start ?? moment(of: block)).addingTimeInterval(rules.duration(of: item.task)))
     }
 
     func overlapsToday(_ event: CalendarEvent) -> Bool {
