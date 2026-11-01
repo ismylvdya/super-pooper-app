@@ -68,6 +68,19 @@ struct ListGroupGeometryTests {
         #expect(frames.plate(of: "day", overhang: 52) == CGRect(x: 16, y: 240, width: 300, height: 88))
     }
 
+    /// A row dragged from Morning past Day into Evening: Day's rows all move up together, in their order — its backing
+    /// stays too, as no group's backing moves while a row is out of its place.
+    @Test func aGroupWhoseRowsAllMoveAsideKeepsItsBacking() {
+        let frames = frames(["a": row(100, 0, of: 2), "b": row(144, 1, of: 2)], group: "morning")
+        frames.set(row(240, 0, of: 2), group: "day", id: "c")
+        frames.set(row(284, 1, of: 2), group: "day", id: "d")
+        frames.set(row(380, 1, of: 2), group: "morning", id: "b")
+        frames.set(row(196, 0, of: 2), group: "day", id: "c")
+        frames.set(row(240, 1, of: 2), group: "day", id: "d")
+        #expect(frames.plate(of: "day", overhang: 52) == CGRect(x: 16, y: 240, width: 300, height: 88))
+        #expect(frames.plate(of: "morning", overhang: 52) == CGRect(x: 16, y: 100, width: 300, height: 88))
+    }
+
     /// The list scrolls while a row is dragged (to a place out of sight): the backing goes with the content.
     @Test func aHeldBackingScrollsWithTheList() {
         let frames = frames(["a": row(100, 0, of: 3), "b": row(144, 1, of: 3), "c": row(188, 2, of: 3)])

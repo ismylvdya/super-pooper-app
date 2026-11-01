@@ -22,14 +22,15 @@ final class ListGroupFrames {
     private(set) var scrollOffset: CGFloat = 0
     /// The list's span on screen.
     private(set) var viewport: ClosedRange<CGFloat> = 0...0
-    /// Each group's backing from the last moment its rows stood in their order, in the list's content: kept while a
-    /// row is lifted, dragged or moving aside.
+    /// Each group's backing from the last moment the rows of every group stood in their order, in the list's content:
+    /// kept while a row is lifted, dragged or moving aside — in its own group or another one (a row dragged into another
+    /// group moves that group's rows aside too, sometimes all of them together).
     private(set) var heldSpans: [String: ListGroupGeometry.Span] = [:]
 
     func set(_ row: Row?, group: String, id: String) {
         guard rows[group]?[id] != row else { return }
         rows[group, default: [:]][id] = row
-        hold(group)
+        holdSpans()
     }
 
     func setVisible(_ isVisible: Bool, group: String, id: String) {
@@ -59,27 +60,38 @@ final class ListGroupFrames {
     func setScrollOffset(_ offset: CGFloat) {
         guard scrollOffset != offset else { return }
         scrollOffset = offset
-        rows.keys.forEach(hold)
+        holdSpans()
     }
 
     func setViewport(_ viewport: ClosedRange<CGFloat>) {
         guard self.viewport != viewport else { return }
         self.viewport = viewport
-        rows.keys.forEach(hold)
+        holdSpans()
     }
 
-    /// The backing of a group on screen now.
+    /// The backing of a group on screen now: from its rows while the list rests, otherwise the one held.
     func plate(of group: String, overhang: CGFloat) -> CGRect? {
-        let rows = Array((rows[group] ?? [:]).values)
-        guard let span = ListGroupGeometry.restingSpan(of: rows, visible: viewport, offset: scrollOffset) ?? heldSpans[group]
-        else { return nil }
+        let resting = restingSpan(of: group)
+        guard let span = isResting ? resting : heldSpans[group] ?? resting else { return nil }
         return ListGroupGeometry.plate(of: span, visible: viewport, overhang: overhang, offset: scrollOffset)
     }
 
-    private func hold(_ group: String) {
-        let rows = Array((rows[group] ?? [:]).values)
-        guard let span = ListGroupGeometry.restingSpan(of: rows, visible: viewport, offset: scrollOffset),
-              heldSpans[group] != span else { return }
-        heldSpans[group] = span
+    /// Every group with rows on screen has them in its order.
+    private var isResting: Bool {
+        rows.values.allSatisfy { group in
+            let rows = Array(group.values)
+            return !rows.contains(where: \.isVisible) || ListGroupGeometry.isResting(rows, visible: viewport)
+        }
+    }
+
+    private func restingSpan(of group: String) -> ListGroupGeometry.Span? {
+        ListGroupGeometry.restingSpan(of: Array((rows[group] ?? [:]).values), visible: viewport, offset: scrollOffset)
+    }
+
+    private func holdSpans() {
+        guard isResting else { return }
+        for group in rows.keys {
+            if let span = restingSpan(of: group), heldSpans[group] != span { heldSpans[group] = span }
+        }
     }
 }
