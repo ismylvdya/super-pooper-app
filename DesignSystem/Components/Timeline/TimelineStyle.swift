@@ -31,6 +31,8 @@ struct TimelineStyle {
     /// What lies under the timeline: a block lying over an earlier one is backed with it, so the earlier one does not show
     /// through its see-through fill. Nil leaves it see-through (the widget's background is a gradient).
     var backdrop: Color?
+    /// The finer marks of a zoomed-in timeline (the app's own timeline only).
+    var gridDetail = TimelineGridDetail.none
 }
 
 extension TimelineStyle {

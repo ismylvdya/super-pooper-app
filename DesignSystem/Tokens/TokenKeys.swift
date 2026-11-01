@@ -45,6 +45,8 @@ enum OpacityToken: String, CaseIterable, Sendable {
     case gridFadedWeek, unlinked, eventTime, nowOverBlocks, daySwipeFade, toggleChipFill, bannerShadow, previewBlock, accentedPlate, signingPlate
     /// The faint copy of a dragged plate where it would land (the pool's parted gap, the timeline's landing spot).
     case dropGhost
+    /// The ":15", ":30", ":45" of a zoomed-in timeline and its five-minute lines, at their full fade-in.
+    case quarterLabel, fineLine
 }
 
 enum DurationToken: String, CaseIterable, Sendable {
@@ -54,7 +56,7 @@ enum DurationToken: String, CaseIterable, Sendable {
 enum FontToken: String, CaseIterable, Sendable {
     case pageTitle, navTitle, sectionHeader, rowTitle, hint, chip, info, timelineHour, banner, poolCounter
     case taskTitle, emptyTitle, emptyBody, footer, widgetTitle, widgetCaption, widgetEvent, caption, noteEditor
-    case statValue, toggleChip, pullIcon, emptyIcon, emptyAction, linkBadge, repeatableTitle, habitTitle
+    case statValue, toggleChip, pullIcon, emptyIcon, emptyAction, linkBadge, repeatableTitle, habitTitle, timelineQuarter
     /// The timeline at the sizes picked in settings (`font(_:size:)`).
     case timelineText, timelineEvent
 }

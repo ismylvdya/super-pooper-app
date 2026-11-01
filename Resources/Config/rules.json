@@ -71,8 +71,20 @@
     "dropStepMinutes": 5,
     "zoom": {
       "min": 0.4,
-      "max": 4
-    }
+      "max": 6
+    },
+    "detail": {
+      "quarters": {
+        "hiddenAboveHours": 6,
+        "fullAtHours": 5
+      },
+      "fiveMinutes": {
+        "hiddenAboveHours": 2.5,
+        "fullAtHours": 2
+      }
+    },
+    "quarterMinutes": 15,
+    "fineLineMinutes": 5
   },
   "widgets": {
     "refreshMinutes": 15,

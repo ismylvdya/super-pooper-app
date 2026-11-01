@@ -25,6 +25,8 @@ struct DayTimelineView<TaskContent: View>: View {
             let blocks = placements.map { PlacedSlot($0, width: itemsWidth, indentStep: tokens.space(.timelineCascadeIndent)) }
             ZStack(alignment: .topLeading) {
                 hourGrid(width: geometry.size.width)
+                TimelineFineGrid(hours: hourMarks, detail: style.gridDetail, labelWidth: style.showsHourLabels ? labelWidth : 0,
+                                 width: geometry.size.width, labelHeight: hourLabelHeight, y: y)
                 ForEach(blocks) { item in
                     let isLinked = links.isLinked(item.slot.id)
                     block(for: item.slot)

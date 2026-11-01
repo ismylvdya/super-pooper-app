@@ -46,9 +46,11 @@ struct TimelineBlock: View {
                 let scale = { (factor: CGFloat) in base * min(max(factor, zoomLimits.min), zoomLimits.max) }
                 let hourHeight = scale(zoom * pinch)
                 let stripRoom = stripHeight == 0 ? 0 : stripHeight + tokens.space(.chipGap) * 2
+                let detail = TimelineGridDetail(visibleHours: Double(geometry.size.height / hourHeight),
+                                                rules: model.config.rules.timeline.detail)
                 ScrollView {
                     DayTimelineView(slots: plan.timeline, window: day, now: plan.now,
-                                    hourHeight: hourHeight, style: style, taskContent: taskRow)
+                                    hourHeight: hourHeight, style: style(gridDetail: detail), taskContent: taskRow)
                         .modifier(TimelineDropTarget(drag: drag, moment: { y in
                             TaskScheduling.moment(atOffset: Double(y), windowStart: day.start, hourHeight: Double(hourHeight),
                                                   stepMinutes: model.config.rules.timeline.dropStepMinutes, calendar: model.calendar)
@@ -163,8 +165,12 @@ struct TimelineBlock: View {
             }
     }
 
-    private var style: TimelineStyle {
+    private var style: TimelineStyle { style(gridDetail: .none) }
+
+    /// The app's timeline; zoomed in, it shows `gridDetail`.
+    private func style(gridDetail: TimelineGridDetail) -> TimelineStyle {
         var style = TimelineStyle.make(model.settings.timeline, tokens: tokens)
+        style.gridDetail = gridDetail
         let links = model.config.rules.eventLinks
         style.onEventTap = { event in
             if let url = links.calendarURL(at: event.start) { openURL(url) }
