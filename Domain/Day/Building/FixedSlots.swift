@@ -2,12 +2,12 @@ import Foundation
 
 /// The timeline's blocks that stand at their own time: events of the day, the open times of timed tasks and habits (a
 /// habit's block dragged today at its new time, still named by the time its note has), and reminders that are not done.
-/// An overdue task rides on the "now" cursor instead (`OverdueTasks`): its alert is over, so its block has no bell.
+/// An overdue block rides on the "now" cursor instead (`OverdueBlocks`): its alert is over, so it has no bell.
 struct FixedSlots: Sendable {
     let rules: DayRules
     let times: DayTimes
-    /// Where overdue tasks start now, by item id.
-    var overdue: [String: Date] = [:]
+    /// Where overdue blocks start now.
+    var overdue: [OverdueBlocks.Key: Date] = [:]
 
     func slots(timed: [DayItem], events: [CalendarEvent], reminders: [ReminderItem]) -> [TimelineSlot] {
         let context = times.context
@@ -18,7 +18,7 @@ struct FixedSlots: Sendable {
         }
         for item in timed {
             for block in times.openTimes(of: item) {
-                let late = overdue[item.id]
+                let late = overdue[OverdueBlocks.Key(item, block)]
                 let start = late ?? times.moment(of: block)
                 slots.append(TimelineSlot(content: .task(item), start: start, end: start.addingTimeInterval(rules.duration(of: item.task)),
                                           isPast: false, time: block.written, alerts: late == nil))
