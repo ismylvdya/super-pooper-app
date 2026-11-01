@@ -6,8 +6,8 @@ extension TaskNotesStore {
     func delete(_ task: TaskItem) async throws {
         let settings = vaultSettings()
         try await location.withRoot { root in
-            try folders.move(try existingURL(of: task, root: root), into: folders.trash(settings, root: root), firstNumber: 1,
-                             confirming: task.name)
+            _ = try folders.move(try existingURL(of: task, root: root), into: folders.trash(settings, root: root), firstNumber: 1,
+                                 confirming: task.name)
         }
     }
 
@@ -15,7 +15,8 @@ extension TaskNotesStore {
     func fileAway(_ task: TaskItem) async throws {
         let settings = vaultSettings()
         try await location.withRoot { root in
-            try folders.move(try existingURL(of: task, root: root), into: try folders.done(doneFolder, settings, root: root), confirming: task.name)
+            _ = try folders.move(try existingURL(of: task, root: root), into: try folders.done(doneFolder, settings, root: root),
+                                 confirming: task.name)
         }
     }
 

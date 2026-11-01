@@ -40,9 +40,10 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         [.banner, .sound, .list]
     }
 
-    /// A swipe, a tap or a button on one of the app's notifications (`NotificationResponseRouter`).
-    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
-        guard let responses = await notificationResponses() else { return }
+    /// A swipe, a tap or a button on one of the app's notifications (`NotificationResponseRouter`), on the main actor
+    /// where the app's state lives.
+    @MainActor func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
+        guard let responses = notificationResponses() else { return }
         await responses.handle(action: response.actionIdentifier, request: response.notification.request)
     }
 
