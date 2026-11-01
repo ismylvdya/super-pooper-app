@@ -70,7 +70,8 @@ final class ScreenSnapshotUITests: XCTestCase {
     func testTaskPage() {
         launch("superpooper://task/Распечатать вопросы")
         snapTopAndBottom("task-page")
-        app.buttons["taskPage.more"].tap()
+        // A toolbar menu refuses the accessibility "scroll to visible" step, so it is tapped by coordinate.
+        app.buttons["taskPage.more"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         settle()
         snap("menu-task-page")
     }
