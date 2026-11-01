@@ -29,6 +29,6 @@ struct WidgetEmptyText: View {
     let text: LocalizedStringKey
 
     var body: some View {
-        Text(text).font(tokens.font(.widgetCaption)).foregroundStyle(tokens.color(.secondaryText)).padding()
+        Text(text).font(tokens.font(.widgetCaption)).foregroundStyle(tokens.color(.secondaryText))
     }
 }

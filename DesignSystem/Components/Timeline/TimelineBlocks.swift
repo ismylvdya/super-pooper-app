@@ -1,4 +1,5 @@
 import SwiftUI
+import WidgetKit
 
 /// A calendar event: tinted fill with the calendar color stripe (distinct from tasks).
 struct TimelineEventBlock: View {
@@ -17,6 +18,7 @@ struct TimelineEventBlock: View {
             RoundedRectangle(cornerRadius: tokens.size(.eventStripe) / 2)
                 .fill(color)
                 .frame(width: tokens.size(.eventStripe))
+                .widgetAccentable()
             VStack(alignment: .leading, spacing: 0) {
                 FadingText(text: event.title, font: font, lineHeight: lineHeight, lines: 2,
                            reserve: TitleFade.trailing(corner: reserve, plateInset: tokens.space(.timelineItemPadding),

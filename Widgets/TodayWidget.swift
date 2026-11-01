@@ -10,7 +10,6 @@ struct TodayWidget: Widget {
         .configurationDisplayName("widget.today.name")
         .description("widget.today.description")
         .supportedFamilies([.systemLarge])
-        .contentMarginsDisabled()
     }
 }
 

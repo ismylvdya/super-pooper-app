@@ -1,4 +1,5 @@
 import SwiftUI
+import WidgetKit
 
 /// One timeline column: hour grid, blocks laid out side by side when they overlap, "now" line.
 /// Shared by the Today screen, the settings preview and the widget.
@@ -193,6 +194,7 @@ struct DayTimelineView<TaskContent: View>: View {
             Circle().frame(width: dot, height: dot)
         }
         .foregroundStyle(tokens.color(.nowLine))
+        .widgetAccentable()
         .mask {
             Canvas { context, size in
                 context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(.black))

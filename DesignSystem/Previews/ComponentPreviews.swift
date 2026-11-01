@@ -63,6 +63,7 @@ import SwiftUI
     let habit = PreviewSamples.tasks[0]
     return HabitWidgetView(habit: habit, grid: HabitGrid(task: habit, weekCount: 4, today: context.today, days: context.days),
                            today: context.today)
+        .systemWidgetMargins()
         .frame(width: 158, height: 158)
 }
 
@@ -71,6 +72,7 @@ import SwiftUI
         TodayWidgetView(plan: PreviewSamples.plan, settings: BundledConfig.settings, arrangement: .stacked,
                         layout: config.todayLayout(for: .stacked), context: PreviewSamples.context,
                         maxTimelineHours: config.rules.widgets.timelineHours)
+            .systemWidgetMargins()
             .frame(width: 338, height: 354)
     } else {
         Text(verbatim: "Config error")

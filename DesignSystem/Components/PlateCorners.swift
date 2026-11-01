@@ -17,6 +17,17 @@ enum PlateCorners {
     case previewItem
 }
 
+extension PlateCorners {
+    /// The plate lies on another plate of the same color (a habit's piece of its routine's plate): where only how opaque
+    /// each view is counts (`WidgetRendering`), its own fill would double the plate under it.
+    var liesOnPlate: Bool {
+        switch self {
+        case .piece: true
+        case .group, .row, .timelineItem, .previewFrame, .previewItem: false
+        }
+    }
+}
+
 extension DesignTokens {
     func plateRadius(_ corners: PlateCorners) -> CGFloat {
         switch corners {

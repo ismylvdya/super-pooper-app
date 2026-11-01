@@ -1,7 +1,8 @@
 import SwiftUI
 
 /// The Today widget body: pool and timeline in the app's arrangement
-/// (`layouts/today-*.layout.json`), built from the same row and timeline components. Read-only.
+/// (`layouts/today-*.layout.json`), built from the same row and timeline components. Read-only. The system puts its
+/// margins around it.
 struct TodayWidgetView: View {
     @Environment(\.tokens) private var tokens
     let plan: DayPlan
@@ -23,7 +24,6 @@ struct TodayWidgetView: View {
                 }
             }
         }
-        .padding(tokens.space(.widgetPadding))
     }
 }
 

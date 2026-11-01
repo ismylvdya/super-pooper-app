@@ -1,4 +1,5 @@
 import SwiftUI
+import WidgetKit
 
 /// All-day events of the day, one full-width bar each in its calendar color, above the timeline.
 /// Long titles fade out; in the app a tap opens Calendar and a long press offers deleting the event.
@@ -31,6 +32,7 @@ struct AllDayStrip: View {
     private func bar(_ event: CalendarEvent) -> some View {
         HStack(spacing: tokens.space(.dotTextGap)) {
             Circle().fill(Color(hex: event.colorHex)).frame(width: tokens.size(.eventDot), height: tokens.size(.eventDot))
+                .widgetAccentable()
             FadingText(text: event.title, font: font ?? tokens.font(.chip), lineHeight: lineHeight)
         }
         .foregroundStyle(tokens.color(.eventText))

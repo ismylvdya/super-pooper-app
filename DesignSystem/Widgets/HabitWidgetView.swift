@@ -1,8 +1,11 @@
 import AppIntents
 import SwiftUI
+import WidgetKit
 
 /// The habit widget: the name in the habit's color, today's day button in the corner (it marks the
-/// habit without opening the app) and the last weeks of days at the bottom, the oldest week fading out.
+/// habit without opening the app) and the last weeks of days at the bottom, the oldest week fading out. All of it is in
+/// the habit's color, so all of it takes the accent of a Home Screen tinted in one color. The system puts its margins
+/// around it.
 struct HabitWidgetView: View {
     @Environment(\.tokens) private var tokens
     let habit: TaskItem
@@ -12,7 +15,7 @@ struct HabitWidgetView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            content(metrics: tokens.habitDots(fitting: geometry.size.width - tokens.space(.widgetPadding) * 2))
+            content(metrics: tokens.habitDots(fitting: geometry.size.width))
         }
     }
 
@@ -31,7 +34,7 @@ struct HabitWidgetView: View {
             Spacer(minLength: 0)
             HabitGridView(grid: grid, color: color, metrics: metrics, fadesTop: true)
         }
-        .padding(tokens.space(.widgetPadding))
+        .widgetAccentable()
     }
 
     private var todayCell: HabitCell {

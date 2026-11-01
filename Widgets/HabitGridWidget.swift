@@ -11,7 +11,6 @@ struct HabitGridWidget: Widget {
         .configurationDisplayName("widget.habit.name")
         .description("widget.habit.description")
         .supportedFamilies([.systemSmall])
-        .contentMarginsDisabled()
     }
 }
 

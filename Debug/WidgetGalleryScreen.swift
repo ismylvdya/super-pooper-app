@@ -35,6 +35,7 @@ struct WidgetGalleryScreen: View {
 
     private func widget<Content: View>(width: CGFloat, height: CGFloat, @ViewBuilder content: () -> Content) -> some View {
         content()
+            .systemWidgetMargins()
             .frame(width: width, height: height)
             .background(tokens.color(width > 300 && height > 300 ? .screenBackground : .plateBackground))
             .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
