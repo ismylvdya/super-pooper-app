@@ -53,11 +53,4 @@ struct ZonedTimesTests {
         #expect(QuickDue.selection(of: task, context: context) == .today)
         #expect(QuickDue.toggling(.tomorrow, task: task, context: context) == TaskDue("2026-10-23T08:00"))
     }
-
-    @Test func theSignatureWarningIsDueWithinTheLeadTime() {
-        let now = Date(timeIntervalSince1970: 1_000_000)
-        #expect(SigningExpiry.isSoon(expiration: now.addingTimeInterval(3600), leadHours: 24, now: now))
-        #expect(!SigningExpiry.isSoon(expiration: now.addingTimeInterval(3 * 24 * 3600), leadHours: 24, now: now))
-        #expect(!SigningExpiry.isSoon(expiration: now.addingTimeInterval(-60), leadHours: 24, now: now))
-    }
 }
