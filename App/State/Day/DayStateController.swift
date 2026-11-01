@@ -52,12 +52,12 @@ final class DayStateController {
     }
 
     /// Habit blocks dragged on the timeline today; none once the day is over.
-    var habitTimes: HabitDayTimes {
-        HabitDayTimes(dayState.day == context().today ? dayState.habitMoves : [])
+    var todayTimes: TodayTimes {
+        TodayTimes(dayState.day == context().today ? dayState.timeMoves : [])
     }
 
-    func setHabitMoves(_ moves: [HabitTimeMove]) {
-        update { $0.habitMoves = moves }
+    func setTimeMoves(_ moves: [TimeMove]) {
+        update { $0.timeMoves = moves }
     }
 
     func rollDayIfNeeded() {
@@ -102,7 +102,7 @@ final class DayStateController {
             $0.skipped = rename($0.skipped)
             $0.postponed = rename($0.postponed)
             $0.manualOrder = $0.manualOrder.map(rename)
-            $0.habitMoves = HabitDayTimes($0.habitMoves).renaming(from: old, to: new)
+            $0.timeMoves = TodayTimes($0.timeMoves).renaming(from: old, to: new)
         }
     }
 

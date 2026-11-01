@@ -3,15 +3,15 @@ import Foundation
 /// When a task stands on the day's timeline.
 struct DayTimes: Sendable {
     let context: DayContext
-    /// Habit blocks dragged today (to another time or to the pool).
-    var habitTimes = HabitDayTimes()
+    /// Blocks moved today (dragged to another time or to the pool, or snoozed).
+    var todayTimes = TodayTimes()
 
     /// Habits are planned at their reminder times as today has them; other tasks need `due` with a time on today's
-    /// logical day.
+    /// logical day, moved as today has it.
     func times(of task: TaskItem) -> [BlockTime] {
-        if task.isHabit { return habitTimes.blocks(of: task) }
+        if task.isHabit { return todayTimes.blocks(of: task) }
         guard let due = task.due, let time = due.time, context.logicalDay(of: due) == context.today else { return [] }
-        return [BlockTime(time)]
+        return todayTimes.blocks(of: task, written: [time])
     }
 
     /// The blocks still to do today. A closed day leaves the timeline (Twice closes it however many reminders there
@@ -27,7 +27,7 @@ struct DayTimes: Sendable {
 
     /// A habit with reminder times sent to the pool today stands in the pool too, while its day is open.
     func isPooledToday(_ item: DayItem) -> Bool {
-        item.isHabit && !item.isFinished && !habitTimes.pooled(of: item.task).isEmpty
+        item.isHabit && !item.isFinished && !todayTimes.pooled(of: item.task).isEmpty
     }
 
     /// The moment a block starts at today.

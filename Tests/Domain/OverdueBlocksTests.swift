@@ -84,9 +84,9 @@ struct OverdueBlocksTests {
     @Test func todaysHabitDragsComeFirst() throws {
         let vitamins = makeHabit("Vitamins", time: "09:00")
         let stretch = makeHabit("Stretch", time: "08:00")
-        let moves = [HabitTimeMove(habit: "Vitamins", slot: LocalTime("09:00"), time: LocalTime("15:00")),
-                     HabitTimeMove(habit: "Stretch", slot: LocalTime("08:00"), time: LocalTime("12:30"))]
-        let plan = DayScenario(tasks: [vitamins, stretch, timed("At noon", at: "12:00")], habitMoves: moves).build()
+        let moves = [TimeMove(task: "Vitamins", slot: LocalTime("09:00"), time: LocalTime("15:00")),
+                     TimeMove(task: "Stretch", slot: LocalTime("08:00"), time: LocalTime("12:30"))]
+        let plan = DayScenario(tasks: [vitamins, stretch, timed("At noon", at: "12:00")], timeMoves: moves).build()
         #expect(try span(plan, "Vitamins") == "15:00–15:15")
         #expect(try span(plan, "At noon") == "13:25–13:40")
         #expect(try span(plan, "Stretch") == "13:40–13:55")

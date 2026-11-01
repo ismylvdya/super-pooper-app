@@ -57,7 +57,7 @@ struct HabitDragTests {
         await model.waitForNotifications()
         #expect(start(model) == "11:00")
         #expect(model.task(named: vitamins) == note, "nothing is written to the note")
-        #expect(model.dayState.habitMoves == [HabitTimeMove(habit: vitamins, slot: nine, time: LocalTime("11:00"))])
+        #expect(model.dayState.timeMoves == [TimeMove(task: vitamins, slot: nine, time: LocalTime("11:00"))])
         #expect(center.delivered.isEmpty, "the notification at the old time goes")
         #expect(todays.map(fireDate) == [at("11:00")], "today's comes at the new time")
         #expect(fireDate(center.pending(slot)) == at("09:00", daysLater: 1), "tomorrow's at the note's time")
@@ -89,7 +89,7 @@ struct HabitDragTests {
         await model.schedule(vitamins, slot: nine, at: at("11:00"))
         clock.now = at("08:00", daysLater: 1)
         await sync(model)
-        #expect(model.dayState.habitMoves.isEmpty)
+        #expect(model.dayState.timeMoves.isEmpty)
         #expect(start(model) == "09:00")
     }
 

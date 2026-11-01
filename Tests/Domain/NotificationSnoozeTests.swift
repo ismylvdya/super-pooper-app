@@ -64,4 +64,36 @@ struct NotificationSnoozeTests {
         let snoozes = NotificationSnoozing.adding(second, to: [old, first, other], today: wednesday)
         #expect(snoozes == [other, second])
     }
+
+    // MARK: - A task's or habit's block moves
+
+    private func moves(_ tasks: [TaskItem], key: String, at time: String, until: String, untilDay: String = TestCalendar.wednesday,
+                       events: [CalendarEvent] = [], reminders: [ReminderItem] = []) -> [TimeMove]? {
+        let context = TestCalendar.context(TestCalendar.wednesday, time)
+        let all = planner.all(tasks: tasks, reminders: reminders, events: events, skipped: [], context: context)
+        guard let note = all.first(where: { $0.key == key && $0.day == context.today }) else { return nil }
+        let task = tasks.first { $0.name == note.taskName } ?? water
+        return NotificationSnoozing.moves(snoozing: note, of: task, until: TestCalendar.date(untilDay, until),
+                                          today: TodayTimes(), context: context)
+    }
+
+    @Test func aSnoozedHabitOrTaskMovesItsBlockToWhereItsNotificationComesAgain() {
+        #expect(moves([water], key: waterSlot, at: "09:00", until: "10:00")
+            == [TimeMove(task: "Вода", slot: LocalTime("09:00"), time: LocalTime("10:00"))])
+        let parcel = makeTask("Parcel") { $0.due = TaskDue("2026-10-21T16:00") }
+        #expect(moves([parcel], key: "task|Parcel", at: "16:10", until: "17:10")
+            == [TimeMove(task: "Parcel", slot: LocalTime("16:00"), time: LocalTime("17:10"))])
+    }
+
+    /// Events and reminders are not ours to move: only their notification comes again. Past the end of today nothing moves.
+    @Test func eventsRemindersAndMomentsPastTodayMoveNothing() {
+        var standup = makeEvent("Standup", from: "15:15", to: "16:15")
+        standup.alarmDates = [TestCalendar.date(TestCalendar.wednesday, "15:00")]
+        #expect(moves([], key: "event|\(standup.eventIdentifier)|0", at: "15:00", until: "16:00", events: [standup]) == nil)
+        let rent = makeReminder("Rent", at: "15:00")
+        #expect(moves([], key: "reminder|\(rent.id)", at: "15:00", until: "16:00", reminders: [rent]) == nil)
+        #expect(moves([water], key: waterSlot, at: "09:00", until: "04:30", untilDay: "2026-10-22") == nil,
+                "tomorrow's logical day")
+    }
 }
+

@@ -13,7 +13,7 @@ struct DayBuilder: Sendable {
         let sorter = PoolSorter(criteria: sortCriteria, rules: rules, routines: inputs.routines)
         let membership = DayMembership(occurrence: occurrence, context: context)
         let dayProblems = DayProblems(graph: graph, occurrence: occurrence)
-        let times = DayTimes(context: context, habitTimes: HabitDayTimes(inputs.habitMoves))
+        let times = DayTimes(context: context, todayTimes: TodayTimes(inputs.timeMoves))
 
         var items: [DayItem] = []
         var anchors: [String: TimelineChain.Anchor] = [:]

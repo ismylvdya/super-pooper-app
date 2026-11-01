@@ -3,7 +3,7 @@ import Foundation
 /// Dragging a task between the pool and the timeline. Dropped on the timeline it gets a `due` with the
 /// date and time of that spot (and with it a notification); dragged back to the pool it keeps its date
 /// and loses the time. A habit's note is never changed by a drag (its times apply to every day): its block moves on
-/// today's timeline or to the pool for today only (`HabitDayTimes`).
+/// today's timeline or to the pool for today only (`TodayTimes`).
 enum TaskScheduling {
     /// A drag writes the note (tasks).
     static func canMove(_ task: TaskItem) -> Bool { !task.isHabit }
@@ -13,7 +13,7 @@ enum TaskScheduling {
 
     /// A dragged item can land on today's timeline: a task; a habit's block from the timeline (`slot`: its time as the
     /// note has it); a habit from the pool only with a reminder time sent there today.
-    static func canPlace(_ task: TaskItem, slot: LocalTime?, today: HabitDayTimes) -> Bool {
+    static func canPlace(_ task: TaskItem, slot: LocalTime?, today: TodayTimes) -> Bool {
         canMove(task) || slot != nil || !today.pooled(of: task).isEmpty
     }
 

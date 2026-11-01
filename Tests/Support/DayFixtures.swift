@@ -135,13 +135,13 @@ struct DayScenario {
     var routines = HabitRoutines()
     var postponed: Set<String> = []
     var eventsKnown = true
-    var habitMoves: [HabitTimeMove] = []
+    var timeMoves: [TimeMove] = []
 
     func build(at context: DayContext = TestCalendar.context()) -> DayPlan {
         var inputs = DayInputs(tasks: tasks, events: events, reminders: reminders, skipped: skipped, manualOrder: manualOrder,
                                routines: routines, postponed: postponed)
         inputs.eventsKnown = eventsKnown
-        inputs.habitMoves = habitMoves
+        inputs.timeMoves = timeMoves
         return DayBuilder(rules: TestConfig.rules.day, sortCriteria: TestConfig.sort.pool).build(inputs, context: context)
     }
 }
