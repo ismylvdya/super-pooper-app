@@ -1,7 +1,7 @@
 import Foundation
 
-/// The new task or habit page as it is being filled in: the draft, the name typed in the title and what leaving the
-/// page creates. Nothing is written while the page is open; the draft stays until the note is created.
+/// The new task or habit page as it is being filled in: the draft, the name typed in the title, what Return in the name
+/// saves at once and what leaving the page creates. The draft stays until the note is created.
 struct NewNotePage: Equatable {
     var draft: NoteDraft
     var name = ""
@@ -22,6 +22,13 @@ struct NewNotePage: Equatable {
     func creation(unnamed: String, rules: (String) -> NoteNameProblem?) -> (draft: NoteDraft, name: String)? {
         guard nameProblem(rules) == nil, !trimmedName.isEmpty || draft != untouched else { return nil }
         return (draft, trimmedName.isEmpty ? unnamed : trimmedName)
+    }
+
+    /// What Return in the name saves at once: the note under the typed name; nothing for an empty name (Return only
+    /// closes the keyboard) or a name a note cannot take (the title already says why).
+    func savedOnReturn(rules: (String) -> NoteNameProblem?) -> (draft: NoteDraft, name: String)? {
+        guard !trimmedName.isEmpty, nameProblem(rules) == nil else { return nil }
+        return (draft, trimmedName)
     }
 
     private var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }

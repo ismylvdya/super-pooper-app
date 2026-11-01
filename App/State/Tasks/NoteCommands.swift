@@ -127,6 +127,13 @@ final class NoteCommands {
         return await create(creation.draft, named: creation.name) != nil
     }
 
+    /// Return in the name of the new task or habit page: its note is created at once (`NewNotePage.savedOnReturn`), and
+    /// the page goes on as the note's own. Returns the note's name; nil when nothing was saved.
+    func createOnReturn(from page: NewNotePage) async -> String? {
+        guard let saving = page.savedOnReturn(rules: nameProblem(in:)) else { return nil }
+        return await create(saving.draft, named: saving.name)
+    }
+
     /// Creates the note of a draft (a task or a habit) with all its fields, its text and its subtasks (each a task of its
     /// own linked to its parent). Returns the final name.
     func create(_ draft: NoteDraft, named name: String) async -> String? {
