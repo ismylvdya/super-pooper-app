@@ -153,7 +153,20 @@ struct ConfigTests {
     }
 
     @Test func missingActionDefinitionIsReported() throws {
-        let registry = ActionRegistry(actions: [], menus: TestConfig.actions.menus, haptics: TestConfig.actions.haptics)
+        let registry = ActionRegistry(actions: [], menus: TestConfig.actions.menus, swipes: TestConfig.actions.swipes,
+                                      haptics: TestConfig.actions.haptics)
+        #expect(throws: ConfigError.self) { try registry.validate(file: "actions.json") }
+    }
+
+    /// Every kind of row has its swipes in actions.json; a misspelt kind, side or swipe color is a config error.
+    @Test func swipesAreCheckedLikeMenus() throws {
+        let json = try String(contentsOf: TestPaths.configFolder.appendingPathComponent("actions.json"), encoding: .utf8)
+        for (fragment, replacement) in [("\"archivedHabit\": {", "\"archivedHabbit\": {"), ("\"trailing\": [\n        \"restoreFromTrash\"", "\"traling\": [\n        \"restoreFromTrash\"")] {
+            let broken = Data(try json.replacingOnce(fragment, with: replacement).utf8)
+            #expect(throws: ConfigError.self) { try ConfigLoader.decode(ActionRegistry.self, from: broken, file: "actions.json") }
+        }
+        let tinted = Data(try json.replacingOnce("\"swipeTint\": \"swipeNeutral\"", with: "\"swipeTint\": \"swipeNeutrl\"").utf8)
+        let registry = try ConfigLoader.decode(ActionRegistry.self, from: tinted, file: "actions.json")
         #expect(throws: ConfigError.self) { try registry.validate(file: "actions.json") }
     }
 

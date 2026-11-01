@@ -21,6 +21,7 @@ final class BannerPresenter: AppEventSink {
         case .archived(let name): success("banner.archived", name)
         case .deleted(let name): success("banner.deleted", name)
         case .restored(let name): success("banner.restored", name)
+        case .returned(let name): success("banner.returned", name)
         case .deletedForever(let name): success("banner.deletedForever", name)
         case .conflictResolved(let name): success("banner.conflictResolved", name)
         case .promoted(let names):

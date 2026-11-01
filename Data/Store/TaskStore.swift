@@ -49,10 +49,15 @@ protocol TaskStore: Sendable {
     func rename(_ task: TaskItem, to newName: String, dependents: [TaskItem]) async throws -> TaskItem
     /// Deletes the item (into the store's trash, where it has one).
     func delete(_ task: TaskItem) async throws
-    /// Puts a completed task away from the active ones; it is gone from `load` and listed by `filedTasks`.
-    func fileAway(_ task: TaskItem) async throws
-    /// The tasks put away, read-only.
+    /// Puts a completed task away from the active ones; it is gone from `load` and listed by `filedTasks`. Returns it as
+    /// filed (its id, and its name where that was taken there, may change).
+    @discardableResult
+    func fileAway(_ task: TaskItem) async throws -> TaskItem
+    /// The tasks put away.
     func filedTasks() async throws -> [TaskItem]
+    /// Brings a task put away back among the active ones, reopened (`TaskEdit.reopen`): the reverse of `fileAway`. A
+    /// name taken there meanwhile gets a number; the task is returned as it is now.
+    func unfile(_ task: TaskItem) async throws -> TaskItem
     /// The item's own text (the note body), without anything the app keeps in it for itself.
     func text(of task: TaskItem) async throws -> String
     func setText(_ text: String, of task: TaskItem) async throws -> TaskWriteResult

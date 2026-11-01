@@ -78,6 +78,26 @@ final class NoteCommands {
         if await setStatus(.archived, of: name) { appEvents.send(.archived(name)) }
     }
 
+    /// A done task back in Soon (Return in the Done list): reopened, as Unmark does.
+    func returnToSoon(_ name: String) async {
+        guard let task = tasks.task(named: name), !task.isHabit, task.status == .done else { return }
+        if await setStatus(.thisWeek, of: name) { appEvents.send(.returned(name)) }
+    }
+
+    /// A task of the done folder back among the active ones, in Soon (the store reopens it).
+    func returnFiled(_ id: TaskID) async {
+        guard let task = tasks.filedTask(id) else { return }
+        do {
+            let back = try await store.unfile(task)
+            tasks.removeFiled(task)
+            tasks.written(back)
+            appEvents.send(.returned(back.name))
+        } catch {
+            appEvents.send(.failure(AppFailure(error)))
+        }
+        await derived.publish()
+    }
+
     /// The weekly review on the phone: a task of a later planning level joins this week.
     func moveToThisWeek(_ name: String) async {
         guard let task = tasks.task(named: name), task.canPromote else { return }
@@ -168,6 +188,19 @@ final class NoteCommands {
             appEvents.send(.failure(AppFailure(error)))
         }
         await derived.publish()
+    }
+
+    /// A task of the done folder goes to the trash, after a backup.
+    func deleteFiled(_ id: TaskID) async {
+        guard let task = tasks.filedTask(id) else { return }
+        do {
+            try await backups.backup([task], reason: "delete")
+            try await store.delete(task)
+            tasks.removeFiled(task)
+            appEvents.send(.deleted(task.name))
+        } catch {
+            appEvents.send(.failure(AppFailure(error)))
+        }
     }
 
     /// Renames the note; the store rewrites the tasks that refer to it, and the settings and today's state that name it

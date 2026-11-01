@@ -107,9 +107,9 @@ final class NoteWriter {
         }
         do {
             try await backups.backup([task], reason: "done")
-            try await store.fileAway(task)
+            let filed = try await store.fileAway(task)
             tasks.remove(task)
-            tasks.addFiled(task)
+            tasks.addFiled(filed)
             await derived.publish()
         } catch {
             SyncLog.logger.error("filing \(task.name, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")

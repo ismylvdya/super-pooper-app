@@ -100,7 +100,7 @@ final class ScreenSnapshotUITests: XCTestCase {
         XCTAssertTrue(row.waitForExistence(timeout: 10))
         app.scrollIntoView(row)
         row.swipeLeft()
-        let postpone = app.buttons["review.postpone"]
+        let postpone = app.buttons["swipe.notToday"]
         if postpone.waitForExistence(timeout: 2) { postpone.tap() }
         for _ in 0..<6 { app.swipeUp() }
         settle()
@@ -108,7 +108,7 @@ final class ScreenSnapshotUITests: XCTestCase {
         let waiting = app.descendants(matching: .any).matching(identifier: "review.notToday:Оплатить интернет").firstMatch
         XCTAssertTrue(waiting.waitForExistence(timeout: 10))
         waiting.swipeRight()
-        let back = app.buttons["review.backToToday"]
+        let back = app.buttons["swipe.backToToday"]
         if back.waitForExistence(timeout: 2) { back.tap() }
         XCTAssertTrue(waiting.waitForNonExistence(timeout: 10))
     }

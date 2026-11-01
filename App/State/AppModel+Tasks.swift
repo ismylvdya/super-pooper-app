@@ -12,12 +12,24 @@ extension AppModel {
         case .done, .partial, .twice, .unmark: await parts.notes.markFromMenu(name, as: action.habitMark, on: day)
         case .skipToday: await parts.dayCommands.skip(name, on: day)
         case .notToday: await parts.dayCommands.notToday(name, on: day)
+        case .backToToday: parts.dayCommands.unpostpone(name)
         case .archive: await parts.notes.archive(name)
         case .restoreThisWeek: await parts.notes.setStatus(.thisWeek, of: name)
         case .restoreHalfYear: await parts.notes.setStatus(.halfYear, of: name)
         case .restoreHabit: await parts.notes.setStatus(.habit, of: name)
+        case .returnFromDone: await parts.notes.returnToSoon(name)
         case .delete: await parts.notes.delete(name)
-        case .open, .openInObsidian, .deleteEvent: break
+        // Opening is the screen's; the trash restores its own notes, the timeline deletes its events.
+        case .open, .openInObsidian, .restoreFromTrash, .deleteEvent: break
+        }
+    }
+
+    /// An action on a task of the done folder (the Done list): its name may also be an active note's, so it goes by id.
+    func perform(_ action: ActionID, onFiled id: TaskID) async {
+        switch action {
+        case .returnFromDone: await parts.notes.returnFiled(id)
+        case .delete: await parts.notes.deleteFiled(id)
+        default: break
         }
     }
 

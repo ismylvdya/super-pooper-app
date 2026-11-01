@@ -8,5 +8,7 @@ struct PendingAction: Identifiable, Equatable {
     let kind: NoteKind
     /// How many subtasks go along with the note.
     let subtasks: Int
+    /// A task of the done folder (the Done list): the action goes by its id, as an active note may have the same name.
+    var filed: TaskID?
     var id: String { "\(action.id.rawValue)|\(taskName)" }
 }

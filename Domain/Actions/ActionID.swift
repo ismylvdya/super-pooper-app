@@ -8,6 +8,8 @@ enum ActionID: String, Codable, CaseIterable, Sendable {
     case twice
     case skipToday
     case notToday
+    /// A task put off with Not today back in today.
+    case backToToday
     case unmark
     case open
     case archive
@@ -16,6 +18,10 @@ enum ActionID: String, Codable, CaseIterable, Sendable {
     case restoreThisWeek
     case restoreHalfYear
     case restoreHabit
+    /// A done task back in Soon, reopened (from the done folder too).
+    case returnFromDone
+    /// A note in the trash back among the tasks.
+    case restoreFromTrash
     case deleteEvent
 }
 

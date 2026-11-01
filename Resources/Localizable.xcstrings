@@ -111,6 +111,17 @@
         }
       }
     },
+    "action.restoreFromTrash": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore"
+          }
+        }
+      }
+    },
     "action.restoreHabit": {
       "extractionState": "manual",
       "localizations": {
@@ -140,6 +151,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Back to Soon"
+          }
+        }
+      }
+    },
+    "action.returnFromDone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Return"
           }
         }
       }
@@ -360,6 +382,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Restored “%@”."
+          }
+        }
+      }
+    },
+    "banner.returned": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Returned “%@” to Soon."
           }
         }
       }

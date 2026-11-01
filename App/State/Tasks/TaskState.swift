@@ -96,4 +96,6 @@ final class TaskState {
 
     /// The Done list and its count see a task filed just now before the folder is read again.
     func addFiled(_ task: TaskItem) { filedTasks.append(task) }
+    func filedTask(_ id: TaskID) -> TaskItem? { filedTasks.first { $0.id == id } }
+    func removeFiled(_ task: TaskItem) { filedTasks.removeAll { $0.id == task.id } }
 }

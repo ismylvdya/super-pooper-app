@@ -6,14 +6,13 @@ import SwiftUI
 /// manual order is kept for today. Reset sorting brings the sort back.
 /// Tapping a row (outside its chips) opens the task page; "+" creates a new this-week task.
 /// A long press opens the same menu as the row in the pool (and moving the finger then drags the row).
-/// Swiping a task left is the menu's Not today: it stays this week and waits in "Not Today" at the bottom
-/// (and in tomorrow's review); swiping it there to the right brings it back.
+/// Swiping a row right is Done; swiping a task left is the menu's Not today (then Delete): it stays this week and waits
+/// in "Not Today" at the bottom (and in tomorrow's review); swiping it there to the right brings it back.
 struct MorningReviewScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
-    @Environment(\.actions) private var actions
     @Environment(\.openURL) private var openURL
     @State private var path: [Route] = []
     @State private var pendingAction: PendingAction?
@@ -47,17 +46,8 @@ struct MorningReviewScreen: View {
                                         }
                                     }
                                     .accessibilityIdentifier("review:\(item.id)")
-                                    // The pool menu's Not today, where that menu offers it.
-                                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                        if model.offers(.notToday, for: item) {
-                                            let action = actions.definition(.notToday)
-                                            Button { Haptics.play(action.haptic); perform(action, on: item.id) } label: {
-                                                Label(LocalizedStringKey(action.title), systemImage: action.icon)
-                                            }
-                                            .tint(tokens.color(.swipeNeutral))
-                                            .accessibilityIdentifier("review.postpone")
-                                        }
-                                    }
+                                    // Done to the right; to the left the pool menu's Not today (a full swipe), then Delete.
+                                    .actionSwipes(.review, item: item) { perform($0, on: item.id) }
                             }
                         }
                     }
@@ -80,13 +70,8 @@ struct MorningReviewScreen: View {
                                           frames: frames, vertical: 0)
                             .accessibilityIdentifier("review.notToday:\(task.name)")
                             .opacity(tokens.opacity(.blocked))
-                            .swipeActions(edge: .leading, allowsFullSwipe: true) {
-                                Button { Haptics.play(.move); model.unpostpone(task.name) } label: {
-                                    Label("review.backToToday", systemImage: icons[.restore])
-                                }
-                                .tint(tokens.color(.success))
-                                .accessibilityIdentifier("review.backToToday")
-                            }
+                            // Back to today to the right, Delete to the left.
+                            .actionSwipes(.postponed, item: DayItem(listed: task)) { perform($0, on: task.name) }
                         }
                         ListGroupFooter(text: Text("review.postponed.hint"))
                     }
@@ -98,7 +83,7 @@ struct MorningReviewScreen: View {
             // The first group starts closer to the bar than a list's own top gap.
             .contentMargins(.top, tokens.space(.reviewTop), for: .scrollContent)
             .bannerHost()
-            .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
+            .actionConfirmation($pendingAction) { handler.run($0) }
             .navigationDestination(for: Route.self) { route in
                 switch route {
                 case .task(let name): TaskPageScreen(taskName: name).bannerHost()

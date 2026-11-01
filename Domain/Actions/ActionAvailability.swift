@@ -36,8 +36,15 @@ struct ActionAvailability: Sendable {
         case .unmark: return item.isDone
         case .skipToday: return isToday && item.isHabit && !item.isDone
         case .notToday: return isToday && NotToday.isAvailable(for: item)
+        case .returnFromDone: return !item.isHabit && item.isDone
         default: return true
         }
+    }
+
+    /// The swipe buttons of a row: the actions of `actions` it offers now, in order, without the mark it already has
+    /// (a swipe button cannot be shown and not pressed).
+    func swipe(_ actions: [ActionID], for item: DayItem?) -> [ActionID] {
+        entries(actions, for: item).filter { !$0.isCurrent }.map(\.action)
     }
 
     private func isCurrentMark(_ action: ActionID, of item: DayItem, offersTwice: Bool) -> Bool {

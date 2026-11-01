@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// The Habits tab: every active habit with today's mark (tap cycles, long press picks), its week
-/// progress, a page per habit; "+" creates a habit, rows reorder by dragging inside their group. Habits come first,
+/// The Habits tab: every active habit with today's mark (tap cycles, long press picks, a swipe to the right is Done, to
+/// the left Delete), a page per habit; "+" creates a habit, rows reorder by dragging inside their group. Habits come first,
 /// tasks that simply repeat ("Repeatable tasks") in a group of their own. A plain list whose rows draw the app's
 /// plates themselves, so the title, the corners and the gaps match the other tabs' pages.
 struct HabitsScreen: View {
@@ -9,7 +9,9 @@ struct HabitsScreen: View {
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
+    @Environment(\.openURL) private var openURL
     @State private var titleHeight: CGFloat = 0
+    @State private var pendingAction: PendingAction?
     @State private var query = ""
     @State private var isSearching = false
     @State private var frames = ListGroupFrames()
@@ -45,6 +47,7 @@ struct HabitsScreen: View {
         .contentMargins(.top, 0, for: .scrollContent)
         .pageSearch(query: $query, isSearching: $isSearching, prompt: "search.prompt.tasks")
         .syncsOnPull()
+        .actionConfirmation($pendingAction) { handler.run($0) }
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Button { router.open(.newHabit) } label: { Image(systemName: icons[.newTask]) }
@@ -54,6 +57,10 @@ struct HabitsScreen: View {
                 SearchBarButton(isSearching: $isSearching, accessibilityID: "habits.search")
             }
         }
+    }
+
+    private var handler: TaskActionHandler {
+        TaskActionHandler(model: model, router: router, openURL: openURL) { pendingAction = $0 }
     }
 
     /// The space between two plates of the page.
@@ -74,6 +81,7 @@ struct HabitsScreen: View {
                         // A long press lifts the row and offers today's marks.
                         HabitDayMenu(habit: habit, day: today)
                     }
+                    .actionSwipes(.habit, item: DayItem(habit: habit, on: today)) { handler.handle($0, taskName: habit.name) }
             }
             // While a search filters the list the rows cannot move: the order is the order of every habit.
             .onMove(perform: query.isEmpty ? { source, destination in

@@ -26,5 +26,12 @@ check "event picker → previous_event written"        "grep -q '^previous_event
 check "plus in Habits → new habit, in Today"         "grep -q '^status: habit' \"$TASKS/Читать 20 минут.md\" && grep -qF '\"show_in_today\":true' \"$TASKS/Читать 20 минут.md\" && grep -q '^recurrence: ' \"$TASKS/Читать 20 минут.md\""
 check "plus in review → new this_week note"           "grep -q '^status: this_week' \"$TASKS/Позвонить врачу.md\""
 check "subtask dragged → its place in subtask_order"  "grep -qF '\"subtask_order\":' \"$TASKS/Шаг один.md\""
+check "swipe right in Habits → complete_instances"   "grep -A20 '^complete_instances:' \"$TASKS/Полить цветы 🌱.md\" | grep -q \"$TODAY\""
+check "swipe left in a list → moved to .trash"        "[ -f \"$VAULT/.trash/Ждать ответа от арендодателя.md\" ] && [ ! -f \"$TASKS/Ждать ответа от арендодателя.md\" ]"
+check "swipe right in a list → done, in Done"         "grep -q '^status: done' \"$DONE/Разобрать почту.md\" && [ ! -f \"$TASKS/Разобрать почту.md\" ]"
+check "Return (menu) from Done → this_week, no completed_date" "grep -q '^status: this_week' \"$TASKS/Старая сделанная задача.md\" && ! grep -q '^completed_date:' \"$TASKS/Старая сделанная задача.md\" && [ ! -f \"$DONE/Старая сделанная задача.md\" ]"
+check "Return (swipe) from Done → this_week, no completed_date" "grep -q '^status: this_week' \"$TASKS/Купить молоко.md\" && ! grep -q '^completed_date:' \"$TASKS/Купить молоко.md\" && [ ! -f \"$DONE/Купить молоко.md\" ]"
+check "swipe left in Archive → status: this_week"     "grep -q '^status: this_week' \"$TASKS/Архивная задача.md\""
+check "swipe left in Trash → back in the tasks"       "[ -f \"$TASKS/Связь на несуществующую.md\" ] && [ ! -f \"$VAULT/.trash/Связь на несуществующую.md\" ]"
 check "unknown keys and body untouched"              "grep -q '^  nested: значение' \"$TASKS/Длинная заметка с незнакомыми ключами.md\""
 exit $FAILED
