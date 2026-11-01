@@ -58,7 +58,7 @@ struct RootView: View {
                 // so no empty strip is left between it and the tabs.
                 .ignoresSafeArea(.container, edges: landscapeTabBarEdge)
                 // Behind the landscape tab bar, which stands beside the tabs rather than over them.
-                .background(tokens.color(.screenBackground).ignoresSafeArea())
+                .screenBackground()
                 // The banner sits right under the status bar, over the bar buttons, on every tab.
                 .overlay(alignment: .top) { BannerOverlay() }
                 .sheet(isPresented: $router.isReviewPresented) {

@@ -22,7 +22,7 @@ struct PageScaffold<Content: View>: View {
             .padding(.horizontal, tokens.space(.screenHorizontal))
             .padding(.bottom, tokens.space(.screenBottom))
         }
-        .background(tokens.color(.screenBackground))
+        .screenBackground()
         .titleScrollsIntoBar(title, titleHeight: titleHeight)
     }
 }

@@ -29,7 +29,7 @@ struct OnboardingFlow: View {
             }
             .padding(.horizontal, tokens.space(.screenHorizontal))
             .padding(.bottom, tokens.space(.screenBottom))
-            .background(tokens.color(.screenBackground))
+            .screenBackground()
             .vaultPicker(isPresented: $isPickingVault)
             .task { await model.refreshAccess() }
         }

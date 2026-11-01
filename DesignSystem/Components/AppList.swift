@@ -15,6 +15,6 @@ private struct AppList: ViewModifier {
         content
             .scrollContentBackground(.hidden)
             .contentMargins(.bottom, tokens.space(.scrollEndRoom), for: .scrollContent)
-            .background(tokens.color(.screenBackground))
+            .screenBackground()
     }
 }

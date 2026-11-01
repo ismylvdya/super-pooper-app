@@ -91,6 +91,7 @@ SuperPooper — iPhone-приложение-оболочка над тремя �
 | Потянуть вниз — синхронизировать | `.syncsOnPull(then:)` (`then` — что ещё перечитать экрану) |
 | Меню дела или привычки | `ActionMenu.context(of:)`, `ActionMenu.page(of:)` |
 | Системный `List` на фоне экрана | `.appList()` |
+| Фон страницы (цвет `screenBackground`) | `.screenBackground()` — у `PageScaffold`, `.appList()`, Today, онбординга и корня: цвет уходит под панели и под клавиатуру (на iOS 26 за её скруглёнными углами видно то, что под ней). Свой `.background(tokens.color(.screenBackground))` на странице не пишется: он останавливается над клавиатурой, и под ней остаётся системный белый (D-079) |
 | Затухание краёв прокрутки | `.edgeFades(color:topInset:bottomExtension:solidTop:barEdges:)`; края под системной панелью (низ блока Today у таб-бара, только вертикально) — `barEdges`: на iOS 26 там системный scroll edge effect вместо ручного затухания (`SystemLook.scrollUnderBars`, `.fadeUnderBar`), внутренние края затухают сами на обеих версиях |
 | Превью на странице настроек | `.settingsPreviewFrame()` (обрезает содержимое само; таймлайну своя обрезка не нужна) |
 | Шрифты таймлайна (события, задачи, полоса all-day) и их высоты строк | `TimelineFonts.app(_:tokens:)` — приложение и превью настроек, `TimelineFonts.widget(tokens:)` — виджет; вес заголовка события — в токене (`timelineEvent`, `widgetEvent`); стиль колонки — `TimelineStyle.make` |

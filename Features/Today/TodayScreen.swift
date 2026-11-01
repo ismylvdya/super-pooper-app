@@ -31,7 +31,7 @@ struct TodayScreen: View {
                 if physicalBottom == .leading { landscapeColumn(bottom: .leading) }
             }
         }
-        .background(tokens.color(.screenBackground))
+        .screenBackground()
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         // Upright, the system bar; lying sideways the buttons stand in their own column along the physical top.
         .toolbar(isLandscape ? .hidden : .visible, for: .navigationBar)
