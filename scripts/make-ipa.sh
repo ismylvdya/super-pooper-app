@@ -7,10 +7,8 @@ cd "$(dirname "$0")/.."
 
 BUNDLE_ID="$(grep -E '^SP_BUNDLE_ID' Config/Shared.xcconfig | sed 's/.*= *//')"
 GROUP="group.$BUNDLE_ID"
-EXTRA=()
-# Если стоит Xcode со старым SDK (< iOS 26), собираем с минимальной iOS 18.0 — такой .ipa ставится и на iOS 26.
-SDK_MAJOR="$(xcrun --sdk iphoneos --show-sdk-version | cut -d. -f1)"
-if [ "$SDK_MAJOR" -lt 26 ]; then EXTRA+=("IPHONEOS_DEPLOYMENT_TARGET=18.0"); fi
+# Минимальную iOS решает Config/Shared.xcconfig: Xcode 16 (SDK iOS 18) собирает с 18.0 — такой .ipa ставится и на iOS 26,
+# Xcode 26 — с 26.0.
 
 xcodebuild build -quiet \
   -project SuperPooper.xcodeproj -scheme SuperPooper -configuration Release \
@@ -19,8 +17,7 @@ xcodebuild build -quiet \
   -clonedSourcePackagesDirPath ./.build/SourcePackages \
   CODE_SIGNING_ALLOWED=NO CLANG_ENABLE_CODE_COVERAGE=NO \
   DEPLOYMENT_POSTPROCESSING=YES STRIP_INSTALLED_PRODUCT=YES COPY_PHASE_STRIP=YES \
-  OTHER_SWIFT_FLAGS="-file-prefix-map $PWD=." \
-  ${EXTRA[@]+"${EXTRA[@]}"}
+  OTHER_SWIFT_FLAGS="-file-prefix-map $PWD=."
 
 APP=.build/DerivedData-device/Build/Products/Release-iphoneos/SuperPooperApp.app
 ENTITLEMENTS=.build/ipa-entitlements.plist

@@ -7,10 +7,11 @@ SP_APP_GROUP = group.$(SP_BUNDLE_ID)
 MARKETING_VERSION = 0.6.1
 CURRENT_PROJECT_VERSION = 14
 
-// Минимальная iOS — 26.0. Строка с [sdk=…18*] срабатывает только в Xcode 16
-// (iOS 18 SDK), на котором собиралась и проверялась v0; в Xcode 26 она не действует.
+// Минимальная iOS — 26.0. Строка с [sdk=iphone*18*] срабатывает только в Xcode 16 (SDK iOS 18, устройство и симулятор):
+// там приложение собирается с минимальной 18.0 и выглядит как на iOS 18. В Xcode 26 она не действует.
+// Переход на iOS 26 — удалить эту строку, больше ничего (docs/IOS26-BUILD.md).
 IPHONEOS_DEPLOYMENT_TARGET = 26.0
-IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator18*] = 18.0
+IPHONEOS_DEPLOYMENT_TARGET[sdk=iphone*18*] = 18.0
 
 // Подпись: стиль Automatic, команда выбирается в Xcode (в репозитории её нет).
 CODE_SIGN_STYLE = Automatic
