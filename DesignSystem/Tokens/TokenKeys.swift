@@ -43,6 +43,8 @@ enum CountToken: String, CaseIterable, Sendable {
 enum OpacityToken: String, CaseIterable, Sendable {
     case blocked, past, eventFill, fadeTop, fadeMiddle, habitEmpty
     case gridFadedWeek, unlinked, eventTime, nowOverBlocks, daySwipeFade, toggleChipFill, bannerShadow, previewBlock, accentedPlate, signingPlate
+    /// The faint copy of a dragged plate where it would land (the pool's parted gap, the timeline's landing spot).
+    case dropGhost
 }
 
 enum DurationToken: String, CaseIterable, Sendable {

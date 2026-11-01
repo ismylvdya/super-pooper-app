@@ -50,4 +50,16 @@ struct TaskDragStateTests {
         #expect(!drag.hover(poolOrder: [task.id, "Call the bank"]))
         #expect(drag.hover(poolOrder: ["Call the bank", task.id]))
     }
+
+    /// The faint copy on the timeline stands where the task would land, as long as its block would be (.3).
+    @Test func theLandingCopyStandsAtTheSpotForTheTasksEstimate() {
+        let task = DayItem(listed: makeTask("Pay the internet") { $0.timeEstimate = 45 })
+        let ten = TestCalendar.date(TestCalendar.wednesday, "10:00")
+        let landing = TimelineSlot.landing(task, at: ten, rules: TestConfig.rules.day)
+        #expect(landing.start == ten)
+        #expect(landing.end == ten.addingTimeInterval(45 * 60))
+        #expect(landing.content == .task(task))
+        #expect(landing.time == nil, "a copy, never picked up itself")
+    }
 }
+

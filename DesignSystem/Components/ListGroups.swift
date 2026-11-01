@@ -85,7 +85,7 @@ private struct ListGroupRow<Menu: View>: ViewModifier {
             .modifier(ListGroupRowMenu(menu: menu))
             // A drag lifts the whole cell, menu and all: UIKit gets the plate's outline for it, so no lift falls back to
             // a shape of the system's (on iOS 26 a tall row would lift with corners of half its height).
-            .listCellLift(tokens.plateShape(.group))
+            .listCellLift(tokens.plateShape(.group), ghostOpacity: tokens.opacity(.dropGhost))
             .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { frame in
                 frames.set(.init(frame: frame, index: index, count: count), group: group, id: id)
             }

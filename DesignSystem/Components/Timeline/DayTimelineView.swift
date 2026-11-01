@@ -44,6 +44,7 @@ struct DayTimelineView<TaskContent: View>: View {
                         .offset(x: labelWidth + item.frame.minX, y: item.frame.minY)
                 }
                 if style.showsNow, window.contains(now) { nowLine(width: geometry.size.width, blocks: blocks) }
+                if let ghost = style.dropGhost, window.contains(ghost.start) { dropGhost(ghost, width: itemsWidth) }
                 if let marker = style.dropMarker, window.contains(marker) {
                     TimelineDropMarker(moment: marker, labelWidth: labelWidth, width: geometry.size.width).offset(y: y(marker))
                 }
@@ -125,6 +126,18 @@ struct DayTimelineView<TaskContent: View>: View {
                 TimelineTaskBlock(isPast: slot.isPast, isCompact: style.compactPlates) { taskContent(item, slot) }
             }
         }
+    }
+
+    /// The faint copy of the dragged plate where it would land: across the column, as tall as its block would be.
+    private func dropGhost(_ slot: TimelineSlot, width: CGFloat) -> some View {
+        let gap = tokens.space(.timelineItemGap)
+        let height = max(y(slot.end) - y(slot.start), style.minimumTaskHeight ?? style.minimumItemHeight)
+        return block(for: slot)
+            .frame(width: max(width - gap, 0), height: max(height - gap, 0), alignment: .topLeading)
+            .opacity(tokens.opacity(.dropGhost))
+            .offset(x: labelWidth, y: y(slot.start))
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
     }
 
     /// A small link mark; tapping it highlights everything linked to the block (widgets only show it).

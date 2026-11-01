@@ -177,6 +177,9 @@ struct TimelineBlock: View {
         style.showsNow = plan.isToday
         style.highlightedSlot = highlightedSlot
         style.dropMarker = drag?.hoverMoment
+        if let item = drag?.item, let moment = drag?.hoverMoment {
+            style.dropGhost = TimelineSlot.landing(item, at: moment, rules: model.config.rules.day)
+        }
         style.onLinkTap = { slot in
             Haptics.play(.select)
             withAnimation(tokens.animation) { highlightedSlot = highlightedSlot == slot.id ? nil : slot.id }

@@ -10,6 +10,19 @@ import Testing
 struct ListCellLiftTests {
     private let tall: CGFloat = 100
 
+    /// UIKit keeps a dragged row's own cell, hidden, in the gap at its landing place; it is shown there faintly instead
+    /// (.3), hidden again for the drop animation to land on, and a row again after the drag.
+    @Test func theDraggedRowsCellInTheGapIsAFaintCopy() {
+        let cell = UICollectionViewCell()
+        cell.isHidden = true
+        ListLiftDelegates.showGhost(of: cell, opacity: TestConfig.tokens.opacity(.dropGhost))
+        #expect(!cell.isHidden)
+        #expect(abs(cell.alpha - TestConfig.tokens.opacity(.dropGhost)) < 0.001)
+        #expect(cell.alpha > 0 && cell.alpha < 0.5, "super faint")
+        ListLiftDelegates.hideGhost(cell)
+        #expect(cell.isHidden && cell.alpha == 1)
+    }
+
     @Test func aTallReorderedRowLiftsWithThePlateOutline() async throws {
         let tokens = TestConfig.tokens
         let frames = ListGroupFrames()

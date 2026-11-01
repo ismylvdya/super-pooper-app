@@ -20,3 +20,11 @@ struct TimelineSlot: Identifiable, Hashable, Sendable {
         content.id + (time.map { "@\($0.string)" } ?? "")
     }
 }
+
+extension TimelineSlot {
+    /// Where a dragged task would stand dropped at `moment`: its block from there for as long as its estimate. The faint copy
+    /// of the plate shown at the landing spot while dragging.
+    static func landing(_ item: DayItem, at moment: Date, rules: DayRules) -> TimelineSlot {
+        TimelineSlot(content: .task(item), start: moment, end: moment.addingTimeInterval(rules.duration(of: item.task)), isPast: false)
+    }
+}

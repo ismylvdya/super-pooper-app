@@ -114,11 +114,14 @@ struct PoolBlock: View {
         return heights.reduce(0, +) + tokens.space(.poolRowGap) * CGFloat(max(rows.count - 1, 0))
     }
 
-    /// The row of a task dragged over the pool is an empty gap (`TaskDragState.isGap`).
+    /// The row of a task dragged over the pool is the gap the others part around (`TaskDragState.isGap`), with a faint copy
+    /// of its plate: how it will stand once dropped.
     private func row(_ item: DayItem, plate: PoolRowContent.PlateKind) -> some View {
-        PoolRow(item: item, isToday: plan.isToday, isCompact: fillsHeight, plate: plate, handler: handler,
-                dragSource: plan.isToday ? .pool : nil)
-            .opacity(drag?.isGap(item.id) == true ? 0 : 1)
+        let isGap = drag?.isGap(item.id) == true
+        return PoolRow(item: item, isToday: plan.isToday, isCompact: fillsHeight, plate: plate, handler: handler,
+                       dragSource: plan.isToday ? .pool : nil)
+            .opacity(isGap ? tokens.opacity(.dropGhost) : 1)
+            .allowsHitTesting(!isGap)
     }
 
     private func tracked(_ view: some View, _ item: DayItem) -> some View {
