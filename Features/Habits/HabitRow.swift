@@ -17,19 +17,21 @@ struct HabitRow: View {
             // the outer ring of Twice may reach past it.
             HabitDayButton(habit: habit, day: today, innerWidth: innerWidth)
                 .frame(width: tokens.size(.iconColumn))
-            // A button with the app's chevron, as the rows of the other tabs' plates (a list's link has its own).
-            Button { router.open(.task(habit.name)) } label: {
-                HStack(spacing: tokens.space(.iconTextGap)) {
-                    VStack(alignment: .leading, spacing: tokens.space(.titleDetailGap)) {
-                        Text(habit.name).font(tokens.font(habit.habit.repeatable ? .repeatableTitle : .habitTitle)).foregroundStyle(tokens.habitNameColor(habit)).lineLimit(2)
-                        detail
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    DisclosureAccessory()
+            // A tap opens the page, as on the rows of Soon; with the app's chevron (a list's link has its own). Not a
+            // button: a button has a pressed look of its own, which a long press may leave on the row after its menu
+            // has closed.
+            HStack(spacing: tokens.space(.iconTextGap)) {
+                VStack(alignment: .leading, spacing: tokens.space(.titleDetailGap)) {
+                    Text(habit.name).font(tokens.font(habit.habit.repeatable ? .repeatableTitle : .habitTitle)).foregroundStyle(tokens.habitNameColor(habit)).lineLimit(2)
+                    detail
                 }
-                .contentShape(Rectangle())
+                .frame(maxWidth: .infinity, alignment: .leading)
+                DisclosureAccessory()
             }
-            .buttonStyle(.plain)
+            .contentShape(Rectangle())
+            .onTapGesture { router.open(.task(habit.name)) }
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isButton)
             .accessibilityIdentifier("habit:\(habit.name)")
         }
         .frame(maxWidth: .infinity, alignment: .leading)

@@ -15,6 +15,41 @@ final class RegressionUITests: XCTestCase {
         app.launch()
     }
 
+    /// Habits (.22478): once a row's long-press menu has closed, the row looks as it did before the press right away, with
+    /// no pressed look left on its plate; a tap still opens the habit's page.
+    func testAHabitRowLeavesNoHighlightOnceItsMenuCloses() throws {
+        launch("superpooper://habits")
+        let name = "Медитация 🧘"
+        let row = app.cells.containing(.button, identifier: "habit:\(name)").firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        app.dismissBanners()
+        let rest = try pixels(of: row)
+        app.buttons["habit:\(name)"].press(forDuration: 1.2)
+        XCTAssertTrue(app.buttons["Partially"].waitForExistence(timeout: 5), "the menu is open")
+        // Away from the menu: the bar at the top.
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.08)).tap()
+        XCTAssertTrue(app.buttons["Partially"].waitForNonExistence(timeout: 3))
+        usleep(400_000)
+        let after = try pixels(of: row)
+        XCTAssertEqual(rest.count, after.count)
+        let differing = zip(rest, after).filter { abs(Int($0) - Int($1)) > 6 }.count
+        XCTAssertLessThan(differing, rest.count / 200, "the row is back to its rest look")
+
+        app.buttons["habit:\(name)"].tap()
+        XCTAssertTrue(app.textFields["taskPage.name"].waitForExistence(timeout: 5), "a tap opens the page")
+    }
+
+    /// The RGB channels of an element's picture.
+    private func pixels(of element: XCUIElement) throws -> [UInt8] {
+        let image = try XCTUnwrap(element.screenshot().image.cgImage)
+        var data = [UInt8](repeating: 0, count: image.width * image.height * 4)
+        let context = try XCTUnwrap(CGContext(data: &data, width: image.width, height: image.height, bitsPerComponent: 8,
+                                              bytesPerRow: image.width * 4, space: CGColorSpaceCreateDeviceRGB(),
+                                              bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+        context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+        return data.enumerated().filter { $0.offset % 4 != 3 }.map(\.element)
+    }
+
     /// The morning review is a sheet with its own pages: a subtask tapped there opens there, not under the sheet.
     func testASubtaskOpensInsideTheMorningReview() {
         launch("superpooper://review")
