@@ -27,7 +27,7 @@ struct TaskPageScreen: View {
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    ActionPopoverButton(menu: .page(of: task), accessibilityID: "taskPage.more") {
+                    ActionMenuButton(menu: .page(of: task), accessibilityID: "taskPage.more") {
                         handler.handle($0, taskName: task.name)
                     }
                 }

@@ -22,6 +22,7 @@ struct ActionMenuContent: View {
                 ActionLabel(action: action, markIcon: actions.menus[menu].habitMarks ? HabitMarkIcon.icon(for: action.id) : nil)
             }
             .disabled(entry.isCurrent)
+            .accessibilityIdentifier("action.\(action.id.rawValue)")
         }
     }
 }

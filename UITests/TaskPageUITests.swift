@@ -40,6 +40,15 @@ final class TaskPageUITests: XCTestCase {
         XCTAssertEqual(hex.value as? String, "#34C759")
     }
 
+    /// The "…" menu is the system menu, like every long-press menu of the app (.25075), not a popover of the app's own.
+    func testTheMoreMenuIsTheSystemMenu() {
+        open("Распечатать вопросы")
+        app.buttons["taskPage.more"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        XCTAssertTrue(app.buttons["action.delete"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.popovers.firstMatch.exists, "no popover")
+        XCTAssertFalse(app.buttons["PopoverDismissRegion"].exists, "no popover")
+    }
+
     func testRenameChangesTheName() {
         open("Записать идеи")
         let field = app.textFields["taskPage.name"]
