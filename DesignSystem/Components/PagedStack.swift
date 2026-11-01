@@ -23,6 +23,7 @@ struct PagedStack<Block: View>: View {
             HStack(alignment: .top, spacing: spacing) {
                 ForEach(Array(slots.enumerated()), id: \.element.block) { index, slot in
                     block(slot.block).frame(width: pages.width(of: index), height: geometry.size.height)
+                        .zIndex(LiftLayer.block(at: index, of: slots.count))
                 }
             }
             .offset(x: offset)

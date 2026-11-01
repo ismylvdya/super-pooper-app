@@ -125,6 +125,8 @@ struct TodayScreen: View {
         // As far from the physical sides as the bubbles upright: measured from the screen edges in both turns.
         .padding(.vertical, tokens.bar(.barSideInset))
         .ignoresSafeArea(.container, edges: .vertical)
+        // Their glass casts a shadow over the blocks beside them.
+        .zIndex(LiftLayer.beside(blocks: layout.blocks.count))
     }
 
     /// A group of bar buttons in the glass capsule the system draws around them upright.

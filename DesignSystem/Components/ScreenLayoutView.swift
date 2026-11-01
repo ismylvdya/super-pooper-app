@@ -20,7 +20,9 @@ struct ScreenLayoutView<Block: View>: View {
                        drag: pageDrag, onTurn: onTurn, block: block)
         } else {
             WeightedStack(axis: layout.axis, spacing: spacing, slots: layout.blocks) {
-                ForEach(layout.blocks, id: \.block) { slot in block(slot.block) }
+                ForEach(Array(layout.blocks.enumerated()), id: \.element.block) { index, slot in
+                    block(slot.block).zIndex(LiftLayer.block(at: index, of: layout.blocks.count))
+                }
             }
         }
     }
