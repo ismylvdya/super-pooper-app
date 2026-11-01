@@ -1,10 +1,10 @@
 #!/bin/bash
 # Эталонные снимки основных экранов (UITests/ScreenSnapshotUITests) для проверки рефакторинга.
 # scripts/snapshots.sh <папка> [quick]
-#   полный прогон: свои симуляторы «SuperPooper Snap Mini» (iPhone 13 mini) и «SuperPooper Max»
-#   (iPhone 16 Pro Max), чтобы не трогать рабочий,
+#   полный прогон: два уже существующих симулятора — SP_SIMULATOR (по умолчанию «🌭 iPhone 13 mini»)
+#   и SP_SIMULATOR_LARGE (по умолчанию «iPhone 16 Pro»); скрипт симуляторы не создаёт,
 #   светлая и тёмная тема, обычный и крупный шрифт — по папке на сочетание;
-#   quick: только Mini, светлая тема, обычный шрифт.
+#   quick: только первый, светлая тема, обычный шрифт.
 # Дата снимков фиксирована (SP_SNAPSHOT_TODAY, по умолчанию 2026-10-25 — день эталона): vault рендерится
 # на неё и приложение считает её сегодняшней, поэтому привычки по дням недели и сроки не зависят от дня прогона.
 # Сравнение двух прогонов: swift scripts/compare-snapshots.swift <эталон> <новый> [<папка разниц>]
@@ -16,14 +16,17 @@ MODE="${2:-full}"
 TODAY="${SP_SNAPSHOT_TODAY:-2026-10-25}"
 
 udid() { xcrun simctl list devices available -j | /usr/bin/python3 -c "import json,sys; name=sys.argv[1]; print(next((d['udid'] for r in json.load(sys.stdin)['devices'].values() for d in r if d['name']==name), ''))" "$1"; }
-[ -n "$(udid "SuperPooper Snap Mini")" ] || xcrun simctl create "SuperPooper Snap Mini" "iPhone 13 mini" >/dev/null
-[ -n "$(udid "SuperPooper Max")" ] || xcrun simctl create "SuperPooper Max" "iPhone 16 Pro Max" >/dev/null
+SMALL="${SP_SIMULATOR:-🌭 iPhone 13 mini}"
+LARGE="${SP_SIMULATOR_LARGE:-iPhone 16 Pro}"
 
 if [ "$MODE" = quick ]; then
-  DEVICES=("SuperPooper Snap Mini"); APPEARANCES=(light); SIZES=(large)
+  DEVICES=("$SMALL"); APPEARANCES=(light); SIZES=(large)
 else
-  DEVICES=("SuperPooper Snap Mini" "SuperPooper Max"); APPEARANCES=(light dark); SIZES=(large extra-extra-extra-large)
+  DEVICES=("$SMALL" "$LARGE"); APPEARANCES=(light dark); SIZES=(large extra-extra-extra-large)
 fi
+for DEVICE in "${DEVICES[@]}"; do
+  [ -n "$(udid "$DEVICE")" ] || { echo "Симулятор '$DEVICE' не найден; скрипт симуляторы не создаёт — задайте SP_SIMULATOR / SP_SIMULATOR_LARGE" >&2; exit 1; }
+done
 
 SP_SIMULATOR="${DEVICES[0]}" scripts/xcb.sh build-for-testing -quiet >/dev/null
 
