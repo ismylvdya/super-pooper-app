@@ -74,8 +74,8 @@ private struct ScrollEdgeFades: ViewModifier {
     }
 
     /// An edge under a system bar is faded as the system look says.
-    @ViewBuilder private func fade(_ fade: some View, at edge: Edge.Set) -> some View {
-        if barEdges.contains(edge) { fade.systemLook(.fadeUnderBar) } else { fade }
+    @ViewBuilder private func fade(_ gradient: some View, at edge: Edge.Set) -> some View {
+        if barEdges.contains(edge) { gradient.systemLook(.fadeUnderBar) } else { gradient }
     }
 }
 
