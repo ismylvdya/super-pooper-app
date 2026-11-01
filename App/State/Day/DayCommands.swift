@@ -1,6 +1,6 @@
 import Foundation
 
-/// What the user decides about today's pool: Skip today, Not today, the manual order, a drag in This week across the
+/// What the user decides about today's pool: Skip today, Not today, the manual order, a drag in Soon across the
 /// parts of the day, a task dragged onto the timeline or back to the pool. The widgets and notifications follow.
 @MainActor
 final class DayCommands {
@@ -33,7 +33,7 @@ final class DayCommands {
     }
 
     /// Not today (`NotToday`): a task with a time moves to the same time of the next logical day, any other waits in
-    /// This week until tomorrow.
+    /// Soon until tomorrow.
     func notToday(_ name: String, on day: LocalDate?) async {
         guard isToday(day), let task = tasks.task(named: name), let local = localTask(named: name) else { return }
         let changes = NotToday.changes(for: local, context: self.day.context())
@@ -62,7 +62,7 @@ final class DayCommands {
         Task { await derived.publish() }
     }
 
-    /// A drag in This week across the Morning / Day / Evening groups: the new order, and a new part of the day for the
+    /// A drag in Soon across the Morning / Day / Evening groups: the new order, and a new part of the day for the
     /// tasks that changed group.
     func applyReviewMove(_ move: ReviewGroups.Move) {
         setManualOrder(move.order)

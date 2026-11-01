@@ -38,7 +38,7 @@ final class ListGroupFrames {
         set(row, group: group, id: id)
     }
 
-    /// A row moved to another group (This week: a drag into another part of the day) leaves its old group's backing.
+    /// A row moved to another group (Soon: a drag into another part of the day) leaves its old group's backing.
     func move(_ id: String, from old: String, to new: String, isFirst: Bool, isLast: Bool) {
         guard var row = rows[old]?[id] else { return }
         set(nil, group: old, id: id)

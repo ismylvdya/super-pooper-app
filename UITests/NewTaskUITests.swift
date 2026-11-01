@@ -24,7 +24,7 @@ final class NewTaskUITests: XCTestCase {
     func testReviewRowOpensTheTaskAndPlusCreatesOne() {
         launch("superpooper://review")
         // The link opens the review once the vault is read; if Today came first, open it from there.
-        if !app.navigationBars["This week"].waitForExistence(timeout: 6) { app.buttons["today.review"].tap() }
+        if !app.navigationBars["Soon"].waitForExistence(timeout: 6) { app.buttons["today.review"].tap() }
         // A banner over the row would take the tap.
         app.dismissBanners()
         // The list is long and lazy: scroll down to the row.
@@ -33,7 +33,7 @@ final class NewTaskUITests: XCTestCase {
         row.tap()
         XCTAssertTrue(app.textFields["taskPage.name"].waitForExistence(timeout: 5))
         app.navigationBars.buttons.element(boundBy: 0).tap()
-        let plus = app.navigationBars["This week"].buttons["task.new"]
+        let plus = app.navigationBars["Soon"].buttons["task.new"]
         XCTAssertTrue(plus.waitForExistence(timeout: 5))
         plus.tap()
         let name = app.textFields["taskPage.name"]
@@ -108,14 +108,15 @@ final class NewTaskUITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["taskPage.name.problem"].waitForNonExistence(timeout: 5))
     }
 
-    /// A list of a later planning level in the Lists tab brings its task to this week.
-    func testSomedayListAddsATaskToThisWeek() {
+    /// A list of a later planning level in the Lists tab brings its task to Soon ("Add to Soon").
+    func testSomedayListAddsATaskToSoon() {
         launch("superpooper://lists/someday")
         let add = app.buttons["lists.toThisWeek.Выучить испанский"]
         for _ in 0..<4 where !add.waitForExistence(timeout: 3) { app.swipeUp() }
+        XCTAssertEqual(add.label, "Add to Soon")
         add.tap()
         let banner = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "identifier == 'banner' AND label CONTAINS 'Выучить испанский'")).firstMatch
+            .matching(NSPredicate(format: "identifier == 'banner' AND label CONTAINS 'Moved to Soon' AND label CONTAINS 'Выучить испанский'")).firstMatch
         XCTAssertTrue(banner.waitForExistence(timeout: 25))
         XCTAssertTrue(add.waitForNonExistence(timeout: 5), "a this-week task has no + any more")
     }

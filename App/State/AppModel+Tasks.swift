@@ -38,7 +38,7 @@ extension AppModel {
     func edit(_ name: String, _ changes: @escaping (TaskItem) -> [TaskEdit]) async { await parts.writer.edit(name, changes) }
     func update(_ name: String, _ changes: [TaskEdit]) async { await parts.writer.edit(name) { _ in changes } }
 
-    /// A date picked on the day's view of a task (This week): on the phone's clock, written in the note's own zone.
+    /// A date picked on the day's view of a task (Soon): on the phone's clock, written in the note's own zone.
     func setLocalDue(_ due: TaskDue?, of name: String) async { await parts.writer.setLocalDue(due, of: name) }
 
     @discardableResult

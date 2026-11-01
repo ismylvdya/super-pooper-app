@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// A list whose rows stand together as groups (rounded only at a group's top and bottom: This week, Lists lists,
+/// A list whose rows stand together as groups (rounded only at a group's top and bottom: Soon, Lists lists,
 /// Habits, Routines). Behind every group lies its backing — one plate of the group's shape, in the rows' color — and
 /// every row is a plate of its own on top of it, rounded by min(the group's corner radius, half its height). At
 /// rest the two read as one plate. A row lifted by a long press or a drag is exactly that row (from the row above to

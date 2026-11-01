@@ -16,7 +16,7 @@ final class TaskPageUITests: XCTestCase {
                                "-SPOpen", "superpooper://task/\(encoded)"]
         app.launch()
         XCTAssertTrue(app.textFields["taskPage.name"].waitForExistence(timeout: 10))
-        // A banner of the launch sync (the first one moves notes to This week) covers the name and the "…" button.
+        // A banner of the launch sync (the first one moves notes to Soon) covers the name and the "…" button.
         app.dismissBanners()
     }
 

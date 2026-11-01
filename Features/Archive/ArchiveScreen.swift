@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Archived tasks and habits in one list. A task goes back to This week / Half year, a habit back to the
+/// Archived tasks and habits in one list. A task goes back to Soon / Half year, a habit back to the
 /// Habits list; either can go to the trash. When the list empties, the page closes.
 struct ArchiveScreen: View {
     @Environment(AppModel.self) private var model

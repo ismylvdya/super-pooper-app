@@ -1,6 +1,6 @@
 import Foundation
 
-/// This week's list as three groups to drag tasks between: Morning, the rest of the day and Evening. One flat
+/// Soon's list as three groups to drag tasks between: Morning, the rest of the day and Evening. One flat
 /// list with a header row per group, so a row can be dragged across groups; its group is the header above it.
 enum ReviewGroups {
     enum Group: String, CaseIterable, Hashable, Sendable {

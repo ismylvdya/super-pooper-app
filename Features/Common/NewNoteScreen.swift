@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// A new task (from This week or Today) or habit (from the Habits tab): the usual page with an empty
+/// A new task (from Soon or Today) or habit (from the Habits tab): the usual page with an empty
 /// name, the cursor already in it. Nothing is written while it is open; leaving the page with Back creates the note with
 /// everything set here (see `NewNotePage`). Another tab only hides the page: the draft waits for the user to come back.
 /// A name a note cannot take is shown right in the title, and Back waits until it is changed.
@@ -10,7 +10,7 @@ struct NewNoteScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     let kind: Kind
-    /// The tab whose stack shows the page; nil in the This week sheet, which no tab can hide.
+    /// The tab whose stack shows the page; nil in the Soon sheet, which no tab can hide.
     var tab: AppTab?
     @State private var page: NewNotePage?
 

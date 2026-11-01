@@ -89,7 +89,7 @@ final class NoteWriter {
         await write(task, ZonedTimes.stored(changes, of: task, calendar: day.calendar))
     }
 
-    /// A date picked on the day's view of a task (This week): on the phone's clock, written in the note's own zone.
+    /// A date picked on the day's view of a task (Soon): on the phone's clock, written in the note's own zone.
     func setLocalDue(_ due: TaskDue?, of name: String) async {
         await edit(name) { note in ZonedTimes.stored([.due(due)], of: note, calendar: self.day.calendar) }
     }

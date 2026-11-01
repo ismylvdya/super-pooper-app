@@ -139,7 +139,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Back to This week"
+            "value": "Back to Soon"
           }
         }
       }
@@ -337,7 +337,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Moved to This week:"
+            "value": "Moved to Soon:"
           }
         }
       }
@@ -2439,7 +2439,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "One date per task. A backlog task whose date falls in the current week moves to This week. For recurring tasks the date gives the time of day."
+            "value": "One date per task. A backlog task whose date falls in the current week moves to Soon. For recurring tasks the date gives the time of day."
           }
         }
       }
@@ -2538,7 +2538,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This week — picked for the week, the day is built from these. Half year and Someday — backlog. Waiting — not in the day. The app never lowers a status."
+            "value": "Soon — picked to do soon, the day is built from these. Half year and Someday — backlog. Waiting — not in the day. The app never lowers a status."
           }
         }
       }
@@ -2725,7 +2725,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Add to This week"
+            "value": "Add to Soon"
           }
         }
       }
@@ -3869,7 +3869,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Not in today's pool; they stay this week and show up in tomorrow's review. Swipe one right to bring it back."
+            "value": "Not in today's pool; they stay in Soon and show up in tomorrow's review. Swipe one right to bring it back."
           }
         }
       }
@@ -3891,7 +3891,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This week"
+            "value": "Soon"
           }
         }
       }
@@ -5576,7 +5576,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This week"
+            "value": "Soon"
           }
         }
       }

@@ -17,7 +17,7 @@ enum HapticRole: String, ConfigName {
     case drop
     /// Rows of a list change places (a subtask moved under another one too).
     case reorder
-    /// A task goes to another list or day (+ to This week, back to today).
+    /// A task goes to another list or day (+ to Soon, back to today).
     case move
     /// A pull past its threshold, before letting go.
     case pullArmed
