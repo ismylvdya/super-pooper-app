@@ -1,4 +1,3 @@
-@preconcurrency import EventKit
 import Foundation
 import SwiftUI
 import UserNotifications
@@ -10,13 +9,15 @@ final class AppContainer {
     let model: AppModel
     let router: Router
     let banners: BannerCenter
+    let notificationResponses: NotificationResponseHandler
     let launch: LaunchOptions
     let eventKit: EventKitAccess
+    let calendar: LiveCalendar
 
     /// The single instance shared by the SwiftUI app and the UIKit delegate.
     static let shared: Result<AppContainer, ConfigError> = {
         do {
-            return .success(try AppContainer(config: AppConfig.load(), launch: .current()))
+            return .success(try AppContainer(config: AppConfig.load(), mapping: FieldMapping.load(), launch: .current()))
         } catch let error as ConfigError {
             return .failure(error)
         } catch {
@@ -32,53 +33,52 @@ final class AppContainer {
     }
     #endif
 
-    init(config: AppConfig, launch: LaunchOptions) {
+    init(config: AppConfig, mapping: FieldMapping, launch: LaunchOptions) {
         self.config = config
         self.launch = launch
-        let calendar = AppCalendar.make()
+        let calendar = LiveCalendar()
+        self.calendar = calendar
 
         let shared = JSONFileStore(directory: AppGroupContainer.directory())
         if launch.resetState {
             shared.remove(SettingsStore.fileName)
             shared.remove(DayStateStore.fileName)
         }
-        let clock = launch.clock(calendar: calendar)
+        let clock = launch.clock(calendar: calendar.current)
 
         let vaultLocation: VaultLocating = launch.vaultURL().map(FixedVaultLocation.init(url:))
             ?? BookmarkVaultLocation(store: shared)
         let settingsStore = SettingsStore(store: shared, defaults: config.defaultSettings)
         let fileSystem = CoordinatedFileSystem()
         let backups = BackupService(directory: shared.url("Backups"), keepCount: config.rules.backups.keepCount,
-                                    fileSystem: fileSystem, clock: { clock.now })
-        let tasks = VaultTaskRepository(location: vaultLocation, fileSystem: fileSystem, ubiquity: ICloudUbiquityService(),
-                                        mapping: config.fieldMapping, calendar: calendar, rules: config.rules.vault,
+                                    fileSystem: fileSystem, clock: { clock.now }, calendar: calendar)
+        let tasks = TaskNotesStore(location: vaultLocation, fileSystem: fileSystem, ubiquity: ICloudUbiquityService(),
+                                        mapping: mapping, calendar: calendar, rules: config.rules.vault,
                                         backups: backups, clock: clock,
                                         vaultSettings: { settingsStore.load().vault })
         let eventKit = EventKitAccess()
         self.eventKit = eventKit
         let notificationImage = NotificationImageStore(url: shared.url(config.rules.notifications.imageFile),
-                                                       maxPixels: config.tokens.size(.notificationImagePixels))
-        let notifications = UserNotificationScheduler(calendar: calendar, icons: config.icons, bodyText: { kind in
+                                                       maxPixels: config.rules.notifications.imageMaxPixels)
+        let notifications = UserNotificationScheduler(calendar: calendar, rules: config.rules.notifications, icons: config.icons, bodyText: { kind in
             switch kind {
             case .habit: L10n.string("notification.habit.body")
             case .task: L10n.string("notification.task.body")
             case .reminder: L10n.string("notification.reminder.body")
             case .event: L10n.string("notification.event.body")
             }
-        }, habitIcon: NotificationIcon(symbolName: config.icons[.habit], color: {
-            settingsStore.load().colors[ColorToken.habit.rawValue].flatMap { UIColor(hex: $0) } ?? UIColor(config.tokens.color(.habit))
+        }, actionTitle: { L10n.string($0) }, habitIcon: NotificationIcon(symbolName: config.icons[.habit], color: {
+            config.tokens.applying(settingsStore.load(), limits: config.rules.limits).uiColor(.habit)
         }, isShown: { settingsStore.load().habits.showsNotificationPicture },
            usesHabitColor: { settingsStore.load().habits.notificationUsesHabitColor },
            pointSize: config.tokens.size(.notificationIcon), image: notificationImage))
         let services = AppServices(
             vault: vaultLocation, tasks: tasks,
-            trash: VaultTrashRepository(location: vaultLocation, fileSystem: fileSystem, noteExtension: config.rules.vault.noteExtension,
+            trash: TaskNotesTrash(location: vaultLocation, fileSystem: fileSystem, noteExtension: mapping.obsidian.noteExtension,
                                         vaultSettings: { settingsStore.load().vault }),
-            settingsNote: VaultSettingsFile(location: vaultLocation, fileSystem: fileSystem, fileName: config.rules.vault.settingsFile,
-                                            vaultSettings: { settingsStore.load().vault },
-                                            legacy: VaultSettingsNote(location: vaultLocation, fileSystem: fileSystem,
-                                                                      fileName: config.rules.vault.settingsNote,
-                                                                      vaultSettings: { settingsStore.load().vault })),
+            versions: tasks, links: tasks, backups: tasks, folder: tasks,
+            settingsNote: VaultSettingsFile(location: vaultLocation, fileSystem: fileSystem, rules: config.rules.vault,
+                                            vaultSettings: { settingsStore.load().vault }),
             calendars: EventKitCalendarRepository(eventKit: eventKit),
             reminders: EventKitRemindersRepository(eventKit: eventKit, calendar: calendar),
             notifications: notifications, settingsStore: settingsStore,
@@ -89,8 +89,12 @@ final class AppContainer {
         let banners = BannerCenter()
         self.banners = banners
         self.router = Router()
-        self.model = AppModel(config: config, services: services, banners: banners, clock: clock, calendar: calendar)
+        self.model = AppModel(config: config, services: services, appEvents: BannerPresenter(banners: banners), clock: clock,
+                              calendar: calendar)
+        notificationResponses = NotificationResponseHandler(model: model, router: NotificationResponseRouter(links: config.rules.eventLinks),
+                                                            open: { await UIApplication.shared.open($0) })
         Haptics.isEnabled = config.flags.haptics
+        Haptics.styles = config.actions.haptics
         notifications.registerCategories(config.actions, habitActionsEnabled: config.flags.habitNotificationActions)
 
         applyLaunchOverrides()
@@ -137,21 +141,21 @@ final class AppContainer {
         // The settings note read by the sync must not undo what the launch asked for.
         applyLaunchOverrides()
         if let url = launch.openURL { router.handle(url) }
-        observeCalendarChanges()
+        model.observeSourceChanges()
+        observeTimeChanges()
     }
 
-    /// Calendar and Reminders edits made elsewhere (moved, deleted, completed) reach the timeline and the
-    /// notifications right away while the app runs; otherwise at the next sync or background refresh.
-    private func observeCalendarChanges() {
+    /// A new time zone (a flight, a manual change) or a clock that jumped: the app calendar is built again and the day,
+    /// the widgets and the notifications are worked out in it, without a relaunch.
+    private func observeTimeChanges() {
         let model = self.model
-        let eventKit = self.eventKit
-        Task { @MainActor in
-            // Filtered by sender instead of `object:`, which needs a Sendable object and EKEventStore is not one.
-            for await notification in NotificationCenter.default.notifications(named: .EKEventStoreChanged)
-            where (notification.object as AnyObject?) === eventKit.store {
-                try? await Task.sleep(for: .seconds(model.config.rules.timeline.externalChangeDelaySeconds))
-                await model.refreshCalendarSources()
-                await model.publishDerivedState()
+        let calendar = self.calendar
+        for name in [Notification.Name.NSSystemTimeZoneDidChange, UIApplication.significantTimeChangeNotification] {
+            Task { @MainActor in
+                for await _ in NotificationCenter.default.notifications(named: name) {
+                    calendar.refresh()
+                    await model.timeDidChange()
+                }
             }
         }
     }

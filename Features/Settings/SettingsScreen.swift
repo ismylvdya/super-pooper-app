@@ -20,7 +20,9 @@ struct SettingsScreen: View {
                 if model.config.flags.archive, model.archivedNotesCount > 0 {
                     SettingsLink(route: .archive, icon: .archive, title: "archive.title", value: "\(model.archivedNotesCount)")
                 }
-                SettingsLink(route: .trash, icon: .trash, title: "trash.title", value: model.trashCount.map(String.init))
+                if model.hasTrash {
+                    SettingsLink(route: .trash, icon: .trash, title: "trash.title", value: model.trashCount.map(String.init))
+                }
             }
             #if DEBUG
             DebugSettingsSection()

@@ -60,7 +60,7 @@ struct VaultSandbox {
 
     func scanner(ubiquity: UbiquityService = FakeUbiquityService(), downloadTimeout: TimeInterval = 0.3) -> VaultScanner {
         VaultScanner(fileSystem: CoordinatedFileSystem(), ubiquity: ubiquity, reader: reader(),
-                     noteExtension: TestConfig.rules.vault.noteExtension, downloadTimeout: downloadTimeout,
+                     noteExtension: TestConfig.mapping.obsidian.noteExtension, downloadTimeout: downloadTimeout,
                      downloadPoll: TestConfig.rules.vault.downloadPollSeconds)
     }
 
@@ -71,20 +71,20 @@ struct VaultSandbox {
 
     func repository(ubiquity: UbiquityService = FakeUbiquityService(), downloadTimeout: TimeInterval = 0.3,
                     keepBackups: Int = TestConfig.rules.backups.keepCount,
-                    fileSystem: NoteFileSystem = CoordinatedFileSystem()) -> VaultTaskRepository {
+                    fileSystem: NoteFileSystem = CoordinatedFileSystem(),
+                    calendar: CalendarSource = FixedCalendar(current: TestCalendar.calendar)) -> TaskNotesStore {
         let backupClock = TickingClock(start: now, step: 1)
         let backupService = BackupService(directory: backups, keepCount: keepBackups, fileSystem: fileSystem,
-                                          clock: { backupClock.now })
+                                          clock: { backupClock.now }, calendar: calendar)
         let settings = TestConfig.defaults.vault
         let rules = RulesConfig.Vault(downloadTimeoutSeconds: downloadTimeout, downloadPollSeconds: TestConfig.rules.vault.downloadPollSeconds,
-                                      noteExtension: TestConfig.rules.vault.noteExtension,
                                       settingsFile: TestConfig.rules.vault.settingsFile,
                                       settingsNote: TestConfig.rules.vault.settingsNote,
                                       doneFolder: TestConfig.rules.vault.doneFolder,
-                                      obsidianVaultsFolder: TestConfig.rules.vault.obsidianVaultsFolder,
-                                      settingsWriteDelaySeconds: TestConfig.rules.vault.settingsWriteDelaySeconds)
-        return VaultTaskRepository(location: FixedVaultLocation(url: vault), fileSystem: fileSystem, ubiquity: ubiquity,
-                                   mapping: TestConfig.mapping, calendar: TestCalendar.calendar, rules: rules,
+                                      settingsWriteDelaySeconds: TestConfig.rules.vault.settingsWriteDelaySeconds,
+                                      modificationToleranceSeconds: TestConfig.rules.vault.modificationToleranceSeconds)
+        return TaskNotesStore(location: FixedVaultLocation(url: vault), fileSystem: fileSystem, ubiquity: ubiquity,
+                                   mapping: TestConfig.mapping, calendar: calendar, rules: rules,
                                    backups: backupService, clock: FixedClock(now: now), vaultSettings: { settings })
     }
 }

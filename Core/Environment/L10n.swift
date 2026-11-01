@@ -10,8 +10,4 @@ enum L10n {
         String(format: string(key), arguments: arguments)
     }
 
-    /// "A, B and C" in the current locale.
-    static func list(_ items: [String]) -> String {
-        ListFormatter.localizedString(byJoining: items)
-    }
 }

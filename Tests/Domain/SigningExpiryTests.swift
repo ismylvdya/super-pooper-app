@@ -15,4 +15,10 @@ struct SigningExpiryTests {
         #expect(SigningExpiry.warningDate(expiration: now.addingTimeInterval(3600), leadHours: 24, now: now) == nil)
         #expect(SigningExpiry.warningDate(expiration: nil, leadHours: 24, now: now) == nil)
     }
+
+    @Test func theSignatureWarningIsDueWithinTheLeadTime() {
+        #expect(SigningExpiry.isSoon(expiration: now.addingTimeInterval(3600), leadHours: 24, now: now))
+        #expect(!SigningExpiry.isSoon(expiration: now.addingTimeInterval(3 * 24 * 3600), leadHours: 24, now: now))
+        #expect(!SigningExpiry.isSoon(expiration: now.addingTimeInterval(-60), leadHours: 24, now: now))
+    }
 }

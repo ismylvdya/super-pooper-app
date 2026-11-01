@@ -11,15 +11,20 @@ struct WidgetDataSource: Sendable {
     static func load(bundle: Bundle = .main) -> WidgetDataSource? {
         guard let config = try? AppConfig.load(bundle: bundle) else { return nil }
         let store = JSONFileStore(directory: AppGroupContainer.directory(bundle: bundle))
+        // A widget process can outlive a time zone change: the system zone is read afresh for every timeline.
+        NSTimeZone.resetSystemTimeZone()
         let calendar = AppCalendar.make()
-        // Everything in the widget reads `today.arrangement`, so it gets the widget's own one there.
-        var settings = SettingsStore(store: store, defaults: config.defaultSettings).load()
-        settings.today.arrangement = settings.today.widgetArrangement.forWidget
         return WidgetDataSource(config: config,
-                                settings: settings,
+                                settings: SettingsStore(store: store, defaults: config.defaultSettings).load(),
                                 snapshot: SnapshotStore(store: store).load(),
                                 calendar: calendar)
     }
+
+    /// The Today widget's own arrangement, independent from the app's; a widget has no pages.
+    var arrangement: AppSettings.TodayArrangement { settings.today.widgetArrangement.forWidget }
+
+    /// The Today widget's layout of the pool and the timeline (`layouts/today-*.layout.json`).
+    var widgetLayout: ScreenLayout { config.todayLayout(for: arrangement) }
 
     func context(at date: Date) -> DayContext {
         DayContext(now: date, calendar: calendar, boundary: settings.day.boundary, energyHour: settings.day.energyHour)
@@ -29,11 +34,11 @@ struct WidgetDataSource: Sendable {
         let context = context(at: date)
         guard let snapshot else { return .empty(today: context.today, now: date) }
         return DayPlanning.plan(config: config, settings: settings, tasks: snapshot.tasks, events: snapshot.events, reminders: snapshot.reminders,
-                                dayState: snapshot.dayState, context: context)
+                                dayState: snapshot.dayState, context: context, eventsKnown: snapshot.eventsKnown ?? false)
     }
 
     /// Active habits in the user's list order.
-    var habits: [TaskNote] {
+    var habits: [TaskItem] {
         HabitOrder.sorted((snapshot?.tasks ?? []).filter { $0.isHabit && !$0.isArchived }, order: settings.habits.order)
     }
 
@@ -41,7 +46,7 @@ struct WidgetDataSource: Sendable {
 
     /// The chosen habit; the first one until a habit is chosen. A chosen habit that is gone (renamed, deleted)
     /// gives nil, so the widget asks to choose again instead of showing and marking another habit.
-    func habit(named name: String?) -> TaskNote? {
+    func habit(named name: String?) -> TaskItem? {
         guard let name else { return habits.first }
         return habits.first { $0.name.isSameNoteName(as: name) }
     }

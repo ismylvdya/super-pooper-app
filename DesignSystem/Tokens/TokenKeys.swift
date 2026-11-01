@@ -2,41 +2,60 @@ import Foundation
 
 /// Names of the design tokens in `tokens.json`. Screens never contain raw numbers or colors.
 enum SpacingToken: String, CaseIterable, Sendable {
-    case tabBarInner, landscapeBarInset, barButtonGap, reviewTop, popoverRowVertical, fadeGap, scrollEndRoom, listRowVertical
+    case reviewTop, popoverRowVertical, fadeGap, scrollEndRoom, listRowVertical
     case screenHorizontal, screenBottom, groupGap, plateInner, plateRowGap, headerToPlate, hintToPlate
     case iconTextGap, chipHorizontal, chipVertical, chipGap, infoPadding, nestedTitleInset, nestedTitleLift
     case childIndent, rowVertical, poolRowGap, blockGap, timelineLabelWidth, timelineItemGap, timelineItemPadding
-    case bannerTop, bannerPadding, widgetPadding, habitCellGap, hourLabelGap, bellInset, liftShadow, listRowInset, toggleChipHorizontal, toggleChipVertical, titleInfoGap, chipIconGap, dotTextGap, valueChevronGap, reviewRowVertical, markPadding, badgeGap, progressGap, timelineTitleExtra, previewRowGap, titleDetailGap, footerLineGap, subtaskIndent
+    case bannerTop, bannerPadding, widgetMargin, habitCellGap, hourLabelGap, bellInset, liftShadow, toggleChipHorizontal, toggleChipVertical, titleInfoGap, chipIconGap, dotTextGap, valueChevronGap, reviewRowVertical, markPadding, badgeGap, progressGap, timelineTitleExtra, previewRowGap, titleDetailGap, footerLineGap, subtaskIndent
+    case widgetGap, previewInset, cornerMarkGap, compactPlateVertical, emptyStateInset, widgetGridGap
 }
 
 enum RadiusToken: String, CaseIterable, Sendable {
-    case plate, chip, timelineItem, banner, habitCell, widgetItem, previewItem
+    case plate, chip, timelineItem, banner, habitCell, notificationImage, previewItem, previewFrame
 }
 
 enum SizeToken: String, CaseIterable, Sendable {
-    case iconColumn, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, notificationIcon, notificationImagePixels
-    case problemDot, sourceDot, fadeHeight, bannerLines, poolRowEstimate, poolCounter, poolWidth
-    case habitRingRatio, habitPartialDot, habitHistoryMaxHeight, habitStatsBar, infoMaxHeightRatio, linkBadge, titleFade, hourDigitsWidth, pullThreshold, pullIcon, actionPopoverWidth, daySwipeStart, reviewChevron, timelineZoomMin, timelineZoomMax, wrapMinWidth, liftOverhang, pagePeek, dropLine, dropMarkerHeight, screenHeightEstimate, bannerShadowRadius, bannerShadowY, bannerDismissDistance, bannerDismissFling, tapSlop, hexFieldWidth, pullArmedScale, pullStartScale, daySwipeAxisRatio, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, allDayFontDelta, previewHeight, previewRow, previewRows, previewHours, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewScale, timelinePreviewHalvesInset, subtaskDropLine, landscapeTabBarWidth, barButton
+    case iconColumn, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, notificationIcon
+    case habitDotMinimum, cornerInsetMinimum, eventDot, sourceDot, fadeHeight, poolCounter, poolWidth
+    case habitHistoryMaxHeight, habitStatsBar, titleFade, hourDigitsWidth, actionPopoverWidth, reviewChevron, wrapMinWidth, liftOverhang, pagePeek, dropLine, dropMarkerHeight, bannerShadowRadius, bannerShadowY, hexFieldWidth, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, allDayFontDelta, previewHeight, previewRow, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewHalvesInset, subtaskDropLine
+}
+
+/// Shares and scale factors: a part of another size, not a size of its own.
+enum RatioToken: String, CaseIterable, Sendable {
+    case habitRing, habitPartialDot, infoMaxHeight, pullStartScale, pullArmedScale, timelinePreview, largeTitleVisible
+    case fadeMiddleStop, widgetWrappedTitle
+}
+
+/// How many of something a drawing has (lines of a wrapped title).
+enum CountToken: String, CaseIterable, Sendable {
+    case widgetTitleLines
 }
 
 enum OpacityToken: String, CaseIterable, Sendable {
     case blocked, past, eventFill, fadeTop, fadeMiddle, habitEmpty
-    case gridFadedWeek, unlinked, eventTime, nowOverBlocks, daySwipeThreshold, daySwipeFade, toggleChipFill, bannerShadow, previewBlock, largeTitleVisible
+    case gridFadedWeek, unlinked, eventTime, nowOverBlocks, daySwipeFade, toggleChipFill, bannerShadow, previewBlock, accentedPlate
 }
 
 enum DurationToken: String, CaseIterable, Sendable {
-    case bannerAutoHide, animation, bannerAnimation, titleColorAnimation
+    case animation, bannerAnimation, titleColorAnimation
 }
 
 enum FontToken: String, CaseIterable, Sendable {
     case pageTitle, navTitle, sectionHeader, rowTitle, hint, chip, info, timelineHour, banner, poolCounter
-    case taskTitle, emptyTitle, emptyBody, footer, widgetTitle, widgetCaption, caption, noteEditor
-    case statValue, toggleChip, pullIcon, emptyIcon, emptyAction, linkBadge, tabIcon, systemTabIcon, tabLabel, popoverAction, repeatableTitle, habitTitle
+    case taskTitle, emptyTitle, emptyBody, footer, widgetTitle, widgetCaption, widgetEvent, caption, noteEditor
+    case statValue, toggleChip, pullIcon, emptyIcon, emptyAction, linkBadge, popoverAction, repeatableTitle, habitTitle
+    /// The timeline at the sizes picked in settings (`font(_:size:)`).
+    case timelineText, timelineEvent
 }
 
-enum ColorToken: String, CaseIterable, Sendable {
-    case accent, task, habit, high, energy, pleasant, heart, nowLine, problem, twice
+enum ColorToken: String, ConfigName {
+    case accent, task, habit, high, energy, pleasant, heart, nowLine, problem
     case past, swipeNeutral, screenBackground, plateBackground, chipBackground, primaryText, secondaryText, tertiaryText
     case bannerBackground, infoText, destructive, eventText, timelineGrid
-    case missed, success, warning, error, shadow, widgetPlate, widgetTop, widgetBottom, listSeparator
+    case success, warning, error, shadow, widgetPlate, widgetTop, widgetBottom, listSeparator
+}
+
+/// The settings sections where the user picks colors (`editableColors`: which colors each offers, in order).
+enum ColorSettingsGroup: String, CaseIterable, Sendable {
+    case general, habits, widgets
 }

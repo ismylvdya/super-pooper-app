@@ -19,7 +19,7 @@ struct TaskPickerScreen: View {
                     HStack {
                         Text(task.name).foregroundStyle(tokens.color(.primaryText))
                         Spacer()
-                        Text(StatusText.title(task.status)).font(tokens.font(.hint)).foregroundStyle(tokens.color(.secondaryText))
+                        Text(StatusText.title(task.status)).secondaryText(.hint)
                     }
                 }
             }
@@ -31,9 +31,5 @@ struct TaskPickerScreen: View {
         }
     }
 
-    private var results: [TaskNote] {
-        NameOrder.sorted(model.tasks.filter {
-            !excluded.contains($0.name) && $0.status != .archived && SearchMatcher.matches($0.name, query)
-        })
-    }
+    private var results: [TaskItem] { model.linkCandidates(excluding: excluded, matching: query) }
 }

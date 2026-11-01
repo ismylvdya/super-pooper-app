@@ -4,17 +4,15 @@ import Foundation
 /// date and time of that spot (and with it a notification); dragged back to the pool it keeps its date
 /// and loses the time. Habits stay where their rule puts them: a time would apply to every day of theirs.
 enum TaskScheduling {
-    static func canMove(_ task: TaskNote) -> Bool { !task.isHabit }
+    static func canMove(_ task: TaskItem) -> Bool { !task.isHabit }
 
-    static func changes(scheduling task: TaskNote, at moment: Date, calendar: Calendar) -> [TaskFieldChange] {
+    static func changes(scheduling task: TaskItem, at moment: Date, calendar: Calendar) -> [TaskEdit] {
         guard canMove(task) else { return [] }
-        let parts = calendar.dateComponents([.hour, .minute], from: moment)
-        let time = LocalTime(minutesSinceMidnight: (parts.hour ?? 0) * 60 + (parts.minute ?? 0))
-        return [.due(TaskDue(day: LocalDate(moment, in: calendar), time: time))]
+        return [.due(TaskDue(day: LocalDate(moment, in: calendar), time: LocalTime(moment, in: calendar)))]
     }
 
     /// Keeps the logical day: a task at 00:30 goes back to tonight's date, not tomorrow's.
-    static func changes(unscheduling task: TaskNote, context: DayContext) -> [TaskFieldChange] {
+    static func changes(unscheduling task: TaskItem, context: DayContext) -> [TaskEdit] {
         guard canMove(task), let due = task.due, due.time != nil else { return [] }
         return [.due(TaskDue(day: context.logicalDay(of: due)))]
     }

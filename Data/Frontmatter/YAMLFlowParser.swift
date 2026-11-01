@@ -9,7 +9,6 @@ struct YAMLFlowParser {
         var value: YAMLValue { quoted ? .scalar(text, quoted: true) : YAMLLineSyntax.plainScalarValue(text) }
     }
 
-    private static let flowIndicators: Set<Unicode.Scalar> = [",", "[", "]", "{", "}"]
     private static let simpleEscapes: [Unicode.Scalar: Unicode.Scalar] = [
         "0": "\0", "a": "\u{07}", "b": "\u{08}", "t": "\t", "\t": "\t", "n": "\n", "v": "\u{0B}",
         "f": "\u{0C}", "r": "\r", "e": "\u{1B}", " ": " ", "\"": "\"", "/": "/", "\\": "\\",
@@ -105,7 +104,7 @@ struct YAMLFlowParser {
 
     private mutating func parseMappingValue() throws -> YAMLValue {
         skipWhitespaceAndComments()
-        guard let scalar = peek, !Self.flowIndicators.contains(scalar) || scalar == "[" || scalar == "{" else { return .null }
+        guard let scalar = peek, !YAMLIndicators.flow.contains(scalar) || scalar == "[" || scalar == "{" else { return .null }
         return try parseNode()
     }
 
@@ -149,7 +148,7 @@ struct YAMLFlowParser {
     }
 
     private func endsPlainScalar(_ scalar: Unicode.Scalar) -> Bool {
-        if Self.flowIndicators.contains(scalar) { return true }
+        if YAMLIndicators.flow.contains(scalar) { return true }
         if scalar == ":" { return isSeparator(at: index + 1) }
         if scalar == "#" { return index > 0 && Self.isSpace(scalars[index - 1]) }
         return false
@@ -260,7 +259,7 @@ struct YAMLFlowParser {
     /// End of text, whitespace, a line break or a flow indicator.
     private func isSeparator(at position: Int) -> Bool {
         guard let scalar = peek(at: position) else { return true }
-        return Self.isSpace(scalar) || Self.flowIndicators.contains(scalar)
+        return Self.isSpace(scalar) || YAMLIndicators.flow.contains(scalar)
     }
 
     private mutating func skipLineIndent() {

@@ -1,4 +1,5 @@
 import SwiftUI
+import WidgetKit
 
 /// All-day events of the day, one full-width bar each in its calendar color, above the timeline.
 /// Long titles fade out; in the app a tap opens Calendar and a long press offers deleting the event.
@@ -30,13 +31,21 @@ struct AllDayStrip: View {
     /// Widgets have no buttons: the bar is plain there.
     private func bar(_ event: CalendarEvent) -> some View {
         HStack(spacing: tokens.space(.dotTextGap)) {
-            Circle().fill(Color(hex: event.colorHex)).frame(width: tokens.size(.problemDot), height: tokens.size(.problemDot))
+            Circle().fill(Color(hex: event.colorHex)).frame(width: tokens.size(.eventDot), height: tokens.size(.eventDot))
+                .widgetAccentable()
             FadingText(text: event.title, font: font ?? tokens.font(.chip), lineHeight: lineHeight)
         }
         .foregroundStyle(tokens.color(.eventText))
-        .padding(.horizontal, tokens.space(.chipHorizontal))
-        .padding(.vertical, tokens.space(.chipVertical))
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(hex: event.colorHex).opacity(tokens.opacity(.eventFill)), in: Capsule())
+        .chipCapsule(Color(hex: event.colorHex).opacity(tokens.opacity(.eventFill)))
+    }
+}
+
+extension AllDayStrip {
+    /// The height the strip takes with `count` bars of text `lineHeight` high: what a layout around it leaves for it.
+    static func height(count: Int, lineHeight: CGFloat, tokens: DesignTokens) -> CGFloat {
+        guard count > 0 else { return 0 }
+        let bar = max(lineHeight, tokens.size(.eventDot)) + ChipCapsule.standard.verticalPadding(tokens) * 2
+        return CGFloat(count) * bar + CGFloat(count - 1) * tokens.space(.chipGap)
     }
 }

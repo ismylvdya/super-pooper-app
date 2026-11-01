@@ -9,20 +9,20 @@ struct HabitStatsTests {
 
     /// A daily habit created `days` days ago with marks `offsets` days before today (0 = today).
     private func habit(createdDaysAgo days: Int = 30, done: [Int] = [], partial: [Int] = [], twice: [Int] = [],
-                       _ configure: (inout TaskNote) -> Void = { _ in }) -> TaskNote {
+                       _ configure: (inout TaskItem) -> Void = { _ in }) -> TaskItem {
         let start = today.adding(days: -days)
         var task = makeTask("Habit", status: .habit, created: start.isoString)
-        task.recurrenceRaw = "DTSTART:\(start.isoString.replacingOccurrences(of: "-", with: ""));FREQ=DAILY"
-        task.recurrence = try? RecurrenceRule.parse(task.recurrenceRaw ?? "").get()
+        task.recurrence = try? RecurrenceCodec.parse("DTSTART:\(start.isoString.replacingOccurrences(of: "-", with: ""));FREQ=DAILY").get()
         let day = { (offset: Int) in self.today.adding(days: -offset) }
-        task.completeInstances = (done + partial + twice).map(day)
-        task.partialInstances = partial.map(day)
-        task.twiceInstances = twice.map(day)
+        task.marks = Dictionary(uniqueKeysWithValues: done.map { (day($0), HabitMark.done) } + partial.map { (day($0), .partial) }
+            + twice.map { (day($0), .twice) })
         configure(&task)
         return task
     }
 
-    private func stats(_ task: TaskNote) -> HabitStats { HabitStats(task: task, today: today, days: TestCalendar.days) }
+    private let rules = TestConfig.rules.habits.stats
+
+    private func stats(_ task: TaskItem) -> HabitStats { HabitStats(task: task, today: today, days: TestCalendar.days, rules: rules) }
 
     @Test func currentStreakStartsYesterdayWhileTodayIsOpen() {
         #expect(stats(habit(done: [1, 2, 3, 5])).currentStreak == 3)
@@ -36,9 +36,25 @@ struct HabitStatsTests {
     }
 
     @Test func sharesCountPartialAsHalfAndSkipAnOpenToday() {
-        let last7 = stats(habit(done: [1, 2, 3], partial: [4])).last7
+        let last7 = stats(habit(done: [1, 2, 3], partial: [4])).recentShares.first { $0.days == 7 }?.share
         // Six finished days (today is open): 3 + 0.5 out of 6.
         #expect(last7.map { abs($0 - 3.5 / 6) < 0.0001 } == true)
+    }
+
+    /// The numbers come from `rules.json` → `habits.stats`: the windows, what Partially and a double Twice are worth,
+    /// the months of the bars.
+    @Test func theNumbersComeFromTheRules() {
+        let custom = HabitStatsRules(partialUnits: 0.25, twiceUnits: 3, shareWindowsDays: [3], months: 2)
+        let result = HabitStats(task: habit(done: [1], partial: [2]), today: today, days: TestCalendar.days, rules: custom)
+        #expect(result.recentShares.map(\.days) == [3])
+        // Two finished days in the window (today is open): 1 + 0.25 out of 2.
+        #expect(result.recentShares.first?.share == 0.625)
+        #expect(result.byMonth.count == 2)
+        var options = HabitOptions()
+        options.twiceADay = true
+        options.twiceCountsDouble = true
+        #expect(custom.units(of: .twice, options) == 3)
+        #expect(TestConfig.rules.habits.stats.units(of: .partial, options) == 0.5)
     }
 
     @Test func twiceCountsDoubleOnlyWhenAskedTo() {
@@ -77,7 +93,7 @@ struct HabitStatsTests {
 
     @Test func weekUnitsCountThisWeekOnly() {
         let task = habit(done: [0, 1, 2, 3])  // Wed, Tue, Mon this week; Sun last week
-        #expect(HabitHistory(task: task, days: TestCalendar.days).weekUnits(containing: today, today: today) == 3)
+        #expect(HabitHistory(task: task, days: TestCalendar.days).weekUnits(containing: today, today: today, rules: rules) == 3)
     }
 
     @Test func gridMarksMissedDays() {

@@ -98,7 +98,7 @@ final class ScreenSnapshotUITests: XCTestCase {
         launch("superpooper://review")
         let row = app.descendants(matching: .any).matching(identifier: "review:Оплатить интернет").firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 10))
-        app.swipeUp()
+        app.scrollIntoView(row)
         row.swipeLeft()
         let postpone = app.buttons["review.postpone"]
         if postpone.waitForExistence(timeout: 2) { postpone.tap() }
@@ -150,6 +150,18 @@ final class ScreenSnapshotUITests: XCTestCase {
         app.buttons["settings.link.taskSettings"].tap()
         settle()
         snapTopAndBottom("settings-today")
+    }
+
+    func testTimelineSettings() {
+        launch("superpooper://settings")
+        app.buttons["settings.link.taskSettings"].tap()
+        settle()
+        let preview = app.descendants(matching: .any)["Timeline preview"]
+        XCTAssertTrue(preview.waitForExistence(timeout: 10))
+        app.scrollIntoView(preview)
+        app.place(preview, topAt: 0.3)
+        settle()
+        snap("settings-timeline")
     }
 
     func testHabitSettings() {

@@ -37,11 +37,28 @@ struct DayMembershipTests {
     }
 
     @Test func notTodayMovesATimedTaskToTheSameTimeTomorrow() {
-        let marking = TaskMarking(today: LocalDate("2026-10-21"))
+        let context = TestCalendar.context()
         let timed = makeTask("Timed") { $0.due = TaskDue("2026-10-21T16:30") }
         let dated = makeTask("Dated") { $0.due = TaskDue("2026-10-21") }
-        #expect(marking.notTodayChanges(for: timed) == [.due(TaskDue("2026-10-22T16:30"))])
-        #expect(marking.notTodayChanges(for: dated).isEmpty)
+        #expect(NotToday.changes(for: timed, context: context) == [.due(TaskDue("2026-10-22T16:30"))])
+        #expect(NotToday.changes(for: dated, context: context).isEmpty)
+    }
+
+    /// 01:00 on the 22nd is still Wednesday the 21st (04:00 boundary): Not today moves it to 01:00 the night after,
+    /// not onto the same value.
+    @Test func notTodayMovesANightTimeToTheNextNight() {
+        let night = makeTask("Night") { $0.due = TaskDue("2026-10-22T01:00") }
+        let changes = NotToday.changes(for: night, context: TestCalendar.context("2026-10-21", "22:00"))
+        #expect(changes == [.due(TaskDue("2026-10-23T01:00"))])
+    }
+
+    /// The pool menu and the swipe in This week offer it for open tasks only: a habit has Skip today.
+    @Test func notTodayIsForOpenTasks() throws {
+        let plan = DayScenario(tasks: [makeTask("Open"), makeHabit("Habit", status: .habit)]).build()
+        #expect(NotToday.isAvailable(for: try #require(plan.item(named: "Open"))))
+        #expect(!NotToday.isAvailable(for: try #require(plan.item(named: "Habit"))))
+        let done = DayItem(task: makeTask("Done", status: .done), state: .marked(.done), blockers: [], problems: [])
+        #expect(!NotToday.isAvailable(for: done))
     }
 
     // MARK: - Recurring tasks
@@ -70,9 +87,7 @@ struct DayMembershipTests {
 
     @Test func aHabitMarkedTodayLeavesTheDay() {
         let habit = makeHabit("Meditation") { task in
-            task.completeInstances = [LocalDate("2026-10-20"), LocalDate("2026-10-21")]
-            task.partialInstances = [LocalDate("2026-10-21")]
-            task.twiceInstances = [LocalDate("2026-10-20")]
+            task.marks = [LocalDate("2026-10-20"): .twice, LocalDate("2026-10-21"): .partial]
         }
         #expect(DayScenario(tasks: [habit]).build().dayNames.isEmpty)
     }
@@ -80,12 +95,12 @@ struct DayMembershipTests {
     @Test func aTwiceADayHabitStaysUntilItsSecondMark() throws {
         let once = makeHabit("Brush teeth") { task in
             task.habit.twiceADay = true
-            task.completeInstances = [LocalDate("2026-10-21")]
+            task.marks = [LocalDate("2026-10-21"): .done]
         }
         let item = try #require(DayScenario(tasks: [once]).build().item(named: "Brush teeth"))
         #expect(item.state == .marked(.done))
         var twice = once
-        twice.twiceInstances = [LocalDate("2026-10-21")]
+        twice.marks = [LocalDate("2026-10-21"): .twice]
         #expect(DayScenario(tasks: [twice]).build().dayNames.isEmpty)
     }
 

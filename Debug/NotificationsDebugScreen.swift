@@ -13,7 +13,9 @@ struct NotificationsDebugScreen: View {
                 ForEach(categories, id: \.identifier) { category in
                     VStack(alignment: .leading) {
                         Text(category.identifier).font(.headline)
-                        Text(category.actions.map(\.title).joined(separator: " · ")).font(.footnote)
+                        ForEach(category.actions, id: \.identifier) { action in
+                            Text(action.title).font(.footnote)
+                        }
                     }
                 }
             }
@@ -21,13 +23,16 @@ struct NotificationsDebugScreen: View {
                 ForEach(requests, id: \.identifier) { request in
                     VStack(alignment: .leading, spacing: 2) {
                         Text(request.content.title).font(.headline)
-                        Text("\(request.content.categoryIdentifier) · \(fireDate(request))").font(.footnote)
+                        LabeledContent("Category", value: request.content.categoryIdentifier).font(.footnote)
+                        LabeledContent("Fires", value: fireDate(request)).font(.footnote)
                         Text(request.identifier).font(.caption2).foregroundStyle(.secondary)
                     }
                 }
             }
         }
         .navigationTitle("Notifications")
+        // Inline like every page of the app: a large title would lie over the first section.
+        .navigationBarTitleDisplayMode(.inline)
         .task {
             let center = UNUserNotificationCenter.current()
             requests = await center.pendingNotificationRequests().sorted { fireDate($0) < fireDate($1) }

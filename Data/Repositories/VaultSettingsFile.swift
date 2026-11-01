@@ -10,7 +10,7 @@ struct VaultSettingsFile: SettingsNoteRepository {
     let fileName: String
     let vaultSettings: @Sendable () -> AppSettings.Vault
     /// The older settings note, read while there is no file.
-    let legacy: SettingsNoteRepository?
+    let legacy: LegacySettingsReading?
 
     func read() async -> Data? {
         let file: Data?? = try? await location.withRoot { root in
@@ -34,5 +34,15 @@ struct VaultSettingsFile: SettingsNoteRepository {
 
     private func url(root: URL) throws -> URL {
         try VaultPaths.besideTasks(fileName, root: root, tasksFolder: vaultSettings().tasksFolder, fileSystem: fileSystem)
+    }
+}
+
+extension VaultSettingsFile {
+    /// The vault's settings file as the app uses it: named by `rules`, reading the older settings note until it exists.
+    init(location: VaultLocating, fileSystem: NoteFileSystem, rules: RulesConfig.Vault,
+         vaultSettings: @escaping @Sendable () -> AppSettings.Vault) {
+        self.init(location: location, fileSystem: fileSystem, fileName: rules.settingsFile, vaultSettings: vaultSettings,
+                  legacy: VaultSettingsNote(location: location, fileSystem: fileSystem, fileName: rules.settingsNote,
+                                            vaultSettings: vaultSettings))
     }
 }

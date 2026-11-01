@@ -70,7 +70,7 @@ struct ManualOrderTests {
         #expect(plan.timelineTaskNames == ["Timed"])
     }
 
-    private func ordered(_ manual: [String], _ tasks: [TaskNote]) -> [String] {
+    private func ordered(_ manual: [String], _ tasks: [TaskItem]) -> [String] {
         DayScenario(tasks: tasks, manualOrder: manual).build(at: context).poolNames
     }
 }

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Работа с собственным симулятором "🌭 iPhone 13 mini".
-# scripts/sim.sh boot | install | load-vault | grant | launch [аргументы] | screenshot <файл> | seed
+# scripts/sim.sh boot | install | load-vault (с доступом к Calendar и Reminders) | grant | launch [аргументы] | screenshot <файл> | udid
 set -euo pipefail
 cd "$(dirname "$0")/.."
 SIMULATOR="${SP_SIMULATOR:-🌭 iPhone 13 mini}"
@@ -9,13 +9,19 @@ UDID="$(xcrun simctl list devices available -j | /usr/bin/python3 -c "import jso
 BUNDLE_ID="$(grep -E '^SP_BUNDLE_ID' Config/Shared.xcconfig | sed 's/.*= *//')"
 APP=".build/DerivedData/Build/Products/Debug-iphonesimulator/SuperPooperApp.app"
 
+grant() {
+  xcrun simctl privacy "$UDID" grant calendar "$BUNDLE_ID" || true
+  xcrun simctl privacy "$UDID" grant reminders "$BUNDLE_ID" || true
+}
+
 case "${1:-}" in
   boot) xcrun simctl boot "$UDID" 2>/dev/null || true; xcrun simctl bootstatus "$UDID" -b >/dev/null ;;
   install) xcrun simctl install "$UDID" "$APP" ;;
-  grant)
-    xcrun simctl privacy "$UDID" grant calendar "$BUNDLE_ID" || true
-    xcrun simctl privacy "$UDID" grant reminders "$BUNDLE_ID" || true ;;
+  grant) grant ;;
   load-vault)
+    # UI tests seed the demo calendar before the first sync (-SPSeedDemo): an unanswered permission prompt
+    # would hold that sync, and Today would stay empty.
+    grant
     DATA="$(xcrun simctl get_app_container "$UDID" "$BUNDLE_ID" data)"
     scripts/render-test-vault.sh "$DATA/Documents/TestVault" "${2:-}" ;;
   launch) shift; xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true

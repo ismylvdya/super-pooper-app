@@ -5,12 +5,11 @@ import Testing
 /// Habits as a kind of their own: `status: habit`, the rule alone decides the days, reminders decide the times.
 @Suite("Habit kind")
 struct HabitKindTests {
-    private func habit(_ name: String, times: [String] = [], rule: String? = "DTSTART:20260901;FREQ=DAILY") -> TaskNote {
+    private func habit(_ name: String, times: [String] = [], rule: String? = "DTSTART:20260901;FREQ=DAILY") -> TaskItem {
         makeTask(name, status: .habit) { task in
             task.reminderTimes = times.compactMap(LocalTime.init(string:))
             guard let rule else { return }
-            task.recurrenceRaw = rule
-            if case .success(let parsed) = RecurrenceRule.parse(rule) { task.recurrence = parsed }
+            if case .success(let parsed) = RecurrenceCodec.parse(rule) { task.recurrence = parsed } else { task.hasUnreadableRecurrence = true }
         }
     }
 

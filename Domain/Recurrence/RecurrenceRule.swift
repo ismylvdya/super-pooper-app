@@ -10,17 +10,9 @@ struct RecurrenceWeekday: Hashable, Codable, Sendable {
     let ordinal: Int?
 }
 
-enum RecurrenceParseError: Error, Equatable, Sendable {
-    case empty
-    case missingFrequency
-    case unsupportedPart(String)
-    case invalidValue(part: String, value: String)
-}
-
-/// A recurrence in the TaskNotes format, e.g. `DTSTART:20261001T090000Z;FREQ=WEEKLY;INTERVAL=2;BYDAY=SA`.
-/// DTSTART and UNTIL are floating wall-clock values: TaskNotes writes local time with a misleading `Z`.
+/// How an item repeats, in the terms of an iCalendar repeat rule (frequency, interval, days, end). The start and the end
+/// are wall-clock values. How a store writes it down is the store's business.
 struct RecurrenceRule: Hashable, Codable, Sendable {
-    let raw: String
     let startDate: LocalDate?
     let startTime: LocalTime?
     let frequency: RecurrenceFrequency
@@ -32,29 +24,4 @@ struct RecurrenceRule: Hashable, Codable, Sendable {
     let untilDate: LocalDate?
     let untilTime: LocalTime?
     let weekStart: Weekday
-
-    static func parse(_ raw: String) -> Result<RecurrenceRule, RecurrenceParseError> {
-        RecurrenceRuleParser(raw: raw).parse()
-    }
-}
-
-/// Encoded as the raw string and re-parsed on decoding, so a decoded rule is always valid.
-extension RecurrenceRule {
-    init(from decoder: Decoder) throws {
-        let raw = try decoder.singleValueContainer().decode(String.self)
-        switch RecurrenceRule.parse(raw) {
-        case .success(let rule):
-            self = rule
-        case .failure(let error):
-            throw DecodingError.dataCorrupted(.init(
-                codingPath: decoder.codingPath,
-                debugDescription: "Invalid recurrence \(raw): \(error)"
-            ))
-        }
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        try container.encode(raw)
-    }
 }

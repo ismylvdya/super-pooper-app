@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// The "…" button: a small popover with the registry's actions, each with its icon on the left in the
-/// same color as its title (system menus put icons on the right).
+/// The "…" button: a small popover with the registry's actions the task store can do, each with its icon on the left
+/// in the same color as its title (system menus put icons on the right).
 struct ActionPopoverButton: View {
-    @Environment(\.actions) private var actions
+    @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
     let menu: ActionMenu
@@ -18,7 +18,7 @@ struct ActionPopoverButton: View {
             .accessibilityIdentifier(accessibilityID)
             .popover(isPresented: $isPresented) {
                 VStack(alignment: .leading, spacing: 0) {
-                    ForEach(Array(actions.actions(in: menu).enumerated()), id: \.element.id) { index, action in
+                    ForEach(Array(model.menuEntries(menu, for: nil).map(\.action).enumerated()), id: \.element.id) { index, action in
                         if index > 0 { Divider() }
                         Button {
                             isPresented = false

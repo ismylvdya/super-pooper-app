@@ -8,8 +8,8 @@ enum DayName {
 
     static func title(_ day: LocalDate, offset: Int, style: Style, calendar: Calendar) -> String {
         switch style {
-        case .weekday: offset == 0 ? L10n.string("day.todayShort") : format(day, .dateTime.weekday(.abbreviated), calendar: calendar)
-        case .date: offset == 0 ? L10n.string("day.today") : format(day, .dateTime.day().month(.abbreviated), calendar: calendar)
+        case .weekday: offset == 0 ? L10n.string("day.todayShort") : DateText.format(day, .dateTime.weekday(.abbreviated), calendar: calendar)
+        case .date: offset == 0 ? L10n.string("day.today") : DateText.format(day, .dateTime.day().month(.abbreviated), calendar: calendar)
         }
     }
 
@@ -22,13 +22,5 @@ enum DayName {
             let dates = (1...12).compactMap { LocalDate(year: day.year, month: $0, day: 28) }
             return [L10n.string("day.today")] + dates.map { title($0, offset: 1, style: .date, calendar: calendar) }
         }
-    }
-
-    private static func format(_ day: LocalDate, _ style: Date.FormatStyle, calendar: Calendar) -> String {
-        var style = style
-        style.calendar = calendar
-        style.timeZone = calendar.timeZone
-        if let locale = calendar.locale { style.locale = locale }
-        return day.startDate(in: calendar).formatted(style)
     }
 }

@@ -12,7 +12,6 @@ struct AppConfig: Sendable {
         static let todaySideBySideLandscape = "today-side-by-side-landscape.layout.json"
         static let todayPaged = "today-paged.layout.json"
         static let sort = "sort.json"
-        static let fieldMapping = "field-mapping.json"
         static let flags = "feature-flags.json"
         static let rules = "rules.json"
         static let defaults = "defaults.json"
@@ -29,27 +28,25 @@ struct AppConfig: Sendable {
     let todaySideBySideLandscape: ScreenLayout
     let todayPaged: ScreenLayout
     let sort: SortConfig
-    let fieldMapping: FieldMapping
     let flags: FeatureFlags
     let rules: RulesConfig
     /// The lists of the Lists tab.
     let lists: TaskListsConfig
-    /// Raw `defaults.json`; user settings are merged over it.
-    let defaultSettings: Data
+    /// `defaults.json`; user settings are merged over it.
+    let defaultSettings: DefaultSettings
 
     static func load(bundle: Bundle = .main) throws -> AppConfig {
         let loader = ConfigLoader(bundle: bundle)
         let actions = try loader.load(ActionRegistry.self, from: File.actions)
         try actions.validate(file: File.actions)
-        let defaults = try loader.data(File.defaults)
-        _ = try ConfigLoader.decode(AppSettings.self, from: defaults, file: File.defaults)
+        let defaultsJSON = try loader.data(File.defaults)
+        let defaults = DefaultSettings(json: defaultsJSON,
+                                       values: try ConfigLoader.decode(AppSettings.self, from: defaultsJSON, file: File.defaults))
         func layout(_ file: String) throws -> ScreenLayout {
             let layout = try loader.load(ScreenLayout.self, from: file)
             try layout.validate(file: file)
             return layout
         }
-        let fieldMapping = try loader.load(FieldMapping.self, from: File.fieldMapping)
-        try fieldMapping.validate(file: File.fieldMapping)
         return AppConfig(
             tokens: try loader.load(DesignTokens.self, from: File.tokens),
             icons: try loader.load(IconSet.self, from: File.icons).resolvingFallbacks { UIImage(systemName: $0) != nil },
@@ -59,7 +56,6 @@ struct AppConfig: Sendable {
             todaySideBySideLandscape: try layout(File.todaySideBySideLandscape),
             todayPaged: try layout(File.todayPaged),
             sort: try loader.load(SortConfig.self, from: File.sort),
-            fieldMapping: fieldMapping,
             flags: try loader.load(FeatureFlags.self, from: File.flags),
             rules: try loader.load(RulesConfig.self, from: File.rules),
             lists: try loader.load(TaskListsConfig.self, from: File.lists),

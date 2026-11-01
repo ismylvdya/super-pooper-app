@@ -24,7 +24,8 @@ struct TaskQuickChips: View {
     }
 
     private var highChip: some View {
-        ToggleChip(icon: .high, title: "taskPage.chip.high", tint: tokens.color(.high), isOn: editor.task.isHighPriority) {
+        ToggleChip(.high, title: "taskPage.chip.high", isOn: editor.task.isHighPriority) {
+            Haptics.play(.select)
             editor.edit { [.highPriority(!$0.isHighPriority)] }
         }
         .accessibilityIdentifier("taskPage.chip.high")
@@ -32,44 +33,13 @@ struct TaskQuickChips: View {
 
     @ViewBuilder private var dueChips: some View {
         let context = model.context()
-        let selected = QuickDue.selection(of: editor.task.due, context: context)
+        let selected = QuickDue.selection(of: editor.task, context: context)
         ForEach(QuickDue.allCases, id: \.self) { chip in
-            ToggleChip(icon: chip == .today ? .today : .tomorrow, title: chip == .today ? "taskPage.chip.today" : "taskPage.chip.tomorrow",
-                       tint: tokens.color(.task), isOn: selected == chip) {
-                editor.edit { [.due(QuickDue.toggling(chip, due: $0.due, context: context))] }
+            ToggleChip(icon: chip.icon, title: chip.title, tint: .task, isOn: selected == chip) {
+                Haptics.play(.select)
+                editor.edit { [.due(QuickDue.toggling(chip, task: $0, context: context))] }
             }
-            .accessibilityIdentifier(chip == .today ? "taskPage.chip.today" : "taskPage.chip.tomorrow")
+            .accessibilityIdentifier(chip.chipIdentifier)
         }
-    }
-}
-
-/// A chip that is a switch: tinted when on, grey when off.
-struct ToggleChip: View {
-    @Environment(\.tokens) private var tokens
-    @Environment(\.icons) private var icons
-    let icon: Icon
-    let title: LocalizedStringKey
-    let tint: Color
-    let isOn: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button {
-            Haptics.play(.light)
-            action()
-        } label: {
-            HStack(spacing: tokens.space(.chipGap)) {
-                Image(systemName: icons[icon])
-                Text(title).lineLimit(1)
-            }
-            .font(tokens.font(.toggleChip))
-            .foregroundStyle(isOn ? tint : tokens.color(.secondaryText))
-            .padding(.horizontal, tokens.space(.toggleChipHorizontal))
-            .padding(.vertical, tokens.space(.toggleChipVertical))
-            .background(isOn ? tint.opacity(tokens.opacity(.toggleChipFill)) : tokens.color(.plateBackground),
-                        in: Capsule())
-        }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(isOn ? .isSelected : [])
     }
 }

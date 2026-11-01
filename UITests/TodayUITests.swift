@@ -55,7 +55,7 @@ final class TodayUITests: XCTestCase {
         let title = app.buttons["title:Оплатить интернет"]
         XCTAssertTrue(title.waitForExistence(timeout: 10))
         title.press(forDuration: 1.2)
-        let done = app.buttons["Done"]
+        let done = app.buttons["DONE"]
         XCTAssertTrue(done.waitForExistence(timeout: 5))
         done.tap()
         expectLeftThePool(title)
@@ -67,18 +67,20 @@ final class TodayUITests: XCTestCase {
         XCTAssertEqual(XCTWaiter().wait(for: [moved], timeout: 5), .completed)
     }
 
-    /// "Выпить воды" is the first pool row (the morning routine goes first), so it is always on screen.
-    /// It is not a twice-a-day habit, so its menu has no Twice.
-    func testLongPressHabitOffersPartiallyAndSkip() {
+    /// "Выпить воды" is the first pool row (the morning routine goes first), so it is always on screen. A habit's menu
+    /// in Today has Done and Skip today; Partially and Twice are only on the Habits tab (D-047).
+    func testLongPressHabitOffersDoneAndSkip() {
         launch()
         dismissBanners()
         let row = app.buttons["title:Выпить воды 💧"]
         XCTAssertTrue(row.waitForExistence(timeout: 10))
         row.press(forDuration: 1.2)
-        XCTAssertTrue(app.buttons["Partially"].waitForExistence(timeout: 5))
-        XCTAssertFalse(app.buttons["Twice"].exists)
+        let done = app.buttons["DONE"]
+        XCTAssertTrue(done.waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["Skip today"].exists)
-        app.buttons["Partially"].tap()
+        XCTAssertFalse(app.buttons["Partially"].exists)
+        XCTAssertFalse(app.buttons["Twice"].exists)
+        done.tap()
         expectLeftThePool(row)
     }
 
@@ -114,6 +116,22 @@ final class TodayUITests: XCTestCase {
         reset.tap()
         let auto = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isEnabled == false"), object: reset)
         XCTAssertEqual(XCTWaiter().wait(for: [auto], timeout: 5), .completed)
+    }
+
+    /// On the pages, a row dragged onto the edge of the other page turns to it. A habit is dragged: the timeline does not
+    /// take habits, so letting go there changes nothing.
+    func testDraggingOntoThePageEdgeTurnsThePage() {
+        app.launchArguments += ["-SPArrangement", "paged"]
+        launch()
+        dismissBanners()
+        let edge = app.descendants(matching: .any)["today.pageEdge"]
+        XCTAssertTrue(edge.waitForExistence(timeout: 10))
+        XCTAssertEqual(edge.label, "Show the timeline")
+        let row = app.buttons["title:Выпить воды 💧"]
+        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        row.press(forDuration: 1.2, thenDragTo: edge, withVelocity: .slow, thenHoldForDuration: 1)
+        let turned = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == 'Show the pool'"), object: edge)
+        XCTAssertEqual(XCTWaiter().wait(for: [turned], timeout: 5), .completed, "the pages turned to the timeline")
     }
 
     func testPullToRefreshShowsSyncBanner() {

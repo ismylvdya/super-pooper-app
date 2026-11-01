@@ -18,22 +18,20 @@ struct TaskListScreen: View {
 
     var body: some View {
         let list = model.config.lists.list(listID)
-        let filter = list?.filter ?? TaskListFilter()
-        let groups = filter.groups(of: model.tasks, query: query, rules: model.config.rules.day)
+        let contents = model.listContents(listID, query: query)
         List {
-            ForEach(groups, id: \.status) { group in
-                // A list of one planning level already says it in its title.
-                if filter.statuses.count > 1 { ListGroupHeader(title: Text(verbatim: StatusText.title(group.status))) } else { ListGroupGap() }
+            ForEach(contents.groups, id: \.status) { group in
+                if contents.namesLevels { ListGroupHeader(title: Text(verbatim: StatusText.title(group.status))) } else { ListGroupGap() }
                 ForEach(Array(group.tasks.enumerated()), id: \.element.name) { index, task in
                     row(task, group: StatusText.title(group.status), isFirst: index == 0, isLast: index == group.tasks.count - 1)
                 }
             }
-            if filter.statuses.contains(.done) { filedGroup(query: query) }
+            filedGroup(contents.filed)
         }
         .listGroupStyle()
         .listGroupBacking(frames)
         .appList()
-        .overlay { if groups.isEmpty { Text("lists.empty").foregroundStyle(tokens.color(.secondaryText)) } }
+        .overlay { if contents.isEmpty { Text("lists.empty").foregroundStyle(tokens.color(.secondaryText)) } }
         .pageSearch(query: $query, isSearching: $isSearching, prompt: "search.prompt.tasks")
         .navigationTitle(Text(LocalizedStringKey(list?.title ?? "tab.lists")))
         .navigationBarTitleDisplayMode(.inline)
@@ -44,33 +42,26 @@ struct TaskListScreen: View {
                 SearchBarButton(isSearching: $isSearching, accessibilityID: "list.search")
             }
         }
-        .task { if filter.statuses.contains(.done) { await model.loadFiledTasks() } }
-        .refreshable {
-            await model.sync(announce: true)
-            if filter.statuses.contains(.done) { await model.loadFiledTasks() }
-        }
+        .task { await model.openList(listID) }
+        .syncsOnPull { await model.openList(listID) }
         .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
     }
 
-    /// The done folder's tasks, newest first: to look back at, not to change (a new task may have the same name).
-    @ViewBuilder private func filedGroup(query: String) -> some View {
-        let filed = model.filedTasks.filter { SearchMatcher.matches($0.name, query) }
-            .sorted { ($0.completedDate?.isoString ?? "") > ($1.completedDate?.isoString ?? "") }
+    /// The filed tasks, newest first: to look back at, not to change (a new task may have the same name).
+    @ViewBuilder private func filedGroup(_ filed: [TaskItem]) -> some View {
         if !filed.isEmpty {
             ListGroupHeader(title: Text("lists.filed"))
-            ForEach(Array(filed.enumerated()), id: \.element.relativePath) { index, task in
+            ForEach(Array(filed.enumerated()), id: \.element.id) { index, task in
                 HStack(spacing: tokens.space(.iconTextGap)) {
                     TaggedTaskName(name: task.name)
                     Spacer(minLength: 0)
                     if let day = task.completedDate {
-                        Text(day.startDate(in: model.calendar).formatted(date: .abbreviated, time: .omitted))
-                            .font(tokens.font(.caption)).foregroundStyle(tokens.color(.secondaryText))
+                        Text(DateText.format(day, Date.FormatStyle(date: .abbreviated, time: .omitted), calendar: model.calendar))
+                            .secondaryText()
                     }
                 }
-                .padding(.horizontal, tokens.space(.plateInner))
-                .padding(.vertical, tokens.space(.listRowVertical))
-                .listGroupRow(group: "filed", id: task.relativePath, isFirst: index == 0, isLast: index == filed.count - 1,
-                              frames: frames, separatorInset: tokens.space(.plateInner))
+                .listGroupRow(group: "filed", id: task.name, isFirst: index == 0, isLast: index == filed.count - 1,
+                              frames: frames)
             }
         }
     }
@@ -79,14 +70,14 @@ struct TaskListScreen: View {
         TaskActionHandler(model: model, router: router, openURL: openURL) { pendingAction = $0 }
     }
 
-    private func row(_ task: TaskNote, group: String, isFirst: Bool, isLast: Bool) -> some View {
+    private func row(_ task: TaskItem, group: String, isFirst: Bool, isLast: Bool) -> some View {
         HStack(spacing: tokens.space(.iconTextGap)) {
             NavigationLink(value: Route.task(task.name)) {
                 TaggedTaskName(name: task.name)
             }
-            if task.status != .thisWeek {
+            if task.canPromote {
                 Button {
-                    Haptics.play(.light)
+                    Haptics.play(.move)
                     Task { await model.moveToThisWeek(task.name) }
                 } label: { Image(systemName: icons[.add]) }
                     .buttonStyle(.borderless)
@@ -94,13 +85,10 @@ struct TaskListScreen: View {
                     .accessibilityIdentifier("lists.toThisWeek.\(task.name)")
             }
         }
-        .padding(.horizontal, tokens.space(.plateInner))
-        .padding(.vertical, tokens.space(.listRowVertical))
-        .listGroupRow(group: group, id: task.name, isFirst: isFirst, isLast: isLast, frames: frames,
-                      separatorInset: tokens.space(.plateInner))
+        .listGroupRow(group: group, id: task.name, isFirst: isFirst, isLast: isLast, frames: frames)
         // The pool's menu for the task (Not today has no place outside Today).
         .contextMenu {
-            ActionMenuContent(menu: task.isHabit ? .habitContext : .taskContext, item: DayItem(listed: task), isToday: false) {
+            ActionMenuContent(menu: .context(of: task), item: DayItem(listed: task), isToday: false) {
                 handler.handle($0, taskName: task.name)
             }
         }

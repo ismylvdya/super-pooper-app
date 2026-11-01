@@ -14,8 +14,8 @@ struct ChipOrderScreen: View {
                 ForEach(kinds, id: \.self) { kind in
                     HStack(spacing: tokens.space(.iconTextGap)) {
                         HStack(spacing: tokens.space(.chipGap)) {
-                            ForEach(Self.icons(of: kind), id: \.self) { icon in
-                                Image(systemName: icons[icon]).foregroundStyle(tint(icon))
+                            ForEach(kind.looks, id: \.self) { look in
+                                Image(systemName: icons[look.icon]).foregroundStyle(tokens.color(of: look))
                             }
                         }
                         Text(LocalizedStringKey(String("chipOrder.") + kind.rawValue))
@@ -25,7 +25,7 @@ struct ChipOrderScreen: View {
                 .onMove { source, destination in
                     var names = kinds.map(\.rawValue)
                     names.move(fromOffsets: source, toOffset: destination)
-                    Haptics.play(.medium)
+                    Haptics.play(.reorder)
                     model.updateSettings { $0.pool.chipOrder = names }
                 }
             } footer: {
@@ -45,28 +45,6 @@ struct ChipOrderScreen: View {
     }
 
     private var defaultOrder: [String] {
-        (try? JSONDecoder.store.decode(AppSettings.self, from: model.config.defaultSettings))?.pool.chipOrder ?? []
-    }
-
-    /// The symbols a chip of this kind can show.
-    private static func icons(of kind: RowChipKind) -> [Icon] {
-        switch kind {
-        case .problem: [.problem]
-        case .blocked: [.links]
-        case .high: [.high]
-        case .feel: [.energy, .pleasant]
-        case .habit: [.habit]
-        }
-    }
-
-    private func tint(_ icon: Icon) -> Color {
-        switch icon {
-        case .problem: tokens.color(.problem)
-        case .high: tokens.color(.high)
-        case .energy: tokens.color(.energy)
-        case .pleasant: tokens.color(.heart)
-        case .habit: tokens.color(.habit)
-        default: tokens.color(.secondaryText)
-        }
+        model.config.defaultSettings.values.pool.chipOrder
     }
 }

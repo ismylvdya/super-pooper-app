@@ -1,4 +1,5 @@
 import Foundation
+import os
 @testable import SuperPooperApp
 
 /// Fixed time zone and calendar for every test: the user lives in Europe/Belgrade.
@@ -32,6 +33,34 @@ enum TestCalendar {
         DayContext(now: date(day, time), calendar: calendar,
                    boundary: TestConfig.defaults.day.boundary, energyHour: TestConfig.defaults.day.energyHour)
     }
+
+    /// The test calendar in another time zone (IANA name).
+    static func calendar(in zone: String) -> Calendar {
+        guard let timeZone = TimeZone(identifier: zone) else { preconditionFailure("No time zone \(zone)") }
+        var result = Self.calendar
+        result.timeZone = timeZone
+        return result
+    }
+}
+
+/// The app calendar of a phone that changes its time zone while the app runs (`LiveCalendar` with a zone set by the test).
+final class TravellingCalendar: CalendarSource {
+    private let zone: OSAllocatedUnfairLock<String>
+    private let live: LiveCalendar
+
+    init(_ zone: String) {
+        let box = OSAllocatedUnfairLock(initialState: zone)
+        self.zone = box
+        live = LiveCalendar { TestCalendar.calendar(in: box.withLock { $0 }) }
+    }
+
+    var current: Calendar { live.current }
+
+    /// The phone arrives in `zone`; the app hears of it (`NSSystemTimeZoneDidChange`) and rebuilds its calendar.
+    func fly(to zone: String) {
+        self.zone.withLock { $0 = zone }
+        live.refresh()
+    }
 }
 
 extension LocalDate {
@@ -60,19 +89,19 @@ extension TaskDue {
 
 /// A regular task in `TaskNotes/Tasks`; `configure` sets the fields a test cares about.
 func makeTask(_ name: String, status: TaskStatus = .thisWeek, created: String = "2026-10-10",
-              _ configure: (inout TaskNote) -> Void = { _ in }) -> TaskNote {
-    var task = TaskNote(name: name, relativePath: "TaskNotes/Tasks/\(name).md", status: status)
+              _ configure: (inout TaskItem) -> Void = { _ in }) -> TaskItem {
+    var task = TaskItem(id: TaskID("TaskNotes/Tasks/\(name).md"), name: name, status: status)
     task.dateCreated = TestCalendar.date(created, "09:00")
+    task.created = TaskDue("\(created)T09:00")
     configure(&task)
     return task
 }
 
 /// A recurring task (habit). `time` goes into `due`, as TaskNotes stores the time of day of a habit.
 func makeHabit(_ name: String, rule: String = "DTSTART:20260901;FREQ=DAILY", time: String? = nil,
-               status: TaskStatus = .halfYear, _ configure: (inout TaskNote) -> Void = { _ in }) -> TaskNote {
+               status: TaskStatus = .halfYear, _ configure: (inout TaskItem) -> Void = { _ in }) -> TaskItem {
     makeTask(name, status: status, created: "2026-09-01") { task in
-        task.recurrenceRaw = rule
-        if case .success(let parsed) = RecurrenceRule.parse(rule) { task.recurrence = parsed }
+        if case .success(let parsed) = RecurrenceCodec.parse(rule) { task.recurrence = parsed } else { task.hasUnreadableRecurrence = true }
         if let time { task.due = TaskDue("2026-09-01T\(time)") }
         configure(&task)
     }
@@ -98,7 +127,7 @@ func eventLink(to event: CalendarEvent, identifier: String? = nil) -> EventLink 
 
 /// Inputs of one day, built with the real rules and sort order from the configs.
 struct DayScenario {
-    var tasks: [TaskNote]
+    var tasks: [TaskItem]
     var events: [CalendarEvent] = []
     var reminders: [ReminderItem] = []
     var skipped: Set<String> = []
@@ -117,6 +146,15 @@ struct DayScenario {
 
 extension DayPlan {
     var poolNames: [String] { pool.map(\.id) }
+
+    /// The item of a task in the pool or on the timeline.
+    func item(named name: String) -> DayItem? {
+        if let item = pool.first(where: { $0.id == name }) { return item }
+        for entry in timeline {
+            if case .task(let item) = entry.content, item.id == name { return item }
+        }
+        return nil
+    }
 
     var timelineTaskNames: [String] {
         timeline.compactMap { slot in

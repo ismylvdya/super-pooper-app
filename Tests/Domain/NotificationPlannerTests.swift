@@ -30,18 +30,18 @@ struct NotificationPlannerTests {
     }
 
     @Test func markedDaysAreNotPlanned() {
-        let marked = vitamins.applying([.markInstance(day: LocalDate("2026-10-21"), mark: .done),
-                                        .markInstance(day: LocalDate("2026-10-23"), mark: .partial)])
+        let marked = vitamins.applying([.mark(.done, on: LocalDate("2026-10-21")),
+                                        .mark(.partial, on: LocalDate("2026-10-23"))])
         #expect(plan([marked], at: "08:00").map(\.day.isoString) == ["2026-10-22"] + days(24...27))
     }
 
     @Test func theNextReminderOfTheDayStillComesAfterTheFirstDone() {
         let twoReminders = makeHabit("Stretch", status: .habit) { $0.reminderTimes = [LocalTime("09:00"), LocalTime("09:01")] }
-        let doneOnce = twoReminders.applying([.markInstance(day: LocalDate("2026-10-21"), mark: .done)])
+        let doneOnce = twoReminders.applying([.mark(.done, on: LocalDate("2026-10-21"))])
         let today = plan([doneOnce], at: "09:00").filter { $0.day.isoString == "2026-10-21" }
         #expect(today.map { clockTime($0.fireDate) } == ["09:01"])
 
-        let doneTwice = twoReminders.applying([.markInstance(day: LocalDate("2026-10-21"), mark: .twice)])
+        let doneTwice = twoReminders.applying([.mark(.twice, on: LocalDate("2026-10-21"))])
         #expect(plan([doneTwice], at: "09:00").allSatisfy { $0.day.isoString != "2026-10-21" })
     }
 
@@ -119,16 +119,32 @@ struct NotificationPlannerTests {
         let todays = valid.filter { $0.day == LocalDate("2026-10-21") }
         #expect(Set(todays.map(\.id)) == ["habit|Vitamins 💊|2026-10-21|09:00", "habit|Vitamins 💊|09:00", "task|Parcel"])
 
-        let marked = vitamins.applying([.markInstance(day: LocalDate("2026-10-21"), mark: .done)])
-        let doneParcel = parcel.applying([.status(.done), .completedDate(LocalDate("2026-10-21"))])
+        let marked = vitamins.applying([.mark(.done, on: LocalDate("2026-10-21"))])
+        let doneParcel = parcel.applying([.complete(on: LocalDate("2026-10-21"))])
         let afterMarking = planner.stillValidToday(tasks: [marked, doneParcel], reminders: [], skipped: [], context: context)
         #expect(!afterMarking.contains { $0.day == LocalDate("2026-10-21") })
     }
 
-    @Test func yesterdaysOpenHabitNotificationStaysUntilTheNewOneComes() {
+    /// A habit's notification under its slot identifier is the same notification: it keeps the habit's color for its
+    /// picture. The slot copies used to be built field by field, and one of the two copies left the color out.
+    @Test func aSlotIdentifiedNotificationKeepsTheHabitsColor() {
+        let colored = makeHabit("Vitamins 💊", time: "09:00") { $0.habit.color = "#FF2D55" }
+        let upcoming = plan([colored], at: "08:00")
+        #expect(upcoming.first?.id == "habit|Vitamins 💊|09:00")
+        #expect(upcoming.allSatisfy { $0.colorHex == "#FF2D55" })
+        let valid = planner.stillValidToday(tasks: [colored], reminders: [], skipped: [], context: TestCalendar.context(TestCalendar.wednesday, "13:25"))
+        #expect(valid.contains { $0.id == "habit|Vitamins 💊|09:00" })
+        #expect(valid.allSatisfy { $0.colorHex == "#FF2D55" })
+    }
+
+    /// A notification lives its logical day (D-040): yesterday's open habit notification is not kept today, as the
+    /// widgets and the restore of a swiped one already decide (`StaleNotifications`).
+    @Test func yesterdaysHabitNotificationIsNotKeptToday() {
         let context = TestCalendar.context(TestCalendar.wednesday, "08:00")
         let valid = planner.stillValidToday(tasks: [vitamins], reminders: [], skipped: [], context: context)
-        #expect(valid.contains { $0.id == "habit|Vitamins 💊|09:00" && $0.day == LocalDate("2026-10-20") })
+        #expect(!valid.contains { $0.day < context.today })
+        #expect(valid.allSatisfy { !StaleNotifications.isOver($0.day, today: context.today) })
+        #expect(valid.contains { $0.id == "habit|Vitamins 💊|09:00" && $0.day == context.today })
     }
 
     /// An event alert knows its event and occurrence, for its Delete event button.
@@ -138,7 +154,7 @@ struct NotificationPlannerTests {
         let planned = planner.plan(tasks: [], reminders: [], events: [call], skipped: [], context: TestCalendar.context())
         let alert = try #require(planned.first { $0.kind == .event })
         #expect(alert.eventID == "EK-call" && alert.start == call.start)
-        #expect(TestConfig.actions.menus["eventNotification"] == [.deleteEvent])
+        #expect(TestConfig.actions.menus[.eventNotification].actions == [.deleteEvent])
     }
 
     /// After midnight, before the day boundary, it is still Wednesday: a delivered 01:30 reminder or event alert
@@ -153,9 +169,17 @@ struct NotificationPlannerTests {
         #expect(valid.allSatisfy { $0.day == LocalDate("2026-10-21") })
     }
 
+    /// The week after the clocks went forward (29 March) has an hour less: counted in calendar days, not in 24-hour
+    /// steps, today's delivered habit notification is still valid and stays in Notification Center.
+    @Test func todaysHabitNotificationStaysValidAfterTheClocksChange() {
+        let habit = makeHabit("Vitamins", rule: "DTSTART:20260101;FREQ=DAILY", time: "09:00")
+        let valid = planner.stillValidToday(tasks: [habit], reminders: [], skipped: [], context: TestCalendar.context("2026-03-30", "13:25"))
+        #expect(valid.contains { $0.id == NotificationPlanner.habitSlot("Vitamins", LocalTime("09:00")) && $0.day == LocalDate("2026-03-30") })
+    }
+
     // MARK: - Helpers
 
-    private func plan(_ tasks: [TaskNote], at time: String, skipped: Set<String> = []) -> [PlannedNotification] {
+    private func plan(_ tasks: [TaskItem], at time: String, skipped: Set<String> = []) -> [PlannedNotification] {
         planner.plan(tasks: tasks, reminders: [], skipped: skipped, context: TestCalendar.context(TestCalendar.wednesday, time))
     }
 

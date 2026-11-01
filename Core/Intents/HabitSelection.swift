@@ -18,6 +18,7 @@ struct SelectHabitIntent: WidgetConfigurationIntent {
     @Parameter(title: "widget.habit.breakWords", description: "widget.habit.breakWords.hint", default: false)
     var breakWords: Bool
 
+    /// AppIntents reads the default and the range at build time, so they are written here as literals, and only here.
     @Parameter(title: "widget.habit.weeks", default: 4, inclusiveRange: (1, 8))
     var weeks: Int
 
@@ -31,5 +32,6 @@ struct HabitWidgetOptions: Sendable {
     var titleSize: Double?
     var wrapTitle = false
     var breakWords = false
-    var weeks = 4
+    /// The widget settings' default (`SelectHabitIntent.weeks`).
+    var weeks = SelectHabitIntent().weeks
 }

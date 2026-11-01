@@ -1,27 +1,6 @@
 import Foundation
 
-/// The part of the day a habit belongs to; the pool lifts habits of the current part.
-enum HabitTimeOfDay: String, Codable, CaseIterable, Sendable {
-    case morning
-    case day
-    case evening
-}
-
-/// How a habit counts missed days: not at all, by a run of allowed skips, or by a weekly goal.
-enum HabitSkipRule: Hashable, Sendable {
-    case none
-    /// Up to `allowed` unmarked scheduled days in a row are fine; longer runs are "missed".
-    case missedDays(allowed: Int)
-    /// `times` marks a week are the goal; days don't count as missed.
-    case weeklyGoal(times: Int)
-
-    var allowsSkips: Bool {
-        if case .missedDays = self { return true }
-        return false
-    }
-}
-
-/// Habit settings stored in the note next to the TaskNotes fields (`habit_color`, `harmful`, …).
+/// A habit's own settings: color, harmful, repeatable, Show in Today, routine, twice a day, the skip rule.
 struct HabitOptions: Hashable, Codable, Sendable {
     /// `#RRGGBB`, `nil` = the habit color from tokens.
     var color: String?
@@ -45,7 +24,4 @@ struct HabitOptions: Hashable, Codable, Sendable {
         if let allowedSkips, !harmful { return .missedDays(allowed: max(allowedSkips, 0)) }
         return .none
     }
-
-    /// Marks a single day is worth at most.
-    var unitsPerDay: Double { twiceADay && twiceCountsDouble ? 2 : 1 }
 }

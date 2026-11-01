@@ -31,15 +31,14 @@ struct PagedStack<Block: View>: View {
             .overlay(alignment: page == 0 ? .trailing : .leading) {
                 if let onTurn, slots.count > 1 {
                     let other = page == 0 ? 1 : page - 1
-                    // The visible edge of the other page turns to it instead of acting on what it shows.
-                    // Not `Color.clear`: a fully clear view is skipped when a drag looks for a drop target.
-                    Rectangle()
-                        .fill(Color.black.opacity(0.001))
+                    // The visible edge of the other page turns to it instead of acting on what it shows: a tap, or a
+                    // drag reaching it.
+                    Color.clear
                         .frame(width: max(pages.peek(of: other) + (page == 0 ? 0 : edgeInset), 0))
                         .padding(.leading, page == 0 ? 0 : -edgeInset)
                         .contentShape(Rectangle())
                         .onTapGesture { onTurn(other) }
-                        .onDrop(of: [.text], isTargeted: Binding(get: { false }, set: { if $0 { onTurn(other) } })) { _ in false }
+                        .onDrop(of: [.text], delegate: PageEdgeDrop { onTurn(other) })
                         .accessibilityElement()
                         .accessibilityLabel(Text(page == 0 ? "today.page.timeline" : "today.page.pool"))
                         .accessibilityAddTraits(.isButton)
@@ -50,26 +49,15 @@ struct PagedStack<Block: View>: View {
     }
 }
 
-/// Where the pages of a `PagedStack` are: each page takes the width its neighbours' peeks leave.
-struct PageStrip: Equatable {
-    let count: Int
-    let width: CGFloat
-    let spacing: CGFloat
-    let peeks: [CGFloat]
+/// A drag that reaches the edge of the other page turns to it; nothing is dropped there.
+private struct PageEdgeDrop: DropDelegate {
+    let turn: () -> Void
 
-    func peek(of index: Int) -> CGFloat { peeks.indices.contains(index) ? peeks[index] : 0 }
-
-    func width(of index: Int) -> CGFloat {
-        let before = index > 0 ? peek(of: index - 1) + spacing : 0
-        let after = index < count - 1 ? peek(of: index + 1) + spacing : 0
-        return max(width - before - after, 1)
+    func dropEntered(info: DropInfo) {
+        turn()
     }
 
-    /// The strip's offset that shows page `index` with its leading neighbour's peek before it.
-    func offset(showing index: Int) -> CGFloat {
-        let index = min(max(index, 0), max(count - 1, 0))
-        let start = (0..<index).reduce(0) { $0 + width(of: $1) + spacing }
-        let before = index > 0 ? peek(of: index - 1) + spacing : 0
-        return before - start
+    func performDrop(info: DropInfo) -> Bool {
+        false
     }
 }

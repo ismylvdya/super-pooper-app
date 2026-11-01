@@ -34,7 +34,7 @@ struct ArchiveScreen: View {
         .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
     }
 
-    private func row(_ note: TaskNote, menu: ActionMenu, color: Color) -> some View {
+    private func row(_ note: TaskItem, menu: ActionMenu, color: Color) -> some View {
         HStack {
             NavigationLink(value: Route.task(note.name)) { Text(note.name).foregroundStyle(color) }
             Spacer()

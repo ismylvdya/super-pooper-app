@@ -9,14 +9,14 @@ struct ListsScreen: View {
     @Environment(\.icons) private var icons
 
     var body: some View {
-        let rules = model.config.rules.day
         PageScaffold(title: L10n.string("tab.lists"), isNested: false) {
             ForEach(model.config.lists.groups) { group in
                 PlateSection(header: LocalizedStringKey(group.title)) {
                     ForEach(group.lists) { list in
-                        let count = list.filter.groups(of: model.tasks, query: "", rules: rules).reduce(0) { $0 + $1.tasks.count }
                         NavigationLink(value: Route.list(list.id)) {
-                            PlateRow(icon: list.icon, title: LocalizedStringKey(list.title)) { DisclosureAccessory(value: "\(count)") }
+                            PlateRow(icon: list.icon, title: LocalizedStringKey(list.title)) {
+                                DisclosureAccessory(value: "\(model.listCount(list.id))")
+                            }
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("lists.\(list.id)")
@@ -24,7 +24,9 @@ struct ListsScreen: View {
                 }
             }
         }
-        .refreshable { await model.sync(announce: true) }
+        // The Done list counts the filed tasks too.
+        .task { await model.loadFiledTasks() }
+        .syncsOnPull { await model.loadFiledTasks() }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { router.open(.search(.tasks)) } label: { Image(systemName: icons[.search]) }

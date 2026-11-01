@@ -16,10 +16,7 @@ struct NotificationImageSection: View {
             PlateRow(icon: nil, title: "settings.notificationImage.show") {
                 Toggle("settings.notificationImage.show", isOn: Binding(
                     get: { isShown },
-                    set: { value in
-                        model.updateSettings { $0.habits.showsNotificationPicture = value }
-                        Task { await model.rescheduleNotifications(context: model.context()) }
-                    }
+                    set: { model.setNotificationPictureShown($0) }
                 ))
                 .labelsHidden()
             }
@@ -48,10 +45,7 @@ struct NotificationImageSection: View {
         PlateRow(icon: nil, title: "settings.notificationImage.habitColor", info: "info.settings.notificationImage.habitColor") {
             Toggle("settings.notificationImage.habitColor", isOn: Binding(
                 get: { model.settings.habits.notificationUsesHabitColor },
-                set: { value in
-                    model.updateSettings { $0.habits.notificationUsesHabitColor = value }
-                    Task { await model.rescheduleNotifications(context: model.context()) }
-                }
+                set: { model.setNotificationPictureUsesHabitColor($0) }
             ))
             .labelsHidden()
         }
@@ -70,7 +64,7 @@ struct NotificationImageSection: View {
         let side = tokens.size(.iconColumn)
         if let image {
             Image(uiImage: image).resizable().scaledToFill().frame(width: side, height: side)
-                .clipShape(RoundedRectangle(cornerRadius: tokens.radius(.widgetItem), style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: tokens.radius(.notificationImage), style: .continuous))
         } else {
             Image(systemName: icons[.habit]).foregroundStyle(tokens.color(.habit)).frame(width: side, height: side)
         }

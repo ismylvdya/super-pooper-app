@@ -27,20 +27,21 @@ enum HabitMarking {
         }
     }
 
-    /// Nothing is left to do on a day with this mark. A twice-a-day habit, or one with two or more reminders
-    /// a day, waits for Twice (its next reminder still comes after the first Done); any other habit for any mark.
-    static func isDayClosed(_ mark: HabitMark?, twiceADay: Bool, remindersPerDay: Int) -> Bool {
+    /// Nothing is left to do on a day with this mark. A twice-a-day habit (`TaskItem.isTwiceADay`: the option, or two
+    /// or more reminders a day) waits for Twice (its next reminder still comes after the first Done); any other habit
+    /// for any mark.
+    static func isDayClosed(_ mark: HabitMark?, twiceADay: Bool) -> Bool {
         guard let mark else { return false }
-        return mark == .twice || !(twiceADay || remindersPerDay >= 2)
+        return mark == .twice || !twiceADay
     }
 
-    /// A button pressed on a reminder notification. With two or more reminders a day, the second
-    /// Done of the day is Twice; Partially only marks an unmarked day and never downgrades.
-    static func notificationMark(_ action: HabitMark, current: HabitMark?, remindersPerDay: Int) -> HabitMark {
+    /// A button pressed on a reminder notification. For a twice-a-day habit the second Done of the day is Twice, as in
+    /// the menus; Partially only marks an unmarked day and never downgrades.
+    static func notificationMark(_ action: HabitMark, current: HabitMark?, twiceADay: Bool) -> HabitMark {
         switch action {
         case .done:
             guard let current else { return .done }
-            return remindersPerDay >= 2 ? .twice : current
+            return twiceADay ? .twice : current
         case .partial:
             return current ?? .partial
         case .twice:

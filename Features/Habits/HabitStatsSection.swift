@@ -1,28 +1,28 @@
 import SwiftUI
 
-/// Soft statistics: this week, streaks, shares of the last 7 / 30 days and all time, counts,
-/// and marks by weekday and by month.
+/// Soft statistics: streaks, shares of the recent periods (`habits.stats.shareWindowsDays`) and all time,
+/// counts, and marks by weekday and by month.
 struct HabitStatsSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
-    let habit: TaskNote
+    @Environment(\.rules) private var rules
+    let habit: TaskItem
 
     var body: some View {
         let context = model.context()
         let today = context.today
-        let stats = HabitStats(task: habit, today: today, days: context.days)
+        let stats = HabitStats(task: habit, today: today, days: context.days, rules: rules.habits.stats)
         let color = tokens.habitColor(habit)
         PlateSection(header: "habitPage.stats", info: habit.habit.harmful ? "info.habitPage.stats.harmful" : "info.habitPage.stats") {
-            Text(HabitSummary.weekLine(habit, today: today, days: context.days))
-                .font(tokens.font(.rowTitle))
             HStack(alignment: .top) {
                 value(streak(stats.currentStreak, unit: stats.streakUnit), "habitPage.stats.current")
                 value(streak(stats.longestStreak?.length ?? 0, unit: stats.streakUnit), "habitPage.stats.longest",
                       detail: stats.longestStreak.map(range))
             }
             HStack(alignment: .top) {
-                value(percent(stats.last7), "habitPage.stats.last7")
-                value(percent(stats.last30), "habitPage.stats.last30")
+                ForEach(stats.recentShares, id: \.days) { recent in
+                    value(percent(recent.share), title: L10n.format("habitPage.stats.lastDays", recent.days))
+                }
                 value(percent(stats.allTime), "habitPage.stats.allTime")
             }
             HStack(alignment: .top) {
@@ -40,9 +40,17 @@ struct HabitStatsSection: View {
     }
 
     private func value(_ text: String, _ title: LocalizedStringKey, detail: String? = nil) -> some View {
+        value(text, title: Text(title), detail: detail)
+    }
+
+    private func value(_ text: String, title: String) -> some View {
+        value(text, title: Text(verbatim: title), detail: nil)
+    }
+
+    private func value(_ text: String, title: Text, detail: String?) -> some View {
         VStack(alignment: .leading, spacing: tokens.space(.titleDetailGap)) {
             Text(verbatim: text).font(tokens.font(.statValue))
-            Text(title).font(tokens.font(.caption)).foregroundStyle(tokens.color(.secondaryText))
+            title.secondaryText()
             if let detail { Text(verbatim: detail).font(tokens.font(.caption)).foregroundStyle(tokens.color(.tertiaryText)) }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -58,8 +66,8 @@ struct HabitStatsSection: View {
 
     private func range(_ streak: HabitStats.Streak) -> String {
         let style = Date.FormatStyle().day().month(.abbreviated)
-        return L10n.format("common.range", streak.first.startDate(in: model.calendar).formatted(style),
-                           streak.last.startDate(in: model.calendar).formatted(style))
+        return L10n.format("common.range", DateText.format(streak.first, style, calendar: model.calendar),
+                           DateText.format(streak.last, style, calendar: model.calendar))
     }
 }
 
@@ -73,7 +81,7 @@ struct BarRow: View {
     var body: some View {
         let top = max(bars.map(\.value).max() ?? 0, 1)
         VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
-            Text(title).font(tokens.font(.caption)).foregroundStyle(tokens.color(.secondaryText))
+            Text(title).secondaryText()
             HStack(alignment: .bottom, spacing: tokens.space(.habitCellGap)) {
                 ForEach(Array(bars.enumerated()), id: \.offset) { _, bar in
                     VStack(spacing: tokens.space(.titleDetailGap)) {
@@ -81,7 +89,7 @@ struct BarRow: View {
                         RoundedRectangle(cornerRadius: tokens.radius(.habitCell), style: .continuous)
                             .fill(color.opacity(bar.value == 0 ? tokens.opacity(.habitEmpty) : 1))
                             .frame(height: max(tokens.size(.habitStatsBar) * CGFloat(bar.value) / CGFloat(top), 2))
-                        Text(verbatim: bar.label).font(tokens.font(.caption)).foregroundStyle(tokens.color(.secondaryText))
+                        Text(verbatim: bar.label).secondaryText()
                     }
                     .frame(maxWidth: .infinity)
                 }

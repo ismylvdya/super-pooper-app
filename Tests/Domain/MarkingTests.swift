@@ -10,41 +10,29 @@ struct MarkingTests {
 
     /// History: done on the 18th, partially on the 19th, twice on the 20th.
     private let habit = makeHabit("Meditation") { task in
-        task.completeInstances = [LocalDate("2026-10-18"), LocalDate("2026-10-19"), LocalDate("2026-10-20")]
-        task.partialInstances = [LocalDate("2026-10-19")]
-        task.twiceInstances = [LocalDate("2026-10-20")]
+        task.marks = [LocalDate("2026-10-18"): .done, LocalDate("2026-10-19"): .partial, LocalDate("2026-10-20"): .twice]
     }
 
     // MARK: - Recurring tasks
 
-    @Test func doneAddsTodayToCompleteInstancesOnly() {
-        #expect(lists(after: .done) == List(complete: ["18", "19", "20", "21"], partial: ["19"], twice: ["20"]))
-    }
-
-    @Test func partiallyAddsTodayToCompleteAndPartialInstances() {
-        #expect(lists(after: .partial) == List(complete: ["18", "19", "20", "21"], partial: ["19", "21"], twice: ["20"]))
-    }
-
-    @Test func twiceAddsTodayToCompleteAndTwiceInstances() {
-        #expect(lists(after: .twice) == List(complete: ["18", "19", "20", "21"], partial: ["19"], twice: ["20", "21"]))
+    @Test(arguments: HabitMark.allCases)
+    func aMarkSetsTodayAndKeepsTheHistory(mark: HabitMark) {
+        #expect(marks(after: mark) == habit.marks.merging([today: mark]) { $1 })
     }
 
     @Test(arguments: HabitMark.allCases, HabitMark.allCases)
-    func switchingMarksRewritesOnlyTheExtraLists(from first: HabitMark, to second: HabitMark) {
+    func switchingMarksChangesOnlyToday(from first: HabitMark, to second: HabitMark) {
         let marked = habit.applying(marking.changes(marking: habit, as: first))
         let switched = marked.applying(marking.changes(marking: marked, as: second))
-        #expect(switched.completeInstances.filter { $0 == today }.count == 1)
-        #expect(HabitInstances(task: switched).mark(on: today) == second)
-        #expect(switched.partialInstances.contains(today) == (second == .partial))
-        #expect(switched.twiceInstances.contains(today) == (second == .twice))
-        #expect(List(switched).withoutToday == List(habit))
+        #expect(switched.mark(on: today) == second)
+        #expect(switched.marks.filter { $0.key != today } == habit.marks)
     }
 
     @Test(arguments: HabitMark.allCases)
-    func unmarkingRemovesTodayFromAllThreeLists(mark: HabitMark) {
+    func unmarkingRemovesToday(mark: HabitMark) {
         let marked = habit.applying(marking.changes(marking: habit, as: mark))
         let unmarked = marked.applying(marking.changes(marking: marked, as: nil))
-        #expect(List(unmarked) == List(habit))
+        #expect(unmarked.marks == habit.marks)
     }
 
     @Test func settingTheSameMarkAgainChangesNothing() {
@@ -53,19 +41,19 @@ struct MarkingTests {
         #expect(marking.changes(marking: habit, as: nil).isEmpty)
     }
 
-    @Test func tapTogglesBetweenDoneAndNoMark() {
-        let done = habit.applying(marking.changes(toggling: habit))
-        #expect(HabitInstances(task: done).mark(on: today) == .done)
+    @Test func aHabitIsMarkedAndUnmarkedForTheDay() {
+        let done = habit.applying(marking.changes(marking: habit, as: .done))
+        #expect(done.mark(on: today) == .done)
         let partial = habit.applying(marking.changes(marking: habit, as: .partial))
-        let cleared = partial.applying(marking.changes(toggling: partial))
-        #expect(HabitInstances(task: cleared).mark(on: today) == nil)
-        #expect(List(cleared) == List(habit))
+        let cleared = partial.applying(marking.changes(marking: partial, as: nil))
+        #expect(cleared.mark(on: today) == nil)
+        #expect(cleared.marks == habit.marks)
     }
 
     @Test func recurringTasksNeverGetStatusOrCompletedDate() {
         for mark in HabitMark.allCases {
             for change in marking.changes(marking: habit, as: mark) {
-                guard case .markInstance = change else {
+                guard case .mark = change else {
                     Issue.record("Unexpected change \(change) for \(mark)")
                     continue
                 }
@@ -77,15 +65,13 @@ struct MarkingTests {
 
     @Test func doneSetsStatusAndCompletedDate() {
         let task = makeTask("Pay for internet")
-        #expect(marking.changes(marking: task, as: .done) == [.status(.done), .completedDate(today)])
-        #expect(marking.changes(toggling: task) == [.status(.done), .completedDate(today)])
+        #expect(marking.changes(marking: task, as: .done) == [.complete(on: today)])
     }
 
     @Test func undoRevertsToThisWeekAndRemovesCompletedDate() {
         let done = makeTask("Buy milk", status: .done) { $0.completedDate = self.today }
-        #expect(marking.changes(marking: done, as: nil) == [.status(.thisWeek), .completedDate(nil)])
-        #expect(marking.changes(toggling: done) == [.status(.thisWeek), .completedDate(nil)])
-        let reverted = done.applying(marking.changes(toggling: done))
+        #expect(marking.changes(marking: done, as: nil) == [.reopen])
+        let reverted = done.applying(marking.changes(marking: done, as: nil))
         #expect(reverted.status == .thisWeek && reverted.completedDate == nil)
     }
 
@@ -96,30 +82,8 @@ struct MarkingTests {
 
     // MARK: - Helpers
 
-    private func lists(after mark: HabitMark) -> List {
-        List(habit.applying(marking.changes(marking: habit, as: mark)))
-    }
-
-    /// The three instance lists as October day numbers, in file order.
-    private struct List: Equatable {
-        var complete: [String]
-        var partial: [String]
-        var twice: [String]
-
-        init(complete: [String], partial: [String], twice: [String]) {
-            self.complete = complete
-            self.partial = partial
-            self.twice = twice
-        }
-
-        init(_ task: TaskNote) {
-            func days(_ list: [LocalDate]) -> [String] { list.map { String(format: "%02d", $0.day) } }
-            self.init(complete: days(task.completeInstances), partial: days(task.partialInstances), twice: days(task.twiceInstances))
-        }
-
-        var withoutToday: List {
-            List(complete: complete.filter { $0 != "21" }, partial: partial.filter { $0 != "21" }, twice: twice.filter { $0 != "21" })
-        }
+    private func marks(after mark: HabitMark) -> [LocalDate: HabitMark] {
+        habit.applying(marking.changes(marking: habit, as: mark)).marks
     }
 }
 
@@ -127,18 +91,27 @@ struct StatusChangeTests {
     private let today = LocalDate(year: 2026, month: 10, day: 21)!
 
     @Test func settingDoneAddsCompletedDateAndLeavingRemovesIt() {
-        let open = TaskNote(name: "Task", relativePath: "Task.md", status: .thisWeek)
-        #expect(TaskMarking(today: today).changes(setting: .done, on: open) == [.status(.done), .completedDate(today)])
+        let open = TaskItem(id: TaskID("Task.md"), name: "Task", status: .thisWeek)
+        #expect(TaskMarking(today: today).changes(setting: .done, on: open) == [.complete(on: today)])
         var done = open
         done.status = .done
         done.completedDate = today
-        #expect(TaskMarking(today: today).changes(setting: .halfYear, on: done) == [.status(.halfYear), .completedDate(nil)])
+        #expect(TaskMarking(today: today).changes(setting: .halfYear, on: done) == [.status(.halfYear)])
         #expect(TaskMarking(today: today).changes(setting: .done, on: done).isEmpty)
     }
 
+    @Test func anyStatusOtherThanDoneDropsTheDayOfCompletion() {
+        var done = TaskItem(id: TaskID("Task.md"), name: "Task", status: .done)
+        done.completedDate = today
+        let changes = TaskMarking(today: today).changes(setting: .archived, on: done)
+        #expect(changes == [.status(.archived)])
+        let archived = done.applying(changes)
+        #expect(archived.status == .archived && archived.completedDate == nil)
+    }
+
     @Test func recurringTasksOnlyChangeStatus() {
-        var habit = TaskNote(name: "Habit", relativePath: "Habit.md", status: .halfYear)
-        habit.recurrenceRaw = "FREQ=DAILY"
+        var habit = TaskItem(id: TaskID("Habit.md"), name: "Habit", status: .halfYear)
+        habit.recurrence = try? RecurrenceCodec.parse("FREQ=DAILY").get()
         #expect(TaskMarking(today: today).changes(setting: .done, on: habit) == [.status(.done)])
     }
 }

@@ -5,10 +5,13 @@ import Foundation
 /// domain code as the app.
 struct WidgetSnapshot: Codable, Sendable {
     let generatedAt: Date
-    let tasks: [TaskNote]
+    let tasks: [TaskItem]
     let events: [CalendarEvent]
     let reminders: [ReminderItem]
     let dayState: DayState
+    /// The app could read the chosen calendars, so a linked event that is missing is a problem; nil in a snapshot of an
+    /// older version (taken as unknown).
+    let eventsKnown: Bool?
 }
 
 struct SnapshotStore: Sendable {

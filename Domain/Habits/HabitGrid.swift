@@ -23,9 +23,9 @@ struct HabitGrid: Sendable {
 
     let weeks: [[Day]]
 
-    init(task: TaskNote, weekCount: Int, today: LocalDate, days: DayBoundary) {
+    init(task: TaskItem, weekCount: Int, today: LocalDate, days: DayBoundary) {
         let history = HabitHistory(task: task, days: days)
-        let lastSunday = today.adding(days: Weekday.sunday.rawValue - today.weekday.rawValue)
+        let lastSunday = today.weekEnd
         let firstMonday = lastSunday.adding(days: -(max(weekCount, 1) * 7) + 1)
         let missed = history.missedDays(through: today.adding(days: -1), today: today)
         weeks = (0..<max(weekCount, 1)).map { week in
@@ -37,9 +37,9 @@ struct HabitGrid: Sendable {
     }
 
     /// Enough weeks to reach back to the first marked day (plus `extraWeeks`), but at least `minimumWeeks`.
-    static func weekCount(for task: TaskNote, today: LocalDate, minimumWeeks: Int, extraWeeks: Int) -> Int {
-        let start = HabitInstances(task: task).complete.min() ?? today
-        let startMonday = start.adding(days: -(start.weekday.rawValue - 1))
+    static func weekCount(for task: TaskItem, today: LocalDate, minimumWeeks: Int, extraWeeks: Int) -> Int {
+        let start = task.marks.keys.min() ?? today
+        let startMonday = start.weekStart
         let weeks = startMonday.days(until: today) / 7 + 1
         return max(minimumWeeks, weeks + extraWeeks)
     }

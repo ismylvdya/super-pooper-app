@@ -13,11 +13,9 @@ private struct SettingsPreviewFrame: ViewModifier {
 
     /// Clipped to its frame: the pages of a paged preview reach past it.
     func body(content: Content) -> some View {
-        let shape = RoundedRectangle(cornerRadius: tokens.radius(.timelineItem), style: .continuous)
         content
-            .padding(tokens.space(.chipGap))
-            .background(tokens.color(.screenBackground), in: shape)
-            .clipShape(shape)
+            .padding(tokens.space(.previewInset))
+            .plate(.previewFrame, fill: tokens.color(.screenBackground), clipsContent: true)
             .allowsHitTesting(false)
     }
 }

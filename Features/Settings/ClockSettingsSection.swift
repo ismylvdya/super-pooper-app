@@ -3,6 +3,7 @@ import SwiftUI
 /// Settings of the clock: the zone and the text before the time on the Lock Screen widget, with a preview.
 struct ClockSettingsSection: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.icons) private var icons
     @State private var prefix = ""
 
     var body: some View {
@@ -11,14 +12,16 @@ struct ClockSettingsSection: View {
                      hint: Text(verbatim: L10n.format("settings.clock.preview",
                                                       ClockLine.text(prefix: prefix, date: model.clock.now, timeZone: zone)))) {
             PlateRow(icon: .clockSettings, title: "settings.clock.zone") {
-                // The row shows the offset alone; the list names the city next to it.
+                // The row shows the offset alone; in the list each zone is its city, with its offset as the line under it
+                // and a check on the chosen one (a picker's item has room for one line only).
                 Menu {
-                    Picker("settings.clock.zone", selection: Binding(
-                        get: { model.settings.clock.timeZone },
-                        set: { value in model.updateSettings { $0.clock.timeZone = value } }
-                    )) {
-                        ForEach(zones, id: \.self) { identifier in
-                            Text(verbatim: zoneItem(identifier)).tag(identifier)
+                    ForEach(zones, id: \.self) { identifier in
+                        Button {
+                            model.updateSettings { $0.clock.timeZone = identifier }
+                        } label: {
+                            Text(verbatim: TimeZoneName.city(identifier))
+                            Text(verbatim: offset(identifier))
+                            if identifier == model.settings.clock.timeZone { Image(systemName: icons[.selected]) }
                         }
                     }
                 } label: {
@@ -36,9 +39,8 @@ struct ClockSettingsSection: View {
         .onAppear { prefix = model.settings.clock.prefix }
     }
 
-    private func zoneItem(_ identifier: String) -> String {
-        let zone = TimeZone(identifier: identifier) ?? .current
-        return L10n.format("clock.zoneItem", TimeZoneName.offset(zone, at: model.clock.now), TimeZoneName.city(identifier))
+    private func offset(_ identifier: String) -> String {
+        TimeZoneName.offset(TimeZone(identifier: identifier) ?? .current, at: model.clock.now)
     }
 
     /// The configured zone first, then all known zones.

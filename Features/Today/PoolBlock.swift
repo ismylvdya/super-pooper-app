@@ -7,11 +7,14 @@ import SwiftUI
 struct PoolBlock: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
+    @Environment(\.rules) private var rules
     @Environment(TaskDragState.self) private var drag: TaskDragState?
     let plan: DayPlan
     let handler: TaskActionHandler
     /// Space under the block that belongs to the home indicator (the list scrolls under it).
     let bottomInset: CGFloat
+    /// The edges of the list that lie under a system bar (`edgeFades`).
+    let barEdges: Edge.Set
     @State private var rowHeights: [String: CGFloat] = [:]
     @State private var visibleRows: Set<String> = []
     @State private var rowMids: [String: CGFloat] = [:]
@@ -40,7 +43,7 @@ struct PoolBlock: View {
     }
 
     private func dropped(_ item: DayItem, from source: TaskDragState.Source, order: [String]) {
-        Haptics.play(.light)
+        Haptics.play(.drop)
         switch source {
         case .pool: model.setManualOrder(order)
         case .timeline: Task { await model.unschedule(item.id, poolOrder: order) }
@@ -51,8 +54,7 @@ struct PoolBlock: View {
         VStack(alignment: .leading, spacing: tokens.space(.poolRowGap)) {
             if plan.pool.isEmpty {
                 Text("pool.empty")
-                    .font(tokens.font(.hint))
-                    .foregroundStyle(tokens.color(.secondaryText))
+                    .secondaryText(.hint)
                     .frame(maxWidth: .infinity, minHeight: tokens.size(.poolCounter))
                 if fillsHeight { Spacer(minLength: 0) }
             } else {
@@ -71,18 +73,9 @@ struct PoolBlock: View {
     private var list: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: tokens.space(.poolRowGap)) {
+                // One plate for a whole routine; each habit keeps its own tap and long press.
                 ForEach(PoolSegments.make(items)) { segment in
-                    if segment.isRoutine {
-                        // One plate for the whole routine; each habit keeps its own tap and long press.
-                        VStack(alignment: .leading, spacing: 0) {
-                            ForEach(segment.items) { item in tracked(row(item, plate: .bare), item) }
-                        }
-                        .background(tokens.color(.plateBackground),
-                                    in: PlateShape(cornerRadius: tokens.rowPlateRadius))
-                        .clipShape(PlateShape(cornerRadius: tokens.rowPlateRadius))
-                    } else if let item = segment.items.first {
-                        tracked(row(item, plate: .pool), item)
-                    }
+                    PoolSegmentView(segment: segment) { item, plate in tracked(row(item, plate: .pool(plate)), item) }
                 }
             }
         }
@@ -90,8 +83,8 @@ struct PoolBlock: View {
         .contentMargins(.bottom, bottomInset + tokens.space(.scrollEndRoom), for: .scrollContent)
         .scrollBounceBehavior(.always)
         .scrollIndicators(.hidden)
-        .refreshable { await model.sync(announce: true) }
-        .edgeFades(bottomExtension: bottomInset)
+        .syncsOnPull()
+        .edgeFades(bottomExtension: bottomInset, barEdges: barEdges)
         .liftRoom()
     }
 
@@ -106,9 +99,8 @@ struct PoolBlock: View {
             Text(L10n.format("pool.more", hiddenBelow))
                 .font(tokens.font(.poolCounter))
                 .foregroundStyle(tokens.color(.secondaryText))
-                .padding(.horizontal, tokens.space(.chipHorizontal))
-                .padding(.vertical, tokens.space(.chipVertical))
-                .background(.regularMaterial, in: Capsule())
+                .chipInsets()
+                .systemLook(.floatingCapsule)
                 .frame(maxWidth: .infinity)
                 .allowsHitTesting(false)
         }
@@ -116,12 +108,12 @@ struct PoolBlock: View {
 
     private var visibleHeight: CGFloat {
         let rows = plan.pool.prefix(visibleCount)
-        let heights = rows.map { rowHeights[$0.id] ?? tokens.size(.poolRowEstimate) }
+        let heights = rows.map { rowHeights[$0.id] ?? CGFloat(rules.layoutEstimates.poolRowHeight) }
         return heights.reduce(0, +) + tokens.space(.poolRowGap) * CGFloat(max(rows.count - 1, 0))
     }
 
     private func row(_ item: DayItem, plate: PoolRowContent.PlateKind) -> some View {
-        PoolRow(item: item, today: plan.today, isToday: plan.isToday, isCompact: fillsHeight, plate: plate, handler: handler,
+        PoolRow(item: item, isToday: plan.isToday, isCompact: fillsHeight, plate: plate, handler: handler,
                 dragSource: plan.isToday ? .pool : nil)
     }
 
@@ -129,97 +121,10 @@ struct PoolBlock: View {
         view
             .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { rowHeights[item.id] = $0 }
             .onGeometryChange(for: CGFloat.self) { $0.frame(in: .named(Self.dropSpace)).midY } action: { rowMids[item.id] = $0 }
-            .onScrollVisibilityChange(threshold: 0.5) { visible in
+            .onScrollVisibilityChange(threshold: rules.pool.rowVisibleShare) { visible in
                 if visible { visibleRows.insert(item.id) } else { visibleRows.remove(item.id) }
             }
     }
-}
-
-/// A task in a rounded plate — the same look in the pool and on the timeline. In the pool the plate
-/// grows with the estimate (a long task takes more room), except a parent: its subtasks hold the time, so it stays
-/// one line; the long-press highlight is the plate itself.
-struct PoolRow: View {
-    @Environment(\.tokens) private var tokens
-    @Environment(\.rules) private var rules
-    let item: DayItem
-    let today: LocalDate
-    var isToday = true
-    var isCompact = false
-    var plate: PoolRowContent.PlateKind = .pool
-    let handler: TaskActionHandler
-    var dragSource: TaskDragState.Source?
-
-    var body: some View {
-        let lines = item.hasSubtasks ? 0 : rules.pool.extraLines(forEstimate: rules.day.estimate(of: item.task))
-        PoolRowContent(item: item, today: today, isToday: isToday, isCompact: isCompact,
-                       titleLineLimit: item.hasSubtasks ? 1 : nil, plate: plate,
-                       minimumHeight: CGFloat(lines) * tokens.uiFont(.taskTitle).lineHeight, handler: handler,
-                       dragSource: dragSource)
-            // A subtask sits under its parent, shifted right.
-            .padding(.leading, CGFloat(item.depth) * tokens.space(.subtaskIndent))
-    }
-}
-
-/// The row with its tap, title, long-press menu and drag wiring, on its plate.
-struct PoolRowContent: View {
-    enum PlateKind {
-        case pool
-        /// Inside a shared routine plate: the row's own padding, no plate of its own.
-        case bare
-        case slot(isPast: Bool, isCompact: Bool)
-    }
-
-    @Environment(\.tokens) private var tokens
-    @Environment(\.actions) private var actions
-    @Environment(TaskDragState.self) private var drag: TaskDragState?
-    let item: DayItem
-    let today: LocalDate
-    var isToday = true
-    var isCompact = true
-    var titleFont: Font?
-    var showsDetails = true
-    var titleLineLimit: Int?
-    var titleLineHeight: CGFloat?
-    var showsDoneState = true
-    var plate: PlateKind = .pool
-    /// Extra height under the content (pool rows of long tasks).
-    var minimumHeight: CGFloat = 0
-    let handler: TaskActionHandler
-    /// Where a drag of this row starts from; nil = it cannot be dragged.
-    var dragSource: TaskDragState.Source?
-
-    var body: some View {
-        let row = TaskRowView(item: item, today: today, titleFont: titleFont, showsDetails: showsDetails, isCompact: isCompact,
-                              titleLineLimit: titleLineLimit, titleLineHeight: titleLineHeight, showsDoneState: showsDoneState,
-                              onOpen: { handler.run(actions.definition(.open), taskName: item.id) })
-        Group {
-            switch plate {
-            case .pool:
-                VStack(alignment: .leading, spacing: 0) {
-                    row
-                    Spacer(minLength: minimumHeight)
-                }
-                .taskPlate(isDone: item.isDone)
-            case .bare:
-                VStack(alignment: .leading, spacing: 0) {
-                    row
-                    Spacer(minLength: minimumHeight)
-                }
-                .rowPlatePadding()
-                .background(tokens.color(.plateBackground))
-            case .slot(let isPast, let isCompact):
-                row.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading).slotPlate(isPast: isPast, isCompact: isCompact)
-            }
-        }
-        .contentShape(.contextMenuPreview, PlateShape(cornerRadius: tokens.rowPlateRadius))
-        .contextMenu {
-            ActionMenuContent(menu: item.isHabit ? .habitContext : .taskContext, item: item, isToday: isToday) {
-                handler.handle($0, taskName: item.id)
-            }
-        }
-        .taskDragSource(item, from: dragSource ?? .pool, drag: drag, isOn: dragSource != nil)
-    }
-
 }
 
 /// The pool as a drop target (today only).

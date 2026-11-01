@@ -2,7 +2,7 @@ import Foundation
 
 /// Case-insensitive "contains" over names and titles; the order is `NameOrder` for tasks, by time for events.
 enum SearchMatcher {
-    static func tasks(_ tasks: [TaskNote], matching query: String) -> [TaskNote] {
+    static func tasks(_ tasks: [TaskItem], matching query: String) -> [TaskItem] {
         guard !query.isEmpty else { return [] }
         return NameOrder.sorted(tasks.filter { matches($0.name, query) })
     }

@@ -4,7 +4,7 @@ import SwiftUI
 #Preview("Task rows") {
     let plan = PreviewSamples.plan
     return VStack(alignment: .leading, spacing: 12) {
-        ForEach(plan.pool) { TaskRowView(item: $0, today: plan.today, onOpen: {}) }
+        ForEach(plan.pool) { TaskRowView(item: $0, onOpen: {}) }
     }
     .padding()
 }
@@ -51,11 +51,8 @@ import SwiftUI
         DayTimelineView(slots: plan.timeline,
                         window: TimelineWindow.rolling(now: plan.now, hoursBefore: 2, hoursAfter: 9, calendar: context.calendar),
                         now: plan.now, hourHeight: 64,
-                        style: TimelineStyle(eventFont: .subheadline, taskFont: .subheadline,
-                                             eventLineHeight: UIFont.preferredFont(forTextStyle: .subheadline).lineHeight,
-                                             taskLineHeight: UIFont.preferredFont(forTextStyle: .subheadline).lineHeight,
-                                             minimumItemHeight: 34)) { item, _ in
-            TaskRowView(item: item, today: plan.today, showsDetails: false)
+                        style: TimelineStyle.make(BundledConfig.settings.timeline, tokens: BundledConfig.tokens)) { item, _ in
+            TaskRowView(item: item, showsDetails: false)
         }
         .padding()
     }
@@ -66,14 +63,19 @@ import SwiftUI
     let habit = PreviewSamples.tasks[0]
     return HabitWidgetView(habit: habit, grid: HabitGrid(task: habit, weekCount: 4, today: context.today, days: context.days),
                            today: context.today)
+        .systemWidgetMargins()
         .frame(width: 158, height: 158)
 }
 
 #Preview("Today widget") {
-    TodayWidgetView(plan: PreviewSamples.plan, settings: .fallback,
-                    layout: ScreenLayout(axis: .vertical, spacing: "blockGap",
-                                         blocks: [.init(block: .pool, size: .fit, weight: nil), .init(block: .timeline, size: .fill, weight: 1)]),
-                    context: PreviewSamples.context, maxTimelineHours: 6)
-        .frame(width: 338, height: 354)
+    if let config = BundledConfig.config {
+        TodayWidgetView(plan: PreviewSamples.plan, settings: BundledConfig.settings, arrangement: .stacked,
+                        layout: config.todayLayout(for: .stacked), context: PreviewSamples.context,
+                        maxTimelineHours: config.rules.widgets.timelineHours)
+            .systemWidgetMargins()
+            .frame(width: 338, height: 354)
+    } else {
+        Text(verbatim: "Config error")
+    }
 }
 #endif

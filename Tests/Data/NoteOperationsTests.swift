@@ -46,7 +46,7 @@ struct NoteOperationsTests {
     @Test func renameMovesTheFileAndRewritesLinksOfDependents() async throws {
         let sandbox = try VaultSandbox.make()
         let repository = sandbox.repository()
-        let tasks = try await repository.scan().tasks
+        let tasks = try await repository.load().tasks
         let screwdriver = try #require(tasks.first { $0.name == "Найти отвёртку" })
         let dependents = tasks.filter { $0.previousTasks.contains("Найти отвёртку") }
         #expect(dependents.map(\.name).sorted() == ["Связь без скобок", "Собрать шкаф"])
@@ -56,7 +56,7 @@ struct NoteOperationsTests {
 
         let renamed = try await repository.rename(screwdriver, to: "Найти отвёртку 🪛", dependents: dependents)
 
-        #expect(renamed.name == "Найти отвёртку 🪛" && renamed.relativePath == "TaskNotes/Tasks/Найти отвёртку 🪛.md")
+        #expect(renamed.name == "Найти отвёртку 🪛" && renamed.id.relativePath == "TaskNotes/Tasks/Найти отвёртку 🪛.md")
         #expect(!sandbox.exists("Найти отвёртку"))
         expectSameBytes(try sandbox.text(of: "Найти отвёртку 🪛"), content)
         let newLink = "  - uid: \"[[Найти отвёртку 🪛]]\"\n    reltype: FINISHTOSTART\n"
@@ -68,7 +68,7 @@ struct NoteOperationsTests {
             .replacingOnce("  - Найти отвёртку\n", with: newLink)
             .replacingOnce("date_modified: 2026-10-20T09:12:44.123+02:00", with: stamp))
 
-        let plan = DayScenario(tasks: try await repository.scan().tasks).build()
+        let plan = DayScenario(tasks: try await repository.load().tasks).build()
         #expect(plan.problems(of: "Собрать шкаф").isEmpty && plan.problems(of: "Связь без скобок").isEmpty)
         #expect(plan.item(named: "Собрать шкаф")?.blockers == [.task("Найти отвёртку 🪛")])
     }
@@ -76,14 +76,14 @@ struct NoteOperationsTests {
     @Test func aTakenOrInvalidNameIsRejectedWithoutTouchingFiles() async throws {
         let sandbox = try VaultSandbox.make()
         let repository = sandbox.repository()
-        let batteries = try #require(try await repository.scan().tasks.first { $0.name == "Купить батарейки 🔋" })
+        let batteries = try #require(try await repository.load().tasks.first { $0.name == "Купить батарейки 🔋" })
         let before = try sandbox.text(of: "Купить батарейки 🔋")
 
-        await #expect(throws: TaskRepositoryError.nameTaken("найти отвёртку")) {
+        await #expect(throws: TaskStoreError.nameTaken("найти отвёртку")) {
             try await repository.rename(batteries, to: "найти отвёртку", dependents: [])
         }
         for name in ["", " Пробел в начале", "Папка/Задача", "[[Ссылка]]", "Вопрос?", ".hidden", "Хэш#тег"] {
-            await #expect(throws: TaskRepositoryError.invalidName(name)) {
+            await #expect(throws: TaskStoreError.invalidName(name)) {
                 try await repository.rename(batteries, to: name, dependents: [])
             }
         }
@@ -96,17 +96,17 @@ struct NoteOperationsTests {
     @Test func moveToTrashMovesTheNoteIntoTheVaultTrashFolder() async throws {
         let sandbox = try VaultSandbox.make()
         let repository = sandbox.repository()
-        let ideas = try #require(try await repository.scan().tasks.first { $0.name == "Записать идеи" })
+        let ideas = try #require(try await repository.load().tasks.first { $0.name == "Записать идеи" })
         let content = try sandbox.text(of: "Записать идеи")
 
-        try await repository.moveToTrash(ideas)
+        try await repository.delete(ideas)
         #expect(!sandbox.exists("Записать идеи"))
         let trashed = sandbox.trashFolder.appendingPathComponent("Записать идеи.md")
         expectSameBytes(try String(contentsOf: trashed, encoding: .utf8), content)
-        #expect(try await repository.scan().tasks.count == 35)
+        #expect(try await repository.load().tasks.count == 35)
 
         try sandbox.write("---\ntags:\n  - 🔫делишка\nstatus: this_week\n---\nВторая\n", to: "Записать идеи")
-        try await repository.moveToTrash(ideas)
+        try await repository.delete(ideas)
         let second = sandbox.trashFolder.appendingPathComponent("Записать идеи 1.md")
         #expect(try String(contentsOf: second, encoding: .utf8).hasSuffix("Вторая\n"))
         expectSameBytes(try String(contentsOf: trashed, encoding: .utf8), content)
@@ -117,7 +117,7 @@ struct NoteOperationsTests {
     @Test func backupCopiesTheNotesAndKeepsOnlyTheNewestFolders() async throws {
         let sandbox = try VaultSandbox.make()
         let repository = sandbox.repository(keepBackups: 2)
-        let tasks = try await repository.scan().tasks
+        let tasks = try await repository.load().tasks
         let picked = tasks.filter { ["Найти отвёртку", "Медитация 🧘"].contains($0.name) }
 
         try await repository.backup(picked, reason: "first")
@@ -134,11 +134,44 @@ struct NoteOperationsTests {
         #expect(sandbox.exists("Найти отвёртку") && sandbox.exists("Медитация 🧘"))
     }
 
+    /// Named by the UTC time, whatever the phone's zone: the newest backup always sorts last and is never rotated away.
+    @Test func backupFoldersAreNamedInUTC() throws {
+        let sandbox = try VaultSandbox.make()
+        let moment = try #require(ISO8601.parse("2026-10-21T00:30:00Z"))
+        let service = BackupService(directory: sandbox.backups, keepCount: 1, fileSystem: CoordinatedFileSystem(), clock: { moment },
+                                    calendar: FixedCalendar(current: TestCalendar.calendar))
+        let folder = try #require(try service.backup([sandbox.url(of: "Найти отвёртку")], reason: "first"))
+        #expect(folder.lastPathComponent == "20261021T003000.000Z-first")
+    }
+
+    /// Folders of older versions are named by the phone's clock. In Jakarta just after midnight their date is already
+    /// the 22nd while the new UTC names still say the 21st: by name the newest backup sorted oldest and was rotated away.
+    @Test func rotationGoesByTheMomentInTheNameOfBothKinds() throws {
+        let sandbox = try VaultSandbox.make()
+        let jakarta = FixedCalendar(current: TestCalendar.calendar(in: "Asia/Jakarta"))
+        for legacy in ["20261022-003000-000-older", "20261022-010000-000-newer"] {
+            try FileManager.default.createDirectory(at: sandbox.backups.appendingPathComponent(legacy), withIntermediateDirectories: true)
+        }
+        let moment = try #require(ISO8601.parse("2026-10-21T18:30:00Z"))
+        let service = BackupService(directory: sandbox.backups, keepCount: 2, fileSystem: CoordinatedFileSystem(), clock: { moment },
+                                    calendar: jakarta)
+        try service.backup([sandbox.url(of: "Найти отвёртку")], reason: "newest")
+        #expect(try backupFolders(sandbox) == ["20261021T183000.000Z-newest", "20261022-010000-000-newer"])
+    }
+
+    @Test func aFolderNameGivesTheMomentOfTheBackup() throws {
+        let belgrade = TestCalendar.timeZone
+        #expect(BackupFolderName.moment(of: "20261021T003000.250Z-delete", legacyZone: belgrade)
+                == ISO8601.parse("2026-10-21T00:30:00.250Z"))
+        #expect(BackupFolderName.moment(of: "20261021-023000-000-rename", legacyZone: belgrade) == ISO8601.parse("2026-10-21T00:30:00Z"))
+        #expect(BackupFolderName.moment(of: "notes", legacyZone: belgrade) == nil)
+    }
+
     @Test func obsidianLinkOpensTheNoteInTheVault() async throws {
         let sandbox = try VaultSandbox.make()
         let repository = sandbox.repository()
-        let task = try #require(try await repository.scan().tasks.first { $0.name == "Утро — душ 🚿" })
-        let url = try #require(await repository.obsidianURL(for: task))
+        let task = try #require(try await repository.load().tasks.first { $0.name == "Утро — душ 🚿" })
+        let url = try #require(await repository.externalURL(for: task))
         let components = try #require(URLComponents(url: url, resolvingAgainstBaseURL: false))
         #expect(components.scheme == "obsidian" && components.host == "open")
         #expect(components.queryItems == [URLQueryItem(name: "vault", value: "Vault"),
@@ -183,8 +216,9 @@ struct SubtaskLinkTests {
         #expect(note.task.projects == ["Ремонт"])
         #expect(try note.text().contains("projects:\n  - \"[[Ремонт]]\"\n"))
 
-        try await note.apply([.renameProject(from: "Ремонт", to: "Ремонт кухни")])
-        #expect(note.task.projects == ["Ремонт кухни"])
-        #expect(try note.text().contains("  - \"[[Ремонт кухни]]\"\n"))
+        var document = try FrontmatterDocument(text: try note.text())
+        TaskNoteWriter(mapping: TestConfig.mapping, calendar: FixedCalendar(current: TestCalendar.calendar))
+            .renameLinks(from: "ремонт", to: "Ремонт кухни", in: &document, now: note.sandbox.now)
+        #expect(document.text.contains("projects:\n  - \"[[Ремонт кухни]]\"\n"))
     }
 }

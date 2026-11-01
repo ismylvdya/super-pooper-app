@@ -108,6 +108,20 @@ struct AppSettings: Codable, Equatable, Sendable {
         var showsNotificationPicture: Bool
         /// The habit symbol on a notification in the habit's own color (when it has one) instead of the habits' color.
         var notificationUsesHabitColor: Bool
+
+        /// Where the order of one routine is kept: the one place that ties a part of the day to its setting.
+        static func routine(_ part: HabitTimeOfDay) -> WritableKeyPath<Habits, [String]> {
+            switch part {
+            case .morning: \.morningRoutine
+            case .day: \.dayRoutine
+            case .evening: \.eveningRoutine
+            }
+        }
+
+        /// The orders of all routines, for the day.
+        var routines: HabitRoutines {
+            HabitRoutines(morning: morningRoutine, day: dayRoutine, evening: eveningRoutine)
+        }
     }
 
     struct Clock: Codable, Equatable, Sendable {
@@ -148,24 +162,41 @@ enum TimelineMode: Equatable, Sendable {
 }
 
 extension AppSettings {
-    var timelineMode: TimelineMode {
-        switch today.arrangement {
+    /// The app's timeline, in the app's own arrangement.
+    var timelineMode: TimelineMode { timelineMode(in: today.arrangement) }
+
+    /// The timeline in an arrangement: the app's, or the widget's own (`TodayWidgetView`).
+    func timelineMode(in arrangement: TodayArrangement) -> TimelineMode {
+        switch arrangement {
         case .stacked: timeline.layout == .twoColumns ? .halves : .aroundNow
         case .sideBySide, .paged: timeline.range == .wholeDay ? .wholeDay : .aroundNow
         }
     }
 
-    /// The pool shows a fixed number of rows only when it sits above the timeline.
-    var poolUsesVisibleCount: Bool { today.arrangement == .stacked }
-}
+    /// What the app's timeline shows by these settings; `limits` cap the hours around now.
+    func timelineSpan(limits: TimelineSpan.Limits = TimelineSpan.Limits()) -> TimelineSpan {
+        timelineSpan(in: today.arrangement, limits: limits)
+    }
 
-extension AppSettings.Timeline {
-    /// Length of the longer half of the day, in hours (two-halves layout scale).
-    var halvesLongestHours: Double {
-        func hours(_ range: AppSettings.TimeRange) -> Double {
-            let minutes = range.end.minutesSinceMidnight - range.start.minutesSinceMidnight
-            return Double(minutes > 0 ? minutes : minutes + 24 * 60) / 60
+    /// What a timeline in that arrangement shows by these settings.
+    func timelineSpan(in arrangement: TodayArrangement, limits: TimelineSpan.Limits = TimelineSpan.Limits()) -> TimelineSpan {
+        func range(_ range: TimeRange) -> TimelineSpan.Range { TimelineSpan.Range(start: range.start, end: range.end) }
+        switch timelineMode(in: arrangement) {
+        case .aroundNow: return .aroundNow(hoursBefore: timeline.hoursBefore, hoursAfter: timeline.hoursAfter, limits: limits)
+        case .wholeDay: return .range(range(timeline.wholeDay))
+        case .halves: return .halves(range(timeline.firstHalf), range(timeline.secondHalf))
         }
-        return max(hours(firstHalf), hours(secondHalf))
+    }
+
+    /// The app's pool shows a fixed number of rows only when it sits above the timeline.
+    var poolUsesVisibleCount: Bool { poolUsesVisibleCount(in: today.arrangement) }
+
+    func poolUsesVisibleCount(in arrangement: TodayArrangement) -> Bool { arrangement == .stacked }
+
+    /// A change that moves the day or what is planned in it: the day boundary and the energy hour, notifications on or
+    /// off, other calendars or lists, another folder. The notifications and the widget snapshot follow only those.
+    func replansDay(comparedTo old: AppSettings) -> Bool {
+        day != old.day || notifications != old.notifications || sources != old.sources || vault != old.vault
     }
 }
+

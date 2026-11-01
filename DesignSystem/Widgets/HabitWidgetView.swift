@@ -1,28 +1,29 @@
 import AppIntents
 import SwiftUI
+import WidgetKit
 
 /// The habit widget: the name in the habit's color, today's day button in the corner (it marks the
-/// habit without opening the app) and the last weeks of days at the bottom, the oldest week fading out.
+/// habit without opening the app) and the last weeks of days at the bottom, the oldest week fading out. All of it is in
+/// the habit's color, so all of it takes the accent of a Home Screen tinted in one color. The system puts its margins
+/// around it.
 struct HabitWidgetView: View {
     @Environment(\.tokens) private var tokens
-    let habit: TaskNote
+    let habit: TaskItem
     let grid: HabitGrid
     let today: LocalDate
     var options = HabitWidgetOptions()
 
     var body: some View {
         GeometryReader { geometry in
-            content(metrics: HabitDotMetrics.fitting(width: geometry.size.width - tokens.space(.widgetPadding) * 2,
-                                                     ringRatio: tokens.size(.habitRingRatio)))
+            content(metrics: tokens.habitDots(fitting: geometry.size.width))
         }
     }
 
     private func content(metrics: HabitDotMetrics) -> some View {
         let color = tokens.habitColor(habit)
-        return VStack(alignment: .leading, spacing: tokens.space(.habitCellGap) * 2) {
-            HStack(alignment: .top, spacing: tokens.space(.chipGap)) {
-                HabitWidgetTitle(text: habit.name, size: options.titleSize ?? Double(tokens.uiFont(.widgetTitle).pointSize),
-                                 wrap: options.wrapTitle, breakWords: options.breakWords)
+        return VStack(alignment: .leading, spacing: tokens.space(.widgetGridGap)) {
+            HStack(alignment: .top, spacing: tokens.space(.widgetGap)) {
+                HabitWidgetTitle(text: habit.name, size: options.titleSize, wrap: options.wrapTitle, breakWords: options.breakWords)
                     .foregroundStyle(color)
                 Spacer(minLength: 0)
                 Button(intent: MarkHabitTodayIntent(habitName: habit.name)) {
@@ -33,46 +34,10 @@ struct HabitWidgetView: View {
             Spacer(minLength: 0)
             HabitGridView(grid: grid, color: color, metrics: metrics, fadesTop: true)
         }
-        .padding(tokens.space(.widgetPadding))
+        .widgetAccentable()
     }
 
     private var todayCell: HabitCell {
         grid.weeks.last?.first { $0.date == today }?.cell ?? .open
-    }
-}
-
-/// The widget title: one line that fades out; with "Wrap Title" a title that does not fit goes to two
-/// lines a third smaller, by words or (with "Break Words") by letters with a hyphen.
-struct HabitWidgetTitle: View {
-    let text: String
-    let size: Double
-    var wrap = false
-    var breakWords = false
-
-    var body: some View {
-        let font = Font.system(size: size, weight: .semibold, design: .rounded)
-        let small = size * 2 / 3
-        let smallFont = Font.system(size: small, weight: .semibold, design: .rounded)
-        let smallLine = UIFont.systemFont(ofSize: small, weight: .semibold).lineHeight
-        if wrap {
-            ViewThatFits(in: .horizontal) {
-                Text(text).font(font).lineLimit(1).fixedSize()
-                if breakWords {
-                    GeometryReader { geometry in
-                        let lines = HyphenSplit.split(text, width: geometry.size.width,
-                                                      font: UIFont.systemFont(ofSize: small, weight: .semibold))
-                        VStack(alignment: .leading, spacing: 0) {
-                            Text(lines.first).font(smallFont).lineLimit(1)
-                            FadingText(text: lines.rest, font: smallFont, lineHeight: smallLine)
-                        }
-                    }
-                    .frame(height: smallLine * 2)
-                } else {
-                    FadingText(text: text, font: smallFont, lineHeight: smallLine, lines: 2)
-                }
-            }
-        } else {
-            FadingText(text: text, font: font, lineHeight: UIFont.systemFont(ofSize: size, weight: .semibold).lineHeight)
-        }
     }
 }

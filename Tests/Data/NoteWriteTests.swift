@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import SuperPooperApp
 
-/// Writing through `VaultTaskRepository` into a rendered copy of the test vault: only the changed keys
+/// Writing through `TaskNotesStore` into a rendered copy of the test vault: only the changed keys
 /// and `date_modified` may differ, byte for byte (`<data_model>` "Запись в файлы").
 /// The vault is rendered for Wednesday 2026-10-21; "now" is 13:25 Belgrade time.
 @Suite("Note writing")
@@ -75,29 +75,32 @@ struct NoteWriteTests {
     @Test func aWriteThatDidNotLandIsNotTakenForDone() async throws {
         let sandbox = try VaultSandbox.make()
         let repository = sandbox.repository(fileSystem: LosingFileSystem())
-        let task = try #require(try await repository.scan().tasks.first { $0.name == "Оплатить интернет" })
-        await #expect(throws: TaskRepositoryError.notConfirmed("Оплатить интернет")) {
+        let task = try #require(try await repository.load().tasks.first { $0.name == "Оплатить интернет" })
+        await #expect(throws: TaskStoreError.notConfirmed("Оплатить интернет")) {
             try await repository.apply([.highPriority(true)], to: task)
         }
-        await #expect(throws: TaskRepositoryError.notConfirmed("Оплатить интернет 2")) {
+        await #expect(throws: TaskStoreError.notConfirmed("Оплатить интернет 2")) {
             try await repository.rename(task, to: "Оплатить интернет 2", dependents: [])
         }
-        await #expect(throws: TaskRepositoryError.notConfirmed("Новое дело")) {
-            try await repository.create(named: "Новое дело", status: .thisWeek)
+        await #expect(throws: TaskStoreError.notConfirmed("Новое дело")) {
+            try await repository.create(NoteDraft(status: .thisWeek), named: "Новое дело")
         }
     }
 
     @Test func editingTheBodyKeepsTheFrontmatter() async throws {
         let note = try await SandboxNote("Длинная заметка с незнакомыми ключами")
         let frontmatter = try #require(splitNote(try note.text())).frontmatter
-        _ = try await note.repository.setBody("Новый текст 📝\n", of: note.task)
+        _ = try await note.repository.setText("Новый текст 📝\n", of: note.task)
         expectSameBytes(try note.text(), try frontmatter
             .replacingOnce("date_modified: 2026-10-19T09:12:44.123+02:00", with: "date_modified: \(note.sandbox.nowStamp)")
             + "Новый текст 📝\n")
-        #expect(try await note.repository.body(of: note.task) == "Новый текст 📝\n")
+        #expect(try await note.repository.text(of: note.task) == "Новый текст 📝\n")
     }
 
     // MARK: - Habit marks
+
+    private static let legacyTimeOfDay = "time_of_day: morning\n"
+    private static let migratedTimeOfDay = "fromSuperPooperApp: '{\"time_of_day\":\"morning\"}'\n"
 
     @Test func habitMarksWriteExactlyTheListsOfTheSpec() async throws {
         let note = try await SandboxNote("Медитация 🧘")
@@ -121,9 +124,10 @@ struct NoteWriteTests {
 
     @Test func anEmptyCompleteListIsFilledInPlaceAndEmptiedBackToBrackets() async throws {
         let note = try await SandboxNote("Утро — зарядка 🤸")
-        let original = try note.text()
+        // The note keeps `time_of_day` as a key of its own (an older format): the first write moves it into the JSON.
+        let original = try note.text().replacingOnce(Self.legacyTimeOfDay, with: "")
         let modified = "date_modified: 2026-10-20T09:12:44.123+02:00\n"
-        let written = "date_modified: \(note.sandbox.nowStamp)\n"
+        let written = "date_modified: \(note.sandbox.nowStamp)\n" + Self.migratedTimeOfDay
 
         try await note.mark(.done)
         expectSameBytes(try note.text(), try original
@@ -135,9 +139,9 @@ struct NoteWriteTests {
 
     @Test func extraListsAreAddedWhenNeededAndRemovedWhenEmpty() async throws {
         let note = try await SandboxNote("Выпить воды 💧")
-        let original = try note.text()
+        let original = try note.text().replacingOnce(Self.legacyTimeOfDay, with: "")
         let modified = "date_modified: 2026-10-20T09:12:44.123+02:00\n"
-        let written = "date_modified: \(note.sandbox.nowStamp)\n"
+        let written = "date_modified: \(note.sandbox.nowStamp)\n" + Self.migratedTimeOfDay
         let marked = try original.replacingOnce("  - 2026-10-20\n", with: "  - 2026-10-20\n  - 2026-10-21\n")
 
         try await note.mark(.partial)
@@ -177,17 +181,28 @@ struct NoteWriteTests {
             .replacingOnce("date_modified: 2026-10-21T09:12:44.123+02:00\n", with: "date_modified: \(note.sandbox.nowStamp)\n"))
     }
 
+    @Test func archivingADoneTaskRemovesItsCompletedDateLine() async throws {
+        let note = try await SandboxNote("Купить молоко")
+        let original = try note.text()
+        try await note.apply(TaskMarking(today: LocalDate(note.sandbox.today)).changes(setting: .archived, on: note.task))
+        expectSameBytes(try note.text(), try original
+            .replacingOnce("status: done\n", with: "status: archived\n")
+            .replacingOnce("completed_date: 2026-10-21\n", with: "")
+            .replacingOnce("date_modified: 2026-10-21T09:12:44.123+02:00\n", with: "date_modified: \(note.sandbox.nowStamp)\n"))
+        #expect(note.task.status == .archived && note.task.completedDate == nil)
+    }
+
     @Test func aBrokenOrMissingFileIsAnErrorAndNothingIsWritten() async throws {
         let sandbox = try VaultSandbox.make()
         let repository = sandbox.repository()
-        let broken = TaskNote(name: "Битый YAML", relativePath: "TaskNotes/Tasks/Битый YAML.md", status: .thisWeek)
+        let broken = TaskItem(id: TaskID("TaskNotes/Tasks/Битый YAML.md"), name: "Битый YAML", status: .thisWeek)
         let original = try sandbox.text(of: "Битый YAML")
-        await #expect(throws: TaskRepositoryError.brokenFrontmatter("Битый YAML")) {
+        await #expect(throws: TaskStoreError.brokenFrontmatter("Битый YAML")) {
             try await repository.apply([.highPriority(true)], to: broken)
         }
         #expect(try sandbox.text(of: "Битый YAML") == original)
-        let missing = TaskNote(name: "Нет такой", relativePath: "TaskNotes/Tasks/Нет такой.md", status: .thisWeek)
-        await #expect(throws: TaskRepositoryError.fileMissing("Нет такой")) {
+        let missing = TaskItem(id: TaskID("TaskNotes/Tasks/Нет такой.md"), name: "Нет такой", status: .thisWeek)
+        await #expect(throws: TaskStoreError.fileMissing("Нет такой")) {
             try await repository.apply([.highPriority(true)], to: missing)
         }
         #expect(!sandbox.exists("Нет такой"))
@@ -209,6 +224,8 @@ private struct LosingFileSystem: NoteFileSystem {
     private let real = CoordinatedFileSystem()
 
     func listFiles(in folder: URL) throws -> [URL] { try real.listFiles(in: folder) }
+    func contents(of folder: URL) throws -> [URL] { try real.contents(of: folder) }
+    func createFolder(_ url: URL) throws { try real.createFolder(url) }
     func read(_ url: URL) throws -> NoteFile { try real.read(url) }
     func modificationDate(of url: URL) -> Date? { real.modificationDate(of: url) }
     func write(_ text: String, to url: URL) throws {}

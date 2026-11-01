@@ -10,8 +10,7 @@ enum ClockLine {
     static func time(_ date: Date, timeZone: TimeZone) -> String {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = timeZone
-        let parts = calendar.dateComponents([.hour, .minute], from: date)
-        return String(format: "%02d:%02d", parts.hour ?? 0, parts.minute ?? 0)
+        return LocalTime(date, in: calendar).string
     }
 
     static func decode(_ prefix: String) -> String {

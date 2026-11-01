@@ -31,7 +31,7 @@ struct SubtaskNestingTests {
 
 /// Subtasks dragged on the parent's page: the new places are written to the subtasks and the pool follows them.
 struct SubtaskOrderTests {
-    private func subtask(_ name: String, _ order: Int? = nil) -> TaskNote {
+    private func subtask(_ name: String, _ order: Int? = nil) -> TaskItem {
         makeTask(name) { $0.projects = ["Move flat"]; $0.subtaskOrder = order }
     }
 

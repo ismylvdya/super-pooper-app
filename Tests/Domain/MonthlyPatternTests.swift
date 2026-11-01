@@ -15,25 +15,25 @@ struct MonthlyPatternTests {
 
     @Test func onTheWritesDaysAndWeekdaysOfTheMonth() {
         let secondMonday = monthly { $0.setMonthlyMode(.onThe); $0.monthlyPattern = MonthlyPattern(ordinal: .second, kind: .weekday(.monday)) }
-        #expect(secondMonday.raw.hasSuffix("FREQ=MONTHLY;BYDAY=2MO"))
+        #expect(RecurrenceCodec.format(secondMonday.rule).hasSuffix("FREQ=MONTHLY;BYDAY=2MO"))
         let lastFriday = monthly { $0.setMonthlyMode(.onThe); $0.monthlyPattern = MonthlyPattern(ordinal: .last, kind: .weekday(.friday)) }
-        #expect(lastFriday.raw.hasSuffix("BYDAY=-1FR"))
+        #expect(RecurrenceCodec.format(lastFriday.rule).hasSuffix("BYDAY=-1FR"))
         let lastDay = monthly { $0.setMonthlyMode(.onThe); $0.monthlyPattern = MonthlyPattern(ordinal: .last, kind: .day) }
-        #expect(lastDay.raw.hasSuffix("BYMONTHDAY=-1"))
+        #expect(RecurrenceCodec.format(lastDay.rule).hasSuffix("BYMONTHDAY=-1"))
         let firstDay = monthly { $0.setMonthlyMode(.onThe) }
-        #expect(firstDay.raw.hasSuffix("BYMONTHDAY=1"))
+        #expect(RecurrenceCodec.format(firstDay.rule).hasSuffix("BYMONTHDAY=1"))
     }
 
     /// "Each" starts at the start's day number, not at "the second Wednesday" of the start date.
     @Test func eachUsesTheDayNumber() {
         let each = monthly { _ in }
         #expect(each.monthlyMode == .each)
-        #expect(each.raw.hasSuffix("BYMONTHDAY=14"))
+        #expect(RecurrenceCodec.format(each.rule).hasSuffix("BYMONTHDAY=14"))
     }
 
     @Test func rulesReadBackIntoTheirMode() throws {
         func draft(_ raw: String) throws -> RecurrenceDraft {
-            guard case .success(let rule) = RecurrenceRule.parse(raw) else { throw RecurrenceParseError.empty }
+            guard case .success(let rule) = RecurrenceCodec.parse(raw) else { throw RecurrenceParseError.empty }
             return RecurrenceDraft(rule: rule, fallbackStart: start)
         }
         #expect(try draft("FREQ=MONTHLY;BYMONTHDAY=15").monthlyMode == .each)

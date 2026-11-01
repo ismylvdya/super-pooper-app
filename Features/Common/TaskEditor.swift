@@ -4,17 +4,22 @@ import SwiftUI
 /// or a draft that becomes a note only when the page is left with a name.
 @MainActor
 struct TaskEditor {
-    let task: TaskNote
+    let task: TaskItem
     /// The draft itself (its text and subtasks), nil for an existing note.
     let draft: Binding<NoteDraft>?
     /// Changes decided from the note as it is when they are applied (a toggle tapped twice quickly flips twice).
-    let edit: (@escaping (TaskNote) -> [TaskFieldChange]) -> Void
+    let edit: (@escaping (TaskItem) -> [TaskEdit]) -> Void
 
     var isDraft: Bool { draft != nil }
 
-    func apply(_ changes: [TaskFieldChange]) { edit { _ in changes } }
+    func apply(_ changes: [TaskEdit]) { edit { _ in changes } }
 
-    static func note(_ task: TaskNote, model: AppModel) -> TaskEditor {
+    /// A status picked for the note, by the one rule of status changes (`TaskMarking`).
+    func setStatus(_ status: TaskStatus, today: LocalDate) {
+        edit { note in TaskMarking(today: today).changes(setting: status, on: note) }
+    }
+
+    static func note(_ task: TaskItem, model: AppModel) -> TaskEditor {
         TaskEditor(task: task, draft: nil) { changes in
             Task { await model.edit(task.name, changes) }
         }
@@ -24,25 +29,5 @@ struct TaskEditor {
         TaskEditor(task: draft.wrappedValue.note, draft: draft) { changes in
             draft.wrappedValue.apply(changes(draft.wrappedValue.note))
         }
-    }
-}
-
-/// A note that does not exist yet: its fields, the changes that will be written when it is created,
-/// its text and the subtasks created with it.
-struct NoteDraft: Equatable {
-    var note: TaskNote
-    private(set) var changes: [TaskFieldChange] = []
-    var body = ""
-    /// Names of the subtasks; empty entries are the "add a subtask" field and are skipped.
-    var subtasks: [String] = []
-
-    init(status: TaskStatus, changes: [TaskFieldChange] = []) {
-        note = TaskNote(name: "", relativePath: "", status: status)
-        apply(changes)
-    }
-
-    mutating func apply(_ new: [TaskFieldChange]) {
-        note = note.applying(new)
-        changes += new
     }
 }

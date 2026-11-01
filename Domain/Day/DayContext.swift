@@ -34,7 +34,7 @@ struct DayContext: Sendable {
     var dayEnd: Date { today.adding(days: 1).startDate(in: calendar, offset: boundary) }
 
     /// Sunday of the current ISO week (inclusive end of "this week").
-    var weekEnd: LocalDate { today.adding(days: Weekday.sunday.rawValue - today.weekday.rawValue) }
+    var weekEnd: LocalDate { today.weekEnd }
 
     var isBeforeEnergyHour: Bool { now < date(today, energyHour) }
 
@@ -52,8 +52,7 @@ struct DayContext: Sendable {
 
     /// The logical day a dated task belongs to (`due` 01:00 on the 24th → the 23rd with a 04:00 boundary).
     func logicalDay(of due: TaskDue) -> LocalDate {
-        guard let time = due.time, time < boundary else { return due.day }
-        return due.day.adding(days: -1)
+        days.day(of: due)
     }
 
     /// A date and time on logical `day`: a time before the boundary falls on the next date.

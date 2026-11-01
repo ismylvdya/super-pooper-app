@@ -10,7 +10,6 @@ struct YAMLBalanceScanner {
     }
 
     private static let flowClosers: [Unicode.Scalar: Unicode.Scalar] = ["[": "]", "{": "}"]
-    private static let flowIndicators: Set<Unicode.Scalar> = [",", "[", "]", "{", "}"]
 
     private let scalars: [Unicode.Scalar]
     private var index = 0
@@ -88,7 +87,7 @@ struct YAMLBalanceScanner {
             expectsScalar = true
         case ":":
             let next: Unicode.Scalar? = index < scalars.count ? scalars[index] : nil
-            let isIndicator = next.map { Self.isSpace($0) || Self.flowIndicators.contains($0) } ?? true
+            let isIndicator = next.map { Self.isSpace($0) || YAMLIndicators.flow.contains($0) } ?? true
             expectsScalar = isIndicator || previous == "\"" || previous == "'"
         default:
             expectsScalar = false

@@ -4,13 +4,12 @@ import Foundation
 /// so both always show the same day.
 enum DayPlanning {
     /// `eventsKnown`: the calendars are readable and chosen, so a linked event that is missing is a problem.
-    static func plan(config: AppConfig, settings: AppSettings, tasks: [TaskNote], events: [CalendarEvent],
-                     reminders: [ReminderItem], dayState: DayState, context: DayContext, eventsKnown: Bool = true) -> DayPlan {
+    static func plan(config: AppConfig, settings: AppSettings, tasks: [TaskItem], events: [CalendarEvent],
+                     reminders: [ReminderItem], dayState: DayState, context: DayContext, eventsKnown: Bool) -> DayPlan {
         let state = dayState.day == context.today ? dayState : DayState(day: context.today)
         let inputs = DayInputs(tasks: usable(tasks, config: config, context: context), events: events, reminders: reminders,
                                skipped: Set(state.skipped), manualOrder: state.manualOrder,
-                               routines: HabitRoutines(morning: settings.habits.morningRoutine, day: settings.habits.dayRoutine,
-                                                      evening: settings.habits.eveningRoutine),
+                               routines: settings.habits.routines,
                                postponed: Set(state.postponed), timelineFilter: settings.timeline.shown, eventsKnown: eventsKnown)
         return DayBuilder(rules: config.rules.day, sortCriteria: sortCriteria(config: config, settings: settings))
             .build(inputs, context: context)
@@ -18,15 +17,16 @@ enum DayPlanning {
 
     /// Today, or another day `offset` days away (swiping on Today): that day's events, reminders and this week's
     /// tasks dated that day. "Past" and blocking are measured from the real now; links reach every task.
-    static func plan(config: AppConfig, settings: AppSettings, tasks: [TaskNote], events: [CalendarEvent],
+    static func plan(config: AppConfig, settings: AppSettings, tasks: [TaskItem], events: [CalendarEvent],
                      reminders: [ReminderItem], dayState: DayState, context: DayContext, dayOffset: Int,
-                     eventsKnown: Bool = true) -> DayPlan {
+                     eventsKnown: Bool) -> DayPlan {
         guard dayOffset != 0 else {
             return plan(config: config, settings: settings, tasks: tasks, events: events, reminders: reminders,
                         dayState: dayState, context: context, eventsKnown: eventsKnown)
         }
         let day = context.today.adding(days: dayOffset)
-        let dayContext = context.focused(on: OtherDay.moment(of: day, context: context, anchor: config.rules.timeline.otherDayAnchor))
+        // "Now" inside another day: the hour its timeline centres on (no cursor is drawn there).
+        let dayContext = context.focused(on: context.moment(config.rules.timeline.otherDayAnchor, onLogicalDay: day))
         let inputs = DayInputs(tasks: usable(tasks, config: config, context: context), events: events, reminders: reminders,
                                skipped: [], manualOrder: nil, timelineFilter: settings.timeline.shown, isOtherDay: true,
                                eventsKnown: eventsKnown)
@@ -37,7 +37,7 @@ enum DayPlanning {
     }
 
     /// Times kept in a zone of their own moved to the phone's; event links dropped when the feature is off.
-    private static func usable(_ tasks: [TaskNote], config: AppConfig, context: DayContext) -> [TaskNote] {
+    private static func usable(_ tasks: [TaskItem], config: AppConfig, context: DayContext) -> [TaskItem] {
         let local = ZonedTimes.local(tasks, calendar: context.calendar, today: context.today)
         return config.flags.eventLinks ? local : local.map(\.withoutEventLinks)
     }
@@ -49,8 +49,8 @@ enum DayPlanning {
     }
 }
 
-private extension TaskNote {
-    var withoutEventLinks: TaskNote {
+private extension TaskItem {
+    var withoutEventLinks: TaskItem {
         var copy = self
         copy.previousEvent = nil
         copy.nextEvent = nil

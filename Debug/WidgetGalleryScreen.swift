@@ -13,14 +13,13 @@ struct WidgetGalleryScreen: View {
                 if let source {
                     let now = AppContainer.sharedClockNow
                     widget(width: 338, height: 354) {
-                        TodayWidgetView(plan: source.plan(at: now), settings: source.settings, layout: source.config.todayLayout(for: source.settings.today.arrangement),
-                                        context: source.context(at: now), maxTimelineHours: source.config.rules.widgets.timelineHours)
+                        TodayWidgetView(source: source, at: now)
                     }
                     if let habit = source.habits.first {
                         let context = source.context(at: now)
                         let today = context.today
                         widget(width: 158, height: 158) {
-                            HabitWidgetView(habit: habit, grid: HabitGrid(task: habit, weekCount: source.config.rules.widgets.habitGridWeeksSmall,
+                            HabitWidgetView(habit: habit, grid: HabitGrid(task: habit, weekCount: HabitWidgetOptions().weeks,
                                                                           today: today, days: context.days), today: today)
                         }
                     }
@@ -32,10 +31,13 @@ struct WidgetGalleryScreen: View {
         }
         .background(tokens.color(.chipBackground))
         .navigationTitle("Widgets")
+        // Inline like every page of the app: a large title would lie over the first widget.
+        .navigationBarTitleDisplayMode(.inline)
     }
 
     private func widget<Content: View>(width: CGFloat, height: CGFloat, @ViewBuilder content: () -> Content) -> some View {
         content()
+            .systemWidgetMargins()
             .frame(width: width, height: height)
             .background(tokens.color(width > 300 && height > 300 ? .screenBackground : .plateBackground))
             .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))

@@ -1,28 +1,28 @@
 import Foundation
 
-/// Every user action in one registry (`actions.json`): menus, swipes, notifications
-/// and widgets take titles, icons, confirmation and haptics from here.
-enum ActionID: String, Codable, CaseIterable, Sendable {
-    case done
-    case partial
-    case twice
-    case skipToday
-    case notToday
-    case unmark
-    case open
-    case archive
-    case delete
-    case openInObsidian
-    case restoreThisWeek
-    case restoreHalfYear
-    case restoreHabit
-    case deleteEvent
-}
-
-enum HapticStyle: String, Codable, Sendable {
+enum HapticStyle: String, Codable, ConfigName {
     case none
     case light
     case medium
+}
+
+/// What a tap on screen feels like by what it does, outside the actions (which carry their own `haptic`); the style of
+/// each is in `actions.json` → `haptics`.
+enum HapticRole: String, ConfigName {
+    /// A choice is picked or switched (a setting, a chip, a weekday, a link highlight).
+    case select
+    /// A habit day or a reminder is marked.
+    case mark
+    /// A dragged task lands on the timeline or in the pool.
+    case drop
+    /// Rows of a list change places (a subtask moved under another one too).
+    case reorder
+    /// A task goes to another list or day (+ to This week, back to today).
+    case move
+    /// A pull past its threshold, before letting go.
+    case pullArmed
+    /// A pull let go loads more.
+    case extend
 }
 
 enum ActionMenu: String, Codable, CaseIterable, Sendable {
@@ -40,11 +40,33 @@ enum ActionMenu: String, Codable, CaseIterable, Sendable {
     case habitDay
     case reminderContext
     case eventContext
+
+    /// The long-press menu of a task or a habit.
+    static func context(of task: TaskItem) -> ActionMenu { task.isHabit ? .habitContext : .taskContext }
+
+    /// The "…" menu on the page of a task or a habit.
+    static func page(of task: TaskItem) -> ActionMenu { task.isHabit ? .habitPage : .taskPage }
 }
 
-extension ActionMenu {
-    /// Menus about a habit's day: their mark actions use the habit mark images.
-    var isHabitMenu: Bool { self == .habitContext || self == .habitNotification || self == .habitDay }
+/// One menu of `actions.json`: its actions in order, and whether it is about a habit's day.
+struct MenuDefinition: Decodable, Hashable, Sendable {
+    let actions: [ActionID]
+    /// Its mark actions show the habit mark images (the habit's menus and notification buttons).
+    let habitMarks: Bool
+
+    init(actions: [ActionID], habitMarks: Bool = false) {
+        self.actions = actions
+        self.habitMarks = habitMarks
+    }
+
+    private enum CodingKeys: String, CodingKey { case actions, habitMarks }
+
+    init(from decoder: Decoder) throws {
+        try decoder.rejectUnknownKeys(CodingKeys.self)
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        actions = try container.decode([ActionID].self, forKey: .actions)
+        habitMarks = try container.decodeIfPresent(Bool.self, forKey: .habitMarks) ?? false
+    }
 }
 
 struct ActionDefinition: Codable, Hashable, Sendable {
@@ -64,27 +86,30 @@ struct ActionDefinition: Codable, Hashable, Sendable {
     var needsConfirmation: Bool { confirmTitle != nil }
 }
 
-struct ActionRegistry: Codable, Hashable, Sendable {
+/// Every user action in one registry (`actions.json`): menus, swipes, notifications and widgets take titles, icons,
+/// confirmation and haptics from here. The actions themselves are `ActionID`.
+struct ActionRegistry: Decodable, Hashable, Sendable {
     let actions: [ActionDefinition]
-    let menus: [String: [ActionID]]
+    /// Every menu is there, and no other (checked as the file is read).
+    let menus: TokenTable<ActionMenu, MenuDefinition>
+    let haptics: TokenTable<HapticRole, HapticStyle>
 
+    /// The definition of an action; `validate` made sure every action has one.
     func definition(_ id: ActionID) -> ActionDefinition {
-        actions.first { $0.id == id } ?? ActionDefinition(id: id, title: id.rawValue, icon: "questionmark",
-                                                          destructive: false, haptic: .none,
-                                                          confirmTitle: nil, confirmMessage: nil)
+        guard let definition = actions.first(where: { $0.id == id }) else {
+            preconditionFailure("actions.json was validated: no definition for \(id.rawValue)")
+        }
+        return definition
     }
 
     func actions(in menu: ActionMenu) -> [ActionDefinition] {
-        (menus[menu.rawValue] ?? []).map(definition)
+        menus[menu].actions.map(definition)
     }
 
-    /// Every action needs a definition and every menu must be present.
+    /// Every action needs a definition.
     func validate(file: String) throws {
         for id in ActionID.allCases where !actions.contains(where: { $0.id == id }) {
             throw ConfigError(file: file, path: "actions", message: "no definition for action \"\(id.rawValue)\"")
-        }
-        for menu in ActionMenu.allCases where menus[menu.rawValue] == nil {
-            throw ConfigError(file: file, path: "menus", message: "missing menu \"\(menu.rawValue)\"")
         }
         for action in actions {
             if let color = action.color, ColorToken(rawValue: color) == nil {

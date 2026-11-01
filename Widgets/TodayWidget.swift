@@ -10,7 +10,6 @@ struct TodayWidget: Widget {
         .configurationDisplayName("widget.today.name")
         .description("widget.today.description")
         .supportedFamilies([.systemLarge])
-        .contentMarginsDisabled()
     }
 }
 
@@ -47,27 +46,18 @@ struct TodayProvider: TimelineProvider {
 }
 
 struct TodayWidgetEntryView: View {
-    @Environment(\.tokens) private var tokens
     let entry: TodayEntry
-
-    /// The tokens with the user's settings (colors, sizes), for the widget and its background.
-    private var widgetTokens: DesignTokens {
-        (entry.source.map { $0.config.tokens.applying($0.settings, limits: $0.config.rules.limits) } ?? tokens).forWidget()
-    }
 
     var body: some View {
         Group {
             if let source = entry.source, source.snapshot != nil {
-                TodayWidgetView(plan: source.plan(at: entry.date), settings: source.settings, layout: source.config.todayLayout(for: source.settings.today.arrangement),
-                                context: source.context(at: entry.date), maxTimelineHours: source.config.rules.widgets.timelineHours)
+                TodayWidgetView(source: source, at: entry.date)
             } else {
-                Text("widget.empty").font(tokens.font(.widgetCaption)).foregroundStyle(tokens.color(.secondaryText)).padding()
+                WidgetEmptyText(text: "widget.empty")
             }
         }
-        .containerBackground(for: .widget) { WidgetBackground(tokens: widgetTokens, light: .screenBackground) }
+        .widgetChrome(entry.source, light: .screenBackground)
         .widgetURL(DeepLink.today)
-        .environment(\.tokens, widgetTokens)
         .environment(\.timelineBell, (entry.source?.settings ?? BundledConfig.settings).timeline.bellStyle)
-        .environment(\.calendar, entry.source?.calendar ?? AppCalendar.make())
     }
 }

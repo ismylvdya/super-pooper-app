@@ -4,8 +4,8 @@ import Foundation
 /// and plain scalars unless quoting is needed.
 enum YAMLSerializer {
     private static let indent = "  "
-    private static let indicators: Set<Unicode.Scalar> = [",", "[", "]", "{", "}", "#", "&", "*", "!", "|", ">", "'", "\"", "%", "@", "`"]
-    private static let indicatorsBeforeSpace: Set<Unicode.Scalar> = ["-", "?", ":"]
+    private static let indicators = YAMLIndicators.flow.union(YAMLIndicators.nodeStarts).union(YAMLIndicators.quotes)
+    private static let indicatorsBeforeSpace = YAMLIndicators.beforeSpace
     private static let namedEscapes: [Unicode.Scalar: String] = ["\"": "\\\"", "\\": "\\\\", "\n": "\\n", "\t": "\\t", "\r": "\\r", "\0": "\\0"]
 
     /// Lines without line endings.

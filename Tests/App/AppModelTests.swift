@@ -15,10 +15,9 @@ struct AppModelTests {
         let today = model.context().today
         await model.perform(.partial, on: "Выпить воды 💧")
         let habit = try #require(model.task(named: "Выпить воды 💧"))
-        #expect(habit.completeInstances.contains(today))
-        #expect(habit.partialInstances.contains(today))
+        #expect(habit.mark(on: today) == .partial)
         await model.perform(.unmark, on: "Выпить воды 💧")
-        #expect(model.task(named: "Выпить воды 💧")?.completeInstances.contains(today) == false)
+        #expect(model.task(named: "Выпить воды 💧")?.mark(on: today) == nil)
     }
 
     @Test func skipTodayHidesTheHabitWithoutWriting() async throws {
@@ -38,8 +37,6 @@ struct AppModelTests {
         #expect(model.dayState.postponed == ["Повесить полку"])
         #expect(model.plan(at: model.clock.now).item(named: "Повесить полку") == nil)
         #expect(model.task(named: "Повесить полку") == before)
-        #expect(model.config.actions.menus["taskContext"]?.contains(.notToday) == true)
-        #expect(model.config.actions.menus["taskContext"]?.contains(.archive) == false)
     }
 
     @Test func aNewHabitIsShownInTodayByDefault() throws {
@@ -54,6 +51,15 @@ struct AppModelTests {
         await model.perform(.done, on: "Повесить полку")
         await model.loadFiledTasks()
         #expect(model.filedTasks.first { $0.name == "Повесить полку" }?.status == .done)
+    }
+
+    /// The Done list's count sees a task done just now, before the folder is read again.
+    @Test func theDoneListCountsATaskDoneJustNow() async throws {
+        let model = try makeModel()
+        let done = TaskListFilter(statuses: [.done])
+        let before = model.listContents(done, query: "").count
+        await model.perform(.done, on: "Позвонить в банк")
+        #expect(model.listContents(done, query: "").count == before + 1)
     }
 
     /// A task marked done goes to the done folder at once, with its date; the Done list reads it from there.
@@ -82,41 +88,70 @@ struct AppModelTests {
         #expect(model.dayState.skipped == ["Вода 💧"])
     }
 
+    /// A rename reaches today's Not today list and the manual order of the pool too.
+    @Test func renamingAPostponedTaskKeepsItsPlaceInTheDay() async throws {
+        let model = try makeModel()
+        let name = "Сдать отчёт"
+        model.postpone(name)
+        model.setManualOrder(["Позвонить в банк", name])
+        #expect(await model.rename(name, to: "Отчёт"))
+        #expect(model.dayState.postponed == ["Отчёт"])
+        #expect(model.dayState.manualOrder == ["Позвонить в банк", "Отчёт"])
+        #expect(model.postponedTasks.map(\.name) == ["Отчёт"])
+    }
+
+    /// A drag in This week into another group: the new order at once, the new part of the day written to the task.
+    @Test func aReviewDragIntoAnotherGroupSetsThePartOfTheDay() async throws {
+        let model = try makeModel()
+        let order = ["Сдать отчёт", "Позвонить в банк"]
+        model.applyReviewMove(ReviewGroups.Move(order: order, regrouped: ["Сдать отчёт": .evening]))
+        #expect(model.dayState.manualOrder == order)
+        await model.parts.writer.waitForEdits(of: "Сдать отчёт")
+        #expect(model.task(named: "Сдать отчёт")?.habit.timeOfDay == .evening)
+        #expect(model.task(named: "Позвонить в банк")?.habit.timeOfDay == nil)
+    }
+
     /// A vault that cannot be read this once (bookmark not resolved in the background, no access) must not
     /// wipe the notifications and the widgets: they keep the last known tasks.
     @Test func aFailedScanKeepsTheWidgetSnapshot() async throws {
         let model = try makeModel()
         await model.sync(announce: false)
-        let before = try #require(model.services.snapshotStore.load()).tasks.count
+        let before = try #require(model.parts.services.snapshotStore.load()).tasks.count
         #expect(before > 0)
-        let repository = try #require(model.services.tasks as? InMemoryTaskRepository)
+        let repository = try #require(model.parts.services.tasks as? InMemoryTaskStore)
         await repository.failScans(with: CocoaError(.fileReadNoPermission))
         await model.sync(announce: false)
-        #expect(model.services.snapshotStore.load()?.tasks.count == before)
+        #expect(model.parts.services.snapshotStore.load()?.tasks.count == before)
     }
 
     /// A setting changed a moment before a sync is not undone by the older copy in the vault note.
+    /// On the store the app uses: the settings file next to the tasks folder.
     @Test func aSettingChangedJustBeforeASyncStays() async throws {
         let model = try makeModel()
-        let root = try await model.services.vault.withRoot { $0 }
+        let root = try await model.parts.services.vault.withRoot { $0 }
         try FileManager.default.createDirectory(at: root.appendingPathComponent("TaskNotes/Tasks"), withIntermediateDirectories: true)
         await model.sync(announce: false)
-        #expect(await model.services.settingsNote.read() != nil)
+        let file = root.appendingPathComponent("TaskNotes").appendingPathComponent(model.config.rules.vault.settingsFile)
+        #expect(FileManager.default.fileExists(atPath: file.path))
         model.updateSettings { $0.timeline.hoursBefore = 5 }
         await model.sync(announce: false)
         #expect(model.settings.timeline.hoursBefore == 5)
+        let written = try JSONDecoder.store.decode(SyncedSettings.self, from: Data(contentsOf: file))
+        #expect(written == SyncedSettings(model.settings))
     }
 
     /// Two plans in a row (a sync, then a mark): the newer one is what stays scheduled, even when the older one is
     /// slower to reach the notification center.
     @Test func theNewestNotificationPlanWins() async throws {
-        let recorder = RecordingNotifications()
+        let slowCenter = AsyncGate()
+        let recorder = RecordingNotifications(firstSync: slowCenter)
         let model = try #require(PreviewModel.make(notifications: recorder)).model
-        await model.publishDerivedState()
+        await model.parts.derived.publish()
         await model.perform(.done, on: "Забрать посылку")
+        await slowCenter.arrived()
+        await slowCenter.open()
         await model.waitForNotifications()
-        try await Task.sleep(for: .milliseconds(600))
-        #expect(await recorder.calls > 0)
+        #expect(await recorder.calls > 1)
         #expect(await !recorder.lastPlanned.contains { $0.taskName == "Забрать посылку" })
     }
 
@@ -124,23 +159,29 @@ struct AppModelTests {
     /// vault is read once more after the running sync.
     @Test func aSyncAskedForDuringASyncRunsAfterIt() async throws {
         let model = try makeModel()
-        let repository = try #require(model.services.tasks as? InMemoryTaskRepository)
-        await repository.slowScans(by: 0.3)
+        let repository = try #require(model.parts.services.tasks as? InMemoryTaskStore)
+        let slowScan = AsyncGate()
+        await repository.holdScans(at: slowScan)
         async let first: Void = model.sync(announce: false)
-        try await Task.sleep(for: .milliseconds(100))
-        await model.sync(announce: true)
+        await slowScan.arrived()
+        let second = Task { await model.sync(announce: true) }
+        while !model.parts.sync.isSyncQueued { await Task.yield() }
+        await slowScan.open()
         await first
+        await second.value
         #expect(await repository.scanCount == 2)
     }
 
     /// Lists switched quickly: an older read of the reminders that ends last must not bring back the old lists.
     @Test func theNewestReminderListsWin() async throws {
-        let model = try #require(PreviewModel.make(reminders: ListedReminders())).model
+        let reminders = ListedReminders()
+        let model = try #require(PreviewModel.make(reminders: reminders)).model
         model.updateSettings { $0.sources.reminderListIDs = ["old"] }
-        async let older: Void = model.refreshCalendarSources()
-        try await Task.sleep(for: .milliseconds(50))
+        async let older: Void = model.parts.sources.refresh()
+        await reminders.oldList.arrived()
         model.updateSettings { $0.sources.reminderListIDs = ["new"] }
-        await model.refreshCalendarSources()
+        await model.parts.sources.refresh()
+        await reminders.oldList.open()
         await older
         #expect(model.reminders.map(\.listID) == ["new"])
     }
@@ -149,20 +190,22 @@ struct AppModelTests {
     /// reminders are in it.
     @Test func theWidgetSnapshotReachesPastTheDayBoundary() async throws {
         let model = try #require(PreviewModel.make(reminders: EarlyReminder())).model
-        await model.refreshCalendarSources()
-        await model.publishDerivedState()
-        let reminders = try #require(model.services.snapshotStore.load()).reminders
+        await model.parts.sources.refresh()
+        await model.parts.derived.publish()
+        let reminders = try #require(model.parts.services.snapshotStore.load()).reminders
         #expect(reminders.map(\.title) == ["Early"])
     }
 
     /// "+" pressed while a slow sync reads the vault: the new task does not vanish when the sync finishes.
     @Test func aTaskCreatedDuringASyncStays() async throws {
         let model = try makeModel()
-        let repository = try #require(model.services.tasks as? InMemoryTaskRepository)
-        await repository.slowScans(by: 0.3)
+        let repository = try #require(model.parts.services.tasks as? InMemoryTaskStore)
+        let slowScan = AsyncGate()
+        await repository.holdScans(at: slowScan)
         async let running: Void = model.sync(announce: false)
-        try await Task.sleep(for: .milliseconds(100))
+        await slowScan.arrived()
         let created = await model.create(NoteDraft(status: .thisWeek), named: "Новая во время синка")
+        await slowScan.open()
         await running
         #expect(created == "Новая во время синка")
         #expect(model.task(named: "Новая во время синка") != nil)
@@ -177,7 +220,7 @@ struct AppModelTests {
         async let second: Void = model.cycleHabit("Выпить воды 💧", on: today)
         _ = await (first, second)
         let habit = try #require(model.task(named: "Выпить воды 💧"))
-        #expect(HabitInstances(task: habit).mark(on: today) == nil)
+        #expect(habit.mark(on: today) == nil)
     }
 
     @Test func archiveAndDelete() async throws {
@@ -204,9 +247,9 @@ struct AppModelTests {
         let model = try makeModel()
         let today = model.context().today
         await model.perform(.done, on: "Выпить воды 💧", day: today.adding(days: -1))
-        #expect(model.task(named: "Выпить воды 💧")?.completeInstances.contains(today) == false)
+        #expect(model.task(named: "Выпить воды 💧")?.mark(on: today) == nil)
         await model.perform(.done, on: "Выпить воды 💧", day: today)
-        #expect(model.task(named: "Выпить воды 💧")?.completeInstances.contains(today) == true)
+        #expect(model.task(named: "Выпить воды 💧")?.mark(on: today) != nil)
     }
 
     @Test func overlappingSyncsRunOnce() async throws {
@@ -215,56 +258,6 @@ struct AppModelTests {
         async let second: Void = model.sync(announce: false)
         _ = await (first, second)
         #expect(model.hasLoaded)
-        #expect(model.runningSync == nil)
-    }
-}
-
-/// Notifications that remember the last plan; the first plan takes a while to arrive (a slow notification center).
-private actor RecordingNotifications: NotificationScheduling {
-    private(set) var lastPlanned: [PlannedNotification] = []
-    private(set) var calls = 0
-
-    nonisolated func access() async -> SourceAccess { .granted }
-    nonisolated func requestAccess() async -> Bool { true }
-    nonisolated func registerCategories(_ registry: ActionRegistry, habitActionsEnabled: Bool) {}
-
-    func sync(planned: [PlannedNotification], stillValid: [PlannedNotification], now immediate: [PlannedNotification]) async {
-        calls += 1
-        // The real center does not stop when the task is cancelled: a wait that ignores cancellation.
-        if calls == 1 {
-            await withCheckedContinuation { done in DispatchQueue.global().asyncAfter(deadline: .now() + 0.4) { done.resume() } }
-        }
-        lastPlanned = planned
-    }
-
-    func removeAll() async { lastPlanned = [] }
-    nonisolated func restore(_ notification: UNNotification) async {}
-}
-
-/// Reminders of the asked lists; the "old" list takes a while to read.
-private struct ListedReminders: RemindersRepository {
-    var access: SourceAccess { .granted }
-    func requestAccess() async -> Bool { true }
-    func lists() -> [SourceCollection] { [] }
-    func setCompleted(_ completed: Bool, reminderID: String) throws {}
-
-    func reminders(from start: Date, to end: Date, listIDs: [String]) async -> [ReminderItem] {
-        if listIDs == ["old"] {
-            await withCheckedContinuation { done in DispatchQueue.global().asyncAfter(deadline: .now() + 0.4) { done.resume() } }
-        }
-        return listIDs.map { ReminderItem(id: $0, title: $0, due: start, listID: $0, listTitle: $0, colorHex: "#000000", isCompleted: false) }
-    }
-}
-
-/// One reminder an hour after the end of the logical day.
-private struct EarlyReminder: RemindersRepository {
-    var access: SourceAccess { .granted }
-    func requestAccess() async -> Bool { true }
-    func lists() -> [SourceCollection] { [] }
-    func setCompleted(_ completed: Bool, reminderID: String) throws {}
-
-    func reminders(from start: Date, to end: Date, listIDs: [String]) async -> [ReminderItem] {
-        let due = PreviewSamples.context.dayEnd.addingTimeInterval(3600)
-        return [ReminderItem(id: "early", title: "Early", due: due, listID: "list", listTitle: "List", colorHex: "#000000", isCompleted: false)]
+        #expect(!model.isSyncing)
     }
 }

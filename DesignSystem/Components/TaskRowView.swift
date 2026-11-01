@@ -10,7 +10,6 @@ struct TaskRowView: View {
     @Environment(\.plateTrailingInset) private var plateInset
     @Environment(\.chipOrder) private var chipOrder
     let item: DayItem
-    let today: LocalDate
     var titleFont: Font?
     /// Chips; widgets hide them to stay compact.
     var showsDetails = true
@@ -40,7 +39,7 @@ struct TaskRowView: View {
     }
 
     private var chipViews: some View {
-        ForEach(chips) { chip in Chip(icon: chip.icon, text: chip.text, tint: chip.tint) }
+        ForEach(chips) { chip in Chip(icon: chip.look.icon, tint: tokens.color(of: chip.look)) }
     }
 
     /// Limited titles fade out instead of ending with "…".
@@ -70,7 +69,7 @@ struct TaskRowView: View {
     }
 
     private var chips: [RowChip] {
-        RowChip.chips(for: item, order: chipOrder, tokens: tokens)
+        RowChip.chips(for: item, order: chipOrder)
     }
 
     private var isDone: Bool { showsDoneState && item.isDone }

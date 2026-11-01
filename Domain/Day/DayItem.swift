@@ -1,27 +1,8 @@
 import Foundation
 
-/// The state of a task for today.
-enum DayItemState: Hashable, Sendable {
-    case open
-    /// Regular tasks are always `.done`; recurring ones carry their mark.
-    case marked(HabitMark)
-
-    var isDone: Bool { self != .open }
-    var mark: HabitMark? {
-        if case .marked(let mark) = self { return mark }
-        return nil
-    }
-}
-
-/// What keeps a task from being checked off.
-enum Blocker: Hashable, Sendable {
-    case task(String)
-    case event(title: String, end: Date)
-}
-
 /// A task as it appears in today's pool or timeline.
 struct DayItem: Identifiable, Hashable, Sendable {
-    let task: TaskNote
+    let task: TaskItem
     let state: DayItemState
     let blockers: [Blocker]
     let problems: [TaskProblem]
@@ -37,13 +18,19 @@ struct DayItem: Identifiable, Hashable, Sendable {
     /// Nothing is left to do today (see `HabitMarking.isDayClosed`): it leaves the pool and the timeline.
     var isFinished: Bool {
         guard isHabit else { return isDone }
-        return HabitMarking.isDayClosed(state.mark, twiceADay: task.habit.twiceADay, remindersPerDay: task.habitTimes.count)
+        return HabitMarking.isDayClosed(state.mark, twiceADay: task.isTwiceADay)
     }
 }
 
 extension DayItem {
-    /// A note as an item outside a day plan (a list of the Lists tab): done by its status, no blockers.
-    init(listed task: TaskNote) {
+    /// A note as an item outside a day plan (a list of the Lists tab, a task waiting under Not today): done by its
+    /// status, no blockers.
+    init(listed task: TaskItem) {
         self.init(task: task, state: task.status == .done ? .marked(.done) : .open, blockers: [], problems: task.problems)
+    }
+
+    /// A habit on one of its days outside a day plan (a day of its history): the day's mark, no blockers.
+    init(habit: TaskItem, on day: LocalDate) {
+        self.init(task: habit, state: habit.mark(on: day).map(DayItemState.marked) ?? .open, blockers: [], problems: habit.problems)
     }
 }

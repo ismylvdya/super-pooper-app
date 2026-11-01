@@ -45,7 +45,7 @@ struct TaskNoteReaderTests {
         #expect(task.status == .other(""))
         #expect(!task.isHighPriority && task.due == nil && task.timeEstimate == nil)
         #expect(task.feel == .neutral && !task.isHabit)
-        #expect(task.previousTasks.isEmpty && task.completeInstances.isEmpty && task.problems.isEmpty)
+        #expect(task.previousTasks.isEmpty && task.marks.isEmpty && task.problems.isEmpty)
     }
 
     @Test func statusesAndPrioritiesComeFromTheMapping() throws {
@@ -74,13 +74,13 @@ struct TaskNoteReaderTests {
         """)
         #expect(task.status == .thisWeek && task.feel == .neutral)
         #expect(task.due == nil && task.timeEstimate == nil && task.previousEvent == nil)
-        #expect(task.completeInstances == [LocalDate("2026-10-20")])
+        #expect(task.marks == [LocalDate("2026-10-20"): .done])
         #expect(Set(task.problems) == [
-            .invalidField(key: "due", value: "tomorrow"),
-            .invalidField(key: "time_estimate", value: "lots"),
-            .invalidField(key: "need_energy", value: "maybe"),
-            .invalidField(key: "previous_event", value: "not a link"),
-            .invalidField(key: "complete_instances", value: "2026-13-01"),
+            .invalidValue(field: .due, value: "tomorrow"),
+            .invalidValue(field: .timeEstimate, value: "lots"),
+            .invalidValue(field: .feel, value: "maybe"),
+            .invalidValue(field: .previousEvent, value: "not a link"),
+            .invalidValue(field: .marks, value: "2026-13-01"),
         ])
     }
 
@@ -90,7 +90,19 @@ struct TaskNoteReaderTests {
         #expect(try read("due: 2026-10-23T16:00:00").due == TaskDue("2026-10-23T16:00"))
     }
 
-    private func read(_ frontmatter: String) throws -> TaskNote {
+    /// A `due` written as a moment (a skill, another app) is moved to the phone's clock (Belgrade, UTC+2 on 23 October),
+    /// or to the item's own zone, instead of losing its offset.
+    @Test func aDueWithAnOffsetIsConvertedNotCut() throws {
+        #expect(try read("due: 2026-10-23T16:00Z").due == TaskDue("2026-10-23T18:00"))
+        #expect(try read("due: 2026-10-23T16:00:00.000+03:00").due == TaskDue("2026-10-23T15:00"))
+        #expect(try read("due: 2026-10-23T23:30-05:00").due == TaskDue("2026-10-24T06:30"))
+        let zoned = try read("due: 2026-10-23T16:00Z\nfromSuperPooperApp: '{\"time_zone\":\"Asia/Jakarta\"}'")
+        #expect(zoned.due == TaskDue("2026-10-23T23:00"))
+        #expect(zoned.problems.isEmpty)
+        #expect(try read("due: 2026-10-23T16:00 in the evening").problems == [.invalidValue(field: .due, value: "2026-10-23T16:00 in the evening")])
+    }
+
+    private func read(_ frontmatter: String) throws -> TaskItem {
         let text = "---\ntags:\n  - 🔫делишка\n\(frontmatter)\n---\n"
         return reader.task(from: try FrontmatterDocument(text: text), name: "Задача", relativePath: "TaskNotes/Tasks/Задача.md")
     }
@@ -116,18 +128,30 @@ struct HabitFieldTests {
 
     @Test func aBadReminderTimeBecomesAProblem() throws {
         let task = reader.task(from: try document("reminder_times: [\"9am\"]"), name: "Pills", relativePath: "x.md")
-        #expect(task.problems == [.invalidField(key: "reminder_times", value: "9am")])
+        #expect(task.problems == [.invalidValue(field: .reminderTimes, value: "9am")])
+    }
+
+    /// TaskNotes keeps every marked day in `complete_instances`; `partial_instances` and `twice_instances` refine it.
+    @Test func theThreeInstanceListsAreReadAsOneMarkPerDay() throws {
+        let task = reader.task(from: try document("""
+        status: habit
+        complete_instances: [2026-10-18, 2026-10-19, 2026-10-20]
+        partial_instances: [2026-10-19, 2026-10-20, 2026-10-21]
+        twice_instances: [2026-10-20]
+        """), name: "Read", relativePath: "x.md")
+        #expect(task.marks == [LocalDate("2026-10-18"): .done, LocalDate("2026-10-19"): .partial, LocalDate("2026-10-20"): .twice])
     }
 
     @Test func recurrenceAndRemindersAreWrittenAndRemoved() throws {
         var doc = try document("status: this_week")
-        let writer = TaskNoteWriter(mapping: mapping, timeZone: TestCalendar.timeZone)
-        writer.apply([.status(.habit), .recurrence("DTSTART:20261023T000000Z;FREQ=DAILY"),
+        let writer = TaskNoteWriter(mapping: mapping, calendar: FixedCalendar(current: TestCalendar.calendar))
+        writer.apply([.status(.habit), .recurrence(RecurrenceDraft(start: LocalDate("2026-10-23")).rule),
                       .reminderTimes([LocalTime(hour: 21, minute: 0)!, LocalTime(hour: 9, minute: 0)!])],
                      to: &doc, now: TestCalendar.date("2026-10-23", "09:00"))
         let task = reader.task(from: doc, name: "Pills", relativePath: "x.md")
         #expect(task.status == .habit)
-        #expect(task.recurrenceRaw == "DTSTART:20261023T000000Z;FREQ=DAILY")
+        #expect(doc.text.contains("\nrecurrence: DTSTART:20261023T000000Z;FREQ=DAILY\n"))
+        #expect(task.recurrence == RecurrenceDraft(start: LocalDate("2026-10-23")).rule)
         #expect(task.reminderTimes.map(\.string) == ["09:00", "21:00"])
 
         writer.apply([.status(.thisWeek), .recurrence(nil), .reminderTimes([])], to: &doc, now: TestCalendar.date("2026-10-23", "10:00"))

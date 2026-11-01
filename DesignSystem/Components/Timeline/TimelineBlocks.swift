@@ -1,8 +1,10 @@
 import SwiftUI
+import WidgetKit
 
 /// A calendar event: tinted fill with the calendar color stripe (distinct from tasks).
 struct TimelineEventBlock: View {
     @Environment(\.tokens) private var tokens
+    @Environment(\.calendar) private var calendar
     @Environment(\.titleReserve) private var reserve
     let event: CalendarEvent
     let slot: TimelineSlot
@@ -16,11 +18,12 @@ struct TimelineEventBlock: View {
             RoundedRectangle(cornerRadius: tokens.size(.eventStripe) / 2)
                 .fill(color)
                 .frame(width: tokens.size(.eventStripe))
+                .widgetAccentable()
             VStack(alignment: .leading, spacing: 0) {
-                FadingText(text: event.title, font: font.weight(.semibold), lineHeight: lineHeight, lines: 2,
+                FadingText(text: event.title, font: font, lineHeight: lineHeight, lines: 2,
                            reserve: TitleFade.trailing(corner: reserve, plateInset: tokens.space(.timelineItemPadding),
                                                        gap: tokens.space(.fadeGap)))
-                Text(TimeRangeText.format(event.start, event.end)).font(tokens.font(.caption)).lineLimit(1)
+                Text(TimeRangeText.format(event.start, event.end, calendar: calendar)).font(tokens.font(.caption)).lineLimit(1)
                     .opacity(tokens.opacity(.eventTime))
             }
             .foregroundStyle(slot.isPast ? tokens.color(.secondaryText) : tokens.color(.eventText))
@@ -29,9 +32,7 @@ struct TimelineEventBlock: View {
         .padding(.vertical, tokens.space(.timelineItemPadding) / 2)
         .padding(.trailing, tokens.space(.timelineItemPadding))
         .frame(maxHeight: .infinity, alignment: .top)
-        .background(color.opacity(tokens.opacity(.eventFill)),
-                    in: PlateShape(cornerRadius: tokens.radius(.timelineItem)))
-        .clipShape(PlateShape(cornerRadius: tokens.radius(.timelineItem)))
+        .plate(.timelineItem, fill: color.opacity(tokens.opacity(.eventFill)), clipsContent: true)
         .opacity(slot.isPast ? tokens.opacity(.past) : 1)
     }
 }
@@ -57,7 +58,7 @@ struct TimelineReminderBlock: View {
             .slotPlate(isPast: slot.isPast, isCompact: isCompact)
         if let onToggle, let onOpen {
             plate
-                .contentShape(.contextMenuPreview, PlateShape(cornerRadius: tokens.rowPlateRadius))
+                .plateLift(.row, for: .contextMenuPreview)
                 .onTapGesture { onOpen(reminder) }
                 .contextMenu { RegistryMenu(menu: .reminderContext) { _ in onToggle(reminder) } }
         } else {
@@ -92,13 +93,11 @@ private struct SlotPlate: ViewModifier {
     let isCompact: Bool
 
     func body(content: Content) -> some View {
-        let shape = PlateShape(cornerRadius: tokens.rowPlateRadius)
         content
             .environment(\.plateTrailingInset, tokens.slotPlateInset)
-            .padding(.vertical, isCompact ? tokens.space(.timelineItemGap) : tokens.space(.rowVertical) / 2)
+            .padding(.vertical, isCompact ? tokens.space(.compactPlateVertical) : tokens.space(.rowVertical) / 2)
             .padding(.horizontal, tokens.slotPlateInset)
-            .background(isPast ? tokens.color(.past).opacity(tokens.opacity(.eventFill)) : tokens.color(.plateBackground), in: shape)
-            .clipShape(shape)
+            .plate(.row, fill: isPast ? tokens.color(.past).opacity(tokens.opacity(.eventFill)) : nil, clipsContent: true)
             .opacity(isPast ? tokens.opacity(.past) : 1)
     }
 }

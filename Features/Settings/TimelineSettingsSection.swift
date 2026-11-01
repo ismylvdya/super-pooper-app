@@ -82,9 +82,9 @@ struct TimelineSettingsSection: View {
                          info: LocalizedStringKey = "info.settings.timeline.halves") -> some View {
         PlateRow(icon: .halves, title: title, info: info, indent: true) {
             HStack(spacing: tokens.space(.titleInfoGap)) {
-                TimeField(time: binding(keyPath.appending(path: \.start)))
+                TimeField(time: binding(keyPath.appending(path: \.start)), on: model.context().today).labelsHidden()
                 Text("common.dash")
-                TimeField(time: binding(keyPath.appending(path: \.end)))
+                TimeField(time: binding(keyPath.appending(path: \.end)), on: model.context().today).labelsHidden()
             }
         }
     }
@@ -111,34 +111,32 @@ struct TimelinePreview: View {
         let timeline = settings.timeline
         let style = TimelineStyle.make(timeline, tokens: tokens)
         let height = tokens.size(.timelinePreviewHeight)
+        let windows = TimelineWindow.windows(settings.timelineSpan(), around: plan.now, context: model.context(at: plan.now))
         Group {
             switch settings.timelineMode {
             case .aroundNow:
                 ScrollView {
-                    DayTimelineView(slots: plan.timeline,
-                                    window: TimelineWindow.rolling(now: plan.now, hoursBefore: timeline.hoursBefore,
-                                                                   hoursAfter: timeline.hoursAfter, calendar: model.calendar),
-                                    now: plan.now, hourHeight: tokens.size(.hourHeight) * tokens.size(.timelinePreviewScale), style: style, taskContent: row)
+                    DayTimelineView(slots: plan.timeline, window: windows[0], now: plan.now,
+                                    hourHeight: tokens.size(.hourHeight) * tokens.ratio(.timelinePreview), style: style, taskContent: row)
                 }
             case .wholeDay:
-                let window = TimelineWindow.fixed(start: timeline.wholeDay.start, end: timeline.wholeDay.end,
-                                                  context: model.context(at: plan.now))
-                DayTimelineView(slots: plan.timeline, window: window, now: plan.now,
-                                hourHeight: CGFloat(window.hourHeight(fitting: Double(height))), style: style, taskContent: row)
+                DayTimelineView(slots: plan.timeline, window: windows[0], now: plan.now,
+                                hourHeight: CGFloat(windows[0].hourHeight(fitting: Double(height))), style: style, taskContent: row)
             case .halves:
-                HalvesTimeline(plan: plan, settings: timeline, context: model.context(at: plan.now), height: height - tokens.size(.timelinePreviewHalvesInset),
+                HalvesTimeline(plan: plan, windows: windows, settings: timeline, height: height - tokens.size(.timelinePreviewHalvesInset),
                                taskContent: row)
             }
         }
         .frame(height: height)
-        .clipShape(RoundedRectangle(cornerRadius: tokens.radius(.timelineItem), style: .continuous))
         .settingsPreviewFrame()
         .accessibilityLabel(Text("settings.timeline.preview"))
     }
 
     private func row(_ item: DayItem, _ slot: TimelineSlot) -> some View {
-        TaskRowView(item: item, today: plan.today, titleFont: .system(size: settings.timeline.taskFontSize), showsDetails: false,
-                    titleLineLimit: 2, titleLineHeight: UIFont.systemFont(ofSize: settings.timeline.taskFontSize).lineHeight)
+        let fonts = TimelineFonts.app(settings.timeline, tokens: tokens)
+        return TaskRowView(item: item, titleFont: fonts.task, showsDetails: false,
+                    titleLineLimit: 2, titleLineHeight: fonts.taskLineHeight,
+                    showsDoneState: false)
     }
 
     private var plan: DayPlan { model.plan(at: model.clock.now) }

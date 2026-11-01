@@ -17,6 +17,12 @@ struct RulesConfig: Codable, Hashable, Sendable {
         /// The warning that the app's signature runs out comes this many hours before.
         let signingWarningHours: Double
         let signingWarningID: String
+        /// The user's picture is scaled down to at most this many pixels on its longer side.
+        let imageMaxPixels: Double
+        /// A notification swiped away comes back (silently) this long after.
+        let restoreDelaySeconds: Double
+        /// A pending notification whose fire time is at most this far from the planned one is kept.
+        let fireTimeToleranceSeconds: Double
     }
 
     struct EventLinks: Codable, Hashable, Sendable {
@@ -35,17 +41,16 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let downloadTimeoutSeconds: Double
         /// While waiting for iCloud downloads, the files are checked this often.
         let downloadPollSeconds: Double
-        let noteExtension: String
         /// The JSON file with the app's shared settings, next to the tasks folder.
         let settingsFile: String
         /// The older note with those settings, read until the file exists.
         let settingsNote: String
         /// Where done tasks are moved, next to the tasks folder; Obsidian and TaskNotes are set to skip it.
         let doneFolder: String
-        /// Where Obsidian keeps its iCloud vaults: a folder under it names its vault and its path in it.
-        let obsidianVaultsFolder: String
         /// The settings note is written this long after the last change.
         let settingsWriteDelaySeconds: Double
+        /// A note's modification date further than this from the one the app saw means it was changed elsewhere.
+        let modificationToleranceSeconds: Double
     }
 
     struct Backups: Codable, Hashable, Sendable {
@@ -63,19 +68,23 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let otherDayAnchor: LocalTime
         /// A task dropped on the timeline lands on a multiple of this many minutes.
         let dropStepMinutes: Int
+        /// How far a pinch scales the hour height: at least `min` and at most `max` times the fitted one.
+        let zoom: Limits.Range
     }
 
     struct Widgets: Codable, Hashable, Sendable {
         let refreshMinutes: Int
         let entryCount: Int
-        /// Weeks in the habit widget.
-        let habitGridWeeksSmall: Int
         /// Hours the one-column timeline shows in the Today widget.
         let timelineHours: Int
         /// The widget timeline starts at most this many hours before now.
         let maxHoursBefore: Int
         /// Background refresh (vault, widgets, notifications) is asked for this often.
         let backgroundRefreshMinutes: Int
+        /// The clock widget is given its minutes this far ahead at a time.
+        let clockTimelineMinutes: Int
+        /// A block on the widget's timeline is at least this long in its scale (more hours, smaller blocks).
+        let minimumBlockMinutes: Int
     }
 
     struct Habits: Codable, Hashable, Sendable {
@@ -90,6 +99,7 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let maxAllowedSkips: Int
         /// Bells under a habit's name in the Habits list (one per reminder, up to this many).
         let maxListBells: Int
+        let stats: HabitStatsRules
     }
 
     /// Pool rows of long tasks are taller: extra title lines from this estimate on.
@@ -100,10 +110,51 @@ struct RulesConfig: Codable, Hashable, Sendable {
         }
 
         let extraLines: [ExtraLines]
+        /// A row counts as shown (for the rows left to scroll to) when this share of it is on screen.
+        let rowVisibleShare: Double
 
         func extraLines(forEstimate minutes: Int) -> Int {
             extraLines.filter { minutes >= $0.minutes }.map(\.lines).max() ?? 0
         }
+    }
+
+    /// When a finger's movement counts as a tap, a swipe or a pull (points, or a share of the width where named so).
+    struct Gestures: Codable, Hashable, Sendable {
+        /// A touch that moves less than this is still a tap.
+        let tapSlop: Double
+        /// A drag on Today starts deciding its direction after this distance.
+        let daySwipeMinimumDistance: Double
+        /// A drag is sideways when it moves this many times more across than up or down.
+        let daySwipeAxisRatio: Double
+        /// A sideways drag turns the page past this share of the width, or when flung past `daySwipeFlingShare` of it.
+        let daySwipeShare: Double
+        let daySwipeFlingShare: Double
+        /// A banner pulled up this far, or flung this far, goes away.
+        let bannerDismissDistance: Double
+        let bannerDismissFling: Double
+        /// Pulling a list down this far arms "load more".
+        let pullThreshold: Double
+    }
+
+    struct Banners: Codable, Hashable, Sendable {
+        /// A banner hides itself this long after it appears.
+        let autoHideSeconds: Double
+        /// Lines of the message (and notes under it) until the banner is expanded.
+        let collapsedLines: Int
+    }
+
+    /// The sketches of the Today arrangements on the settings page.
+    struct SettingsPreview: Codable, Hashable, Sendable {
+        let poolRows: Int
+        let timelineHours: Int
+        /// The colors preview: the first rows of today's pool and then its first habits.
+        let colorRows: Int
+        let colorHabitRows: Int
+    }
+
+    /// Heights assumed until the real ones are measured.
+    struct LayoutEstimates: Codable, Hashable, Sendable {
+        let poolRowHeight: Double
     }
 
     /// Ranges of the number controls on settings and note pages.
@@ -152,6 +203,9 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let nextReminderGapMinutes: Int
         /// The note text is saved this long after typing stops.
         let noteSaveDelaySeconds: Double
+        /// A settings change is written and followed (notifications, widgets) this long after the last one: a slider
+        /// sends one per step.
+        let settingsSaveDelaySeconds: Double
         let repeatUntilDays: Int
         let repeatCount: Int
     }
@@ -159,6 +213,10 @@ struct RulesConfig: Codable, Hashable, Sendable {
     let pool: Pool
     let limits: Limits
     let editing: Editing
+    let gestures: Gestures
+    let banners: Banners
+    let settingsPreview: SettingsPreview
+    let layoutEstimates: LayoutEstimates
 }
 
 /// Order of the pool sort criteria (`sort.json`).

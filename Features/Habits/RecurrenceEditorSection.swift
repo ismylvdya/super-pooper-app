@@ -1,7 +1,8 @@
 import SwiftUI
 
 /// Edits a habit's repeat rule the way Apple Calendar does: frequency, interval, weekdays or the day of
-/// the month, start and end. Every change is written to the note right away.
+/// the month, start and end. Every change is written to the note right away. A rule with more than the editor can
+/// show (several days of the month, several months…) is shown in words only: editing it would lose those parts.
 struct RecurrenceEditorSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
@@ -9,10 +10,27 @@ struct RecurrenceEditorSection: View {
     let editor: TaskEditor
     @State private var draft: RecurrenceDraft?
 
-    private var task: TaskNote { editor.task }
+    private var task: TaskItem { editor.task }
 
     var body: some View {
-        let draft = self.draft ?? initialDraft
+        if let rule = task.recurrence, draft == nil, !RecurrenceDraft.canEdit(rule, start: fallbackStart) {
+            readOnly(rule)
+        } else {
+            editingRows(draft ?? initialDraft)
+        }
+    }
+
+    private func readOnly(_ rule: RecurrenceRule) -> some View {
+        PlateSection(header: "recurrenceEditor.header", info: "info.recurrenceEditor", hint: Text("recurrenceEditor.readOnly")) {
+            PlateRow(icon: .recurrence, title: "recurrenceEditor.rule") {
+                Text(verbatim: RecurrenceText.describe(rule, calendar: model.calendar))
+                    .foregroundStyle(tokens.color(.secondaryText))
+                    .multilineTextAlignment(.trailing)
+            }
+        }
+    }
+
+    private func editingRows(_ draft: RecurrenceDraft) -> some View {
         PlateSection(header: "recurrenceEditor.header", info: "info.recurrenceEditor",
                      hint: Text(verbatim: RecurrenceText.describe(draft, calendar: model.calendar))) {
             PlateRow(icon: .recurrence, title: "recurrenceEditor.frequency") {
@@ -28,10 +46,8 @@ struct RecurrenceEditorSection: View {
             if draft.frequency == .weekly { weekdayRow(draft) }
             if draft.frequency == .monthly { monthlyRows(draft) }
             PlateRow(icon: nil, title: "recurrenceEditor.starts", indent: true) {
-                DatePicker("recurrenceEditor.starts", selection: Binding(
-                    get: { draft.start.startDate(in: model.calendar) },
-                    set: { date in change { $0.start = LocalDate(date, in: model.calendar) } }
-                ), displayedComponents: .date).labelsHidden()
+                DayField("recurrenceEditor.starts", day: Binding(get: { draft.start }, set: { day in change { $0.start = day } }))
+                    .labelsHidden()
             }
             endRows(draft)
         }
@@ -44,7 +60,7 @@ struct RecurrenceEditorSection: View {
         return HStack(spacing: tokens.space(.chipGap)) {
             ForEach(Weekday.allCases, id: \.self) { day in
                 Button {
-                    Haptics.play(.light)
+                    Haptics.play(.select)
                     change { value in
                         var days = selected
                         if days.contains(day) { if days.count > 1 { days.remove(day) } } else { days.insert(day) }
@@ -115,10 +131,8 @@ struct RecurrenceEditorSection: View {
             EmptyView()
         case .until(let day):
             PlateRow(icon: nil, title: "recurrenceEditor.endDate", indent: true) {
-                DatePicker("recurrenceEditor.endDate", selection: Binding(
-                    get: { day.startDate(in: model.calendar) },
-                    set: { date in change { $0.end = .until(LocalDate(date, in: model.calendar)) } }
-                ), displayedComponents: .date).labelsHidden()
+                DayField("recurrenceEditor.endDate", day: Binding(get: { day }, set: { value in change { $0.end = .until(value) } }))
+                    .labelsHidden()
             }
         case .count(let count):
             PlateRow(icon: nil, title: "recurrenceEditor.endCount", indent: true) {
@@ -131,9 +145,15 @@ struct RecurrenceEditorSection: View {
     // MARK: - Editing
 
     private var initialDraft: RecurrenceDraft {
-        let today = model.context().today
-        if let rule = task.recurrence { return RecurrenceDraft(rule: rule, fallbackStart: today) }
-        return RecurrenceDraft(start: today)
+        if let rule = task.recurrence { return RecurrenceDraft(rule: rule, fallbackStart: fallbackStart) }
+        return RecurrenceDraft(start: model.context().today)
+    }
+
+    /// Where a rule without DTSTART starts its days (the `due` day or the note's creation), so that the first edit
+    /// writes that start and not today.
+    private var fallbackStart: LocalDate {
+        let context = model.context()
+        return TaskOccurrence(days: context.days).start(of: task) ?? context.today
     }
 
     private func edit<Value>(_ keyPath: WritableKeyPath<RecurrenceDraft, Value>) -> Binding<Value> {
@@ -145,9 +165,9 @@ struct RecurrenceEditorSection: View {
         var updated = draft ?? initialDraft
         edit(&updated)
         draft = updated
-        let raw = updated.raw
-        guard raw != task.recurrenceRaw else { return }
-        editor.apply([.recurrence(raw)])
+        let rule = updated.rule
+        guard rule != task.recurrence else { return }
+        editor.apply([.recurrence(rule)])
     }
 }
 

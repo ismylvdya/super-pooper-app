@@ -31,7 +31,7 @@ struct TodayButtons: View {
                 button(item)
             } else {
                 button(item)
-                    .frame(minWidth: tokens.size(.barButton), minHeight: tokens.size(.barButton))
+                    .frame(minWidth: tokens.bar(.barButton), minHeight: tokens.bar(.barButton))
                     .contentShape(Capsule())
             }
         }

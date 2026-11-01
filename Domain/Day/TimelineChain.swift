@@ -1,0 +1,43 @@
+import Foundation
+
+/// Tasks tied to something on the timeline — an event or a task with its own time — directly or through links.
+struct TimelineChain: Sendable {
+    /// What a chain hangs on.
+    struct Target: Hashable, Sendable {
+        let id: String
+        let end: Date
+
+        init(id: String, end: Date) {
+            self.id = id
+            self.end = end
+        }
+
+        init(event: CalendarEvent) {
+            self.init(id: TimelineContent.event(event).id, end: event.end)
+        }
+    }
+
+    enum Anchor: Hashable, Sendable {
+        /// Done before it (`next_event`, or a task it leads to): laid out from "now".
+        case before(Target)
+        /// Done after it (`previous_event`, or a task it follows): laid out from its end (or "now" if it is over).
+        case after(Target)
+
+        var target: Target {
+            switch self {
+            case .before(let target), .after(let target): target
+            }
+        }
+
+        var key: String {
+            switch self {
+            case .before(let target): "before:\(target.id)"
+            case .after(let target): "after:\(target.id)"
+            }
+        }
+    }
+
+    let anchor: Anchor
+    /// Already in link-and-sort order.
+    let items: [DayItem]
+}

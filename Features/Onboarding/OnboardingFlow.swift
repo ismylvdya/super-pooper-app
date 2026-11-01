@@ -75,12 +75,12 @@ struct OnboardingFlow: View {
     private var buttons: some View {
         HStack {
             if step != .vault {
-                Button("onboarding.back") { withAnimation { step = Step(rawValue: step.rawValue - 1) ?? .vault } }
+                Button("onboarding.back") { withAnimation(tokens.animation) { step = Step(rawValue: step.rawValue - 1) ?? .vault } }
             }
             Spacer()
             Button(step == .sources ? "onboarding.start" : "onboarding.next") {
                 if let next = Step(rawValue: step.rawValue + 1) {
-                    withAnimation { step = next }
+                    withAnimation(tokens.animation) { step = next }
                 } else {
                     model.updateSettings { $0.onboarding.completed = true }
                 }

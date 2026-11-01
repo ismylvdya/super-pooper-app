@@ -9,7 +9,6 @@ struct HabitsScreen: View {
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
-    @State private var isLargeTitleVisible = true
     @State private var titleHeight: CGFloat = 0
     @State private var query = ""
     @State private var isSearching = false
@@ -19,14 +18,10 @@ struct HabitsScreen: View {
         let today = model.context().today
         let groups = HabitGroups(model.habits.filter { SearchMatcher.matches($0.name, query) })
         List {
-            Text("tab.habits")
-                .font(tokens.font(.pageTitle))
-                .frame(maxWidth: .infinity)
-                .padding(.top, tokens.space(.nestedTitleLift))
-                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { titleHeight = $0 }
+            LargePageTitle(isNested: false, height: $titleHeight) { Text("tab.habits") }
                 .listGroupSpacer()
             if model.habits.isEmpty {
-                Text("habits.empty").font(tokens.font(.hint)).foregroundStyle(tokens.color(.secondaryText))
+                Text("habits.empty").secondaryText(.hint)
                     .listGroupSpacer()
             }
             group(groups.tracked, header: nil, groups: groups, isRepeatable: false, today: today)
@@ -44,13 +39,12 @@ struct HabitsScreen: View {
         }
         .listGroupStyle()
         .listGroupBacking(frames)
-        .tracksLargeTitle($isLargeTitleVisible, titleHeight: titleHeight)
+        .titleScrollsIntoBar(L10n.string("tab.habits"), titleHeight: titleHeight)
         .appList()
         // The title starts where the other tabs' page titles start, not under the list's own top margin.
         .contentMargins(.top, 0, for: .scrollContent)
         .pageSearch(query: $query, isSearching: $isSearching, prompt: "search.prompt.tasks")
-        .refreshable { await model.sync(announce: true) }
-        .barTitle(L10n.string("tab.habits"), isHidden: isLargeTitleVisible)
+        .syncsOnPull()
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Button { router.open(.newHabit) } label: { Image(systemName: icons[.newTask]) }
@@ -68,7 +62,7 @@ struct HabitsScreen: View {
     }
 
     /// One group of rows; the rounded corners belong to its first and last row, as on every plate.
-    @ViewBuilder private func group(_ habits: [TaskNote], header: LocalizedStringKey?, groups: HabitGroups, isRepeatable: Bool,
+    @ViewBuilder private func group(_ habits: [TaskItem], header: LocalizedStringKey?, groups: HabitGroups, isRepeatable: Bool,
                                     today: LocalDate) -> some View {
         if !habits.isEmpty {
             if let header { ListGroupHeader(title: Text(header)) } else { gap }
@@ -76,15 +70,14 @@ struct HabitsScreen: View {
                 let isFirst = index == 0, isLast = index == habits.count - 1
                 HabitRow(habit: habit, today: today)
                     .listGroupRow(group: isRepeatable ? "repeatable" : "tracked", id: habit.name, isFirst: isFirst, isLast: isLast,
-                                  frames: frames, separatorInset: tokens.space(.plateInner) + tokens.size(.iconColumn) + tokens.space(.iconTextGap))
+                                  frames: frames, vertical: tokens.space(.rowVertical) / 2,
+                                  separatorIndent: tokens.size(.iconColumn) + tokens.space(.iconTextGap))
                     // A long press lifts the row and offers today's marks.
                     .contextMenu { HabitDayMenu(habit: habit, day: today) }
-                    // Rebuilt when it becomes or stops being first or last, so the corners follow a new order.
-                    .id("\(habit.name)|\(isFirst)|\(isLast)")
             }
             // While a search filters the list the rows cannot move: the order is the order of every habit.
             .onMove(perform: query.isEmpty ? { source, destination in
-                Haptics.play(.medium)
+                Haptics.play(.reorder)
                 model.moveHabits(groups.order(moving: source, to: destination, inRepeatable: isRepeatable))
             } : nil)
         }

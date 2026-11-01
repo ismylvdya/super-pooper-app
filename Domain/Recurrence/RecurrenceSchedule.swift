@@ -3,7 +3,7 @@ import Foundation
 /// Which days a recurring task has an instance on, matching TaskNotes (rrule.js with floating dates).
 /// Build it once per rule and reuse it: rules with COUNT enumerate their occurrences up front.
 struct RecurrenceSchedule: Sendable {
-    /// How far ahead `nextOccurrence(onOrAfter:)` and COUNT enumeration look.
+    /// How far ahead COUNT enumeration looks.
     private static let searchHorizonDays = 100 * 366
 
     let rule: RecurrenceRule
@@ -33,31 +33,6 @@ struct RecurrenceSchedule: Sendable {
         let index = Self.firstIndex(onOrAfter: day, in: counted)
         return index < counted.count && counted[index] == day
     }
-
-    func occurrences(from start: LocalDate, through end: LocalDate) -> [LocalDate] {
-        if let counted = countedOccurrences {
-            return Array(counted[Self.firstIndex(onOrAfter: start, in: counted)...].prefix { $0 <= end })
-        }
-        let last = lastDay.map { min($0, end) } ?? end
-        var result: [LocalDate] = []
-        var cursor = start
-        while let next = pattern.firstMatch(onOrAfter: cursor, through: last) {
-            result.append(next)
-            cursor = next.adding(days: 1)
-        }
-        return result
-    }
-
-    func nextOccurrence(onOrAfter day: LocalDate) -> LocalDate? {
-        if let counted = countedOccurrences {
-            let index = Self.firstIndex(onOrAfter: day, in: counted)
-            return index < counted.count ? counted[index] : nil
-        }
-        let start = max(day, anchor)
-        let horizon = start.adding(days: Self.searchHorizonDays)
-        return pattern.firstMatch(onOrAfter: start, through: lastDay.map { min($0, horizon) } ?? horizon)
-    }
-
     private func isNotPastUntil(_ day: LocalDate) -> Bool {
         guard let lastDay else { return true }
         return day <= lastDay

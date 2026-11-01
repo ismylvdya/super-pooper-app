@@ -14,9 +14,10 @@ struct OtherDayTests {
         config = try AppConfig.load(bundle: .main)
     }
 
-    private func tomorrow(_ tasks: [TaskNote], events: [CalendarEvent] = []) -> DayPlan {
+    private func tomorrow(_ tasks: [TaskItem], events: [CalendarEvent] = []) -> DayPlan {
         DayPlanning.plan(config: config, settings: TestConfig.defaults, tasks: tasks, events: events, reminders: [],
-                         dayState: DayState(day: LocalDate(TestCalendar.wednesday)), context: TestCalendar.context(), dayOffset: 1)
+                         dayState: DayState(day: LocalDate(TestCalendar.wednesday)), context: TestCalendar.context(), dayOffset: 1,
+                         eventsKnown: true)
     }
 
     @Test func tomorrowsEventsAreNotPastYet() throws {
@@ -44,7 +45,7 @@ struct OtherDayTests {
         #expect(tomorrow([everyDay, everySixDays, hidden]).dayNames == ["Water"] as Set)
         let sixDaysOn = DayPlanning.plan(config: config, settings: TestConfig.defaults, tasks: [everyDay, everySixDays, hidden],
                                          events: [], reminders: [], dayState: DayState(day: LocalDate(TestCalendar.wednesday)),
-                                         context: TestCalendar.context(), dayOffset: 6)
+                                         context: TestCalendar.context(), dayOffset: 6, eventsKnown: true)
         #expect(sixDaysOn.dayNames == ["Water", "Laundry"] as Set)
     }
 

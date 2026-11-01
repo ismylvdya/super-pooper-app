@@ -6,7 +6,6 @@ struct RootView: View {
     let container: AppContainer
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
-    @State private var screenHeight = BundledConfig.tokens.size(.screenHeightEstimate)
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     /// Which side the physical bottom took the last time the phone lay sideways.
     @State private var landscapeBottom: HorizontalEdge = .trailing
@@ -35,8 +34,8 @@ struct RootView: View {
                                 root(tab, model: model)
                                     .systemTabBar(isShown: physicalBottom == nil)
                                     .navigationDestination(for: Route.self) { route in
-                                        destination(route)
-                                            .refreshable { await model.sync(announce: true) }
+                                        destination(route, in: tab)
+                                            .syncsOnPull()
                                             .systemTabBar(isShown: physicalBottom == nil)
                                     }
                             }
@@ -71,16 +70,14 @@ struct RootView: View {
             }
         }
         .tint(tokens.color(.accent))
-        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { screenHeight = $0 }
         .onGeometryChange(for: CGSize.self) { $0.size } action: { _ in updateLandscapeBottom() }
         .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in updateLandscapeBottom() }
-        .environment(\.screenHeight, screenHeight)
         .environment(\.physicalBottom, physicalBottom)
         .environment(\.timelineBell, model.settings.timeline.bellStyle)
         .environment(\.chipOrder, RowChipKind.ordered(model.settings.pool.chipOrder))
-        .environment(\.calendar, model.calendar)
+        .appCalendar(model.calendar)
         // The user's colors and opacity sit closest to the views, over the bundled tokens of `appConfig`.
-        .environment(\.tokens, tokens)
+        .designTokens(tokens)
         .environment(model)
         .environment(container.router)
         .environment(container.banners)
@@ -98,11 +95,13 @@ struct RootView: View {
                 }
             case .background:
                 BackgroundRefresh.schedule()
+                Task { await model.flushSettings() }
             default:
                 break
             }
         }
-        .task(id: model.context().today) { await model.syncWhenTheDayEnds() }
+        // Waits again when the day turns or its end moves (a new time zone).
+        .task(id: model.context().dayEnd) { await model.syncWhenTheDayEnds() }
         .onOpenURL { container.router.handle($0) }
     }
 
@@ -130,20 +129,20 @@ struct RootView: View {
 
     @ViewBuilder private func home(_ model: AppModel) -> some View {
         switch model.vaultState {
-        case .failed(let message):
-            NoVaultScreen(message: message)
+        case .failed(let failure):
+            NoVaultScreen(failure: failure)
         case .notSelected where !model.hasVault:
-            NoVaultScreen(message: nil)
+            NoVaultScreen(failure: nil)
         default:
             TodayScreen()
         }
     }
 
-    @ViewBuilder private func destination(_ route: Route) -> some View {
+    @ViewBuilder private func destination(_ route: Route, in tab: AppTab) -> some View {
         switch route {
         case .task(let name): TaskPageScreen(taskName: name)
-        case .newTask: NewNoteScreen(kind: .task)
-        case .newHabit: NewNoteScreen(kind: .habit)
+        case .newTask: NewNoteScreen(kind: .task, tab: tab)
+        case .newHabit: NewNoteScreen(kind: .habit, tab: tab)
         case .search(let scope): SearchScreen(scope: scope)
         case .taskSettings: TaskSettingsScreen()
         case .habitSettings: HabitSettingsScreen()
@@ -164,12 +163,9 @@ struct RootView: View {
 
     /// The morning review opens by itself on the first launch of the day.
     private func openReviewIfNeeded() {
-        let model = container.model
-        guard model.config.flags.morningReviewAutoOpen, model.settings.onboarding.completed,
-              model.vaultState == .ready, !model.dayState.reviewShown,
-              container.launch.openURL == nil else { return }
-        model.updateDayState { $0.reviewShown = true }
-        container.router.isReviewPresented = true
+        if container.model.claimMorningReview(openedForSomethingElse: container.launch.openURL != nil) {
+            container.router.isReviewPresented = true
+        }
     }
 }
 

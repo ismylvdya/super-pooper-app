@@ -6,42 +6,33 @@ import Foundation
 ///
 /// A habit's next notification at each of its times reuses one identifier, so when it is delivered it
 /// replaces the one left from an earlier day: an overdue day just stays undone, and the buttons act on
-/// the new day.
+/// the new day. A notification lives its logical day (`StaleNotifications`): one of a day that is over is not kept.
 struct NotificationPlanner: Sendable {
     let horizonDays: Int
     let limit: Int
 
     /// Upcoming notifications, nearest first, at most `limit`. `skipped`: names taken out of today
     /// (Skip today for habits, Not today for tasks).
-    func plan(tasks: [TaskNote], reminders: [ReminderItem], events: [CalendarEvent] = [], skipped: Set<String>,
+    func plan(tasks: [TaskItem], reminders: [ReminderItem], events: [CalendarEvent] = [], skipped: Set<String>,
               context: DayContext) -> [PlannedNotification] {
         let upcoming = all(tasks: tasks, reminders: reminders, events: events, skipped: skipped, context: context)
             .filter { $0.fireDate > context.now }
         return Array(Self.reusingHabitSlots(upcoming).prefix(limit))
     }
 
-    /// Today's notifications regardless of time: a delivered one stays in Notification Center
-    /// only while it is still in this list.
-    func stillValidToday(tasks: [TaskNote], reminders: [ReminderItem], events: [CalendarEvent] = [], skipped: Set<String>,
+    /// Today's notifications regardless of time: a delivered one stays in Notification Center only while it is still in
+    /// this list, so one of a day that is over goes, marked or not, as the widgets clear it at the boundary.
+    func stillValidToday(tasks: [TaskItem], reminders: [ReminderItem], events: [CalendarEvent] = [], skipped: Set<String>,
                          context: DayContext) -> [PlannedNotification] {
         let today = all(tasks: tasks, reminders: reminders, events: events, skipped: skipped, context: context)
             .filter { $0.day == context.today }
-        // A delivered habit notification carries its slot identifier and its day: it stays while that day is
-        // still open (an overdue day too), until the next one replaces it or the day gets marked.
-        let earlier = context.with(now: context.dayStart.addingTimeInterval(-Double(horizonDays) * 86_400))
-        let openSlots = NotificationPlanner(horizonDays: horizonDays + 1, limit: limit)
-            .all(tasks: tasks, reminders: [], skipped: skipped, context: earlier)
-            .filter { $0.kind == .habit && $0.day <= context.today }
-            .filter { !($0.day == context.today && skipped.contains($0.taskName ?? "")) }
-            .map { note in
-                PlannedNotification(id: note.key, kind: note.kind, title: note.title, fireDate: note.fireDate,
-                                    taskName: note.taskName, day: note.day, key: note.key)
-            }
-        return today + openSlots
+        // A delivered habit notification may carry its slot identifier: it stays while today's slot is open.
+        let slots = today.filter { $0.kind == .habit }.map { $0.identified(as: $0.key) }
+        return today + slots
     }
 
     /// Everything of today and the coming days, past times included (for late alerts).
-    func all(tasks: [TaskNote], reminders: [ReminderItem], events: [CalendarEvent] = [], skipped: Set<String>,
+    func all(tasks: [TaskItem], reminders: [ReminderItem], events: [CalendarEvent] = [], skipped: Set<String>,
              context: DayContext) -> [PlannedNotification] {
         let occurrence = TaskOccurrence(days: context.days)
         var result: [PlannedNotification] = []
@@ -49,26 +40,26 @@ struct NotificationPlanner: Sendable {
         for task in tasks {
             if task.isHabit {
                 guard !task.isArchived else { continue }
-                let instances = HabitInstances(task: task)
+                let schedule = occurrence.schedule(of: task)
                 for offset in 0..<horizonDays {
                     let day = context.today.adding(days: offset)
-                    guard occurrence.occurs(task, on: day),
-                          !HabitMarking.isDayClosed(instances.mark(on: day), twiceADay: task.habit.twiceADay,
-                                                    remindersPerDay: task.habitTimes.count) else { continue }
-                    if day == context.today, skipped.contains(task.name) { continue }
+                    guard schedule.occurs(on: day),
+                          !HabitMarking.isDayClosed(task.mark(on: day), twiceADay: task.isTwiceADay) else { continue }
+                    if day == context.today, skipped.containsNoteName(task.name) { continue }
                     for time in task.habitTimes {
                         result.append(PlannedNotification(id: "habit|\(task.name)|\(day.isoString)|\(time.string)", kind: .habit,
                                                           title: task.name, fireDate: context.moment(time, onLogicalDay: day),
                                                           taskName: task.name, day: day,
-                                                          key: Self.habitSlot(task.name, time), colorHex: task.habit.color))
+                                                          key: Self.habitSlot(task.name, time), colorHex: task.habit.color,
+                                                          isAbsolute: task.timeZone != nil))
                     }
                 }
             } else if task.status == .thisWeek, let due = task.due, let time = due.time {
                 let day = context.logicalDay(of: due)
-                if day == context.today, skipped.contains(task.name) { continue }
+                if day == context.today, skipped.containsNoteName(task.name) { continue }
                 result.append(PlannedNotification(id: "task|\(task.name)", kind: .task, title: task.name,
                                                   fireDate: context.date(due.day, time), taskName: task.name,
-                                                  day: day, key: "task|\(task.name)"))
+                                                  day: day, key: "task|\(task.name)", isAbsolute: task.timeZone != nil))
             }
         }
 
@@ -76,17 +67,18 @@ struct NotificationPlanner: Sendable {
             result.append(PlannedNotification(id: "reminder|\(reminder.id)|\(reminder.due.timeIntervalSince1970)", kind: .reminder,
                                               title: reminder.title, fireDate: reminder.due, taskName: nil,
                                               day: context.logicalDay(of: reminder.due), reminderID: reminder.id,
-                                              key: "reminder|\(reminder.id)"))
+                                              key: "reminder|\(reminder.id)", isAbsolute: true))
         }
 
         let horizonEnd = context.today.adding(days: horizonDays).startDate(in: context.calendar, offset: context.boundary)
-        for event in events where event.end > context.dayStart.addingTimeInterval(-86_400) {
+        let yesterdayStart = context.date(context.today.adding(days: -1), context.boundary)
+        for event in events where event.end > yesterdayStart {
             for (index, fire) in event.alarmDates.enumerated() where fire < horizonEnd {
                 result.append(PlannedNotification(id: "event|\(event.eventIdentifier)|\(Int(event.start.timeIntervalSince1970))|\(index)",
                                                   kind: .event, title: event.title, fireDate: fire, taskName: nil,
                                                   day: context.logicalDay(of: event.start),
                                                   key: "event|\(event.eventIdentifier)|\(index)", start: event.start,
-                                                  eventID: event.eventIdentifier))
+                                                  eventID: event.eventIdentifier, isAbsolute: true))
             }
         }
 
@@ -100,9 +92,7 @@ struct NotificationPlanner: Sendable {
         var used: Set<String> = []
         return upcoming.map { note in
             guard note.kind == .habit, used.insert(note.key).inserted else { return note }
-            return PlannedNotification(id: note.key, kind: note.kind, title: note.title, fireDate: note.fireDate,
-                                       taskName: note.taskName, day: note.day, reminderID: note.reminderID,
-                                       key: note.key, start: note.start, colorHex: note.colorHex)
+            return note.identified(as: note.key)
         }
     }
 }

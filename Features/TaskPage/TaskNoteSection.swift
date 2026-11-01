@@ -1,45 +1,37 @@
 import SwiftUI
 
-/// The note body, edited as plain text and saved shortly after typing stops.
+/// The note body, edited as plain text; the model reads it and writes it shortly after typing stops. A text that could
+/// not be read shows a problem instead of an empty field.
 struct TaskNoteSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
-    @Environment(\.rules) private var rules
+    @Environment(\.icons) private var icons
     let taskName: String
     var header: LocalizedStringKey = "taskPage.note"
     var placeholder: LocalizedStringKey = "taskPage.note.placeholder"
-    @State private var text = ""
-    @State private var loaded: String?
-    @State private var saveTask: Task<Void, Never>?
 
     var body: some View {
         PlateSection(header: header, info: "info.taskPage.note") {
-            // One line when empty, growing with the text.
-            TextField(placeholder, text: $text, axis: .vertical)
-                .font(tokens.font(.rowTitle))
-                .accessibilityIdentifier("taskPage.note")
-        }
-        .task(id: taskName) {
-            let body = await model.body(of: taskName) ?? ""
-            loaded = body
-            text = body
-        }
-        .onChange(of: text) { _, value in
-            guard let loaded, value != loaded else { return }
-            saveTask?.cancel()
-            saveTask = Task {
-                try? await Task.sleep(for: .seconds(rules.editing.noteSaveDelaySeconds))
-                guard !Task.isCancelled else { return }
-                await model.setBody(value, of: taskName)
-                self.loaded = value
+            if model.noteBody(taskName)?.state == .unavailable {
+                Label("taskPage.note.unavailable", systemImage: icons[.problem])
+                    .font(tokens.font(.hint))
+                    .foregroundStyle(tokens.color(.problem))
+                    .accessibilityIdentifier("taskPage.note.unavailable")
+            } else {
+                // One line when empty, growing with the text.
+                TextField(placeholder, text: text, axis: .vertical)
+                    .font(tokens.font(.rowTitle))
+                    .disabled(model.noteBody(taskName)?.state != .editing)
+                    .accessibilityIdentifier("taskPage.note")
             }
         }
-        .onDisappear {
-            saveTask?.cancel()
-            guard let loaded, text != loaded else { return }
-            let value = text
-            Task { await model.setBody(value, of: taskName) }
-        }
+        .task(id: taskName) { await model.openBody(of: taskName) }
+        .onChange(of: taskName) { old, _ in model.closeBody(of: old) }
+        .onDisappear { model.closeBody(of: taskName) }
+    }
+
+    private var text: Binding<String> {
+        Binding(get: { model.noteBody(taskName)?.text ?? "" }, set: { model.editBody($0, of: taskName) })
     }
 }
 

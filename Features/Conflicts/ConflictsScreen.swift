@@ -9,7 +9,7 @@ struct ConflictsScreen: View {
     var body: some View {
         PageScaffold(title: L10n.string("conflicts.title")) {
             if model.conflictedNotes.isEmpty {
-                Text("conflicts.empty").font(tokens.font(.hint)).foregroundStyle(tokens.color(.secondaryText))
+                Text("conflicts.empty").secondaryText(.hint)
             } else {
                 PlateSection(header: nil, hint: "conflicts.hint") {
                     ForEach(model.conflictedNotes, id: \.self) { name in
@@ -69,6 +69,6 @@ struct ConflictVersionsScreen: View {
     }
 
     private func detail(_ version: NoteVersion) -> String {
-        version.modified.map { L10n.format("conflicts.saved", $0.formatted(date: .abbreviated, time: .standard)) } ?? ""
+        version.modified.map { L10n.format("conflicts.saved", DateText.format($0, Date.FormatStyle(date: .abbreviated, time: .standard), calendar: model.calendar)) } ?? ""
     }
 }

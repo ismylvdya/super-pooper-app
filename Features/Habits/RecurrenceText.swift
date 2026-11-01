@@ -4,11 +4,10 @@ import Foundation
 enum RecurrenceText {
     /// The rule the editor is building, in words.
     static func describe(_ draft: RecurrenceDraft, calendar: Calendar) -> String {
-        guard case .success(let rule) = RecurrenceRule.parse(draft.raw) else { return "" }
-        return describe(rule, calendar: calendar)
+        describe(draft.rule, calendar: calendar)
     }
 
-    private static func describe(_ rule: RecurrenceRule, calendar: Calendar) -> String {
+    static func describe(_ rule: RecurrenceRule, calendar: Calendar) -> String {
         var text = base(rule, calendar: calendar)
         if let count = rule.count { text += L10n.format("recurrence.count", count) }
         if let until = rule.untilDate { text += L10n.format("recurrence.until", until.isoString) }

@@ -1,48 +1,41 @@
 #if DEBUG
 import Foundation
 
-/// Sample data for SwiftUI previews: a small day built with the real domain logic.
+/// Sample data for SwiftUI previews: a small day at 11:30 today, built with the real domain logic, the app's calendar
+/// and the default settings.
 enum PreviewSamples {
-    static var calendar: Calendar {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = .current
-        calendar.firstWeekday = 2
-        return calendar
-    }
+    static var calendar: Calendar { AppCalendar.make() }
 
     static var context: DayContext {
-        let today = LocalDate(Date(), in: calendar)
+        let today = LocalDate(SystemClock().now, in: calendar)
+        let day = BundledConfig.settings.day
         return DayContext(now: today.startDate(in: calendar, offset: LocalTime(hour: 11, minute: 30) ?? .midnight),
-                          calendar: calendar, boundary: LocalTime(hour: 4, minute: 0) ?? .midnight,
-                          energyHour: LocalTime(hour: 14, minute: 0) ?? .midnight)
+                          calendar: calendar, boundary: day.boundary, energyHour: day.energyHour)
     }
 
-    static var tasks: [TaskNote] {
+    static var tasks: [TaskItem] {
         let today = context.today
-        let daily = RecurrenceRule.parse("DTSTART:\(today.adding(days: -20).isoString.replacingOccurrences(of: "-", with: ""));FREQ=DAILY")
-        var water = TaskNote(name: "Выпить воды 💧", relativePath: "TaskNotes/Tasks/water.md", status: .halfYear)
-        water.recurrenceRaw = "FREQ=DAILY"
-        water.recurrence = try? daily.get()
-        water.completeInstances = [today.adding(days: -2), today.adding(days: -1)]
-        water.partialInstances = [today.adding(days: -2)]
+        var water = TaskItem(id: TaskID("TaskNotes/Tasks/water.md"), name: "Выпить воды 💧", status: .halfYear)
+        water.recurrence = RecurrenceDraft(start: today.adding(days: -20)).rule
+        water.marks = [today.adding(days: -2): .partial, today.adding(days: -1): .done]
         water.timeEstimate = 2
         var vitamins = water
         vitamins.name = "Витамины 💊"
-        vitamins.relativePath = "TaskNotes/Tasks/vitamins.md"
+        vitamins.id = TaskID("TaskNotes/Tasks/vitamins.md")
         vitamins.due = TaskDue(day: today.adding(days: -20), time: LocalTime(hour: 9, minute: 0))
-        var bank = TaskNote(name: "Позвонить в банк", relativePath: "TaskNotes/Tasks/bank.md", status: .thisWeek)
+        var bank = TaskItem(id: TaskID("TaskNotes/Tasks/bank.md"), name: "Позвонить в банк", status: .thisWeek)
         bank.isHighPriority = true
         bank.feel = .needEnergy
-        var report = TaskNote(name: "Сдать отчёт", relativePath: "TaskNotes/Tasks/report.md", status: .thisWeek)
+        var report = TaskItem(id: TaskID("TaskNotes/Tasks/report.md"), name: "Сдать отчёт", status: .thisWeek)
         report.due = TaskDue(day: today.adding(days: 2))
         report.timeEstimate = 60
         report.feel = .needEnergy
-        var shelf = TaskNote(name: "Повесить полку", relativePath: "TaskNotes/Tasks/shelf.md", status: .thisWeek)
+        var shelf = TaskItem(id: TaskID("TaskNotes/Tasks/shelf.md"), name: "Повесить полку", status: .thisWeek)
         shelf.previousTasks = ["Позвонить в банк"]
-        var parcel = TaskNote(name: "Забрать посылку", relativePath: "TaskNotes/Tasks/parcel.md", status: .thisWeek)
+        var parcel = TaskItem(id: TaskID("TaskNotes/Tasks/parcel.md"), name: "Забрать посылку", status: .thisWeek)
         parcel.due = TaskDue(day: today, time: LocalTime(hour: 16, minute: 0))
         parcel.timeEstimate = 60
-        var questions = TaskNote(name: "Подготовить вопросы", relativePath: "TaskNotes/Tasks/questions.md", status: .thisWeek)
+        var questions = TaskItem(id: TaskID("TaskNotes/Tasks/questions.md"), name: "Подготовить вопросы", status: .thisWeek)
         questions.nextEvent = EventLink(eventIdentifier: "call", title: "Call with dad", start: callStart)
         return [water, vitamins, bank, report, shelf, parcel, questions]
     }
@@ -67,10 +60,8 @@ enum PreviewSamples {
     }
 
     static var plan: DayPlan {
-        let rules = DayRules(defaultEstimateMinutes: 15, reminderMinutes: 15, autoPromoteFrom: [],
-                             morningEnds: LocalTime(hour: 12, minute: 0)!, eveningStarts: LocalTime(hour: 18, minute: 0)!)
         let inputs = DayInputs(tasks: tasks, events: events, reminders: reminders, skipped: [], manualOrder: nil)
-        return DayBuilder(rules: rules, sortCriteria: PoolSortCriterion.allCases).build(inputs, context: context)
+        return DayBuilder(rules: BundledConfig.rules.day, sortCriteria: PoolSortCriterion.allCases).build(inputs, context: context)
     }
 }
 #endif

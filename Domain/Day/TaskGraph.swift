@@ -1,24 +1,24 @@
 import Foundation
 
-/// The `previous_task` links between tasks, resolved by name, with cycles (a link to itself included) broken.
+/// The previous-task links between tasks, resolved by name, with cycles (a link to itself included) broken.
 struct TaskGraph: Sendable {
-    let tasksByName: [String: TaskNote]
+    let tasksByName: [String: TaskItem]
     /// Resolved predecessors per task (edges that closed a cycle are dropped).
     let predecessors: [String: [String]]
     let successors: [String: [String]]
     let missingLinks: [String: [String]]
     let cycleMembers: Set<String>
 
-    init(tasks: [TaskNote]) {
+    init(tasks: [TaskItem]) {
         let byName = Dictionary(tasks.map { ($0.name, $0) }, uniquingKeysWith: { first, _ in first })
-        let byLowercased = Dictionary(tasks.map { ($0.name.lowercased(), $0.name) }, uniquingKeysWith: { first, _ in first })
+        let byNoteName = Dictionary(tasks.map { ($0.name.noteName, $0.name) }, uniquingKeysWith: { first, _ in first })
 
         var resolved: [String: [String]] = [:]
         var missing: [String: [String]] = [:]
         var selfLinked = Set<String>()
         for task in tasks {
             for link in task.previousTasks {
-                guard let name = byName[link]?.name ?? byLowercased[link.lowercased()] else {
+                guard let name = byNoteName[link.noteName] else {
                     missing[task.name, default: []].append(link)
                     continue
                 }

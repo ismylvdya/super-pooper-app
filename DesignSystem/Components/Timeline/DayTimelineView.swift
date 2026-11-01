@@ -1,4 +1,5 @@
 import SwiftUI
+import WidgetKit
 
 /// One timeline column: hour grid, blocks laid out side by side when they overlap, "now" line.
 /// Shared by the Today screen, the settings preview and the widget.
@@ -7,6 +8,7 @@ struct DayTimelineView<TaskContent: View>: View {
     @Environment(\.icons) private var icons
     @Environment(\.timelineBell) private var bell
     @Environment(\.calendar) private var calendar
+    @Environment(\.rules) private var rules
     let slots: [TimelineSlot]
     let window: TimelineWindow
     let now: Date
@@ -15,18 +17,20 @@ struct DayTimelineView<TaskContent: View>: View {
     @ViewBuilder let taskContent: (DayItem, TimelineSlot) -> TaskContent
 
     var body: some View {
-        let links = TimelineLinks(slots: slots)
+        let links = TimelineLinks(slots: slots, calendar: calendar, rules: rules.day)
         let highlighted = style.highlightedSlot.map(links.connected(to:))
+        let placements = layout.place(slots)
         GeometryReader { geometry in
             let itemsWidth = max(geometry.size.width - labelWidth, 0)
+            let blocks = placements.map { PlacedSlot($0, width: itemsWidth) }
             ZStack(alignment: .topLeading) {
                 hourGrid(width: geometry.size.width)
-                ForEach(placed(width: itemsWidth)) { item in
+                ForEach(blocks) { item in
                     let isLinked = links.isLinked(item.slot.id)
                     block(for: item.slot)
                         .environment(\.titleReserve, cornerWidth(linked: isLinked, alerts: item.slot.alerts))
                         .overlay(alignment: .topTrailing) {
-                            HStack(spacing: tokens.space(.chipVertical)) {
+                            HStack(spacing: tokens.space(.cornerMarkGap)) {
                                 if isLinked { linkBadge(item.slot, isOn: style.highlightedSlot == item.slot.id) }
                                 if item.slot.alerts { AlertBell() }
                             }
@@ -38,73 +42,54 @@ struct DayTimelineView<TaskContent: View>: View {
                                height: max(item.frame.height - tokens.space(.timelineItemGap), 0), alignment: .topLeading)
                         .offset(x: labelWidth + item.frame.minX, y: item.frame.minY)
                 }
-                if style.showsNow, window.contains(now) { nowLine(width: geometry.size.width, blocks: placed(width: itemsWidth)) }
+                if style.showsNow, window.contains(now) { nowLine(width: geometry.size.width, blocks: blocks) }
                 if let marker = style.dropMarker, window.contains(marker) {
                     TimelineDropMarker(moment: marker, labelWidth: labelWidth, width: geometry.size.width).offset(y: y(marker))
                 }
             }
         }
-        .frame(height: max(totalHeight, contentBottom))
+        .frame(height: max(totalHeight, CGFloat(placements.map(\.bottom).max() ?? 0)))
     }
 
     /// Dense widget plates: the bell sits as far from the right edge as from the top and bottom of a one-line block.
     private var cornerInset: CGFloat {
-        style.compactPlates ? max((style.minimumItemHeight - tokens.space(.timelineItemGap) - bell.size) / 2, 1) : tokens.space(.bellInset)
+        style.compactPlates ? max((style.minimumItemHeight - tokens.space(.timelineItemGap) - bell.size) / 2, tokens.size(.cornerInsetMinimum)) : tokens.space(.bellInset)
     }
 
     /// How far from the block's right edge the corner marks reach (their inset, the link mark, the bell and the gap
     /// between them); 0 without marks. The title fades out `fadeGap` before that (`TitleFade`).
     private func cornerWidth(linked: Bool, alerts: Bool) -> CGFloat {
-        let marks = [linked ? tokens.size(.linkBadge) : nil, alerts ? bell.size : nil].compactMap { $0 }
+        let marks = [linked ? tokens.uiFont(.linkBadge).pointSize : nil, alerts ? bell.size : nil].compactMap { $0 }
         guard !marks.isEmpty else { return 0 }
-        return cornerInset + marks.reduce(0, +) + tokens.space(.chipVertical) * CGFloat(marks.count - 1)
+        return cornerInset + marks.reduce(0, +) + tokens.space(.cornerMarkGap) * CGFloat(marks.count - 1)
     }
 
-    private var contentBottom: CGFloat { CGFloat(placed(width: 1).map(\.frame.maxY).max() ?? 0) }
-
-    private var labelWidth: CGFloat { style.showsHourLabels ? tokens.space(.timelineLabelWidth) : 0 }
+    /// The hour column and the hour labels' line grow with the hour font.
+    private var labelWidth: CGFloat { style.showsHourLabels ? tokens.scaled(tokens.space(.timelineLabelWidth), with: .timelineHour) : 0 }
+    private var hourLabelHeight: CGFloat { tokens.scaled(tokens.size(.hourLabelHeight), with: .timelineHour) }
     private var totalHeight: CGFloat { CGFloat(window.hours) * hourHeight }
 
     private func y(_ date: Date) -> CGFloat {
         CGFloat(window.offset(of: date, hourHeight: Double(hourHeight)))
     }
 
+    /// Where the blocks go (`TimelineBlockLayout`), worked out once per drawing.
+    private var layout: TimelineBlockLayout {
+        TimelineBlockLayout(window: window, hourHeight: Double(hourHeight), minimumEventHeight: Double(style.minimumItemHeight),
+                            minimumTaskHeight: Double(style.minimumTaskHeight ?? style.minimumItemHeight))
+    }
+
+    /// A placed block in a column of the drawn width.
     private struct PlacedSlot: Identifiable {
         let slot: TimelineSlot
         let frame: CGRect
         var id: String { slot.id }
-    }
 
-    /// Blocks get at least the minimum height. A block that does not overlap an earlier one in time
-    /// but would overlap it visually is pushed below it (so short chains read top to bottom);
-    /// blocks that really overlap in time share the width in columns, like in Calendar.
-    private func placed(width: CGFloat) -> [PlacedSlot] {
-        let visible = slots.filter { $0.end > window.start && $0.start < window.end }
-            .sorted { $0.start != $1.start ? $0.start < $1.start : $0.end > $1.end }
-        var extents: [(start: Double, end: Double)] = []
-        for (index, slot) in visible.enumerated() {
-            var top = y(max(slot.start, window.start))
-            let height = max(y(min(slot.end, window.end)) - top, minimumHeight(of: slot))
-            for earlier in visible.indices where earlier < index && visible[earlier].end <= slot.start {
-                top = max(top, CGFloat(extents[earlier].end))
-            }
-            extents.append((Double(top), Double(top + height)))
+        init(_ placement: TimelineBlockLayout.Placement, width: CGFloat) {
+            let horizontal = placement.horizontal(in: Double(width))
+            slot = placement.slot
+            frame = CGRect(x: horizontal.x, y: placement.top, width: horizontal.width, height: placement.height)
         }
-        let placements = ColumnAssigner.assign(extents)
-        return zip(visible, zip(extents, placements)).map { slot, pair in
-            let (extent, placement) = pair
-            let columnWidth = width / CGFloat(placement.columnCount)
-            return PlacedSlot(slot: slot, frame: CGRect(x: CGFloat(placement.column) * columnWidth, y: extent.start,
-                                                        width: columnWidth, height: extent.end - extent.start))
-        }
-    }
-
-    private func minimumHeight(of slot: TimelineSlot) -> CGFloat {
-        switch slot.content {
-        case .task, .reminder: return style.minimumTaskHeight ?? style.minimumItemHeight
-        case .event: break
-        }
-        return style.minimumItemHeight
     }
 
     @ViewBuilder private func block(for slot: TimelineSlot) -> some View {
@@ -112,20 +97,20 @@ struct DayTimelineView<TaskContent: View>: View {
         case .event(let event):
             if let onEventTap = style.onEventTap {
                 // A tap, not a Button: a button also fires when a swipe across the timeline ends on the event.
-                TimelineEventBlock(event: event, slot: slot, font: style.eventFont, lineHeight: style.eventLineHeight)
+                TimelineEventBlock(event: event, slot: slot, font: style.fonts.event, lineHeight: style.fonts.eventLineHeight)
                     .contentShape(Rectangle())
                     .onTapGesture { onEventTap(event) }
                     .accessibilityAddTraits(.isButton)
                     .accessibilityAction { onEventTap(event) }
-                    .contentShape(.contextMenuPreview, PlateShape(cornerRadius: tokens.radius(.timelineItem)))
+                    .plateLift(.timelineItem, for: .contextMenuPreview)
                     .contextMenu {
                         if let onEventDelete = style.onEventDelete { RegistryMenu(menu: .eventContext) { _ in onEventDelete(event) } }
                     }
             } else {
-                TimelineEventBlock(event: event, slot: slot, font: style.eventFont, lineHeight: style.eventLineHeight)
+                TimelineEventBlock(event: event, slot: slot, font: style.fonts.event, lineHeight: style.fonts.eventLineHeight)
             }
         case .reminder(let reminder):
-            TimelineReminderBlock(reminder: reminder, slot: slot, font: style.taskFont, lineHeight: style.taskLineHeight,
+            TimelineReminderBlock(reminder: reminder, slot: slot, font: style.fonts.task, lineHeight: style.fonts.taskLineHeight,
                                   isCompact: style.compactPlates,
                                   onToggle: style.onReminderToggle, onOpen: style.onReminderTap)
         case .task(let item):
@@ -163,8 +148,8 @@ struct DayTimelineView<TaskContent: View>: View {
                 }
                 Rectangle().fill(tokens.color(.timelineGrid)).frame(height: tokens.size(.gridLine))
             }
-            .frame(width: width, height: tokens.size(.hourLabelHeight))
-            .offset(y: y(mark) - tokens.size(.hourLabelHeight) / 2)
+            .frame(width: width, height: hourLabelHeight)
+            .offset(y: y(mark) - hourLabelHeight / 2)
         }
     }
 
@@ -182,9 +167,9 @@ struct DayTimelineView<TaskContent: View>: View {
     /// The corners the now line is cut out by: an event's own, or the plate of a task or reminder
     /// (smaller in widgets).
     private func cornerRadius(of slot: TimelineSlot) -> CGFloat {
-        if case .event = slot.content { return tokens.radius(.timelineItem) }
+        if case .event = slot.content { return tokens.plateRadius(.timelineItem) }
         // The same plate in the app and in widgets; a short slot is capped by `PlateShape`.
-        return tokens.rowPlateRadius
+        return tokens.plateRadius(.row)
     }
 
     /// The "now" cursor, as in the old Calendar widget: a dot in the middle of the hour numbers and a
@@ -192,7 +177,7 @@ struct DayTimelineView<TaskContent: View>: View {
     private func nowLine(width: CGFloat, blocks: [PlacedSlot]) -> some View {
         let dot = tokens.size(.nowDot)
         let centerX = style.showsHourLabels
-            ? labelWidth - tokens.space(.hourLabelGap) - tokens.size(.hourDigitsWidth) / 2
+            ? labelWidth - tokens.space(.hourLabelGap) - tokens.scaled(tokens.size(.hourDigitsWidth), with: .timelineHour) / 2
             : dot / 2
         let origin = CGPoint(x: centerX - dot / 2, y: y(now) - dot / 2)
         let gap = tokens.space(.timelineItemGap)
@@ -209,6 +194,7 @@ struct DayTimelineView<TaskContent: View>: View {
             Circle().frame(width: dot, height: dot)
         }
         .foregroundStyle(tokens.color(.nowLine))
+        .widgetAccentable()
         .mask {
             Canvas { context, size in
                 context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(.black))
@@ -224,36 +210,4 @@ struct DayTimelineView<TaskContent: View>: View {
         .allowsHitTesting(false)
         .accessibilityHidden(true)
     }
-}
-
-/// Visual parameters of a timeline column.
-struct TimelineStyle {
-    var eventFont: Font
-    var taskFont: Font
-    /// Line heights of the two fonts (titles fade on their last line).
-    var eventLineHeight: CGFloat
-    var taskLineHeight: CGFloat
-    /// At least one line of normal text.
-    var minimumItemHeight: CGFloat
-    /// Tasks get at least their title and chip lines (short tasks still show two lines).
-    var minimumTaskHeight: CGFloat?
-    var showsHourLabels = true
-    /// Tap on an event (the app opens Calendar on that day).
-    var onEventTap: ((CalendarEvent) -> Void)?
-    /// Long-press menu of an event (asks first).
-    var onEventDelete: ((CalendarEvent) -> Void)?
-    /// Reminder long-press menu (completes it in Reminders) and tap (opens it in Reminders).
-    var onReminderToggle: ((ReminderItem) -> Void)?
-    var onReminderTap: ((ReminderItem) -> Void)?
-    /// The block whose links are highlighted (the rest dims), and the tap on a block's link mark.
-    var highlightedSlot: String?
-    var onLinkTap: ((TimelineSlot) -> Void)?
-    /// Another day than today has no "now" cursor.
-    var showsNow = true
-    /// Task rows draw their own plates (and long-press highlight) instead of getting one here.
-    var rowsHaveOwnPlates = false
-    /// Dense widget timelines: plates with minimal vertical padding.
-    var compactPlates = false
-    /// Where a dragged task would land (its minutes are shown next to the hours).
-    var dropMarker: Date?
 }

@@ -6,7 +6,7 @@ import Testing
 @Suite("Habits in Today")
 struct HabitsInTodayTests {
     private func habit(_ name: String, times: [String] = [], showInToday: Bool = true,
-                       _ configure: (inout TaskNote) -> Void = { _ in }) -> TaskNote {
+                       _ configure: (inout TaskItem) -> Void = { _ in }) -> TaskItem {
         makeHabit(name, status: .habit) { task in
             task.reminderTimes = times.map { LocalTime($0) }
             task.habit.showInToday = showInToday
@@ -91,6 +91,23 @@ struct HabitsInTodayTests {
         #expect(plan.allDayEvents.map(\.title) == ["Today off"])
     }
 
+    /// Each part of the day keeps its routine in its own setting, and the day reads all three from there.
+    @Test func eachRoutineHasItsSetting() {
+        var habits = TestConfig.defaults.habits
+        for (part, names) in zip(HabitTimeOfDay.allCases, [["M"], ["D"], ["E"]]) {
+            habits[keyPath: AppSettings.Habits.routine(part)] = names
+        }
+        #expect(habits.morningRoutine == ["M"] && habits.dayRoutine == ["D"] && habits.eveningRoutine == ["E"])
+        #expect(HabitTimeOfDay.allCases.map(habits.routines.order) == [["M"], ["D"], ["E"]])
+    }
+
+    /// All-day bars go by name as everything else does (`NameOrder`): letter case does not matter, numbers count as numbers.
+    @Test func allDayEventsAreInNameOrder() {
+        let events = ["day 10", "Day 9", "anniversary"].map { makeEvent($0, from: "00:00", to: "23:59", allDay: true) }
+        let plan = DayScenario(tasks: [], events: events).build()
+        #expect(plan.allDayEvents.map(\.title) == ["anniversary", "Day 9", "day 10"])
+    }
+
     @Test func aMultiDayAllDayEventCoversEveryDay() {
         let trip = CalendarEvent(eventIdentifier: "trip", title: "Trip", start: TestCalendar.date("2026-10-20"),
                                  end: TestCalendar.date("2026-10-23"), isAllDay: true, calendarID: "c", calendarTitle: "C", colorHex: "#000000")
@@ -103,7 +120,7 @@ struct HabitsInTodayTests {
 /// Routines, the user's pool order and postponed tasks.
 @Suite("Routines and pool order")
 struct RoutineOrderTests {
-    private func habit(_ name: String, _ part: HabitTimeOfDay?) -> TaskNote {
+    private func habit(_ name: String, _ part: HabitTimeOfDay?) -> TaskItem {
         makeHabit(name, status: .habit) { $0.habit.timeOfDay = part }
     }
 

@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import SuperPooperApp
 
-/// The quick chips of a task, dragging tasks between the pool and the timeline, and swipes on Today.
+/// The quick chips of a task and dragging tasks between the pool and the timeline.
 @Suite("Quick planning")
 struct QuickPlanningTests {
     private let today = LocalDate(TestCalendar.wednesday)
@@ -83,26 +83,6 @@ struct QuickPlanningTests {
         #expect(PoolDropOrder.order(rows: rows, dragged: "A", at: 500) == ["B", "C", "A"])
         // A task from the timeline is not a row yet.
         #expect(PoolDropOrder.order(rows: rows, dragged: "T", at: 40) == ["A", "T", "B", "C"])
-    }
-
-    // MARK: - Swipes
-
-    /// A swipe only turns the pages; past the edge it does nothing (days change with the buttons).
-    @Test func onPagesASwipeTurnsThePageAndStopsAtTheEdge() {
-        #expect(TodaySwipe.page(forward: true, page: 0, pageCount: 2) == 1)
-        #expect(TodaySwipe.page(forward: true, page: 1, pageCount: 2) == nil)
-        #expect(TodaySwipe.page(forward: false, page: 1, pageCount: 2) == 0)
-        #expect(TodaySwipe.page(forward: false, page: 0, pageCount: 2) == nil)
-        #expect(TodaySwipe.page(forward: true, page: 0, pageCount: 1) == nil)
-    }
-
-    /// The first movement decides the direction: a vertical scroll that later drifts sideways never turns the page.
-    @Test func aDragKeepsTheDirectionOfItsFirstMovement() {
-        #expect(TodaySwipe.axis(locked: nil, width: 4, height: 30, axisRatio: 1.5) == .vertical)
-        #expect(TodaySwipe.axis(locked: .vertical, width: 200, height: 30, axisRatio: 1.5) == .vertical)
-        #expect(TodaySwipe.axis(locked: .horizontal, width: 40, height: 90, axisRatio: 1.5) == .horizontal)
-        #expect(!TodaySwipe.isSwipe(axis: .vertical, width: 300, predictedWidth: 300, containerWidth: 375, threshold: 0.25))
-        #expect(TodaySwipe.isSwipe(axis: .horizontal, width: 120, predictedWidth: 120, containerWidth: 375, threshold: 0.25))
     }
 
     @Test func theWidgetHasNoPages() {

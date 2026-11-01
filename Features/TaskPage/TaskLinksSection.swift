@@ -1,13 +1,12 @@
 import SwiftUI
 
-/// Previous tasks (this task's `previous_task`) and Next tasks (tasks whose `previous_task`
-/// contains this one), on task and habit pages alike; either side may be a task or a habit. Each link is stored
+/// Previous tasks (the ones this task waits for) and Next tasks (tasks that wait for this one), on task and habit pages alike; either side may be a task or a habit. Each link is stored
 /// once, in the later note, and edited from both sides.
 struct TaskLinksSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.icons) private var icons
     @Environment(\.tokens) private var tokens
-    let task: TaskNote
+    let task: TaskItem
     @State private var picking: Side?
 
     enum Side: String, Identifiable {
@@ -28,9 +27,7 @@ struct TaskLinksSection: View {
         }
     }
 
-    private var nextTasks: [String] {
-        NameOrder.sorted(model.tasks.filter { $0.previousTasks.contains(task.name) }.map(\.name))
-    }
+    private var nextTasks: [String] { model.nextTasks(of: task.name) }
 
     @ViewBuilder private func linkGroup(_ side: Side, icon: Icon, title: LocalizedStringKey, names: [String]) -> some View {
         PlateRow(icon: icon, title: title) {
@@ -50,7 +47,7 @@ struct TaskLinksSection: View {
         }
     }
 
-    /// The link is always stored in the later task's `previous_task`.
+    /// The link is always stored in the later task, as its previous task.
     private func add(_ name: String, side: Side) {
         Task {
             switch side {
@@ -77,7 +74,7 @@ struct TaskEventsSection: View {
     @Environment(\.tokens) private var tokens
     let editor: TaskEditor
 
-    private var task: TaskNote { editor.task }
+    private var task: TaskItem { editor.task }
     @State private var picking: Field?
 
     enum Field: String, Identifiable {
@@ -106,11 +103,12 @@ struct TaskEventsSection: View {
                 .accessibilityIdentifier("event.pick.\(field.rawValue)")
         }
         if let link {
-            let resolved = EventLinkResolver(events: model.events, calendar: model.calendar).resolve(link)
+            let resolved = model.event(for: link)
             HStack(spacing: tokens.space(.iconTextGap)) {
                 if let resolved { SourceDot(hex: resolved.colorHex) }
                 TitleDetailLabel(detail: Text(resolved == nil ? L10n.string("taskPage.eventNotFound")
-                                                              : (resolved?.start ?? link.start).formatted(date: .abbreviated, time: .shortened)),
+                                                              : DateText.format(resolved?.start ?? link.start, Date.FormatStyle(date: .abbreviated, time: .shortened),
+                                                                               calendar: model.calendar)),
                                  detailTint: resolved == nil ? tokens.color(.problem) : nil) {
                     Text(link.title)
                 }

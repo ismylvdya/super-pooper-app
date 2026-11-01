@@ -6,13 +6,14 @@ import SwiftUI
 /// manual order is kept for today. Reset sorting brings the sort back.
 /// Tapping a row (outside its chips) opens the task page; "+" creates a new this-week task.
 /// A long press opens the same menu as the row in the pool (and moving the finger then drags the row).
-/// Swiping a row left takes it out of today: it stays this week and waits in "Not Today" at the bottom
+/// Swiping a task left is the menu's Not today: it stays this week and waits in "Not Today" at the bottom
 /// (and in tomorrow's review); swiping it there to the right brings it back.
 struct MorningReviewScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
+    @Environment(\.actions) private var actions
     @Environment(\.openURL) private var openURL
     @State private var path: [Route] = []
     @State private var pendingAction: PendingAction?
@@ -37,31 +38,32 @@ struct MorningReviewScreen: View {
                                 ReviewRow(item: item, today: plan.today) { path.append(.task(item.id)) }
                                     // A subtask sits under its parent, shifted right, as in the pool.
                                     .padding(.leading, CGFloat(item.depth) * tokens.space(.subtaskIndent))
-                                    .padding(.horizontal, tokens.space(.plateInner))
+                                    // The row keeps its top and bottom inset inside, where a tap opens the task.
                                     .listGroupRow(group: ReviewGroups.group(of: index, in: rows)?.rawValue ?? "", id: name,
-                                                  isFirst: position.isFirst, isLast: position.isLast, frames: frames,
-                                                  separatorInset: tokens.space(.plateInner) + CGFloat(item.depth) * tokens.space(.subtaskIndent))
+                                                  isFirst: position.isFirst, isLast: position.isLast, frames: frames, vertical: 0,
+                                                  separatorIndent: CGFloat(item.depth) * tokens.space(.subtaskIndent))
                                     .contextMenu {
-                                        ActionMenuContent(menu: item.isHabit ? .habitContext : .taskContext, item: item) {
+                                        ActionMenuContent(menu: .context(of: item.task), item: item) {
                                             perform($0, on: item.id)
                                         }
                                     }
-                                    // The row is rebuilt when it becomes or stops being the group's first or last, so its
-                                    // rounded corners follow a new order (the list keeps a moved row's old background).
-                                    .id("\(name)|\(position.isFirst)|\(position.isLast)")
                                     .accessibilityIdentifier("review:\(item.id)")
+                                    // The pool menu's Not today, where that menu offers it.
                                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                        Button { Haptics.play(.light); model.postpone(item.id) } label: {
-                                            Label("review.postpone", systemImage: icons[.postpone])
+                                        if model.offers(.notToday, for: item) {
+                                            let action = actions.definition(.notToday)
+                                            Button { Haptics.play(action.haptic); perform(action, on: item.id) } label: {
+                                                Label(LocalizedStringKey(action.title), systemImage: action.icon)
+                                            }
+                                            .tint(tokens.color(.swipeNeutral))
+                                            .accessibilityIdentifier("review.postpone")
                                         }
-                                        .tint(tokens.color(.swipeNeutral))
-                                        .accessibilityIdentifier("review.postpone")
                                     }
                             }
                         }
                     }
                     .onMove { source, destination in
-                        Haptics.play(.medium)
+                        Haptics.play(.reorder)
                         model.applyReviewMove(ReviewGroups.move(rows, from: source, to: destination, pool: plan.pool))
                     }
                 }
@@ -72,16 +74,15 @@ struct MorningReviewScreen: View {
                     Group {
                         ListGroupHeader(title: Text("review.postponed"))
                         ForEach(Array(postponed.enumerated()), id: \.element.name) { index, task in
-                            ReviewRow(item: DayItem(task: task, state: .open, blockers: [], problems: []), today: plan.today) {
+                            ReviewRow(item: DayItem(listed: task), today: plan.today) {
                                 path.append(.task(task.name))
                             }
-                            .padding(.horizontal, tokens.space(.plateInner))
                             .listGroupRow(group: "postponed", id: task.name, isFirst: index == 0, isLast: index == postponed.count - 1,
-                                          frames: frames, separatorInset: tokens.space(.plateInner))
+                                          frames: frames, vertical: 0)
                             .accessibilityIdentifier("review.notToday:\(task.name)")
                             .opacity(tokens.opacity(.blocked))
                             .swipeActions(edge: .leading, allowsFullSwipe: true) {
-                                Button { Haptics.play(.light); model.unpostpone(task.name) } label: {
+                                Button { Haptics.play(.move); model.unpostpone(task.name) } label: {
                                     Label("review.backToToday", systemImage: icons[.restore])
                                 }
                                 .tint(tokens.color(.success))
@@ -110,10 +111,7 @@ struct MorningReviewScreen: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        model.resetOrder()
-                        model.banners.show(L10n.string("banner.orderReset"))
-                    } label: { Image(systemName: icons[.resetSort]) }
+                    Button { model.resetOrder() } label: { Image(systemName: icons[.resetSort]) }
                     .accessibilityLabel(Text("review.reset"))
                     .disabled(model.dayState.manualOrder == nil)
                 }
@@ -141,109 +139,5 @@ extension MorningReviewScreen {
 
     private var handler: TaskActionHandler {
         TaskActionHandler(model: model, router: router, openURL: openURL) { pendingAction = $0 }
-    }
-}
-
-
-/// One table row: title and editable chips: High, date, estimate, energy,
-/// pleasant, status, links.
-struct ReviewRow: View {
-    @Environment(AppModel.self) private var model
-    @Environment(\.tokens) private var tokens
-    @Environment(\.icons) private var icons
-    @Environment(\.rules) private var rules
-    let item: DayItem
-    let today: LocalDate
-    let onOpen: () -> Void
-    @State private var isPickingDate = false
-
-    private var task: TaskNote { item.task }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
-            HStack(spacing: tokens.space(.chipGap)) {
-                if item.isHabit { Image(systemName: icons[.habit]).foregroundStyle(tokens.color(.habit)) }
-                Text(task.name).font(tokens.font(.taskTitle)).foregroundStyle(item.isDone ? tokens.color(.secondaryText) : tokens.color(.primaryText))
-                if item.isBlocked { Image(systemName: icons[.links]).foregroundStyle(tokens.color(.secondaryText)) }
-            }
-            ChipFlow(spacing: tokens.space(.chipGap)) {
-                toggleChip(.high, isOn: task.isHighPriority, tint: tokens.color(.high)) { [.highPriority(!$0.isHighPriority)] }
-                dueChip
-                estimateChip
-                // One feel: turning one on turns the other off.
-                toggleChip(.energy, isOn: task.feel == .needEnergy, tint: tokens.color(.energy)) { [.feel($0.feel == .needEnergy ? .neutral : .needEnergy)] }
-                toggleChip(.pleasant, isOn: task.feel == .pleasant, tint: tokens.color(.heart)) { [.feel($0.feel == .pleasant ? .neutral : .pleasant)] }
-                if !task.isHabit { statusChip }
-                if !task.previousTasks.isEmpty || item.isBlocked {
-                    Chip(icon: .previousTasks, text: "\(task.previousTasks.count)")
-                }
-            }
-        }
-        .padding(.vertical, tokens.space(.reviewRowVertical))
-        .padding(.trailing, tokens.size(.reviewChevron))
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .overlay(alignment: .trailing) { DisclosureAccessory() }
-        .contentShape(Rectangle())
-        .onTapGesture(perform: onOpen)
-    }
-
-    /// The new value is decided from the note as it is when the edit runs (two quick taps go there and back).
-    private func toggleChip(_ icon: Icon, isOn: Bool, tint: Color, changes: @escaping (TaskNote) -> [TaskFieldChange]) -> some View {
-        Button {
-            Haptics.play(.light)
-            Task { await model.edit(task.name, changes) }
-        } label: {
-            Chip(icon: icon, tint: tint, isOn: isOn)
-        }
-        .buttonStyle(.borderless)
-    }
-
-    /// Today / Tomorrow / an exact date and time; the chosen one is checked, choosing it again
-    /// removes the date (no option checked = no date). Today and Tomorrow are logical days, as the task page's chips.
-    private var dueChip: some View {
-        let context = model.context()
-        let selected = QuickDue.selection(of: task.due, context: context)
-        return Menu {
-            ForEach(QuickDue.allCases, id: \.self) { chip in
-                Toggle(chip == .today ? "due.today" : "due.tomorrow", isOn: Binding(
-                    get: { selected == chip },
-                    set: { _ in setDue(QuickDue.toggling(chip, due: task.due, context: context)) }
-                ))
-            }
-            Toggle("review.due.exact", isOn: Binding(get: { task.due != nil && selected == nil },
-                                                    set: { _ in isPickingDate = true }))
-        } label: {
-            Chip(icon: .due, text: task.due.map { DueText.format($0, context: context) }, isOn: task.due != nil)
-        }
-        .sheet(isPresented: $isPickingDate) {
-            DueDateSheet(due: task.due ?? TaskDue(day: today, time: rules.editing.defaultTime), calendar: model.calendar) { setDue($0) }
-        }
-    }
-
-    private func setDue(_ due: TaskDue?) {
-        Task { await model.update(task.name, [.due(due)]) }
-    }
-
-    private var estimateChip: some View {
-        Menu {
-            ForEach(rules.timeEstimates, id: \.minutes) { option in
-                Button(LocalizedStringKey(option.label)) { Task { await model.update(task.name, [.timeEstimate(option.minutes)]) } }
-            }
-        } label: {
-            Chip(icon: .estimate, text: EstimateText.label(task.timeEstimate, rules: rules))
-        }
-    }
-
-    private var statusChip: some View {
-        Menu {
-            ForEach(TaskStatus.known.filter { $0 != .done }, id: \.self) { status in
-                Button(StatusText.title(status)) {
-                    let changes = TaskMarking(today: today).changes(setting: status, on: task)
-                    Task { await model.update(task.name, changes) }
-                }
-            }
-        } label: {
-            Chip(icon: .status, text: StatusText.title(task.status))
-        }
     }
 }

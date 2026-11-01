@@ -150,21 +150,33 @@ struct PoolSorterTests {
             == ["A breakfast", "C workout", "B shower"])
     }
 
+    /// A task a criterion knows nothing about (no creation date, no due date this week) comes after every task it knows,
+    /// however far the known value is.
+    @Test func aTaskACriterionKnowsNothingAboutComesLast() {
+        let undated = makeTask("A undated") { $0.dateCreated = nil }
+        let ancient = makeTask("B ancient") { $0.dateCreated = Date(timeIntervalSince1970: 0) }
+        let future = makeTask("C future") { $0.dateCreated = Date.distantFuture }
+        #expect(sortedNames([undated, future, ancient], at: morning) == ["B ancient", "C future", "A undated"])
+        let sunday = makeTask("D sunday") { $0.due = TaskDue("2026-10-25") }
+        let later = makeTask("A later") { $0.due = TaskDue("2026-11-30") }
+        #expect(sortedNames([later, sunday], at: morning) == ["D sunday", "A later"])
+    }
+
     // MARK: - Helpers
 
     private var sorter: PoolSorter { PoolSorter(criteria: TestConfig.sort.pool, rules: TestConfig.rules.day) }
 
-    private func item(_ task: TaskNote, done: Bool = false) -> DayItem {
+    private func item(_ task: TaskItem, done: Bool = false) -> DayItem {
         DayItem(task: task, state: done ? .marked(.done) : .open, blockers: [], problems: [])
     }
 
-    private func sortedNames(_ tasks: [TaskNote], done: Set<String> = [], at context: DayContext) -> [String] {
+    private func sortedNames(_ tasks: [TaskItem], done: Set<String> = [], at context: DayContext) -> [String] {
         let items = tasks.map { item($0, done: done.contains($0.name)) }
         return sorter.sorted(items, graph: TaskGraph(tasks: tasks), context: context).map(\.id)
     }
 
     /// "Rest": a task that every criterion after `criterion` prefers (and that ties on the ones before it).
-    private func favoredByEverythingBelow(_ criterion: PoolSortCriterion) -> TaskNote {
+    private func favoredByEverythingBelow(_ criterion: PoolSortCriterion) -> TaskItem {
         let below = TestConfig.sort.pool.drop { $0 != criterion }.dropFirst()
         return makeTask("Rest", created: "2026-01-01") { task in
             for lower in below {

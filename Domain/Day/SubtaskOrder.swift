@@ -3,7 +3,7 @@ import Foundation
 /// The order of a task's subtasks, set by dragging them on its page: the ones with a place first, by it, the rest
 /// after them by name. The place is kept in each subtask (`subtask_order`), so renames do not lose it.
 enum SubtaskOrder {
-    static func sorted(_ subtasks: [TaskNote]) -> [TaskNote] {
+    static func sorted(_ subtasks: [TaskItem]) -> [TaskItem] {
         stable(NameOrder.sorted(subtasks))
     }
 
@@ -14,13 +14,13 @@ enum SubtaskOrder {
             .map(\.element)
     }
 
-    static func stable(_ subtasks: [TaskNote]) -> [TaskNote] {
+    static func stable(_ subtasks: [TaskItem]) -> [TaskItem] {
         stable(subtasks, order: \.subtaskOrder)
     }
 
     /// `name` dropped on `target`: it takes the target's place, the ones between shift by one. Every subtask gets
     /// its place in the new order; the result holds only the places that changed.
-    static func moving(_ name: String, onto target: String, in subtasks: [TaskNote]) -> [String: Int] {
+    static func moving(_ name: String, onto target: String, in subtasks: [TaskItem]) -> [String: Int] {
         var names = sorted(subtasks).map(\.name)
         guard name != target, let from = names.firstIndex(of: name), let to = names.firstIndex(of: target) else { return [:] }
         names.remove(at: from)

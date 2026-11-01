@@ -19,7 +19,7 @@ struct HabitSettingsScreen: View {
                 }
             }
             PlateSection(header: "settings.habits.colors", hint: "settings.habits.colors.hint") {
-                ForEach([ColorToken.habit, .twice, .missed], id: \.self) { token in
+                ForEach(tokens.editableColors[.habits], id: \.self) { token in
                     PlateRow(icon: nil, title: LocalizedStringKey(String("color.") + token.rawValue)) { ColorField(token: token) }
                 }
             }

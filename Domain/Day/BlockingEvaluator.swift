@@ -7,7 +7,7 @@ struct BlockingEvaluator: Sendable {
     let skipped: Set<String>
     let context: DayContext
 
-    func blockers(for task: TaskNote, previousEvent: CalendarEvent?) -> [Blocker] {
+    func blockers(for task: TaskItem, previousEvent: CalendarEvent?) -> [Blocker] {
         var result = graph.predecessors(of: task.name)
             .filter { !isSatisfied($0) }
             .map(Blocker.task)
@@ -22,8 +22,8 @@ struct BlockingEvaluator: Sendable {
     func isSatisfied(_ name: String) -> Bool {
         guard let task = graph.tasksByName[name] else { return true }
         guard task.isHabit else { return task.status.isCompleted }
-        if skipped.contains(name) { return true }
-        if HabitInstances(task: task).mark(on: context.today) != nil { return true }
+        if skipped.containsNoteName(name) { return true }
+        if task.mark(on: context.today) != nil { return true }
         return !occurrence.occurs(task, on: context.today)
     }
 }

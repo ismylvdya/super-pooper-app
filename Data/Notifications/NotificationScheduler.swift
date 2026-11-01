@@ -10,21 +10,24 @@ protocol NotificationScheduling: Sendable {
     /// `immediate`: alerts whose time already passed without a notification (moved into the past), sent now.
     func sync(planned: [PlannedNotification], stillValid: [PlannedNotification], now immediate: [PlannedNotification]) async
     func removeAll() async
-    /// Puts a notification the user swiped away or tapped back into Notification Center (silently).
-    func restore(_ notification: UNNotification) async
+    /// Puts a notification the user swiped away or tapped back into Notification Center (silently), under an
+    /// identifier of its own: it never takes the place of the pending request of the same slot (tomorrow's).
+    func restore(_ request: UNNotificationRequest) async
 }
 
 struct UserNotificationScheduler: NotificationScheduling {
-    let calendar: Calendar
+    let calendar: CalendarSource
+    let rules: RulesConfig.Notifications
     let icons: IconSet
     let bodyText: @Sendable (PlannedNotification.Kind) -> String
+    /// The words of an action button, by its title key in `actions.json`.
+    let actionTitle: @Sendable (String) -> String
     /// The picture of habit notifications; nil = none.
     var habitIcon: NotificationIcon?
-
-    private var center: UNUserNotificationCenter { .current() }
+    var center: NotificationCenterClient = SystemNotificationCenter()
 
     func access() async -> SourceAccess {
-        switch await center.notificationSettings().authorizationStatus {
+        switch await center.authorizationStatus() {
         case .authorized, .provisional, .ephemeral: .granted
         case .notDetermined: .notDetermined
         default: .denied
@@ -39,11 +42,11 @@ struct UserNotificationScheduler: NotificationScheduling {
         func category(_ id: String, _ menu: ActionMenu) -> UNNotificationCategory {
             let actions = registry.actions(in: menu).map { definition in
                 // Habit buttons get the same mark images as the app's habit menus.
-                let icon = menu.isHabitMenu
+                let icon = registry.menus[menu].habitMarks
                     ? HabitMarkIcon.icon(for: definition.id).map { UNNotificationActionIcon(templateImageName: icons[$0]) }
                     : nil
                 return UNNotificationAction(identifier: definition.id.rawValue,
-                                            title: String(localized: String.LocalizationValue(definition.title)),
+                                            title: actionTitle(definition.title),
                                             options: definition.destructive ? [.destructive] : [],
                                             icon: icon ?? UNNotificationActionIcon(systemImageName: definition.icon))
             }
@@ -62,16 +65,19 @@ struct UserNotificationScheduler: NotificationScheduling {
     }
 
     /// Pending requests are compared by identifier and fire time: a habit's slot identifier stays the
-    /// same from day to day, and a moved item must be rescheduled even when its identifier did not change.
+    /// same from day to day, and a moved item must be rescheduled even when its identifier did not change. Notifications
+    /// put back after a swipe (pending for a moment, then shown) are kept like shown ones: while their item is still open.
     func sync(planned: [PlannedNotification], stillValid: [PlannedNotification], now immediate: [PlannedNotification]) async {
-        let pending = await center.pendingNotificationRequests().filter { $0.identifier.hasPrefix(NotificationPayload.prefix) }
+        let ours = await center.pendingRequests().filter { $0.identifier.hasPrefix(NotificationPayload.prefix) }
+        let restoring = ours.filter { NotificationIdentifier.isRestored($0.identifier) }
+        let pending = ours.filter { !NotificationIdentifier.isRestored($0.identifier) }
         let wanted = Dictionary(planned.map { (identifier(for: $0), $0.fireDate) }, uniquingKeysWith: { first, _ in first })
         let current = Dictionary(pending.map { ($0.identifier, fireDate(of: $0)) }, uniquingKeysWith: { first, _ in first })
         let outdated = current.filter { id, date in
             guard let want = wanted[id] else { return true }
-            return date.map { abs($0.timeIntervalSince(want)) > 30 } ?? true
+            return date.map { abs($0.timeIntervalSince(want)) > rules.fireTimeToleranceSeconds } ?? true
         }
-        center.removePendingNotificationRequests(withIdentifiers: Array(outdated.keys))
+        center.removePendingRequests(withIdentifiers: Array(outdated.keys))
         for notification in planned {
             // A newer plan is waiting: it will add what is still missing.
             if Task.isCancelled { return }
@@ -81,34 +87,44 @@ struct UserNotificationScheduler: NotificationScheduling {
         }
         for notification in immediate {
             let content = self.content(for: notification)
-            try? await center.add(UNNotificationRequest(identifier: identifier(for: notification) + "|late", content: content, trigger: nil))
+            try? await center.add(UNNotificationRequest(identifier: NotificationIdentifier.late(identifier(for: notification)),
+                                                        content: content, trigger: nil))
         }
 
-        // Delivered ones stay only while their item is still open for their day (identifier + day).
-        let valid = Set(stillValid.flatMap { [identifier(for: $0) + "#" + $0.day.isoString, identifier(for: $0) + "|late#" + $0.day.isoString] })
-        let delivered = await center.deliveredNotifications().map(\.request)
-        center.removeDeliveredNotifications(withIdentifiers: delivered.filter { request in
+        // Shown ones stay only while their item is still open for their day (identifier + day); one put back gives way to
+        // a newer notification of its slot, as a shown one is replaced by it.
+        let valid = Set(stillValid.flatMap { notification in
+            let id = identifier(for: notification)
+            return [id, NotificationIdentifier.late(id)].map { $0 + "#" + notification.day.isoString }
+        })
+        let delivered = await center.deliveredRequests().filter { $0.identifier.hasPrefix(NotificationPayload.prefix) }
+        let shownAgain = Set(delivered.map(\.identifier).filter { !NotificationIdentifier.isRestored($0) })
+        let isStale = { (request: UNNotificationRequest) -> Bool in
             let day = request.content.userInfo[NotificationPayload.dayKey] as? String ?? ""
-            return request.identifier.hasPrefix(NotificationPayload.prefix) && !valid.contains(request.identifier + "#" + day)
-        }.map(\.identifier))
+            let shown = NotificationIdentifier.shown(request.identifier)
+            return !valid.contains(shown + "#" + day) || (shown != request.identifier && shownAgain.contains(shown))
+        }
+        center.removeDeliveredNotifications(withIdentifiers: delivered.filter(isStale).map(\.identifier))
+        center.removePendingRequests(withIdentifiers: restoring.filter(isStale).map(\.identifier))
     }
 
+    /// The moment a pending request was asked for, worked out from its trigger (not from the wall clock).
     private func fireDate(of request: UNNotificationRequest) -> Date? {
-        (request.trigger as? UNCalendarNotificationTrigger)?.nextTriggerDate()
+        (request.trigger as? UNCalendarNotificationTrigger).flatMap { calendar.current.date(from: $0.dateComponents) }
     }
 
     func removeAll() async {
-        let pending = await center.pendingNotificationRequests().map(\.identifier).filter { $0.hasPrefix(NotificationPayload.prefix) }
-        center.removePendingNotificationRequests(withIdentifiers: pending)
+        let pending = await center.pendingRequests().map(\.identifier).filter { $0.hasPrefix(NotificationPayload.prefix) }
+        center.removePendingRequests(withIdentifiers: pending)
     }
 
-    func restore(_ notification: UNNotification) async {
-        let original = notification.request
+    func restore(_ original: UNNotificationRequest) async {
         guard original.identifier.hasPrefix(NotificationPayload.prefix) else { return }
         let content = (original.content.mutableCopy() as? UNMutableNotificationContent) ?? UNMutableNotificationContent()
         content.sound = nil
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-        try? await center.add(UNNotificationRequest(identifier: original.identifier, content: content, trigger: trigger))
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: rules.restoreDelaySeconds, repeats: false)
+        try? await center.add(UNNotificationRequest(identifier: NotificationIdentifier.restored(original.identifier),
+                                                    content: content, trigger: trigger))
     }
 
     /// Habits keep one identifier per time slot (the new day's notification replaces the old one);
@@ -120,8 +136,8 @@ struct UserNotificationScheduler: NotificationScheduling {
 
     private func request(for notification: PlannedNotification) -> UNNotificationRequest {
         let content = content(for: notification)
-        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: notification.fireDate)
-        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: NotificationTrigger.components(for: notification, calendar: calendar.current),
+                                                    repeats: false)
         return UNNotificationRequest(identifier: identifier(for: notification), content: content, trigger: trigger)
     }
 

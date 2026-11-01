@@ -16,10 +16,12 @@ enum TodaySwipe {
         abs(width) > abs(height) * axisRatio
     }
 
-    /// A finished sideways drag counts when it went past `threshold` of the width or was flung past half of it.
-    static func isSwipe(axis: Axis, width: Double, predictedWidth: Double, containerWidth: Double, threshold: Double) -> Bool {
+    /// A finished sideways drag counts when it went past `daySwipeShare` of the width or was flung past
+    /// `daySwipeFlingShare` of it.
+    static func isSwipe(axis: Axis, width: Double, predictedWidth: Double, containerWidth: Double,
+                        gestures: RulesConfig.Gestures) -> Bool {
         axis == .horizontal
-            && (abs(width) > containerWidth * threshold || abs(predictedWidth) > containerWidth / 2)
+            && (abs(width) > containerWidth * gestures.daySwipeShare || abs(predictedWidth) > containerWidth * gestures.daySwipeFlingShare)
     }
 
     /// The page a swipe turns to; nil past the first or last page.

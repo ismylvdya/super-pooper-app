@@ -18,7 +18,7 @@ struct HabitOptionsSection: View {
             }
             .pickerStyle(.segmented)
             .accessibilityIdentifier("habitPage.kind")
-            toggle(.today, "habitPage.showInToday", "info.habitPage.showInToday", \.showInToday, TaskFieldChange.showInToday)
+            toggle(.today, "habitPage.showInToday", "info.habitPage.showInToday", \.showInToday, TaskEdit.showInToday)
             PlateRow(icon: .colors, title: "habitPage.color") {
                 ColorPicker("habitPage.color", selection: Binding(
                     get: { tokens.habitColor(editor.task) },
@@ -34,7 +34,7 @@ struct HabitOptionsSection: View {
                     .accessibilityLabel(Text("settings.colors.reset"))
                 }
             }
-            toggle(.harmful, "habitPage.harmful", "info.habitPage.harmful", \.harmful, TaskFieldChange.harmful)
+            toggle(.harmful, "habitPage.harmful", "info.habitPage.harmful", \.harmful, TaskEdit.harmful)
             PlateRow(icon: .timeOfDay, title: "habitPage.timeOfDay", info: "info.habitPage.timeOfDay") {
                 Picker("habitPage.timeOfDay", selection: Binding(
                     get: { options.timeOfDay },
@@ -45,23 +45,23 @@ struct HabitOptionsSection: View {
                 }
                 .labelsHidden()
             }
-            toggle(.habitMarkTwice, "habitPage.twiceADay", "info.habitPage.twiceADay", \.twiceADay, TaskFieldChange.twiceADay)
+            toggle(.habitMarkTwice, "habitPage.twiceADay", "info.habitPage.twiceADay", \.twiceADay, TaskEdit.twiceADay)
             if options.twiceADay {
                 PlateRow(icon: nil, title: "habitPage.twiceCountsDouble", indent: true) {
-                    Toggle("habitPage.twiceCountsDouble", isOn: binding(\.twiceCountsDouble, TaskFieldChange.twiceCountsDouble)).labelsHidden()
+                    Toggle("habitPage.twiceCountsDouble", isOn: binding(\.twiceCountsDouble, TaskEdit.twiceCountsDouble)).labelsHidden()
                 }
             }
         }
     }
 
     private func toggle(_ icon: Icon, _ title: LocalizedStringKey, _ info: LocalizedStringKey,
-                        _ keyPath: KeyPath<HabitOptions, Bool>, _ change: @escaping (Bool) -> TaskFieldChange) -> some View {
+                        _ keyPath: KeyPath<HabitOptions, Bool>, _ change: @escaping (Bool) -> TaskEdit) -> some View {
         PlateRow(icon: icon, title: title, info: info) {
             Toggle(title, isOn: binding(keyPath, change)).labelsHidden()
         }
     }
 
-    private func binding(_ keyPath: KeyPath<HabitOptions, Bool>, _ change: @escaping (Bool) -> TaskFieldChange) -> Binding<Bool> {
+    private func binding(_ keyPath: KeyPath<HabitOptions, Bool>, _ change: @escaping (Bool) -> TaskEdit) -> Binding<Bool> {
         Binding(get: { options[keyPath: keyPath] }, set: { editor.apply([change($0)]) })
     }
 }

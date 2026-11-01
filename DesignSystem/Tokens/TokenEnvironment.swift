@@ -42,10 +42,27 @@ extension EnvironmentValues {
 
 extension View {
     func appConfig(_ config: AppConfig) -> some View {
-        environment(\.tokens, config.tokens)
+        designTokens(config.tokens)
             .environment(\.icons, config.icons)
             .environment(\.actions, config.actions)
             .environment(\.rules, config.rules)
+    }
+}
+
+extension View {
+    /// The tokens for the views below, measured at their text size: fixed-size fonts and UIKit line heights follow the
+    /// Dynamic Type size of this place, not only the phone's global one.
+    func designTokens(_ tokens: DesignTokens) -> some View {
+        modifier(DesignTokensModifier(tokens: tokens))
+    }
+}
+
+private struct DesignTokensModifier: ViewModifier {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    let tokens: DesignTokens
+
+    func body(content: Content) -> some View {
+        content.environment(\.tokens, tokens.measured(at: dynamicTypeSize))
     }
 }
 
@@ -75,9 +92,8 @@ enum BundledConfig {
     }
 
     /// `defaults.json` as settings (the values a view falls back to before the user's ones arrive).
-    static let settings: AppSettings = {
-        guard let config, let settings = try? ConfigLoader.decode(AppSettings.self, from: config.defaultSettings, file: AppConfig.File.defaults)
-        else { preconditionFailure("defaults.json is invalid") }
-        return settings
-    }()
+    static var settings: AppSettings {
+        guard let config else { preconditionFailure("defaults.json is invalid") }
+        return config.defaultSettings.values
+    }
 }

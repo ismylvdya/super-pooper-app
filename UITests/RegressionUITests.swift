@@ -19,8 +19,10 @@ final class RegressionUITests: XCTestCase {
     func testASubtaskOpensInsideTheMorningReview() {
         launch("superpooper://review")
         if !app.navigationBars["This week"].waitForExistence(timeout: 6) { app.buttons["today.review"].tap() }
+        // A banner over the row would take the tap.
+        app.dismissBanners()
         let row = app.staticTexts["Позвонить в банк"]
-        for _ in 0..<4 where !row.waitForExistence(timeout: 2) { app.swipeUp() }
+        app.scrollIntoView(row)
         row.tap()
         let field = app.textFields["taskPage.subtask"].firstMatch
         XCTAssertTrue(field.waitForExistence(timeout: 5))
@@ -61,7 +63,8 @@ final class RegressionUITests: XCTestCase {
         let second = app.descendants(matching: .any).matching(identifier: "subtask:Шаг два").firstMatch
         XCTAssertTrue(first.waitForExistence(timeout: 5) && second.waitForExistence(timeout: 5))
         XCTAssertLessThan(second.frame.minY, first.frame.minY)
-        first.press(forDuration: 1.2, thenDragTo: second)
+        // Slowly, and held over the target: a quick drop can land before the target notices the drag.
+        first.press(forDuration: 1.2, thenDragTo: second, withVelocity: .slow, thenHoldForDuration: 0.5)
         let moved = NSPredicate { _, _ in first.frame.minY < second.frame.minY }
         XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: moved, object: nil)], timeout: 5), .completed,
                        "the dragged subtask is above the one it was dropped on")
@@ -82,7 +85,8 @@ final class RegressionUITests: XCTestCase {
         XCTAssertTrue(listRow.waitForNonExistence(timeout: 6), "Lists → Pleasant opened")
     }
 
-    /// Every text field of the settings keeps a typed trailing space visible (right-aligned fields hide ordinary ones).
+    /// Every text field of the settings keeps a typed trailing space visible (right-aligned text drops it): the field
+    /// is as wide as its text, so the space after the word widens it, and the space is kept as typed.
     func testSettingsFieldsShowATypedTrailingSpace() {
         launch("superpooper://settings")
         let link = app.buttons["settings.link.taskSettings"]
@@ -91,10 +95,13 @@ final class RegressionUITests: XCTestCase {
         let vault = app.textFields.matching(NSPredicate(format: "placeholderValue == 'Automatic'")).firstMatch
         XCTAssertTrue(vault.waitForExistence(timeout: 5))
         vault.tap()
-        vault.typeText("My ")
-        XCTAssertEqual(vault.value as? String, "My\u{00A0}", "the space after the word is shown")
+        vault.typeText("My")
+        let word = vault.frame.width
+        vault.typeText(" ")
+        XCTAssertEqual(vault.value as? String, "My ")
+        XCTAssertGreaterThan(vault.frame.width, word, "the space after the word is shown")
         vault.typeText("Vault")
-        XCTAssertEqual(vault.value as? String, "My\u{00A0}Vault")
+        XCTAssertEqual(vault.value as? String, "My Vault")
         vault.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 8))
     }
 

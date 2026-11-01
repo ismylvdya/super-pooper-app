@@ -11,7 +11,7 @@ struct HabitSections: View {
             // A task that simply repeats has no history grid to keep an eye on.
             if !editor.task.habit.repeatable { HabitHistorySection(habit: editor.task) }
             TaskNoteSection(taskName: editor.task.name, header: "habitPage.description", placeholder: "habitPage.description.placeholder")
-            // One-off subtasks: ordinary task notes under the habit (TaskNotes `projects`); done, they do not come back.
+            // One-off subtasks: ordinary tasks under the habit; done, they do not come back.
             SubtasksSection(editor: editor)
             HabitStatsSection(habit: editor.task)
             TaskLinksSection(task: editor.task)

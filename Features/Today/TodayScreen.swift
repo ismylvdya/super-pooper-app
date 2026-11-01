@@ -13,17 +13,12 @@ struct TodayScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
-    @Environment(\.icons) private var icons
+    @Environment(\.rules) private var rules
     @Environment(\.openURL) private var openURL
     @Environment(\.physicalBottom) private var physicalBottom
     @State private var pendingAction: PendingAction?
-    @State private var dayOffset = 0
-    @State private var dragX: CGFloat = 0
     @State private var width: CGFloat = 0
-    @State private var page = 0
-    @State private var pageDrag: CGFloat = 0
-    /// The direction of the drag in progress, decided by its first movement.
-    @State private var swipeAxis: TodaySwipe.Axis?
+    @State private var pager = TodayPager()
     @State private var taskDrag = TaskDragState()
 
     private var isLandscape: Bool { physicalBottom != nil }
@@ -50,7 +45,13 @@ struct TodayScreen: View {
         }
         .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
         .environment(taskDrag)
-        .onChange(of: router.todayTaps) { if dayOffset != 0 { withAnimation(tokens.animation) { dayOffset = 0 } } }
+        // A drag asks for a block; the pages of the layout shown now turn to it.
+        .onChange(of: taskDrag.turnRequest) { _, block in
+            guard let block else { return }
+            if let index = layout.blocks.firstIndex(where: { $0.block == block }) { turn(to: index) }
+            taskDrag.turnHandled()
+        }
+        .onChange(of: router.todayTaps) { pager.showToday(animation: tokens.animation) }
     }
 
     /// Turned sideways, Today has its own arrangement.
@@ -62,11 +63,7 @@ struct TodayScreen: View {
     private var pageCount: Int { layout.isPaged ? layout.blocks.count : 1 }
 
     private func turn(to newPage: Int) {
-        guard layout.isPaged, newPage != page, layout.blocks.indices.contains(newPage) else { return }
-        withAnimation(tokens.animation) {
-            page = newPage
-            pageDrag = 0
-        }
+        pager.turn(to: newPage, pageCount: pageCount, animation: tokens.animation)
     }
 
     private var content: some View {
@@ -74,68 +71,43 @@ struct TodayScreen: View {
             let layout = layout
             let bottomInset = geometry.safeAreaInsets.bottom
             TimelineView(.periodic(from: .now, by: model.config.rules.timeline.refreshSeconds)) { _ in
-                let plan = model.plan(at: model.clock.now, dayOffset: dayOffset)
-                let fade = 1 - min(abs(dragX) / geometry.size.width, 1) * tokens.opacity(.daySwipeFade)
-                ScreenLayoutView(layout: layout, page: page, pageDrag: pageDrag, edgeInset: tokens.space(.screenHorizontal), onTurn: turn) { id in
-                    TodayBlock(id: id, plan: plan, handler: handler,
-                               bottomInset: Self.touchesBottom(id, in: layout) ? bottomInset : 0)
-                        .daySlide(dragX, fade: fade)
+                let plan = model.plan(at: model.clock.now, dayOffset: pager.dayOffset)
+                let fade = 1 - min(abs(pager.daySlide) / geometry.size.width, 1) * tokens.opacity(.daySwipeFade)
+                ScreenLayoutView(layout: layout, page: pager.page, pageDrag: pager.pageDrag, edgeInset: tokens.space(.screenHorizontal),
+                                 onTurn: turn) { id in
+                    let reachesBottom = Self.touchesBottom(id, in: layout)
+                    TodayBlock(id: id, plan: plan, handler: handler, bottomInset: reachesBottom ? bottomInset : 0,
+                               barEdges: reachesBottom && !isLandscape ? .bottom : [])
+                        .daySlide(pager.daySlide, fade: fade)
                 }
                 .padding(.horizontal, tokens.space(.screenHorizontal))
                 .padding(.top, tokens.space(.headerToPlate))
                 // An empty pool still takes the swipe.
                 .contentShape(Rectangle())
+                // A lifted row's shadow fits above the first row; sideways it may reach over the margins and the next block.
+                .environment(\.liftRoom, LiftRoom(top: tokens.space(.liftShadow), sides: tokens.size(.liftOverhang)))
             }
             .ignoresSafeArea(.container, edges: .bottom)
             .simultaneousGesture(daySwipe(width: geometry.size.width))
-            .onAppear {
-                taskDrag.turn = { block in
-                    if let index = layout.blocks.firstIndex(where: { $0.block == block }) { turn(to: index) }
-                }
-            }
-            .onChange(of: arrangement) { page = 0 }
+            .onChange(of: arrangement) { pager.resetPage() }
         }
     }
 
-    /// On pages a horizontal drag moves them with the finger; far enough, it turns the page. Past the first or
-    /// last page it does nothing: the day changes with the arrows.
+    /// On pages a horizontal drag moves them with the finger and, far enough, turns the page (`TodayPager`).
     private func daySwipe(width: CGFloat) -> some Gesture {
-        DragGesture(minimumDistance: tokens.size(.daySwipeStart))
-            .onChanged { value in
-                let axis = TodaySwipe.axis(locked: swipeAxis, width: value.translation.width, height: value.translation.height,
-                                           axisRatio: tokens.size(.daySwipeAxisRatio))
-                swipeAxis = axis
-                guard axis == .horizontal,
-                      TodaySwipe.page(forward: value.translation.width < 0, page: page, pageCount: pageCount) != nil else { return }
-                pageDrag = value.translation.width
-            }
+        DragGesture(minimumDistance: rules.gestures.daySwipeMinimumDistance)
+            .onChanged { pager.swipeChanged($0.translation, pageCount: pageCount, gestures: rules.gestures) }
             .onEnded { value in
-                let distance = value.translation.width
-                let axis = TodaySwipe.axis(locked: swipeAxis, width: distance, height: value.translation.height,
-                                           axisRatio: tokens.size(.daySwipeAxisRatio))
-                swipeAxis = nil
-                let isSwipe = TodaySwipe.isSwipe(axis: axis, width: distance, predictedWidth: value.predictedEndTranslation.width,
-                                                 containerWidth: width, threshold: tokens.opacity(.daySwipeThreshold))
-                if isSwipe, let target = TodaySwipe.page(forward: distance < 0, page: page, pageCount: pageCount) {
-                    turn(to: target)
-                } else {
-                    withAnimation(tokens.animation) { pageDrag = 0 }
-                }
+                pager.swipeEnded(value.translation, predicted: value.predictedEndTranslation, containerWidth: width,
+                                 pageCount: pageCount, gestures: rules.gestures, animation: tokens.animation)
             }
-    }
-
-    /// Yesterday / tomorrow: the pool and the timeline slide out to the side and the other day slides in.
-    private func changeDay(by step: Int) {
-        withAnimation(.easeIn(duration: tokens.duration(.animation) / 2)) { dragX = step > 0 ? -width : width } completion: {
-            dayOffset += step
-            dragX = step > 0 ? width : -width
-            withAnimation(.easeOut(duration: tokens.duration(.animation) / 2)) { dragX = 0 }
-        }
     }
 
     /// The arrows around the shown day's name; on another day, tapping the name goes back to today.
     private var dayNavigation: DayNavigation {
-        DayNavigation(dayOffset: dayOffset, onStep: changeDay) { withAnimation(tokens.animation) { dayOffset = 0 } }
+        DayNavigation(dayOffset: pager.dayOffset, onStep: { pager.changeDay(by: $0, width: width, duration: tokens.duration(.animation)) }) {
+            pager.showToday(animation: tokens.animation)
+        }
     }
 
     /// The phone lying sideways: the bar's buttons in a column along the physical top, each where it is on the
@@ -151,18 +123,18 @@ struct TodayScreen: View {
             }
         }
         // As far from the physical sides as the bubbles upright: measured from the screen edges in both turns.
-        .padding(.vertical, tokens.space(.screenHorizontal))
+        .padding(.vertical, tokens.bar(.barSideInset))
         .ignoresSafeArea(.container, edges: .vertical)
     }
 
     /// A group of bar buttons in the glass capsule the system draws around them upright.
     private func bubble(_ axis: Axis, @ViewBuilder _ buttons: () -> some View) -> some View {
-        let layout = axis == .horizontal ? AnyLayout(HStackLayout(spacing: tokens.space(.barButtonGap)))
-            : AnyLayout(VStackLayout(spacing: tokens.space(.barButtonGap)))
+        let layout = axis == .horizontal ? AnyLayout(HStackLayout(spacing: tokens.bar(.barButtonGap)))
+            : AnyLayout(VStackLayout(spacing: tokens.bar(.barButtonGap)))
         return layout { buttons() }
             .buttonStyle(.plain)
             .foregroundStyle(tokens.color(.primaryText))
-            .glassBubble()
+            .systemLook(.barCapsule)
     }
 
     /// The bar upright: the button groups at the edges, the day's name with its arrows midway between them.
@@ -189,7 +161,7 @@ private extension View {
 }
 
 private struct DaySlide: ViewModifier {
-    @Environment(\.tokens) private var tokens
+    @Environment(\.liftRoom) private var liftRoom
     let offset: CGFloat
     let fade: Double
 
@@ -197,7 +169,7 @@ private struct DaySlide: ViewModifier {
         content
             .offset(x: offset)
             .opacity(fade)
-            .clipShape(Rectangle().inset(by: offset == 0 ? -tokens.size(.liftOverhang) : 0))
+            .clipShape(Rectangle().inset(by: offset == 0 ? -liftRoom.sides : 0))
     }
 }
 
@@ -207,11 +179,14 @@ struct TodayBlock: View {
     let plan: DayPlan
     let handler: TaskActionHandler
     let bottomInset: CGFloat
+    /// The edges under the system tab bar: upright, the bottom of a block that reaches the screen's bottom (lying sideways
+    /// the app's own tab bar stands beside the blocks).
+    let barEdges: Edge.Set
 
     var body: some View {
         switch id {
-        case .pool: PoolBlock(plan: plan, handler: handler, bottomInset: bottomInset)
-        case .timeline: TimelineBlock(plan: plan, handler: handler, bottomInset: bottomInset)
+        case .pool: PoolBlock(plan: plan, handler: handler, bottomInset: bottomInset, barEdges: barEdges)
+        case .timeline: TimelineBlock(plan: plan, handler: handler, bottomInset: bottomInset, barEdges: barEdges)
         }
     }
 }

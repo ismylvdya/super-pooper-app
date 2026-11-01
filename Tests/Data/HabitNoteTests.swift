@@ -58,9 +58,9 @@ struct HabitNoteTests {
         #expect(text.contains("\"habit_color\":\"#FF9500\"") && text.contains("\"weekly_goal\":2"))
     }
 
-    /// The sync's migration: the old property name, separate keys and the two feel booleans become the current
-    /// fields, values unchanged.
-    @Test func theMigrationRewritesEveryOlderField() async throws {
+    /// Any write of the note moves the old property name, separate keys and the two feel booleans into the current
+    /// fields, values unchanged; reading leaves them.
+    @Test func anyWriteRewritesEveryOlderField() async throws {
         let note = try await SandboxNote("Медитация 🧘")
         let old = try note.text().replacingOnce("\ntags:", with: """
 
@@ -72,10 +72,11 @@ struct HabitNoteTests {
         """)
         try note.sandbox.write(old, to: note.task.name)
         let before = try await note.reload()
-        #expect(before.hasLegacyFields && before.feel == .pleasant && before.habit.harmful)
-        let written = try await note.apply([.migrateLegacyFields]).task
+        #expect(before.feel == .pleasant && before.habit.harmful && before.habit.color == "#FF9500")
+        #expect(try note.text() == old)
+        let written = try await note.apply([.highPriority(true)]).task
         let text = try note.text()
-        #expect(!written.hasLegacyFields && written.feel == .pleasant && written.habit.harmful && written.habit.color == "#FF9500")
+        #expect(written.isHighPriority && written.feel == .pleasant && written.habit.harmful && written.habit.color == "#FF9500")
         for key in ["superpooper:", "habit_color:", "need_energy:", "pleasant:"] {
             #expect(!text.split(separator: "\n").contains { $0.hasPrefix(key) }, "no \(key) key")
         }
@@ -90,7 +91,7 @@ struct WriteConflictTests {
         let note = try await SandboxNote("Купить молоко")
         try note.sandbox.write(try note.text().replacingOnce("time_estimate: 15", with: "time_estimate: 60"), to: note.task.name)
         let result = try await note.apply([.highPriority(true)])
-        #expect(result.hadConflict && result.clashingKeys.isEmpty)
+        #expect(result.hadConflict && result.clashingFields.isEmpty)
         #expect(result.task.timeEstimate == 60 && result.task.isHighPriority)
     }
 
@@ -98,7 +99,7 @@ struct WriteConflictTests {
         let note = try await SandboxNote("Купить молоко")
         try note.sandbox.write(try note.text().replacingOnce("time_estimate: 15", with: "time_estimate: 60"), to: note.task.name)
         let result = try await note.apply([.timeEstimate(2)])
-        #expect(result.clashingKeys == ["time_estimate"])
+        #expect(result.clashingFields == [.timeEstimate])
         #expect(result.task.timeEstimate == 2)
     }
 }
@@ -116,24 +117,24 @@ struct TaskNotesFolderTests {
     }
 
     @Test func obsidianLinksPointIntoTheVault() {
-        let url = VaultPaths.obsidianURL(relativePath: "Tasks/Купить молоко.md", root: folder, folder: ChosenFolder(),
-                                         vaultName: "", pathPrefix: "", noteExtension: "md")
+        let url = ObsidianLink.url(relativePath: "Tasks/Купить молоко.md", root: folder, folder: ChosenFolder(),
+                                         vaultName: "", pathPrefix: "", obsidian: TestConfig.mapping.obsidian)
         let items = URLComponents(url: url!, resolvingAgainstBaseURL: false)?.queryItems
         #expect(items == [URLQueryItem(name: "vault", value: "Vault"), URLQueryItem(name: "file", value: "TaskNotes/Tasks/Купить молоко")])
-        let custom = VaultPaths.obsidianURL(relativePath: "Tasks/A.md", root: folder, folder: ChosenFolder(),
-                                            vaultName: "Main", pathPrefix: "Work/TaskNotes", noteExtension: "md")
+        let custom = ObsidianLink.url(relativePath: "Tasks/A.md", root: folder, folder: ChosenFolder(),
+                                            vaultName: "Main", pathPrefix: "Work/TaskNotes", obsidian: TestConfig.mapping.obsidian)
         #expect(URLComponents(url: custom!, resolvingAgainstBaseURL: false)?.queryItems?.last?.value == "Work/TaskNotes/Tasks/A")
     }
 
     /// A TaskNotes folder deep in an iCloud vault: its path names the vault and where the folder is, no settings needed.
     @Test func theFolderInObsidiansICloudFolderTellsItsVault() throws {
-        let vaults = "iCloud~md~obsidian/Documents"
+        let vaults = TestConfig.mapping.obsidian.vaultsFolder
         let nested = URL(fileURLWithPath: "/private/var/mobile/Library/Mobile Documents/iCloud~md~obsidian/Documents/Main/Work/TaskNotes",
                          isDirectory: true)
         let place = try #require(VaultPaths.obsidianPlace(of: nested, vaultsFolder: vaults))
         #expect(place == ObsidianPlace(vault: "Main", pathPrefix: "Work/TaskNotes"))
-        let url = VaultPaths.obsidianURL(relativePath: "Tasks/A.md", root: nested, folder: ChosenFolder(obsidianPlace: place),
-                                         vaultName: "", pathPrefix: "", noteExtension: "md")
+        let url = ObsidianLink.url(relativePath: "Tasks/A.md", root: nested, folder: ChosenFolder(obsidianPlace: place),
+                                         vaultName: "", pathPrefix: "", obsidian: TestConfig.mapping.obsidian)
         #expect(URLComponents(url: url!, resolvingAgainstBaseURL: false)?.queryItems
                 == [URLQueryItem(name: "vault", value: "Main"), URLQueryItem(name: "file", value: "Work/TaskNotes/Tasks/A")])
         #expect(VaultPaths.obsidianPlace(of: folder, vaultsFolder: vaults) == nil)
@@ -141,16 +142,16 @@ struct TaskNotesFolderTests {
 
     @Test func aWholeVaultKeepsItsOwnPaths() async throws {
         let sandbox = try VaultSandbox.make()
-        #expect(VaultPaths.isWholeVault(sandbox.vault, exists: { FileManager.default.fileExists(atPath: $0.path) }))
+        #expect(VaultPaths.isWholeVault(sandbox.vault, configFolder: TestConfig.mapping.obsidian.configFolder, exists: { FileManager.default.fileExists(atPath: $0.path) }))
         let note = try await SandboxNote("Купить молоко", sandbox: sandbox)
-        #expect(note.task.relativePath == "TaskNotes/Tasks/Купить молоко.md")
+        #expect(note.task.id.relativePath == "TaskNotes/Tasks/Купить молоко.md")
     }
 
     @Test func scanningTheTaskNotesFolderFindsTheTasks() async throws {
         let sandbox = try VaultSandbox.make()
         let root = sandbox.vault.appendingPathComponent("TaskNotes", isDirectory: true)
         let output = await sandbox.scanner().scan(root: root, tasksFolder: "TaskNotes/Tasks")
-        #expect(output.result.tasks.contains { $0.relativePath == "Tasks/Купить молоко.md" })
+        #expect(output.result.tasks.contains { $0.id.relativePath == "Tasks/Купить молоко.md" })
         #expect(output.result.fileProblems.allSatisfy { if case .tasksFolderMissing = $0 { false } else { true } })
     }
 }

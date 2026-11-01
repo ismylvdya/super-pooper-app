@@ -3,11 +3,12 @@
     "defaultEstimateMinutes": 15,
     "reminderMinutes": 15,
     "autoPromoteFrom": [
-      "half_year",
+      "halfYear",
       "someday"
     ],
     "morningEnds": "12:00",
-    "eveningStarts": "18:00"
+    "eveningStarts": "18:00",
+    "eventLinkToleranceSeconds": 60
   },
   "timeEstimates": [
     {
@@ -32,7 +33,10 @@
     "horizonDays": 7,
     "imageFile": "notification-image.png",
     "signingWarningHours": 24,
-    "signingWarningID": "signing-expiry"
+    "signingWarningID": "signing-expiry",
+    "imageMaxPixels": 400,
+    "restoreDelaySeconds": 1,
+    "fireTimeToleranceSeconds": 30
   },
   "eventLinks": {
     "resolveDaysBefore": 2,
@@ -44,12 +48,11 @@
   "vault": {
     "downloadTimeoutSeconds": 20,
     "downloadPollSeconds": 0.25,
-    "noteExtension": "md",
     "settingsFile": "super-pooper-app-settings.json",
     "settingsNote": "SuperPooper Settings.md",
     "doneFolder": "Done",
-    "obsidianVaultsFolder": "iCloud~md~obsidian/Documents",
-    "settingsWriteDelaySeconds": 1
+    "settingsWriteDelaySeconds": 1,
+    "modificationToleranceSeconds": 0.001
   },
   "backups": {
     "keepCount": 20
@@ -59,15 +62,20 @@
     "externalChangeDelaySeconds": 0.5,
     "maxHoursAfter": 18,
     "otherDayAnchor": "08:00",
-    "dropStepMinutes": 5
+    "dropStepMinutes": 5,
+    "zoom": {
+      "min": 0.4,
+      "max": 4
+    }
   },
   "widgets": {
     "refreshMinutes": 15,
     "entryCount": 24,
-    "habitGridWeeksSmall": 4,
     "timelineHours": 6,
     "maxHoursBefore": 1,
-    "backgroundRefreshMinutes": 30
+    "backgroundRefreshMinutes": 30,
+    "clockTimelineMinutes": 60,
+    "minimumBlockMinutes": 30
   },
   "habits": {
     "historyMinimumWeeks": 6,
@@ -76,7 +84,16 @@
     "defaultWeeklyGoal": 3,
     "maxAllowedSkips": 14,
     "historyPullWeeks": 4,
-    "maxListBells": 2
+    "maxListBells": 2,
+    "stats": {
+      "partialUnits": 0.5,
+      "twiceUnits": 2,
+      "shareWindowsDays": [
+        7,
+        30
+      ],
+      "months": 12
+    }
   },
   "pool": {
     "extraLines": [
@@ -88,7 +105,8 @@
         "minutes": 240,
         "lines": 2
       }
-    ]
+    ],
+    "rowVisibleShare": 0.5
   },
   "limits": {
     "poolVisibleCount": {
@@ -136,7 +154,31 @@
     "defaultTime": "09:00",
     "nextReminderGapMinutes": 240,
     "noteSaveDelaySeconds": 1.2,
+    "settingsSaveDelaySeconds": 0.5,
     "repeatUntilDays": 30,
     "repeatCount": 10
+  },
+  "gestures": {
+    "tapSlop": 6,
+    "daySwipeMinimumDistance": 20,
+    "daySwipeAxisRatio": 1.5,
+    "daySwipeShare": 0.25,
+    "daySwipeFlingShare": 0.5,
+    "bannerDismissDistance": 20,
+    "bannerDismissFling": 60,
+    "pullThreshold": 60
+  },
+  "banners": {
+    "autoHideSeconds": 10,
+    "collapsedLines": 2
+  },
+  "settingsPreview": {
+    "poolRows": 3,
+    "timelineHours": 6,
+    "colorRows": 2,
+    "colorHabitRows": 1
+  },
+  "layoutEstimates": {
+    "poolRowHeight": 52
   }
 }

@@ -7,7 +7,7 @@ struct TaskPropertiesSection: View {
     @Environment(\.tokens) private var tokens
     let editor: TaskEditor
 
-    private var task: TaskNote { editor.task }
+    private var task: TaskItem { editor.task }
 
     var body: some View {
         PlateSection(header: "taskPage.properties", info: "info.taskPage.properties") {
@@ -25,7 +25,7 @@ struct TaskPropertiesSection: View {
             }
             TimeZoneRow(editor: editor)
             PlateRow(icon: .feel, title: "taskPage.feel", info: "info.taskPage.feel") {}
-            Picker("taskPage.feel", selection: binding(\.feel, change: TaskFieldChange.feel)) {
+            Picker("taskPage.feel", selection: binding(\.feel, change: TaskEdit.feel)) {
                 ForEach(TaskFeel.allCases, id: \.self) { Text(L10n.string("taskPage.feel." + $0.rawValue)).tag($0) }
             }
             .pickerStyle(.segmented)
@@ -39,9 +39,7 @@ struct TaskPropertiesSection: View {
         PlateRow(icon: .status, title: "taskPage.status", info: "info.taskPage.status") {
             Picker("taskPage.status", selection: Binding(
                 get: { task.status },
-                set: { status in
-                    editor.apply(TaskMarking(today: model.context().today).changes(setting: status, on: task))
-                }
+                set: { status in editor.setStatus(status, today: model.context().today) }
             )) {
                 ForEach(TaskStatus.known, id: \.self) { Text(StatusText.title($0)).tag($0) }
                 if case .other(let raw) = task.status { Text(verbatim: raw).tag(task.status) }
@@ -50,7 +48,7 @@ struct TaskPropertiesSection: View {
         }
     }
 
-    private func binding<Value>(_ keyPath: KeyPath<TaskNote, Value>, change: @escaping (Value) -> TaskFieldChange) -> Binding<Value> {
+    private func binding<Value>(_ keyPath: KeyPath<TaskItem, Value>, change: @escaping (Value) -> TaskEdit) -> Binding<Value> {
         Binding(get: { task[keyPath: keyPath] },
                 set: { value in editor.apply([change(value)]) })
     }
@@ -58,68 +56,5 @@ struct TaskPropertiesSection: View {
     private var estimateBinding: Binding<Int> {
         Binding(get: { rules.day.estimate(of: task) },
                 set: { minutes in editor.apply([.timeEstimate(minutes)]) })
-    }
-}
-
-/// The task date: a toggle; when on, a date and (child) an optional time.
-struct DueEditor: View {
-    @Environment(AppModel.self) private var model
-    @Environment(\.rules) private var rules
-    let editor: TaskEditor
-
-    private var task: TaskNote { editor.task }
-
-    var body: some View {
-        PlateRow(icon: .due, title: "taskPage.due", info: "info.taskPage.due") {
-            Toggle("taskPage.due", isOn: Binding(
-                get: { task.due != nil },
-                set: { on in save(on ? TaskDue(day: model.context().today) : nil) }
-            )).labelsHidden()
-        }
-        if let due = task.due {
-            PlateRow(icon: nil, title: "taskPage.due.date", indent: true) {
-                DatePicker("taskPage.due.date", selection: Binding(
-                    get: { due.date(in: model.calendar) },
-                    set: { save(TaskDue(day: LocalDate($0, in: model.calendar), time: due.time)) }
-                ), displayedComponents: .date)
-                .labelsHidden()
-            }
-            PlateRow(icon: nil, title: "taskPage.due.hasTime", info: "info.taskPage.time", indent: true) {
-                Toggle("taskPage.due.hasTime", isOn: Binding(
-                    get: { due.time != nil },
-                    set: { on in save(TaskDue(day: due.day, time: on ? rules.editing.defaultTime : nil)) }
-                )).labelsHidden()
-            }
-            if let time = due.time {
-                PlateRow(icon: nil, title: "taskPage.due.time", indent: true) {
-                    DatePicker("taskPage.due.time", selection: Binding(
-                        get: { due.day.startDate(in: model.calendar, offset: time) },
-                        set: { date in
-                            save(TaskDue(day: due.day, time: LocalTime(date, in: model.calendar)))
-                        }
-                    ), displayedComponents: .hourAndMinute)
-                    .labelsHidden()
-                }
-            }
-        }
-    }
-
-    private func save(_ due: TaskDue?) {
-        editor.apply([.due(due)])
-    }
-}
-
-enum StatusText {
-    static func title(_ status: TaskStatus) -> String {
-        switch status {
-        case .thisWeek: L10n.string("status.thisWeek")
-        case .halfYear: L10n.string("status.halfYear")
-        case .someday: L10n.string("status.someday")
-        case .waiting: L10n.string("status.waiting")
-        case .done: L10n.string("status.done")
-        case .archived: L10n.string("status.archived")
-        case .habit: L10n.string("status.habit")
-        case .other(let raw): raw
-        }
     }
 }

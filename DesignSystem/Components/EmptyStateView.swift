@@ -41,7 +41,7 @@ struct EmptyStateView: View {
                     .tint(tokens.color(.accent))
             }
         }
-        .padding(tokens.space(.screenHorizontal) * 2)
+        .padding(tokens.space(.emptyStateInset))
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

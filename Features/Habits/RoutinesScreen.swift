@@ -9,9 +9,9 @@ struct RoutinesScreen: View {
 
     var body: some View {
         List {
-            section(.morning, title: "routines.morning", keyPath: \.morningRoutine)
-            section(.day, title: "routines.day", keyPath: \.dayRoutine)
-            section(.evening, title: "routines.evening", keyPath: \.eveningRoutine)
+            section(.morning, title: "routines.morning")
+            section(.day, title: "routines.day")
+            section(.evening, title: "routines.evening")
         }
         .listGroupStyle()
         .listGroupBacking(frames)
@@ -21,31 +21,25 @@ struct RoutinesScreen: View {
     }
 
     @ViewBuilder
-    private func section(_ part: HabitTimeOfDay, title: LocalizedStringKey, keyPath: WritableKeyPath<AppSettings.Habits, [String]>) -> some View {
+    private func section(_ part: HabitTimeOfDay, title: LocalizedStringKey) -> some View {
+        let keyPath = AppSettings.Habits.routine(part)
         let members = HabitRoutines.members(part, of: model.habits, order: model.settings.habits[keyPath: keyPath])
         ListGroupHeader(title: Text(title))
         if members.isEmpty {
-            Text("routines.empty").font(tokens.font(.hint)).foregroundStyle(tokens.color(.secondaryText))
-                .padding(.horizontal, tokens.space(.plateInner))
-                .padding(.vertical, tokens.space(.listRowVertical))
-                .listGroupRow(group: part.rawValue, id: "empty", isFirst: true, isLast: true, frames: frames,
-                              separatorInset: tokens.space(.plateInner))
+            Text("routines.empty").secondaryText(.hint)
+                .listGroupRow(group: part.rawValue, id: "empty", isFirst: true, isLast: true, frames: frames)
         }
         ForEach(Array(members.enumerated()), id: \.element.name) { index, habit in
             NavigationLink(value: Route.task(habit.name)) {
                 Text(habit.name).foregroundStyle(tokens.habitNameColor(habit))
             }
-            .padding(.horizontal, tokens.space(.plateInner))
-            .padding(.vertical, tokens.space(.listRowVertical))
             .listGroupRow(group: part.rawValue, id: habit.name, isFirst: index == 0, isLast: index == members.count - 1,
-                          frames: frames, separatorInset: tokens.space(.plateInner))
-            // Rebuilt when it becomes or stops being first or last, so the corners follow a new order.
-            .id("\(habit.name)|\(index == 0)|\(index == members.count - 1)")
+                          frames: frames)
         }
         .onMove { source, destination in
             var names = members.map(\.name)
             names.move(fromOffsets: source, toOffset: destination)
-            Haptics.play(.medium)
+            Haptics.play(.reorder)
             model.updateSettings { $0.habits[keyPath: keyPath] = names }
         }
         ListGroupFooter(text: Text("routines.hint"))

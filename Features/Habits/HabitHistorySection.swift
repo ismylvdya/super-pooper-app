@@ -8,7 +8,7 @@ struct HabitHistorySection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
     @Environment(\.rules) private var rules
-    let habit: TaskNote
+    let habit: TaskItem
     @State private var addedWeeks = 0
     /// The plate's width; the grid is laid out only once it is known, so the scroll starts at the real bottom
     /// (laid out for a guessed width first, the newest week would end up below the plate on a narrow phone).
@@ -22,19 +22,17 @@ struct HabitHistorySection: View {
                                         extraWeeks: rules.habits.historyExtraWeeks) + addedWeeks
         let grid = HabitGrid(task: habit, weekCount: weeks, today: today, days: context.days)
         let inner = tokens.space(.plateInner)
-        let shape = RoundedRectangle(cornerRadius: tokens.radius(.plate), style: .continuous)
         VStack(alignment: .leading, spacing: 0) {
             PlateHeader(title: "habitPage.history", info: "info.habitPage.history")
             Group {
                 if let width {
-                    history(grid, metrics: HabitDotMetrics.fitting(width: width - inner * 2, ringRatio: tokens.size(.habitRingRatio)))
+                    history(grid, metrics: tokens.habitDots(fitting: width - inner * 2))
                 } else {
                     Color.clear.frame(height: tokens.size(.habitHistoryMaxHeight))
                 }
             }
             .frame(maxWidth: .infinity)
-            .background(tokens.color(.plateBackground), in: shape)
-            .clipShape(shape)
+            .plate(.group, clipsContent: true)
             .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         }
     }
@@ -44,7 +42,7 @@ struct HabitHistorySection: View {
                 WeekdayHeader(metrics: metrics).padding(.top, tokens.space(.plateInner))
                 ScrollView {
                     HabitGridView(grid: grid, color: tokens.habitColor(habit), metrics: metrics, onTap: { day in
-                        Haptics.play(.light)
+                        Haptics.play(.mark)
                         Task { await model.cycleHabit(habit.name, on: day) }
                     }) { day in
                         HabitDayMenu(habit: habit, day: day, showsDate: true)
@@ -60,7 +58,7 @@ struct HabitHistorySection: View {
                 .scrollIndicators(.hidden)
                 .edgeFades(color: tokens.color(.plateBackground), solidTop: true)
                 .pullToExtend(icon: .olderWeeks) {
-                    Haptics.play(.medium)
+                    Haptics.play(.extend)
                     addedWeeks += rules.habits.historyPullWeeks
                 }
                 .frame(maxHeight: tokens.size(.habitHistoryMaxHeight))

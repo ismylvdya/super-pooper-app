@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Subtasks, the TaskNotes way: each is a task note of its own that lists this one in `projects`.
+/// Subtasks: each is a task of its own that names this one as its parent.
 /// Under the existing ones there is always one empty field to add the next. A subtask picked up (long press)
 /// and dropped on another one takes its place; the pool follows that order.
 struct SubtasksSection: View {
@@ -25,21 +25,11 @@ struct SubtasksSection: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .buttonStyle(.plain)
-                    // As a habit of a routine in the pool: the row covers its piece of the plate (over the plate's
-                    // inner margins and half the gaps) with the plate's color, and that whole piece lifts as a
-                    // rounded plate.
-                    .padding(.horizontal, tokens.space(.plateInner))
-                    .padding(.vertical, tokens.space(.plateRowGap) / 2)
-                    // The section's plate is the backing; the row is a plate of its own on it, lifted with the plate's
-                    // corner radius (capped at half its height, `PlateShape`).
-                    .background(tokens.color(.plateBackground), in: PlateShape(cornerRadius: tokens.radius(.plate)))
-                    .contentShape(.dragPreview, PlateShape(cornerRadius: tokens.radius(.plate)))
-                    .onDrag {
+                    // The section's plate is the backing; the row is a plate of its own on it.
+                    .plateBleedRow {
                         dragged = subtask.name
                         return NSItemProvider(object: subtask.name as NSString)
                     }
-                    .padding(.horizontal, -tokens.space(.plateInner))
-                    .padding(.vertical, -tokens.space(.plateRowGap) / 2)
                     .onDrop(of: TaskDragState.types, isTargeted: targetBinding(subtask.name)) { _ in
                         drop(onto: subtask.name)
                     }
@@ -69,7 +59,7 @@ struct SubtasksSection: View {
     private func drop(onto name: String) -> Bool {
         defer { dragged = nil; target = nil }
         guard let dragged else { return false }
-        Haptics.play(.medium)
+        Haptics.play(.reorder)
         model.moveSubtask(dragged, onto: name, of: editor.task.name)
         return true
     }

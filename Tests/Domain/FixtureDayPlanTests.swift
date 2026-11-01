@@ -100,7 +100,7 @@ struct FixtureDayPlanTests {
 
     @Test func onlyTheHalfYearTaskDueThisWeekIsPromoted() async throws {
         let tasks = try await VaultSandbox.make().scan().tasks
-        let statuses = Set(TestConfig.rules.day.autoPromoteFrom.map(TestConfig.mapping.status(fromRaw:)))
+        let statuses = Set(TestConfig.rules.day.autoPromoteFrom.map(\.status))
         let promoted = AutoPromoter(promotableStatuses: statuses).candidates(in: tasks, context: TestCalendar.context())
         #expect(promoted.map(\.name) == ["Обновить резюме"])
     }
