@@ -2620,6 +2620,94 @@
         }
       }
     },
+    "intent.newTask.created %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Added “%@” to Soon."
+          }
+        }
+      }
+    },
+    "intent.newTask.description": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Asks for a name and adds the task to Soon without opening the app."
+          }
+        }
+      }
+    },
+    "intent.newTask.failed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t add the task. Open the app to see why."
+          }
+        }
+      }
+    },
+    "intent.newTask.name": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
+          }
+        }
+      }
+    },
+    "intent.newTask.prompt": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What's the task?"
+          }
+        }
+      }
+    },
+    "intent.newTask.rejected %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ Nothing was added."
+          }
+        }
+      }
+    },
+    "intent.newTask.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New Task"
+          }
+        }
+      }
+    },
+    "intent.newTask.unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open the app and choose the TaskNotes folder first."
+          }
+        }
+      }
+    },
     "intent.signing.description": {
       "extractionState": "manual",
       "localizations": {

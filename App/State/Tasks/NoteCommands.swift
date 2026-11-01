@@ -134,6 +134,17 @@ final class NoteCommands {
         return await create(saving.draft, named: saving.name)
     }
 
+    /// A task named outside the app's pages (the New Task intent): created as Return in the new task page's name would
+    /// create it, with the same defaults; an empty name is rejected rather than called "Unnamed".
+    func createTask(named name: String) async -> NamedTaskCreation {
+        var page = NewNotePage(draft: .newTask)
+        page.name = name
+        guard let saving = page.savedOnReturn(rules: nameProblem(in:)) else {
+            return .rejected(page.nameProblem(nameProblem(in:)) ?? .empty)
+        }
+        return await create(saving.draft, named: saving.name).map(NamedTaskCreation.created) ?? .failed
+    }
+
     /// Creates the note of a draft (a task or a habit) with all its fields, its text and its subtasks (each a task of its
     /// own linked to its parent). Returns the final name.
     func create(_ draft: NoteDraft, named name: String) async -> String? {
