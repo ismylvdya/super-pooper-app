@@ -1893,39 +1893,6 @@
         }
       }
     },
-    "habits.week.count": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ this week"
-          }
-        }
-      }
-    },
-    "habits.week.goal": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$@/%2$lld this week"
-          }
-        }
-      }
-    },
-    "habits.week.harmful": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ times this week"
-          }
-        }
-      }
-    },
     "info.habitPage.goal": {
       "extractionState": "manual",
       "localizations": {

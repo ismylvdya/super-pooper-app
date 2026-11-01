@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Soft statistics: this week, streaks, shares of the recent periods (`habits.stats.shareWindowsDays`) and all time,
+/// Soft statistics: streaks, shares of the recent periods (`habits.stats.shareWindowsDays`) and all time,
 /// counts, and marks by weekday and by month.
 struct HabitStatsSection: View {
     @Environment(AppModel.self) private var model
@@ -14,8 +14,6 @@ struct HabitStatsSection: View {
         let stats = HabitStats(task: habit, today: today, days: context.days, rules: rules.habits.stats)
         let color = tokens.habitColor(habit)
         PlateSection(header: "habitPage.stats", info: habit.habit.harmful ? "info.habitPage.stats.harmful" : "info.habitPage.stats") {
-            Text(HabitSummary.weekLine(habit, today: today, days: context.days, rules: rules.habits.stats))
-                .font(tokens.font(.rowTitle))
             HStack(alignment: .top) {
                 value(streak(stats.currentStreak, unit: stats.streakUnit), "habitPage.stats.current")
                 value(streak(stats.longestStreak?.length ?? 0, unit: stats.streakUnit), "habitPage.stats.longest",
