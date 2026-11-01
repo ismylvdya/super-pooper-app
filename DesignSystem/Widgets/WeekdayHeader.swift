@@ -2,7 +2,6 @@ import SwiftUI
 
 /// Monday … Sunday initials above a habit grid, one per cell.
 struct WeekdayHeader: View {
-    @Environment(\.tokens) private var tokens
     @Environment(\.calendar) private var calendar
     let metrics: HabitDotMetrics
 

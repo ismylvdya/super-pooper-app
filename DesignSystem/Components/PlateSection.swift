@@ -2,7 +2,6 @@ import SwiftUI
 
 /// A settings-style group: header above, rounded plate with rows, hint below (manifest specs).
 struct PlateSection<Content: View>: View {
-    @Environment(\.tokens) private var tokens
     let header: Text?
     let info: LocalizedStringKey?
     let hint: Text?

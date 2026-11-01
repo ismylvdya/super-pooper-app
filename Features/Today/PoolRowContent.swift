@@ -8,7 +8,6 @@ struct PoolRowContent: View {
         case slot(isPast: Bool, isCompact: Bool)
     }
 
-    @Environment(\.tokens) private var tokens
     @Environment(\.actions) private var actions
     @Environment(TaskDragState.self) private var drag: TaskDragState?
     let item: DayItem
