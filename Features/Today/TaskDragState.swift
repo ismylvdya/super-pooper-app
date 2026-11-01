@@ -44,6 +44,12 @@ final class TaskDragState {
         turnRequest = nil
     }
 
+    /// While the task is over the pool its row there is an empty gap the others part around: the task itself is under
+    /// the finger.
+    func isGap(_ id: String) -> Bool {
+        poolOrder != nil && item?.id == id
+    }
+
     func end() {
         item = nil
         hoverMoment = nil
@@ -52,13 +58,37 @@ final class TaskDragState {
 }
 
 extension View {
-    /// Lets the row be picked up (long press, then move); the long-press menu still opens without moving.
-    @ViewBuilder func taskDragSource(_ item: DayItem, from source: TaskDragState.Source, drag: TaskDragState?, isOn: Bool) -> some View {
+    /// Lets the row be picked up (long press, then move); the long-press menu still opens without moving. Under the
+    /// finger goes `preview` (the row's plate, drawn again: a drag that starts from the long-press menu shows only the
+    /// row's text otherwise) at the row's size, lifted as its plate (`lift`).
+    @ViewBuilder func taskDragSource<Preview: View>(_ item: DayItem, from source: TaskDragState.Source, drag: TaskDragState?,
+                                                    isOn: Bool, lift: PlateCorners,
+                                                    @ViewBuilder preview: @escaping () -> Preview) -> some View {
         if let drag, isOn {
-            onDrag { drag.begin(item, from: source) }
+            modifier(TaskDragSource(item: item, source: source, drag: drag, lift: lift, preview: preview))
         } else {
             self
         }
+    }
+}
+
+private struct TaskDragSource<Preview: View>: ViewModifier {
+    let item: DayItem
+    let source: TaskDragState.Source
+    let drag: TaskDragState
+    let lift: PlateCorners
+    let preview: () -> Preview
+    @State private var size: CGSize?
+
+    func body(content: Content) -> some View {
+        content
+            .plateLift(lift, for: .dragPreview)
+            .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
+            .onDrag { drag.begin(item, from: source) } preview: {
+                preview()
+                    .frame(width: size?.width, height: size?.height)
+                    .plateLift(lift, for: .dragPreview)
+            }
     }
 }
 

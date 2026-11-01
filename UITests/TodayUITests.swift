@@ -142,6 +142,19 @@ final class TodayUITests: XCTestCase {
         XCTAssertEqual(XCTWaiter().wait(for: [auto], timeout: 5), .completed)
     }
 
+    /// A pool row dragged up onto the row above takes its place (.21800): the drag carries the row's own plate and leaves
+    /// a gap in the pool; what it looks like mid-drag only a screenshot shows, the new order is checked here.
+    func testAPoolRowDraggedUpTakesThePlaceAbove() {
+        launch()
+        dismissBanners()
+        let pay = app.buttons["title:Оплатить интернет"]
+        let above = app.buttons["title:Медитация 🧘"]
+        XCTAssertTrue(pay.waitForExistence(timeout: 10) && above.waitForExistence(timeout: 5))
+        XCTAssertLessThan(above.frame.midY, pay.frame.midY)
+        pay.press(forDuration: 1.2, thenDragTo: above, withVelocity: .slow, thenHoldForDuration: 0.5)
+        expect(pay, toBe: { $0.frame.midY < above.frame.midY }, "it stands above the row it was dropped on")
+    }
+
     /// On the pages, a row dragged onto the edge of the other page turns to it. A habit without reminder times is
     /// dragged: the timeline does not take it, so letting go there changes nothing.
     func testDraggingOntoThePageEdgeTurnsThePage() {
