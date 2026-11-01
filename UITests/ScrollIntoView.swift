@@ -16,6 +16,22 @@ extension XCUIApplication {
         XCTFail("\(element) never came into view", file: file, line: line)
     }
 
+    /// Drags the list without letting it glide on until `element`'s top stands `share` of the window down, so a picture
+    /// taken then shows the same part of the list in every run (after a swipe the list stops a little elsewhere each time).
+    func place(_ element: XCUIElement, topAt share: CGFloat) {
+        let window = windows.firstMatch.frame
+        for _ in 0..<3 {
+            settle(element)
+            let distance = window.minY + window.height * share - element.frame.minY
+            if abs(distance) < 0.5 { return }
+            // In the screen's side margin, where the list itself takes the drag; from low down when it goes up.
+            let start = coordinate(withNormalizedOffset: CGVector(dx: 0.03, dy: distance < 0 ? 0.85 : 0.15))
+            start.press(forDuration: 0.05, thenDragTo: start.withOffset(CGVector(dx: 0, dy: distance)), withVelocity: .slow,
+                        thenHoldForDuration: 0.3)
+        }
+        settle(element)
+    }
+
     /// Waits until the element's place stops changing (a list gliding after a swipe), a few seconds at most.
     private func settle(_ element: XCUIElement) {
         var last = element.exists ? element.frame : .null

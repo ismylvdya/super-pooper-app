@@ -159,6 +159,7 @@ final class ScreenSnapshotUITests: XCTestCase {
         let preview = app.descendants(matching: .any)["Timeline preview"]
         XCTAssertTrue(preview.waitForExistence(timeout: 10))
         app.scrollIntoView(preview)
+        app.place(preview, topAt: 0.3)
         settle()
         snap("settings-timeline")
     }
