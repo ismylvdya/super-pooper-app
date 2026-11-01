@@ -2939,6 +2939,17 @@
         }
       }
     },
+    "notification.repeatable.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeatable task"
+          }
+        }
+      }
+    },
     "notification.signing.body": {
       "extractionState": "manual",
       "localizations": {

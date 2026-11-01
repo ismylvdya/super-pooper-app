@@ -58,7 +58,8 @@ struct NotificationPlanner: Sendable {
                                                           title: task.name, fireDate: context.moment(block.time, onLogicalDay: day),
                                                           taskName: task.name, day: day,
                                                           key: Self.habitSlot(task.name, slot), colorHex: task.habit.color,
-                                                          isAbsolute: task.timeZone != nil, isMoved: block.isMoved))
+                                                          isAbsolute: task.timeZone != nil, isMoved: block.isMoved,
+                                                          isRepeatable: task.kind == .repeatable))
                     }
                 }
             } else if task.status == .thisWeek, let due = task.due, let time = due.time {

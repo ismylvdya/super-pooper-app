@@ -60,14 +60,7 @@ final class AppContainer {
         self.eventKit = eventKit
         let notificationImage = NotificationImageStore(url: shared.url(config.rules.notifications.imageFile),
                                                        maxPixels: config.rules.notifications.imageMaxPixels)
-        let notifications = UserNotificationScheduler(calendar: calendar, rules: config.rules.notifications, icons: config.icons, bodyText: { kind in
-            switch kind {
-            case .habit: L10n.string("notification.habit.body")
-            case .task: L10n.string("notification.task.body")
-            case .reminder: L10n.string("notification.reminder.body")
-            case .event: L10n.string("notification.event.body")
-            }
-        }, actionTitle: { L10n.string($0) }, habitIcon: NotificationIcon(symbolName: config.icons[.habit], color: {
+        let notifications = UserNotificationScheduler(calendar: calendar, rules: config.rules.notifications, icons: config.icons, bodyText: NotificationBodyText.text(for:), actionTitle: { L10n.string($0) }, habitIcon: NotificationIcon(symbolName: config.icons[.habit], color: {
             config.tokens.applying(settingsStore.load(), limits: config.rules.limits).uiColor(.habit)
         }, isShown: { settingsStore.load().habits.showsNotificationPicture },
            usesHabitColor: { settingsStore.load().habits.notificationUsesHabitColor },

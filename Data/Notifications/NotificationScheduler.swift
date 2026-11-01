@@ -21,7 +21,8 @@ struct UserNotificationScheduler: NotificationScheduling {
     let calendar: CalendarSource
     let rules: RulesConfig.Notifications
     let icons: IconSet
-    let bodyText: @Sendable (PlannedNotification.Kind) -> String
+    /// The words under the title, by what the notification is about.
+    let bodyText: @Sendable (PlannedNotification.Subject) -> String
     /// The words of an action button, by its title key in `actions.json`.
     let actionTitle: @Sendable (String) -> String
     /// The picture of habit notifications; nil = none.
@@ -161,8 +162,8 @@ struct UserNotificationScheduler: NotificationScheduling {
         let content = UNMutableNotificationContent()
         content.title = notification.title
         content.body = notification.start.map { start in
-            "\(bodyText(notification.kind)) \(start.formatted(date: .omitted, time: .shortened))"
-        } ?? bodyText(notification.kind)
+            "\(bodyText(notification.subject)) \(start.formatted(date: .omitted, time: .shortened))"
+        } ?? bodyText(notification.subject)
         content.sound = Self.alertSound
         content.threadIdentifier = notification.key
         if notification.kind == .habit, let icon = habitIcon?.attachment(habitColor: notification.colorHex) {
