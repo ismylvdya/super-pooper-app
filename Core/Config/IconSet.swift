@@ -1,6 +1,7 @@
 import Foundation
 
-/// Names of every SF Symbol used outside the action registry (`icons.json`).
+/// Names of every SF Symbol used outside the action registry (`icons.json`), or of a hand-drawn template image of the
+/// asset catalog (the Lists glyphs, the frog of Need energy, the habit marks).
 enum Icon: String, CaseIterable, Codable, Sendable {
     case settings, review, more, info, problem, sync
     case energy, pleasant, feel, chipOrder, timeZone, high, due, time, estimate
@@ -10,7 +11,9 @@ enum Icon: String, CaseIterable, Codable, Sendable {
     case archive, delete, search, resetOrder, resetSort, add, newTask, colors, remove, chevron, status, note, title, recurrence
     case checkboxOpen, markDone
     case emptyVault, debugSeed, permissionGranted
-    case tabToday, tabHabits, tabLists, tabSettings
+    case tabToday, tabHabits, tabSettings
+    /// The hand-drawn glyphs the Lists icon is picked from (Settings → Lists, `lists.json` → `icons`).
+    case listsGun, listsGunFill, listsDoubleGuns, listsDoubleGunsFillForward, listsDoubleGunsFillBack
     case listQuick, listThisWeek, listHalfYear, listSomeday, listWaiting, listDone, listArchived
     case bell, olderWeeks, postpone
     /// Asset catalog template images (not SF Symbols): the habit marks, shared by menus and notifications.

@@ -74,5 +74,8 @@
   },
   "appearance": {
     "pastOpacity": 0.2
+  },
+  "lists": {
+    "icon": "gun"
   }
 }

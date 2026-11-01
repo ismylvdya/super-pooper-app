@@ -25,6 +25,9 @@ enum SizeToken: String, CaseIterable, Sendable {
 enum RatioToken: String, CaseIterable, Sendable {
     case habitRing, habitPartialDot, infoMaxHeight, pullStartScale, pullArmedScale, timelinePreview, largeTitleVisible
     case fadeMiddleStop, widgetWrappedTitle
+    /// A hand-drawn glyph standing in a line of text (the frog of Need energy): how tall its ink is, in cap heights of
+    /// the text's font, as the wide SF Symbols (the heart, the warning triangle) stand there.
+    case handGlyph
 }
 
 /// How many of something a drawing has (lines of a wrapped title).

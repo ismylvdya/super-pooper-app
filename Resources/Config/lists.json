@@ -66,5 +66,12 @@
         }
       ]
     }
+  ],
+  "icons": [
+    { "id": "gun", "title": "settings.listsIcon.gun", "icon": "listsGun" },
+    { "id": "gunFill", "title": "settings.listsIcon.gunFill", "icon": "listsGunFill" },
+    { "id": "doubleGuns", "title": "settings.listsIcon.doubleGuns", "icon": "listsDoubleGuns" },
+    { "id": "doubleGunsFillForward", "title": "settings.listsIcon.doubleGunsFillForward", "icon": "listsDoubleGunsFillForward" },
+    { "id": "doubleGunsFillBack", "title": "settings.listsIcon.doubleGunsFillBack", "icon": "listsDoubleGunsFillBack" }
   ]
 }

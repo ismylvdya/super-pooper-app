@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Settings of the tasks side: sources, day, Today, timeline, pool, appearance, notifications, archive.
+/// Settings of the tasks side: sources, day, Today, timeline, pool, the Lists icon, appearance, notifications, archive.
 struct TaskSettingsScreen: View {
     @Environment(AppModel.self) private var model
 
@@ -11,6 +11,7 @@ struct TaskSettingsScreen: View {
             TodaySettingsSection()
             TimelineSettingsSection()
             PoolSettingsSection()
+            ListsSettingsSection()
             AppearanceSettingsSection()
             ColorSettingsSection()
             WidgetColorsSection()

@@ -7,6 +7,7 @@ struct RootView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
     @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @Environment(\.displayScale) private var displayScale
     /// Which side the physical bottom took the last time the phone lay sideways.
     @State private var landscapeBottom: HorizontalEdge = .trailing
 
@@ -43,8 +44,10 @@ struct RootView: View {
                                 Label {
                                     Text(LocalizedStringKey(String("tab.") + tab.rawValue))
                                 } icon: {
-                                    TabIconImage.image(container.config.icons[tab.icon], font: tokens.uiFont(.systemTabIcon),
-                                                       others: AppTab.allCases.map { container.config.icons[$0.icon] })
+                                    TabIconImage.image(container.config.icons[tab.icon(lists: model.listsIcon)],
+                                                       font: tokens.uiFont(.systemTabIcon),
+                                                       others: container.config.icons.otherTabSymbols(than: tab, lists: model.listsIcon),
+                                                       fit: tokens.bar(.tabGlyphFit), scale: displayScale)
                                         // The symbol exactly as `icons.json` names it: the tab bar fills it otherwise.
                                         .environment(\.symbolVariants, .none)
                                 }
@@ -170,13 +173,21 @@ struct RootView: View {
 }
 
 extension AppTab {
-    var icon: Icon {
+    /// Its icon; the lists' one is picked in the settings.
+    func icon(lists: Icon) -> Icon {
         switch self {
         case .today: .tabToday
         case .habits: .tabHabits
-        case .lists: .tabLists
+        case .lists: lists
         case .settings: .tabSettings
         }
+    }
+}
+
+extension IconSet {
+    /// The symbols of the tabs beside `tab`: a hand-drawn tab glyph stands within them.
+    func otherTabSymbols(than tab: AppTab, lists: Icon) -> [String] {
+        AppTab.allCases.filter { $0 != tab }.map { self[$0.icon(lists: lists)] }
     }
 }
 

@@ -4611,6 +4611,83 @@
         }
       }
     },
+    "settings.lists": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lists"
+          }
+        }
+      }
+    },
+    "settings.listsIcon": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lists icon"
+          }
+        }
+      }
+    },
+    "settings.listsIcon.doubleGuns": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Double guns"
+          }
+        }
+      }
+    },
+    "settings.listsIcon.doubleGunsFillBack": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Double guns fill back"
+          }
+        }
+      }
+    },
+    "settings.listsIcon.doubleGunsFillForward": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Double guns fill forward"
+          }
+        }
+      }
+    },
+    "settings.listsIcon.gun": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gun"
+          }
+        }
+      }
+    },
+    "settings.listsIcon.gunFill": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gun fill"
+          }
+        }
+      }
+    },
     "settings.notificationImage": {
       "extractionState": "manual",
       "localizations": {

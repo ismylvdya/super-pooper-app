@@ -131,6 +131,11 @@ struct AppSettings: Codable, Equatable, Sendable {
         var prefix: String
     }
 
+    struct Lists: Codable, Equatable, Sendable {
+        /// The id of the Lists icon picked (`lists.json` → `icons`).
+        var icon: String
+    }
+
     struct Appearance: Codable, Equatable, Sendable {
         /// Opacity of done tasks and past events in the pool, the timeline and the widget.
         var pastOpacity: Double
@@ -147,6 +152,7 @@ struct AppSettings: Codable, Equatable, Sendable {
     var habits: Habits
     var clock: Clock
     var appearance: Appearance
+    var lists: Lists
     /// Color overrides by token name (`task`, `habit`, `past`, …) as `#RRGGBB`; empty = tokens.json.
     var colors: [String: String]
 }

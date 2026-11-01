@@ -165,6 +165,20 @@ final class ScreenSnapshotUITests: XCTestCase {
         snap("settings-timeline")
     }
 
+    func testListsIconSetting() {
+        launch("superpooper://settings")
+        app.buttons["settings.link.taskSettings"].tap()
+        let picker = app.buttons["settings.listsIcon"]
+        XCTAssertTrue(picker.waitForExistence(timeout: 10))
+        app.scrollIntoView(picker)
+        app.place(picker, topAt: 0.4)
+        settle()
+        snap("settings-lists-icon")
+        picker.tap()
+        settle()
+        snap("settings-lists-icon-menu")
+    }
+
     func testHabitSettings() {
         launch("superpooper://settings")
         app.buttons["settings.link.habitSettings"].tap()

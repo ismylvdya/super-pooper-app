@@ -24,11 +24,34 @@ struct TaskListsConfig: Codable, Hashable, Sendable {
         var maxEstimate: Int?
     }
 
+    /// A glyph the Lists icon can be (Settings → Lists): the icon wherever the button to the lists stands.
+    struct IconChoice: Codable, Hashable, Sendable, Identifiable {
+        /// What the settings keep (`AppSettings.Lists.icon`).
+        let id: String
+        /// Text key in `Localizable.xcstrings`.
+        let title: String
+        /// A key of `icons.json`.
+        let icon: Icon
+    }
+
     let groups: [Group]
+    let icons: [IconChoice]
 
     var lists: [List] { groups.flatMap(\.lists) }
 
     func list(_ id: String) -> List? { lists.first { $0.id == id } }
+
+    /// There is a Lists icon to pick, and the default one is among them.
+    func validate(defaultIcon: String, file: String) throws {
+        if !icons.contains(where: { $0.id == defaultIcon }) {
+            throw ConfigError(file: file, path: "icons", message: "no Lists icon \"\(defaultIcon)\" (the default in defaults.json)")
+        }
+    }
+
+    /// The Lists icon picked in the settings; an id no choice has any more (an older settings file) gets the first one.
+    func icon(for choiceID: String) -> Icon {
+        (icons.first { $0.id == choiceID } ?? icons[0]).icon
+    }
 }
 
 extension TaskListsConfig.List {

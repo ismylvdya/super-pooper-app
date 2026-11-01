@@ -26,7 +26,7 @@ struct RowChipTests {
 
     /// The page peek measures the rows' last chip by its kind's icon: the same icon the row draws; the chip order in
     /// the settings shows every look a kind can have.
-    @Test func aChipKindNamesTheIconItsChipShows() {
+    @MainActor @Test func aChipKindNamesTheIconItsChipShows() {
         let task = makeTask("Stretch") { $0.status = .habit; $0.isHighPriority = true; $0.feel = .needEnergy }
         let item = DayItem(task: task, state: .open, blockers: [.task("Warm up")], problems: [.dependencyCycle])
         for chip in RowChip.chips(for: item, order: RowChipKind.allCases) {
@@ -36,7 +36,7 @@ struct RowChipTests {
         let pleasant = DayItem(task: makeTask("Bake") { $0.feel = .pleasant }, state: .open, blockers: [], problems: [])
         #expect(RowChip.chips(for: pleasant, order: [.feel]).map(\.look) == [.pleasant])
         let icons = TestConfig.decode(IconSet.self, "icons.json")
-        #expect(Chip.width(of: .habit, tokens: TestConfig.tokens, icons: icons) > TestConfig.tokens.space(.chipHorizontal) * 2)
+        #expect(Chip.width(of: .habit, tokens: TestConfig.tokens, icons: icons, scale: 3) > TestConfig.tokens.space(.chipHorizontal) * 2)
     }
 
     /// One table of looks: a property has the same icon and color in a row's chips, the chip order and the review.

@@ -27,6 +27,9 @@ enum SystemBarMetric: String, CaseIterable, Sendable {
     case barButton, barButtonGap, barSideInset
     /// The room the system bar's button style leaves on each side of a button's label upright.
     case barButtonPadding
+    /// A hand-drawn tab glyph (the Lists one): its ink as a share of the smallest ink of the other tabs' symbols, upright
+    /// in height and sideways in width; 1 keeps it within every one of them.
+    case tabGlyphFit
 }
 
 /// `systemBar.font`: a tab's symbol lying sideways (`tabIcon`) and upright in the system tab bar (`systemTabIcon`, only
