@@ -2340,7 +2340,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Blocks that will send an alert — reminders, events with a Calendar alert, timed tasks and habits with reminders — show a bell in the corner."
+            "value": "Events with a Calendar alert show a bell in the corner. Every task and habit with a time rings at the time it stands at on the timeline, so they need no bell."
           }
         }
       }

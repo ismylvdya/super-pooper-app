@@ -22,7 +22,6 @@ struct OverdueBlocksTests {
         #expect(try span(plan, "Missed at noon") == "13:25–13:40")
         #expect(plan.item(named: "Missed at noon")?.task.due == TaskDue("2026-10-21T12:00"))
         #expect(plan.slot("Missed at noon")?.time == LocalTime("12:00"), "still named by its own time (it can be dragged)")
-        #expect(plan.slot("Missed at noon")?.alerts == false, "its alert is over")
     }
 
     @Test func itSlidesAlongWithNow() throws {
@@ -61,7 +60,6 @@ struct OverdueBlocksTests {
         #expect(try span(plan, "Vitamins") == "13:25–13:40")
         #expect(try span(plan, "Take out the bins") == "13:40–13:55")
         #expect(plan.slot("Vitamins")?.time == LocalTime("09:00"), "still named by its own time (it can be dragged)")
-        #expect(plan.slot("Take out the bins")?.alerts == false, "its alert is over")
         #expect(plan.item(named: "Vitamins")?.task.due == TaskDue("2026-09-01T09:00"))
 
         let today = LocalDate(TestCalendar.wednesday)

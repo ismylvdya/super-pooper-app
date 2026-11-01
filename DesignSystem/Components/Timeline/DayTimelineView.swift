@@ -28,11 +28,11 @@ struct DayTimelineView<TaskContent: View>: View {
                 ForEach(blocks) { item in
                     let isLinked = links.isLinked(item.slot.id)
                     block(for: item.slot)
-                        .environment(\.titleReserve, cornerWidth(linked: isLinked, alerts: item.slot.alerts))
+                        .environment(\.titleReserve, cornerWidth(linked: isLinked, bell: item.slot.showsBell))
                         .overlay(alignment: .topTrailing) {
                             HStack(spacing: tokens.space(.cornerMarkGap)) {
                                 if isLinked { linkBadge(item.slot, isOn: style.highlightedSlot == item.slot.id) }
-                                if item.slot.alerts { AlertBell() }
+                                if item.slot.showsBell { AlertBell() }
                             }
                             .padding(.top, cornerInset)
                             .padding(.trailing, cornerInset)
@@ -58,8 +58,8 @@ struct DayTimelineView<TaskContent: View>: View {
 
     /// How far from the block's right edge the corner marks reach (their inset, the link mark, the bell and the gap
     /// between them); 0 without marks. The title fades out `fadeGap` before that (`TitleFade`).
-    private func cornerWidth(linked: Bool, alerts: Bool) -> CGFloat {
-        let marks = [linked ? tokens.uiFont(.linkBadge).pointSize : nil, alerts ? bell.size : nil].compactMap { $0 }
+    private func cornerWidth(linked: Bool, bell showsBell: Bool) -> CGFloat {
+        let marks = [linked ? tokens.uiFont(.linkBadge).pointSize : nil, showsBell ? bell.size : nil].compactMap { $0 }
         guard !marks.isEmpty else { return 0 }
         return cornerInset + marks.reduce(0, +) + tokens.space(.cornerMarkGap) * CGFloat(marks.count - 1)
     }

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The mark of a timeline block that will send a notification: a plain bell in the text color, faded.
+/// The mark of an event with a Calendar alert: a plain bell in the text color, faded.
 /// Size and opacity come from the settings.
 struct AlertBell: View {
     @Environment(\.tokens) private var tokens

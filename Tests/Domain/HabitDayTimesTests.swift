@@ -71,7 +71,6 @@ struct HabitDayTimesTests {
         let slot = try #require(plan.slot("Vitamins"))
         #expect(clockTime(slot.start) == "11:00")
         #expect(slot.time == nine)
-        #expect(slot.alerts)
     }
 
     /// The day state is today's only: the next day's plan (and another day browsed) has the note's time.
