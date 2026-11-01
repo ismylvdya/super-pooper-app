@@ -20,6 +20,16 @@ final class SwipeUITests: XCTestCase {
         app.cells.containing(NSPredicate(format: "label CONTAINS %@", text)).firstMatch
     }
 
+    /// The row that shows `text`, scrolled into view once the list is there (a lazy list lays out only what shows, and
+    /// the tests before this one may have added rows above it).
+    private func find(_ text: String, file: StaticString = #filePath, line: UInt = #line) -> XCUIElement {
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 10), file: file, line: line)
+        app.dismissBanners()
+        let found = row(text)
+        app.scrollIntoView(found, file: file, line: line)
+        return found
+    }
+
     /// Drags the row part of the way, slowly: its swipe buttons show, and none runs by itself (a full swipe would).
     private func reveal(_ row: XCUIElement, right: Bool) {
         app.scrollIntoView(row)
@@ -57,9 +67,7 @@ final class SwipeUITests: XCTestCase {
     /// A list of the Lists tab: a swipe to the left asks, then the task goes to the trash.
     func testListSwipeLeftDeletesAfterTheConfirmation() {
         launch("superpooper://lists/waiting")
-        let task = row("Ждать ответа от арендодателя")
-        XCTAssertTrue(task.waitForExistence(timeout: 10))
-        app.dismissBanners()
+        let task = find("Ждать ответа от арендодателя")
         swipe(task, right: false, press: "delete")
         let alert = app.alerts["Delete task?"]
         XCTAssertTrue(alert.waitForExistence(timeout: 5), "the existing confirmation")
@@ -71,9 +79,7 @@ final class SwipeUITests: XCTestCase {
     /// A list of the Lists tab: a swipe to the right is Done (the task goes to the done folder).
     func testListSwipeRightIsDone() {
         launch("superpooper://lists/thisWeek")
-        let task = row("Разобрать почту")
-        XCTAssertTrue(task.waitForExistence(timeout: 10))
-        app.dismissBanners()
+        let task = find("Разобрать почту")
         swipe(task, right: true, press: "done")
         XCTAssertTrue(task.waitForNonExistence(timeout: 10), "a done task leaves the Soon list")
     }
@@ -81,10 +87,7 @@ final class SwipeUITests: XCTestCase {
     /// The Done list: a filed task returns to Soon from its menu (Return) and with a swipe to the right.
     func testDoneListReturnsFiledTasks() {
         launch("superpooper://lists/done")
-        let old = row("Старая сделанная задача")
-        XCTAssertTrue(old.waitForExistence(timeout: 10))
-        app.dismissBanners()
-        app.scrollIntoView(old)
+        let old = find("Старая сделанная задача")
         old.press(forDuration: 1.2)
         let menuReturn = app.buttons["Return"]
         XCTAssertTrue(menuReturn.waitForExistence(timeout: 5), "the menu offers Return")
@@ -92,9 +95,7 @@ final class SwipeUITests: XCTestCase {
         expectBanner("Старая сделанная задача")
         XCTAssertTrue(old.waitForNonExistence(timeout: 10))
 
-        let milk = row("Купить молоко")
-        XCTAssertTrue(milk.waitForExistence(timeout: 10))
-        app.dismissBanners()
+        let milk = find("Купить молоко")
         swipe(milk, right: true, press: "returnFromDone")
         expectBanner("Купить молоко")
         XCTAssertTrue(milk.waitForNonExistence(timeout: 10))
@@ -103,9 +104,7 @@ final class SwipeUITests: XCTestCase {
     /// Soon: to the left Not today (the full swipe) and Delete, to the right Done.
     func testSoonOffersNotTodayDeleteAndDone() {
         launch("superpooper://review")
-        let task = row("Сдать отчёт")
-        XCTAssertTrue(task.waitForExistence(timeout: 10))
-        app.dismissBanners()
+        let task = find("Сдать отчёт")
         reveal(task, right: false)
         XCTAssertTrue(app.buttons["swipe.notToday"].waitForExistence(timeout: 3))
         XCTAssertTrue(app.buttons["swipe.delete"].exists)
@@ -121,9 +120,7 @@ final class SwipeUITests: XCTestCase {
     /// The archive: a swipe to the left brings an archived task back to Soon.
     func testArchiveSwipeLeftRestoresToSoon() {
         launch("superpooper://archive")
-        let task = row("Архивная задача")
-        XCTAssertTrue(task.waitForExistence(timeout: 10))
-        app.dismissBanners()
+        let task = find("Архивная задача")
         swipe(task, right: false, press: "restoreThisWeek")
         XCTAssertTrue(task.waitForNonExistence(timeout: 10), "it leaves the archive")
     }
@@ -131,9 +128,7 @@ final class SwipeUITests: XCTestCase {
     /// The trash: a note deleted with a swipe comes back with a swipe to the left.
     func testTrashSwipeLeftRestores() {
         launch("superpooper://lists/thisWeek")
-        let task = row("Связь на несуществующую")
-        XCTAssertTrue(task.waitForExistence(timeout: 10))
-        app.dismissBanners()
+        let task = find("Связь на несуществующую")
         swipe(task, right: false, press: "delete")
         let alert = app.alerts["Delete task?"]
         XCTAssertTrue(alert.waitForExistence(timeout: 5))
@@ -142,9 +137,7 @@ final class SwipeUITests: XCTestCase {
         app.terminate()
 
         launch("superpooper://trash")
-        let trashed = row("Связь на несуществующую")
-        XCTAssertTrue(trashed.waitForExistence(timeout: 10))
-        app.dismissBanners()
+        let trashed = find("Связь на несуществующую")
         swipe(trashed, right: false, press: "restoreFromTrash")
         expectBanner("Restored")
         XCTAssertTrue(trashed.waitForNonExistence(timeout: 10))
