@@ -142,8 +142,8 @@ final class TodayUITests: XCTestCase {
         XCTAssertEqual(XCTWaiter().wait(for: [auto], timeout: 5), .completed)
     }
 
-    /// On the pages, a row dragged onto the edge of the other page turns to it. A habit is dragged: the timeline does not
-    /// take habits, so letting go there changes nothing.
+    /// On the pages, a row dragged onto the edge of the other page turns to it. A habit without reminder times is
+    /// dragged: the timeline does not take it, so letting go there changes nothing.
     func testDraggingOntoThePageEdgeTurnsThePage() {
         app.launchArguments += ["-SPArrangement", "paged"]
         launch()
@@ -156,6 +156,34 @@ final class TodayUITests: XCTestCase {
         row.press(forDuration: 1.2, thenDragTo: edge, withVelocity: .slow, thenHoldForDuration: 1)
         let turned = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == 'Show the pool'"), object: edge)
         XCTAssertEqual(XCTWaiter().wait(for: [turned], timeout: 5), .completed, "the pages turned to the timeline")
+    }
+
+    /// A habit's block dragged from the timeline into the pool stands in the pool today, and dragged back from the pool it
+    /// is on the timeline again (.3267). Side by side, both columns are in sight. The note keeps its time: no write
+    /// (`check-vault-after-ui-tests.sh`); the notifications are covered by unit tests.
+    func testAHabitBlockGoesToThePoolAndBackForToday() {
+        app.launchArguments += ["-SPArrangement", "sideBySide"]
+        launch()
+        dismissBanners()
+        let walk = app.buttons["title:Прогулка 🚶"]
+        let now = app.buttons["title:Подготовить вопросы папе"]
+        let pool = app.buttons["title:Утро — зарядка 🤸"]
+        XCTAssertTrue(walk.waitForExistence(timeout: 10))
+        XCTAssertTrue(now.waitForExistence(timeout: 5) && pool.waitForExistence(timeout: 5))
+        XCTAssertGreaterThan(walk.frame.midX, pool.frame.maxX, "the 14:00 block is on the timeline")
+
+        walk.press(forDuration: 1.2, thenDragTo: pool, withVelocity: .slow, thenHoldForDuration: 0.5)
+        expect(walk, toBe: { $0.frame.midX < now.frame.minX }, "in the pool")
+
+        walk.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+            .press(forDuration: 1.2, thenDragTo: now.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 5)), withVelocity: .slow,
+                   thenHoldForDuration: 0.5)
+        expect(walk, toBe: { $0.frame.midX > pool.frame.maxX }, "back on the timeline")
+    }
+
+    private func expect(_ element: XCUIElement, toBe condition: @escaping (XCUIElement) -> Bool, _ message: String) {
+        let met = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in element.exists && condition(element) }, object: nil)
+        XCTAssertEqual(XCTWaiter().wait(for: [met], timeout: 5), .completed, message)
     }
 
     func testPullToRefreshShowsSyncBanner() {

@@ -20,4 +20,6 @@ struct DayInputs: Sendable {
     var isOtherDay = false
     /// The calendars are readable and chosen: a link to an event that is not found is a problem.
     var eventsKnown = true
+    /// Habit blocks dragged on today's timeline (to another time or to the pool); none on another day.
+    var habitMoves: [HabitTimeMove] = []
 }

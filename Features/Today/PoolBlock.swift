@@ -2,8 +2,9 @@ import SwiftUI
 
 /// Untimed tasks of the day. Above the timeline it shows N rows (setting) and a "+K more" counter
 /// that follows scrolling; beside it, it takes the full height and has no counter. Today's rows can be
-/// dragged: within the pool to reorder it, onto the timeline to give a task a time; a timed task dragged
-/// here from the timeline loses its time.
+/// dragged: within the pool to reorder it, onto the timeline to give a task a time (a habit sent here today gets its
+/// time back for today); a timed task dragged here from the timeline loses its time, a habit's block leaves today's
+/// timeline.
 struct PoolBlock: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
@@ -26,7 +27,8 @@ struct PoolBlock: View {
     var body: some View {
         poolContent
             .coordinateSpace(.named(Self.dropSpace))
-            .modifier(PoolDropTarget(drag: plan.isToday ? drag : nil, animation: tokens.animation, rows: dropRows, onDrop: dropped))
+            .modifier(PoolDropTarget(drag: plan.isToday ? drag : nil, animation: tokens.animation, rows: dropRows,
+                                     canDrop: { item, source in model.canDropInPool(item.id, slot: source.slot) }, onDrop: dropped))
             .onChange(of: drag?.item?.id) { _, dragged in if dragged == nil { dragMids = nil } }
     }
 
@@ -46,7 +48,7 @@ struct PoolBlock: View {
         Haptics.play(.drop)
         switch source {
         case .pool: model.setManualOrder(order)
-        case .timeline: Task { await model.unschedule(item.id, poolOrder: order) }
+        case .timeline(let slot): Task { await model.unschedule(item.id, slot: slot, poolOrder: order) }
         }
     }
 
@@ -132,13 +134,15 @@ private struct PoolDropTarget: ViewModifier {
     let drag: TaskDragState?
     let animation: Animation
     let rows: () -> [PoolDropOrder.Row]
+    let canDrop: (DayItem, TaskDragState.Source) -> Bool
     let onDrop: (DayItem, TaskDragState.Source, [String]) -> Void
 
     func body(content: Content) -> some View {
         if let drag {
             content
                 .contentShape(Rectangle())
-                .onDrop(of: TaskDragState.types, delegate: PoolDropDelegate(drag: drag, animation: animation, rows: rows, onDrop: onDrop))
+                .onDrop(of: TaskDragState.types, delegate: PoolDropDelegate(drag: drag, animation: animation, rows: rows,
+                                                                            canDrop: canDrop, onDrop: onDrop))
         } else {
             content
         }

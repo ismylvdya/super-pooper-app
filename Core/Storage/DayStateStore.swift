@@ -1,7 +1,7 @@
 import Foundation
 
-/// App-only state that lives for one day: Skip today, the manual pool order and whether the
-/// morning review was shown. Losing it is harmless.
+/// App-only state that lives for one day: Skip today, the manual pool order, whether the morning review was shown and
+/// the habit blocks dragged today. Losing it is harmless.
 struct DayState: Codable, Equatable, Sendable {
     var day: LocalDate
     var skipped: [String] = []
@@ -11,6 +11,8 @@ struct DayState: Codable, Equatable, Sendable {
     var announcedProblems = 0
     /// Tasks swiped out of today in the morning review (they come back in tomorrow's review).
     var postponed: [String] = []
+    /// Habit blocks dragged on the timeline today: to another time or to the pool (`HabitDayTimes`).
+    var habitMoves: [HabitTimeMove] = []
 
     init(day: LocalDate) { self.day = day }
 
@@ -23,6 +25,7 @@ struct DayState: Codable, Equatable, Sendable {
         reviewShown = try container.decodeIfPresent(Bool.self, forKey: .reviewShown) ?? false
         announcedProblems = try container.decodeIfPresent(Int.self, forKey: .announcedProblems) ?? 0
         postponed = try container.decodeIfPresent([String].self, forKey: .postponed) ?? []
+        habitMoves = try container.decodeIfPresent([HabitTimeMove].self, forKey: .habitMoves) ?? []
     }
 }
 

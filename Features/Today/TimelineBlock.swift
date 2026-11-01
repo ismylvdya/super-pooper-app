@@ -52,9 +52,11 @@ struct TimelineBlock: View {
                         .modifier(TimelineDropTarget(drag: drag, moment: { y in
                             TaskScheduling.moment(atOffset: Double(y), windowStart: day.start, hourHeight: Double(hourHeight),
                                                   stepMinutes: model.config.rules.timeline.dropStepMinutes, calendar: model.calendar)
-                        }, onDrop: { item, moment in
+                        }, canDrop: { item, source in
+                            model.canDropOnTimeline(item.id, slot: source.slot)
+                        }, onDrop: { item, source, moment in
                             Haptics.play(.drop)
-                            Task { await model.schedule(item.id, at: moment) }
+                            Task { await model.schedule(item.id, slot: source.slot, at: moment) }
                         }))
                         .padding(.vertical, contentInset)
                 }
@@ -194,28 +196,31 @@ struct TimelineBlock: View {
 
     /// The same row as in the pool, without chips or a done mark, always on one line (a long title dissolves): what is
     /// finished has left the timeline, what is on it is shown plainly (a twice-a-day habit after its first Done too). A task on the timeline
-    /// by its own time (not a habit, not a chain) can be dragged to another time or back to the pool.
+    /// by its own time (not a chain) can be dragged to another time or back to the pool; a habit's block too, on today's
+    /// timeline and for today only.
     private func taskRow(_ item: DayItem, _ slot: TimelineSlot) -> some View {
-        let movable = slot.time != nil && TaskScheduling.canMove(item.task)
+        let movable = slot.time != nil && TaskScheduling.canDrag(item.task, isToday: plan.isToday)
         return PoolRowContent(item: item, isToday: plan.isToday, isCompact: false, titleFont: fonts.task,
                               showsDetails: false, titleLineLimit: 1, titleLineHeight: fonts.taskLineHeight,
                               showsDoneState: false, plate: .slot(isPast: slot.isPast, isCompact: false), handler: handler,
-                              dragSource: movable ? .timeline : nil)
+                              dragSource: movable ? .timeline(slot: slot.time) : nil)
     }
 }
 
-/// The one-column timeline as a drop target for tasks.
+/// The one-column timeline as a drop target for tasks and habit blocks.
 private struct TimelineDropTarget: ViewModifier {
     let drag: TaskDragState?
     let moment: (CGFloat) -> Date
-    let onDrop: (DayItem, Date) -> Void
+    let canDrop: (DayItem, TaskDragState.Source) -> Bool
+    let onDrop: (DayItem, TaskDragState.Source, Date) -> Void
 
     func body(content: Content) -> some View {
         if let drag {
             // The empty space between the hours counts too: a drop target is only what is hit-testable.
             content
                 .contentShape(Rectangle())
-                .onDrop(of: TaskDragState.types, delegate: TimelineDropDelegate(drag: drag, moment: moment, onDrop: onDrop))
+                .onDrop(of: TaskDragState.types, delegate: TimelineDropDelegate(drag: drag, moment: moment, canDrop: canDrop,
+                                                                                onDrop: onDrop))
         } else {
             content
         }

@@ -120,14 +120,19 @@ final class DerivedStatePublisher {
         let dayState = day.dayState
         // Skip today (habits) and Not today (tasks) both take an item out of today's notifications.
         let skipped = Set(dayState.day == context.today ? dayState.skipped + dayState.postponed : [])
+        // Habit blocks dragged today ring at their new time, or not at all from the pool.
+        let habitTimes = HabitDayTimes(dayState.day == context.today ? dayState.habitMoves : [])
         // Times kept in a zone of their own ring at the phone's time for that moment.
         let tasks = ZonedTimes.local(self.tasks.tasks, calendar: context.calendar, today: context.today)
         let reminders = sources.reminders
         let events = sources.events
-        let planned = planner.plan(tasks: tasks, reminders: reminders, events: events, skipped: skipped, context: context)
-        let valid = planner.stillValidToday(tasks: tasks, reminders: reminders, events: events, skipped: skipped, context: context)
+        let planned = planner.plan(tasks: tasks, reminders: reminders, events: events, skipped: skipped, habitTimes: habitTimes,
+                                   context: context)
+        let valid = planner.stillValidToday(tasks: tasks, reminders: reminders, events: events, skipped: skipped,
+                                            habitTimes: habitTimes, context: context)
         // Alerts moved into the past or added too late come right away, once.
-        let all = planner.all(tasks: tasks, reminders: reminders, events: events, skipped: skipped, context: context)
+        let all = planner.all(tasks: tasks, reminders: reminders, events: events, skipped: skipped, habitTimes: habitTimes,
+                              context: context)
         let previous = alertStateStore.load()
         let late = LateAlerts.due(all, pending: previous?.pending ?? [:], known: previous.map { Set($0.known) }, context: context)
         try? alertStateStore.save(AlertState(

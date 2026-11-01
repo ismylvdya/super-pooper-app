@@ -13,7 +13,7 @@ struct DayBuilder: Sendable {
         let sorter = PoolSorter(criteria: sortCriteria, rules: rules, routines: inputs.routines)
         let membership = DayMembership(occurrence: occurrence, context: context)
         let dayProblems = DayProblems(graph: graph, occurrence: occurrence)
-        let times = DayTimes(context: context)
+        let times = DayTimes(context: context, habitTimes: HabitDayTimes(inputs.habitMoves))
 
         var items: [DayItem] = []
         var anchors: [String: TimelineChain.Anchor] = [:]
@@ -49,8 +49,11 @@ struct DayBuilder: Sendable {
                                  uniquingKeysWith: { first, _ in first })
         let chainAnchors = ChainAnchors.propagate(anchors, timed: targets, through: items.filter { !timedNames.contains($0.id) },
                                                   graph: graph)
-        // Done today: it leaves the pool and the timeline instead of staying greyed out.
-        let poolItems = items.filter { !$0.isFinished && !timedNames.contains($0.id) && chainAnchors[$0.id] == nil }
+        // Done today: it leaves the pool and the timeline instead of staying greyed out. A habit block dragged to the pool
+        // today brings the habit there, even if another of its blocks stays on the timeline.
+        let poolItems = items.filter {
+            !$0.isFinished && (!timedNames.contains($0.id) || times.isPooledToday($0)) && chainAnchors[$0.id] == nil
+        }
 
         let pool = SubtaskNesting.nested(inputs.manualOrder.map { sorter.applyingManualOrder($0, to: poolItems, graph: graph, context: context) }
             ?? sorter.sorted(poolItems, graph: graph, context: context))

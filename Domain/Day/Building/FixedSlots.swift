@@ -1,7 +1,7 @@
 import Foundation
 
-/// The timeline's blocks that stand at their own time: events of the day, the open times of timed tasks and habits,
-/// and reminders that are not done.
+/// The timeline's blocks that stand at their own time: events of the day, the open times of timed tasks and habits (a
+/// habit's block dragged today at its new time, still named by the time its note has), and reminders that are not done.
 struct FixedSlots: Sendable {
     let rules: DayRules
     let times: DayTimes
@@ -14,10 +14,10 @@ struct FixedSlots: Sendable {
                                       alerts: event.hasAlarm))
         }
         for item in timed {
-            for time in times.openTimes(of: item) {
-                let start = context.moment(time, onLogicalDay: context.today)
+            for block in times.openTimes(of: item) {
+                let start = times.moment(of: block)
                 slots.append(TimelineSlot(content: .task(item), start: start, end: start.addingTimeInterval(rules.duration(of: item.task)),
-                                          isPast: false, time: time, alerts: true))
+                                          isPast: false, time: block.written, alerts: true))
             }
         }
         for reminder in reminders where context.contains(reminder.due) && !reminder.isCompleted {

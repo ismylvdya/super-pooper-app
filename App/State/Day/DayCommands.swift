@@ -1,7 +1,8 @@
 import Foundation
 
 /// What the user decides about today's pool: Skip today, Not today, the manual order, a drag in Soon across the
-/// parts of the day, a task dragged onto the timeline or back to the pool. The widgets and notifications follow.
+/// parts of the day, a task or a habit's block dragged onto the timeline or back to the pool. The widgets and
+/// notifications follow.
 @MainActor
 final class DayCommands {
     private let day: DayStateController
@@ -71,17 +72,44 @@ final class DayCommands {
         }
     }
 
-    /// Dropped on the timeline: the moment is read on the phone's clock and written in the note's own zone.
-    func schedule(_ name: String, at moment: Date) async {
-        guard let task = tasks.task(named: name) else { return }
-        await writer.writeLocal(task, TaskScheduling.changes(scheduling: task, at: moment, calendar: day.calendar))
+    /// Dropped on the timeline: a task's moment is read on the phone's clock and written in the note's own zone; a
+    /// habit's block stands there today only and its note stays as it is (`HabitDayTimes`). `slot`: the habit block's
+    /// time as its note has it, when it comes from the timeline; from the pool the habit's first time sent there today.
+    func schedule(_ name: String, slot: LocalTime?, at moment: Date) async {
+        guard let task = tasks.task(named: name), let local = localTask(named: name) else { return }
+        guard task.isHabit else {
+            await writer.writeLocal(task, TaskScheduling.changes(scheduling: task, at: moment, calendar: day.calendar))
+            return
+        }
+        let time = LocalTime(moment, in: day.calendar)
+        let today = day.habitTimes
+        guard let moves = slot.map({ today.moving(local, slot: $0, to: time) }) ?? today.placing(local, at: time) else { return }
+        day.setHabitMoves(moves)
+        await derived.publish()
     }
 
-    /// Back to the pool at the spot it was dropped on, on the logical day it was shown on.
-    func unschedule(_ name: String, poolOrder: [String]) async {
+    /// Back to the pool at the spot it was dropped on, on the logical day it was shown on: a task loses its time, a
+    /// habit's block (`slot`) leaves today's timeline and does not ring today.
+    func unschedule(_ name: String, slot: LocalTime?, poolOrder: [String]) async {
         guard let task = tasks.task(named: name), let local = localTask(named: name) else { return }
-        await writer.writeLocal(task, TaskScheduling.changes(unscheduling: local, context: day.context()))
+        if task.isHabit {
+            guard let slot else { return }
+            day.setHabitMoves(day.habitTimes.pooling(local, slot: slot))
+            await derived.publish()
+        } else {
+            await writer.writeLocal(task, TaskScheduling.changes(unscheduling: local, context: day.context()))
+        }
         setManualOrder(poolOrder)
+    }
+
+    /// A dragged item can land on today's timeline (`TaskScheduling.canPlace`).
+    func canPlaceOnTimeline(_ name: String, slot: LocalTime?) -> Bool {
+        localTask(named: name).map { TaskScheduling.canPlace($0, slot: slot, today: day.habitTimes) } ?? false
+    }
+
+    /// A block dragged from the timeline can land in the pool (`TaskScheduling.canSendToPool`).
+    func canSendToPool(_ name: String, slot: LocalTime?) -> Bool {
+        tasks.task(named: name).map { TaskScheduling.canSendToPool($0, slot: slot) } ?? false
     }
 
     private func isToday(_ date: LocalDate?) -> Bool {
