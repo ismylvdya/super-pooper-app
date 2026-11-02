@@ -111,10 +111,14 @@ struct TodayScreen: View {
     /// On pages a horizontal drag moves them with the finger and, far enough, turns the page (`TodayPager`).
     private func daySwipe(width: CGFloat) -> some Gesture {
         DragGesture(minimumDistance: rules.gestures.daySwipeMinimumDistance)
-            .onChanged { pager.swipeChanged($0.translation, pageCount: pageCount, gestures: rules.gestures) }
+            .onChanged { value in
+                pager.swipeChanged(value.translation, velocity: value.velocity, containerWidth: width, pageCount: pageCount,
+                                   gestures: rules.gestures, duration: tokens.duration(.animation))
+            }
             .onEnded { value in
-                pager.swipeEnded(value.translation, predicted: value.predictedEndTranslation, containerWidth: width,
-                                 pageCount: pageCount, gestures: rules.gestures, animation: tokens.animation)
+                pager.swipeEnded(value.translation, predicted: value.predictedEndTranslation, velocity: value.velocity,
+                                 containerWidth: width, pageCount: pageCount, gestures: rules.gestures,
+                                 duration: tokens.duration(.animation))
             }
     }
 
