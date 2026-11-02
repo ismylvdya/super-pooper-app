@@ -1,9 +1,10 @@
 import SwiftUI
 
-/// Top banner: up to `banners.collapsedLines` lines, tap expands/collapses, swipe up dismisses, hides itself after
-/// `hidesAfter` (`banners.autoHideSeconds` unless given). Under the message each fact has its own element: a count per kind
-/// (icon and number), the notes it is about one per line (as many as the message's lines until it is expanded). A banner
-/// offering Undo has the button at its end.
+/// Top banner on the line of the bar's round buttons (`BannerPlacement`): collapsed it is one line exactly as tall as they
+/// are (the first note it is about after the message, how many more beside it, the counts, each its own element); a tap
+/// expands it to the whole message and under it the
+/// notes it is about, one per line, and collapses it again. A swipe up dismisses it; it hides itself after `hidesAfter`
+/// (`banners.autoHideSeconds` unless given). A banner offering Undo has the button at its end.
 struct BannerView: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.rules) private var rules
@@ -26,6 +27,8 @@ struct BannerView: View {
         HStack(spacing: tokens.space(.iconTextGap)) {
             message
                 .accessibilityElement(children: .combine)
+                // Read out whole even while collapsed: the notes too, not only the first one shown.
+                .accessibilityLabel(Text(verbatim: ([text] + counts.map(\.label) + items).joined(separator: "\n")))
                 .accessibilityAddTraits(.isStaticText)
                 .accessibilityIdentifier("banner")
                 .accessibilityAction(named: Text("a11y.dismiss")) { onDismiss() }
@@ -38,11 +41,14 @@ struct BannerView: View {
                 }
                 .buttonStyle(.bordered)
                 .buttonBorderShape(.capsule)
+                .controlSize(.small)
                 .tint(tokens.color(.accent))
                 .accessibilityIdentifier("banner.undo")
             }
         }
-        .padding(tokens.space(.bannerPadding))
+        .padding(.horizontal, tokens.space(.bannerPadding))
+        .padding(.vertical, isExpanded ? tokens.space(.bannerPadding) : 0)
+        .frame(minHeight: tokens.bannerPlacement.height, maxHeight: isExpanded ? nil : tokens.bannerPlacement.height)
         .systemLook(.bannerCard)
         .padding(.horizontal, tokens.bannerPlacement.side)
         .padding(.top, tokens.bannerPlacement.top)
@@ -56,34 +62,44 @@ struct BannerView: View {
     }
 
     private var message: some View {
-        HStack(alignment: .top, spacing: tokens.space(.iconTextGap)) {
+        HStack(alignment: isExpanded ? .top : .center, spacing: tokens.space(.iconTextGap)) {
             if let icon { Image(systemName: icons[icon]).foregroundStyle(tint) }
-            VStack(alignment: .leading, spacing: tokens.space(.titleDetailGap)) {
-                Text(text)
-                    .lineLimit(isExpanded ? nil : lines)
-                if !counts.isEmpty {
-                    HStack(spacing: tokens.space(.chipGap)) {
-                        ForEach(counts, id: \.self) { count in
-                            Label { Text(verbatim: "\(count.value)") } icon: { Image(systemName: icons[count.icon]) }
-                                .accessibilityElement(children: .ignore)
-                                .accessibilityLabel(Text(verbatim: count.label))
-                        }
+            if isExpanded {
+                VStack(alignment: .leading, spacing: tokens.space(.titleDetailGap)) {
+                    Text(text)
+                    if !counts.isEmpty { countRow }
+                    ForEach(items, id: \.self) { item in Text(verbatim: item).lineLimit(1) }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                HStack(spacing: tokens.space(.iconTextGap)) {
+                    Text(text).lineLimit(1).layoutPriority(1)
+                    // The first note it is about, in its own place after the message; the rest after a tap.
+                    if let first = items.first {
+                        Text(verbatim: first).fontWeight(.semibold).lineLimit(1)
                     }
                 }
-                ForEach(shownItems, id: \.self) { item in Text(verbatim: item).lineLimit(1) }
-                if shownItems.count < items.count {
-                    Text(L10n.format("banner.more", items.count - shownItems.count)).foregroundStyle(tokens.color(.secondaryText))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                if items.count > 1 {
+                    Text(verbatim: "+\(items.count - 1)").foregroundStyle(tokens.color(.secondaryText)).fixedSize()
                 }
+                if !counts.isEmpty { countRow.fixedSize() }
             }
-            .font(tokens.font(.banner))
-            .foregroundStyle(tokens.color(.primaryText))
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .font(tokens.font(.banner))
+        .foregroundStyle(tokens.color(.primaryText))
     }
 
-    private var lines: Int { rules.banners.collapsedLines }
-
-    private var shownItems: [String] { isExpanded ? items : Array(items.prefix(lines)) }
+    /// A count per kind of change: its icon and number.
+    private var countRow: some View {
+        HStack(spacing: tokens.space(.chipGap)) {
+            ForEach(counts, id: \.self) { count in
+                Label { Text(verbatim: "\(count.value)") } icon: { Image(systemName: icons[count.icon]) }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(Text(verbatim: count.label))
+            }
+        }
+    }
 
     /// One gesture for both: a short touch toggles the full text, a move up dismisses.
     private var tapOrSwipe: some Gesture {

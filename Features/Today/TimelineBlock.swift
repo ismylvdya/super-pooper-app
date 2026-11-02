@@ -55,7 +55,7 @@ struct TimelineBlock: View {
                             TaskScheduling.moment(atOffset: Double(y), windowStart: day.start, hourHeight: Double(hourHeight),
                                                   stepMinutes: model.config.rules.timeline.dropStepMinutes, calendar: model.calendar)
                         }, canDrop: { item, source in
-                            model.canDropOnTimeline(item.id, slot: source.slot)
+                            model.canDropOnTimeline(item.id, slot: source.slot, on: plan.today)
                         }, onDrop: { item, source, moment in
                             Haptics.play(.drop)
                             Task { await model.schedule(item.id, slot: source.slot, at: moment) }
@@ -205,10 +205,10 @@ struct TimelineBlock: View {
 
     /// The same row as in the pool, without chips or a done mark, always on one line (a long title dissolves): what is
     /// finished has left the timeline, what is on it is shown plainly (a twice-a-day habit after its first Done too). A task on the timeline
-    /// by its own time (not a chain) can be dragged to another time or back to the pool; a habit's block too, on today's
-    /// timeline and for today only.
+    /// by its own time (not a chain) can be dragged to another time or back to the pool on any day; a habit's block too,
+    /// for that day only.
     private func taskRow(_ item: DayItem, _ slot: TimelineSlot) -> some View {
-        let movable = slot.time != nil && TaskScheduling.canDrag(item.task, isToday: plan.isToday)
+        let movable = slot.time != nil
         return PoolRowContent(item: item, isToday: plan.isToday, isCompact: false, titleFont: fonts.task,
                               showsDetails: false, titleLineLimit: 1, titleLineHeight: fonts.taskLineHeight,
                               showsDoneState: false, plate: .slot(isPast: slot.isPast, isCompact: false), handler: handler,

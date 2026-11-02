@@ -38,5 +38,6 @@ check "Return (swipe) from Done → this_week, no completed_date" "grep -q '^sta
 check "swipe left in Archive → status: this_week"     "grep -q '^status: this_week' \"$TASKS/Архивная задача.md\""
 check "swipe left in Trash → back in the tasks"       "[ -f \"$TASKS/Связь на несуществующую.md\" ] && [ ! -f \"$VAULT/.trash/Связь на несуществующую.md\" ]"
 check "habit block dragged to the pool and back → its note keeps its time" "grep -q '^due: .*T14:00$' \"$TASKS/Прогулка 🚶.md\" && ! grep -q 'reminder_times' \"$TASKS/Прогулка 🚶.md\" && ! grep -q \"^date_modified: $TODAY\" \"$TASKS/Прогулка 🚶.md\""
+check "Start then Not started (pool menu) → this_week again" "grep -q '^status: this_week' \"$TASKS/Найти отвёртку.md\""
 check "unknown keys and body untouched"              "grep -q '^  nested: значение' \"$TASKS/Длинная заметка с незнакомыми ключами.md\""
 exit $FAILED

@@ -32,6 +32,7 @@
   },
   "statuses": {
     "thisWeek": "this_week",
+    "inProgress": "in-progress",
     "halfYear": "half_year",
     "someday": "someday",
     "waiting": "waiting",

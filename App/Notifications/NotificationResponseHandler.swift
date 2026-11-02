@@ -34,6 +34,8 @@ final class NotificationResponseHandler {
             // The snoozed notification is planned from today's notifications: the tasks and sources are read first.
             await model.ensureLoaded()
             await model.snoozeNotification(key: key, day: day, shown: request.identifier)
+        case .dismiss:
+            await model.dismissNotification(shown: request.identifier)
         case .perform(let chosen, let taskName, let day):
             let previous = pending
             let job = Task {

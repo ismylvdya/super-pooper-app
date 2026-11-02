@@ -2,17 +2,16 @@ import SwiftUI
 import Testing
 @testable import SuperPooperApp
 
-/// Today's pages and days: a sideways drag moves the pages and, once it has gone a quarter of the width, turns them by
-/// itself whatever the finger does after (.27239); a vertical one never does; there is nothing to turn to past the first
+/// Today's pages and days: a sideways drag moves the pages with the finger until it lifts, and only then do they settle:
+/// turned past a quarter of the width or flung, back otherwise; a vertical one never moves them; there is nothing to turn to past the first
 /// or the last page or without pages.
 @MainActor
 struct TodayPagerTests {
     private let gestures = TestConfig.rules.gestures
     private let width: CGFloat = 400
 
-    private func changed(_ pager: TodayPager, _ x: CGFloat, _ y: CGFloat = 0, velocity: CGFloat = 0) {
-        pager.swipeChanged(CGSize(width: x, height: y), velocity: CGSize(width: velocity, height: 0), containerWidth: width,
-                           pageCount: 2, gestures: gestures, duration: 0.25)
+    private func changed(_ pager: TodayPager, _ x: CGFloat, _ y: CGFloat = 0) {
+        pager.swipeChanged(CGSize(width: x, height: y), containerWidth: width, pageCount: 2, gestures: gestures)
     }
 
     private func ended(_ pager: TodayPager, _ x: CGFloat, _ y: CGFloat = 0, predicted: CGFloat? = nil) {
@@ -27,25 +26,26 @@ struct TodayPagerTests {
         #expect(pager.pageDrag == -90 && pager.page == 0)
     }
 
-    /// Past the threshold the page turns at once: the finger stopping, going back or lifting changes nothing.
-    @Test func pastAQuarterThePageTurnsByItselfWhateverTheFingerDoes() {
+    /// Past the threshold the page still follows the finger, and turns only once it lifts there; brought back under the
+    /// threshold before lifting, it goes back.
+    @Test func thePageSettlesOnlyOnceTheFingerLifts() {
         let pager = TodayPager()
         changed(pager, -10, 1)
-        changed(pager, -110, 5, velocity: -600)
-        #expect(pager.page == 1 && pager.pageDrag == 0)
-        #expect(pager.isFinishing)
+        changed(pager, -110, 5)
+        #expect(pager.page == 0 && pager.pageDrag == -110, "still under the finger")
         changed(pager, -20, 5)
-        #expect(pager.page == 1 && pager.pageDrag == 0, "the finger going back does not stall or pull the page back")
+        #expect(pager.page == 0 && pager.pageDrag == -20)
         ended(pager, -20, 5)
-        #expect(pager.page == 1 && pager.pageDrag == 0 && !pager.isFinishing)
+        #expect(pager.page == 0 && pager.pageDrag == 0)
+        changed(pager, -10, 1)
+        changed(pager, -110, 5)
+        ended(pager, -110, 5)
+        #expect(pager.page == 1 && pager.pageDrag == 0)
     }
 
     @Test func theTurnStartsAtTheFingersSpeed() {
         #expect(TodaySwipe.initialVelocity(speed: -600, remaining: 300) == 2)
         #expect(TodaySwipe.initialVelocity(speed: 600, remaining: 0) == 0)
-        #expect(TodaySwipe.commits(axis: .horizontal, width: -101, containerWidth: 400, gestures: gestures))
-        #expect(!TodaySwipe.commits(axis: .horizontal, width: -99, containerWidth: 400, gestures: gestures))
-        #expect(!TodaySwipe.commits(axis: .vertical, width: -300, containerWidth: 400, gestures: gestures))
     }
 
     @Test func aShortDragGoesBackAFlingTurnsAndAVerticalOneNeverMovesThePages() {

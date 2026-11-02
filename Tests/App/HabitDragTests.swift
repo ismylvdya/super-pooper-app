@@ -63,6 +63,21 @@ struct HabitDragTests {
         #expect(fireDate(center.pending(slot)) == at("09:00", daysLater: 1), "tomorrow's at the note's time")
     }
 
+    /// On another day's timeline the block moves for that day only: today stays as the note has it, and the move becomes
+    /// today's once that day comes.
+    @Test func aBlockDraggedOnTomorrowsTimelineMovesOnlyTomorrow() async throws {
+        let (model, clock) = try app()
+        await sync(model)
+        let tomorrow = context.today.adding(days: 1)
+        #expect(model.canDropOnTimeline(vitamins, slot: nine, on: tomorrow))
+        await model.schedule(vitamins, slot: nine, at: at("11:00", daysLater: 1))
+        let tomorrowsStart = model.plan(at: clock.now, dayOffset: 1).slot(vitamins).map { LocalTime($0.start, in: PreviewSamples.calendar) }
+        #expect(tomorrowsStart == LocalTime("11:00"))
+        #expect(start(model) == "09:00", "today is as the note has it")
+        #expect(model.dayState.timeMoves.isEmpty)
+        #expect(model.dayState.rolled(to: tomorrow).timeMoves == [TimeMove(task: vitamins, slot: nine, time: LocalTime("11:00"))])
+    }
+
     @Test func droppedInThePoolItDoesNotRingTodayAndComesBackToTheTimelineFromThere() async throws {
         let (model, clock) = try app()
         await sync(model)

@@ -23,6 +23,18 @@ struct ListCellLiftTests {
         #expect(cell.isHidden && cell.alpha == 1)
     }
 
+    /// The cell in the gap is found by its drag state or, where the system only hides it, by being out of sight.
+    @Test func theGapIsTheCellUIKitKeepsOutOfSight() {
+        let shown = UICollectionViewCell()
+        #expect(!ListLiftDelegates.isGap(shown, session: nil))
+        let hidden = UICollectionViewCell()
+        hidden.isHidden = true
+        #expect(ListLiftDelegates.isGap(hidden, session: nil))
+        let transparent = UICollectionViewCell()
+        transparent.alpha = 0
+        #expect(ListLiftDelegates.isGap(transparent, session: nil))
+    }
+
     @Test func aTallReorderedRowLiftsWithThePlateOutline() async throws {
         let tokens = TestConfig.tokens
         let frames = ListGroupFrames()

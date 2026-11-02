@@ -88,6 +88,27 @@ final class TodayUITests: XCTestCase {
         expectLeftThePool(title)
     }
 
+    /// Start (under the divider of the pool menu) makes a task Started: it stays in the pool, and its menu then offers
+    /// Not started, which the test chooses to leave the note as it was.
+    func testStartAndNotStartedFromThePoolMenu() {
+        launch()
+        dismissBanners()
+        let title = app.buttons["title:Найти отвёртку"]
+        XCTAssertTrue(title.waitForExistence(timeout: 10))
+        title.press(forDuration: 1.2)
+        let start = app.buttons["action.start"]
+        XCTAssertTrue(start.waitForExistence(timeout: 5))
+        start.tap()
+        XCTAssertTrue(start.waitForNonExistence(timeout: 5))
+        XCTAssertTrue(title.waitForExistence(timeout: 5), "a started task stays in the pool")
+        dismissBanners()
+        title.press(forDuration: 1.2)
+        let notStarted = app.buttons["action.notStarted"]
+        XCTAssertTrue(notStarted.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["action.start"].exists)
+        notStarted.tap()
+    }
+
     /// Done items leave the pool.
     private func expectLeftThePool(_ row: XCUIElement) {
         let moved = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false OR hittable == false"), object: row)
@@ -176,6 +197,44 @@ final class TodayUITests: XCTestCase {
         row.press(forDuration: 1.2, thenDragTo: edge, withVelocity: .slow, thenHoldForDuration: 1)
         let turned = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == 'Show the pool'"), object: edge)
         XCTAssertEqual(XCTWaiter().wait(for: [turned], timeout: 5), .completed, "the pages turned to the timeline")
+    }
+
+    /// On the pages, the day's name turns back to the pool; the Today tab turns back to the pool and to today's date, and
+    /// from a page opened further in on Today back to its first page.
+    func testTheDayNameAndTheTodayTabGoBackToTodaysPool() {
+        app.launchArguments += ["-SPArrangement", "paged"]
+        launch()
+        dismissBanners()
+        let edge = app.descendants(matching: .any)["today.pageEdge"]
+        XCTAssertTrue(edge.waitForExistence(timeout: 10))
+        let onPool = NSPredicate(format: "label == 'Show the timeline'")
+        let onTimeline = NSPredicate(format: "label == 'Show the pool'")
+        let wait = { (predicate: NSPredicate) in
+            XCTWaiter().wait(for: [XCTNSPredicateExpectation(predicate: predicate, object: edge)], timeout: 5)
+        }
+        edge.tap()
+        XCTAssertEqual(wait(onTimeline), .completed)
+        app.buttons["today.day"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        XCTAssertEqual(wait(onPool), .completed, "the day's name turns back to the pool")
+
+        edge.tap()
+        XCTAssertEqual(wait(onTimeline), .completed)
+        app.buttons["today.nextDay"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        let tomorrow = NSPredicate(format: "identifier == 'today.day' AND label == 'Tomorrow'")
+        XCTAssertTrue(app.buttons.matching(tomorrow).firstMatch.waitForExistence(timeout: 5))
+        app.tabBars.buttons["Habits"].tap()
+        app.tabBars.buttons["Today"].tap()
+        XCTAssertEqual(wait(onPool), .completed, "the Today tab turns back to the pool")
+        XCTAssertEqual(app.buttons["today.day"].label, "Today", "and to today")
+
+        // Whichever row the earlier tests left first in the pool.
+        let row = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'title:'")).firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        row.tap()
+        XCTAssertFalse(app.buttons["today.day"].waitForExistence(timeout: 3), "the row's page is open")
+        app.tabBars.buttons["Today"].tap()
+        XCTAssertTrue(app.buttons["today.day"].waitForExistence(timeout: 5), "back on Today's first page")
+        XCTAssertEqual(wait(onPool), .completed)
     }
 
     /// A habit's block dragged from the timeline into the pool stands in the pool today, and dragged back from the pool it

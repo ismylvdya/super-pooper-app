@@ -49,6 +49,8 @@ struct TimelineReminderBlock: View {
     let font: Font
     let lineHeight: CGFloat
     var isCompact = false
+    /// An opaque backing under the plate (see `TimelineStyle.backdrop`).
+    var backdrop: Color?
     var onToggle: ((ReminderItem) -> Void)?
     var onOpen: ((ReminderItem) -> Void)?
 
@@ -60,6 +62,7 @@ struct TimelineReminderBlock: View {
             .slotPlate(isPast: slot.isPast, isCompact: isCompact)
         if let onToggle, let onOpen {
             plate
+                .background { if let backdrop { tokens.plateShape(.row).fill(backdrop) } }
                 .plateLift(.row, for: .contextMenuPreview)
                 .onTapGesture { onOpen(reminder) }
                 .contextMenu { RegistryMenu(menu: .reminderContext) { _ in onToggle(reminder) } }

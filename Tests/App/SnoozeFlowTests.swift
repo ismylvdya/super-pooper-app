@@ -153,6 +153,11 @@ struct SnoozeFlowTests {
         #expect(app.model.task(named: vitamins)?.habitTimes == [LocalTime("09:00")], "the note keeps its time")
         #expect(snoozed(shown).map(fireDate) == [at("10:00")], "one notification, where the block now stands")
         #expect(fireDate(center.pending(slot)) == at("09:00", daysLater: 1))
+        let tomorrow = app.model.plan(at: app.clock.now, dayOffset: 1).timeline.first { slot in
+            if case .task(let item) = slot.content { return item.id == vitamins }
+            return false
+        }?.start
+        #expect(tomorrow == at("09:00", daysLater: 1), "tomorrow's block stands at the note's time")
     }
 
     /// A timed task's block moves the same way; its note keeps its due.

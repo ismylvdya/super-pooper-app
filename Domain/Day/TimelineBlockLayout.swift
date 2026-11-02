@@ -1,9 +1,10 @@
 import Foundation
 
-/// Where the blocks of a timeline column go, in points from the top of its window. Every block gets at least its
-/// minimum height. A block that does not overlap an earlier one in time but would overlap it on screen is pushed below
-/// it (so short chains read top to bottom); blocks that really overlap lie over each other indented, or share the width
-/// in columns when they start too close for that, as in Calendar (`CascadeAssigner`).
+/// Where the blocks of a timeline column go, in points from the top of its window. An event stands exactly from its start
+/// to its end. A task or reminder gets at least its minimum height (its title and chip lines). A later block that starts
+/// below an earlier one's title lies over it indented, or shares the width in columns when it starts too close for that,
+/// as in Calendar (`CascadeAssigner`). Only short tasks stack: a task starting inside the title of an earlier task that
+/// has no height beyond its minimum is drawn right under it, edge to edge, so short chains read top to bottom.
 struct TimelineBlockLayout: Sendable {
     struct Placement: Identifiable, Sendable {
         let slot: TimelineSlot
@@ -26,12 +27,12 @@ struct TimelineBlockLayout: Sendable {
 
     let window: TimelineWindow
     let hourHeight: Double
-    /// At least one line of an event's title.
+    /// One line of an event's title: the room a later block leaves under an event's top to keep it readable.
     let minimumEventHeight: Double
-    /// Tasks and reminders may need more (their title and chip lines).
+    /// Tasks and reminders are at least this tall (their title and chip lines).
     let minimumTaskHeight: Double
     /// The room a block's title needs below its top, as a share of its minimum height: a block starting closer under it
-    /// stands beside it instead of over it.
+    /// stands beside it (or, both being short tasks, under it) instead of over it.
     let titleRoomShare: Double
 
     /// The blocks inside the window, earliest first (the longer of two starting together first).
@@ -39,13 +40,14 @@ struct TimelineBlockLayout: Sendable {
         let visible = slots.filter { $0.end > window.start && $0.start < window.end }
             .sorted { $0.start != $1.start ? $0.start < $1.start : $0.end > $1.end }
         var extents: [CascadeAssigner.Block] = []
-        for (index, slot) in visible.enumerated() {
+        var stacksOthers: [Bool] = []
+        for slot in visible {
             var top = y(max(slot.start, window.start))
-            let height = max(y(min(slot.end, window.end)) - top, minimumHeight(of: slot))
-            for earlier in visible.indices where earlier < index && visible[earlier].end <= slot.start {
-                top = max(top, extents[earlier].bottom)
-            }
+            let span = y(min(slot.end, window.end)) - top
+            let height = slot.isEvent ? span : max(span, minimumTaskHeight)
+            if !slot.isEvent { top = stackedTop(top, under: extents, stacking: stacksOthers) }
             extents.append(CascadeAssigner.Block(top: top, bottom: top + height, titleRoom: minimumHeight(of: slot) * titleRoomShare))
+            stacksOthers.append(!slot.isEvent && span <= minimumTaskHeight)
         }
         return zip(visible, zip(extents, CascadeAssigner.assign(extents))).map { slot, pair in
             let (extent, placement) = pair
@@ -54,14 +56,27 @@ struct TimelineBlockLayout: Sendable {
         }
     }
 
+    /// Below every short task whose title a task starting at `top` would cover, again and again down the chain.
+    private func stackedTop(_ top: Double, under extents: [CascadeAssigner.Block], stacking: [Bool]) -> Double {
+        var top = top
+        while let covered = extents.indices.first(where: { stacking[$0] && extents[$0].bottom > top && top < extents[$0].top + extents[$0].titleRoom }) {
+            top = extents[covered].bottom
+        }
+        return top
+    }
+
     private func y(_ date: Date) -> Double {
         window.offset(of: date, hourHeight: hourHeight)
     }
 
     private func minimumHeight(of slot: TimelineSlot) -> Double {
-        switch slot.content {
-        case .task, .reminder: minimumTaskHeight
-        case .event: minimumEventHeight
-        }
+        slot.isEvent ? minimumEventHeight : minimumTaskHeight
+    }
+}
+
+private extension TimelineSlot {
+    var isEvent: Bool {
+        if case .event = content { return true }
+        return false
     }
 }

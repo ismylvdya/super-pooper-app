@@ -116,7 +116,7 @@ final class ListLiftDelegates: NSObject, UICollectionViewDragDelegate, UICollect
                         withDestinationIndexPath destination: IndexPath?) -> UICollectionViewDropProposal {
         let proposal = drop?.collectionView?(collectionView, dropSessionDidUpdate: session, withDestinationIndexPath: destination)
             ?? UICollectionViewDropProposal(operation: .forbidden)
-        for cell in collectionView.visibleCells where cell.configurationState.cellDragState == .dragging {
+        for cell in collectionView.visibleCells where Self.isGap(cell, session: session) {
             Self.showGhost(of: cell, opacity: ghostOpacity)
             ghosts.add(cell)
         }
@@ -131,6 +131,13 @@ final class ListLiftDelegates: NSObject, UICollectionViewDragDelegate, UICollect
     func collectionView(_ collectionView: UICollectionView, dragSessionDidEnd session: UIDragSession) {
         drag?.collectionView?(collectionView, dragSessionDidEnd: session)
         restoreGhosts()
+    }
+
+    /// The dragged row's own cell in the gap: in the dragging state, or the one cell UIKit keeps out of sight while the
+    /// session is a reorder of this list (on some systems it is hidden without the state). Not for a drag from elsewhere.
+    static func isGap(_ cell: UICollectionViewCell, session: UIDropSession?) -> Bool {
+        if let session, session.localDragSession == nil { return false }
+        return cell.configurationState.cellDragState == .dragging || cell.isHidden || cell.alpha == 0
     }
 
     /// The cell in the gap shown faintly.

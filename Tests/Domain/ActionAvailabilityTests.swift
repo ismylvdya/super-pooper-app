@@ -42,6 +42,13 @@ struct ActionAvailabilityTests {
         #expect(full.entries(habitMenu, for: item(makeHabit("Walk"), .marked(.done))).first { $0.action == .done }?.isCurrent == true)
     }
 
+    /// A twice-a-day habit done once is still on today's timeline: Skip today puts off its second time too.
+    @Test func skipTodayStaysOnATwiceADayHabitDoneOnce() {
+        #expect(full.entries(habitMenu, for: item(twiceADay("Water"), .marked(.done))).map(\.action) == [.unmark, .done, .skipToday])
+        #expect(full.entries(habitMenu, for: item(twiceADay("Water"), .marked(.twice))).map(\.action) == [.unmark, .done])
+        #expect(full.entries(habitMenu, for: item(makeHabit("Walk"), .marked(.done))).map(\.action) == [.unmark, .done])
+    }
+
     /// Twice is offered to twice-a-day habits (and to a day already marked Twice), never to other habits.
     @Test func twiceIsForTwiceADayHabits() {
         #expect(full.entries(habitDayMenu, for: item(makeHabit("Walk"))).map(\.action) == [.partial, .done])
@@ -91,8 +98,14 @@ struct ActionAvailabilityTests {
         #expect(TestConfig.actions.definition(.notToday).swipeTint == ColorToken.swipeNeutral.rawValue)
         #expect(TestConfig.actions.definition(.skipToday).swipeTint == ColorToken.swipeNeutral.rawValue)
         #expect(swipes(.review, item(makeTask("Report"))).leading == [.done])
-        #expect(swipes(.postponed, item(makeTask("Report"))).leading == [.backToToday])
-        #expect(swipes(.postponed, item(makeTask("Report"))).trailing == [.delete])
+    }
+
+    /// Morning review's Not today group swipes as the groups above: Done to the right, back to Today to the left (gray,
+    /// as Not today).
+    @Test func thePostponedGroupSwipesLikeTheOthers() {
+        #expect(swipes(.postponed, item(makeTask("Report"))).leading == [.done])
+        #expect(swipes(.postponed, item(makeTask("Report"))).trailing == [.backToToday])
+        #expect(TestConfig.actions.definition(.backToToday).swipeTint == ColorToken.swipeNeutral.rawValue)
     }
 
     /// The archive and the trash put a note back with a swipe to the left; nothing to swipe to the right.

@@ -65,6 +65,20 @@ struct NotificationResponseTests {
         #expect(opened == [try #require(links.calendarURL(at: start))])
     }
 
+    /// Dismiss alert on an event alert takes only the shown notification away: nothing is put back or opened.
+    @Test func dismissAlertRemovesOnlyTheShownNotification() async throws {
+        let recorder = RecordingNotifications()
+        let model = try #require(PreviewModel.make(notifications: recorder)).model
+        var opened: [URL] = []
+        let handler = NotificationResponseHandler(model: model, router: router) { opened.append($0) }
+        let info: [AnyHashable: Any] = ["kind": "event", "day": model.context().today.isoString, "event": "EV-1",
+                                        "eventStart": start.timeIntervalSince1970]
+        #expect(router.route(action: "dismissAlert", info: info) == .dismiss)
+        await handler.handle(action: "dismissAlert", request: request(info, id: "sp|event|EV-1"))
+        #expect(await recorder.log == ["remove sp|event|EV-1"])
+        #expect(opened.isEmpty)
+    }
+
     /// Two presses in a row run one after another: the second Done of a habit with two reminders is Twice.
     @Test func habitButtonsRunInOrder() async throws {
         let water = "Выпить воды 💧"

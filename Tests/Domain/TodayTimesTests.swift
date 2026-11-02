@@ -54,8 +54,6 @@ struct TodayTimesTests {
     }
 
     @Test func habitBlocksMoveOnlyOnTodaysTimelineAndNeverWriteTheNote() {
-        #expect(TaskScheduling.canDrag(vitamins, isToday: true))
-        #expect(!TaskScheduling.canDrag(vitamins, isToday: false))
         #expect(TaskScheduling.canSendToPool(vitamins, slot: nine))
         #expect(TaskScheduling.canPlace(vitamins, slot: nine, today: TodayTimes()))
         #expect(!TaskScheduling.canPlace(vitamins, slot: nil, today: TodayTimes()), "nothing of it is in the pool")

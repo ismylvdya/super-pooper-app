@@ -31,8 +31,10 @@ struct DayNavigation: View {
                 let towardName = edgeTowardName(beforeName: index < nameIndex)
                 switch part {
                 case .previous: arrow(.previousDay, step: -1, label: "today.previousDay", id: "today.previousDay", towardName: towardName)
+                    .zIndex(1)
                 case .name: name(title, names: names)
                 case .next: arrow(.nextDay, step: 1, label: "today.nextDay", id: "today.nextDay", towardName: towardName)
+                    .zIndex(1)
                 }
             }
         }
@@ -68,10 +70,13 @@ struct DayNavigation: View {
         .accessibilityIdentifier(id)
     }
 
+    /// Upright the name may also take the arrows' inner padding (`nameOverlap`, still clear of their glyphs): its frame is
+    /// that much wider on each side while the arrows stay where the widest name puts them, so a date shrinks less.
     private func name(_ title: String, names: [String]) -> some View {
-        Button(action: onToday) {
+        let overlap = bottom == nil ? tokens.bar(.barButtonPadding) : 0
+        return Button(action: onToday) {
             ZStack {
-                if let widest = widest(of: names) { Text(verbatim: widest).hidden() }
+                if let widest = widest(of: names) { Text(verbatim: widest).hidden().padding(.horizontal, overlap) }
                 Text(verbatim: title)
             }
             .font(tokens.font(.navTitle))
@@ -84,6 +89,7 @@ struct DayNavigation: View {
             .frame(height: bottom == nil ? tokens.size(.dayArrowTarget) : nil)
             .contentShape(Rectangle())
         }
+        .padding(.horizontal, -overlap)
         // The bar's button style keeps its label at its full width; the plain one lets the name shrink into the bar's room.
         .buttonStyle(.plain)
         .foregroundStyle(.tint)

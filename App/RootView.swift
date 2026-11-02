@@ -79,6 +79,7 @@ struct RootView: View {
         .environment(\.timelineBell, model.settings.timeline.bellStyle)
         .environment(\.chipOrder, RowChipKind.ordered(model.settings.pool.chipOrder))
         .environment(\.highPriorityLook, model.settings.pool.highPriorityLook)
+        .environment(\.startedFillLength, model.settings.pool.startedFillLength)
         .appCalendar(model.calendar)
         // The user's colors and opacity sit closest to the views, over the bundled tokens of `appConfig`.
         .designTokens(tokens)

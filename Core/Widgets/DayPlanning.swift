@@ -28,9 +28,10 @@ enum DayPlanning {
         let day = context.today.adding(days: dayOffset)
         // "Now" inside another day: the hour its timeline centres on (no cursor is drawn there).
         let dayContext = context.focused(on: context.moment(config.rules.timeline.otherDayAnchor, onLogicalDay: day))
+        let moves = dayState.day == context.today ? dayState.moves(on: day) : []
         let inputs = DayInputs(tasks: usable(tasks, config: config, context: context), events: events, reminders: reminders,
                                skipped: [], manualOrder: nil, timelineFilter: settings.timeline.shown, isOtherDay: true,
-                               eventsKnown: eventsKnown)
+                               eventsKnown: eventsKnown, timeMoves: moves)
         var result = DayBuilder(rules: config.rules.day, sortCriteria: sortCriteria(config: config, settings: settings))
             .build(inputs, context: dayContext)
         result.isToday = false
