@@ -120,8 +120,7 @@ struct PoolBlock: View {
         let isGap = drag?.isGap(item.id) == true
         return PoolRow(item: item, isToday: plan.isToday, isCompact: fillsHeight, plate: plate, handler: handler,
                        dragSource: plan.isToday ? .pool : nil)
-            .opacity(isGap ? tokens.opacity(.dropGhost) : 1)
-            .allowsHitTesting(!isGap)
+            .dropGhost(isGap)
     }
 
     private func tracked(_ view: some View, _ item: DayItem) -> some View {

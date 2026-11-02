@@ -133,10 +133,8 @@ struct DayTimelineView<TaskContent: View>: View {
         let height = max(y(slot.end) - y(slot.start), style.minimumTaskHeight ?? style.minimumItemHeight)
         return block(for: slot)
             .frame(width: max(width - gap, 0), height: max(height - gap, 0), alignment: .topLeading)
-            .opacity(tokens.opacity(.dropGhost))
             .offset(x: labelWidth, y: y(slot.start))
-            .allowsHitTesting(false)
-            .accessibilityHidden(true)
+            .dropGhost()
     }
 
     /// A small link mark; tapping it highlights everything linked to the block (widgets only show it).
