@@ -86,7 +86,7 @@ struct MorningReviewScreen: View {
             .navigationDestination(for: Route.self) { route in
                 switch route {
                 case .task(let name): TaskPageScreen(taskName: name)
-                case .newTask: NewNoteScreen(kind: .task)
+                case .newItem: NewNoteScreen(kind: .task)
                 default: EmptyView()
                 }
             }
@@ -99,7 +99,7 @@ struct MorningReviewScreen: View {
                     .disabled(model.dayState.manualOrder == nil)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button { path.append(.newTask) } label: {
+                    Button { path.append(.newItem(NewItemSeed(kind: .task))) } label: {
                         Image(systemName: icons[.newTask])
                     }
                     .accessibilityLabel(Text("task.new.add"))

@@ -8,7 +8,6 @@ struct LandscapeTabBar: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
     @Environment(\.displayScale) private var displayScale
-    @Environment(AppModel.self) private var model
     let bottom: HorizontalEdge
 
     var body: some View {
@@ -17,8 +16,8 @@ struct LandscapeTabBar: View {
                 Button { router.select(tab) } label: {
                     VStack(spacing: tokens.bar(.tabIconLabelGap)) {
                         // The symbol as `icons.json` names it and the small label, as in the tab bar upright.
-                        TabIconImage.image(icons[tab.icon(lists: model.listsIcon)], font: tokens.uiFont(.tabIcon),
-                                           others: icons.otherTabSymbols(than: tab, lists: model.listsIcon), matching: .width,
+                        TabIconImage.image(icons[tab.icon], font: tokens.uiFont(.tabIcon),
+                                           others: icons.otherTabSymbols(than: tab), matching: .width,
                                            fit: tokens.bar(.tabGlyphFit), scale: displayScale)
                             .font(tokens.font(.tabIcon))
                         // Centered in the bar when it fits; a longer label starts at the left and fades.

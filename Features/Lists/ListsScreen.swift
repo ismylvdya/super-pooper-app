@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The Lists tab: the groups of task lists from `lists.json` (by feel: pleasant, needs energy, quick; all statuses:
+/// The Lists page (Today's top left button): the groups of task lists from `lists.json` (by feel: pleasant, needs energy, quick; all statuses:
 /// a list per planning level), each list with the number of tasks in it; the search button finds any task.
 struct ListsScreen: View {
     @Environment(AppModel.self) private var model
@@ -9,7 +9,7 @@ struct ListsScreen: View {
     @Environment(\.icons) private var icons
 
     var body: some View {
-        PageScaffold(title: L10n.string("tab.lists"), isNested: false) {
+        PageScaffold(title: L10n.string("lists.title"), isNested: true) {
             ForEach(model.config.lists.groups) { group in
                 PlateSection(header: LocalizedStringKey(group.title)) {
                     ForEach(group.lists) { list in

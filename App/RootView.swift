@@ -44,9 +44,9 @@ struct RootView: View {
                                 Label {
                                     Text(LocalizedStringKey(String("tab.") + tab.rawValue))
                                 } icon: {
-                                    TabIconImage.image(container.config.icons[tab.icon(lists: model.listsIcon)],
+                                    TabIconImage.image(container.config.icons[tab.icon],
                                                        font: tokens.uiFont(.systemTabIcon),
-                                                       others: container.config.icons.otherTabSymbols(than: tab, lists: model.listsIcon),
+                                                       others: container.config.icons.otherTabSymbols(than: tab),
                                                        fit: tokens.bar(.tabGlyphFit), scale: displayScale)
                                         // The symbol exactly as `icons.json` names it: the tab bar fills it otherwise.
                                         .environment(\.symbolVariants, .none)
@@ -115,7 +115,6 @@ struct RootView: View {
         switch tab {
         case .today: home(model)
         case .habits: HabitsScreen()
-        case .lists: ListsScreen()
         case .settings: SettingsScreen()
         }
     }
@@ -146,8 +145,8 @@ struct RootView: View {
     @ViewBuilder private func destination(_ route: Route, in tab: AppTab) -> some View {
         switch route {
         case .task(let name): TaskPageScreen(taskName: name)
-        case .newTask: NewNoteScreen(kind: .task, tab: tab)
-        case .newHabit: NewNoteScreen(kind: .habit, tab: tab)
+        case .newItem(let seed): NewNoteScreen(kind: seed.kind == .habit ? .habit : .task, tab: tab)
+        case .lists: ListsScreen()
         case .search(let scope): SearchScreen(scope: scope)
         case .taskSettings: TaskSettingsScreen()
         case .habitSettings: HabitSettingsScreen()
@@ -175,12 +174,10 @@ struct RootView: View {
 }
 
 extension AppTab {
-    /// Its icon; the lists' one is picked in the settings.
-    func icon(lists: Icon) -> Icon {
+    var icon: Icon {
         switch self {
         case .today: .tabToday
         case .habits: .tabHabits
-        case .lists: lists
         case .settings: .tabSettings
         }
     }
@@ -188,8 +185,8 @@ extension AppTab {
 
 extension IconSet {
     /// The symbols of the tabs beside `tab`: a hand-drawn tab glyph stands within them.
-    func otherTabSymbols(than tab: AppTab, lists: Icon) -> [String] {
-        AppTab.allCases.filter { $0 != tab }.map { self[$0.icon(lists: lists)] }
+    func otherTabSymbols(than tab: AppTab) -> [String] {
+        AppTab.allCases.filter { $0 != tab }.map { self[$0.icon] }
     }
 }
 

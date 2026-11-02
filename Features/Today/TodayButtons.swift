@@ -65,7 +65,7 @@ struct TodayButtons: View {
                 .accessibilityLabel(Text("problems.title"))
             }
         case .newTask:
-            Button { router.open(.newTask) } label: { Image(systemName: icons[.newTask]) }
+            Button { router.openNewItem() } label: { Image(systemName: icons[.newTask]) }
                 .tint(tokens.color(.accent))
                 .accessibilityLabel(Text("task.new.title"))
                 .accessibilityIdentifier("today.newTask")

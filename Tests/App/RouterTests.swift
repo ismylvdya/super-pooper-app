@@ -17,8 +17,6 @@ struct RouterTests {
         let habit = try routed("superpooper://habit/Water")
         #expect(habit.tab == .habits && habit.path == [.task("Water")])
         #expect(try routed("superpooper://habits").tab == .habits)
-        let list = try routed("superpooper://lists/someday")
-        #expect(list.tab == .lists && list.path == [.list("someday")])
         #expect(try routed("superpooper://clock").tab == .settings)
         #expect(try routed("superpooper://archive").path == [.archive])
         #expect(try routed("superpooper://trash").path == [.trash])
@@ -30,7 +28,31 @@ struct RouterTests {
         let router = try routed("superpooper://review")
         router.handle(try #require(URL(string: "superpooper://new-task")))
         #expect(!router.isReviewPresented)
-        #expect(router.tab == .today && router.path == [.newTask])
+        #expect(router.tab == .today && router.path == [.newItem(NewItemSeed(kind: .task))])
+    }
+
+    @Test func theTabBarHasTasksHabitsAndSettings() {
+        #expect(AppTab.allCases == [.today, .habits, .settings])
+    }
+
+    @Test func plusOpensAHabitInHabitsAndATaskElsewhere() {
+        #expect(NewItemSeed.opening(on: .habits).kind == .habit)
+        #expect(NewItemSeed.opening(on: .today).kind == .task && NewItemSeed.opening(on: .settings).kind == .task)
+        let router = Router()
+        router.select(.settings)
+        router.openNewItem()
+        #expect(router.path == [.newItem(NewItemSeed(kind: .task))])
+        router.select(.habits)
+        router.openNewItem()
+        #expect(router.path == [.newItem(NewItemSeed(kind: .habit))])
+        router.openNewItem(NewItemSeed(kind: .task))
+        #expect(router.path.last == .newItem(NewItemSeed(kind: .task)))
+    }
+
+    @Test func listsLinksOpenTheListsPageOnTasks() throws {
+        let list = try routed("superpooper://lists/someday")
+        #expect(list.tab == .today && list.path == [.lists, .list("someday")])
+        #expect(try routed("superpooper://lists").path == [.lists])
     }
 
     @Test func unknownLinksOpenTodayAndOtherSchemesNothing() throws {
@@ -41,7 +63,7 @@ struct RouterTests {
         #expect(router.tab == .today && router.path.isEmpty)
     }
 
-    /// Tapping the open tab goes back to its first page; every tap on Today brings back today's date.
+    /// Tapping the open tab goes back to its first page; every tap on Tasks brings back today's pool.
     @Test func tappingTheOpenTabGoesBackToItsFirstPage() {
         let router = Router()
         router.select(.habits)
@@ -51,9 +73,9 @@ struct RouterTests {
         router.select(.habits)
         router.select(.habits)
         #expect(router.path.isEmpty)
-        let taps = router.todayTaps
+        let taps = router.tasksTaps
         router.select(.today)
-        #expect(router.todayTaps == taps + 1)
+        #expect(router.tasksTaps == taps + 1)
     }
 
     /// On Today with a page open further in, the Today tab goes back to its first page; from another tab Today's pages

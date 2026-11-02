@@ -57,7 +57,7 @@ struct TodayScreen: View {
             if let index = layout.blocks.firstIndex(where: { $0.block == block }) { turn(to: index) }
             taskDrag.turnHandled()
         }
-        .onChange(of: router.todayTaps) { showTodaysPool() }
+        .onChange(of: router.tasksTaps) { showTodaysPool() }
     }
 
     /// Turned sideways, Today has its own arrangement.

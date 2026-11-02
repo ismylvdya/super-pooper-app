@@ -4,7 +4,7 @@ import SwiftUI
 import UIKit
 @testable import SuperPooperApp
 
-/// The hand-drawn glyphs: the Lists icon picked in the settings stands within the other tabs' symbols, and Need energy
+/// The hand-drawn glyphs: the Lists icon picked in the settings stands within the bar's symbols, and Need energy
 /// is the frog wherever the property shows.
 @MainActor
 struct HandGlyphTests {
@@ -55,8 +55,6 @@ struct HandGlyphTests {
         #expect(model.listsIcon == .listsGun)
         model.updateSettings { $0.lists.icon = "doubleGunsFillForward" }
         #expect(model.listsIcon == .listsDoubleGunsFillForward)
-        #expect(AppTab.lists.icon(lists: model.listsIcon) == .listsDoubleGunsFillForward)
-        #expect(AppTab.today.icon(lists: model.listsIcon) == .tabToday)
         await model.parts.settings.waitForSave()
         #expect(model.parts.services.settingsStore.load().lists.icon == "doubleGunsFillForward")
         #expect(SyncedSettings(model.settings).lists.icon == "doubleGunsFillForward")
@@ -68,26 +66,19 @@ struct HandGlyphTests {
         #expect(SettingsStore(store: store, defaults: try config().defaultSettings).load().lists.icon == "gun")
     }
 
-    /// Upright the glyph is no taller than any other tab's symbol, sideways no wider: whichever gun is picked.
-    @Test func theListsGlyphStandsWithinTheOtherTabSymbols() throws {
+    /// On Today's top left button the glyph is no taller than the bar's other symbol (search), whichever gun is picked.
+    @Test func theListsGlyphStandsWithinTheBarSymbols() throws {
         let lists = try config().lists
         let fit = tokens.bar(.tabGlyphFit)
-        let cases: [(font: UIFont, axis: Axis)] = [(tokens.uiFont(.systemTabIcon), .vertical), (tokens.uiFont(.tabIcon), .horizontal)]
+        let font = tokens.uiFont(.barIcon)
+        let others = [icons[.search]]
+        let search = try #require(UIImage(systemName: icons[.search], withConfiguration: UIImage.SymbolConfiguration(font: font)))
+        let ink = InkBounds.of(search, scale: scale)
         for choice in lists.icons {
-            let others = icons.otherTabSymbols(than: .lists, lists: choice.icon)
-            #expect(others.count == AppTab.allCases.count - 1)
-            for (font, axis) in cases {
-                let inks = others.compactMap { UIImage(systemName: $0, withConfiguration: UIImage.SymbolConfiguration(font: font)) }
-                    .map { InkBounds.of($0, scale: scale) }
-                #expect(inks.count == others.count)
-                let extent = TabIconImage.glyphExtent(font: font, others: others, along: axis, fit: fit, scale: scale)
-                let glyph = try #require(TemplateGlyph.image(icons[choice.icon], extent: extent, along: axis, scale: scale))
-                let side = axis == .vertical ? glyph.size.height : glyph.size.width
-                #expect(abs(side - extent) < 1 / scale, "\(choice.id): the glyph is cut to its ink")
-                for ink in inks {
-                    #expect(side <= (axis == .vertical ? ink.height : ink.width) + 1 / scale, "\(choice.id) \(axis)")
-                }
-            }
+            let extent = TabIconImage.glyphExtent(font: font, others: others, along: .vertical, fit: fit, scale: scale)
+            let glyph = try #require(TemplateGlyph.image(icons[choice.icon], extent: extent, along: .vertical, scale: scale))
+            #expect(abs(glyph.size.height - extent) < 1 / scale, "\(choice.id): the glyph is cut to its ink")
+            #expect(glyph.size.height <= ink.height + 1 / scale, "\(choice.id)")
         }
     }
 

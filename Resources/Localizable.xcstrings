@@ -3115,6 +3115,17 @@
         }
       }
     },
+    "lists.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lists"
+          }
+        }
+      }
+    },
     "lists.toThisWeek": {
       "extractionState": "manual",
       "localizations": {
@@ -6230,17 +6241,6 @@
         }
       }
     },
-    "tab.lists": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lists"
-          }
-        }
-      }
-    },
     "tab.settings": {
       "extractionState": "manual",
       "localizations": {
@@ -6258,7 +6258,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Today"
+            "value": "Tasks"
           }
         }
       }
