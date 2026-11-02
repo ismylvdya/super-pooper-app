@@ -84,6 +84,19 @@ final class SwipeUITests: XCTestCase {
         XCTAssertTrue(task.waitForNonExistence(timeout: 10), "a done task leaves the Soon list")
     }
 
+    /// The Done list: a swipe to the left deletes a filed task at once (no dialog), and the banner's Undo puts it back there.
+    func testDoneListDeleteOffersUndo() {
+        launch("superpooper://lists/done")
+        let old = find("Старая сделанная задача")
+        swipe(old, right: false, press: "delete")
+        XCTAssertFalse(app.alerts.firstMatch.waitForExistence(timeout: 1), "no confirmation")
+        let undo = app.buttons["banner.undo"]
+        XCTAssertTrue(undo.waitForExistence(timeout: 10))
+        XCTAssertTrue(old.waitForNonExistence(timeout: 5))
+        undo.tap()
+        XCTAssertTrue(row("Старая сделанная задача").waitForExistence(timeout: 10), "back in the Done list")
+    }
+
     /// The Done list: a filed task returns to Soon from its menu (Return) and with a swipe to the right.
     func testDoneListReturnsFiledTasks() {
         launch("superpooper://lists/done")

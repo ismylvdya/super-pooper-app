@@ -18,6 +18,8 @@ final class UndoController {
         let day: DayState
         /// Where the deleted notes lie in the trash.
         var trashed: [TrashedNote] = []
+        /// A task of the done folder deleted from the Done list: taken back, it lies there again as it was.
+        var filed: TaskItem?
     }
 
     private let tasks: TaskState
@@ -60,6 +62,11 @@ final class UndoController {
         return Step(action: action, name: note.name, notes: notes, along: along.map(\.name), day: day.dayState)
     }
 
+    /// What a delete of a task of the done folder changes: only that file, which goes to the trash.
+    func begin(_ action: ActionID, onFiled task: TaskItem) -> Step {
+        Step(action: action, name: task.name, notes: [], along: [], day: day.dayState, filed: task)
+    }
+
     /// The action has run: when it changed anything, the banner offers to take it back.
     func offer(_ step: Step, trashed: [TrashedNote]) {
         var step = step
@@ -87,11 +94,14 @@ final class UndoController {
         await derived.publish()
     }
 
-    /// The deleted notes out of the trash, the tasks filed as done back among the active ones.
+    /// The deleted notes out of the trash (a filed one back into the done folder), the tasks filed as done back among the
+    /// active ones.
     private func bringBack(_ step: Step) async throws {
         if let trash, !step.trashed.isEmpty {
             for note in step.trashed { _ = try await trash.restore(note) }
             await tasks.reload(from: store)
+            // The trash puts a note back among the tasks; a done one goes on into the done folder, where it was.
+            if step.filed != nil { await writer.fileAwayDoneTasks() }
         }
         for before in step.notes where tasks.task(named: before.name) == nil {
             guard let filed = writer.filed(from: before.id) else { continue }

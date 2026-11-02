@@ -224,16 +224,20 @@ final class NoteCommands {
         return trashed
     }
 
-    /// A task of the done folder goes to the trash, after a backup.
-    func deleteFiled(_ id: TaskID) async {
-        guard let task = tasks.filedTask(id) else { return }
+    /// A task of the done folder goes to the trash, after a backup. Returns where it lies there (empty: gone for good),
+    /// nil when it failed.
+    @discardableResult
+    func deleteFiled(_ id: TaskID, announcing: Bool = true) async -> [TrashedNote]? {
+        guard let task = tasks.filedTask(id) else { return nil }
         do {
             try await backups.backup([task], reason: "delete")
-            try await store.delete(task)
+            let place = try await store.delete(task)
             tasks.removeFiled(task)
-            appEvents.send(.deleted(task.name))
+            if announcing { appEvents.send(.deleted(task.name)) }
+            return place.map { [$0] } ?? []
         } catch {
             appEvents.send(.failure(AppFailure(error)))
+            return nil
         }
     }
 

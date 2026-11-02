@@ -52,6 +52,18 @@ extension AppModel {
     }
 
     /// An action on a task of the done folder (the Done list): its name may also be an active note's, so it goes by id.
+    /// An action on a task of the done folder: a delete that the trash can take back happens at once and the banner
+    /// offers Undo, which puts the task back into the done folder as it was.
+    func performOfferingUndo(_ action: ActionDefinition, onFiled id: TaskID) async {
+        guard action.id == .delete, parts.undo.canUndo(action), let task = parts.tasks.filedTask(id) else {
+            await perform(action.id, onFiled: id)
+            return
+        }
+        let step = parts.undo.begin(action.id, onFiled: task)
+        guard let trashed = await parts.notes.deleteFiled(id, announcing: false) else { return }
+        parts.undo.offer(step, trashed: trashed)
+    }
+
     func perform(_ action: ActionID, onFiled id: TaskID) async {
         switch action {
         case .returnFromDone: await parts.notes.returnFiled(id)
