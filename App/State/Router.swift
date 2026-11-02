@@ -46,6 +46,8 @@ final class Router {
     var paths: [AppTab: [Route]] = [:]
     var isReviewPresented = false
     var isProblemsPresented = false
+    /// A sheet that shows the banner on its own bar is up: the tabs' banner, under the sheet, steps aside.
+    var presentsBannerSheet: Bool { isReviewPresented || isProblemsPresented }
     /// Grows on every tap on the Today tab: Today goes back to today's date.
     private(set) var todayTaps = 0
 

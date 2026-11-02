@@ -80,7 +80,13 @@ struct DayNavigation: View {
             .minimumScaleFactor(bottom == nil ? tokens.size(.navTitleMin) / tokens.uiFont(.navTitle).pointSize : 1)
             // Sideways the three letters keep their size and may stand out of the narrow button column.
             .fixedSize(horizontal: bottom != nil, vertical: false)
+            // The whole frame takes the tap, as tall as the arrows beside it.
+            .frame(height: bottom == nil ? tokens.size(.dayArrowTarget) : nil)
+            .contentShape(Rectangle())
         }
+        // The bar's button style keeps its label at its full width; the plain one lets the name shrink into the bar's room.
+        .buttonStyle(.plain)
+        .foregroundStyle(.tint)
         .accessibilityIdentifier("today.day")
     }
 }

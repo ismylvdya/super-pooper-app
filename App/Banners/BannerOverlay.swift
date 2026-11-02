@@ -14,11 +14,14 @@ struct BannerOverlay: View {
     @Environment(BannerCenter.self) private var banners
     @Environment(Router.self) private var router
     var tab: AppTab?
+    /// The tabs' host: while a sheet shows the banner on its own bar, this one would lie under the sheet, where a swipe
+    /// meant for it moves the sheet instead.
+    var yieldsToSheets = false
     @Environment(\.tokens) private var tokens
 
     var body: some View {
         ZStack {
-            if let banner = banners.current, tab == nil || tab == router.tab {
+            if let banner = banners.current, tab == nil || tab == router.tab, !(yieldsToSheets && router.presentsBannerSheet) {
                 BannerView(text: banner.text, icon: icon(banner.style), tint: tint(banner.style), counts: banner.counts,
                            items: banner.items, onDismiss: {
                     withAnimation(.easeInOut(duration: tokens.duration(.bannerAnimation))) { banners.dismiss(banner.id) }

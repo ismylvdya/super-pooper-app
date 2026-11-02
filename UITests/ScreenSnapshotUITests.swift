@@ -98,7 +98,8 @@ final class ScreenSnapshotUITests: XCTestCase {
     func testMorningReviewNotToday() {
         launch("superpooper://review")
         let row = app.descendants(matching: .any).matching(identifier: "review:Оплатить интернет").firstMatch
-        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        // The review is a long lazy list: the row is made only once it is scrolled to.
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 10))
         app.scrollIntoView(row)
         row.swipeLeft()
         let postpone = app.buttons["swipe.notToday"]

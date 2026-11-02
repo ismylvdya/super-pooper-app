@@ -20,6 +20,8 @@ struct TodayScreen: View {
     @State private var width: CGFloat = 0
     @State private var pager = TodayPager()
     @State private var taskDrag = TaskDragState()
+    /// Where the bar's buttons stand upright (`DayBarRoom`).
+    @State private var barButtons: [TodayButtons.Item: CGRect] = [:]
 
     private var isLandscape: Bool { physicalBottom != nil }
 
@@ -38,9 +40,13 @@ struct TodayScreen: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             if !isLandscape {
-                ToolbarItemGroup(placement: .topBarLeading) { TodayButtons(placement: .leading) }
-                ToolbarItem(placement: .principal) { dayNavigation }
-                ToolbarItemGroup(placement: .topBarTrailing) { TodayButtons(placement: .trailing) }
+                ToolbarItemGroup(placement: .topBarLeading) { TodayButtons(placement: .leading, onFrame: barButtonMoved) }
+                // As wide as the bar leaves between its button groups: the name shrinks into that room rather than the
+                // arrows reaching under the buttons beside them.
+                ToolbarItem(placement: .principal) {
+                    if let room = dayBarRoom { dayNavigation.frame(width: room) } else { dayNavigation }
+                }
+                ToolbarItemGroup(placement: .topBarTrailing) { TodayButtons(placement: .trailing, onFrame: barButtonMoved) }
             }
         }
         .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
@@ -57,6 +63,15 @@ struct TodayScreen: View {
     /// Turned sideways, Today has its own arrangement.
     private var arrangement: AppSettings.TodayArrangement {
         isLandscape ? model.settings.today.landscapeArrangement : model.settings.today.arrangement
+    }
+
+    private func barButtonMoved(_ item: TodayButtons.Item, to frame: CGRect?) {
+        if barButtons[item] != frame { barButtons[item] = frame }
+    }
+
+    private var dayBarRoom: CGFloat? {
+        let frames = { (placement: TodayButtons.Placement) in placement.items.compactMap { barButtons[$0] } }
+        return DayBarRoom.width(leading: frames(.leading), trailing: frames(.trailing), gap: tokens.bar(.barButtonPadding))
     }
 
     private var layout: ScreenLayout { model.config.todayLayout(for: arrangement, landscape: isLandscape) }
