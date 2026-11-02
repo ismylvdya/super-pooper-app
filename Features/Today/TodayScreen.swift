@@ -112,8 +112,7 @@ struct TodayScreen: View {
     private func daySwipe(width: CGFloat) -> some Gesture {
         DragGesture(minimumDistance: rules.gestures.daySwipeMinimumDistance)
             .onChanged { value in
-                pager.swipeChanged(value.translation, velocity: value.velocity, containerWidth: width, pageCount: pageCount,
-                                   gestures: rules.gestures, duration: tokens.duration(.animation))
+                pager.swipeChanged(value.translation, containerWidth: width, pageCount: pageCount, gestures: rules.gestures)
             }
             .onEnded { value in
                 pager.swipeEnded(value.translation, predicted: value.predictedEndTranslation, velocity: value.velocity,
