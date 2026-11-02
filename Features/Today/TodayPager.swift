@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Where Today stands: the page of a paged layout and how far a finger has moved it, the day shown and how far it has
-/// slid out. The screen draws from it; the swipe, the page edge, a dragged task, the arrows and the Today tab move it.
+/// slid out. The screen draws from it; the swipe, the page edge, a dragged task, the arrows and the Tasks tab move it.
 @MainActor
 @Observable
 final class TodayPager {
@@ -77,8 +77,13 @@ final class TodayPager {
         }
     }
 
-    func showToday(animation: Animation) {
-        guard dayOffset != 0 else { return }
-        withAnimation(animation) { dayOffset = 0 }
+    /// The Tasks tab and the day's name: today, on the pool's page (`poolPage` of the layout shown).
+    func showPool(poolPage: Int = 0, animation: Animation) {
+        guard dayOffset != 0 || page != poolPage || pageDrag != 0 else { return }
+        withAnimation(animation) {
+            dayOffset = 0
+            page = poolPage
+            pageDrag = 0
+        }
     }
 }

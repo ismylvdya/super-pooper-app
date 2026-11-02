@@ -17,7 +17,7 @@ final class TodayUITests: XCTestCase {
     /// itself. `-SPSeedDemo` brings back the demo calendar the event-linked tasks need.
     private func launch() {
         app.launch()
-        XCTAssertTrue(app.buttons["today.review"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["today.lists"].waitForExistence(timeout: 10))
     }
 
     private func dismissBanners() {
@@ -73,6 +73,22 @@ final class TodayUITests: XCTestCase {
             app.tabBars.buttons["Tasks"].tap()
             XCTAssertTrue(app.buttons.matching(today).firstMatch.waitForExistence(timeout: 5))
         }
+    }
+
+    /// The Lists button at the top left pushes the Lists page with a Back button; Back is Today again.
+    func testListsButtonPushesListsWithBack() {
+        launch()
+        dismissBanners()
+        app.buttons["today.lists"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        let lists = app.navigationBars["Lists"]
+        XCTAssertTrue(lists.waitForExistence(timeout: 5) || app.staticTexts["Lists"].waitForExistence(timeout: 1))
+        XCTAssertTrue(app.buttons["lists.pleasant"].waitForExistence(timeout: 5))
+        let back = app.navigationBars.buttons.element(boundBy: 0)
+        XCTAssertTrue(back.exists)
+        back.tap()
+        XCTAssertTrue(app.buttons["today.day"].waitForExistence(timeout: 5), "back on Today")
+        XCTAssertFalse(app.buttons["today.newTask"].exists, "no \"+\" at Today's top")
+        XCTAssertFalse(app.buttons["today.review"].exists, "no review button")
     }
 
     /// Pool rows have no checkboxes: a long press offers Done, and the done task leaves the pool.
@@ -145,14 +161,13 @@ final class TodayUITests: XCTestCase {
         XCTAssertEqual(XCTWaiter().wait(for: [switchedOn], timeout: 5), .completed)
     }
 
+    /// The review has no button any more: it opens by itself once a day, or from its link.
     func testMorningReviewDragFixesManualOrder() {
-        launch()
-        let edit = app.buttons["today.review"]
-        XCTAssertTrue(edit.waitForExistence(timeout: 5))
-        XCTAssertEqual(edit.label, "Morning review", "the review sheet is named Morning review, its list stays Soon")
+        app.launchArguments[app.launchArguments.count - 1] = "superpooper://review"
+        app.launch()
+        XCTAssertTrue(app.navigationBars["Morning review"].waitForExistence(timeout: 10),
+                      "the review sheet is named Morning review, its list stays Soon")
         dismissBanners()
-        edit.tap()
-        XCTAssertTrue(app.navigationBars["Morning review"].waitForExistence(timeout: 5))
         // Row 0 is the Morning header; the tasks start at row 1.
         let first = app.cells.element(boundBy: 1)
         let third = app.cells.element(boundBy: 3)

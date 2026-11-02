@@ -4,7 +4,7 @@ import SwiftUI
 /// Morning, Day and Evening groups; rows reorder by dragging, also into another group (which sets their part
 /// of the day). Until the first drag the order follows the automatic sort after every edit; after it the
 /// manual order is kept for today. Reset sorting brings the sort back.
-/// Tapping a row (outside its chips) opens the task page; "+" creates a new this-week task.
+/// Tapping a row (outside its chips) opens the task page.
 /// A long press opens the same menu as the row in the pool (and moving the finger then drags the row).
 /// Swiping a row right is Done; swiping it left has one button: a task's Not today (it stays this week and waits in "Not
 /// Today" at the bottom, and in tomorrow's review; swiping it there to the right brings it back), a habit's Skip today.
@@ -86,7 +86,6 @@ struct MorningReviewScreen: View {
             .navigationDestination(for: Route.self) { route in
                 switch route {
                 case .task(let name): TaskPageScreen(taskName: name)
-                case .newItem: NewNoteScreen(kind: .task)
                 default: EmptyView()
                 }
             }
@@ -97,13 +96,6 @@ struct MorningReviewScreen: View {
                     Button { model.resetOrder() } label: { Image(systemName: icons[.resetSort]) }
                     .accessibilityLabel(Text("review.reset"))
                     .disabled(model.dayState.manualOrder == nil)
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button { path.append(.newItem(NewItemSeed(kind: .task))) } label: {
-                        Image(systemName: icons[.newItem])
-                    }
-                    .accessibilityLabel(Text("task.new.add"))
-                    .accessibilityIdentifier("task.new")
                 }
             }
         }

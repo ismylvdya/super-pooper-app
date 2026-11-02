@@ -74,4 +74,15 @@ struct TodayPagerTests {
         pager.resetPage()
         #expect(pager.page == 0)
     }
+
+    /// The Tasks tab and the day's name bring back today on the pool's page.
+    @Test func theTasksTabAndTheDayTitleBringBackThePoolOfToday() {
+        let pager = TodayPager()
+        pager.turn(to: 1, pageCount: 2, animation: .default)
+        pager.changeDay(by: 1, width: width, duration: 0)
+        pager.showPool(animation: .default)
+        #expect(pager.page == 0 && pager.dayOffset == 0)
+        pager.showPool(poolPage: 1, animation: .default)
+        #expect(pager.page == 1, "a layout whose pool is its second page")
+    }
 }

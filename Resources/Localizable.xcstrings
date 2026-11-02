@@ -392,7 +392,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld problems in your data. Tap ⚠︎ at the top to see them."
+            "value": "%lld problems in your data. Open Lists at the top left to see them."
           }
         }
       }
@@ -3643,6 +3643,17 @@
         }
       }
     },
+    "problems.badge %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld problems"
+          }
+        }
+      }
+    },
     "problems.none": {
       "extractionState": "manual",
       "localizations": {
@@ -6270,17 +6281,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tasks"
-          }
-        }
-      }
-    },
-    "task.new.add": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "New task"
           }
         }
       }

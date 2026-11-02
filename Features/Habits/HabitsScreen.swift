@@ -1,14 +1,13 @@
 import SwiftUI
 
 /// The Habits tab: every active habit with today's mark (tap cycles, long press picks, a swipe to the right is Done, to
-/// the left Delete), a page per habit; "+" creates a habit, rows reorder by dragging inside their group. Habits come first,
+/// the left Delete), a page per habit; the tab bar's "+" creates a habit, rows reorder by dragging inside their group. Habits come first,
 /// tasks that simply repeat ("Repeatable tasks") in a group of their own. A plain list whose rows draw the app's
 /// plates themselves, so the title, the corners and the gaps match the other tabs' pages.
 struct HabitsScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
-    @Environment(\.icons) private var icons
     @Environment(\.openURL) private var openURL
     @State private var titleHeight: CGFloat = 0
     @State private var pendingAction: PendingAction?
@@ -50,10 +49,6 @@ struct HabitsScreen: View {
         .actionConfirmation($pendingAction) { handler.run($0) }
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
-                Button { router.openNewItem() } label: { Image(systemName: icons[.newItem]) }
-                    .tint(tokens.color(.accent))
-                    .accessibilityLabel(Text("habits.new"))
-                    .accessibilityIdentifier("habits.new")
                 SearchBarButton(isSearching: $isSearching, accessibilityID: "habits.search")
             }
         }
