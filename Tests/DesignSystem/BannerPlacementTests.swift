@@ -7,6 +7,7 @@ struct BannerPlacementTests {
     @Test func theCornerLiesOnTheButtonsCircle() {
         let placement = BannerPlacement(bar: 54, button: 42, sideInset: 16)
         #expect(placement.radius == 21)
+        #expect(placement.height == 42, "collapsed, as tall as a bar button: it covers the bar's row and no more")
         #expect(placement.top == 6, "as high as the buttons, which stand in the middle of the bar")
         #expect(placement.side == 16)
         // The centre of the banner's top-left corner is the centre of the leading button.

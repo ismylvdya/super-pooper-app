@@ -342,17 +342,6 @@
         }
       }
     },
-    "banner.more": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld more"
-          }
-        }
-      }
-    },
     "banner.notificationImageFailed": {
       "extractionState": "manual",
       "localizations": {

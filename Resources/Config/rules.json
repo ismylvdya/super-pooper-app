@@ -197,8 +197,7 @@
   },
   "banners": {
     "autoHideSeconds": 10,
-    "undoSeconds": 5,
-    "collapsedLines": 2
+    "undoSeconds": 5
   },
   "settingsPreview": {
     "poolRows": 3,
