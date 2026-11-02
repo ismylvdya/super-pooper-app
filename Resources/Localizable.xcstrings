@@ -5227,6 +5227,39 @@
         }
       }
     },
+    "settings.search.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No settings found"
+          }
+        }
+      }
+    },
+    "settings.search.open": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open"
+          }
+        }
+      }
+    },
+    "settings.search.prompt": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search settings"
+          }
+        }
+      }
+    },
     "settings.signing.days %lld": {
       "extractionState": "manual",
       "localizations": {

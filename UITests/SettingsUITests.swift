@@ -36,6 +36,21 @@ final class SettingsUITests: XCTestCase {
         XCTAssertFalse(plate.waitForExistence(timeout: 3))
     }
 
+    /// The search in Settings (.searchable) finds a row by its title and opens the page it is on.
+    func testSearchFindsASettingAndOpensItsPage() {
+        openSettings(signatureHoursLeft: 8 * 24)
+        app.swipeDown()
+        let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        field.tap()
+        field.typeText("bell")
+        let result = app.descendants(matching: .any).matching(identifier: "settings.search.result").firstMatch
+        XCTAssertTrue(result.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.descendants(matching: .any)["settings.link.habitSettings"].exists, "only the results show")
+        result.tap()
+        XCTAssertTrue(app.buttons["settings.listsIcon"].waitForExistence(timeout: 10), "the tasks' settings page")
+    }
+
     /// A plain menu of names; the pick stays once the menu closes. The test puts the gun back, so the other tests see
     /// the default.
     func testTheListsIconIsPickedByName() {

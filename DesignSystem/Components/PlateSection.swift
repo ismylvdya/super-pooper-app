@@ -18,7 +18,7 @@ struct PlateSection<Content: View>: View {
         self.init(header: header.map { Text($0) }, info: info, hintText: hint, content: content)
     }
 
-    init(header: Text, info: LocalizedStringKey? = nil, hint: Text, @ViewBuilder content: () -> Content) {
+    init(header: Text, info: LocalizedStringKey? = nil, hint: Text? = nil, @ViewBuilder content: () -> Content) {
         self.init(header: header, info: info, hintText: hint, content: content)
     }
 
