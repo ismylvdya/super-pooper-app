@@ -6,7 +6,7 @@ enum SpacingToken: String, CaseIterable, Sendable {
     case screenHorizontal, screenBottom, groupGap, plateInner, plateRowGap, headerToPlate, hintToPlate
     case iconTextGap, chipHorizontal, chipVertical, chipGap, infoPadding, nestedTitleInset, nestedTitleLift
     case childIndent, rowVertical, poolRowGap, blockGap, timelineLabelWidth, timelineItemGap, timelineItemPadding
-    case bannerTop, bannerPadding, widgetMargin, habitCellGap, hourLabelGap, bellInset, liftShadow, toggleChipHorizontal, toggleChipVertical, titleInfoGap, chipIconGap, dotTextGap, valueChevronGap, reviewRowVertical, markPadding, badgeGap, progressGap, timelineTitleExtra, previewRowGap, titleDetailGap, footerLineGap, subtaskIndent
+    case bannerPadding, widgetMargin, habitCellGap, hourLabelGap, bellInset, liftShadow, toggleChipHorizontal, toggleChipVertical, titleInfoGap, chipIconGap, dotTextGap, valueChevronGap, reviewRowVertical, markPadding, badgeGap, progressGap, timelineTitleExtra, previewRowGap, titleDetailGap, footerLineGap, subtaskIndent
     case widgetGap, previewInset, cornerMarkGap, compactPlateVertical, emptyStateInset, widgetGridGap
     /// How much further right a timeline block lying over an earlier one starts, per step.
     case timelineCascadeIndent
@@ -15,7 +15,7 @@ enum SpacingToken: String, CaseIterable, Sendable {
 }
 
 enum RadiusToken: String, CaseIterable, Sendable {
-    case plate, chip, timelineItem, banner, habitCell, notificationImage, previewItem, previewFrame
+    case plate, chip, timelineItem, habitCell, notificationImage, previewItem, previewFrame
 }
 
 enum SizeToken: String, CaseIterable, Sendable {

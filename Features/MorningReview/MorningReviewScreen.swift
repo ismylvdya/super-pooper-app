@@ -82,12 +82,11 @@ struct MorningReviewScreen: View {
             .appList()
             // The first group starts closer to the bar than a list's own top gap.
             .contentMargins(.top, tokens.space(.reviewTop), for: .scrollContent)
-            .bannerHost()
             .actionConfirmation($pendingAction) { handler.run($0) }
             .navigationDestination(for: Route.self) { route in
                 switch route {
-                case .task(let name): TaskPageScreen(taskName: name).bannerHost()
-                case .newTask: NewNoteScreen(kind: .task).bannerHost()
+                case .task(let name): TaskPageScreen(taskName: name)
+                case .newTask: NewNoteScreen(kind: .task)
                 default: EmptyView()
                 }
             }
@@ -108,6 +107,8 @@ struct MorningReviewScreen: View {
                 }
             }
         }
+        // Over the sheet's bar, on every page pushed in it.
+        .bannerHost()
     }
 }
 

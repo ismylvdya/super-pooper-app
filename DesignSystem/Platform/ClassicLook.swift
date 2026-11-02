@@ -14,7 +14,7 @@ struct ClassicLook: ViewModifier {
             content.background(.regularMaterial, in: Capsule())
         case .bannerCard:
             content
-                .background(tokens.color(.bannerBackground), in: RoundedRectangle(cornerRadius: tokens.radius(.banner), style: .continuous))
+                .background(tokens.color(.bannerBackground), in: RoundedRectangle(cornerRadius: tokens.bannerPlacement.radius, style: .continuous))
                 .shadow(color: tokens.color(.shadow).opacity(tokens.opacity(.bannerShadow)), radius: tokens.size(.bannerShadowRadius),
                         y: tokens.size(.bannerShadowY))
         case .scrollUnderBars, .fadeUnderBar:

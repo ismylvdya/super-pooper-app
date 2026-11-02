@@ -30,6 +30,8 @@ enum SystemBarMetric: String, CaseIterable, Sendable {
     /// A hand-drawn tab glyph (the Lists one): its ink as a share of the smallest ink of the other tabs' symbols, upright
     /// in height and sideways in width; 1 keeps it within every one of them.
     case tabGlyphFit
+    /// The height of an upright navigation bar, from the top of the safe area (a banner stands with its buttons).
+    case navigationBar
 }
 
 /// `systemBar.font`: a tab's symbol lying sideways (`tabIcon`) and upright in the system tab bar (`systemTabIcon`, only

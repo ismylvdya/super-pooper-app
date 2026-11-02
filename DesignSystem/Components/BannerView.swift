@@ -44,8 +44,8 @@ struct BannerView: View {
         }
         .padding(tokens.space(.bannerPadding))
         .systemLook(.bannerCard)
-        .padding(.horizontal, tokens.space(.screenHorizontal))
-        .padding(.top, tokens.space(.bannerTop))
+        .padding(.horizontal, tokens.bannerPlacement.side)
+        .padding(.top, tokens.bannerPlacement.top)
         .offset(y: min(dragOffset, 0))
         .contentShape(Rectangle())
         .gesture(tapOrSwipe)

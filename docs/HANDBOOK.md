@@ -139,6 +139,7 @@ SuperPooper — iPhone-приложение-оболочка над тремя �
 | Плашка подписи приложения в Settings: с какого дня показывается (7), когда жёлтая (меньше 2 дней) и красная с часами (меньше 1 дня) | `rules.json` → `signingPlate` (`showWithinDays`, `soonWithinDays`, `urgentWithinDays`); цвета — `tokens.json` → `color.signingAhead/Soon/Urgent`, заливка — `opacity.signingPlate` |
 | Жесты: сдвиг, который ещё тап, начало, направление и порог свайпа страниц Today (доля ширины и доля для броска), смахивание баннера, порог «потянуть, чтобы загрузить ещё» | `rules.json` → `gestures` |
 | Баннер: через сколько скрывается, сколько строк видно до раскрытия | `rules.json` → `banners` |
+| Где стоит баннер и его скругление: на панели, концентрично круглым кнопкам (верх — как у кнопок, бока — `barSideInset`, радиус — половина кнопки, D-090) | `tokens.json` → `systemBar.metric` (`navigationBar` — высота панели, `barButton`, `barSideInset`; `BannerPlacement`) |
 | Сколько строк пула и часов в наброске раскладки на странице настроек, сколько дел и привычек в превью цветов | `rules.json` → `settingsPreview` |
 | Какая доля строки пула на экране делает её «показанной» (для счётчика остальных) | `rules.json` → `pool.rowVisibleShare` |
 | На сколько минут вперёд виджет часов получает свои минуты; минимальная длина блока на таймлайне виджета (в минутах его масштаба) | `rules.json` → `widgets.clockTimelineMinutes`, `widgets.minimumBlockMinutes` |
