@@ -28,8 +28,9 @@ struct TimelineStyle {
     var dropMarker: Date?
     /// The dragged task as it would stand dropped there (`TimelineSlot.landing`), drawn as a faint copy of its plate.
     var dropGhost: TimelineSlot?
-    /// What lies under the timeline: a block lying over an earlier one is backed with it, so the earlier one does not show
-    /// through its see-through fill. Nil leaves it see-through (the widget's background is a gradient).
+    /// What lies under the timeline: events and reminders are backed with it, so an earlier block does not show through
+    /// their see-through fill and a long press lifts the whole plate. Nil leaves them see-through (the widget's
+    /// background is a gradient).
     var backdrop: Color?
     /// The finer marks of a zoomed-in timeline (the app's own timeline only).
     var gridDetail = TimelineGridDetail.none

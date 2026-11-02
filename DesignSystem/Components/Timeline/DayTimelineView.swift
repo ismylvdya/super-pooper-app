@@ -30,7 +30,6 @@ struct DayTimelineView<TaskContent: View>: View {
                 ForEach(blocks) { item in
                     let isLinked = links.isLinked(item.slot.id)
                     block(for: item.slot)
-                        .background { if item.liesOver, let backdrop = style.backdrop { PlateShape(cornerRadius: cornerRadius(of: item.slot)).fill(backdrop) } }
                         .environment(\.titleReserve, cornerWidth(linked: isLinked, bell: item.slot.showsBell))
                         .overlay(alignment: .topTrailing) {
                             HStack(spacing: tokens.space(.cornerMarkGap)) {
@@ -88,15 +87,12 @@ struct DayTimelineView<TaskContent: View>: View {
     private struct PlacedSlot: Identifiable {
         let slot: TimelineSlot
         let frame: CGRect
-        /// It lies over an earlier block (indented), so it needs an opaque backing under its see-through fill.
-        let liesOver: Bool
         var id: String { slot.id }
 
         init(_ placement: TimelineBlockLayout.Placement, width: CGFloat, indentStep: CGFloat) {
             let horizontal = placement.horizontal(in: Double(width), indentStep: Double(indentStep))
             slot = placement.slot
             frame = CGRect(x: horizontal.x, y: placement.top, width: horizontal.width, height: placement.height)
-            liesOver = placement.indent > 0
         }
     }
 
@@ -106,6 +102,7 @@ struct DayTimelineView<TaskContent: View>: View {
             if let onEventTap = style.onEventTap {
                 // A tap, not a Button: a button also fires when a swipe across the timeline ends on the event.
                 TimelineEventBlock(event: event, slot: slot, font: style.fonts.event, lineHeight: style.fonts.eventLineHeight)
+                    .backdrop(style.backdrop, cornerRadius: cornerRadius(of: slot))
                     .contentShape(Rectangle())
                     .onTapGesture { onEventTap(event) }
                     .accessibilityAddTraits(.isButton)
@@ -119,7 +116,7 @@ struct DayTimelineView<TaskContent: View>: View {
             }
         case .reminder(let reminder):
             TimelineReminderBlock(reminder: reminder, slot: slot, font: style.fonts.task, lineHeight: style.fonts.taskLineHeight,
-                                  isCompact: style.compactPlates,
+                                  isCompact: style.compactPlates, backdrop: style.backdrop,
                                   onToggle: style.onReminderToggle, onOpen: style.onReminderTap)
         case .task(let item):
             if style.rowsHaveOwnPlates {
@@ -229,5 +226,13 @@ struct DayTimelineView<TaskContent: View>: View {
         .offset(x: origin.x, y: origin.y)
         .allowsHitTesting(false)
         .accessibilityHidden(true)
+    }
+}
+
+private extension View {
+    /// An opaque backing under a see-through plate: a block lying over an earlier one hides it, and a long press lifts the
+    /// plate itself, not an outline of it (the lift keeps only what the menu's view draws).
+    @ViewBuilder func backdrop(_ color: Color?, cornerRadius: CGFloat) -> some View {
+        if let color { background { PlateShape(cornerRadius: cornerRadius).fill(color) } } else { self }
     }
 }
