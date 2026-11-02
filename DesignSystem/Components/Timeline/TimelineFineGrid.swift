@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// The finer marks of a zoomed-in timeline (`TimelineGridDetail`): ":15", ":30", ":45" right-aligned under the hour
-/// labels, paler and a little smaller, and a line every five minutes without numbers, each faded in by the zoom.
+/// labels, paler and smaller (`TimelineMinuteLabel`), and a line every five minutes without numbers, each faded in by the zoom.
 struct TimelineFineGrid: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.rules) private var rules
@@ -24,11 +24,9 @@ struct TimelineFineGrid: View {
         }
         if detail.quarters > 0 {
             ForEach(marks(every: rules.timeline.quarterMinutes), id: \.self) { mark in
-                Text(L10n.format("timeline.dropMinutes", Int(mark.timeIntervalSince(hour(of: mark)) / 60)))
-                    .font(tokens.font(.timelineQuarter).monospacedDigit())
-                    .foregroundStyle(tokens.color(.tertiaryText))
+                TimelineMinuteLabel(minute: Int(mark.timeIntervalSince(hour(of: mark)) / 60), width: labelWidth)
                     .opacity(detail.quarters * tokens.opacity(.quarterLabel))
-                    .frame(width: max(labelWidth - tokens.space(.hourLabelGap), 0), height: labelHeight, alignment: .trailing)
+                    .frame(height: labelHeight)
                     .offset(y: y(mark) - labelHeight / 2)
             }
         }

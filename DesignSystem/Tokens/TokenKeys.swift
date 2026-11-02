@@ -64,7 +64,7 @@ enum DurationToken: String, CaseIterable, Sendable {
 enum FontToken: String, CaseIterable, Sendable {
     case pageTitle, navTitle, sectionHeader, rowTitle, hint, chip, info, timelineHour, banner, poolCounter
     case taskTitle, emptyTitle, emptyBody, footer, widgetTitle, widgetCaption, widgetEvent, caption, noteEditor
-    case statValue, toggleChip, pullIcon, emptyIcon, emptyAction, linkBadge, repeatableTitle, habitTitle, timelineQuarter
+    case statValue, toggleChip, pullIcon, emptyIcon, emptyAction, linkBadge, repeatableTitle, habitTitle, timelineMinutes
     /// The timeline at the sizes picked in settings (`font(_:size:)`).
     case timelineText, timelineEvent
     /// A swipe button's symbol and the title under it, drawn inside the button.
