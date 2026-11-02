@@ -24,8 +24,8 @@ final class TodayUITests: XCTestCase {
         app.dismissBanners()
     }
 
-    /// The arrows next to the day's name change the day (another day is named by its date) and stay where they are;
-    /// the Today tab brings back today.
+    /// The arrows next to the day's name change the day (the next one is Tomorrow, the one after it is named by its date
+    /// and weekday, the one before today Yesterday) and stay where they are; the Today tab brings back today.
     func testArrowsChangeTheDayAndTheTodayTabBringsItBack() {
         launch()
         dismissBanners()
@@ -34,18 +34,22 @@ final class TodayUITests: XCTestCase {
         let next = app.buttons["today.nextDay"]
         let previous = app.buttons["today.previousDay"]
         let arrows = (next.frame, previous.frame)
-        let date = NSPredicate(format: "identifier == 'today.day' AND label MATCHES '^[0-9]{1,2} [A-Za-z]{3}$'")
+        let named = { (name: String) in NSPredicate(format: "identifier == 'today.day' AND label == %@", name) }
+        let date = NSPredicate(format: "identifier == 'today.day' AND label MATCHES '^[0-9]{1,2} [A-Za-z]{3} • [A-Za-z]{3}$'")
         // Bar buttons refuse the accessibility "scroll to visible" step: tap by coordinate.
         next.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-        XCTAssertTrue(app.buttons.matching(date).firstMatch.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons.matching(named("Tomorrow")).firstMatch.waitForExistence(timeout: 5))
         XCTAssertEqual(next.frame, arrows.0, "the arrows do not move with the name")
+        next.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        XCTAssertTrue(app.buttons.matching(date).firstMatch.waitForExistence(timeout: 5))
+        XCTAssertEqual(next.frame, arrows.0)
         XCTAssertEqual(previous.frame, arrows.1)
         app.tabBars.buttons["Today"].tap()
-        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "identifier == 'today.day' AND label == 'Today'")).firstMatch
-            .waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons.matching(named("Today")).firstMatch.waitForExistence(timeout: 5))
         previous.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-        XCTAssertTrue(app.buttons.matching(date).firstMatch.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons.matching(named("Yesterday")).firstMatch.waitForExistence(timeout: 5))
         XCTAssertEqual(previous.frame, arrows.1)
+        XCTAssertEqual(next.frame, arrows.0)
     }
 
     /// The arrows take taps across the whole bar height (`size.dayArrowTarget`, 44 pt), on the room around the glyph and
@@ -59,7 +63,7 @@ final class TodayUITests: XCTestCase {
             XCTAssertGreaterThanOrEqual(arrow.frame.height.rounded(), 44, arrow.identifier)
             XCTAssertGreaterThan(arrow.frame.width, app.buttons["today.day"].frame.height / 2, arrow.identifier)
         }
-        let date = NSPredicate(format: "identifier == 'today.day' AND label MATCHES '^[0-9]{1,2} [A-Za-z]{3}$'")
+        let date = NSPredicate(format: "identifier == 'today.day' AND label IN {'Tomorrow', 'Yesterday'}")
         let today = NSPredicate(format: "identifier == 'today.day' AND label == 'Today'")
         let corners = [(next, CGVector(dx: 0.95, dy: 0.08)), (next, CGVector(dx: 0.05, dy: 0.92)),
                        (previous, CGVector(dx: 0.05, dy: 0.08)), (previous, CGVector(dx: 0.95, dy: 0.92))]

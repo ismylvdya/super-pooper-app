@@ -981,6 +981,17 @@
         }
       }
     },
+    "day.dateAndWeekday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ • %2$@"
+          }
+        }
+      }
+    },
     "day.today": {
       "extractionState": "manual",
       "localizations": {
@@ -999,6 +1010,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tod"
+          }
+        }
+      }
+    },
+    "day.tomorrow": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tomorrow"
+          }
+        }
+      }
+    },
+    "day.yesterday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yesterday"
           }
         }
       }

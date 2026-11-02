@@ -1,6 +1,8 @@
+import CoreText
 import SwiftUI
+import UIKit
 
-/// The arrows around the shown day's name ("Today", "26 Oct"; lying sideways "Mon", "Tod"); on another day, tapping the
+/// The arrows around the shown day's name ("Today", "Yesterday", "26 Oct • Wed"; lying sideways "Mon", "Tod"); on another day, tapping the
 /// name goes back to today. The name's frame is as wide as the widest name, so the arrows stay put; it shrinks if
 /// the room is short. Sideways it is a column in physical order whose arrows point the same physical way as upright.
 /// An arrow takes taps far beyond its glyph while everything stays where it was: the whole height of the bar
@@ -69,7 +71,7 @@ struct DayNavigation: View {
     private func name(_ title: String, names: [String]) -> some View {
         Button(action: onToday) {
             ZStack {
-                ForEach(names, id: \.self) { Text(verbatim: $0).hidden() }
+                if let widest = widest(of: names) { Text(verbatim: widest).hidden() }
                 Text(verbatim: title)
             }
             .font(tokens.font(.navTitle))
@@ -80,6 +82,17 @@ struct DayNavigation: View {
             .fixedSize(horizontal: bottom != nil, vertical: false)
         }
         .accessibilityIdentifier("today.day")
+    }
+}
+
+extension DayNavigation {
+    /// The widest name in the bar's font with its digits as wide as each other (`.monospacedDigit()`), which the frame
+    /// holds room for.
+    private func widest(of names: [String]) -> String? {
+        let base = tokens.uiFont(.navTitle)
+        let digits: [UIFontDescriptor.FeatureKey: Int] = [.type: kNumberSpacingType, .selector: kMonospacedNumbersSelector]
+        let font = UIFont(descriptor: base.fontDescriptor.addingAttributes([.featureSettings: [digits]]), size: base.pointSize)
+        return DayName.widest(names) { NSAttributedString(string: $0, attributes: [.font: font]).size().width }
     }
 }
 
