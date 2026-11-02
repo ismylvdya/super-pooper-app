@@ -60,10 +60,20 @@ final class DayStateController {
         update { $0.timeMoves = moves }
     }
 
+    /// The blocks moved on `day`'s timeline (today's, or another day's).
+    func times(on day: LocalDate) -> TodayTimes {
+        rollDayIfNeeded()
+        return TodayTimes(dayState.moves(on: day))
+    }
+
+    func setTimeMoves(_ moves: [TimeMove], on day: LocalDate) {
+        update { $0.setMoves(moves, on: day) }
+    }
+
     func rollDayIfNeeded() {
         let today = context().today
         guard dayState.day != today else { return }
-        dayState = DayState(day: today)
+        dayState = dayState.rolled(to: today)
         try? store.save(dayState)
     }
 

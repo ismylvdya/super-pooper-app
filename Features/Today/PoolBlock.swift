@@ -47,8 +47,9 @@ struct PoolBlock: View {
     private func dropped(_ item: DayItem, from source: TaskDragState.Source, order: [String]) {
         Haptics.play(.drop)
         switch source {
-        case .pool: model.setManualOrder(order)
-        case .timeline(let slot): Task { await model.unschedule(item.id, slot: slot, poolOrder: order) }
+        // The pool's own order is today's only; another day's pool takes blocks from its timeline.
+        case .pool: if plan.isToday { model.setManualOrder(order) }
+        case .timeline(let slot): Task { await model.unschedule(item.id, slot: slot, poolOrder: order, on: plan.today) }
         }
     }
 
@@ -119,7 +120,7 @@ struct PoolBlock: View {
     private func row(_ item: DayItem, plate: PoolRowContent.PlateKind) -> some View {
         let isGap = drag?.isGap(item.id) == true
         return PoolRow(item: item, isToday: plan.isToday, isCompact: fillsHeight, plate: plate, handler: handler,
-                       dragSource: plan.isToday ? .pool : nil)
+                       dragSource: .pool)
             .dropGhost(isGap)
     }
 
