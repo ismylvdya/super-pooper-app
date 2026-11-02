@@ -1,7 +1,8 @@
 import SwiftUI
 
 /// Top banner on the line of the bar's round buttons (`BannerPlacement`): collapsed it is one line exactly as tall as they
-/// are (the counts beside the message, each its own element); a tap expands it to the whole message and under it the
+/// are (the first note it is about after the message, how many more beside it, the counts, each its own element); a tap
+/// expands it to the whole message and under it the
 /// notes it is about, one per line, and collapses it again. A swipe up dismisses it; it hides itself after `hidesAfter`
 /// (`banners.autoHideSeconds` unless given). A banner offering Undo has the button at its end.
 struct BannerView: View {
@@ -69,8 +70,17 @@ struct BannerView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             } else {
-                Text(text).lineLimit(1)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                HStack(spacing: tokens.space(.iconTextGap)) {
+                    Text(text).lineLimit(1).layoutPriority(1)
+                    // The first note it is about, in its own place after the message; the rest after a tap.
+                    if let first = items.first {
+                        Text(verbatim: first).fontWeight(.semibold).lineLimit(1)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                if items.count > 1 {
+                    Text(verbatim: "+\(items.count - 1)").foregroundStyle(tokens.color(.secondaryText)).fixedSize()
+                }
                 if !counts.isEmpty { countRow.fixedSize() }
             }
         }
