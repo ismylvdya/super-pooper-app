@@ -20,6 +20,7 @@ struct PoolSettingsSection: View {
             }
             .pickerStyle(.segmented)
             .accessibilityIdentifier("settings.pool.highPriority")
+            startedFill
             PlateRow(icon: .poolCount, title: "settings.pool.visible", info: "info.settings.pool.visible") {
                 Stepper(value: Binding(get: { model.settings.pool.visibleCount },
                                        set: { value in model.updateSettings { $0.pool.visibleCount = value } }), in: model.config.rules.limits.poolVisibleCount.ints) {
@@ -30,5 +31,18 @@ struct PoolSettingsSection: View {
             .disabled(!isActive)
             .opacity(isActive ? 1 : tokens.opacity(.blocked))
         }
+    }
+
+    /// How far a started task's blue fill reaches, with a sample of it.
+    @ViewBuilder private var startedFill: some View {
+        let length = model.settings.pool.startedFillLength
+        let limits = model.config.rules.limits.startedFillLength
+        PlateRow(icon: nil, title: "settings.pool.startedFill", info: "info.settings.pool.startedFill") {
+            Text(length.formatted(.percent.precision(.fractionLength(0)))).monospacedDigit().foregroundStyle(tokens.color(.secondaryText))
+        }
+        .background { StartedFill(length: length) }
+        Slider(value: Binding(get: { length }, set: { value in model.updateSettings { $0.pool.startedFillLength = limits.snapped(value) } }),
+               in: limits.closed)
+            .accessibilityIdentifier("settings.pool.startedFill")
     }
 }

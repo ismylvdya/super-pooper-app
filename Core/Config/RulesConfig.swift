@@ -193,6 +193,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let bellOpacity: Range
         let fontSize: Range
         let pastOpacity: Range
+        /// The share of a plate a started task's fill reaches.
+        let startedFillLength: Range
         /// The ring of a habit's day not done or done partly.
         let ringOpacity: Range
         let recurrenceInterval: Range

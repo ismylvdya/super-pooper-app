@@ -43,7 +43,7 @@ struct TaskItem: Identifiable, Hashable, Codable, Sendable {
     /// Where an archived note goes back to: a task to Soon, a habit among the habits.
     var statusOutOfArchive: TaskStatus { isHabit ? .habit : .thisWeek }
     /// A task of a later planning level (or done, or archived) can be brought to this week.
-    var canPromote: Bool { !isHabit && status != .thisWeek }
+    var canPromote: Bool { !isHabit && !status.isThisWeek }
     /// Another task can be linked to it (before or after it); archived notes are out of the way.
     var isLinkable: Bool { !isArchived }
     /// Habits that are not archived, and only those switched on for Today, take part in the day.

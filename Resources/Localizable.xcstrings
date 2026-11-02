@@ -78,6 +78,17 @@
         }
       }
     },
+    "action.notStarted": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not started"
+          }
+        }
+      }
+    },
     "action.notToday": {
       "extractionState": "manual",
       "localizations": {
@@ -206,6 +217,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Snooze"
+          }
+        }
+      }
+    },
+    "action.start": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start"
           }
         }
       }
@@ -529,6 +551,17 @@
         }
       }
     },
+    "banner.undoable.notStarted": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” is not started."
+          }
+        }
+      }
+    },
     "banner.undoable.notToday": {
       "extractionState": "manual",
       "localizations": {
@@ -591,6 +624,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Skipped “%@” today."
+          }
+        }
+      }
+    },
+    "banner.undoable.start": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Started “%@”."
           }
         }
       }
@@ -811,6 +855,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Problems"
+          }
+        }
+      }
+    },
+    "color.started": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Started"
           }
         }
       }
@@ -2495,6 +2550,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "How a high-priority task stands out in the pool and on the timeline: the priority icon before its name, or its whole plate in a soft red."
+          }
+        }
+      }
+    },
+    "info.settings.pool.startedFill": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How far a started task's blue fill reaches across its plate."
           }
         }
       }
@@ -5194,6 +5260,17 @@
         }
       }
     },
+    "settings.pool.startedFill": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Started fill"
+          }
+        }
+      }
+    },
     "settings.pool.visible": {
       "extractionState": "manual",
       "localizations": {
@@ -6094,6 +6171,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nearest months"
+          }
+        }
+      }
+    },
+    "status.inProgress": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Started"
           }
         }
       }

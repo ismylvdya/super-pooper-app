@@ -57,6 +57,8 @@ struct FieldMapping: Codable, Hashable, Sendable {
 
     struct Statuses: Codable, Hashable, Sendable {
         let thisWeek: String
+        /// Started: TaskNotes' own in-progress status.
+        let inProgress: String
         let halfYear: String
         let someday: String
         let waiting: String
@@ -105,6 +107,7 @@ struct FieldMapping: Codable, Hashable, Sendable {
     func status(fromRaw raw: String) -> TaskStatus {
         switch raw {
         case statuses.thisWeek: .thisWeek
+        case statuses.inProgress: .inProgress
         case statuses.halfYear: .halfYear
         case statuses.someday: .someday
         case statuses.waiting: .waiting
@@ -152,6 +155,7 @@ struct FieldMapping: Codable, Hashable, Sendable {
     func raw(_ status: TaskStatus) -> String {
         switch status {
         case .thisWeek: statuses.thisWeek
+        case .inProgress: statuses.inProgress
         case .halfYear: statuses.halfYear
         case .someday: statuses.someday
         case .waiting: statuses.waiting

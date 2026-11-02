@@ -72,7 +72,7 @@ enum FontToken: String, CaseIterable, Sendable {
 }
 
 enum ColorToken: String, ConfigName {
-    case accent, task, habit, high, energy, pleasant, heart, nowLine, problem
+    case accent, task, habit, high, started, energy, pleasant, heart, nowLine, problem
     case past, swipeNeutral, screenBackground, plateBackground, chipBackground, primaryText, secondaryText, tertiaryText
     case bannerBackground, infoText, destructive, eventText, timelineGrid
     case success, warning, error, shadow, widgetPlate, widgetTop, widgetBottom, listSeparator

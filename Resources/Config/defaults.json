@@ -23,7 +23,8 @@
     "visibleCount": 3,
     "criteria": [],
     "chipOrder": ["problem", "blocked", "feel", "habit"],
-    "highPriorityLook": "leadingIcon"
+    "highPriorityLook": "leadingIcon",
+    "startedFillLength": 0.33
   },
   "timeline": {
     "layout": "oneColumn",

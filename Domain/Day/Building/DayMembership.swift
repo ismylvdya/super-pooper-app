@@ -12,14 +12,14 @@ struct DayMembership: Sendable {
             guard task.isInTodayHabits, !skipped.containsNoteName(task.name) else { return false }
             return occurrence.occurs(task, on: context.today) || task.mark(on: context.today) != nil
         }
-        return (task.status == .thisWeek && !isDatedLater(task))
+        return (task.status.isThisWeek && !isDatedLater(task))
             || (task.status == .done && task.completedDate == context.today)
     }
 
     /// Another day: the habits shown in Today that repeat on it, this week's tasks dated that day.
     func isOnOtherDay(_ task: TaskItem) -> Bool {
         if task.isHabit { return task.isInTodayHabits && occurrence.occurs(task, on: context.today) }
-        guard task.status == .thisWeek, let due = task.due else { return false }
+        guard task.status.isThisWeek, let due = task.due else { return false }
         return context.logicalDay(of: due) == context.today
     }
 

@@ -88,6 +88,27 @@ final class TodayUITests: XCTestCase {
         expectLeftThePool(title)
     }
 
+    /// Start (under the divider of the pool menu) makes a task Started: it stays in the pool, and its menu then offers
+    /// Not started, which the test chooses to leave the note as it was.
+    func testStartAndNotStartedFromThePoolMenu() {
+        launch()
+        dismissBanners()
+        let title = app.buttons["title:Найти отвёртку"]
+        XCTAssertTrue(title.waitForExistence(timeout: 10))
+        title.press(forDuration: 1.2)
+        let start = app.buttons["action.start"]
+        XCTAssertTrue(start.waitForExistence(timeout: 5))
+        start.tap()
+        XCTAssertTrue(start.waitForNonExistence(timeout: 5))
+        XCTAssertTrue(title.waitForExistence(timeout: 5), "a started task stays in the pool")
+        dismissBanners()
+        title.press(forDuration: 1.2)
+        let notStarted = app.buttons["action.notStarted"]
+        XCTAssertTrue(notStarted.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["action.start"].exists)
+        notStarted.tap()
+    }
+
     /// Done items leave the pool.
     private func expectLeftThePool(_ row: XCUIElement) {
         let moved = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false OR hittable == false"), object: row)

@@ -50,7 +50,7 @@ struct ConfigTests {
             #expect(bundle.localizedString(forKey: title, value: "∅", table: nil) != "∅", "missing text for \(title)")
         }
         let statuses = config.lists.groups.first { $0.id == "statuses" }?.lists.flatMap(\.filter.statuses)
-        #expect(statuses == TaskStatus.known)
+        #expect(statuses == TaskStatus.open + [.done, .archived], "Started is in This week, not a list of its own")
     }
 
     /// A planning level misspelt in `day.autoPromoteFrom` stops the app with a config error naming the key; it used to

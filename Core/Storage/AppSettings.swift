@@ -31,6 +31,8 @@ struct AppSettings: Codable, Equatable, Sendable {
         var chipOrder: [String]
         /// How a high-priority task stands out in the pool and on the timeline.
         var highPriorityLook: HighPriorityLook
+        /// How far a started task's fill reaches across its plate, as a share of its width.
+        var startedFillLength: Double
     }
 
     /// How a high-priority task stands out: the priority icon before its name, or its whole plate in a soft red.

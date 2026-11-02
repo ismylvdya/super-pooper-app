@@ -37,6 +37,8 @@ struct ActionAvailability: Sendable {
         case .skipToday: return isToday && item.isHabit && !item.isFinished
         case .notToday: return isToday && NotToday.isAvailable(for: item)
         case .returnFromDone: return !item.isHabit && item.isDone
+        case .start: return !item.isHabit && !item.isDone && !item.task.status.isCompleted && !item.task.status.isStarted
+        case .notStarted: return !item.isHabit && item.task.status.isStarted
         case .archive: return !item.task.isArchived
         case .restoreFromArchive: return item.task.isArchived
         default: return true

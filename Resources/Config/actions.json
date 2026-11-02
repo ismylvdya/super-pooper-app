@@ -158,6 +158,22 @@
       "haptic": "light"
     },
     {
+      "id": "start",
+      "title": "action.start",
+      "icon": "circle.lefthalf.filled",
+      "destructive": false,
+      "haptic": "light",
+      "undo": "edits"
+    },
+    {
+      "id": "notStarted",
+      "title": "action.notStarted",
+      "icon": "circle",
+      "destructive": false,
+      "haptic": "light",
+      "undo": "edits"
+    },
+    {
       "id": "dismissAlert",
       "title": "action.dismissAlert",
       "icon": "bell.slash",
@@ -180,6 +196,10 @@
         "unmark",
         "notToday",
         "delete"
+      ],
+      "more": [
+        "start",
+        "notStarted"
       ]
     },
     "taskPage": {
