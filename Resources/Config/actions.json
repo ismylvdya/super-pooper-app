@@ -187,19 +187,25 @@
       "habitMarks": true,
       "actions": [
         "done",
-        "snooze",
         "skipToday"
+      ],
+      "more": [
+        "snooze"
       ]
     },
     "taskNotification": {
       "actions": [
-        "done",
+        "done"
+      ],
+      "more": [
         "snooze"
       ]
     },
     "reminderNotification": {
       "actions": [
-        "done",
+        "done"
+      ],
+      "more": [
         "snooze"
       ]
     },
@@ -232,8 +238,10 @@
     },
     "eventNotification": {
       "actions": [
-        "snooze",
         "deleteEvent"
+      ],
+      "more": [
+        "snooze"
       ]
     },
     "habitDay": {

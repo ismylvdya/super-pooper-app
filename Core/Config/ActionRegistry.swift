@@ -96,23 +96,30 @@ struct SwipeDefinition: Decodable, Hashable, Sendable {
     }
 }
 
-/// One menu of `actions.json`: its actions in order, and whether it is about a habit's day.
+/// One menu of `actions.json`: the frequent actions on top (`actions`), the rarer ones under a divider (`more`), each in
+/// order, and whether it is about a habit's day.
 struct MenuDefinition: Decodable, Hashable, Sendable {
-    let actions: [ActionID]
+    let frequent: [ActionID]
+    let more: [ActionID]
     /// Its mark actions show the habit mark images (the habit's menus and notification buttons).
     let habitMarks: Bool
 
-    init(actions: [ActionID], habitMarks: Bool = false) {
-        self.actions = actions
+    /// Every action of the menu, the frequent ones first (a notification's buttons, which have no divider).
+    var actions: [ActionID] { frequent + more }
+
+    init(actions: [ActionID], more: [ActionID] = [], habitMarks: Bool = false) {
+        frequent = actions
+        self.more = more
         self.habitMarks = habitMarks
     }
 
-    private enum CodingKeys: String, CodingKey { case actions, habitMarks }
+    private enum CodingKeys: String, CodingKey { case actions, more, habitMarks }
 
     init(from decoder: Decoder) throws {
         try decoder.rejectUnknownKeys(CodingKeys.self)
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        actions = try container.decode([ActionID].self, forKey: .actions)
+        frequent = try container.decode([ActionID].self, forKey: .actions)
+        more = try container.decodeIfPresent([ActionID].self, forKey: .more) ?? []
         habitMarks = try container.decodeIfPresent(Bool.self, forKey: .habitMarks) ?? false
     }
 }

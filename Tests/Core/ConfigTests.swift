@@ -9,7 +9,8 @@ struct ConfigTests {
     @Test func partialAndTwiceStayOnTheHabitsPage() {
         #expect(TestConfig.actions.menus[.habitDay].actions == [.unmark, .partial, .done, .twice])
         #expect(TestConfig.actions.menus[.habitContext].actions == [.unmark, .done, .skipToday])
-        #expect(TestConfig.actions.menus[.habitNotification].actions == [.done, .snooze, .skipToday])
+        #expect(TestConfig.actions.menus[.habitNotification].actions == [.done, .skipToday, .snooze])
+        #expect(TestConfig.actions.menus[.habitNotification].more == [.snooze], "the rarer actions stand under the frequent ones")
         #expect(TestConfig.actions.definition(.skipToday).destructive)
         #expect(TestConfig.actions.menus[.eventContext].actions == [.deleteEvent])
     }
