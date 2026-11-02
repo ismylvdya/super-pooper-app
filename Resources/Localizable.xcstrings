@@ -56,6 +56,17 @@
         }
       }
     },
+    "action.dismissAlert": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dismiss alert"
+          }
+        }
+      }
+    },
     "action.done": {
       "extractionState": "manual",
       "localizations": {

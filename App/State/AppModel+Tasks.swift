@@ -45,8 +45,8 @@ extension AppModel {
         case .returnFromDone: await parts.notes.returnToSoon(name)
         case .delete: return await parts.notes.delete(name, announcing: announcing)
         // Opening is the screen's; the trash restores its own notes, the timeline deletes its events, a notification
-        // snoozes itself.
-        case .open, .openInObsidian, .restoreFromTrash, .deleteEvent, .snooze: break
+        // snoozes or dismisses itself.
+        case .open, .openInObsidian, .restoreFromTrash, .deleteEvent, .snooze, .dismissAlert: break
         }
         return []
     }

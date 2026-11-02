@@ -156,6 +156,13 @@
       "icon": "zzz",
       "destructive": false,
       "haptic": "light"
+    },
+    {
+      "id": "dismissAlert",
+      "title": "action.dismissAlert",
+      "icon": "bell.slash",
+      "destructive": false,
+      "haptic": "light"
     }
   ],
   "menus": {
@@ -241,7 +248,8 @@
         "deleteEvent"
       ],
       "more": [
-        "snooze"
+        "snooze",
+        "dismissAlert"
       ]
     },
     "habitDay": {

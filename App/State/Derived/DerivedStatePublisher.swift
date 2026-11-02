@@ -112,6 +112,12 @@ final class DerivedStatePublisher {
         await replanNotifications()
     }
 
+    /// A notification dismissed from its button leaves Notification Center; its item and the schedule stay as they are.
+    func dismiss(shown identifier: String) async {
+        let notifications = notifications
+        await queue.run { await notifications.remove(shown: identifier) }
+    }
+
     /// Background work waits for the notification schedule before the app is suspended.
     func waitForNotifications() async {
         await queue.waitUntilIdle()

@@ -28,6 +28,8 @@ enum ActionID: String, Codable, CaseIterable, Sendable {
     /// A notification's button: the same notification comes again later (`rules.json` → `notifications.snoozeMinutes`);
     /// nothing about its item changes.
     case snooze
+    /// An event alert's button: only the alert goes away; the event stays in Calendar and on the timeline.
+    case dismissAlert
 }
 
 extension ActionID {

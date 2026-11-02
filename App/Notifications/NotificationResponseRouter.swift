@@ -11,6 +11,8 @@ enum NotificationResponse: Equatable {
     case deleteEvent(identifier: String, start: Date)
     /// Snooze on any notification: the notification of this key and day comes again later.
     case snooze(key: String, day: LocalDate)
+    /// Dismiss alert on an event alert: the notification goes, nothing else changes.
+    case dismiss
     /// A button on a task's or habit's notification, for the day the notification belongs to.
     case perform(ActionID, taskName: String, day: LocalDate?)
     case ignore
@@ -25,6 +27,7 @@ struct NotificationResponseRouter {
             let opens = action == UNNotificationDefaultActionIdentifier ? NotificationTapTarget.url(for: info, links: links) : nil
             return .putBack(opening: opens)
         }
+        if action == ActionID.dismissAlert.rawValue { return .dismiss }
         let day = (info[NotificationPayload.dayKey] as? String).flatMap(LocalDate.init(isoString:))
         if action == ActionID.snooze.rawValue {
             guard let key = info[NotificationPayload.keyKey] as? String, !key.isEmpty, let day else { return .ignore }
