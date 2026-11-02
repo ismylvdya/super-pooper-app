@@ -84,6 +84,19 @@ final class SwipeUITests: XCTestCase {
         XCTAssertTrue(task.waitForNonExistence(timeout: 10), "a done task leaves the Soon list")
     }
 
+    /// The Done list: a swipe to the left deletes a filed task at once (no dialog), and the banner's Undo puts it back there.
+    func testDoneListDeleteOffersUndo() {
+        launch("superpooper://lists/done")
+        let old = find("Старая сделанная задача")
+        swipe(old, right: false, press: "delete")
+        XCTAssertFalse(app.alerts.firstMatch.waitForExistence(timeout: 1), "no confirmation")
+        let undo = app.buttons["banner.undo"]
+        XCTAssertTrue(undo.waitForExistence(timeout: 10))
+        XCTAssertTrue(old.waitForNonExistence(timeout: 5))
+        undo.tap()
+        XCTAssertTrue(row("Старая сделанная задача").waitForExistence(timeout: 10), "back in the Done list")
+    }
+
     /// The Done list: a filed task returns to Soon from its menu (Return) and with a swipe to the right.
     func testDoneListReturnsFiledTasks() {
         launch("superpooper://lists/done")
@@ -126,6 +139,22 @@ final class SwipeUITests: XCTestCase {
         XCTAssertTrue(app.buttons["swipe.notToday"].waitForNonExistence(timeout: 3))
         reveal(task, right: true)
         XCTAssertTrue(app.buttons["swipe.done"].waitForExistence(timeout: 3))
+    }
+
+    /// Morning review's Not today group swipes as the groups above: Done to the right, back to Today to the left.
+    func testThePostponedGroupSwipesDoneRightAndTodayLeft() {
+        launch("superpooper://review")
+        let task = find("Оплатить интернет")
+        swipe(task, right: false, press: "notToday")
+        let waiting = app.descendants(matching: .any).matching(identifier: "review.notToday:Оплатить интернет").firstMatch
+        app.scrollIntoView(waiting)
+        reveal(waiting, right: true)
+        XCTAssertTrue(app.buttons["swipe.done"].waitForExistence(timeout: 3))
+        XCTAssertFalse(app.buttons["swipe.backToToday"].exists)
+        reveal(waiting, right: false)
+        XCTAssertTrue(app.buttons["swipe.done"].waitForNonExistence(timeout: 3))
+        swipe(waiting, right: false, press: "backToToday")
+        XCTAssertTrue(waiting.waitForNonExistence(timeout: 10))
     }
 
     /// The archive: a swipe to the left brings an archived task back to Soon.

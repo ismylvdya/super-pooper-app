@@ -51,8 +51,9 @@ final class Router {
     /// Grows on every tap on the Today tab: Today goes back to today's date.
     private(set) var todayTaps = 0
 
-    /// The tab bar's selection: a tap on Today (also when it is already selected) brings back today.
-    /// Tapping the tab that is already open goes back to its first page, as the system tab bar does.
+    /// The tab bar's selection: a tap on Today (also when it is already selected) brings back today's pool. Tapping the
+    /// tab that is already open goes back to its first page, as the system tab bar does; coming from another tab finds
+    /// the pages as they were left (a new task's page among them).
     func select(_ tab: AppTab) {
         if tab == .today { todayTaps += 1 }
         if tab == self.tab { paths[tab] = [] }

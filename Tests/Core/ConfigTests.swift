@@ -9,7 +9,8 @@ struct ConfigTests {
     @Test func partialAndTwiceStayOnTheHabitsPage() {
         #expect(TestConfig.actions.menus[.habitDay].actions == [.unmark, .partial, .done, .twice])
         #expect(TestConfig.actions.menus[.habitContext].actions == [.unmark, .done, .skipToday])
-        #expect(TestConfig.actions.menus[.habitNotification].actions == [.done, .snooze, .skipToday])
+        #expect(TestConfig.actions.menus[.habitNotification].actions == [.done, .skipToday, .snooze])
+        #expect(TestConfig.actions.menus[.habitNotification].more == [.snooze], "the rarer actions stand under the frequent ones")
         #expect(TestConfig.actions.definition(.skipToday).destructive)
         #expect(TestConfig.actions.menus[.eventContext].actions == [.deleteEvent])
     }
@@ -49,7 +50,7 @@ struct ConfigTests {
             #expect(bundle.localizedString(forKey: title, value: "∅", table: nil) != "∅", "missing text for \(title)")
         }
         let statuses = config.lists.groups.first { $0.id == "statuses" }?.lists.flatMap(\.filter.statuses)
-        #expect(statuses == TaskStatus.known)
+        #expect(statuses == TaskStatus.open + [.done, .archived], "Started is in This week, not a list of its own")
     }
 
     /// A planning level misspelt in `day.autoPromoteFrom` stops the app with a config error naming the key; it used to

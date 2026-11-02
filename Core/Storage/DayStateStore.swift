@@ -13,6 +13,8 @@ struct DayState: Codable, Equatable, Sendable {
     var postponed: [String] = []
     /// Habit blocks dragged on the timeline today: to another time or to the pool (`TodayTimes`).
     var timeMoves: [TimeMove] = []
+    /// Blocks dragged on the timeline of another day; a later day's become that day's `timeMoves` once it comes.
+    var otherDays: [DayMoves] = []
 
     init(day: LocalDate) { self.day = day }
 
@@ -26,7 +28,37 @@ struct DayState: Codable, Equatable, Sendable {
         announcedProblems = try container.decodeIfPresent(Int.self, forKey: .announcedProblems) ?? 0
         postponed = try container.decodeIfPresent([String].self, forKey: .postponed) ?? []
         timeMoves = try container.decodeIfPresent([TimeMove].self, forKey: .timeMoves) ?? []
+        otherDays = try container.decodeIfPresent([DayMoves].self, forKey: .otherDays) ?? []
     }
+
+    /// The blocks moved on `day`: today's own, or those dragged on its timeline from today.
+    func moves(on day: LocalDate) -> [TimeMove] {
+        day == self.day ? timeMoves : otherDays.first { $0.day == day }?.moves ?? []
+    }
+
+    mutating func setMoves(_ moves: [TimeMove], on day: LocalDate) {
+        guard day != self.day else {
+            timeMoves = moves
+            return
+        }
+        otherDays.removeAll { $0.day == day }
+        if !moves.isEmpty { otherDays.append(DayMoves(day: day, moves: moves)) }
+    }
+
+    /// The state a new logical day starts with: empty, but with the blocks dragged on its timeline before it came, and
+    /// those of the days still to come.
+    func rolled(to day: LocalDate) -> DayState {
+        var state = DayState(day: day)
+        state.timeMoves = moves(on: day)
+        state.otherDays = otherDays.filter { $0.day > day }
+        return state
+    }
+}
+
+/// The blocks moved on one day's timeline.
+struct DayMoves: Codable, Equatable, Sendable {
+    let day: LocalDate
+    let moves: [TimeMove]
 }
 
 struct DayStateStore: Sendable {
@@ -35,8 +67,8 @@ struct DayStateStore: Sendable {
     let store: JSONFileStore
 
     func load(for day: LocalDate) -> DayState {
-        guard let state = store.read(DayState.self, from: Self.fileName), state.day == day else { return DayState(day: day) }
-        return state
+        guard let state = store.read(DayState.self, from: Self.fileName) else { return DayState(day: day) }
+        return state.day == day ? state : state.rolled(to: day)
     }
 
     func save(_ state: DayState) throws {

@@ -31,6 +31,9 @@ extension AppModel {
         await parts.derived.snooze(key: key, day: day, shown: identifier)
     }
 
+    /// Dismiss alert on an event alert: the one shown (`identifier`) goes and does not come back; the event stays.
+    func dismissNotification(shown identifier: String) async { await parts.derived.dismiss(shown: identifier) }
+
     /// Background work waits for these before the app is suspended.
     func waitForNotifications() async { await parts.derived.waitForNotifications() }
     func waitForSourceRefresh() async { await parts.sourceCommands.waitForRefresh() }

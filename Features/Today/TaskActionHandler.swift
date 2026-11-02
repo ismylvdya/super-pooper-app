@@ -22,11 +22,11 @@ struct TaskActionHandler {
 
     /// An action on a task of the done folder (the Done list).
     func handle(_ action: ActionDefinition, filed task: TaskItem) {
-        if action.needsConfirmation {
+        if model.needsConfirmation(action) {
             requestConfirmation(PendingAction(action: action, taskName: task.name, kind: task.kind, subtasks: 0, filed: task.id))
             return
         }
-        Task { await model.perform(action.id, onFiled: task.id) }
+        Task { await model.performOfferingUndo(action, onFiled: task.id) }
     }
 
     /// A confirmed action.

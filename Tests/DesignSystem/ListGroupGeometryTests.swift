@@ -25,6 +25,16 @@ struct ListGroupGeometryTests {
         #expect(frames.plate(of: "g", overhang: 52) == CGRect(x: 16, y: 100, width: 300, height: 132))
     }
 
+    /// A swipe moves the first row sideways at its width (Delete, Done): the backing stays where the rows stood.
+    @Test func aSwipedFirstRowLeavesTheBackingInPlace() {
+        let frames = frames(["a": row(100, 0, of: 2), "b": row(144, 1, of: 2)])
+        frames.set(.init(frame: CGRect(x: -120, y: 100, width: 300, height: 44), index: 0, count: 2), group: "g", id: "a")
+        #expect(frames.plate(of: "g", overhang: 52) == CGRect(x: 16, y: 100, width: 300, height: 88))
+        frames.set(.init(frame: CGRect(x: 40, y: 100, width: 500, height: 44), index: 0, count: 2), group: "g", id: "a")
+        frames.set(.init(frame: CGRect(x: 40, y: 144, width: 500, height: 44), index: 1, count: 2), group: "g", id: "b")
+        #expect(frames.plate(of: "g", overhang: 52) == CGRect(x: 40, y: 100, width: 500, height: 88), "a list turned sideways")
+    }
+
     @Test func aGroupScrolledPartlyAwayStaysOpenOnThatSide() {
         var top = row(-34, 0, of: 3)
         top.isVisible = false

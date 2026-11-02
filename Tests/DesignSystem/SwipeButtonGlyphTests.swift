@@ -25,6 +25,14 @@ struct SwipeButtonGlyphTests {
         #expect(ink.maxY > icon.size.height + gap, "the title is drawn under the symbol")
     }
 
+    /// The symbol and the title keep clear of the button's edges on a one-line row (44 points, the system's least).
+    @Test func theGlyphLeavesRoomInsideTheButton() {
+        let done = TestConfig.actions.definition(.done)
+        let image = SwipeButtonGlyph.image(symbol: done.icon, title: L10n.string(done.title), iconFont: tokens.uiFont(.swipeIcon),
+                                           titleFont: tokens.uiFont(.swipeTitle), gap: tokens.space(.swipeIconTitleGap), scale: scale)
+        #expect(image.size.height <= 44 * 0.75)
+    }
+
     @Test func everySwipeActionHasASymbol() {
         for kind in ActionSwipes.allCases {
             let set = TestConfig.actions.swipes[kind]

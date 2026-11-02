@@ -24,12 +24,15 @@ private struct PlateFill: ViewModifier {
     let fill: Color?
     let tint: Color?
     let clipsContent: Bool
+    @Environment(\.plateGradient) private var gradient
 
     func body(content: Content) -> some View {
         let shape = tokens.plateShape(corners)
         let color = fill ?? plateColor
-        let surfaced = content.environment(\.plateSurface, color)
+        // The gradient belongs to this plate only, not to plates inside it.
+        let surfaced = content.environment(\.plateSurface, color).environment(\.plateGradient, nil)
             .background(tint ?? .clear, in: shape)
+            .background { if let gradient { gradient.clipShape(shape) } }
             .background(color, in: shape)
         if clipsContent {
             surfaced.clipShape(shape)
@@ -52,6 +55,18 @@ private struct PlateLift: ViewModifier {
 
     func body(content: Content) -> some View {
         content.contentShape(kinds, tokens.plateShape(corners))
+    }
+}
+
+private struct PlateGradientKey: EnvironmentKey {
+    static let defaultValue: AnyView? = nil
+}
+
+extension EnvironmentValues {
+    /// A fill the next plate out draws over its color and under its tint (a started task's `StartedFill`).
+    var plateGradient: AnyView? {
+        get { self[PlateGradientKey.self] }
+        set { self[PlateGradientKey.self] = newValue }
     }
 }
 

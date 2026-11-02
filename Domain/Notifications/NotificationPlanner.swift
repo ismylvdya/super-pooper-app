@@ -63,7 +63,7 @@ struct NotificationPlanner: Sendable {
                                                           isRepeatable: task.kind == .repeatable))
                     }
                 }
-            } else if task.status == .thisWeek, let due = task.due, let time = due.time {
+            } else if task.status.isThisWeek, let due = task.due, let time = due.time {
                 let day = context.logicalDay(of: due)
                 let blocks = day == context.today ? todayTimes.blocks(of: task, written: [time]) : [BlockTime(time)]
                 guard day != context.today || !skipped.containsNoteName(task.name), let block = blocks.first else { continue }

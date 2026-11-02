@@ -6,6 +6,9 @@ import SwiftUI
 enum PoolRowPlate {
     case own
     case piece
+
+    /// The shape of a tint over the row (high priority): the row's own rounded plate, also on a routine's piece.
+    var tintCorners: PlateCorners { .row }
 }
 
 extension View {
@@ -15,6 +18,7 @@ extension View {
 }
 
 private struct PoolRowPlateFill: ViewModifier {
+    @Environment(\.tokens) private var tokens
     let plate: PoolRowPlate
     let isDone: Bool
     let tint: Color?
@@ -22,7 +26,10 @@ private struct PoolRowPlateFill: ViewModifier {
     func body(content: Content) -> some View {
         switch plate {
         case .own: content.taskPlate(isDone: isDone, tint: tint)
-        case .piece: content.rowPlatePadding().plate(.piece, tint: tint)
+        case .piece:
+            content.rowPlatePadding()
+                .background { if let tint { tokens.plateShape(plate.tintCorners).fill(tint) } }
+                .plate(.piece)
         }
     }
 }

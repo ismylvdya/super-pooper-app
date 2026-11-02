@@ -70,7 +70,7 @@ struct MorningReviewScreen: View {
                                           frames: frames, vertical: 0)
                             .accessibilityIdentifier("review.notToday:\(task.name)")
                             .opacity(tokens.opacity(.blocked))
-                            // Back to today to the right, Delete to the left.
+                            // Done to the right, back to today to the left, as Done and Not today in the groups above.
                             .actionSwipes(.postponed, item: DayItem(listed: task)) { perform($0, on: task.name) }
                         }
                         ListGroupFooter(text: Text("review.postponed.hint"))

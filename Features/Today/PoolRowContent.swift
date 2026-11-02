@@ -11,6 +11,7 @@ struct PoolRowContent: View {
     @Environment(\.actions) private var actions
     @Environment(\.tokens) private var tokens
     @Environment(\.highPriorityLook) private var highPriorityLook
+    @Environment(\.startedFillLength) private var startedFillLength
     @Environment(TaskDragState.self) private var drag: TaskDragState?
     let item: DayItem
     var isToday = true
@@ -56,5 +57,12 @@ struct PoolRowContent: View {
                 row.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading).slotPlate(isPast: isPast, isCompact: isCompact, tint: tint)
             }
         }
+        .environment(\.plateGradient, startedFill)
+    }
+
+    /// A started task, not done yet, has the started fill over its plate, under its text (`PlateFill`).
+    private var startedFill: AnyView? {
+        guard let startedFillLength, item.task.status.isStarted, !item.isDone else { return nil }
+        return AnyView(StartedFill(length: startedFillLength))
     }
 }

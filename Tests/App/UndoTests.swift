@@ -63,6 +63,24 @@ struct UndoTests {
         #expect(model.filedTasks.isEmpty)
     }
 
+    /// The Done list: Delete asks nothing, the banner offers Undo, and Undo puts the task back into the done folder as it was.
+    @Test func deletingAFiledTaskOffersUndoBackIntoTheDoneFolder() async throws {
+        let (model, events) = try makeModel([makeTask("Report")])
+        await model.performOfferingUndo(action(model, .done), on: "Report")
+        let filed = try #require(model.filedTasks.first { $0.name == "Report" })
+        await model.performOfferingUndo(action(model, .delete), onFiled: filed.id)
+        #expect(model.filedTasks.isEmpty)
+        let offer = try offer(events)
+        #expect(offer.action == .delete && offer.name == "Report")
+
+        await model.undo(offer.id)
+
+        let back = try #require(model.filedTasks.first { $0.name == "Report" })
+        #expect(back.status == filed.status && back.completedDate == filed.completedDate)
+        #expect(model.task(named: "Report") == nil, "it stays in the done folder, not among the active tasks")
+        #expect(try await model.parts.services.trash?.notes().isEmpty == true)
+    }
+
     @Test func undoingArchiveRestoresTheStatus() async throws {
         let (model, events) = try makeModel([makeTask("Report", status: .halfYear)])
         await model.performOfferingUndo(action(model, .archive), on: "Report")

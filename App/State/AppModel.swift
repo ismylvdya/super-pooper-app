@@ -54,15 +54,17 @@ final class AppModel {
     func setManualOrder(_ names: [String]) { parts.dayCommands.setManualOrder(names) }
     func resetOrder() { parts.dayCommands.resetOrder() }
     func applyReviewMove(_ move: ReviewGroups.Move) { parts.dayCommands.applyReviewMove(move) }
-    /// A drag between the pool and the timeline; `slot`: a habit block's time as its note has it, when it comes from the
-    /// timeline (a habit moves for today only).
+    /// A drag between the pool and the timeline of any day; `slot`: a habit block's time as its note has it, when it comes
+    /// from the timeline (a habit moves for that day only).
     func schedule(_ name: String, slot: LocalTime? = nil, at moment: Date) async {
         await parts.dayCommands.schedule(name, slot: slot, at: moment)
     }
-    func unschedule(_ name: String, slot: LocalTime? = nil, poolOrder: [String]) async {
-        await parts.dayCommands.unschedule(name, slot: slot, poolOrder: poolOrder)
+    func unschedule(_ name: String, slot: LocalTime? = nil, poolOrder: [String], on day: LocalDate? = nil) async {
+        await parts.dayCommands.unschedule(name, slot: slot, poolOrder: poolOrder, on: day)
     }
-    func canDropOnTimeline(_ name: String, slot: LocalTime?) -> Bool { parts.dayCommands.canPlaceOnTimeline(name, slot: slot) }
+    func canDropOnTimeline(_ name: String, slot: LocalTime?, on day: LocalDate? = nil) -> Bool {
+        parts.dayCommands.canPlaceOnTimeline(name, slot: slot, on: day)
+    }
     func canDropInPool(_ name: String, slot: LocalTime?) -> Bool { parts.dayCommands.canSendToPool(name, slot: slot) }
 
     /// The morning review opens by itself once a day, on the first launch with a ready vault after onboarding, unless

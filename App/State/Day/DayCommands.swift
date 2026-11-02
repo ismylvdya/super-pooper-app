@@ -24,7 +24,7 @@ final class DayCommands {
         tasks.task(named: name).map(day.local)
     }
 
-    var postponedTasks: [TaskItem] { day.postponedNames.compactMap(tasks.task(named:)) }
+    var postponedTasks: [TaskItem] { day.postponedNames.compactMap(tasks.task(named:)).filter { $0.status != .done } }
 
     /// Only on today's page (`day` nil or today).
     func skip(_ name: String, on day: LocalDate?) async {
@@ -72,9 +72,10 @@ final class DayCommands {
         }
     }
 
-    /// Dropped on the timeline: a task's moment is read on the phone's clock and written in the note's own zone; a
-    /// habit's block stands there today only and its note stays as it is (`TodayTimes`). `slot`: the habit block's
-    /// time as its note has it, when it comes from the timeline; from the pool the habit's first time sent there today.
+    /// Dropped on the timeline of any day: a task's moment is read on the phone's clock and written in the note's own
+    /// zone; a habit's block stands there on that day only and its note stays as it is (`TodayTimes`). `slot`: the habit
+    /// block's time as its note has it, when it comes from the timeline; from the pool the habit's first time sent there
+    /// that day.
     func schedule(_ name: String, slot: LocalTime?, at moment: Date) async {
         guard let task = tasks.task(named: name), let local = localTask(named: name) else { return }
         guard task.isHabit else {
@@ -82,29 +83,33 @@ final class DayCommands {
             return
         }
         let time = LocalTime(moment, in: day.calendar)
-        let today = day.todayTimes
-        guard let moves = slot.map({ today.moving(local, slot: $0, to: time) }) ?? today.placing(local, at: time) else { return }
-        day.setTimeMoves(moves)
+        let shown = day.context().logicalDay(of: moment)
+        let times = day.times(on: shown)
+        guard let moves = slot.map({ times.moving(local, slot: $0, to: time) }) ?? times.placing(local, at: time) else { return }
+        day.setTimeMoves(moves, on: shown)
         await derived.publish()
     }
 
-    /// Back to the pool at the spot it was dropped on, on the logical day it was shown on: a task loses its time, a
-    /// habit's block (`slot`) leaves today's timeline and does not ring today.
-    func unschedule(_ name: String, slot: LocalTime?, poolOrder: [String]) async {
+    /// Back to the pool at the spot it was dropped on, on the logical day it was shown on (`shown`, nil: today): a task
+    /// loses its time, a habit's block (`slot`) leaves that day's timeline and does not ring then. The pool's order is
+    /// today's only.
+    func unschedule(_ name: String, slot: LocalTime?, poolOrder: [String], on shown: LocalDate? = nil) async {
         guard let task = tasks.task(named: name), let local = localTask(named: name) else { return }
+        let shown = shown ?? day.context().today
         if task.isHabit {
             guard let slot else { return }
-            day.setTimeMoves(day.todayTimes.pooling(local, slot: slot))
+            day.setTimeMoves(day.times(on: shown).pooling(local, slot: slot), on: shown)
             await derived.publish()
         } else {
             await write(task, TaskScheduling.changes(unscheduling: local, context: day.context()))
         }
-        setManualOrder(poolOrder)
+        if isToday(shown) { setManualOrder(poolOrder) }
     }
 
-    /// A dragged item can land on today's timeline (`TaskScheduling.canPlace`).
-    func canPlaceOnTimeline(_ name: String, slot: LocalTime?) -> Bool {
-        localTask(named: name).map { TaskScheduling.canPlace($0, slot: slot, today: day.todayTimes) } ?? false
+    /// A dragged item can land on the timeline of `shown` (nil: today) (`TaskScheduling.canPlace`).
+    func canPlaceOnTimeline(_ name: String, slot: LocalTime?, on shown: LocalDate? = nil) -> Bool {
+        let times = day.times(on: shown ?? day.context().today)
+        return localTask(named: name).map { TaskScheduling.canPlace($0, slot: slot, today: times) } ?? false
     }
 
     /// A block dragged from the timeline can land in the pool (`TaskScheduling.canSendToPool`).

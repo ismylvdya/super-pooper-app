@@ -150,8 +150,6 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let autoHideSeconds: Double
         /// A banner offering Undo hides itself this long after it appears; then the action stays.
         let undoSeconds: Double
-        /// Lines of the message (and notes under it) until the banner is expanded.
-        let collapsedLines: Int
     }
 
     /// The sketches of the Today arrangements on the settings page.
@@ -195,6 +193,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let bellOpacity: Range
         let fontSize: Range
         let pastOpacity: Range
+        /// The share of a plate a started task's fill reaches.
+        let startedFillLength: Range
         /// The ring of a habit's day not done or done partly.
         let ringOpacity: Range
         let recurrenceInterval: Range

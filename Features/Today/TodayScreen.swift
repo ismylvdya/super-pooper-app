@@ -57,7 +57,7 @@ struct TodayScreen: View {
             if let index = layout.blocks.firstIndex(where: { $0.block == block }) { turn(to: index) }
             taskDrag.turnHandled()
         }
-        .onChange(of: router.todayTaps) { pager.showToday(animation: tokens.animation) }
+        .onChange(of: router.todayTaps) { showTodaysPool() }
     }
 
     /// Turned sideways, Today has its own arrangement.
@@ -76,6 +76,12 @@ struct TodayScreen: View {
 
     private var layout: ScreenLayout { model.config.todayLayout(for: arrangement, landscape: isLandscape) }
     private var pageCount: Int { layout.isPaged ? layout.blocks.count : 1 }
+
+    /// The day's name and the Today tab: back to today and, on pages, to the pool's page.
+    private func showTodaysPool() {
+        pager.showToday(animation: tokens.animation)
+        if let pool = layout.blocks.firstIndex(where: { $0.block == .pool }) { turn(to: pool) }
+    }
 
     private func turn(to newPage: Int) {
         pager.turn(to: newPage, pageCount: pageCount, animation: tokens.animation)
@@ -112,8 +118,7 @@ struct TodayScreen: View {
     private func daySwipe(width: CGFloat) -> some Gesture {
         DragGesture(minimumDistance: rules.gestures.daySwipeMinimumDistance)
             .onChanged { value in
-                pager.swipeChanged(value.translation, velocity: value.velocity, containerWidth: width, pageCount: pageCount,
-                                   gestures: rules.gestures, duration: tokens.duration(.animation))
+                pager.swipeChanged(value.translation, containerWidth: width, pageCount: pageCount, gestures: rules.gestures)
             }
             .onEnded { value in
                 pager.swipeEnded(value.translation, predicted: value.predictedEndTranslation, velocity: value.velocity,
@@ -125,7 +130,7 @@ struct TodayScreen: View {
     /// The arrows around the shown day's name; on another day, tapping the name goes back to today.
     private var dayNavigation: DayNavigation {
         DayNavigation(dayOffset: pager.dayOffset, onStep: { pager.changeDay(by: $0, width: width, duration: tokens.duration(.animation)) }) {
-            pager.showToday(animation: tokens.animation)
+            showTodaysPool()
         }
     }
 

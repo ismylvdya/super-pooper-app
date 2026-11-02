@@ -49,7 +49,7 @@
       "icon": "arrow.uturn.backward",
       "destructive": false,
       "haptic": "light",
-      "swipeTint": "success",
+      "swipeTint": "swipeNeutral",
       "undo": "edits"
     },
     {
@@ -156,6 +156,29 @@
       "icon": "zzz",
       "destructive": false,
       "haptic": "light"
+    },
+    {
+      "id": "start",
+      "title": "action.start",
+      "icon": "circle.lefthalf.filled",
+      "destructive": false,
+      "haptic": "light",
+      "undo": "edits"
+    },
+    {
+      "id": "notStarted",
+      "title": "action.notStarted",
+      "icon": "circle",
+      "destructive": false,
+      "haptic": "light",
+      "undo": "edits"
+    },
+    {
+      "id": "dismissAlert",
+      "title": "action.dismissAlert",
+      "icon": "bell.slash",
+      "destructive": false,
+      "haptic": "light"
     }
   ],
   "menus": {
@@ -173,6 +196,10 @@
         "unmark",
         "notToday",
         "delete"
+      ],
+      "more": [
+        "start",
+        "notStarted"
       ]
     },
     "taskPage": {
@@ -187,19 +214,25 @@
       "habitMarks": true,
       "actions": [
         "done",
-        "snooze",
         "skipToday"
+      ],
+      "more": [
+        "snooze"
       ]
     },
     "taskNotification": {
       "actions": [
-        "done",
+        "done"
+      ],
+      "more": [
         "snooze"
       ]
     },
     "reminderNotification": {
       "actions": [
-        "done",
+        "done"
+      ],
+      "more": [
         "snooze"
       ]
     },
@@ -232,8 +265,11 @@
     },
     "eventNotification": {
       "actions": [
-        "snooze",
         "deleteEvent"
+      ],
+      "more": [
+        "snooze",
+        "dismissAlert"
       ]
     },
     "habitDay": {
@@ -291,10 +327,10 @@
     },
     "postponed": {
       "leading": [
-        "backToToday"
+        "done"
       ],
       "trailing": [
-        "delete"
+        "backToToday"
       ]
     },
     "archivedTask": {
