@@ -34,7 +34,7 @@ struct ActionAvailability: Sendable {
         switch action {
         case .twice: return !item.isHabit || item.task.isTwiceADay || item.state == .marked(.twice)
         case .unmark: return item.isDone
-        case .skipToday: return isToday && item.isHabit && !item.isDone
+        case .skipToday: return isToday && item.isHabit && !item.isFinished
         case .notToday: return isToday && NotToday.isAvailable(for: item)
         case .returnFromDone: return !item.isHabit && item.isDone
         case .archive: return !item.task.isArchived
