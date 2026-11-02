@@ -11,9 +11,9 @@ extension DesignTokens {
         task.habit.repeatable ? habitNameColor(task) : habitColor(task)
     }
 
-    /// The habit symbol before a habit's or a repeatable task's name in search and lists: in the habit color, as habits
-    /// stand there, whatever color a repeatable task's marks take.
-    func habitSymbolColor(_ task: TaskItem) -> Color { habitColor(task) }
+    /// The habit symbol before a habit's or a repeatable task's name in search and lists: a habit's in its own color, a
+    /// repeatable task's always in the habits' color of the palette, whatever color it has for its name and marks.
+    func habitSymbolColor(_ task: TaskItem) -> Color { task.habit.repeatable ? color(.habit) : habitColor(task) }
 
     /// A habit's name: in its own color when it has one; the settings' habit color is for marks and chips only.
     func habitNameColor(_ task: TaskItem) -> Color {
