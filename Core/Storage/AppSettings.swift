@@ -106,6 +106,8 @@ struct AppSettings: Codable, Equatable, Sendable {
         var morningRoutine: [String]
         var dayRoutine: [String]
         var eveningRoutine: [String]
+        /// A repeatable task's page shows the history grid and the statistics too, as a habit's does.
+        var repeatableShowsHistory: Bool
         /// Habit notifications carry a picture at the right at all.
         var showsNotificationPicture: Bool
         /// The habit symbol on a notification in the habit's own color (when it has one) instead of the habits' color.
@@ -119,6 +121,9 @@ struct AppSettings: Codable, Equatable, Sendable {
             case .evening: \.eveningRoutine
             }
         }
+
+        /// Whether the page of `task` shows its history grid and statistics: always a habit's, a repeatable task's as set.
+        func showsHistory(of task: TaskItem) -> Bool { !task.habit.repeatable || repeatableShowsHistory }
 
         /// The orders of all routines, for the day.
         var routines: HabitRoutines {

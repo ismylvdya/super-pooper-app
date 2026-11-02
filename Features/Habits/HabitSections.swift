@@ -4,16 +4,18 @@ import SwiftUI
 /// The description (the note body) sits right under the history; the tasks and habits it waits for or holds
 /// back come after the statistics.
 struct HabitSections: View {
+    @Environment(AppModel.self) private var model
     let editor: TaskEditor
 
     var body: some View {
+        // A task that simply repeats has no history grid or statistics to keep an eye on, unless the settings ask for them.
+        let showsHistory = model.settings.habits.showsHistory(of: editor.task)
         if !editor.isDraft {
-            // A task that simply repeats has no history grid to keep an eye on.
-            if !editor.task.habit.repeatable { HabitHistorySection(habit: editor.task) }
+            if showsHistory { HabitHistorySection(habit: editor.task) }
             TaskNoteSection(taskName: editor.task.name, header: "habitPage.description", placeholder: "habitPage.description.placeholder")
             // One-off subtasks: ordinary tasks under the habit; done, they do not come back.
             SubtasksSection(editor: editor)
-            HabitStatsSection(habit: editor.task)
+            if showsHistory { HabitStatsSection(habit: editor.task) }
             TaskLinksSection(task: editor.task)
         }
         HabitOptionsSection(editor: editor)

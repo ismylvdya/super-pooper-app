@@ -4600,6 +4600,39 @@
         }
       }
     },
+    "settings.habits.repeatable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeatable tasks"
+          }
+        }
+      }
+    },
+    "settings.habits.repeatable.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A repeatable task's page shows its history grid and statistics, as a habit's does."
+          }
+        }
+      }
+    },
+    "settings.habits.repeatableHistory": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "History and statistics"
+          }
+        }
+      }
+    },
     "settings.habits.until": {
       "extractionState": "manual",
       "localizations": {
