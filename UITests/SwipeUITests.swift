@@ -10,8 +10,9 @@ final class SwipeUITests: XCTestCase {
         app = XCUIApplication()
     }
 
-    private func launch(_ link: String) {
+    private func launch(_ link: String, today: String? = nil) {
         app.launchArguments = ["-SPVaultPath", "TestVault", "-SPSkipOnboarding", "-SPNow", "11:30", "-SPOpen", link]
+        if let today { app.launchArguments += ["-SPToday", today] }
         app.launch()
     }
 
@@ -103,7 +104,8 @@ final class SwipeUITests: XCTestCase {
 
     /// Soon: to the left exactly one button, Not today for a task and Skip today for a habit (no Delete); to the right Done.
     func testSoonOffersOneButtonToTheLeftAndDoneToTheRight() {
-        launch("superpooper://review")
+        // "Сдать отчёт" is due this Friday: on that day it stands in Soon whatever day of the week the run is on.
+        launch("superpooper://review", today: TestVaultWeek.date(.friday))
         XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 10))
         app.dismissBanners()
         let habit = app.cells.containing(.any, identifier: "review:Утро — зарядка 🤸").firstMatch

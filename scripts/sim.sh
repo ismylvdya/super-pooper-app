@@ -23,6 +23,9 @@ case "${1:-}" in
     # would hold that sync, and Today would stay empty.
     grant
     DATA="$(xcrun simctl get_app_container "$UDID" "$BUNDLE_ID" data)"
+    # A fresh vault each run: what the app wrote into the last one (the vault's settings file, its trash) is not carried
+    # into the next run's tests.
+    if [ -e "$DATA/Documents/TestVault" ]; then trash "$DATA/Documents/TestVault"; fi
     scripts/render-test-vault.sh "$DATA/Documents/TestVault" "${2:-}" ;;
   launch) shift; xcrun simctl terminate "$UDID" "$BUNDLE_ID" 2>/dev/null || true
     xcrun simctl launch "$UDID" "$BUNDLE_ID" "$@" ;;

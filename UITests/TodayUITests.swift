@@ -145,6 +145,8 @@ final class TodayUITests: XCTestCase {
     /// A pool row dragged up onto the row above takes its place (.21800): the drag carries the row's own plate and leaves
     /// a gap in the pool; what it looks like mid-drag only a screenshot shows, the new order is checked here.
     func testAPoolRowDraggedUpTakesThePlaceAbove() {
+        // "Обновить резюме" is due this Sunday: on that day it is in the pool whatever day of the week the run is on.
+        app.launchArguments += ["-SPToday", TestVaultWeek.date(.sunday)]
         launch()
         dismissBanners()
         // Rows no other test marks or moves, so the suite's order does not matter.
