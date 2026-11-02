@@ -30,6 +30,15 @@ struct HabitSummaryTests {
         #expect(HabitSummary.traitsLine(habit)?.text == "Twice")
     }
 
+    /// The bells after the traits stand behind the same separator as between the traits.
+    @Test func bellsFollowTheTraitsAfterTheSameSeparator() {
+        let habit = makeHabit("Push-ups") { $0.habit.timeOfDay = .morning; $0.reminderTimes = [LocalTime("09:00")] }
+        let separator = L10n.string("habits.traits.separator")
+        #expect(HabitSummary.traitsLine(habit, bellsFollow: true)?.text == "Morning" + separator)
+        #expect(HabitSummary.traitsLine(habit, bellsFollow: true)?.spoken == "Morning")
+        #expect(HabitSummary.traitsLine(habit)?.text == "Morning")
+    }
+
     @Test func aHabitWithNeitherHasNoLine() {
         #expect(HabitSummary.traitsLine(makeHabit("Read")) == nil)
     }

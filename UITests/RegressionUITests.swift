@@ -15,6 +15,18 @@ final class RegressionUITests: XCTestCase {
         app.launch()
     }
 
+    /// Habits: a row without a detail line is as tall as one with it.
+    func testEveryHabitRowHasOneHeight() {
+        launch("superpooper://habits")
+        let plain = app.cells.containing(.button, identifier: "habit:Полить цветы 🌱").firstMatch
+        let morning = app.cells.containing(.button, identifier: "habit:Выпить воды 💧").firstMatch
+        XCTAssertTrue(plain.waitForExistence(timeout: 10))
+        XCTAssertTrue(morning.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["habit:Выпить воды 💧"].label.contains("Morning"), "the morning habit has its detail line")
+        XCTAssertFalse(app.buttons["habit:Полить цветы 🌱"].label.contains("Morning"), "the other one has none")
+        XCTAssertEqual(plain.frame.height, morning.frame.height, accuracy: 0.5)
+    }
+
     /// Habits (.22478): once a row's long-press menu has closed, the row looks as it did before the press right away, with
     /// no pressed look left on its plate; a tap still opens the habit's page.
     func testAHabitRowLeavesNoHighlightOnceItsMenuCloses() throws {

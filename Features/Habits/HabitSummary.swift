@@ -18,11 +18,13 @@ enum HabitSummary {
         return traits
     }
 
-    /// The traits' line; nil when the habit has none.
-    static func traitsLine(_ habit: TaskItem) -> TraitsLine? {
+    /// The traits' line; nil when the habit has none. With its bells after it (`bellsFollow`) the line ends in the same
+    /// separator as between the traits, so the bells stand as one more trait ("Morning · Twice · 🔔🔔").
+    static func traitsLine(_ habit: TaskItem, bellsFollow: Bool = false) -> TraitsLine? {
         let titles = traits(habit).map { L10n.string($0.titleKey) }
         guard !titles.isEmpty else { return nil }
-        return TraitsLine(text: titles.joined(separator: L10n.string("habits.traits.separator")),
+        let separator = L10n.string("habits.traits.separator")
+        return TraitsLine(text: titles.joined(separator: separator) + (bellsFollow ? separator : ""),
                           spoken: titles.formatted(.list(type: .and, width: .narrow)))
     }
 

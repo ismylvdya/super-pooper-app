@@ -5,7 +5,6 @@ struct HabitRow: View {
     @Environment(AppModel.self) var model
     @Environment(Router.self) private var router
     @Environment(\.tokens) var tokens
-    @Environment(\.icons) var icons
     let habit: TaskItem
     let today: LocalDate
     /// The width inside the row's plate: the history grid of a plate this wide sets the day mark's ring and gap.
@@ -21,11 +20,15 @@ struct HabitRow: View {
             // button: a button has a pressed look of its own, which a long press may leave on the row after its menu
             // has closed.
             HStack(spacing: tokens.space(.iconTextGap)) {
+                // Every row is as tall as one with a detail line; a name without one stands in the middle of that height.
                 VStack(alignment: .leading, spacing: tokens.space(.titleDetailGap)) {
-                    Text(habit.name).font(tokens.font(habit.habit.repeatable ? .repeatableTitle : .habitTitle)).foregroundStyle(tokens.habitNameColor(habit)).lineLimit(2)
+                    Text(habit.name).font(tokens.font(nameFont)).foregroundStyle(tokens.habitNameColor(habit)).lineLimit(2)
                     detail
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity, minHeight: HabitRowHeight.text(name: tokens.uiFont(nameFont).lineHeight,
+                                                                          gap: tokens.space(.titleDetailGap),
+                                                                          detail: tokens.uiFont(Self.detailFont).lineHeight),
+                       alignment: .leading)
                 DisclosureAccessory()
             }
             .contentShape(Rectangle())
@@ -40,20 +43,28 @@ struct HabitRow: View {
 }
 
 extension HabitRow {
-    /// The routine and Twice as one line ("Morning · Twice"), then a bell per reminder; nothing when the habit has none.
+    static let detailFont: FontToken = .hint
+
+    private var nameFont: FontToken { habit.habit.repeatable ? .repeatableTitle : .habitTitle }
+
+    /// The routine and Twice as one line ("Morning · Twice"), then, after the same separator, a bell per reminder as tall
+    /// as the line's capital letters; nothing when the habit has none.
     @ViewBuilder var detail: some View {
-        let traits = HabitSummary.traitsLine(habit)
         let bells = HabitSummary.bellCount(habit, limit: model.config.rules.habits.maxListBells)
+        let traits = HabitSummary.traitsLine(habit, bellsFollow: bells > 0)
         if traits != nil || bells > 0 {
-            HStack(spacing: tokens.space(.badgeGap)) {
+            HStack(alignment: .firstTextBaseline, spacing: 0) {
                 if let traits {
                     Text(verbatim: traits.text)
                         .accessibilityLabel(Text(verbatim: traits.spoken))
                         .accessibilityIdentifier("habitTraits:\(habit.name)")
                 }
-                ForEach(0..<bells, id: \.self) { _ in Image(systemName: icons[.bell]) }
+                HStack(alignment: .firstTextBaseline, spacing: tokens.space(.badgeGap)) {
+                    ForEach(0..<bells, id: \.self) { _ in CapHeightIcon(.bell, font: Self.detailFont) }
+                }
+                .accessibilityIdentifier("habitBells:\(habit.name)")
             }
-            .secondaryText(.hint)
+            .secondaryText(Self.detailFont)
         }
     }
 }
