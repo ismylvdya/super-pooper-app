@@ -10,6 +10,8 @@ enum SpacingToken: String, CaseIterable, Sendable {
     case widgetGap, previewInset, cornerMarkGap, compactPlateVertical, emptyStateInset, widgetGridGap
     /// How much further right a timeline block lying over an earlier one starts, per step.
     case timelineCascadeIndent
+    /// Between a swipe button's symbol and its title.
+    case swipeIconTitleGap
 }
 
 enum RadiusToken: String, CaseIterable, Sendable {
@@ -59,6 +61,8 @@ enum FontToken: String, CaseIterable, Sendable {
     case statValue, toggleChip, pullIcon, emptyIcon, emptyAction, linkBadge, repeatableTitle, habitTitle, timelineQuarter
     /// The timeline at the sizes picked in settings (`font(_:size:)`).
     case timelineText, timelineEvent
+    /// A swipe button's symbol and the title under it, drawn inside the button.
+    case swipeIcon, swipeTitle
 }
 
 enum ColorToken: String, ConfigName {

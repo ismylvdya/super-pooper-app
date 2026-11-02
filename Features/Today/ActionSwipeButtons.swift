@@ -13,6 +13,7 @@ extension View {
 private struct ActionSwipeButtons: ViewModifier {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
+    @Environment(\.displayScale) private var scale
     let swipes: ActionSwipes
     let item: DayItem?
     let isToday: Bool
@@ -25,14 +26,18 @@ private struct ActionSwipeButtons: ViewModifier {
             .swipeActions(edge: .trailing, allowsFullSwipe: true) { buttons(actions.trailing) }
     }
 
-    /// No destructive role: the list would take the row away at once, before the confirmation is answered.
+    /// No destructive role: the list would take the row away at once, before the confirmation is answered. The symbol and
+    /// title are one image, so the system draws both inside the button on rows of every height.
     private func buttons(_ actions: [ActionDefinition]) -> some View {
         ForEach(actions, id: \.id) { action in
             Button {
                 Haptics.play(action.haptic)
                 perform(action)
             } label: {
-                Label(LocalizedStringKey(action.title), systemImage: action.icon)
+                Image(uiImage: SwipeButtonGlyph.image(symbol: action.icon, title: L10n.string(action.title),
+                                                      iconFont: tokens.uiFont(.swipeIcon), titleFont: tokens.uiFont(.swipeTitle),
+                                                      gap: tokens.space(.swipeIconTitleGap), scale: scale))
+                    .accessibilityLabel(Text(LocalizedStringKey(action.title)))
             }
             .tint(tokens.color(tint(of: action)))
             .accessibilityIdentifier("swipe.\(action.id.rawValue)")
