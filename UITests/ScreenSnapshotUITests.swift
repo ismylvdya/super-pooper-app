@@ -83,7 +83,7 @@ final class ScreenSnapshotUITests: XCTestCase {
 
     func testNewTask() {
         launch("superpooper://today")
-        app.buttons["today.newTask"].tap()
+        app.buttons["tabBar.newItem"].tap()
         settle()
         snap("new-task")
     }

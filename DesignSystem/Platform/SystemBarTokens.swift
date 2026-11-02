@@ -27,16 +27,21 @@ enum SystemBarMetric: String, CaseIterable, Sendable {
     case barButton, barButtonGap, barSideInset
     /// The room the system bar's button style leaves on each side of a button's label upright.
     case barButtonPadding
-    /// A hand-drawn tab glyph (the Lists one): its ink as a share of the smallest ink of the other tabs' symbols, upright
-    /// in height and sideways in width; 1 keeps it within every one of them.
+    /// A hand-drawn glyph among system symbols (a tab's, or Lists on Today's bar): its ink as a share of the smallest ink
+    /// of the symbols beside it, upright in height and sideways in width; 1 keeps it within every one of them.
     case tabGlyphFit
+    /// The "+" upright: on iOS 26 a round bubble of `newItemBubble` this far from the screen's side and bottom
+    /// (`newItemBubbleInset`); on iOS 18 the last item of a tab bar `classicTabBar` tall. Lying sideways it stands
+    /// `newItemBubbleGap` from the app's own tab bar.
+    case newItemBubble, newItemBubbleInset, classicTabBar, newItemBubbleGap
     /// The height of an upright navigation bar, from the top of the safe area (a banner stands with its buttons).
     case navigationBar
 }
 
 /// `systemBar.font`: a tab's symbol lying sideways (`tabIcon`) and upright in the system tab bar (`systemTabIcon`, only
-/// for sizing a hand-drawn glyph), a tab's label lying sideways. The system tab bar keeps its labels at one size whatever
+/// for sizing a hand-drawn glyph), a bar button's symbol (`barIcon`, only for sizing a hand-drawn glyph: Lists on
+/// Today), a tab's label lying sideways. The system tab bar keeps its labels at one size whatever
 /// the text size, and so does the label lying sideways (`"fixed": true`).
 enum SystemBarFont: String, CaseIterable, Sendable {
-    case tabIcon, systemTabIcon, tabLabel
+    case tabIcon, systemTabIcon, barIcon, tabLabel
 }

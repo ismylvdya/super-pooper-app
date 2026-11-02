@@ -29,32 +29,39 @@ struct RootView: View {
             if model.settings.onboarding.completed {
                 HStack(spacing: 0) {
                     if physicalBottom == .leading { LandscapeTabBar(bottom: .leading) }
-                    TabView(selection: Binding(get: { router.tab }, set: { router.select($0) })) {
+                    TabView(selection: Binding(get: { TabBarItem.tab(router.tab) }, set: { TabBarItem.selection($0, router: router) })) {
                         ForEach(AppTab.allCases, id: \.self) { tab in
-                            NavigationStack(path: Binding(get: { router.paths[tab] ?? [] }, set: { router.paths[tab] = $0 })) {
-                                root(tab, model: model)
-                                    .systemTabBar(isShown: physicalBottom == nil)
-                                    .navigationDestination(for: Route.self) { route in
-                                        destination(route, in: tab)
-                                            .syncsOnPull()
-                                            .systemTabBar(isShown: physicalBottom == nil)
-                                    }
-                            }
-                            .tabItem {
+                            Tab(value: TabBarItem.tab(tab)) {
+                                NavigationStack(path: Binding(get: { router.paths[tab] ?? [] }, set: { router.paths[tab] = $0 })) {
+                                    root(tab, model: model)
+                                        .systemTabBar(isShown: physicalBottom == nil)
+                                        .navigationDestination(for: Route.self) { route in
+                                            destination(route, in: tab)
+                                                .syncsOnPull()
+                                                .systemTabBar(isShown: physicalBottom == nil)
+                                        }
+                                }
+                            } label: {
                                 Label {
                                     Text(LocalizedStringKey(String("tab.") + tab.rawValue))
                                 } icon: {
-                                    TabIconImage.image(container.config.icons[tab.icon(lists: model.listsIcon)],
+                                    TabIconImage.image(container.config.icons[tab.icon],
                                                        font: tokens.uiFont(.systemTabIcon),
-                                                       others: container.config.icons.otherTabSymbols(than: tab, lists: model.listsIcon),
+                                                       others: container.config.icons.otherTabSymbols(than: tab),
                                                        fit: tokens.bar(.tabGlyphFit), scale: displayScale)
                                         // The symbol exactly as `icons.json` names it: the tab bar fills it otherwise.
                                         .environment(\.symbolVariants, .none)
                                 }
                             }
-                            .tag(tab)
+                        }
+                        // Only keeps the room the "+" stands over (iOS 26 draws a search-role tab apart, on the right).
+                        Tab(value: TabBarItem.newItem, role: .search) {
+                            Color.clear
+                        } label: {
+                            Label { Text("newItem.title") } icon: { Image(systemName: container.config.icons[.newItem]) }
                         }
                     }
+                    .overlay { if physicalBottom == nil { uprightNewItemButton } }
                     if physicalBottom == .trailing { LandscapeTabBar(bottom: .trailing) }
                 }
                 // The landscape tab bar is laid out from the screen edge at the physical bottom, not from the safe area,
@@ -111,11 +118,26 @@ struct RootView: View {
     }
 
 
+    /// The "+" over the room the system tab bar keeps for it, under the keyboard rather than above it. Read within the
+    /// safe area (its insets are lost once a view ignores it) and laid out in screen coordinates.
+    private var uprightNewItemButton: some View {
+        GeometryReader { geometry in
+            let insets = geometry.safeAreaInsets
+            let screen = CGSize(width: geometry.size.width + insets.leading + insets.trailing,
+                                height: geometry.size.height + insets.top + insets.bottom)
+            let frame = SystemLook.newItemSlot(tokens: tokens, tabCount: AppTab.allCases.count + 1)
+                .frame(in: screen, bottomSafeArea: insets.bottom)
+            NewItemButton()
+                .frame(width: frame.width, height: frame.height)
+                .position(x: frame.midX - insets.leading, y: frame.midY - insets.top)
+        }
+        .ignoresSafeArea(.keyboard)
+    }
+
     @ViewBuilder private func root(_ tab: AppTab, model: AppModel) -> some View {
         switch tab {
         case .today: home(model)
         case .habits: HabitsScreen()
-        case .lists: ListsScreen()
         case .settings: SettingsScreen()
         }
     }
@@ -146,8 +168,8 @@ struct RootView: View {
     @ViewBuilder private func destination(_ route: Route, in tab: AppTab) -> some View {
         switch route {
         case .task(let name): TaskPageScreen(taskName: name)
-        case .newTask: NewNoteScreen(kind: .task, tab: tab)
-        case .newHabit: NewNoteScreen(kind: .habit, tab: tab)
+        case .newItem(let seed): NewNoteScreen(kind: seed.kind == .habit ? .habit : .task, tab: tab)
+        case .lists: ListsScreen()
         case .search(let scope): SearchScreen(scope: scope)
         case .taskSettings: TaskSettingsScreen()
         case .habitSettings: HabitSettingsScreen()
@@ -175,12 +197,10 @@ struct RootView: View {
 }
 
 extension AppTab {
-    /// Its icon; the lists' one is picked in the settings.
-    func icon(lists: Icon) -> Icon {
+    var icon: Icon {
         switch self {
         case .today: .tabToday
         case .habits: .tabHabits
-        case .lists: lists
         case .settings: .tabSettings
         }
     }
@@ -188,8 +208,8 @@ extension AppTab {
 
 extension IconSet {
     /// The symbols of the tabs beside `tab`: a hand-drawn tab glyph stands within them.
-    func otherTabSymbols(than tab: AppTab, lists: Icon) -> [String] {
-        AppTab.allCases.filter { $0 != tab }.map { self[$0.icon(lists: lists)] }
+    func otherTabSymbols(than tab: AppTab) -> [String] {
+        AppTab.allCases.filter { $0 != tab }.map { self[$0.icon] }
     }
 }
 

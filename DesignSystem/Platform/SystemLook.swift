@@ -7,6 +7,8 @@ import SwiftUI
 enum SystemLook {
     /// The capsule of the system bar buttons and tab bar, around the bars the app draws itself (lying sideways).
     case barCapsule
+    /// The app's own "+" bubble beside the tab bar, round as the system's search tab.
+    case newItemBubble
     /// A capsule floating over a list, not a control (the pool's "+N more").
     case floatingCapsule
     /// A banner's card over the screen.
@@ -17,6 +19,19 @@ enum SystemLook {
     /// The hand-made fade at a scroll edge under a system bar: the system's scroll edge effect takes its place on iOS 26,
     /// so the edge is not faded twice.
     case fadeUnderBar
+}
+
+extension SystemLook {
+    /// The room the system tab bar keeps for its search-role tab (`tabCount` tabs with it), where the "+" stands upright.
+    @MainActor
+    static func newItemSlot(tokens: DesignTokens, tabCount: Int) -> NewItemSlot {
+        #if compiler(>=6.2)
+        if #available(iOS 26.0, *) {
+            return .bubble(diameter: tokens.bar(.newItemBubble), inset: tokens.bar(.newItemBubbleInset))
+        }
+        #endif
+        return .lastTab(count: tabCount, height: tokens.bar(.classicTabBar))
+    }
 }
 
 extension View {

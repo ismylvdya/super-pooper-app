@@ -1,9 +1,8 @@
 import SwiftUI
 
-/// One list of the Lists tab: the matching tasks by planning level, searchable from the search button in the bar
+/// One list of the Lists page: the matching tasks by planning level, searchable from the search button in the bar
 /// (as on Today), not by pulling the list down. A row opens the task page
-/// (every property can be changed there); "+" on a task of a later level brings it to this week, "+" in the
-/// bar creates a new this-week task.
+/// (every property can be changed there); "+" on a task of a later level brings it to this week.
 struct TaskListScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
@@ -33,12 +32,10 @@ struct TaskListScreen: View {
         .appList()
         .overlay { if contents.isEmpty { Text("lists.empty").foregroundStyle(tokens.color(.secondaryText)) } }
         .pageSearch(query: $query, isSearching: $isSearching, prompt: "search.prompt.tasks")
-        .navigationTitle(Text(LocalizedStringKey(list?.title ?? "tab.lists")))
+        .navigationTitle(Text(LocalizedStringKey(list?.title ?? "lists.title")))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
-                Button { router.open(.newTask) } label: { Image(systemName: icons[.newTask]) }
-                    .accessibilityLabel(Text("task.new.title"))
                 SearchBarButton(isSearching: $isSearching, accessibilityID: "list.search")
             }
         }

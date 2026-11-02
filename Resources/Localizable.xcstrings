@@ -392,7 +392,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld problems in your data. Tap ⚠︎ at the top to see them."
+            "value": "%lld problems in your data. Open Lists at the top left to see them."
           }
         }
       }
@@ -3115,6 +3115,17 @@
         }
       }
     },
+    "lists.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lists"
+          }
+        }
+      }
+    },
     "lists.toThisWeek": {
       "extractionState": "manual",
       "localizations": {
@@ -3122,6 +3133,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Add to Soon"
+          }
+        }
+      }
+    },
+    "newItem.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New"
           }
         }
       }
@@ -3617,6 +3639,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Can’t read the file: %@"
+          }
+        }
+      }
+    },
+    "problems.badge %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld problems"
           }
         }
       }
@@ -6230,17 +6263,6 @@
         }
       }
     },
-    "tab.lists": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lists"
-          }
-        }
-      }
-    },
     "tab.settings": {
       "extractionState": "manual",
       "localizations": {
@@ -6258,18 +6280,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Today"
-          }
-        }
-      }
-    },
-    "task.new.add": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "New task"
+            "value": "Tasks"
           }
         }
       }

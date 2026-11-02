@@ -25,6 +25,8 @@ enum SizeToken: String, CaseIterable, Sendable {
     case dayArrowTarget
     case habitDotMinimum, cornerInsetMinimum, eventDot, sourceDot, fadeHeight, poolCounter, poolWidth
     case habitHistoryMaxHeight, habitStatsBar, titleFade, hourDigitsWidth, reviewChevron, wrapMinWidth, liftOverhang, pagePeek, dropMarkerHeight, bannerShadowRadius, bannerShadowY, hexFieldWidth, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, allDayFontDelta, previewHeight, previewRow, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewHalvesInset, subtaskDropLine
+    /// The problems badge on Today's Lists button: its smallest width and its height.
+    case problemBadge
 }
 
 /// Shares and scale factors: a part of another size, not a size of its own.

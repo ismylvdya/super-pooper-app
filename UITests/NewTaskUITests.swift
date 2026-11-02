@@ -1,7 +1,7 @@
 import XCTest
 
-/// "+" in the morning review creates a task and "+" in Habits creates a habit: an empty page whose note
-/// is written when the page is left with Back, or at once on Return in its name (.1571).
+/// The "+" beside the tab bar creates a task, or a habit in Habits: an empty page whose note is written when the page
+/// is left with Back, or at once on Return in its name (.1571).
 final class NewTaskUITests: XCTestCase {
     private var app: XCUIApplication!
 
@@ -21,10 +21,11 @@ final class NewTaskUITests: XCTestCase {
         XCTAssertTrue(banner.waitForExistence(timeout: 15))
     }
 
-    func testReviewRowOpensTheTaskAndPlusCreatesOne() {
+    /// A review row opens its task inside the sheet; the review has no "+" any more.
+    func testReviewRowOpensTheTask() {
         launch("superpooper://review")
-        // The link opens the review once the vault is read; if Today came first, open it from there.
-        if !app.navigationBars["Morning review"].waitForExistence(timeout: 6) { app.buttons["today.review"].tap() }
+        XCTAssertTrue(app.navigationBars["Morning review"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.navigationBars["Morning review"].buttons["task.new"].exists)
         // A banner over the row would take the tap.
         app.dismissBanners()
         // The list is long and lazy: scroll down to the row.
@@ -32,21 +33,31 @@ final class NewTaskUITests: XCTestCase {
         app.scrollIntoView(row)
         row.tap()
         XCTAssertTrue(app.textFields["taskPage.name"].waitForExistence(timeout: 5))
-        app.navigationBars.buttons.element(boundBy: 0).tap()
-        let plus = app.navigationBars["Morning review"].buttons["task.new"]
-        XCTAssertTrue(plus.waitForExistence(timeout: 5))
+    }
+
+    /// The "+" beside the tab bar opens a new task on Tasks, its name ready for typing, and a new habit on Habits.
+    func testPlusOnEveryTabOpensTheNewItemPage() {
+        launch("superpooper://today")
+        let plus = app.buttons["tabBar.newItem"]
+        XCTAssertTrue(plus.waitForExistence(timeout: 10))
+        app.dismissBanners()
         plus.tap()
         let name = app.textFields["taskPage.name"]
         XCTAssertTrue(name.waitForExistence(timeout: 5))
-        name.tap()
-        name.typeText("Позвонить врачу")
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5), "the name is focused")
+        XCTAssertEqual(name.placeholderValue, "New task")
         app.navigationBars.buttons.element(boundBy: 0).tap()
-        expectCreatedBanner("Позвонить врачу")
+        XCTAssertTrue(name.waitForNonExistence(timeout: 5))
+        app.tabBars.buttons["Habits"].tap()
+        plus.tap()
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        XCTAssertEqual(name.placeholderValue, "New habit")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
     }
 
     func testPlusInHabitsCreatesAHabit() {
         launch("superpooper://habits")
-        let plus = app.buttons["habits.new"]
+        let plus = app.buttons["tabBar.newItem"]
         XCTAssertTrue(plus.waitForExistence(timeout: 10))
         app.dismissBanners()
         plus.tap()
@@ -64,7 +75,7 @@ final class NewTaskUITests: XCTestCase {
     /// creates no second note (`scripts/check-vault-after-ui-tests.sh` checks the file).
     func testReturnInTheNameSavesTheTaskAndStaysOnItsPage() {
         launch("superpooper://today")
-        let plus = app.buttons["today.newTask"]
+        let plus = app.buttons["tabBar.newItem"]
         XCTAssertTrue(plus.waitForExistence(timeout: 10))
         app.dismissBanners()
         plus.tap()
@@ -84,7 +95,7 @@ final class NewTaskUITests: XCTestCase {
         // The first banner goes first, so a second one would show.
         app.dismissBanners()
         app.navigationBars.buttons.element(boundBy: 0).tap()
-        XCTAssertTrue(app.buttons["today.newTask"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["tabBar.newItem"].waitForExistence(timeout: 5))
         let second = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier == 'banner' AND label BEGINSWITH 'Created'")).firstMatch
         XCTAssertFalse(second.waitForExistence(timeout: 3), "Back creates no second note")
@@ -93,7 +104,7 @@ final class NewTaskUITests: XCTestCase {
     /// Return with a name a note cannot take saves nothing: the title keeps pointing at the problem, the page stays a draft.
     func testReturnWithANameANoteCannotTakeSavesNothing() {
         launch("superpooper://today")
-        let plus = app.buttons["today.newTask"]
+        let plus = app.buttons["tabBar.newItem"]
         XCTAssertTrue(plus.waitForExistence(timeout: 10))
         app.dismissBanners()
         plus.tap()
@@ -109,7 +120,7 @@ final class NewTaskUITests: XCTestCase {
     /// page — and Back then creates no second note.
     func testAnotherTabKeepsTheNewTaskPage() {
         launch("superpooper://today")
-        let plus = app.buttons["today.newTask"]
+        let plus = app.buttons["tabBar.newItem"]
         XCTAssertTrue(plus.waitForExistence(timeout: 10))
         app.dismissBanners()
         plus.tap()
@@ -118,8 +129,8 @@ final class NewTaskUITests: XCTestCase {
         app.typeText("Полить цветы\n")
         expectCreatedBanner("Полить цветы")
         app.tabBars.buttons["Habits"].tap()
-        XCTAssertTrue(app.buttons["habits.new"].waitForExistence(timeout: 5))
-        app.tabBars.buttons["Today"].tap()
+        XCTAssertTrue(app.buttons["tabBar.newItem"].waitForExistence(timeout: 5))
+        app.tabBars.buttons["Tasks"].tap()
         XCTAssertTrue(name.waitForExistence(timeout: 5))
         XCTAssertEqual(name.value as? String, "Полить цветы")
         XCTAssertTrue(app.buttons["taskPage.more"].exists)
@@ -133,7 +144,7 @@ final class NewTaskUITests: XCTestCase {
     /// A name a note cannot take is pointed out in the title while it is typed.
     func testANameANoteCannotTakeIsShownInTheTitle() {
         launch("superpooper://today")
-        let plus = app.buttons["today.newTask"]
+        let plus = app.buttons["tabBar.newItem"]
         XCTAssertTrue(plus.waitForExistence(timeout: 10))
         app.dismissBanners()
         plus.tap()

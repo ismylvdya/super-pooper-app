@@ -12,6 +12,8 @@ struct LiquidGlassLook: ViewModifier {
         switch look {
         case .barCapsule:
             content.glassEffect(.regular.interactive(), in: Capsule())
+        case .newItemBubble:
+            content.glassEffect(.regular.interactive(), in: Circle())
         case .floatingCapsule:
             content.glassEffect(.regular, in: Capsule())
         case .bannerCard:

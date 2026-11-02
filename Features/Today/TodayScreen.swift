@@ -2,8 +2,8 @@ import SwiftUI
 
 /// Main screen: blocks from the arrangement's layout (`layouts/today-*.layout.json`), refreshed every
 /// minute so "now" and chains move. The pool and the timeline both pull to refresh (full sync).
-/// Top left: Soon (the review) and the problems badge; top right: new task and search, in the system navigation
-/// bar with the day's name as its title (so the bar's buttons flow into a pushed page's, as on the other tabs). In landscape the same buttons stand in a column along the physical top, each where it is upright on the
+/// Top left: Lists with the problems badge; top right: search, in the system navigation bar with the day's name
+/// centred as its title (so the bar's buttons flow into a pushed page's, as on the other tabs). In landscape the same buttons stand in a column along the physical top, each where it is upright on the
 /// physical screen (see `PhysicalBottom`); the layout is the landscape one from settings. The arrows next to the day's name
 /// slide the pool and the timeline together to yesterday / tomorrow (and further): another day shows its own
 /// events, reminders, dated tasks and habits; its name, or the Today tab, brings back today. With the paged
@@ -57,7 +57,7 @@ struct TodayScreen: View {
             if let index = layout.blocks.firstIndex(where: { $0.block == block }) { turn(to: index) }
             taskDrag.turnHandled()
         }
-        .onChange(of: router.todayTaps) { showTodaysPool() }
+        .onChange(of: router.tasksTaps) { showTodaysPool() }
     }
 
     /// Turned sideways, Today has its own arrangement.
@@ -71,16 +71,17 @@ struct TodayScreen: View {
 
     private var dayBarRoom: CGFloat? {
         let frames = { (placement: TodayButtons.Placement) in placement.items.compactMap { barButtons[$0] } }
-        return DayBarRoom.width(leading: frames(.leading), trailing: frames(.trailing), gap: tokens.bar(.barButtonPadding))
+        return DayBarRoom.width(leading: frames(.leading), trailing: frames(.trailing), gap: tokens.bar(.barButtonPadding),
+                                center: width / 2)
     }
 
     private var layout: ScreenLayout { model.config.todayLayout(for: arrangement, landscape: isLandscape) }
     private var pageCount: Int { layout.isPaged ? layout.blocks.count : 1 }
 
-    /// The day's name and the Today tab: back to today and, on pages, to the pool's page.
+    /// The day's name and the Tasks tab: back to today and, on pages, to the pool's page.
     private func showTodaysPool() {
-        pager.showToday(animation: tokens.animation)
-        if let pool = layout.blocks.firstIndex(where: { $0.block == .pool }) { turn(to: pool) }
+        let pool = layout.isPaged ? layout.blocks.firstIndex(where: { $0.block == .pool }) ?? 0 : 0
+        pager.showPool(poolPage: pool, animation: tokens.animation)
     }
 
     private func turn(to newPage: Int) {
@@ -162,8 +163,6 @@ struct TodayScreen: View {
             .foregroundStyle(tokens.color(.primaryText))
             .systemLook(.barCapsule)
     }
-
-    /// The bar upright: the button groups at the edges, the day's name with its arrows midway between them.
 
     /// The bar upright, from the physical left to the physical right.
     private enum LandscapeSlot: CaseIterable { case leading, day, trailing }

@@ -1,6 +1,5 @@
 {
   "settings": "gearshape",
-  "review": "7.calendar|calendar",
   "resetSort": "arrow.trianglehead.2.counterclockwise",
   "more": "ellipsis.circle",
   "info": "info.circle",
@@ -39,7 +38,7 @@
   "search": "magnifyingglass",
   "resetOrder": "arrow.counterclockwise",
   "add": "plus.circle.fill",
-  "newTask": "plus",
+  "newItem": "plus",
   "colors": "paintpalette",
   "remove": "minus.circle.fill",
   "chevron": "chevron.right",

@@ -70,8 +70,8 @@ struct ConfigTests {
     /// "new|old" in icons.json: the newer symbol where the system has it, the fallback otherwise.
     @Test func iconFallbacksPickTheFirstAvailableSymbol() throws {
         let icons = TestConfig.decode(IconSet.self, "icons.json")
-        #expect(icons.resolvingFallbacks { $0 == "calendar" }[.review] == "calendar")
-        #expect(icons.resolvingFallbacks { _ in true }[.review] == "7.calendar")
+        #expect(icons.resolvingFallbacks { $0 == "calendar" }[.listThisWeek] == "calendar")
+        #expect(icons.resolvingFallbacks { _ in true }[.listThisWeek] == "7.calendar")
         #expect(icons.resolvingFallbacks { _ in false }[.chevron] == icons[.chevron])
     }
 
