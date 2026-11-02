@@ -31,6 +31,28 @@ struct HabitDayCellTests {
         #expect(alphas[gap] == 0, "a widget lies on its own background, not on a plate")
     }
 
+    /// The ring of a day not done or done partly stands at `opacity.habitOpenRing` (.27670); Done and Twice keep the color.
+    @Test(arguments: [HabitCell.open, .partial, .missed])
+    func theRingOfAnOpenDayIsFaded(_ cell: HabitCell) throws {
+        let tokens = TestConfig.tokens
+        let alphas = try middleRowAlphas(HabitDayCell(cell: cell, color: .black, metrics: metrics).designTokens(tokens))
+        let ring = Int(metrics.cell / 2 - metrics.dot / 2 + metrics.ring / 2)
+        #expect(abs(Double(alphas[ring]) - 255 * tokens.opacity(.habitOpenRing)) <= 3)
+        let done = try middleRowAlphas(HabitDayCell(cell: .twice, color: .black, metrics: metrics).designTokens(tokens))
+        #expect(done[Int(metrics.cell / 2)] == 255)
+    }
+
+    /// The habits settings set it, within `rules.json` → `limits.ringOpacity`.
+    @Test func theSettingsSetTheRingsOpacity() {
+        var settings = TestConfig.defaults
+        #expect(settings.habits.ringOpacity == 0.5)
+        settings.habits.ringOpacity = 0.3
+        let limits = TestConfig.rules.limits
+        #expect(TestConfig.tokens.applying(settings, limits: limits).opacity(.habitOpenRing) == 0.3)
+        settings.habits.ringOpacity = 0
+        #expect(TestConfig.tokens.applying(settings, limits: limits).opacity(.habitOpenRing) == limits.ringOpacity.min)
+    }
+
     /// The alpha of each pixel in the middle row of the rendered view (one pixel per point).
     private func middleRowAlphas(_ view: some View) throws -> [UInt8] {
         let rendered = try RenderedAlpha(view)

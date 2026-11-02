@@ -174,6 +174,9 @@ struct RulesConfig: Codable, Hashable, Sendable {
 
             var closed: ClosedRange<Double> { min...max }
 
+            /// The value kept within the range.
+            func clamped(_ value: Double) -> Double { Swift.min(Swift.max(value, min), max) }
+
             /// The nearest step (unchanged without one).
             func snapped(_ value: Double) -> Double {
                 guard let step, step > 0 else { return value }
@@ -188,6 +191,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let bellOpacity: Range
         let fontSize: Range
         let pastOpacity: Range
+        /// The ring of a habit's day not done or done partly.
+        let ringOpacity: Range
         let recurrenceInterval: Range
         let recurrenceCount: Range
         /// "Each" day number of a monthly repeat.

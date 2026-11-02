@@ -147,6 +147,7 @@ SuperPooper — iPhone-приложение-оболочка над тремя �
 | Высота строки пула, которая берётся, пока настоящая не измерена | `rules.json` → `layoutEstimates` |
 | Пределы степперов и слайдеров настроек (часы до/после, размер колокольчика, шрифты, прозрачность, интервал и число повторов) | `rules.json` → `limits` (`min`, `max`, `step`) |
 | С чего начинается новое значение: время по умолчанию, отступ следующего напоминания привычки, задержка сохранения описания и настроек, конец повторения через N дней / после N раз | `rules.json` → `editing` |
+| Прозрачность кольца неотмеченного и частичного дня привычки (сетка, Habits, виджет; D-094) | настройка Habits → Marks (`habits.ringOpacity`, по умолчанию в `defaults.json`), пределы — `rules.json` → `limits.ringOpacity`, токен — `opacity.habitOpenRing` |
 | Значения настроек по умолчанию (папка задач, тег, граница дня, час энергии, раскладка таймлайна, цвет новой привычки `habits.newHabitColor` — чёрный, D-092…) | `defaults.json` |
 | Тексты интерфейса, уведомлений, виджетов | `Resources/Localizable.xcstrings` (ключи вида `settings.day.boundary`) |
 | Bundle ID / App Group / версию | `Config/Shared.xcconfig` (`SP_BUNDLE_ID`, `MARKETING_VERSION`, `CURRENT_PROJECT_VERSION`) |

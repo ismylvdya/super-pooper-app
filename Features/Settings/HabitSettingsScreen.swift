@@ -34,6 +34,7 @@ struct HabitSettingsScreen: View {
                     PlateRow(icon: nil, title: LocalizedStringKey(String("color.") + token.rawValue)) { ColorField(token: token) }
                 }
             }
+            HabitRingSettingsSection()
             NotificationImageSection()
             PlateSection(header: "settings.habits.partsOfDay", info: "info.settings.habits.partsOfDay") {
                 PlateRow(icon: .timeOfDay, title: "habitPage.timeOfDay.morning") {

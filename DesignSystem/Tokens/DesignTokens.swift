@@ -67,10 +67,12 @@ struct DesignTokens: Decodable, Sendable {
     /// The side insets of a timeline slot's plate.
     var slotPlateInset: CGFloat { space(.plateInner) / 2 }
 
-    /// The user's appearance settings over the bundled tokens: colors and the opacity of done/past items.
+    /// The user's appearance settings over the bundled tokens: colors, the opacity of done/past items and of a habit's open
+    /// rings.
     func applying(_ settings: AppSettings, limits: RulesConfig.Limits) -> DesignTokens {
         var tokens = overridingColors(settings.colors)
-        tokens.opacity = opacity.replacing([.past: min(max(settings.appearance.pastOpacity, limits.pastOpacity.min), limits.pastOpacity.max)])
+        tokens.opacity = opacity.replacing([.past: limits.pastOpacity.clamped(settings.appearance.pastOpacity),
+                                            .habitOpenRing: limits.ringOpacity.clamped(settings.habits.ringOpacity)])
         return tokens
     }
 

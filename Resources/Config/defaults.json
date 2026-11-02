@@ -67,6 +67,7 @@
     "dayRoutine": [],
     "eveningRoutine": [],
     "repeatableShowsHistory": false,
+    "ringOpacity": 0.5,
     "showsNotificationPicture": true,
     "notificationUsesHabitColor": false
   },

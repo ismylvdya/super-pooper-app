@@ -106,6 +106,8 @@ struct AppSettings: Codable, Equatable, Sendable {
         var morningRoutine: [String]
         var dayRoutine: [String]
         var eveningRoutine: [String]
+        /// Opacity of the ring of a habit's day not done or done partly (on its page's grid, in the Habits list, the widget).
+        var ringOpacity: Double
         /// A repeatable task's page shows the history grid and the statistics too, as a habit's does.
         var repeatableShowsHistory: Bool
         /// Habit notifications carry a picture at the right at all.

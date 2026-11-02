@@ -44,6 +44,8 @@ enum CountToken: String, CaseIterable, Sendable {
 
 enum OpacityToken: String, CaseIterable, Sendable {
     case blocked, past, eventFill, fadeTop, fadeMiddle, habitEmpty
+    /// The ring of a habit's day not done or done partly (the user's `habits.ringOpacity` over it).
+    case habitOpenRing
     case gridFadedWeek, unlinked, eventTime, nowOverBlocks, daySwipeFade, toggleChipFill, bannerShadow, previewBlock, accentedPlate, signingPlate
     /// The faint copy of a dragged plate where it would land (the pool's parted gap, the timeline's landing spot).
     case dropGhost

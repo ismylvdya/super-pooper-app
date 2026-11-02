@@ -2290,6 +2290,17 @@
         }
       }
     },
+    "info.settings.habits.ringOpacity": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How faded the ring of a day not done, or done partly, is on a habit's page, in the Habits list and in the widget. Done and Twice keep the full color."
+          }
+        }
+      }
+    },
     "info.settings.notificationImage.habitColor": {
       "extractionState": "manual",
       "localizations": {
@@ -4567,6 +4578,17 @@
         }
       }
     },
+    "settings.habits.marks": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marks"
+          }
+        }
+      }
+    },
     "settings.habits.new": {
       "extractionState": "manual",
       "localizations": {
@@ -4629,6 +4651,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "History and statistics"
+          }
+        }
+      }
+    },
+    "settings.habits.ringOpacity": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ring of an open day"
           }
         }
       }
