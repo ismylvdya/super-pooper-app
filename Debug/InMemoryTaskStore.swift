@@ -2,9 +2,11 @@
 import Foundation
 
 /// Task notes in memory for previews and tests of the app state.
-actor InMemoryTaskStore: TaskStore, VersionConflictResolving, ExternalLinking, TaskBackups, FolderInspecting {
+actor InMemoryTaskStore: TaskStore, TaskTrash, VersionConflictResolving, ExternalLinking, TaskBackups, FolderInspecting {
     /// Notes moved to the done folder.
     private var filed: [TaskItem] = []
+    /// Notes moved to the trash, by where they lie there.
+    private var trashed: [String: TaskItem] = [:]
     private var tasks: [TaskItem]
     private var bodies: [String: String] = [:]
     /// Texts that cannot be read (not downloaded, broken YAML), and every text written, in order.
@@ -70,10 +72,24 @@ actor InMemoryTaskStore: TaskStore, VersionConflictResolving, ExternalLinking, T
         return renamed
     }
 
-    func delete(_ task: TaskItem) async throws {
+    func delete(_ task: TaskItem) async throws -> TrashedNote? {
         tasks.removeAll { $0.id == task.id }
         filed.removeAll { $0.id == task.id }
+        let note = TrashedNote(id: ".trash/\(task.name).md", name: task.name, trashedAt: nil)
+        trashed[note.id] = task
+        return note
     }
+
+    func notes() async throws -> [TrashedNote] {
+        trashed.map { TrashedNote(id: $0.key, name: $0.value.name, trashedAt: nil) }.sorted { $0.name < $1.name }
+    }
+    func text(of note: TrashedNote) async throws -> String { bodies[note.name] ?? "" }
+    func restore(_ note: TrashedNote) async throws -> String {
+        guard let task = trashed.removeValue(forKey: note.id) else { throw CocoaError(.fileNoSuchFile) }
+        tasks.append(task)
+        return task.name
+    }
+    func deletePermanently(_ note: TrashedNote) async throws { trashed[note.id] = nil }
     /// The note moves to the done folder, as in the vault: the id says so.
     func fileAway(_ task: TaskItem) async throws -> TaskItem {
         tasks.removeAll { $0.id == task.id }

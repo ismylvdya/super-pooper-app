@@ -95,6 +95,19 @@ final class DayStateController {
         return isNew
     }
 
+    /// Undo: what an action decided about today goes back (Skip today, Not today, the manual order, the moved blocks),
+    /// as long as it is still the same day.
+    func restore(_ before: DayState) {
+        rollDayIfNeeded()
+        guard before.day == dayState.day else { return }
+        update {
+            $0.skipped = before.skipped
+            $0.postponed = before.postponed
+            $0.manualOrder = before.manualOrder
+            $0.timeMoves = before.timeMoves
+        }
+    }
+
     /// A renamed note keeps its place in today's lists.
     func followRename(from old: String, to new: String) {
         let rename = { (names: [String]) in NameReferences.renaming(names, from: old, to: new) }

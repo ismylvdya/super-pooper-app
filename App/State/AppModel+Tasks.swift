@@ -8,21 +8,47 @@ extension AppModel {
     /// A menu action on a note; `day`: a habit mark for that day (habit page, notifications), `nil` = today.
     func perform(_ action: ActionID, on name: String, day: LocalDate? = nil) async {
         guard task(named: name) != nil else { return }
+        _ = await run(action, on: name, day: day, announcing: true)
+    }
+
+    /// An action from a menu or a swipe: one that can be taken back happens at once and the banner offers Undo
+    /// (`UndoController`); any other runs as `perform` does.
+    func performOfferingUndo(_ action: ActionDefinition, on name: String) async {
+        guard parts.undo.canUndo(action), let step = parts.undo.begin(action.id, on: name) else {
+            await perform(action.id, on: name)
+            return
+        }
+        guard let trashed = await run(action.id, on: name, day: nil, announcing: false) else { return }
+        parts.undo.offer(step, trashed: trashed)
+    }
+
+    /// The action needs its confirmation first: it has one, and it cannot be taken back here.
+    func needsConfirmation(_ action: ActionDefinition) -> Bool {
+        action.needsConfirmation && !parts.undo.canUndo(action)
+    }
+
+    /// The banner's Undo: what the latest action offering it changed goes back.
+    func undo(_ id: UUID) async { await parts.undo.undo(id) }
+
+    /// Runs the action; returns where deleted notes lie in the trash (none for other actions), nil when it failed.
+    private func run(_ action: ActionID, on name: String, day: LocalDate?, announcing: Bool) async -> [TrashedNote]? {
         switch action {
         case .done, .partial, .twice, .unmark: await parts.notes.markFromMenu(name, as: action.habitMark, on: day)
         case .skipToday: await parts.dayCommands.skip(name, on: day)
         case .notToday: await parts.dayCommands.notToday(name, on: day)
         case .backToToday: parts.dayCommands.unpostpone(name)
-        case .archive: await parts.notes.archive(name)
+        case .archive: return await parts.notes.archive(name, announcing: announcing) ? [] : nil
         case .restoreThisWeek: await parts.notes.setStatus(.thisWeek, of: name)
         case .restoreHalfYear: await parts.notes.setStatus(.halfYear, of: name)
         case .restoreHabit: await parts.notes.setStatus(.habit, of: name)
+        case .restoreFromArchive: await parts.notes.restoreFromArchive(name)
         case .returnFromDone: await parts.notes.returnToSoon(name)
-        case .delete: await parts.notes.delete(name)
+        case .delete: return await parts.notes.delete(name, announcing: announcing)
         // Opening is the screen's; the trash restores its own notes, the timeline deletes its events, a notification
         // snoozes itself.
         case .open, .openInObsidian, .restoreFromTrash, .deleteEvent, .snooze: break
         }
+        return []
     }
 
     /// An action on a task of the done folder (the Done list): its name may also be an active note's, so it goes by id.
@@ -100,6 +126,12 @@ extension AppModel {
     func refreshTrash() async { await parts.trash.refresh() }
     func trashedText(_ note: TrashedNote) async -> String { await parts.trash.text(of: note) }
     func restore(_ note: TrashedNote) async { await parts.trash.restore(note) }
+    /// The note of that name in the trash, the latest put there (as the trash screen last read it).
+    func trashedNote(named name: String) -> TrashedNote? { trashedNotes.first { $0.name.isSameNoteName(as: name) } }
+    /// "Restore from trash" on the page of a note in the trash.
+    func restoreFromTrash(named name: String) async {
+        if let note = trashedNote(named: name) { await restore(note) }
+    }
     func deletePermanently(_ note: TrashedNote) async { await parts.trash.deletePermanently(note) }
 
     func versions(of name: String) async -> [NoteVersion] { await parts.conflicts.versions(of: name) }

@@ -62,10 +62,10 @@ final class HabitDeleteUITests: XCTestCase {
         let delete = app.buttons["action.delete"]
         XCTAssertTrue(delete.waitForExistence(timeout: 5))
         delete.tap()
-        let alert = app.alerts["Delete repeatable task?"]
-        XCTAssertTrue(alert.waitForExistence(timeout: 5), "the confirmation names a repeatable task")
-        alert.buttons["Delete"].tap()
+        // With a trash a delete happens at once; the banner offers Undo instead of a confirmation (.27143).
         XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'to trash'")).firstMatch.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["banner.undo"].exists)
+        XCTAssertFalse(app.alerts.firstMatch.exists, "no confirmation")
         XCTAssertTrue(app.textFields["taskPage.name"].waitForNonExistence(timeout: 5), "the page closes")
         XCTAssertTrue(row.waitForNonExistence(timeout: 5), "it leaves the Habits tab")
         app.terminate()

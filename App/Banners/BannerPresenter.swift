@@ -23,6 +23,9 @@ final class BannerPresenter: AppEventSink {
         case .restored(let name): success("banner.restored", name)
         case .returned(let name): success("banner.returned", name)
         case .deletedForever(let name): success("banner.deletedForever", name)
+        case .undoable(let offer):
+            BannerCenter.Banner(text: L10n.format(String("banner.undoable.") + offer.action.rawValue, offer.name), style: .success,
+                                items: offer.along, undo: offer.id)
         case .conflictResolved(let name): success("banner.conflictResolved", name)
         case .promoted(let names):
             BannerCenter.Banner(text: L10n.string("banner.promoted"), style: .success, items: names)

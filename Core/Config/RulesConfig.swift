@@ -148,6 +148,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
     struct Banners: Codable, Hashable, Sendable {
         /// A banner hides itself this long after it appears.
         let autoHideSeconds: Double
+        /// A banner offering Undo hides itself this long after it appears; then the action stays.
+        let undoSeconds: Double
         /// Lines of the message (and notes under it) until the banner is expanded.
         let collapsedLines: Int
     }

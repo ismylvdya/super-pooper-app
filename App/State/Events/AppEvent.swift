@@ -12,6 +12,8 @@ enum AppEvent: Equatable, Sendable {
     /// A done task back in Soon, under the name it got there.
     case returned(String)
     case deletedForever(String)
+    /// An action that happened at once and can be taken back for a few seconds (`UndoController`).
+    case undoable(UndoOffer)
     /// Tasks of later planning levels that joined this week (by the user or by auto-promotion).
     case promoted([String])
     /// The fields an edit wrote that had also been changed elsewhere to something else (the edit won).

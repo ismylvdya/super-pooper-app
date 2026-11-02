@@ -20,6 +20,17 @@ final class TaskPageUITests: XCTestCase {
         app.dismissBanners()
     }
 
+    /// The app again from the start, on the page of `task` (whatever that page shows now).
+    private func relaunch(opening task: String) {
+        app.terminate()
+        let encoded = task.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? task
+        app.launchArguments = ["-SPVaultPath", "TestVault", "-SPSkipOnboarding", "-SPNow", "11:30", "-SPSeedDemo",
+                               "-SPOpen", "superpooper://task/\(encoded)"]
+        app.launch()
+        XCTAssertTrue(app.buttons["taskPage.more"].waitForExistence(timeout: 10))
+        app.dismissBanners()
+    }
+
     private func moreMenu(_ action: String) {
         // Toolbar menus refuse the accessibility "scroll to visible" step, so tap by coordinate.
         app.buttons["taskPage.more"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
@@ -67,16 +78,54 @@ final class TaskPageUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Archived'")).firstMatch.waitForExistence(timeout: 5))
     }
 
-    func testDeleteAsksAndMovesToTrash() {
+    /// With a trash, Delete asks nothing: the note goes to the trash and the banner offers Undo (.27143).
+    func testDeleteMovesToTrashAtOnceWithUndo() {
         open("Посмотреть сериал 🍿")
         moreMenu("Delete")
-        let alert = app.alerts["Delete task?"]
-        XCTAssertTrue(alert.waitForExistence(timeout: 5))
-        alert.buttons["Delete"].tap()
         XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'to trash'")).firstMatch.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["banner.undo"].exists)
+        XCTAssertFalse(app.alerts.firstMatch.exists, "no confirmation")
+        XCTAssertTrue(app.textFields["taskPage.name"].waitForNonExistence(timeout: 5), "the page closes")
     }
 
-    /// A parent's subtasks go with it (.1965): the confirmation says how many.
+    /// Undo in the banner brings a deleted note back; the page of a note in the trash says so, and its "…" menu brings
+    /// it back from there (.28117).
+    func testUndoAndRestoreFromTrashBringADeletedNoteBack() {
+        let name = "Забрать посылку на почте"
+        open(name)
+        moreMenu("action.delete")
+        let undo = app.buttons["banner.undo"]
+        XCTAssertTrue(undo.waitForExistence(timeout: 5))
+        undo.tap()
+        relaunch(opening: name)
+        XCTAssertTrue(app.textFields["taskPage.name"].waitForExistence(timeout: 10), "Undo brought it back")
+
+        moreMenu("action.delete")
+        XCTAssertTrue(app.textFields["taskPage.name"].waitForNonExistence(timeout: 5))
+        relaunch(opening: name)
+        XCTAssertTrue(app.staticTexts["In the trash"].waitForExistence(timeout: 10))
+        moreMenu("action.restoreFromTrash")
+        XCTAssertTrue(app.textFields["taskPage.name"].waitForExistence(timeout: 10), "back from the trash")
+    }
+
+    /// The "…" menu of an archived note offers Restore from archive instead of Archive (.28117).
+    func testAnArchivedNoteIsRestoredFromItsMenu() {
+        open("Собрать шкаф")
+        moreMenu("action.archive")
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Archived'")).firstMatch.waitForExistence(timeout: 5))
+        app.dismissBanners()
+        app.buttons["taskPage.more"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        let restore = app.buttons["action.restoreFromArchive"]
+        XCTAssertTrue(restore.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["action.archive"].exists, "an archived note is not archived again")
+        restore.tap()
+        app.dismissBanners()
+        app.buttons["taskPage.more"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        XCTAssertTrue(app.buttons["action.archive"].waitForExistence(timeout: 5), "out of the archive again")
+        XCTAssertFalse(app.buttons["action.restoreFromArchive"].exists)
+    }
+
+    /// A parent's subtasks go with it (.1965): the banner names them.
     func testDeletingAParentSaysItsSubtasksGoAlong() {
         open("Повесить зеркало")
         let field = app.textFields["taskPage.subtask"].firstMatch
@@ -88,11 +137,10 @@ final class TaskPageUITests: XCTestCase {
         }
         app.dismissBanners()
         moreMenu("action.delete")
-        let alert = app.alerts["Delete task?"]
-        XCTAssertTrue(alert.waitForExistence(timeout: 5))
-        XCTAssertTrue(alert.staticTexts.matching(NSPredicate(format: "label CONTAINS '2 subtasks go with it.'")).firstMatch.exists)
-        alert.buttons["Delete"].tap()
-        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'to trash'")).firstMatch.waitForExistence(timeout: 5))
+        let banner = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == 'banner' AND label CONTAINS 'to trash' AND label CONTAINS 'Купить дюбели' AND label CONTAINS 'Найти уровень'"))
+            .firstMatch
+        XCTAssertTrue(banner.waitForExistence(timeout: 5))
     }
 
     func testLinkPreviousTaskThroughPicker() {

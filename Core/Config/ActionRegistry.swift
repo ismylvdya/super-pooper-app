@@ -46,6 +46,8 @@ enum ActionMenu: String, Codable, CaseIterable, Sendable {
     case habitDay
     case reminderContext
     case eventContext
+    /// The "…" menu on the page of a note that is in the trash.
+    case trashedPage
 
     /// The long-press menu of a task or a habit.
     static func context(of task: TaskItem) -> ActionMenu { task.isHabit ? .habitContext : .taskContext }
@@ -133,12 +135,22 @@ struct ActionDefinition: Codable, Hashable, Sendable {
     let confirmMessage: String?
     /// How many subtasks go along, under the message (a plural text); none = not said.
     var confirmSubtasks: String?
+    /// How the action can be taken back from the banner; none = it cannot. An action that can be taken back happens at
+    /// once, without its confirmation.
+    var undo: UndoKind?
 
     var needsConfirmation: Bool { confirmTitle != nil }
 
     func confirmTitle(for kind: NoteKind) -> String? {
         confirmTitle.map { $0 + "." + kind.rawValue }
     }
+}
+
+/// How an action is taken back: by writing back the fields it changed (and the day's decisions), or out of the
+/// store's trash (only where the store has one).
+enum UndoKind: String, Codable, Hashable, Sendable {
+    case edits
+    case trash
 }
 
 /// Every user action in one registry (`actions.json`): menus, swipes, notifications and widgets take titles, icons,

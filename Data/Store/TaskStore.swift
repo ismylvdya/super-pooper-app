@@ -47,8 +47,10 @@ protocol TaskStore: Sendable {
     func create(_ draft: NoteDraft, named name: String) async throws -> TaskItem
     /// Renames the item; the items that refer to it (`dependents`) are rewritten to refer to the new name.
     func rename(_ task: TaskItem, to newName: String, dependents: [TaskItem]) async throws -> TaskItem
-    /// Deletes the item (into the store's trash, where it has one).
-    func delete(_ task: TaskItem) async throws
+    /// Deletes the item: into the store's trash, where it has one, and returns where it lies there (for Undo); nil when
+    /// it is gone for good.
+    @discardableResult
+    func delete(_ task: TaskItem) async throws -> TrashedNote?
     /// Puts a completed task away from the active ones; it is gone from `load` and listed by `filedTasks`. Returns it as
     /// filed (its id, and its name where that was taken there, may change).
     @discardableResult

@@ -15,6 +15,8 @@ final class NoteWriter {
     private let filesDoneTasks: Bool
     /// The edit of each note still running.
     private var pendingEdits: [String: Task<Void, Never>] = [:]
+    /// What filing made of each note, by its id before (Undo brings a task done a moment ago back).
+    private var filedFrom: [TaskID: TaskItem] = [:]
 
     init(tasks: TaskState, store: TaskStore, day: DayStateController, derived: DerivedStatePublisher, backups: BackupPolicy,
          appEvents: AppEventSink, filesDoneTasks: Bool) {
@@ -51,11 +53,12 @@ final class NoteWriter {
         await pendingEdits[name]?.value
     }
 
+    /// `cascades`: a task written done takes its open subtasks along; Undo, which puts back what was, does not.
     @discardableResult
-    func write(_ task: TaskItem, _ changes: [TaskEdit]) async -> Bool {
+    func write(_ task: TaskItem, _ changes: [TaskEdit], cascades: Bool = true) async -> Bool {
         guard !changes.isEmpty else { return true }
         guard let written = await apply(changes, to: task) else { return false }
-        if task.status != .done, written.status == .done, !written.isHabit { await completeSubtasks(of: written) }
+        if cascades, task.status != .done, written.status == .done, !written.isHabit { await completeSubtasks(of: written) }
         await derived.publish()
         if DoneFiling.isDue(written) { await fileAwayDoneTasks() }
         return true
@@ -94,6 +97,11 @@ final class NoteWriter {
         await edit(name) { note in ZonedTimes.stored([.due(due)], of: note, calendar: self.day.calendar) }
     }
 
+    /// The task filing made of the note that had this id, if it is still among the filed ones.
+    func filed(from id: TaskID) -> TaskItem? {
+        filedFrom[id].flatMap { tasks.filedTask($0.id) }
+    }
+
     /// Done tasks are filed away by the store; the tasks that waited for them lose those met links first. Runs after every
     /// write that marks a task done and at every sync (a task done in Obsidian).
     func fileAwayDoneTasks() async {
@@ -108,6 +116,7 @@ final class NoteWriter {
         do {
             try await backups.backup([task], reason: "done")
             let filed = try await store.fileAway(task)
+            filedFrom[task.id] = filed
             tasks.remove(task)
             tasks.addFiled(filed)
             await derived.publish()

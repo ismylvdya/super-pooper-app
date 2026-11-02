@@ -111,13 +111,24 @@
         }
       }
     },
+    "action.restoreFromArchive": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore from archive"
+          }
+        }
+      }
+    },
     "action.restoreFromTrash": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Restore"
+            "value": "Restore from trash"
           }
         }
       }
@@ -459,6 +470,149 @@
           "stringUnit": {
             "state": "translated",
             "value": "Synced. Everything is up to date."
+          }
+        }
+      }
+    },
+    "banner.undo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo"
+          }
+        }
+      }
+    },
+    "banner.undoable.archive": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archived “%@”."
+          }
+        }
+      }
+    },
+    "banner.undoable.backToToday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Brought “%@” back to today."
+          }
+        }
+      }
+    },
+    "banner.undoable.delete": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moved “%@” to trash."
+          }
+        }
+      }
+    },
+    "banner.undoable.done": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marked “%@” done."
+          }
+        }
+      }
+    },
+    "banner.undoable.notToday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moved “%@” out of today."
+          }
+        }
+      }
+    },
+    "banner.undoable.partial": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marked “%@” done partly."
+          }
+        }
+      }
+    },
+    "banner.undoable.restoreHabit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moved “%@” back to habits."
+          }
+        }
+      }
+    },
+    "banner.undoable.restoreHalfYear": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moved “%@” to Half year."
+          }
+        }
+      }
+    },
+    "banner.undoable.restoreThisWeek": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moved “%@” to Soon."
+          }
+        }
+      }
+    },
+    "banner.undoable.skipToday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skipped “%@” today."
+          }
+        }
+      }
+    },
+    "banner.undoable.twice": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marked “%@” done twice."
+          }
+        }
+      }
+    },
+    "banner.undoable.unmark": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unmarked “%@”."
           }
         }
       }
@@ -6468,6 +6622,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Phone's time"
+          }
+        }
+      }
+    },
+    "taskPage.trashed.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This note is in the trash. Restore it from the “…” menu."
+          }
+        }
+      }
+    },
+    "taskPage.trashed.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In the trash"
           }
         }
       }

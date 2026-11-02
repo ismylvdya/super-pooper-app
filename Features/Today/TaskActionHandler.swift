@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Routes a chosen registry action: navigation stays in the UI layer, data changes go to the
-/// app model, confirmed actions wait for the dialog.
+/// Routes a chosen registry action: navigation stays in the UI layer, data changes go to the app model, confirmed
+/// actions wait for the dialog. An action that can be taken back runs at once and the banner offers Undo instead.
 @MainActor
 struct TaskActionHandler {
     let model: AppModel
@@ -12,7 +12,7 @@ struct TaskActionHandler {
     var afterDelete: (() -> Void)?
 
     func handle(_ action: ActionDefinition, taskName: String) {
-        if action.needsConfirmation {
+        if model.needsConfirmation(action) {
             requestConfirmation(PendingAction(action: action, taskName: taskName, kind: model.task(named: taskName)?.kind ?? .task,
                                               subtasks: model.subtasksGoingAlong(with: taskName, action: action.id)))
             return
@@ -46,13 +46,15 @@ struct TaskActionHandler {
             Task {
                 if let url = await model.externalURL(for: taskName) { openURL(url) }
             }
+        case .restoreFromTrash:
+            Task { await model.restoreFromTrash(named: taskName) }
         case .delete:
             Task {
-                await model.perform(.delete, on: taskName)
+                await model.performOfferingUndo(action, on: taskName)
                 if model.task(named: taskName) == nil { afterDelete?() }
             }
         default:
-            Task { await model.perform(action.id, on: taskName) }
+            Task { await model.performOfferingUndo(action, on: taskName) }
         }
     }
 }

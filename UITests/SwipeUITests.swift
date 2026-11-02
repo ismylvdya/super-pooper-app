@@ -65,15 +65,14 @@ final class SwipeUITests: XCTestCase {
         XCTAssertFalse(app.buttons["swipe.done"].waitForExistence(timeout: 2), "the day is marked")
     }
 
-    /// A list of the Lists tab: a swipe to the left asks, then the task goes to the trash.
-    func testListSwipeLeftDeletesAfterTheConfirmation() {
+    /// A list of the Lists tab: a swipe to the left puts the task in the trash at once, the banner offers Undo (.27143).
+    func testListSwipeLeftDeletesAtOnceAndOffersUndo() {
         launch("superpooper://lists/waiting")
         let task = find("Ждать ответа от арендодателя")
         swipe(task, right: false, press: "delete")
-        let alert = app.alerts["Delete task?"]
-        XCTAssertTrue(alert.waitForExistence(timeout: 5), "the existing confirmation")
-        alert.buttons["Delete"].tap()
         expectBanner("to trash")
+        XCTAssertTrue(app.buttons["banner.undo"].exists)
+        XCTAssertFalse(app.alerts.firstMatch.exists, "no confirmation")
         XCTAssertTrue(task.waitForNonExistence(timeout: 5))
     }
 
@@ -142,9 +141,6 @@ final class SwipeUITests: XCTestCase {
         launch("superpooper://lists/thisWeek")
         let task = find("Связь на несуществующую")
         swipe(task, right: false, press: "delete")
-        let alert = app.alerts["Delete task?"]
-        XCTAssertTrue(alert.waitForExistence(timeout: 5))
-        alert.buttons["Delete"].tap()
         expectBanner("to trash")
         app.terminate()
 

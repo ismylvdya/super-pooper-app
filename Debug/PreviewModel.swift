@@ -21,8 +21,7 @@ enum PreviewModel {
         let memory = InMemoryTaskStore(tasks: tasks, names: ObsidianNoteNames(rules: mapping.obsidian.noteNames))
         let services = AppServices(
             vault: FixedVaultLocation(url: store.directory), tasks: memory,
-            trash: TaskNotesTrash(location: FixedVaultLocation(url: store.directory), fileSystem: CoordinatedFileSystem(),
-                                        noteExtension: mapping.obsidian.noteExtension, vaultSettings: { settingsStore.load().vault }),
+            trash: memory,
             versions: memory, links: memory, backups: memory, folder: memory,
             settingsNote: VaultSettingsFile(location: FixedVaultLocation(url: store.directory), fileSystem: CoordinatedFileSystem(),
                                             rules: config.rules.vault, vaultSettings: { settingsStore.load().vault }),

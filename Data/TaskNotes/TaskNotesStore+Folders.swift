@@ -3,11 +3,13 @@ import Foundation
 /// Moving notes between the vault's folders: the trash and the done folder.
 extension TaskNotesStore {
     /// Into the vault's trash folder (Obsidian's `.trash`).
-    func delete(_ task: TaskItem) async throws {
+    func delete(_ task: TaskItem) async throws -> TrashedNote? {
         let settings = vaultSettings()
-        try await location.withRoot { root in
-            _ = try folders.move(try existingURL(of: task, root: root), into: folders.trash(settings, root: root), firstNumber: 1,
-                                 confirming: task.name)
+        return try await location.withRoot { root in
+            let target = try folders.move(try existingURL(of: task, root: root), into: folders.trash(settings, root: root),
+                                          firstNumber: 1, confirming: task.name)
+            return TrashedNote(id: VaultPaths.relative(target.url, to: root), name: target.name,
+                               trashedAt: fileSystem.modificationDate(of: target.url))
         }
     }
 

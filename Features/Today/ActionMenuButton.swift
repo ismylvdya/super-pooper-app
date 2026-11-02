@@ -7,12 +7,14 @@ struct ActionMenuButton: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
     let menu: ActionMenu
+    /// What the menu is about, so it offers only what fits its state (an archived note: Restore from archive).
+    var item: DayItem?
     var accessibilityID = "more"
     let perform: (ActionDefinition) -> Void
 
     var body: some View {
         Menu {
-            ActionMenuContent(menu: menu, item: nil, perform: perform)
+            ActionMenuContent(menu: menu, item: item, perform: perform)
         } label: {
             Image(systemName: icons[.more])
         }
