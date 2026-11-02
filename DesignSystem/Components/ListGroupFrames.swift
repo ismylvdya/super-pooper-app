@@ -22,6 +22,9 @@ final class ListGroupFrames {
     private(set) var scrollOffset: CGFloat = 0
     /// The list's span on screen.
     private(set) var viewport: ClosedRange<CGFloat> = 0...0
+    /// Where the rows stand across the list: the backings' sides. A row's swipe moves the row sideways at its width and
+    /// leaves them; a row of another width (the list resized or turned) sets them anew.
+    private(set) var columns: ClosedRange<CGFloat>?
     /// Each group's backing from the last moment the rows of every group stood in their order, in the list's content:
     /// kept while a row is lifted, dragged or moving aside — in its own group or another one (a row dragged into another
     /// group moves that group's rows aside too, sometimes all of them together).
@@ -29,6 +32,9 @@ final class ListGroupFrames {
 
     func set(_ row: Row?, group: String, id: String) {
         guard rows[group]?[id] != row else { return }
+        if let frame = row?.frame, columns.map({ $0.upperBound - $0.lowerBound }) != frame.width {
+            columns = frame.minX...frame.maxX
+        }
         rows[group, default: [:]][id] = row
         holdSpans()
     }
@@ -72,7 +78,11 @@ final class ListGroupFrames {
     /// The backing of a group on screen now: from its rows while the list rests, otherwise the one held.
     func plate(of group: String, overhang: CGFloat) -> CGRect? {
         let resting = restingSpan(of: group)
-        guard let span = isResting ? resting : heldSpans[group] ?? resting else { return nil }
+        guard var span = isResting ? resting : heldSpans[group] ?? resting else { return nil }
+        if let columns {
+            span.minX = columns.lowerBound
+            span.width = columns.upperBound - columns.lowerBound
+        }
         return ListGroupGeometry.plate(of: span, visible: viewport, overhang: overhang, offset: scrollOffset)
     }
 
