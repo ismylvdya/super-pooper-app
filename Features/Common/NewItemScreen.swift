@@ -1,20 +1,19 @@
 import SwiftUI
 
-/// A new task (from Soon or Today) or habit (from the Habits tab): the usual page with an empty
-/// name, the cursor already in it. Return in the name saves the note at once (`AppModel.createOnReturn`): the keyboard
-/// goes and the page stays, now the note's own page, where every edit is written as on any task page. Without Return
-/// nothing is written while it is open; leaving the page with Back creates the note with everything set here (see
-/// `NewNotePage`). Another tab only hides the page: the draft waits for the user to come back.
+/// What a "+" opens: one page for a new task or a new habit, with a Task / Habit slider under the name. The usual page
+/// of the shown kind follows, with an empty name and the cursor already in it; switching the kind keeps the typed name
+/// and what was set for each kind (`NewItemPage`). Return in the name saves the note at once (`AppModel.createOnReturn`):
+/// the keyboard goes and the page stays, now the note's own page, where every edit is written as on any task page.
+/// Without Return nothing is written while it is open; leaving the page with Back creates the note of the shown kind
+/// with everything set here. Another tab only hides the page: the draft waits for the user to come back.
 /// A name a note cannot take is shown right in the title; Return does not save it, and Back waits until it is changed.
-struct NewNoteScreen: View {
-    enum Kind { case task, habit }
-
+struct NewItemScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
-    let kind: Kind
-    /// The tab whose stack shows the page; nil in the Soon sheet, which no tab can hide.
+    let seed: NewItemSeed
+    /// The tab whose stack shows the page.
     var tab: AppTab?
-    @State private var page: NewNotePage?
+    @State private var page: NewItemPage?
     /// The note Return saved: the page is its own page from then on.
     @State private var saved: String?
     /// Return is saving the note: Back must not create a second one meanwhile.
@@ -29,18 +28,24 @@ struct NewNoteScreen: View {
     }
 
     private var draftPage: some View {
-        let current = page ?? NewNotePage(draft: initialDraft)
+        let current = page ?? model.newItemPage(kind: seed.kind)
         let editor = TaskEditor.draft(Binding(get: { page?.draft ?? current.draft }, set: { page?.draft = $0 }))
-        return PageScaffold(title: current.name.isEmpty ? L10n.string(titleKey) : current.name,
-                            titleView: AnyView(NewNoteNameField(placeholder: LocalizedStringKey(titleKey),
+        return PageScaffold(title: current.name.isEmpty ? L10n.string(Self.titleKey(current.kind)) : current.name,
+                            titleView: AnyView(NewNoteNameField(placeholder: LocalizedStringKey(Self.titleKey(current.kind)),
                                                                 name: Binding(get: { page?.name ?? "" }, set: { page?.name = $0 }),
                                                                 problem: current.nameProblem(model.nameProblem(in:)),
                                                                 onReturn: saveOnReturn))) {
-            switch kind {
+            Picker("newItem.kind", selection: Binding(get: { page?.kind ?? current.kind }, set: { page?.kind = $0 })) {
+                Text("newItem.kind.task").tag(NewItemSeed.Kind.task)
+                Text("newItem.kind.habit").tag(NewItemSeed.Kind.habit)
+            }
+            .pickerStyle(.segmented)
+            .accessibilityIdentifier("newItem.kind")
+            switch current.kind {
             case .task: TaskSections(editor: editor)
             case .habit: HabitSections(editor: editor)
             }
-            Text(kind == .task ? "task.new.hint" : "habits.new.hint")
+            Text(current.kind == .task ? "task.new.hint" : "habits.new.hint")
                 .secondaryText(.hint)
         }
         .navigationBarBackButtonHidden(current.nameProblem(model.nameProblem(in:)) != nil)
@@ -48,10 +53,11 @@ struct NewNoteScreen: View {
         .onDisappear(perform: leave)
     }
 
-    private var titleKey: String { kind == .task ? "task.new.title" : "habits.new" }
-
-    private var initialDraft: NoteDraft {
-        kind == .task ? NoteDraft.newTask : model.newHabitDraft()
+    private static func titleKey(_ kind: NewItemSeed.Kind) -> String {
+        switch kind {
+        case .task: "task.new.title"
+        case .habit: "habits.new"
+        }
     }
 
     private func saveOnReturn() {

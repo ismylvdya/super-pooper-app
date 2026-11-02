@@ -55,6 +55,31 @@ final class NewTaskUITests: XCTestCase {
         app.navigationBars.buttons.element(boundBy: 0).tap()
     }
 
+    /// The slider under the name turns the new task into a new habit without losing what was typed; Return then saves
+    /// a habit (`scripts/check-vault-after-ui-tests.sh` checks its status).
+    func testSwitchingToHabitKeepsTheTypedName() {
+        launch("superpooper://today")
+        let plus = app.buttons["tabBar.newItem"]
+        XCTAssertTrue(plus.waitForExistence(timeout: 10))
+        app.dismissBanners()
+        plus.tap()
+        let name = app.textFields["taskPage.name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
+        app.typeText("Stretch")
+        let kind = app.segmentedControls["newItem.kind"]
+        XCTAssertTrue(kind.exists)
+        XCTAssertFalse(app.segmentedControls["habitPage.kind"].exists, "a task has no habit options")
+        kind.buttons["Habit"].tap()
+        XCTAssertEqual(name.value as? String, "Stretch")
+        XCTAssertTrue(app.segmentedControls["habitPage.kind"].waitForExistence(timeout: 5), "the habit's sections show")
+        name.tap()
+        app.typeText("\n")
+        expectCreatedBanner("Stretch")
+        XCTAssertTrue(app.buttons["taskPage.more"].waitForExistence(timeout: 5), "the page is the habit's own page now")
+        XCTAssertTrue(app.segmentedControls["habitPage.kind"].exists)
+    }
+
     func testPlusInHabitsCreatesAHabit() {
         launch("superpooper://habits")
         let plus = app.buttons["tabBar.newItem"]

@@ -1,15 +1,33 @@
 import Foundation
 
-/// The new task or habit page as it is being filled in: the draft, the name typed in the title, what Return in the name
-/// saves at once and what leaving the page creates. The draft stays until the note is created.
-struct NewNotePage: Equatable {
-    var draft: NoteDraft
+/// The new-item page as it is being filled in: the kind shown (a task or a habit), the name typed in the title, a draft
+/// per kind, what Return in the name saves at once and what leaving the page creates. Switching the kind keeps the name
+/// and both drafts, so switching back finds what was set there; only the shown kind is created.
+struct NewItemPage: Equatable {
+    var kind: NewItemSeed.Kind
     var name = ""
-    private let untouched: NoteDraft
+    private var taskDraft: NoteDraft
+    private var habitDraft: NoteDraft
+    private let untouchedTask: NoteDraft
+    private let untouchedHabit: NoteDraft
 
-    init(draft: NoteDraft) {
-        self.draft = draft
-        untouched = draft
+    init(kind: NewItemSeed.Kind, taskDraft: NoteDraft, habitDraft: NoteDraft) {
+        self.kind = kind
+        self.taskDraft = taskDraft
+        self.habitDraft = habitDraft
+        untouchedTask = taskDraft
+        untouchedHabit = habitDraft
+    }
+
+    /// The shown kind's draft.
+    var draft: NoteDraft {
+        get { kind == .task ? taskDraft : habitDraft }
+        set {
+            switch kind {
+            case .task: taskDraft = newValue
+            case .habit: habitDraft = newValue
+            }
+        }
     }
 
     /// What is wrong with the typed name by the store's `rules`; an empty name is fine (the note is called "Unnamed").
@@ -30,6 +48,8 @@ struct NewNotePage: Equatable {
         guard !trimmedName.isEmpty, nameProblem(rules) == nil else { return nil }
         return (draft, trimmedName)
     }
+
+    private var untouched: NoteDraft { kind == .task ? untouchedTask : untouchedHabit }
 
     private var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
 }

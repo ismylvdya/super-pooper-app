@@ -127,9 +127,14 @@ final class NoteCommands {
         return .newHabit(startingOn: day.context().today, showInToday: habits.showNewHabitsInToday, color: habits.newHabitColor)
     }
 
-    /// The new task or habit page is left: its note is created (none for a page left untouched), or the user is told why
+    /// The new-item page a "+" opens, showing `kind`, with a fresh task draft and a fresh habit draft behind its slider.
+    func newItemPage(kind: NewItemSeed.Kind) -> NewItemPage {
+        NewItemPage(kind: kind, taskDraft: .newTask, habitDraft: newHabitDraft())
+    }
+
+    /// The new-item page is left: its note is created (none for a page left untouched), or the user is told why
     /// its name cannot be used. `unnamed`: the name of a note whose name was left empty. True once the page is done with.
-    func create(from page: NewNotePage, unnamed: String) async -> Bool {
+    func create(from page: NewItemPage, unnamed: String) async -> Bool {
         if let problem = page.nameProblem(nameProblem(in:)) {
             appEvents.send(.nameRejected(problem, name: page.name))
             return false
@@ -138,9 +143,9 @@ final class NoteCommands {
         return await create(creation.draft, named: creation.name) != nil
     }
 
-    /// Return in the name of the new task or habit page: its note is created at once (`NewNotePage.savedOnReturn`), and
+    /// Return in the name of the new-item page: its note is created at once (`NewItemPage.savedOnReturn`), and
     /// the page goes on as the note's own. Returns the note's name; nil when nothing was saved.
-    func createOnReturn(from page: NewNotePage) async -> String? {
+    func createOnReturn(from page: NewItemPage) async -> String? {
         guard let saving = page.savedOnReturn(rules: nameProblem(in:)) else { return nil }
         return await create(saving.draft, named: saving.name)
     }
@@ -148,7 +153,7 @@ final class NoteCommands {
     /// A task named outside the app's pages (the New Task intent): created as Return in the new task page's name would
     /// create it, with the same defaults; an empty name is rejected rather than called "Unnamed".
     func createTask(named name: String) async -> NamedTaskCreation {
-        var page = NewNotePage(draft: .newTask)
+        var page = newItemPage(kind: .task)
         page.name = name
         guard let saving = page.savedOnReturn(rules: nameProblem(in:)) else {
             return .rejected(page.nameProblem(nameProblem(in:)) ?? .empty)

@@ -168,7 +168,7 @@ struct RootView: View {
     @ViewBuilder private func destination(_ route: Route, in tab: AppTab) -> some View {
         switch route {
         case .task(let name): TaskPageScreen(taskName: name)
-        case .newItem(let seed): NewNoteScreen(kind: seed.kind == .habit ? .habit : .task, tab: tab)
+        case .newItem(let seed): NewItemScreen(seed: seed, tab: tab)
         case .lists: ListsScreen()
         case .search(let scope): SearchScreen(scope: scope)
         case .taskSettings: TaskSettingsScreen()
