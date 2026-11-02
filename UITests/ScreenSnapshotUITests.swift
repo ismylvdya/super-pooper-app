@@ -109,7 +109,7 @@ final class ScreenSnapshotUITests: XCTestCase {
         snap("review-not-today")
         let waiting = app.descendants(matching: .any).matching(identifier: "review.notToday:Оплатить интернет").firstMatch
         XCTAssertTrue(waiting.waitForExistence(timeout: 10))
-        waiting.swipeRight()
+        waiting.swipeLeft()
         let back = app.buttons["swipe.backToToday"]
         if back.waitForExistence(timeout: 2) { back.tap() }
         XCTAssertTrue(waiting.waitForNonExistence(timeout: 10))

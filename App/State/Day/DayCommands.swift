@@ -24,7 +24,7 @@ final class DayCommands {
         tasks.task(named: name).map(day.local)
     }
 
-    var postponedTasks: [TaskItem] { day.postponedNames.compactMap(tasks.task(named:)) }
+    var postponedTasks: [TaskItem] { day.postponedNames.compactMap(tasks.task(named:)).filter { $0.status != .done } }
 
     /// Only on today's page (`day` nil or today).
     func skip(_ name: String, on day: LocalDate?) async {

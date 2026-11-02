@@ -128,6 +128,22 @@ final class SwipeUITests: XCTestCase {
         XCTAssertTrue(app.buttons["swipe.done"].waitForExistence(timeout: 3))
     }
 
+    /// Morning review's Not today group swipes as the groups above: Done to the right, back to Today to the left.
+    func testThePostponedGroupSwipesDoneRightAndTodayLeft() {
+        launch("superpooper://review")
+        let task = find("Оплатить интернет")
+        swipe(task, right: false, press: "notToday")
+        let waiting = app.descendants(matching: .any).matching(identifier: "review.notToday:Оплатить интернет").firstMatch
+        app.scrollIntoView(waiting)
+        reveal(waiting, right: true)
+        XCTAssertTrue(app.buttons["swipe.done"].waitForExistence(timeout: 3))
+        XCTAssertFalse(app.buttons["swipe.backToToday"].exists)
+        reveal(waiting, right: false)
+        XCTAssertTrue(app.buttons["swipe.done"].waitForNonExistence(timeout: 3))
+        swipe(waiting, right: false, press: "backToToday")
+        XCTAssertTrue(waiting.waitForNonExistence(timeout: 10))
+    }
+
     /// The archive: a swipe to the left brings an archived task back to Soon.
     func testArchiveSwipeLeftRestoresToSoon() {
         launch("superpooper://archive")

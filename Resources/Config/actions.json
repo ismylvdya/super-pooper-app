@@ -49,7 +49,7 @@
       "icon": "arrow.uturn.backward",
       "destructive": false,
       "haptic": "light",
-      "swipeTint": "success",
+      "swipeTint": "swipeNeutral",
       "undo": "edits"
     },
     {
@@ -299,10 +299,10 @@
     },
     "postponed": {
       "leading": [
-        "backToToday"
+        "done"
       ],
       "trailing": [
-        "delete"
+        "backToToday"
       ]
     },
     "archivedTask": {

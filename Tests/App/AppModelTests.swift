@@ -98,6 +98,15 @@ struct AppModelTests {
         #expect(model.dayState.skipped == ["Вода 💧"])
     }
 
+    /// A task put off with Not today and then marked Done (its swipe to the right in Morning review) leaves that group.
+    @Test func aPostponedTaskMarkedDoneLeavesThePostponedGroup() async throws {
+        let model = try makeModel()
+        model.postpone("Сдать отчёт")
+        #expect(model.postponedTasks.map(\.name) == ["Сдать отчёт"])
+        await model.perform(.done, on: "Сдать отчёт")
+        #expect(model.postponedTasks.isEmpty)
+    }
+
     /// A rename reaches today's Not today list and the manual order of the pool too.
     @Test func renamingAPostponedTaskKeepsItsPlaceInTheDay() async throws {
         let model = try makeModel()
