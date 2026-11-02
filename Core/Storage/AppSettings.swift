@@ -29,6 +29,14 @@ struct AppSettings: Codable, Equatable, Sendable {
         var criteria: [String]
         /// The order of the chips in task rows (raw names of `RowChipKind`).
         var chipOrder: [String]
+        /// How a high-priority task stands out in the pool and on the timeline.
+        var highPriorityLook: HighPriorityLook
+    }
+
+    /// How a high-priority task stands out: the priority icon before its name, or its whole plate in a soft red.
+    enum HighPriorityLook: String, Codable, CaseIterable, Sendable {
+        case leadingIcon
+        case fill
     }
 
     /// Where the pool and the timeline sit on Today.
@@ -100,10 +108,16 @@ struct AppSettings: Codable, Equatable, Sendable {
         /// "Show in Today" of a newly created habit (on by default; the old `showInTodayByDefault`, which was off,
         /// is not read any more).
         var showNewHabitsInToday: Bool
+        /// The own color (`#RRGGBB`) a newly created habit gets; black unless the user picks another.
+        var newHabitColor: String
         /// The order of the morning, day and evening routines in the pool (habit names).
         var morningRoutine: [String]
         var dayRoutine: [String]
         var eveningRoutine: [String]
+        /// Opacity of the ring of a habit's day not done or done partly (on its page's grid, in the Habits list, the widget).
+        var ringOpacity: Double
+        /// A repeatable task's page shows the history grid and the statistics too, as a habit's does.
+        var repeatableShowsHistory: Bool
         /// Habit notifications carry a picture at the right at all.
         var showsNotificationPicture: Bool
         /// The habit symbol on a notification in the habit's own color (when it has one) instead of the habits' color.
@@ -118,6 +132,9 @@ struct AppSettings: Codable, Equatable, Sendable {
             }
         }
 
+        /// Whether the page of `task` shows its history grid and statistics: always a habit's, a repeatable task's as set.
+        func showsHistory(of task: TaskItem) -> Bool { !task.habit.repeatable || repeatableShowsHistory }
+
         /// The orders of all routines, for the day.
         var routines: HabitRoutines {
             HabitRoutines(morning: morningRoutine, day: dayRoutine, evening: eveningRoutine)
@@ -129,6 +146,11 @@ struct AppSettings: Codable, Equatable, Sendable {
         var timeZone: String
         /// Text before the time in the Lock Screen widget.
         var prefix: String
+    }
+
+    struct Lists: Codable, Equatable, Sendable {
+        /// The id of the Lists icon picked (`lists.json` → `icons`).
+        var icon: String
     }
 
     struct Appearance: Codable, Equatable, Sendable {
@@ -147,6 +169,7 @@ struct AppSettings: Codable, Equatable, Sendable {
     var habits: Habits
     var clock: Clock
     var appearance: Appearance
+    var lists: Lists
     /// Color overrides by token name (`task`, `habit`, `past`, …) as `#RRGGBB`; empty = tokens.json.
     var colors: [String: String]
 }

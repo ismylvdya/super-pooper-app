@@ -49,7 +49,7 @@ struct ArchiveScreen: View {
             ForEach(Array(notes.enumerated()), id: \.element.name) { index, note in
                 HStack {
                     NavigationLink(value: Route.task(note.name)) { Text(note.name).foregroundStyle(color(note)) }
-                    ActionPopoverButton(menu: menu, accessibilityID: "archive.more.\(note.name)") { handler.handle($0, taskName: note.name) }
+                    ActionMenuButton(menu: menu, accessibilityID: "archive.more.\(note.name)") { handler.handle($0, taskName: note.name) }
                         .buttonStyle(.borderless)
                 }
                 .listGroupRow(group: id, id: note.name, index: index, count: notes.count, frames: frames)

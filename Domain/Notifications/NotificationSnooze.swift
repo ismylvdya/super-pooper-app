@@ -1,8 +1,8 @@
 import Foundation
 
-/// A notification snoozed from its button: the same notification comes again at `until`. Nothing about its item
-/// changes. It is told apart by its key and day (`PlannedNotification.key`, `day`), which stay the same when the item is
-/// moved or the habit's block is dragged today.
+/// An event's or reminder's notification snoozed from its button: the same notification comes again at `until`. Nothing
+/// about its item changes. It is told apart by its key and day (`PlannedNotification.key`, `day`), which stay the same when
+/// the item is moved. A task's or habit's snooze moves its block instead (`NotificationSnoozing.moves`).
 struct NotificationSnooze: Codable, Hashable, Sendable {
     let key: String
     let day: LocalDate
@@ -26,6 +26,17 @@ enum NotificationSnoozing {
     /// The snoozes after `snooze`: it replaces an earlier snooze of the same notification; those of days that are over go.
     static func adding(_ snooze: NotificationSnooze, to snoozes: [NotificationSnooze], today: LocalDate) -> [NotificationSnooze] {
         current(snoozes, today: today).filter { $0.key != snooze.key || $0.day != snooze.day } + [snooze]
+    }
+
+    /// Snooze on a task's or habit's notification moves its block on today's timeline to the moment the notification
+    /// comes again (`until`), for today only, so the timeline and the notification tell the same time; the notification
+    /// follows the block (`NotificationPlanner`). Nil for an event or a reminder (only their notification comes again), a
+    /// notification of another day, or a moment past the end of today.
+    static func moves(snoozing notification: PlannedNotification, of task: TaskItem, until: Date, today: TodayTimes,
+                      context: DayContext) -> [TimeMove]? {
+        guard [.habit, .task].contains(notification.kind), let slot = notification.slot, notification.day == context.today,
+              until < context.dayEnd else { return nil }
+        return today.moving(task, slot: slot, to: LocalTime(until, in: context.calendar))
     }
 
     /// The snoozes still of today or later.

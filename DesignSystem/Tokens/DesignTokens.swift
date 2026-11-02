@@ -60,13 +60,19 @@ struct DesignTokens: Decodable, Sendable {
     var rowPlateRadius: CGFloat { chipHeight / 2 + space(.rowVertical) / 2 }
     /// The right inset of a row's own plate (pool, widgets): the chips stand as far from its right edge as from the top.
     var rowPlateTrailingInset: CGFloat { space(.rowVertical) / 2 }
+    /// Where a banner stands: over the navigation bar, its corners on the round bar buttons (back, …).
+    var bannerPlacement: BannerPlacement {
+        BannerPlacement(bar: bar(.navigationBar), button: bar(.barButton), sideInset: bar(.barSideInset))
+    }
     /// The side insets of a timeline slot's plate.
     var slotPlateInset: CGFloat { space(.plateInner) / 2 }
 
-    /// The user's appearance settings over the bundled tokens: colors and the opacity of done/past items.
+    /// The user's appearance settings over the bundled tokens: colors, the opacity of done/past items and of a habit's open
+    /// rings.
     func applying(_ settings: AppSettings, limits: RulesConfig.Limits) -> DesignTokens {
         var tokens = overridingColors(settings.colors)
-        tokens.opacity = opacity.replacing([.past: min(max(settings.appearance.pastOpacity, limits.pastOpacity.min), limits.pastOpacity.max)])
+        tokens.opacity = opacity.replacing([.past: limits.pastOpacity.clamped(settings.appearance.pastOpacity),
+                                            .habitOpenRing: limits.ringOpacity.clamped(settings.habits.ringOpacity)])
         return tokens
     }
 

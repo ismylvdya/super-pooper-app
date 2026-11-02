@@ -22,17 +22,20 @@ struct DayTimelineView<TaskContent: View>: View {
         let placements = layout.place(slots)
         GeometryReader { geometry in
             let itemsWidth = max(geometry.size.width - labelWidth, 0)
-            let blocks = placements.map { PlacedSlot($0, width: itemsWidth) }
+            let blocks = placements.map { PlacedSlot($0, width: itemsWidth, indentStep: tokens.space(.timelineCascadeIndent)) }
             ZStack(alignment: .topLeading) {
                 hourGrid(width: geometry.size.width)
+                TimelineFineGrid(hours: hourMarks, detail: style.gridDetail, labelWidth: style.showsHourLabels ? labelWidth : 0,
+                                 width: geometry.size.width, labelHeight: hourLabelHeight, y: y)
                 ForEach(blocks) { item in
                     let isLinked = links.isLinked(item.slot.id)
                     block(for: item.slot)
-                        .environment(\.titleReserve, cornerWidth(linked: isLinked, alerts: item.slot.alerts))
+                        .background { if item.liesOver, let backdrop = style.backdrop { PlateShape(cornerRadius: cornerRadius(of: item.slot)).fill(backdrop) } }
+                        .environment(\.titleReserve, cornerWidth(linked: isLinked, bell: item.slot.showsBell))
                         .overlay(alignment: .topTrailing) {
                             HStack(spacing: tokens.space(.cornerMarkGap)) {
                                 if isLinked { linkBadge(item.slot, isOn: style.highlightedSlot == item.slot.id) }
-                                if item.slot.alerts { AlertBell() }
+                                if item.slot.showsBell { AlertBell() }
                             }
                             .padding(.top, cornerInset)
                             .padding(.trailing, cornerInset)
@@ -43,6 +46,7 @@ struct DayTimelineView<TaskContent: View>: View {
                         .offset(x: labelWidth + item.frame.minX, y: item.frame.minY)
                 }
                 if style.showsNow, window.contains(now) { nowLine(width: geometry.size.width, blocks: blocks) }
+                if let ghost = style.dropGhost, window.contains(ghost.start) { dropGhost(ghost, width: itemsWidth) }
                 if let marker = style.dropMarker, window.contains(marker) {
                     TimelineDropMarker(moment: marker, labelWidth: labelWidth, width: geometry.size.width).offset(y: y(marker))
                 }
@@ -58,8 +62,8 @@ struct DayTimelineView<TaskContent: View>: View {
 
     /// How far from the block's right edge the corner marks reach (their inset, the link mark, the bell and the gap
     /// between them); 0 without marks. The title fades out `fadeGap` before that (`TitleFade`).
-    private func cornerWidth(linked: Bool, alerts: Bool) -> CGFloat {
-        let marks = [linked ? tokens.uiFont(.linkBadge).pointSize : nil, alerts ? bell.size : nil].compactMap { $0 }
+    private func cornerWidth(linked: Bool, bell showsBell: Bool) -> CGFloat {
+        let marks = [linked ? tokens.uiFont(.linkBadge).pointSize : nil, showsBell ? bell.size : nil].compactMap { $0 }
         guard !marks.isEmpty else { return 0 }
         return cornerInset + marks.reduce(0, +) + tokens.space(.cornerMarkGap) * CGFloat(marks.count - 1)
     }
@@ -76,19 +80,23 @@ struct DayTimelineView<TaskContent: View>: View {
     /// Where the blocks go (`TimelineBlockLayout`), worked out once per drawing.
     private var layout: TimelineBlockLayout {
         TimelineBlockLayout(window: window, hourHeight: Double(hourHeight), minimumEventHeight: Double(style.minimumItemHeight),
-                            minimumTaskHeight: Double(style.minimumTaskHeight ?? style.minimumItemHeight))
+                            minimumTaskHeight: Double(style.minimumTaskHeight ?? style.minimumItemHeight),
+                            titleRoomShare: Double(tokens.ratio(.timelineTitleRoom)))
     }
 
     /// A placed block in a column of the drawn width.
     private struct PlacedSlot: Identifiable {
         let slot: TimelineSlot
         let frame: CGRect
+        /// It lies over an earlier block (indented), so it needs an opaque backing under its see-through fill.
+        let liesOver: Bool
         var id: String { slot.id }
 
-        init(_ placement: TimelineBlockLayout.Placement, width: CGFloat) {
-            let horizontal = placement.horizontal(in: Double(width))
+        init(_ placement: TimelineBlockLayout.Placement, width: CGFloat, indentStep: CGFloat) {
+            let horizontal = placement.horizontal(in: Double(width), indentStep: Double(indentStep))
             slot = placement.slot
             frame = CGRect(x: horizontal.x, y: placement.top, width: horizontal.width, height: placement.height)
+            liesOver = placement.indent > 0
         }
     }
 
@@ -120,6 +128,18 @@ struct DayTimelineView<TaskContent: View>: View {
                 TimelineTaskBlock(isPast: slot.isPast, isCompact: style.compactPlates) { taskContent(item, slot) }
             }
         }
+    }
+
+    /// The faint copy of the dragged plate where it would land: across the column, as tall as its block would be.
+    private func dropGhost(_ slot: TimelineSlot, width: CGFloat) -> some View {
+        let gap = tokens.space(.timelineItemGap)
+        let height = max(y(slot.end) - y(slot.start), style.minimumTaskHeight ?? style.minimumItemHeight)
+        return block(for: slot)
+            .frame(width: max(width - gap, 0), height: max(height - gap, 0), alignment: .topLeading)
+            .opacity(tokens.opacity(.dropGhost))
+            .offset(x: labelWidth, y: y(slot.start))
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
     }
 
     /// A small link mark; tapping it highlights everything linked to the block (widgets only show it).

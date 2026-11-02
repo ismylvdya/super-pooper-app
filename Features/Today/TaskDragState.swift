@@ -35,6 +35,20 @@ final class TaskDragState {
         return NSItemProvider(object: item.id as NSString)
     }
 
+    /// The finger is over `moment` on the timeline (a drop step); true when the spot moved, a step to feel.
+    func hover(at moment: Date) -> Bool {
+        guard moment != hoverMoment else { return false }
+        hoverMoment = moment
+        return true
+    }
+
+    /// The pool in the order the finger makes; true when the row passed another, a step to feel.
+    func hover(poolOrder order: [String]) -> Bool {
+        guard order != poolOrder else { return false }
+        poolOrder = order
+        return true
+    }
+
     /// The drag reached a block: the pages turn to it (nothing without pages).
     func turn(_ block: TodayBlockID) {
         turnRequest = block
@@ -42,6 +56,12 @@ final class TaskDragState {
 
     func turnHandled() {
         turnRequest = nil
+    }
+
+    /// While the task is over the pool its row there is an empty gap the others part around: the task itself is under
+    /// the finger.
+    func isGap(_ id: String) -> Bool {
+        poolOrder != nil && item?.id == id
     }
 
     func end() {
@@ -52,13 +72,37 @@ final class TaskDragState {
 }
 
 extension View {
-    /// Lets the row be picked up (long press, then move); the long-press menu still opens without moving.
-    @ViewBuilder func taskDragSource(_ item: DayItem, from source: TaskDragState.Source, drag: TaskDragState?, isOn: Bool) -> some View {
+    /// Lets the row be picked up (long press, then move); the long-press menu still opens without moving. Under the
+    /// finger goes `preview` (the row's plate, drawn again: a drag that starts from the long-press menu shows only the
+    /// row's text otherwise) at the row's size, lifted as its plate (`lift`).
+    @ViewBuilder func taskDragSource<Preview: View>(_ item: DayItem, from source: TaskDragState.Source, drag: TaskDragState?,
+                                                    isOn: Bool, lift: PlateCorners,
+                                                    @ViewBuilder preview: @escaping () -> Preview) -> some View {
         if let drag, isOn {
-            onDrag { drag.begin(item, from: source) }
+            modifier(TaskDragSource(item: item, source: source, drag: drag, lift: lift, preview: preview))
         } else {
             self
         }
+    }
+}
+
+private struct TaskDragSource<Preview: View>: ViewModifier {
+    let item: DayItem
+    let source: TaskDragState.Source
+    let drag: TaskDragState
+    let lift: PlateCorners
+    let preview: () -> Preview
+    @State private var size: CGSize?
+
+    func body(content: Content) -> some View {
+        content
+            .plateLift(lift, for: .dragPreview)
+            .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
+            .onDrag { drag.begin(item, from: source) } preview: {
+                preview()
+                    .frame(width: size?.width, height: size?.height)
+                    .plateLift(lift, for: .dragPreview)
+            }
     }
 }
 
@@ -79,7 +123,7 @@ struct TimelineDropDelegate: DropDelegate {
     }
 
     func dropUpdated(info: DropInfo) -> DropProposal? {
-        drag.hoverMoment = moment(info.location.y)
+        if drag.hover(at: moment(info.location.y)) { Haptics.play(.dragStep) }
         return DropProposal(operation: .move)
     }
 
@@ -120,7 +164,8 @@ struct PoolDropDelegate: DropDelegate {
     func dropUpdated(info: DropInfo) -> DropProposal? {
         guard let item = drag.item else { return nil }
         let order = PoolDropOrder.order(rows: rows(), dragged: item.id, at: info.location.y)
-        if order != drag.poolOrder { withAnimation(animation) { drag.poolOrder = order } }
+        let moved = withAnimation(animation) { drag.hover(poolOrder: order) }
+        if moved { Haptics.play(.dragStep) }
         return DropProposal(operation: .move)
     }
 

@@ -111,13 +111,24 @@
         }
       }
     },
+    "action.restoreFromArchive": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore from archive"
+          }
+        }
+      }
+    },
     "action.restoreFromTrash": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Restore"
+            "value": "Restore from trash"
           }
         }
       }
@@ -463,6 +474,149 @@
         }
       }
     },
+    "banner.undo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo"
+          }
+        }
+      }
+    },
+    "banner.undoable.archive": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archived “%@”."
+          }
+        }
+      }
+    },
+    "banner.undoable.backToToday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Brought “%@” back to today."
+          }
+        }
+      }
+    },
+    "banner.undoable.delete": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moved “%@” to trash."
+          }
+        }
+      }
+    },
+    "banner.undoable.done": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marked “%@” done."
+          }
+        }
+      }
+    },
+    "banner.undoable.notToday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moved “%@” out of today."
+          }
+        }
+      }
+    },
+    "banner.undoable.partial": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marked “%@” done partly."
+          }
+        }
+      }
+    },
+    "banner.undoable.restoreHabit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moved “%@” back to habits."
+          }
+        }
+      }
+    },
+    "banner.undoable.restoreHalfYear": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moved “%@” to Half year."
+          }
+        }
+      }
+    },
+    "banner.undoable.restoreThisWeek": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moved “%@” to Soon."
+          }
+        }
+      }
+    },
+    "banner.undoable.skipToday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skipped “%@” today."
+          }
+        }
+      }
+    },
+    "banner.undoable.twice": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marked “%@” done twice."
+          }
+        }
+      }
+    },
+    "banner.undoable.unmark": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unmarked “%@”."
+          }
+        }
+      }
+    },
     "banner.wholeVault": {
       "extractionState": "manual",
       "localizations": {
@@ -514,17 +668,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Habit or repeating task"
-          }
-        }
-      }
-    },
-    "chipOrder.high": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "High priority"
           }
         }
       }
@@ -981,6 +1124,17 @@
         }
       }
     },
+    "day.dateAndWeekday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ • %2$@"
+          }
+        }
+      }
+    },
     "day.today": {
       "extractionState": "manual",
       "localizations": {
@@ -999,6 +1153,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tod"
+          }
+        }
+      }
+    },
+    "day.tomorrow": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tomorrow"
+          }
+        }
+      }
+    },
+    "day.yesterday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yesterday"
           }
         }
       }
@@ -2257,6 +2433,17 @@
         }
       }
     },
+    "info.settings.habits.ringOpacity": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How faded the ring of a day not done, or done partly, is on a habit's page, in the Habits list and in the widget. Done and Twice keep the full color."
+          }
+        }
+      }
+    },
     "info.settings.notificationImage.habitColor": {
       "extractionState": "manual",
       "localizations": {
@@ -2301,6 +2488,17 @@
         }
       }
     },
+    "info.settings.pool.highPriority": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How a high-priority task stands out in the pool and on the timeline: the priority icon before its name, or its whole plate in a soft red."
+          }
+        }
+      }
+    },
     "info.settings.pool.visible": {
       "extractionState": "manual",
       "localizations": {
@@ -2340,7 +2538,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Blocks that will send an alert — reminders, events with a Calendar alert, timed tasks and habits with reminders — show a bell in the corner."
+            "value": "Events with a Calendar alert show a bell in the corner. Every task and habit with a time rings at the time it stands at on the timeline, so they need no bell."
           }
         }
       }
@@ -2935,6 +3133,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Reminder"
+          }
+        }
+      }
+    },
+    "notification.repeatable.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeatable task"
           }
         }
       }
@@ -4023,7 +4232,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Soon"
+            "value": "Morning review"
           }
         }
       }
@@ -4523,6 +4732,17 @@
         }
       }
     },
+    "settings.habits.marks": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marks"
+          }
+        }
+      }
+    },
     "settings.habits.new": {
       "extractionState": "manual",
       "localizations": {
@@ -4540,7 +4760,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Whether a new habit shows up on Today right away. You can change it on each habit's page."
+            "value": "Whether a new habit shows up on Today right away and its color. You can change both on each habit's page."
           }
         }
       }
@@ -4552,6 +4772,50 @@
           "stringUnit": {
             "state": "translated",
             "value": "Parts of the day"
+          }
+        }
+      }
+    },
+    "settings.habits.repeatable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeatable tasks"
+          }
+        }
+      }
+    },
+    "settings.habits.repeatable.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A repeatable task's page shows its history grid and statistics, as a habit's does."
+          }
+        }
+      }
+    },
+    "settings.habits.repeatableHistory": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "History and statistics"
+          }
+        }
+      }
+    },
+    "settings.habits.ringOpacity": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ring of an open day"
           }
         }
       }
@@ -4596,6 +4860,83 @@
           "stringUnit": {
             "state": "translated",
             "value": "The phone turned sideways keeps its own layout, independent from the upright one."
+          }
+        }
+      }
+    },
+    "settings.lists": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lists"
+          }
+        }
+      }
+    },
+    "settings.listsIcon": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lists icon"
+          }
+        }
+      }
+    },
+    "settings.listsIcon.doubleGuns": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Double guns"
+          }
+        }
+      }
+    },
+    "settings.listsIcon.doubleGunsFillBack": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Double guns fill back"
+          }
+        }
+      }
+    },
+    "settings.listsIcon.doubleGunsFillForward": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Double guns fill forward"
+          }
+        }
+      }
+    },
+    "settings.listsIcon.gun": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gun"
+          }
+        }
+      }
+    },
+    "settings.listsIcon.gunFill": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gun fill"
           }
         }
       }
@@ -4794,6 +5135,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pool"
+          }
+        }
+      }
+    },
+    "settings.pool.highPriority": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "High priority"
+          }
+        }
+      }
+    },
+    "settings.pool.highPriority.fill": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Red plate"
+          }
+        }
+      }
+    },
+    "settings.pool.highPriority.leadingIcon": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Icon before the name"
           }
         }
       }
@@ -6248,6 +6622,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Phone's time"
+          }
+        }
+      }
+    },
+    "taskPage.trashed.message": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This note is in the trash. Restore it from the “…” menu."
+          }
+        }
+      }
+    },
+    "taskPage.trashed.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In the trash"
           }
         }
       }

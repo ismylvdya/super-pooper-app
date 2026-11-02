@@ -9,6 +9,8 @@ struct PoolRowContent: View {
     }
 
     @Environment(\.actions) private var actions
+    @Environment(\.tokens) private var tokens
+    @Environment(\.highPriorityLook) private var highPriorityLook
     @Environment(TaskDragState.self) private var drag: TaskDragState?
     let item: DayItem
     var isToday = true
@@ -26,28 +28,33 @@ struct PoolRowContent: View {
     var dragSource: TaskDragState.Source?
 
     var body: some View {
+        plated
+            .plateLift(.row, for: .contextMenuPreview)
+            .contextMenu {
+                ActionMenuContent(menu: .context(of: item.task), item: item, isToday: isToday) {
+                    handler.handle($0, taskName: item.id)
+                }
+            }
+            .taskDragSource(item, from: dragSource ?? .pool, drag: drag, isOn: dragSource != nil, lift: .row) { plated }
+    }
+
+    /// The row on its plate: what stands in the pool or on the timeline, and what a drag lifts.
+    private var plated: some View {
         let row = TaskRowView(item: item, titleFont: titleFont, showsDetails: showsDetails, isCompact: isCompact,
                               titleLineLimit: titleLineLimit, titleLineHeight: titleLineHeight, showsDoneState: showsDoneState,
                               onOpen: { handler.run(actions.definition(.open), taskName: item.id) })
-        Group {
+        let tint = tokens.plateTint(HighPriorityMark(look: highPriorityLook, task: item.task))
+        return Group {
             switch plate {
             case .pool(let plate):
                 VStack(alignment: .leading, spacing: 0) {
                     row
                     Spacer(minLength: minimumHeight)
                 }
-                .poolRowPlate(plate, isDone: item.isDone)
+                .poolRowPlate(plate, isDone: item.isDone, tint: tint)
             case .slot(let isPast, let isCompact):
-                row.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading).slotPlate(isPast: isPast, isCompact: isCompact)
+                row.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading).slotPlate(isPast: isPast, isCompact: isCompact, tint: tint)
             }
         }
-        .plateLift(.row, for: .contextMenuPreview)
-        .contextMenu {
-            ActionMenuContent(menu: .context(of: item.task), item: item, isToday: isToday) {
-                handler.handle($0, taskName: item.id)
-            }
-        }
-        .taskDragSource(item, from: dragSource ?? .pool, drag: drag, isOn: dragSource != nil)
     }
-
 }

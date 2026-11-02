@@ -22,6 +22,8 @@ struct TodayButtons: View {
     @Environment(\.icons) private var icons
     let placement: Placement
     var bottom: HorizontalEdge?
+    /// Upright: where each shown button stands on screen (nil when it is gone), for the room left between the groups.
+    var onFrame: ((Item, CGRect?) -> Void)?
 
     var body: some View {
         ForEach(PhysicalBottom.physicalOrder(placement.items.filter(isShown), bottom: bottom), id: \.self) { item in
@@ -29,6 +31,8 @@ struct TodayButtons: View {
             // a system bar button in its bubble.
             if bottom == nil {
                 button(item)
+                    .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { onFrame?(item, $0) }
+                    .onDisappear { onFrame?(item, nil) }
             } else {
                 button(item)
                     .frame(minWidth: tokens.bar(.barButton), minHeight: tokens.bar(.barButton))

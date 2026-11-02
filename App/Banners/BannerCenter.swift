@@ -25,6 +25,8 @@ final class BannerCenter {
         /// Under the text: a count per kind, and the notes the message is about, each on its own line.
         var counts: [BannerCount] = []
         var items: [String] = []
+        /// The banner offers to take an action back (`UndoOffer`) while it is shown.
+        var undo: UUID?
     }
 
     private(set) var current: Banner?

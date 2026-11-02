@@ -31,6 +31,9 @@ extension AppModel {
 
     // MARK: - Lists tab
 
+    /// The icon of the button to the lists, as picked in the settings.
+    var listsIcon: Icon { config.lists.icon(for: settings.lists.icon) }
+
     /// What a list holds now, the filed tasks included.
     func listContents(_ listID: String, query: String) -> TaskListContents { parts.lists.contents(of: listID, query: query) }
     func listContents(_ filter: TaskListFilter, query: String) -> TaskListContents { parts.lists.contents(filter, query: query) }

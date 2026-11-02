@@ -13,7 +13,7 @@ struct DayBuilder: Sendable {
         let sorter = PoolSorter(criteria: sortCriteria, rules: rules, routines: inputs.routines)
         let membership = DayMembership(occurrence: occurrence, context: context)
         let dayProblems = DayProblems(graph: graph, occurrence: occurrence)
-        let times = DayTimes(context: context, habitTimes: HabitDayTimes(inputs.habitMoves))
+        let times = DayTimes(context: context, todayTimes: TodayTimes(inputs.timeMoves))
 
         var items: [DayItem] = []
         var anchors: [String: TimelineChain.Anchor] = [:]
@@ -45,10 +45,10 @@ struct DayBuilder: Sendable {
         let timed = items.filter { inputs.timelineFilter.shows($0) && !times.times(of: $0.task).isEmpty }
         let shownTimed = timed.filter { !times.openTimes(of: $0).isEmpty }
         let timedNames = Set(timed.map(\.id))
-        // Overdue tasks ride on the cursor of today only; on another day "now" is not on its timeline.
-        let overdue = inputs.isOtherDay ? [:] : OverdueTasks(rules: rules, times: times).starts(of: shownTimed)
+        // Overdue blocks ride on the cursor of today only; on another day "now" is not on its timeline.
+        let overdue = inputs.isOtherDay ? [:] : OverdueBlocks(rules: rules, times: times).starts(of: shownTimed)
         let targets = Dictionary(shownTimed.compactMap { item in
-            times.target(of: item, rules: rules, start: overdue[item.id]).map { (item.id, $0) }
+            times.target(of: item, rules: rules, overdue: overdue).map { (item.id, $0) }
         }, uniquingKeysWith: { first, _ in first })
         let chainAnchors = ChainAnchors.propagate(anchors, timed: targets, through: items.filter { !timedNames.contains($0.id) },
                                                   graph: graph)

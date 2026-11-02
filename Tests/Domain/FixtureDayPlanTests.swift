@@ -59,10 +59,11 @@ struct FixtureDayPlanTests {
             }
             return "\(clockTime(slot.start))–\(clockTime(slot.end)) \(title)\(slot.isPast ? " (past)" : "")"
         }
+        // The vitamins were missed at 09:00: their block rides on the "now" cursor (.1133).
         #expect(rows == [
-            "09:00–09:02 Витамины 💊",
             "10:00–10:15 event Standup (past)",
             "13:25–13:40 Подготовить вопросы папе",
+            "13:25–13:27 Витамины 💊",
             "13:40–13:55 Распечатать вопросы",
             "14:00–14:15 Прогулка 🚶",
             "15:00–15:15 reminder Take the laundry out",

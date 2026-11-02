@@ -5,8 +5,9 @@ extension View {
     /// The content on a plate: `fill` (the plates' color unless given) in the plate's shape. `clipsContent` cuts what
     /// reaches past the plate (a scroll, a past event's stripe, the pages of a paged preview). In a widget rendered in
     /// one tint the plates' color is see-through (`WidgetRendering`); a given fill is already a tint of its own.
-    func plate(_ corners: PlateCorners, fill: Color? = nil, clipsContent: Bool = false) -> some View {
-        modifier(PlateFill(corners: corners, fill: fill, clipsContent: clipsContent))
+    /// `tint` lies over the fill (a high-priority task's soft red over its plate).
+    func plate(_ corners: PlateCorners, fill: Color? = nil, tint: Color? = nil, clipsContent: Bool = false) -> some View {
+        modifier(PlateFill(corners: corners, fill: fill, tint: tint, clipsContent: clipsContent))
     }
 
     /// A long press (`.contextMenuPreview`) or a drag (`.dragPreview`) lifts exactly the plate: its shape, not the
@@ -21,14 +22,19 @@ private struct PlateFill: ViewModifier {
     @Environment(\.widgetRenderingMode) private var renderingMode
     let corners: PlateCorners
     let fill: Color?
+    let tint: Color?
     let clipsContent: Bool
 
     func body(content: Content) -> some View {
         let shape = tokens.plateShape(corners)
+        let color = fill ?? plateColor
+        let surfaced = content.environment(\.plateSurface, color)
+            .background(tint ?? .clear, in: shape)
+            .background(color, in: shape)
         if clipsContent {
-            content.background(fill ?? plateColor, in: shape).clipShape(shape)
+            surfaced.clipShape(shape)
         } else {
-            content.background(fill ?? plateColor, in: shape)
+            surfaced
         }
     }
 
@@ -46,5 +52,18 @@ private struct PlateLift: ViewModifier {
 
     func body(content: Content) -> some View {
         content.contentShape(kinds, tokens.plateShape(corners))
+    }
+}
+
+private struct PlateSurfaceKey: EnvironmentKey {
+    static let defaultValue: Color? = nil
+}
+
+extension EnvironmentValues {
+    /// The color of the plate a view lies on (nil: on no plate). An element with see-through parts (a habit day's rings)
+    /// backs them with it, so lifted it never shows what lies under it.
+    var plateSurface: Color? {
+        get { self[PlateSurfaceKey.self] }
+        set { self[PlateSurfaceKey.self] = newValue }
     }
 }

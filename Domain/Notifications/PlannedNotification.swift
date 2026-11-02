@@ -10,6 +10,15 @@ struct PlannedNotification: Hashable, Sendable {
         case event
     }
 
+    /// What the notification's text calls the item: a habit notification of a repeatable task says so.
+    enum Subject: String, CaseIterable, Sendable {
+        case habit
+        case repeatable
+        case task
+        case reminder
+        case event
+    }
+
     var id: String
     let kind: Kind
     let title: String
@@ -22,6 +31,8 @@ struct PlannedNotification: Hashable, Sendable {
     var reminderID: String? = nil
     /// The same alert across moves (an event's start or a task's time may change; this does not).
     var key: String = ""
+    /// The time a task's or habit's block has in its note: which block of today a snooze moves (`TodayTimes`).
+    var slot: LocalTime? = nil
     /// Start of the event an alert belongs to.
     var start: Date? = nil
     /// The calendar event an event alert deletes from its Delete event button.
@@ -31,9 +42,20 @@ struct PlannedNotification: Hashable, Sendable {
     /// The fire time is a moment, not a time on the clock: an event's alert, a timed reminder, an item with a time zone
     /// of its own. It rings at that moment even if the phone changes its zone first; the rest ring at their clock time.
     var isAbsolute = false
-    /// A habit's block dragged to another time for today only: it rings under an identifier of its own (with its time),
-    /// never the slot's, so the slot's request waits for the next day and a shown notification of the slot goes.
+    /// A block dragged or snoozed to another time for today only: a habit's rings under an identifier of its own (with
+    /// its time), never the slot's, so the slot's request waits for the next day and a shown notification of the slot goes.
     var isMoved = false
+    /// A habit notification of a habit marked repeatable (a task that simply repeats).
+    var isRepeatable = false
+
+    var subject: Subject {
+        switch kind {
+        case .habit: isRepeatable ? .repeatable : .habit
+        case .task: .task
+        case .reminder: .reminder
+        case .event: .event
+        }
+    }
 
     /// The same notification under another identifier.
     func identified(as id: String) -> PlannedNotification {
@@ -46,7 +68,7 @@ struct PlannedNotification: Hashable, Sendable {
     /// phone is, under an id of its own, so it never takes the place of a habit slot's pending request.
     func snoozed(until moment: Date) -> PlannedNotification {
         PlannedNotification(id: "snooze|\(key)|\(day.isoString)", kind: kind, title: title, fireDate: moment, taskName: taskName,
-                            day: day, reminderID: reminderID, key: key, start: start, eventID: eventID, colorHex: colorHex,
-                            isAbsolute: true)
+                            day: day, reminderID: reminderID, key: key, slot: slot, start: start, eventID: eventID, colorHex: colorHex,
+                            isAbsolute: true, isRepeatable: isRepeatable)
     }
 }

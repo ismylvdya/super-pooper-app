@@ -42,7 +42,7 @@ struct DayTimelineTests {
             }
         }
         func times(_ task: TaskItem) -> [String] {
-            DayScenario(tasks: [task]).build().timeline.map { clockTime($0.start) }
+            DayScenario(tasks: [task]).build(at: TestCalendar.context(TestCalendar.wednesday, "08:00")).timeline.map { clockTime($0.start) }
         }
         #expect(times(water()) == ["09:00", "18:00"])
         #expect(times(water { $0.marks = [today: .done] }) == ["18:00"])
@@ -63,7 +63,7 @@ struct DayTimelineTests {
 
     @Test func aTimedHabitIsOnTheTimelineEveryDayItOccurs() throws {
         let vitamins = makeHabit("Vitamins", time: "09:00") { $0.timeEstimate = 2 }
-        let plan = DayScenario(tasks: [vitamins]).build()
+        let plan = DayScenario(tasks: [vitamins]).build(at: TestCalendar.context(TestCalendar.wednesday, "08:00"))
         let slot = try #require(plan.slot("Vitamins"))
         #expect((clockTime(slot.start), clockTime(slot.end)) == ("09:00", "09:02"))
         #expect(plan.poolNames.isEmpty)

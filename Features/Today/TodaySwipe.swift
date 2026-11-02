@@ -16,6 +16,17 @@ enum TodaySwipe {
         abs(width) > abs(height) * axisRatio
     }
 
+    /// A sideways drag that has gone past `daySwipeShare` of the width turns the page there and then, whatever the
+    /// finger does after (.27239).
+    static func commits(axis: Axis, width: Double, containerWidth: Double, gestures: RulesConfig.Gestures) -> Bool {
+        axis == .horizontal && abs(width) > containerWidth * gestures.daySwipeShare
+    }
+
+    /// The page finishing a turn starts at the finger's speed: the spring's first velocity, as a share of the way left.
+    static func initialVelocity(speed: Double, remaining: Double) -> Double {
+        remaining > 0 ? abs(speed) / remaining : 0
+    }
+
     /// A finished sideways drag counts when it went past `daySwipeShare` of the width or was flung past
     /// `daySwipeFlingShare` of it.
     static func isSwipe(axis: Axis, width: Double, predictedWidth: Double, containerWidth: Double,

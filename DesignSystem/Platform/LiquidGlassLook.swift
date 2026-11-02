@@ -15,7 +15,7 @@ struct LiquidGlassLook: ViewModifier {
         case .floatingCapsule:
             content.glassEffect(.regular, in: Capsule())
         case .bannerCard:
-            content.glassEffect(.regular, in: RoundedRectangle(cornerRadius: tokens.radius(.banner), style: .continuous))
+            content.glassEffect(.regular, in: RoundedRectangle(cornerRadius: tokens.bannerPlacement.radius, style: .continuous))
         case .scrollUnderBars(let edges):
             content.scrollEdgeEffectStyle(.soft, for: edges)
         case .fadeUnderBar:

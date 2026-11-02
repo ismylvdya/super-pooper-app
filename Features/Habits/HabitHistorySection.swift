@@ -1,8 +1,8 @@
 import SwiftUI
 
 /// Weeks of the habit back to its first marked day; the newest week is at the bottom and visible first.
-/// Tap a day to cycle its mark, long press to pick one. Pulling down at the top adds older weeks
-/// (until the page is left). At the top the older weeks dissolve completely under the weekday header; the bottom
+/// Tap a day to cycle its mark, long press to pick one. Pulling down at the top adds older weeks (until the page is
+/// left): the weeks seen stay where they were and the grid then scrolls up quickly to the oldest added week (.28232). At the top the older weeks dissolve completely under the weekday header; the bottom
 /// fades in only once the newest week is scrolled down from where it opened.
 struct HabitHistorySection: View {
     @Environment(AppModel.self) private var model
@@ -13,6 +13,7 @@ struct HabitHistorySection: View {
     /// The plate's width; the grid is laid out only once it is known, so the scroll starts at the real bottom
     /// (laid out for a guessed width first, the newest week would end up below the plate on a narrow phone).
     @State private var width: CGFloat?
+    @State private var position = ScrollPosition(edge: .bottom)
 
     var body: some View {
         let context = model.context()
@@ -54,12 +55,19 @@ struct HabitHistorySection: View {
                 }
                 // The newest week is visible first; weeks added on top keep the scroll position.
                 .defaultScrollAnchor(.bottom, for: .initialOffset)
+                .scrollPosition($position)
                 .scrollBounceBehavior(.always)
                 .scrollIndicators(.hidden)
                 .edgeFades(color: tokens.color(.plateBackground), solidTop: true)
                 .pullToExtend(icon: .olderWeeks) {
                     Haptics.play(.extend)
-                    addedWeeks += rules.habits.historyPullWeeks
+                    let weeks = rules.habits.historyPullWeeks
+                    addedWeeks += weeks
+                    // First the weeks seen stay put under the new ones above them, then the scroll runs up to the top.
+                    position.scrollTo(y: metrics.height(ofWeeks: weeks))
+                    Task { @MainActor in
+                        withAnimation(.easeOut(duration: tokens.duration(.animation))) { position.scrollTo(edge: .top) }
+                    }
                 }
                 .frame(maxHeight: tokens.size(.habitHistoryMaxHeight))
         }

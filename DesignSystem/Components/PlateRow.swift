@@ -3,7 +3,6 @@ import SwiftUI
 /// A row inside a plate: icon column, title with ⓘ right after it, trailing control.
 struct PlateRow<Trailing: View>: View {
     @Environment(\.tokens) private var tokens
-    @Environment(\.icons) private var icons
     let icon: Icon?
     let title: Text
     let info: LocalizedStringKey?
@@ -55,8 +54,7 @@ struct PlateRow<Trailing: View>: View {
     private var label: some View {
         HStack(spacing: tokens.space(.iconTextGap)) {
             if let icon {
-                Image(icon: icon, icons: icons)
-                    .renderingMode(.template)
+                IconGlyph(icon, font: .rowTitle)
                     .foregroundStyle(iconTint ?? tint ?? tokens.color(.accent))
                     .frame(width: tokens.size(.iconColumn))
             }

@@ -11,7 +11,7 @@ enum DayPlanning {
                                skipped: Set(state.skipped), manualOrder: state.manualOrder,
                                routines: settings.habits.routines,
                                postponed: Set(state.postponed), timelineFilter: settings.timeline.shown, eventsKnown: eventsKnown,
-                               habitMoves: state.habitMoves)
+                               timeMoves: state.timeMoves)
         return DayBuilder(rules: config.rules.day, sortCriteria: sortCriteria(config: config, settings: settings))
             .build(inputs, context: context)
     }

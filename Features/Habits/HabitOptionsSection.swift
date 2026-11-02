@@ -3,7 +3,6 @@ import SwiftUI
 /// Color, harmful, repeatable task, Today, routine, twice a day.
 struct HabitOptionsSection: View {
     @Environment(\.tokens) private var tokens
-    @Environment(\.icons) private var icons
     let editor: TaskEditor
 
     private var options: HabitOptions { editor.task.habit }
@@ -20,18 +19,9 @@ struct HabitOptionsSection: View {
             .accessibilityIdentifier("habitPage.kind")
             toggle(.today, "habitPage.showInToday", "info.habitPage.showInToday", \.showInToday, TaskEdit.showInToday)
             PlateRow(icon: .colors, title: "habitPage.color") {
-                ColorPicker("habitPage.color", selection: Binding(
-                    get: { tokens.habitColor(editor.task) },
-                    set: { color in editor.apply([.habitColor(UIColor(color).hexString)]) }
-                ), supportsOpacity: false)
-                .labelsHidden()
-                // Back to the habit color from the settings.
-                if options.color != nil {
-                    Button { editor.apply([.habitColor(nil)]) } label: {
-                        Image(systemName: icons[.resetOrder]).foregroundStyle(tokens.color(.secondaryText))
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(Text("settings.colors.reset"))
+                // Reset: back to the habit color from the settings.
+                HexColorField(color: tokens.habitColor(editor.task), stored: options.color, accessibilityID: "habitPage.color") {
+                    editor.apply([.habitColor($0)])
                 }
             }
             toggle(.harmful, "habitPage.harmful", "info.habitPage.harmful", \.harmful, TaskEdit.harmful)

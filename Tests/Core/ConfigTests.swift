@@ -137,11 +137,13 @@ struct ConfigTests {
         }
     }
 
-    /// Taps outside the actions go by what they do: moving rows and loading older weeks are medium, the rest light.
+    /// Taps outside the actions go by what they do: moving rows and loading older weeks are medium, each step of a drag a
+    /// selection tick, the rest light.
     @Test func hapticRolesKeepTheirStyles() {
         let haptics = TestConfig.actions.haptics
         #expect(HapticRole.allCases.filter { haptics[$0] == .medium } == [.reorder, .extend])
         #expect(HapticRole.allCases.filter { haptics[$0] == .light } == [.select, .mark, .drop, .move, .pullArmed])
+        #expect(HapticRole.allCases.filter { haptics[$0] == .selection } == [.dragStep])
     }
 
     /// A role missing from `haptics` or a misspelt style is a config error, not a silent tap.
@@ -175,7 +177,8 @@ struct ConfigTests {
             let broken = Data(try json.replacingOnce(fragment, with: replacement).utf8)
             #expect(throws: ConfigError.self) { try ConfigLoader.decode(ActionRegistry.self, from: broken, file: "actions.json") }
         }
-        let tinted = Data(try json.replacingOnce("\"swipeTint\": \"swipeNeutral\"", with: "\"swipeTint\": \"swipeNeutrl\"").utf8)
+        let tinted = Data(try json.replacingOnce("\"moon.zzz\",\n      \"destructive\": false,\n      \"haptic\": \"light\",\n      \"swipeTint\": \"swipeNeutral\"",
+                                                 with: "\"moon.zzz\",\n      \"destructive\": false,\n      \"haptic\": \"light\",\n      \"swipeTint\": \"swipeNeutrl\"").utf8)
         let registry = try ConfigLoader.decode(ActionRegistry.self, from: tinted, file: "actions.json")
         #expect(throws: ConfigError.self) { try registry.validate(file: "actions.json") }
     }

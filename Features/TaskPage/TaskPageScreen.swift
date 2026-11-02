@@ -27,14 +27,25 @@ struct TaskPageScreen: View {
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    ActionPopoverButton(menu: .page(of: task), accessibilityID: "taskPage.more") {
+                    ActionMenuButton(menu: .page(of: task), item: DayItem(listed: task), accessibilityID: "taskPage.more") {
                         handler.handle($0, taskName: task.name)
                     }
                 }
             }
             .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
+        } else if model.trashedNote(named: currentName) != nil {
+            // The note was deleted while its page was open, or the page was opened by its link: it waits in the trash.
+            EmptyStateView(icon: .trash, title: "taskPage.trashed.title", message: "taskPage.trashed.message")
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        ActionMenuButton(menu: .trashedPage, accessibilityID: "taskPage.more") {
+                            handler.handle($0, taskName: currentName)
+                        }
+                    }
+                }
         } else {
             EmptyStateView(icon: .problem, title: "taskPage.missing.title", message: "taskPage.missing.message")
+                .task { await model.refreshTrash() }
         }
     }
 

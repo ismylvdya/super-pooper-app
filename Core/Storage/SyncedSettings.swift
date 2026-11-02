@@ -15,6 +15,7 @@ struct SyncedSettings: Codable, Equatable, Sendable {
     var habits: AppSettings.Habits
     var clock: AppSettings.Clock
     var appearance: AppSettings.Appearance
+    var lists: AppSettings.Lists
     var colors: [String: String]
 
     init(_ settings: AppSettings) {
@@ -29,6 +30,7 @@ struct SyncedSettings: Codable, Equatable, Sendable {
         habits = settings.habits
         clock = settings.clock
         appearance = settings.appearance
+        lists = settings.lists
         colors = settings.colors
     }
 
@@ -45,6 +47,7 @@ struct SyncedSettings: Codable, Equatable, Sendable {
         result.habits = habits
         result.clock = clock
         result.appearance = appearance
+        result.lists = lists
         result.colors = colors
         return result
     }

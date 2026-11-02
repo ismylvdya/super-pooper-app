@@ -32,43 +32,16 @@ struct ColorSettingsSection: View {
     }
 }
 
-/// Hex text field + system color circle + reset for one color token.
+/// The color of one token, editable (empty = the color from tokens.json).
 struct ColorField: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
-    @Environment(\.icons) private var icons
     let token: ColorToken
-    @State private var hex = ""
 
     var body: some View {
-        HStack(spacing: tokens.space(.chipGap)) {
-            TrailingSpaceTextField(placeholder: "settings.colors.hex", text: $hex,
-                                   font: .monospacedSystemFont(ofSize: tokens.uiFont(.chip).pointSize, weight: .regular),
-                                   capitalization: .characters) { save(hex) }
-                .frame(width: tokens.size(.hexFieldWidth))
-            ColorPicker("", selection: Binding(
-                get: { tokens.color(token) },
-                set: { save(UIColor($0).hexString) }
-            ), supportsOpacity: false)
-            .labelsHidden()
-            if model.settings.colors[token.rawValue] != nil {
-                Button {
-                    model.updateSettings { $0.colors[token.rawValue] = nil }
-                    hex = ""
-                } label: {
-                    Image(systemName: icons[.resetOrder]).foregroundStyle(tokens.color(.secondaryText))
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(Text("settings.colors.reset"))
-            }
+        HexColorField(color: tokens.color(token), stored: model.settings.colors[token.rawValue],
+                      accessibilityID: String("color.") + token.rawValue) { hex in
+            model.updateSettings { $0.colors[token.rawValue] = hex }
         }
-        .onAppear { hex = model.settings.colors[token.rawValue] ?? "" }
-    }
-
-    private func save(_ value: String) {
-        let text = value.hasPrefix("#") ? value.uppercased() : "#" + value.uppercased()
-        guard UIColor(hex: text) != nil else { return }
-        hex = text
-        model.updateSettings { $0.colors[token.rawValue] = text }
     }
 }

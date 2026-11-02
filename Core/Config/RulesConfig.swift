@@ -72,6 +72,11 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let dropStepMinutes: Int
         /// How far a pinch scales the hour height: at least `min` and at most `max` times the fitted one.
         let zoom: Limits.Range
+        /// The finer marks of a zoomed-in timeline (`TimelineGridDetail`).
+        let detail: TimelineGridDetail.Rules
+        /// The quarter labels and the fine lines stand this many minutes apart.
+        let quarterMinutes: Int
+        let fineLineMinutes: Int
     }
 
     struct Widgets: Codable, Hashable, Sendable {
@@ -114,6 +119,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let extraLines: [ExtraLines]
         /// A row counts as shown (for the rows left to scroll to) when this share of it is on screen.
         let rowVisibleShare: Double
+        /// The ways of showing a high-priority task the settings offer, in their order.
+        let highPriorityLooks: [AppSettings.HighPriorityLook]
 
         func extraLines(forEstimate minutes: Int) -> Int {
             extraLines.filter { minutes >= $0.minutes }.map(\.lines).max() ?? 0
@@ -141,6 +148,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
     struct Banners: Codable, Hashable, Sendable {
         /// A banner hides itself this long after it appears.
         let autoHideSeconds: Double
+        /// A banner offering Undo hides itself this long after it appears; then the action stays.
+        let undoSeconds: Double
         /// Lines of the message (and notes under it) until the banner is expanded.
         let collapsedLines: Int
     }
@@ -169,6 +178,9 @@ struct RulesConfig: Codable, Hashable, Sendable {
 
             var closed: ClosedRange<Double> { min...max }
 
+            /// The value kept within the range.
+            func clamped(_ value: Double) -> Double { Swift.min(Swift.max(value, min), max) }
+
             /// The nearest step (unchanged without one).
             func snapped(_ value: Double) -> Double {
                 guard let step, step > 0 else { return value }
@@ -183,6 +195,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let bellOpacity: Range
         let fontSize: Range
         let pastOpacity: Range
+        /// The ring of a habit's day not done or done partly.
+        let ringOpacity: Range
         let recurrenceInterval: Range
         let recurrenceCount: Range
         /// "Each" day number of a monthly repeat.

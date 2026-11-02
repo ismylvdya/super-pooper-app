@@ -40,6 +40,8 @@ struct TaskItem: Identifiable, Hashable, Codable, Sendable {
     /// A habit has the habit status or repeats by a rule (even one that cannot be read).
     var isHabit: Bool { status == .habit || recurrence != nil || hasUnreadableRecurrence }
     var isArchived: Bool { status == .archived }
+    /// Where an archived note goes back to: a task to Soon, a habit among the habits.
+    var statusOutOfArchive: TaskStatus { isHabit ? .habit : .thisWeek }
     /// A task of a later planning level (or done, or archived) can be brought to this week.
     var canPromote: Bool { !isHabit && status != .thisWeek }
     /// Another task can be linked to it (before or after it); archived notes are out of the way.

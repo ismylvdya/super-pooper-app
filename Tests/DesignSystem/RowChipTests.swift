@@ -18,15 +18,22 @@ struct RowChipTests {
     }
 
     @Test func theRepeatingChipIsLastByDefaultAndTheOrderComesFromTheSettings() {
-        let task = makeTask("Stretch") { $0.status = .habit; $0.isHighPriority = true; $0.feel = .pleasant }
-        let item = DayItem(task: task, state: .open, blockers: [], problems: [])
-        #expect(chips(item) == ["high", "feel", "habit"])
-        #expect(chips(item, order: ["habit", "feel"]) == ["habit", "feel", "high"])
+        let task = makeTask("Stretch") { $0.status = .habit; $0.feel = .pleasant; $0.previousTasks = ["Warm up"] }
+        let item = DayItem(task: task, state: .open, blockers: [.task("Warm up")], problems: [])
+        #expect(chips(item) == ["blocked", "feel", "habit"])
+        #expect(chips(item, order: ["habit", "feel"]) == ["habit", "feel", "blocked"])
+    }
+
+    /// High priority is no chip at the end of the row: the look chosen in the settings marks it (.25226).
+    @Test func highPriorityHasNoChip() {
+        let item = DayItem(task: makeTask("Call the bank") { $0.isHighPriority = true }, state: .open, blockers: [], problems: [])
+        #expect(chips(item, order: ["high", "feel"]).isEmpty)
+        #expect(!TestConfig.defaults.pool.chipOrder.contains("high"))
     }
 
     /// The page peek measures the rows' last chip by its kind's icon: the same icon the row draws; the chip order in
     /// the settings shows every look a kind can have.
-    @Test func aChipKindNamesTheIconItsChipShows() {
+    @MainActor @Test func aChipKindNamesTheIconItsChipShows() {
         let task = makeTask("Stretch") { $0.status = .habit; $0.isHighPriority = true; $0.feel = .needEnergy }
         let item = DayItem(task: task, state: .open, blockers: [.task("Warm up")], problems: [.dependencyCycle])
         for chip in RowChip.chips(for: item, order: RowChipKind.allCases) {
@@ -36,7 +43,7 @@ struct RowChipTests {
         let pleasant = DayItem(task: makeTask("Bake") { $0.feel = .pleasant }, state: .open, blockers: [], problems: [])
         #expect(RowChip.chips(for: pleasant, order: [.feel]).map(\.look) == [.pleasant])
         let icons = TestConfig.decode(IconSet.self, "icons.json")
-        #expect(Chip.width(of: .habit, tokens: TestConfig.tokens, icons: icons) > TestConfig.tokens.space(.chipHorizontal) * 2)
+        #expect(Chip.width(of: .habit, tokens: TestConfig.tokens, icons: icons, scale: 3) > TestConfig.tokens.space(.chipHorizontal) * 2)
     }
 
     /// One table of looks: a property has the same icon and color in a row's chips, the chip order and the review.

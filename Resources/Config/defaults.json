@@ -22,7 +22,8 @@
   "pool": {
     "visibleCount": 3,
     "criteria": [],
-    "chipOrder": ["problem", "blocked", "high", "feel", "habit"]
+    "chipOrder": ["problem", "blocked", "feel", "habit"],
+    "highPriorityLook": "leadingIcon"
   },
   "timeline": {
     "layout": "oneColumn",
@@ -62,9 +63,12 @@
   "habits": {
     "order": [],
     "showNewHabitsInToday": true,
+    "newHabitColor": "#000000",
     "morningRoutine": [],
     "dayRoutine": [],
     "eveningRoutine": [],
+    "repeatableShowsHistory": false,
+    "ringOpacity": 0.5,
     "showsNotificationPicture": true,
     "notificationUsesHabitColor": false
   },
@@ -74,5 +78,8 @@
   },
   "appearance": {
     "pastOpacity": 0.2
+  },
+  "lists": {
+    "icon": "gun"
   }
 }

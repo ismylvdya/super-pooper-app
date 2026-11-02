@@ -9,6 +9,7 @@ struct TaskRowView: View {
     @Environment(\.titleReserve) private var reserve
     @Environment(\.plateTrailingInset) private var plateInset
     @Environment(\.chipOrder) private var chipOrder
+    @Environment(\.highPriorityLook) private var highPriorityLook
     let item: DayItem
     var titleFont: Font?
     /// Chips; widgets hide them to stay compact.
@@ -26,8 +27,11 @@ struct TaskRowView: View {
     var body: some View {
         // The title fades out `fadeGap` before the chips, the corner marks or the plate's edge (`TitleFade`).
         HStack(alignment: .top, spacing: tokens.space(.fadeGap)) {
-            title.frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.trailing, hasTrailing ? 0 : TitleFade.trailing(corner: reserve, plateInset: plateInset, gap: tokens.space(.fadeGap)))
+            HStack(alignment: .top, spacing: tokens.space(.priorityIconGap)) {
+                if HighPriorityMark(look: highPriorityLook, task: item.task).leadsWithIcon { priorityIcon }
+                title.frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(.trailing, hasTrailing ? 0 : TitleFade.trailing(corner: reserve, plateInset: plateInset, gap: tokens.space(.fadeGap)))
             if showsDetails, !chips.isEmpty {
                 HStack(spacing: tokens.space(.chipGap)) { chipViews }.fixedSize()
             }
@@ -36,6 +40,15 @@ struct TaskRowView: View {
         .contentShape(Rectangle())
         // Anywhere on the row opens the task (chips included).
         .onTapGesture { onOpen?() }
+    }
+
+    /// The priority icon in the title's font, centred on its first line.
+    private var priorityIcon: some View {
+        IconGlyph(.high, font: .taskTitle)
+            .font(titleFont ?? tokens.font(.taskTitle))
+            .foregroundStyle(tokens.color(of: .high))
+            .frame(height: titleLineHeight ?? tokens.uiFont(.taskTitle).lineHeight)
+            .accessibilityIdentifier("highPriority:\(item.task.name)")
     }
 
     private var chipViews: some View {

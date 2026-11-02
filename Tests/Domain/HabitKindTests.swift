@@ -28,7 +28,7 @@ struct HabitKindTests {
     }
 
     @Test func eachReminderIsItsOwnTimelineBlock() {
-        let plan = DayScenario(tasks: [habit("Pills", times: ["09:00", "21:00"])]).build()
+        let plan = DayScenario(tasks: [habit("Pills", times: ["09:00", "21:00"])]).build(at: TestCalendar.context(TestCalendar.wednesday, "08:00"))
         #expect(plan.poolNames.isEmpty)
         let slots = plan.timeline.filter { $0.id.hasPrefix("task:Pills") }
         #expect(slots.map { clockTime($0.start) } == ["09:00", "21:00"])

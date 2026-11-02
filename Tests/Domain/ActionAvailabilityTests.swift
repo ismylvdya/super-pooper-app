@@ -82,10 +82,14 @@ struct ActionAvailabilityTests {
         #expect(swipes(.habit, item(makeHabit("Walk"))).trailing == [.delete])
     }
 
-    /// Soon: a task's full swipe to the left is Not today, then Delete; a habit (no Not today) has Delete only.
-    @Test func soonSwipesNotTodayBeforeDelete() {
-        #expect(swipes(.review, item(makeTask("Report"))).trailing == [.notToday, .delete])
-        #expect(swipes(.review, item(makeHabit("Walk"))).trailing == [.delete])
+    /// Soon: a swipe to the left has exactly one button, Not today for a task and Skip today for a habit, both gray; no
+    /// Delete there.
+    @Test func soonSwipesOneGrayButtonToTheLeft() {
+        #expect(swipes(.review, item(makeTask("Report"))).trailing == [.notToday])
+        #expect(swipes(.review, item(makeHabit("Walk"))).trailing == [.skipToday])
+        #expect(swipes(.review, item(makeHabit("Bins") { $0.habit.repeatable = true })).trailing == [.skipToday])
+        #expect(TestConfig.actions.definition(.notToday).swipeTint == ColorToken.swipeNeutral.rawValue)
+        #expect(TestConfig.actions.definition(.skipToday).swipeTint == ColorToken.swipeNeutral.rawValue)
         #expect(swipes(.review, item(makeTask("Report"))).leading == [.done])
         #expect(swipes(.postponed, item(makeTask("Report"))).leading == [.backToToday])
         #expect(swipes(.postponed, item(makeTask("Report"))).trailing == [.delete])

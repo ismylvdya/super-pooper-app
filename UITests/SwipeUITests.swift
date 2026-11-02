@@ -10,8 +10,9 @@ final class SwipeUITests: XCTestCase {
         app = XCUIApplication()
     }
 
-    private func launch(_ link: String) {
+    private func launch(_ link: String, today: String? = nil) {
         app.launchArguments = ["-SPVaultPath", "TestVault", "-SPSkipOnboarding", "-SPNow", "11:30", "-SPOpen", link]
+        if let today { app.launchArguments += ["-SPToday", today] }
         app.launch()
     }
 
@@ -64,15 +65,14 @@ final class SwipeUITests: XCTestCase {
         XCTAssertFalse(app.buttons["swipe.done"].waitForExistence(timeout: 2), "the day is marked")
     }
 
-    /// A list of the Lists tab: a swipe to the left asks, then the task goes to the trash.
-    func testListSwipeLeftDeletesAfterTheConfirmation() {
+    /// A list of the Lists tab: a swipe to the left puts the task in the trash at once, the banner offers Undo (.27143).
+    func testListSwipeLeftDeletesAtOnceAndOffersUndo() {
         launch("superpooper://lists/waiting")
         let task = find("Ждать ответа от арендодателя")
         swipe(task, right: false, press: "delete")
-        let alert = app.alerts["Delete task?"]
-        XCTAssertTrue(alert.waitForExistence(timeout: 5), "the existing confirmation")
-        alert.buttons["Delete"].tap()
         expectBanner("to trash")
+        XCTAssertTrue(app.buttons["banner.undo"].exists)
+        XCTAssertFalse(app.alerts.firstMatch.exists, "no confirmation")
         XCTAssertTrue(task.waitForNonExistence(timeout: 5))
     }
 
@@ -101,15 +101,26 @@ final class SwipeUITests: XCTestCase {
         XCTAssertTrue(milk.waitForNonExistence(timeout: 10))
     }
 
-    /// Soon: to the left Not today (the full swipe) and Delete, to the right Done.
-    func testSoonOffersNotTodayDeleteAndDone() {
-        launch("superpooper://review")
+    /// Soon: to the left exactly one button, Not today for a task and Skip today for a habit (no Delete); to the right Done.
+    func testSoonOffersOneButtonToTheLeftAndDoneToTheRight() {
+        // "Сдать отчёт" is due this Friday: on that day it stands in Soon whatever day of the week the run is on.
+        launch("superpooper://review", today: TestVaultWeek.date(.friday))
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 10))
+        app.dismissBanners()
+        let habit = app.cells.containing(.any, identifier: "review:Утро — зарядка 🤸").firstMatch
+        app.scrollIntoView(habit)
+        reveal(habit, right: false)
+        XCTAssertTrue(app.buttons["swipe.skipToday"].waitForExistence(timeout: 3))
+        XCTAssertFalse(app.buttons["swipe.delete"].exists, "no Delete in Soon")
+        XCTAssertFalse(app.buttons["swipe.notToday"].exists)
+        reveal(habit, right: true)
+        XCTAssertTrue(app.buttons["swipe.skipToday"].waitForNonExistence(timeout: 3))
+
         let task = find("Сдать отчёт")
         reveal(task, right: false)
         XCTAssertTrue(app.buttons["swipe.notToday"].waitForExistence(timeout: 3))
-        XCTAssertTrue(app.buttons["swipe.delete"].exists)
-        XCTAssertLessThan(app.buttons["swipe.delete"].frame.minX, app.buttons["swipe.notToday"].frame.minX,
-                          "Not today stands at the edge, Delete after it")
+        XCTAssertFalse(app.buttons["swipe.delete"].exists, "no Delete in Soon")
+        XCTAssertFalse(app.buttons["swipe.skipToday"].exists)
         // A drag back closes the buttons; the next one shows the other side.
         reveal(task, right: true)
         XCTAssertTrue(app.buttons["swipe.notToday"].waitForNonExistence(timeout: 3))
@@ -130,9 +141,6 @@ final class SwipeUITests: XCTestCase {
         launch("superpooper://lists/thisWeek")
         let task = find("Связь на несуществующую")
         swipe(task, right: false, press: "delete")
-        let alert = app.alerts["Delete task?"]
-        XCTAssertTrue(alert.waitForExistence(timeout: 5))
-        alert.buttons["Delete"].tap()
         expectBanner("to trash")
         app.terminate()
 

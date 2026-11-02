@@ -7,6 +7,7 @@ struct ScreenLayoutView<Block: View>: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
     @Environment(\.chipOrder) private var chipOrder
+    @Environment(\.displayScale) private var displayScale
     let layout: ScreenLayout
     var page = 0
     var pageDrag: CGFloat = 0
@@ -20,7 +21,9 @@ struct ScreenLayoutView<Block: View>: View {
                        drag: pageDrag, onTurn: onTurn, block: block)
         } else {
             WeightedStack(axis: layout.axis, spacing: spacing, slots: layout.blocks) {
-                ForEach(layout.blocks, id: \.block) { slot in block(slot.block) }
+                ForEach(Array(layout.blocks.enumerated()), id: \.element.block) { index, slot in
+                    block(slot.block).zIndex(LiftLayer.block(at: index, of: layout.blocks.count))
+                }
             }
         }
     }
@@ -29,7 +32,7 @@ struct ScreenLayoutView<Block: View>: View {
     /// (in the user's chip order).
     private func peek(_ slot: ScreenLayout.Slot) -> CGFloat {
         if let part = slot.peekChip {
-            let chip = chipOrder.last.map { Chip.width(of: $0.icon, tokens: tokens, icons: icons) } ?? 0
+            let chip = chipOrder.last.map { Chip.width(of: $0.icon, tokens: tokens, icons: icons, scale: displayScale) } ?? 0
             return tokens.rowPlateTrailingInset + chip * part - edgeInset
         }
         return layout.peek.flatMap(SizeToken.init(rawValue:)).map(tokens.size) ?? 0

@@ -5,7 +5,6 @@ import SwiftUI
 /// tinted when on. The caller plays the tap's haptic.
 struct ToggleChip: View {
     @Environment(\.tokens) private var tokens
-    @Environment(\.icons) private var icons
     let icon: Icon
     var title: LocalizedStringKey?
     let tint: ColorToken
@@ -40,7 +39,7 @@ struct ToggleChip: View {
             Chip(icon: icon, tint: tokens.color(tint), isOn: isOn)
         case .large:
             HStack(spacing: tokens.space(.chipGap)) {
-                Image(systemName: icons[icon])
+                IconGlyph(icon, font: .toggleChip)
                 if let title { Text(title).lineLimit(1) }
             }
             .font(tokens.font(.toggleChip))

@@ -74,8 +74,18 @@ final class NoteCommands {
         return await writer.write(task, TaskMarking(today: day.context().today).changes(setting: status, on: task))
     }
 
-    func archive(_ name: String) async {
-        if await setStatus(.archived, of: name) { appEvents.send(.archived(name)) }
+    /// `announcing`: the banner says so (an action offering Undo has a banner of its own). False when nothing was written.
+    @discardableResult
+    func archive(_ name: String, announcing: Bool = true) async -> Bool {
+        guard await setStatus(.archived, of: name) else { return false }
+        if announcing { appEvents.send(.archived(name)) }
+        return true
+    }
+
+    /// An archived note back among the active ones (`TaskItem.statusOutOfArchive`).
+    func restoreFromArchive(_ name: String) async {
+        guard let task = tasks.task(named: name), task.isArchived else { return }
+        await setStatus(task.statusOutOfArchive, of: name)
     }
 
     /// A done task back in Soon (Return in the Done list): reopened, as Unmark does.
@@ -111,9 +121,10 @@ final class NoteCommands {
         store.nameProblem(in: name)
     }
 
-    /// A new habit: daily from today, shown in Today as the settings say.
+    /// A new habit: daily from today, shown in Today and in the color the settings say.
     func newHabitDraft() -> NoteDraft {
-        .newHabit(startingOn: day.context().today, showInToday: settings.settings.habits.showNewHabitsInToday)
+        let habits = settings.settings.habits
+        return .newHabit(startingOn: day.context().today, showInToday: habits.showNewHabitsInToday, color: habits.newHabitColor)
     }
 
     /// The new task or habit page is left: its note is created (none for a page left untouched), or the user is told why
@@ -192,20 +203,25 @@ final class NoteCommands {
     // MARK: - Rename and delete
 
     /// The note goes, and its subtasks with it, all the way down (`SubtaskCascade`), after one backup of them all.
-    func delete(_ name: String) async {
-        guard let task = tasks.task(named: name) else { return }
+    /// Returns where they lie in the trash (none without a trash); nil when the delete failed. `announcing`: as `archive`.
+    @discardableResult
+    func delete(_ name: String, announcing: Bool = true) async -> [TrashedNote]? {
+        guard let task = tasks.task(named: name) else { return nil }
         let notes = [task] + SubtaskCascade.subtasks(of: task, in: tasks.tasks, change: .deletion)
+        var trashed: [TrashedNote]? = []
         do {
             try await backups.backup(notes, reason: "delete")
             for note in notes {
-                try await store.delete(note)
+                if let place = try await store.delete(note) { trashed?.append(place) }
                 tasks.remove(note)
             }
-            appEvents.send(.deleted(task.name))
+            if announcing { appEvents.send(.deleted(task.name)) }
         } catch {
             appEvents.send(.failure(AppFailure(error)))
+            trashed = nil
         }
         await derived.publish()
+        return trashed
     }
 
     /// A task of the done folder goes to the trash, after a backup.

@@ -18,6 +18,8 @@ enum ActionID: String, Codable, CaseIterable, Sendable {
     case restoreThisWeek
     case restoreHalfYear
     case restoreHabit
+    /// An archived note back among the active ones: a task in Soon, a habit among the habits (its page's "…").
+    case restoreFromArchive
     /// A done task back in Soon, reopened (from the done folder too).
     case returnFromDone
     /// A note in the trash back among the tasks.

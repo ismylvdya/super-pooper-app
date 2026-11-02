@@ -16,6 +16,7 @@ struct AppParts {
     let writer: NoteWriter
     let texts: NoteTextEditor
     let notes: NoteCommands
+    let undo: UndoController
     let dayCommands: DayCommands
     let sourceCommands: SourceCommands
     let lists: TaskLists
@@ -44,6 +45,8 @@ struct AppParts {
                                saveDelay: rules.editing.noteSaveDelaySeconds)
         notes = NoteCommands(tasks: tasks, writer: writer, texts: texts, store: store, links: services.links, backups: backups,
                              settings: settings, day: day, derived: derived, appEvents: appEvents)
+        undo = UndoController(tasks: tasks, writer: writer, store: store, trash: services.trash, day: day, derived: derived,
+                              appEvents: appEvents)
         dayCommands = DayCommands(day: day, tasks: tasks, writer: writer, derived: derived, appEvents: appEvents)
         sourceCommands = SourceCommands(sources: sources, services: services, day: day, derived: derived, appEvents: appEvents,
                                         delay: delay, quietSeconds: rules.timeline.externalChangeDelaySeconds)

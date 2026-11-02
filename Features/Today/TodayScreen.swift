@@ -20,6 +20,8 @@ struct TodayScreen: View {
     @State private var width: CGFloat = 0
     @State private var pager = TodayPager()
     @State private var taskDrag = TaskDragState()
+    /// Where the bar's buttons stand upright (`DayBarRoom`).
+    @State private var barButtons: [TodayButtons.Item: CGRect] = [:]
 
     private var isLandscape: Bool { physicalBottom != nil }
 
@@ -31,16 +33,20 @@ struct TodayScreen: View {
                 if physicalBottom == .leading { landscapeColumn(bottom: .leading) }
             }
         }
-        .background(tokens.color(.screenBackground))
+        .screenBackground()
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         // Upright, the system bar; lying sideways the buttons stand in their own column along the physical top.
         .toolbar(isLandscape ? .hidden : .visible, for: .navigationBar)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             if !isLandscape {
-                ToolbarItemGroup(placement: .topBarLeading) { TodayButtons(placement: .leading) }
-                ToolbarItem(placement: .principal) { dayNavigation }
-                ToolbarItemGroup(placement: .topBarTrailing) { TodayButtons(placement: .trailing) }
+                ToolbarItemGroup(placement: .topBarLeading) { TodayButtons(placement: .leading, onFrame: barButtonMoved) }
+                // As wide as the bar leaves between its button groups: the name shrinks into that room rather than the
+                // arrows reaching under the buttons beside them.
+                ToolbarItem(placement: .principal) {
+                    if let room = dayBarRoom { dayNavigation.frame(width: room) } else { dayNavigation }
+                }
+                ToolbarItemGroup(placement: .topBarTrailing) { TodayButtons(placement: .trailing, onFrame: barButtonMoved) }
             }
         }
         .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
@@ -57,6 +63,15 @@ struct TodayScreen: View {
     /// Turned sideways, Today has its own arrangement.
     private var arrangement: AppSettings.TodayArrangement {
         isLandscape ? model.settings.today.landscapeArrangement : model.settings.today.arrangement
+    }
+
+    private func barButtonMoved(_ item: TodayButtons.Item, to frame: CGRect?) {
+        if barButtons[item] != frame { barButtons[item] = frame }
+    }
+
+    private var dayBarRoom: CGFloat? {
+        let frames = { (placement: TodayButtons.Placement) in placement.items.compactMap { barButtons[$0] } }
+        return DayBarRoom.width(leading: frames(.leading), trailing: frames(.trailing), gap: tokens.bar(.barButtonPadding))
     }
 
     private var layout: ScreenLayout { model.config.todayLayout(for: arrangement, landscape: isLandscape) }
@@ -96,10 +111,14 @@ struct TodayScreen: View {
     /// On pages a horizontal drag moves them with the finger and, far enough, turns the page (`TodayPager`).
     private func daySwipe(width: CGFloat) -> some Gesture {
         DragGesture(minimumDistance: rules.gestures.daySwipeMinimumDistance)
-            .onChanged { pager.swipeChanged($0.translation, pageCount: pageCount, gestures: rules.gestures) }
+            .onChanged { value in
+                pager.swipeChanged(value.translation, velocity: value.velocity, containerWidth: width, pageCount: pageCount,
+                                   gestures: rules.gestures, duration: tokens.duration(.animation))
+            }
             .onEnded { value in
-                pager.swipeEnded(value.translation, predicted: value.predictedEndTranslation, containerWidth: width,
-                                 pageCount: pageCount, gestures: rules.gestures, animation: tokens.animation)
+                pager.swipeEnded(value.translation, predicted: value.predictedEndTranslation, velocity: value.velocity,
+                                 containerWidth: width, pageCount: pageCount, gestures: rules.gestures,
+                                 duration: tokens.duration(.animation))
             }
     }
 
@@ -125,6 +144,8 @@ struct TodayScreen: View {
         // As far from the physical sides as the bubbles upright: measured from the screen edges in both turns.
         .padding(.vertical, tokens.bar(.barSideInset))
         .ignoresSafeArea(.container, edges: .vertical)
+        // Their glass casts a shadow over the blocks beside them.
+        .zIndex(LiftLayer.beside(blocks: layout.blocks.count))
     }
 
     /// A group of bar buttons in the glass capsule the system draws around them upright.

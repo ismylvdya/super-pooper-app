@@ -5,7 +5,6 @@ import SwiftUI
 struct ChipOrderScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
-    @Environment(\.icons) private var icons
 
     var body: some View {
         let kinds = RowChipKind.ordered(model.settings.pool.chipOrder)
@@ -15,7 +14,7 @@ struct ChipOrderScreen: View {
                     HStack(spacing: tokens.space(.iconTextGap)) {
                         HStack(spacing: tokens.space(.chipGap)) {
                             ForEach(kind.looks, id: \.self) { look in
-                                Image(systemName: icons[look.icon]).foregroundStyle(tokens.color(of: look))
+                                IconGlyph(look.icon, font: .rowTitle).foregroundStyle(tokens.color(of: look))
                             }
                         }
                         Text(LocalizedStringKey(String("chipOrder.") + kind.rawValue))

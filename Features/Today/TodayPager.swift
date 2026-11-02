@@ -14,6 +14,8 @@ final class TodayPager {
     private(set) var daySlide: CGFloat = 0
     /// The direction of the drag in progress, decided by its first movement.
     private var swipeAxis: TodaySwipe.Axis?
+    /// The drag in progress has turned the page; the page finishes the move by itself.
+    private(set) var isFinishing = false
 
     /// Turns to a page of `pageCount` (1 without pages: nothing to turn to).
     func turn(to newPage: Int, pageCount: Int, animation: Animation) {
@@ -31,27 +33,50 @@ final class TodayPager {
     }
 
     /// On pages a sideways drag moves them with the finger; past the first or last page it does nothing (the day
-    /// changes with the arrows).
-    func swipeChanged(_ translation: CGSize, pageCount: Int, gestures: RulesConfig.Gestures) {
+    /// changes with the arrows). Past `daySwipeShare` of the width the page turns by itself at the finger's speed and the
+    /// rest of the drag is ignored (`TodaySwipe.commits`), so a finger slowing down or stopping halfway never stalls it.
+    func swipeChanged(_ translation: CGSize, velocity: CGSize = .zero, containerWidth: CGFloat, pageCount: Int,
+                      gestures: RulesConfig.Gestures, duration: Double) {
+        guard !isFinishing else { return }
         let axis = TodaySwipe.axis(locked: swipeAxis, width: translation.width, height: translation.height,
                                    axisRatio: gestures.daySwipeAxisRatio)
         swipeAxis = axis
-        guard axis == .horizontal, TodaySwipe.page(forward: translation.width < 0, page: page, pageCount: pageCount) != nil else { return }
+        guard axis == .horizontal,
+              let target = TodaySwipe.page(forward: translation.width < 0, page: page, pageCount: pageCount) else { return }
         pageDrag = translation.width
+        if TodaySwipe.commits(axis: axis, width: Double(translation.width), containerWidth: Double(containerWidth), gestures: gestures) {
+            isFinishing = true
+            finish(to: target, speed: velocity.width, containerWidth: containerWidth, duration: duration)
+        }
     }
 
-    /// Far enough, or flung, the drag turns the page; otherwise the pages go back.
-    func swipeEnded(_ translation: CGSize, predicted: CGSize, containerWidth: CGFloat, pageCount: Int,
-                    gestures: RulesConfig.Gestures, animation: Animation) {
+    /// Flung far enough, the drag turns the page at the finger's speed; otherwise the pages go back. A drag that turned
+    /// the page already only ends.
+    func swipeEnded(_ translation: CGSize, predicted: CGSize, velocity: CGSize = .zero, containerWidth: CGFloat, pageCount: Int,
+                    gestures: RulesConfig.Gestures, duration: Double) {
         let axis = TodaySwipe.axis(locked: swipeAxis, width: translation.width, height: translation.height,
                                    axisRatio: gestures.daySwipeAxisRatio)
         swipeAxis = nil
+        guard !isFinishing else {
+            isFinishing = false
+            return
+        }
         let isSwipe = TodaySwipe.isSwipe(axis: axis, width: translation.width, predictedWidth: predicted.width,
                                          containerWidth: containerWidth, gestures: gestures)
         if isSwipe, let target = TodaySwipe.page(forward: translation.width < 0, page: page, pageCount: pageCount) {
-            turn(to: target, pageCount: pageCount, animation: animation)
+            finish(to: target, speed: velocity.width, containerWidth: containerWidth, duration: duration)
         } else {
-            withAnimation(animation) { pageDrag = 0 }
+            withAnimation(.easeInOut(duration: duration)) { pageDrag = 0 }
+        }
+    }
+
+    /// The rest of the way to the page, starting at the finger's speed and slowing down to rest, as a scroll view's page does.
+    private func finish(to target: Int, speed: CGFloat, containerWidth: CGFloat, duration: Double) {
+        let remaining = max(Double(containerWidth - abs(pageDrag)), 0)
+        let velocity = TodaySwipe.initialVelocity(speed: Double(speed), remaining: remaining)
+        withAnimation(.interpolatingSpring(duration: duration, bounce: 0, initialVelocity: velocity)) {
+            page = target
+            pageDrag = 0
         }
     }
 

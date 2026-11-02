@@ -13,7 +13,8 @@ struct HabitGridView<Menu: View>: View {
 
     var body: some View {
         VStack(spacing: metrics.spacing) {
-            ForEach(Array(grid.weeks.enumerated()), id: \.offset) { index, week in
+            // A week is known by its first day: weeks added on top are new rows, the others keep theirs.
+            ForEach(Array(grid.weeks.enumerated()), id: \.element.first?.date) { index, week in
                 HStack(spacing: metrics.spacing) {
                     ForEach(week, id: \.date) { day in
                         cell(day)
@@ -26,8 +27,8 @@ struct HabitGridView<Menu: View>: View {
 
     @ViewBuilder private func cell(_ day: HabitGrid.Day) -> some View {
         let view = HabitDayCell(cell: day.cell, color: color, metrics: metrics)
-        if let onTap, day.cell != .future {
-            let inset = day.cell == .twice ? 0 : 2 * metrics.ring
+        if let onTap, let outline = metrics.outline(of: day.cell) {
+            let inset = (metrics.cell - outline) / 2
             view
                 .contentShape(Circle().inset(by: inset))
                 .contentShape(.contextMenuPreview, Circle().inset(by: inset))

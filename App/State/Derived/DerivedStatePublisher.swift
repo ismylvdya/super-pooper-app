@@ -87,15 +87,26 @@ final class DerivedStatePublisher {
         await queue.run { await notifications.restore(request) }
     }
 
-    /// A notification snoozed from its button leaves Notification Center and comes again, the same, after
-    /// `notifications.snoozeMinutes`, while its day lasts and its item stays open (`NotificationSnoozing`). Its item does
-    /// not change. Returns when the plan with it is scheduled, so the app is not suspended before.
+    /// A notification snoozed from its button leaves Notification Center and comes again after
+    /// `notifications.snoozeMinutes`, while its day lasts and its item stays open. A task's or habit's block moves on
+    /// today's timeline to that moment and its notification follows it (`NotificationSnoozing.moves`); an event's or
+    /// reminder's notification just comes again (`NotificationSnooze`). Returns when the plan with it is scheduled, so the
+    /// app is not suspended before.
     func snooze(key: String, day: LocalDate, shown identifier: String) async {
         let context = self.day.context()
         guard !StaleNotifications.isOver(day, today: context.today) else { return }
         let until = context.now.addingTimeInterval(Double(config.rules.notifications.snoozeMinutes) * 60)
-        let snooze = NotificationSnooze(key: key, day: day, until: until)
-        try? snoozeStore.save(NotificationSnoozing.adding(snooze, to: snoozeStore.load(), today: context.today))
+        let inputs = notificationInputs(context: context)
+        let snoozed = inputs.all().first { $0.key == key && $0.day == day }
+        let task = snoozed?.taskName.flatMap { name in inputs.tasks.first { $0.name.isSameNoteName(as: name) } }
+        if let snoozed, let task, let moves = NotificationSnoozing.moves(snoozing: snoozed, of: task, until: until,
+                                                                         today: inputs.todayTimes, context: context) {
+            self.day.setTimeMoves(moves)
+            widgets.reloadAll()
+        } else {
+            let snooze = NotificationSnooze(key: key, day: day, until: until)
+            try? snoozeStore.save(NotificationSnoozing.adding(snooze, to: snoozeStore.load(), today: context.today))
+        }
         let notifications = notifications
         await queue.run { await notifications.remove(shown: identifier) }
         await replanNotifications()
@@ -115,24 +126,13 @@ final class DerivedStatePublisher {
             await notifications.removeAll()
             return
         }
-        let rules = config.rules.notifications
-        let planner = NotificationPlanner(horizonDays: rules.horizonDays, limit: rules.limit)
-        let dayState = day.dayState
-        // Skip today (habits) and Not today (tasks) both take an item out of today's notifications.
-        let skipped = Set(dayState.day == context.today ? dayState.skipped + dayState.postponed : [])
-        // Habit blocks dragged today ring at their new time, or not at all from the pool.
-        let habitTimes = HabitDayTimes(dayState.day == context.today ? dayState.habitMoves : [])
-        // Times kept in a zone of their own ring at the phone's time for that moment.
-        let tasks = ZonedTimes.local(self.tasks.tasks, calendar: context.calendar, today: context.today)
-        let reminders = sources.reminders
-        let events = sources.events
-        let planned = planner.plan(tasks: tasks, reminders: reminders, events: events, skipped: skipped, habitTimes: habitTimes,
-                                   context: context)
-        let valid = planner.stillValidToday(tasks: tasks, reminders: reminders, events: events, skipped: skipped,
-                                            habitTimes: habitTimes, context: context)
+        let inputs = notificationInputs(context: context)
+        let planned = inputs.planner.plan(tasks: inputs.tasks, reminders: inputs.reminders, events: inputs.events,
+                                          skipped: inputs.skipped, todayTimes: inputs.todayTimes, context: context)
+        let valid = inputs.planner.stillValidToday(tasks: inputs.tasks, reminders: inputs.reminders, events: inputs.events,
+                                                   skipped: inputs.skipped, todayTimes: inputs.todayTimes, context: context)
         // Alerts moved into the past or added too late come right away, once.
-        let all = planner.all(tasks: tasks, reminders: reminders, events: events, skipped: skipped, habitTimes: habitTimes,
-                              context: context)
+        let all = inputs.all()
         let previous = alertStateStore.load()
         let late = LateAlerts.due(all, pending: previous?.pending ?? [:], known: previous.map { Set($0.known) }, context: context)
         try? alertStateStore.save(AlertState(
@@ -143,11 +143,42 @@ final class DerivedStatePublisher {
                                  now: late)
     }
 
+    /// What the notifications are planned from now.
+    private func notificationInputs(context: DayContext) -> NotificationInputs {
+        let rules = config.rules.notifications
+        let dayState = day.dayState
+        let isToday = dayState.day == context.today
+        // Skip today (habits) and Not today (tasks) both take an item out of today's notifications; blocks dragged or
+        // snoozed today ring at their new time, or not at all from the pool. Times kept in a zone of their own ring at
+        // the phone's time for that moment.
+        return NotificationInputs(planner: NotificationPlanner(horizonDays: rules.horizonDays, limit: rules.limit),
+                                  tasks: ZonedTimes.local(tasks.tasks, calendar: context.calendar, today: context.today),
+                                  reminders: sources.reminders, events: sources.events,
+                                  skipped: Set(isToday ? dayState.skipped + dayState.postponed : []),
+                                  todayTimes: TodayTimes(isToday ? dayState.timeMoves : []), context: context)
+    }
+
     /// The snoozes of today; those of days that are over are forgotten.
     private func currentSnoozes(today: LocalDate) -> [NotificationSnooze] {
         let stored = snoozeStore.load()
         let current = NotificationSnoozing.current(stored, today: today)
         if current.count != stored.count { try? snoozeStore.save(current) }
         return current
+    }
+}
+
+/// The data one notification plan is made from.
+private struct NotificationInputs {
+    let planner: NotificationPlanner
+    let tasks: [TaskItem]
+    let reminders: [ReminderItem]
+    let events: [CalendarEvent]
+    let skipped: Set<String>
+    let todayTimes: TodayTimes
+    let context: DayContext
+
+    /// Everything of today and the coming days, past times included.
+    func all() -> [PlannedNotification] {
+        planner.all(tasks: tasks, reminders: reminders, events: events, skipped: skipped, todayTimes: todayTimes, context: context)
     }
 }

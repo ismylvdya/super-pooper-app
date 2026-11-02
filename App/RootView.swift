@@ -7,6 +7,7 @@ struct RootView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
     @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @Environment(\.displayScale) private var displayScale
     /// Which side the physical bottom took the last time the phone lay sideways.
     @State private var landscapeBottom: HorizontalEdge = .trailing
 
@@ -43,8 +44,10 @@ struct RootView: View {
                                 Label {
                                     Text(LocalizedStringKey(String("tab.") + tab.rawValue))
                                 } icon: {
-                                    TabIconImage.image(container.config.icons[tab.icon], font: tokens.uiFont(.systemTabIcon),
-                                                       others: AppTab.allCases.map { container.config.icons[$0.icon] })
+                                    TabIconImage.image(container.config.icons[tab.icon(lists: model.listsIcon)],
+                                                       font: tokens.uiFont(.systemTabIcon),
+                                                       others: container.config.icons.otherTabSymbols(than: tab, lists: model.listsIcon),
+                                                       fit: tokens.bar(.tabGlyphFit), scale: displayScale)
                                         // The symbol exactly as `icons.json` names it: the tab bar fills it otherwise.
                                         .environment(\.symbolVariants, .none)
                                 }
@@ -58,9 +61,9 @@ struct RootView: View {
                 // so no empty strip is left between it and the tabs.
                 .ignoresSafeArea(.container, edges: landscapeTabBarEdge)
                 // Behind the landscape tab bar, which stands beside the tabs rather than over them.
-                .background(tokens.color(.screenBackground).ignoresSafeArea())
-                // The banner sits right under the status bar, over the bar buttons, on every tab.
-                .overlay(alignment: .top) { BannerOverlay() }
+                .screenBackground()
+                // The banner sits over the navigation bar, its corners on the bar buttons, on every tab.
+                .overlay(alignment: .top) { BannerOverlay(yieldsToSheets: true) }
                 .sheet(isPresented: $router.isReviewPresented) {
                     MorningReviewScreen().tint(tokens.color(.accent)).presentationDragIndicator(.visible)
                 }
@@ -75,6 +78,7 @@ struct RootView: View {
         .environment(\.physicalBottom, physicalBottom)
         .environment(\.timelineBell, model.settings.timeline.bellStyle)
         .environment(\.chipOrder, RowChipKind.ordered(model.settings.pool.chipOrder))
+        .environment(\.highPriorityLook, model.settings.pool.highPriorityLook)
         .appCalendar(model.calendar)
         // The user's colors and opacity sit closest to the views, over the bundled tokens of `appConfig`.
         .designTokens(tokens)
@@ -170,13 +174,21 @@ struct RootView: View {
 }
 
 extension AppTab {
-    var icon: Icon {
+    /// Its icon; the lists' one is picked in the settings.
+    func icon(lists: Icon) -> Icon {
         switch self {
         case .today: .tabToday
         case .habits: .tabHabits
-        case .lists: .tabLists
+        case .lists: lists
         case .settings: .tabSettings
         }
+    }
+}
+
+extension IconSet {
+    /// The symbols of the tabs beside `tab`: a hand-drawn tab glyph stands within them.
+    func otherTabSymbols(than tab: AppTab, lists: Icon) -> [String] {
+        AppTab.allCases.filter { $0 != tab }.map { self[$0.icon(lists: lists)] }
     }
 }
 

@@ -6,28 +6,33 @@
       "icon": "checkmark.circle.fill",
       "destructive": false,
       "haptic": "light",
-      "swipeTint": "success"
+      "swipeTint": "success",
+      "undo": "edits"
     },
     {
       "id": "partial",
       "title": "action.partial",
       "icon": "smallcircle.filled.circle",
       "destructive": false,
-      "haptic": "light"
+      "haptic": "light",
+      "undo": "edits"
     },
     {
       "id": "twice",
       "title": "action.twice",
       "icon": "circle.inset.filled",
       "destructive": false,
-      "haptic": "light"
+      "haptic": "light",
+      "undo": "edits"
     },
     {
       "id": "skipToday",
       "title": "action.skipToday",
       "icon": "forward.end",
       "destructive": true,
-      "haptic": "light"
+      "haptic": "light",
+      "swipeTint": "swipeNeutral",
+      "undo": "edits"
     },
     {
       "id": "notToday",
@@ -35,7 +40,8 @@
       "icon": "moon.zzz",
       "destructive": false,
       "haptic": "light",
-      "swipeTint": "swipeNeutral"
+      "swipeTint": "swipeNeutral",
+      "undo": "edits"
     },
     {
       "id": "backToToday",
@@ -43,14 +49,16 @@
       "icon": "arrow.uturn.backward",
       "destructive": false,
       "haptic": "light",
-      "swipeTint": "success"
+      "swipeTint": "success",
+      "undo": "edits"
     },
     {
       "id": "unmark",
       "title": "action.unmark",
       "icon": "arrow.uturn.backward.circle",
       "destructive": false,
-      "haptic": "light"
+      "haptic": "light",
+      "undo": "edits"
     },
     {
       "id": "open",
@@ -64,7 +72,8 @@
       "title": "action.archive",
       "icon": "archivebox",
       "destructive": false,
-      "haptic": "medium"
+      "haptic": "medium",
+      "undo": "edits"
     },
     {
       "id": "delete",
@@ -74,7 +83,8 @@
       "haptic": "medium",
       "confirmTitle": "confirm.delete.title",
       "confirmMessage": "confirm.delete.message",
-      "confirmSubtasks": "confirm.delete.subtasks"
+      "confirmSubtasks": "confirm.delete.subtasks",
+      "undo": "trash"
     },
     {
       "id": "openInObsidian",
@@ -89,14 +99,16 @@
       "icon": "arrow.uturn.up.circle",
       "destructive": false,
       "haptic": "light",
-      "swipeTint": "success"
+      "swipeTint": "success",
+      "undo": "edits"
     },
     {
       "id": "restoreHalfYear",
       "title": "action.restoreHalfYear",
       "icon": "tray.and.arrow.up",
       "destructive": false,
-      "haptic": "light"
+      "haptic": "light",
+      "undo": "edits"
     },
     {
       "id": "restoreHabit",
@@ -104,7 +116,16 @@
       "icon": "arrow.uturn.up.circle",
       "destructive": false,
       "haptic": "light",
-      "swipeTint": "success"
+      "swipeTint": "success",
+      "undo": "edits"
+    },
+    {
+      "id": "restoreFromArchive",
+      "title": "action.restoreFromArchive",
+      "icon": "arrow.uturn.up.circle",
+      "destructive": false,
+      "haptic": "light",
+      "undo": "edits"
     },
     {
       "id": "returnFromDone",
@@ -157,6 +178,7 @@
     "taskPage": {
       "actions": [
         "archive",
+        "restoreFromArchive",
         "openInObsidian",
         "delete"
       ]
@@ -191,6 +213,7 @@
     "habitPage": {
       "actions": [
         "archive",
+        "restoreFromArchive",
         "openInObsidian",
         "delete"
       ]
@@ -231,6 +254,11 @@
       "actions": [
         "deleteEvent"
       ]
+    },
+    "trashedPage": {
+      "actions": [
+        "restoreFromTrash"
+      ]
     }
   },
   "swipes": {
@@ -258,7 +286,7 @@
       ],
       "trailing": [
         "notToday",
-        "delete"
+        "skipToday"
       ]
     },
     "postponed": {
@@ -294,6 +322,7 @@
     "drop": "light",
     "reorder": "medium",
     "move": "light",
+    "dragStep": "selection",
     "pullArmed": "light",
     "extend": "medium"
   }

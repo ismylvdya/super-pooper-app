@@ -38,7 +38,7 @@ final class DayCommands {
     func notToday(_ name: String, on day: LocalDate?) async {
         guard isToday(day), let task = tasks.task(named: name), let local = localTask(named: name) else { return }
         let changes = NotToday.changes(for: local, context: self.day.context())
-        if changes.isEmpty { postpone(name) } else { await writer.writeLocal(task, changes) }
+        if changes.isEmpty { postpone(name) } else { await write(task, changes) }
     }
 
     /// The morning review takes a task out of today; it stays this week and is back tomorrow.
@@ -73,18 +73,18 @@ final class DayCommands {
     }
 
     /// Dropped on the timeline: a task's moment is read on the phone's clock and written in the note's own zone; a
-    /// habit's block stands there today only and its note stays as it is (`HabitDayTimes`). `slot`: the habit block's
+    /// habit's block stands there today only and its note stays as it is (`TodayTimes`). `slot`: the habit block's
     /// time as its note has it, when it comes from the timeline; from the pool the habit's first time sent there today.
     func schedule(_ name: String, slot: LocalTime?, at moment: Date) async {
         guard let task = tasks.task(named: name), let local = localTask(named: name) else { return }
         guard task.isHabit else {
-            await writer.writeLocal(task, TaskScheduling.changes(scheduling: task, at: moment, calendar: day.calendar))
+            await write(task, TaskScheduling.changes(scheduling: task, at: moment, calendar: day.calendar))
             return
         }
         let time = LocalTime(moment, in: day.calendar)
-        let today = day.habitTimes
+        let today = day.todayTimes
         guard let moves = slot.map({ today.moving(local, slot: $0, to: time) }) ?? today.placing(local, at: time) else { return }
-        day.setHabitMoves(moves)
+        day.setTimeMoves(moves)
         await derived.publish()
     }
 
@@ -94,22 +94,29 @@ final class DayCommands {
         guard let task = tasks.task(named: name), let local = localTask(named: name) else { return }
         if task.isHabit {
             guard let slot else { return }
-            day.setHabitMoves(day.habitTimes.pooling(local, slot: slot))
+            day.setTimeMoves(day.todayTimes.pooling(local, slot: slot))
             await derived.publish()
         } else {
-            await writer.writeLocal(task, TaskScheduling.changes(unscheduling: local, context: day.context()))
+            await write(task, TaskScheduling.changes(unscheduling: local, context: day.context()))
         }
         setManualOrder(poolOrder)
     }
 
     /// A dragged item can land on today's timeline (`TaskScheduling.canPlace`).
     func canPlaceOnTimeline(_ name: String, slot: LocalTime?) -> Bool {
-        localTask(named: name).map { TaskScheduling.canPlace($0, slot: slot, today: day.habitTimes) } ?? false
+        localTask(named: name).map { TaskScheduling.canPlace($0, slot: slot, today: day.todayTimes) } ?? false
     }
 
     /// A block dragged from the timeline can land in the pool (`TaskScheduling.canSendToPool`).
     func canSendToPool(_ name: String, slot: LocalTime?) -> Bool {
         tasks.task(named: name).map { TaskScheduling.canSendToPool($0, slot: slot) } ?? false
+    }
+
+    /// A task's new time written to its note: what a snooze moved of its old time today no longer applies.
+    private func write(_ task: TaskItem, _ changes: [TaskEdit]) async {
+        let today = day.todayTimes
+        if today.moves.contains(where: { $0.task.isSameNoteName(as: task.name) }) { day.setTimeMoves(today.clearing(task)) }
+        await writer.writeLocal(task, changes)
     }
 
     private func isToday(_ date: LocalDate?) -> Bool {

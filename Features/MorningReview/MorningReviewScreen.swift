@@ -1,13 +1,13 @@
 import SwiftUI
 
-/// Soon (the review): the pool as a table — one row per task with property chips edited in place, in
+/// Morning review (the sheet; its list is Soon): the pool as a table — one row per task with property chips edited in place, in
 /// Morning, Day and Evening groups; rows reorder by dragging, also into another group (which sets their part
 /// of the day). Until the first drag the order follows the automatic sort after every edit; after it the
 /// manual order is kept for today. Reset sorting brings the sort back.
 /// Tapping a row (outside its chips) opens the task page; "+" creates a new this-week task.
 /// A long press opens the same menu as the row in the pool (and moving the finger then drags the row).
-/// Swiping a row right is Done; swiping a task left is the menu's Not today (then Delete): it stays this week and waits
-/// in "Not Today" at the bottom (and in tomorrow's review); swiping it there to the right brings it back.
+/// Swiping a row right is Done; swiping it left has one button: a task's Not today (it stays this week and waits in "Not
+/// Today" at the bottom, and in tomorrow's review; swiping it there to the right brings it back), a habit's Skip today.
 struct MorningReviewScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
@@ -46,7 +46,7 @@ struct MorningReviewScreen: View {
                                         }
                                     }
                                     .accessibilityIdentifier("review:\(item.id)")
-                                    // Done to the right; to the left the pool menu's Not today (a full swipe), then Delete.
+                                    // Done to the right; to the left Not today or, for a habit, Skip today.
                                     .actionSwipes(.review, item: item) { perform($0, on: item.id) }
                             }
                         }
@@ -82,12 +82,11 @@ struct MorningReviewScreen: View {
             .appList()
             // The first group starts closer to the bar than a list's own top gap.
             .contentMargins(.top, tokens.space(.reviewTop), for: .scrollContent)
-            .bannerHost()
             .actionConfirmation($pendingAction) { handler.run($0) }
             .navigationDestination(for: Route.self) { route in
                 switch route {
-                case .task(let name): TaskPageScreen(taskName: name).bannerHost()
-                case .newTask: NewNoteScreen(kind: .task).bannerHost()
+                case .task(let name): TaskPageScreen(taskName: name)
+                case .newTask: NewNoteScreen(kind: .task)
                 default: EmptyView()
                 }
             }
@@ -108,6 +107,8 @@ struct MorningReviewScreen: View {
                 }
             }
         }
+        // Over the sheet's bar, on every page pushed in it.
+        .bannerHost()
     }
 }
 

@@ -24,8 +24,8 @@ final class TodayUITests: XCTestCase {
         app.dismissBanners()
     }
 
-    /// The arrows next to the day's name change the day (another day is named by its date) and stay where they are;
-    /// the Today tab brings back today.
+    /// The arrows next to the day's name change the day (the next one is Tomorrow, the one after it is named by its date
+    /// and weekday, the one before today Yesterday) and stay where they are; the Today tab brings back today.
     func testArrowsChangeTheDayAndTheTodayTabBringsItBack() {
         launch()
         dismissBanners()
@@ -34,18 +34,22 @@ final class TodayUITests: XCTestCase {
         let next = app.buttons["today.nextDay"]
         let previous = app.buttons["today.previousDay"]
         let arrows = (next.frame, previous.frame)
-        let date = NSPredicate(format: "identifier == 'today.day' AND label MATCHES '^[0-9]{1,2} [A-Za-z]{3}$'")
+        let named = { (name: String) in NSPredicate(format: "identifier == 'today.day' AND label == %@", name) }
+        let date = NSPredicate(format: "identifier == 'today.day' AND label MATCHES '^[0-9]{1,2} [A-Za-z]{3} • [A-Za-z]{3}$'")
         // Bar buttons refuse the accessibility "scroll to visible" step: tap by coordinate.
         next.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-        XCTAssertTrue(app.buttons.matching(date).firstMatch.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons.matching(named("Tomorrow")).firstMatch.waitForExistence(timeout: 5))
         XCTAssertEqual(next.frame, arrows.0, "the arrows do not move with the name")
+        next.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        XCTAssertTrue(app.buttons.matching(date).firstMatch.waitForExistence(timeout: 5))
+        XCTAssertEqual(next.frame, arrows.0)
         XCTAssertEqual(previous.frame, arrows.1)
         app.tabBars.buttons["Today"].tap()
-        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "identifier == 'today.day' AND label == 'Today'")).firstMatch
-            .waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons.matching(named("Today")).firstMatch.waitForExistence(timeout: 5))
         previous.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-        XCTAssertTrue(app.buttons.matching(date).firstMatch.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons.matching(named("Yesterday")).firstMatch.waitForExistence(timeout: 5))
         XCTAssertEqual(previous.frame, arrows.1)
+        XCTAssertEqual(next.frame, arrows.0)
     }
 
     /// The arrows take taps across the whole bar height (`size.dayArrowTarget`, 44 pt), on the room around the glyph and
@@ -59,7 +63,7 @@ final class TodayUITests: XCTestCase {
             XCTAssertGreaterThanOrEqual(arrow.frame.height.rounded(), 44, arrow.identifier)
             XCTAssertGreaterThan(arrow.frame.width, app.buttons["today.day"].frame.height / 2, arrow.identifier)
         }
-        let date = NSPredicate(format: "identifier == 'today.day' AND label MATCHES '^[0-9]{1,2} [A-Za-z]{3}$'")
+        let date = NSPredicate(format: "identifier == 'today.day' AND label IN {'Tomorrow', 'Yesterday'}")
         let today = NSPredicate(format: "identifier == 'today.day' AND label == 'Today'")
         let corners = [(next, CGVector(dx: 0.95, dy: 0.08)), (next, CGVector(dx: 0.05, dy: 0.92)),
                        (previous, CGVector(dx: 0.05, dy: 0.08)), (previous, CGVector(dx: 0.95, dy: 0.92))]
@@ -124,10 +128,10 @@ final class TodayUITests: XCTestCase {
         launch()
         let edit = app.buttons["today.review"]
         XCTAssertTrue(edit.waitForExistence(timeout: 5))
-        XCTAssertEqual(edit.label, "Soon", "the review is named Soon (.6461)")
+        XCTAssertEqual(edit.label, "Morning review", "the review sheet is named Morning review, its list stays Soon")
         dismissBanners()
         edit.tap()
-        XCTAssertTrue(app.navigationBars["Soon"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.navigationBars["Morning review"].waitForExistence(timeout: 5))
         // Row 0 is the Morning header; the tasks start at row 1.
         let first = app.cells.element(boundBy: 1)
         let third = app.cells.element(boundBy: 3)
@@ -140,6 +144,22 @@ final class TodayUITests: XCTestCase {
         reset.tap()
         let auto = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isEnabled == false"), object: reset)
         XCTAssertEqual(XCTWaiter().wait(for: [auto], timeout: 5), .completed)
+    }
+
+    /// A pool row dragged up onto the row above takes its place (.21800): the drag carries the row's own plate and leaves
+    /// a gap in the pool; what it looks like mid-drag only a screenshot shows, the new order is checked here.
+    func testAPoolRowDraggedUpTakesThePlaceAbove() {
+        // "Обновить резюме" is due this Sunday: on that day it is in the pool whatever day of the week the run is on.
+        app.launchArguments += ["-SPToday", TestVaultWeek.date(.sunday)]
+        launch()
+        dismissBanners()
+        // Rows no other test marks or moves, so the suite's order does not matter.
+        let resume = app.buttons["title:Обновить резюме"]
+        let above = app.buttons["title:Неизвестное правило"]
+        XCTAssertTrue(resume.waitForExistence(timeout: 10) && above.waitForExistence(timeout: 5))
+        XCTAssertLessThan(above.frame.midY, resume.frame.midY)
+        resume.press(forDuration: 1.2, thenDragTo: above, withVelocity: .slow, thenHoldForDuration: 0.5)
+        expect(resume, toBe: { $0.frame.midY < above.frame.midY }, "it stands above the row it was dropped on")
     }
 
     /// On the pages, a row dragged onto the edge of the other page turns to it. A habit without reminder times is

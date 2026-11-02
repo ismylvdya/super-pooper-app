@@ -1,6 +1,6 @@
 import UIKit
 
-/// Light and medium taps: an action's own style, or the style of what a tap does (`actions.json` → `haptics`).
+/// Light and medium taps and selection ticks: an action's own style, or the style of what a tap does (`actions.json` → `haptics`).
 @MainActor
 enum Haptics {
     static var isEnabled = true
@@ -17,6 +17,7 @@ enum Haptics {
         case .none: return
         case .light: UIImpactFeedbackGenerator(style: .light).impactOccurred()
         case .medium: UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        case .selection: UISelectionFeedbackGenerator().selectionChanged()
         }
     }
 }

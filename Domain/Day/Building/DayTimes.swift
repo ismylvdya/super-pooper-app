@@ -3,15 +3,15 @@ import Foundation
 /// When a task stands on the day's timeline.
 struct DayTimes: Sendable {
     let context: DayContext
-    /// Habit blocks dragged today (to another time or to the pool).
-    var habitTimes = HabitDayTimes()
+    /// Blocks moved today (dragged to another time or to the pool, or snoozed).
+    var todayTimes = TodayTimes()
 
     /// Habits are planned at their reminder times as today has them; other tasks need `due` with a time on today's
-    /// logical day.
+    /// logical day, moved as today has it.
     func times(of task: TaskItem) -> [BlockTime] {
-        if task.isHabit { return habitTimes.blocks(of: task) }
+        if task.isHabit { return todayTimes.blocks(of: task) }
         guard let due = task.due, let time = due.time, context.logicalDay(of: due) == context.today else { return [] }
-        return [BlockTime(time)]
+        return todayTimes.blocks(of: task, written: [time])
     }
 
     /// The blocks still to do today. A closed day leaves the timeline (Twice closes it however many reminders there
@@ -27,7 +27,7 @@ struct DayTimes: Sendable {
 
     /// A habit with reminder times sent to the pool today stands in the pool too, while its day is open.
     func isPooledToday(_ item: DayItem) -> Bool {
-        item.isHabit && !item.isFinished && !habitTimes.pooled(of: item.task).isEmpty
+        item.isHabit && !item.isFinished && !todayTimes.pooled(of: item.task).isEmpty
     }
 
     /// The moment a block starts at today.
@@ -35,12 +35,12 @@ struct DayTimes: Sendable {
         context.moment(block.time, onLogicalDay: context.today)
     }
 
-    /// The first open block of a timed task or habit today: what a chain hangs on. `start`: where an overdue task's block
-    /// stands now (`OverdueTasks`), if it is not at its own time.
-    func target(of item: DayItem, rules: DayRules, start: Date? = nil) -> TimelineChain.Target? {
+    /// The first open block of a timed task or habit today: what a chain hangs on. `overdue`: where overdue blocks stand
+    /// now (`OverdueBlocks`), when not at their own time.
+    func target(of item: DayItem, rules: DayRules, overdue: [OverdueBlocks.Key: Date] = [:]) -> TimelineChain.Target? {
         guard let block = openTimes(of: item).first else { return nil }
-        return TimelineChain.Target(id: TimelineContent.task(item).id,
-                                    end: (start ?? moment(of: block)).addingTimeInterval(rules.duration(of: item.task)))
+        let start = overdue[OverdueBlocks.Key(item, block)] ?? moment(of: block)
+        return TimelineChain.Target(id: TimelineContent.task(item).id, end: start.addingTimeInterval(rules.duration(of: item.task)))
     }
 
     func overlapsToday(_ event: CalendarEvent) -> Bool {

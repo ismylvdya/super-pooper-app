@@ -42,6 +42,8 @@ struct AppConfig: Sendable {
         let defaultsJSON = try loader.data(File.defaults)
         let defaults = DefaultSettings(json: defaultsJSON,
                                        values: try ConfigLoader.decode(AppSettings.self, from: defaultsJSON, file: File.defaults))
+        let lists = try loader.load(TaskListsConfig.self, from: File.lists)
+        try lists.validate(defaultIcon: defaults.values.lists.icon, file: File.lists)
         func layout(_ file: String) throws -> ScreenLayout {
             let layout = try loader.load(ScreenLayout.self, from: file)
             try layout.validate(file: file)
@@ -58,7 +60,7 @@ struct AppConfig: Sendable {
             sort: try loader.load(SortConfig.self, from: File.sort),
             flags: try loader.load(FeatureFlags.self, from: File.flags),
             rules: try loader.load(RulesConfig.self, from: File.rules),
-            lists: try loader.load(TaskListsConfig.self, from: File.lists),
+            lists: lists,
             defaultSettings: defaults
         )
     }

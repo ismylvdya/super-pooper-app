@@ -2,29 +2,41 @@ import Foundation
 
 /// Names of the design tokens in `tokens.json`. Screens never contain raw numbers or colors.
 enum SpacingToken: String, CaseIterable, Sendable {
-    case reviewTop, popoverRowVertical, fadeGap, scrollEndRoom, listRowVertical
+    case reviewTop, fadeGap, scrollEndRoom, listRowVertical
     case screenHorizontal, screenBottom, groupGap, plateInner, plateRowGap, headerToPlate, hintToPlate
     case iconTextGap, chipHorizontal, chipVertical, chipGap, infoPadding, nestedTitleInset, nestedTitleLift
     case childIndent, rowVertical, poolRowGap, blockGap, timelineLabelWidth, timelineItemGap, timelineItemPadding
-    case bannerTop, bannerPadding, widgetMargin, habitCellGap, hourLabelGap, bellInset, liftShadow, toggleChipHorizontal, toggleChipVertical, titleInfoGap, chipIconGap, dotTextGap, valueChevronGap, reviewRowVertical, markPadding, badgeGap, progressGap, timelineTitleExtra, previewRowGap, titleDetailGap, footerLineGap, subtaskIndent
+    case bannerPadding, widgetMargin, habitCellGap, hourLabelGap, bellInset, liftShadow, toggleChipHorizontal, toggleChipVertical, titleInfoGap, chipIconGap, dotTextGap, valueChevronGap, reviewRowVertical, markPadding, badgeGap, progressGap, timelineTitleExtra, previewRowGap, titleDetailGap, footerLineGap, subtaskIndent
     case widgetGap, previewInset, cornerMarkGap, compactPlateVertical, emptyStateInset, widgetGridGap
+    /// How much further right a timeline block lying over an earlier one starts, per step.
+    case timelineCascadeIndent
+    /// Between a swipe button's symbol and its title.
+    case swipeIconTitleGap
+    /// Between the priority icon before a high-priority task's name and the name.
+    case priorityIconGap
 }
 
 enum RadiusToken: String, CaseIterable, Sendable {
-    case plate, chip, timelineItem, banner, habitCell, notificationImage, previewItem, previewFrame
+    case plate, chip, timelineItem, habitCell, notificationImage, previewItem, previewFrame
 }
 
 enum SizeToken: String, CaseIterable, Sendable {
     case iconColumn, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, notificationIcon
     case dayArrowTarget
     case habitDotMinimum, cornerInsetMinimum, eventDot, sourceDot, fadeHeight, poolCounter, poolWidth
-    case habitHistoryMaxHeight, habitStatsBar, titleFade, hourDigitsWidth, actionPopoverWidth, reviewChevron, wrapMinWidth, liftOverhang, pagePeek, dropLine, dropMarkerHeight, bannerShadowRadius, bannerShadowY, hexFieldWidth, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, allDayFontDelta, previewHeight, previewRow, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewHalvesInset, subtaskDropLine
+    case habitHistoryMaxHeight, habitStatsBar, titleFade, hourDigitsWidth, reviewChevron, wrapMinWidth, liftOverhang, pagePeek, dropMarkerHeight, bannerShadowRadius, bannerShadowY, hexFieldWidth, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, allDayFontDelta, previewHeight, previewRow, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewHalvesInset, subtaskDropLine
 }
 
 /// Shares and scale factors: a part of another size, not a size of its own.
 enum RatioToken: String, CaseIterable, Sendable {
     case habitRing, habitPartialDot, infoMaxHeight, pullStartScale, pullArmedScale, timelinePreview, largeTitleVisible
     case fadeMiddleStop, widgetWrappedTitle
+    /// A hand-drawn glyph standing in a line of text (the frog of Need energy): how tall its ink is, in cap heights of
+    /// the text's font, as the wide SF Symbols (the heart, the warning triangle) stand there.
+    case handGlyph
+    /// The room a timeline block's title needs under its top, in its minimum heights: a block starting closer under it
+    /// stands beside it rather than over it.
+    case timelineTitleRoom
 }
 
 /// How many of something a drawing has (lines of a wrapped title).
@@ -34,7 +46,15 @@ enum CountToken: String, CaseIterable, Sendable {
 
 enum OpacityToken: String, CaseIterable, Sendable {
     case blocked, past, eventFill, fadeTop, fadeMiddle, habitEmpty
+    /// The ring of a habit's day not done or done partly (the user's `habits.ringOpacity` over it).
+    case habitOpenRing
     case gridFadedWeek, unlinked, eventTime, nowOverBlocks, daySwipeFade, toggleChipFill, bannerShadow, previewBlock, accentedPlate, signingPlate
+    /// The faint copy of a dragged plate where it would land (the pool's parted gap, the timeline's landing spot).
+    case dropGhost
+    /// The ":15", ":30", ":45" of a zoomed-in timeline and its five-minute lines, at their full fade-in.
+    case quarterLabel, fineLine
+    /// The soft red of a high-priority task's plate (Settings → Pool → High priority → Fill).
+    case highPriorityFill
 }
 
 enum DurationToken: String, CaseIterable, Sendable {
@@ -44,9 +64,11 @@ enum DurationToken: String, CaseIterable, Sendable {
 enum FontToken: String, CaseIterable, Sendable {
     case pageTitle, navTitle, sectionHeader, rowTitle, hint, chip, info, timelineHour, banner, poolCounter
     case taskTitle, emptyTitle, emptyBody, footer, widgetTitle, widgetCaption, widgetEvent, caption, noteEditor
-    case statValue, toggleChip, pullIcon, emptyIcon, emptyAction, linkBadge, popoverAction, repeatableTitle, habitTitle
+    case statValue, toggleChip, pullIcon, emptyIcon, emptyAction, linkBadge, repeatableTitle, habitTitle, timelineQuarter
     /// The timeline at the sizes picked in settings (`font(_:size:)`).
     case timelineText, timelineEvent
+    /// A swipe button's symbol and the title under it, drawn inside the button.
+    case swipeIcon, swipeTitle
 }
 
 enum ColorToken: String, ConfigName {

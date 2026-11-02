@@ -70,7 +70,8 @@ final class ScreenSnapshotUITests: XCTestCase {
     func testTaskPage() {
         launch("superpooper://task/Распечатать вопросы")
         snapTopAndBottom("task-page")
-        app.buttons["taskPage.more"].tap()
+        // A toolbar menu refuses the accessibility "scroll to visible" step, so it is tapped by coordinate.
+        app.buttons["taskPage.more"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         settle()
         snap("menu-task-page")
     }
@@ -97,7 +98,8 @@ final class ScreenSnapshotUITests: XCTestCase {
     func testMorningReviewNotToday() {
         launch("superpooper://review")
         let row = app.descendants(matching: .any).matching(identifier: "review:Оплатить интернет").firstMatch
-        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        // The review is a long lazy list: the row is made only once it is scrolled to.
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 10))
         app.scrollIntoView(row)
         row.swipeLeft()
         let postpone = app.buttons["swipe.notToday"]
@@ -162,6 +164,20 @@ final class ScreenSnapshotUITests: XCTestCase {
         app.place(preview, topAt: 0.3)
         settle()
         snap("settings-timeline")
+    }
+
+    func testListsIconSetting() {
+        launch("superpooper://settings")
+        app.buttons["settings.link.taskSettings"].tap()
+        let picker = app.buttons["settings.listsIcon"]
+        XCTAssertTrue(picker.waitForExistence(timeout: 10))
+        app.scrollIntoView(picker)
+        app.place(picker, topAt: 0.4)
+        settle()
+        snap("settings-lists-icon")
+        picker.tap()
+        settle()
+        snap("settings-lists-icon-menu")
     }
 
     func testHabitSettings() {

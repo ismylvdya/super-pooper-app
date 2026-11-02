@@ -52,12 +52,12 @@ final class DayStateController {
     }
 
     /// Habit blocks dragged on the timeline today; none once the day is over.
-    var habitTimes: HabitDayTimes {
-        HabitDayTimes(dayState.day == context().today ? dayState.habitMoves : [])
+    var todayTimes: TodayTimes {
+        TodayTimes(dayState.day == context().today ? dayState.timeMoves : [])
     }
 
-    func setHabitMoves(_ moves: [HabitTimeMove]) {
-        update { $0.habitMoves = moves }
+    func setTimeMoves(_ moves: [TimeMove]) {
+        update { $0.timeMoves = moves }
     }
 
     func rollDayIfNeeded() {
@@ -95,6 +95,19 @@ final class DayStateController {
         return isNew
     }
 
+    /// Undo: what an action decided about today goes back (Skip today, Not today, the manual order, the moved blocks),
+    /// as long as it is still the same day.
+    func restore(_ before: DayState) {
+        rollDayIfNeeded()
+        guard before.day == dayState.day else { return }
+        update {
+            $0.skipped = before.skipped
+            $0.postponed = before.postponed
+            $0.manualOrder = before.manualOrder
+            $0.timeMoves = before.timeMoves
+        }
+    }
+
     /// A renamed note keeps its place in today's lists.
     func followRename(from old: String, to new: String) {
         let rename = { (names: [String]) in NameReferences.renaming(names, from: old, to: new) }
@@ -102,7 +115,7 @@ final class DayStateController {
             $0.skipped = rename($0.skipped)
             $0.postponed = rename($0.postponed)
             $0.manualOrder = $0.manualOrder.map(rename)
-            $0.habitMoves = HabitDayTimes($0.habitMoves).renaming(from: old, to: new)
+            $0.timeMoves = TodayTimes($0.timeMoves).renaming(from: old, to: new)
         }
     }
 

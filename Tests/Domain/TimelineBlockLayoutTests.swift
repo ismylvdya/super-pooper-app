@@ -2,12 +2,12 @@ import Foundation
 import Testing
 @testable import SuperPooperApp
 
-/// Where the blocks of a timeline column go: minimum heights, chains pushed down, overlaps in columns.
+/// Where the blocks of a timeline column go: minimum heights, chains pushed down, overlaps indented or in columns.
 struct TimelineBlockLayoutTests {
     private let window = TimelineWindow(start: TestCalendar.date(TestCalendar.wednesday, "09:00"),
                                         end: TestCalendar.date(TestCalendar.wednesday, "13:00"))
     private var layout: TimelineBlockLayout {
-        TimelineBlockLayout(window: window, hourHeight: 60, minimumEventHeight: 20, minimumTaskHeight: 40)
+        TimelineBlockLayout(window: window, hourHeight: 60, minimumEventHeight: 20, minimumTaskHeight: 40, titleRoomShare: 1)
     }
 
     private func event(_ title: String, _ start: String, _ end: String) -> TimelineSlot {
@@ -34,16 +34,40 @@ struct TimelineBlockLayoutTests {
         #expect(placed.map(\.columnCount) == [1, 1])
     }
 
-    /// Blocks that overlap in time share the width, the longer of two starting together on the left.
-    @Test func overlapsShareTheWidthInColumns() {
+    /// Blocks starting together share the width, the longer of the two on the left; a later one that leaves the earlier
+    /// title readable lies over the long one, one indent step in, across the rest of the width.
+    @Test func overlapsStartingTogetherShareTheWidthAndALaterOneLiesOverIndented() {
         let placed = layout.place([event("Short", "10:00", "10:30"), event("Long", "10:00", "11:30"), event("Later", "10:45", "11:00")])
         #expect(placed.map(\.slot.id) == ["event:" + makeEvent("Long", from: "10:00", to: "11:30").id,
                                           "event:" + makeEvent("Short", from: "10:00", to: "10:30").id,
                                           "event:" + makeEvent("Later", from: "10:45", to: "11:00").id])
-        #expect(placed.map(\.column) == [0, 1, 1])
-        #expect(placed.allSatisfy { $0.columnCount == 2 })
-        let short = placed[1].horizontal(in: 300)
+        #expect(placed.map(\.indent) == [0, 0, 1])
+        #expect(placed.map(\.column) == [0, 1, 0])
+        #expect(placed.map(\.columnCount) == [2, 2, 1])
+        let short = placed[1].horizontal(in: 300, indentStep: 10)
         #expect(short.x == 150 && short.width == 150)
+        let later = placed[2].horizontal(in: 300, indentStep: 10)
+        #expect(later.x == 10 && later.width == 290)
+    }
+
+    /// Three blocks, each starting under the title of the one before, step in one more each time.
+    @Test func eachLaterOverlapStepsInOneMore() {
+        let placed = layout.place([event("A", "10:00", "12:00"), event("B", "10:30", "12:00"), event("C", "11:00", "12:00"),
+                                   event("D", "11:30", "12:00")])
+        #expect(placed.map(\.indent) == [0, 1, 2, 3])
+        #expect(placed.allSatisfy { $0.columnCount == 1 })
+        #expect(placed[3].horizontal(in: 300, indentStep: 10).x == 30)
+    }
+
+    /// A block starting inside the earlier one's title room would hide its title: it stands beside it instead. The room is
+    /// the earlier block's minimum height (a task's is taller than an event's).
+    @Test func aBlockStartingInsideTheEarlierTitleStandsBesideIt() {
+        let events = layout.place([event("Long", "10:00", "11:00"), event("Close", "10:25", "10:45")])
+        #expect(events.map(\.indent) == [0, 1], "25 points under an event clear its 20-point title")
+        let tasks = layout.place([task("Long", "10:00", "11:00"), task("Close", "10:25", "10:45")])
+        #expect(tasks.map(\.indent) == [0, 0])
+        #expect(tasks.map(\.column) == [0, 1])
+        #expect(tasks.map(\.columnCount) == [2, 2])
     }
 
     /// Outside the window a block is left out; one reaching into it starts at the window's top.
