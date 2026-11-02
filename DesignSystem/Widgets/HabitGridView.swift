@@ -13,7 +13,8 @@ struct HabitGridView<Menu: View>: View {
 
     var body: some View {
         VStack(spacing: metrics.spacing) {
-            ForEach(Array(grid.weeks.enumerated()), id: \.offset) { index, week in
+            // A week is known by its first day: weeks added on top are new rows, the others keep theirs.
+            ForEach(Array(grid.weeks.enumerated()), id: \.element.first?.date) { index, week in
                 HStack(spacing: metrics.spacing) {
                     ForEach(week, id: \.date) { day in
                         cell(day)

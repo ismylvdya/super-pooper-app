@@ -12,6 +12,9 @@ struct HabitDotMetrics: Equatable {
     /// Neighbouring cells overlap by one ring width.
     var spacing: CGFloat { -ring }
 
+    /// How much taller a grid grows with `weeks` more rows.
+    func height(ofWeeks weeks: Int) -> CGFloat { CGFloat(weeks) * (cell + spacing) }
+
     /// The diameter of a day's outer edge: the outer ring of Twice, the circle of every other mark; a future day has none.
     func outline(of cell: HabitCell) -> CGFloat? {
         switch cell {
