@@ -124,10 +124,10 @@ final class TodayUITests: XCTestCase {
         launch()
         let edit = app.buttons["today.review"]
         XCTAssertTrue(edit.waitForExistence(timeout: 5))
-        XCTAssertEqual(edit.label, "Soon", "the review is named Soon (.6461)")
+        XCTAssertEqual(edit.label, "Morning review", "the review sheet is named Morning review, its list stays Soon")
         dismissBanners()
         edit.tap()
-        XCTAssertTrue(app.navigationBars["Soon"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.navigationBars["Morning review"].waitForExistence(timeout: 5))
         // Row 0 is the Morning header; the tasks start at row 1.
         let first = app.cells.element(boundBy: 1)
         let third = app.cells.element(boundBy: 3)

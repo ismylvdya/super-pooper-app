@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Soon (the review): the pool as a table — one row per task with property chips edited in place, in
+/// Morning review (the sheet; its list is Soon): the pool as a table — one row per task with property chips edited in place, in
 /// Morning, Day and Evening groups; rows reorder by dragging, also into another group (which sets their part
 /// of the day). Until the first drag the order follows the automatic sort after every edit; after it the
 /// manual order is kept for today. Reset sorting brings the sort back.

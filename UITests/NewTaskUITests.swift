@@ -24,7 +24,7 @@ final class NewTaskUITests: XCTestCase {
     func testReviewRowOpensTheTaskAndPlusCreatesOne() {
         launch("superpooper://review")
         // The link opens the review once the vault is read; if Today came first, open it from there.
-        if !app.navigationBars["Soon"].waitForExistence(timeout: 6) { app.buttons["today.review"].tap() }
+        if !app.navigationBars["Morning review"].waitForExistence(timeout: 6) { app.buttons["today.review"].tap() }
         // A banner over the row would take the tap.
         app.dismissBanners()
         // The list is long and lazy: scroll down to the row.
@@ -33,7 +33,7 @@ final class NewTaskUITests: XCTestCase {
         row.tap()
         XCTAssertTrue(app.textFields["taskPage.name"].waitForExistence(timeout: 5))
         app.navigationBars.buttons.element(boundBy: 0).tap()
-        let plus = app.navigationBars["Soon"].buttons["task.new"]
+        let plus = app.navigationBars["Morning review"].buttons["task.new"]
         XCTAssertTrue(plus.waitForExistence(timeout: 5))
         plus.tap()
         let name = app.textFields["taskPage.name"]
