@@ -124,7 +124,11 @@
         "lines": 2
       }
     ],
-    "rowVisibleShare": 0.5
+    "rowVisibleShare": 0.5,
+    "highPriorityLooks": [
+      "leadingIcon",
+      "fill"
+    ]
   },
   "limits": {
     "poolVisibleCount": {

@@ -12,6 +12,8 @@ enum SpacingToken: String, CaseIterable, Sendable {
     case timelineCascadeIndent
     /// Between a swipe button's symbol and its title.
     case swipeIconTitleGap
+    /// Between the priority icon before a high-priority task's name and the name.
+    case priorityIconGap
 }
 
 enum RadiusToken: String, CaseIterable, Sendable {
@@ -51,6 +53,8 @@ enum OpacityToken: String, CaseIterable, Sendable {
     case dropGhost
     /// The ":15", ":30", ":45" of a zoomed-in timeline and its five-minute lines, at their full fade-in.
     case quarterLabel, fineLine
+    /// The soft red of a high-priority task's plate (Settings → Pool → High priority → Fill).
+    case highPriorityFill
 }
 
 enum DurationToken: String, CaseIterable, Sendable {

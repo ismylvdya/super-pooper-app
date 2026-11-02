@@ -22,7 +22,8 @@
   "pool": {
     "visibleCount": 3,
     "criteria": [],
-    "chipOrder": ["problem", "blocked", "high", "feel", "habit"]
+    "chipOrder": ["problem", "blocked", "feel", "habit"],
+    "highPriorityLook": "leadingIcon"
   },
   "timeline": {
     "layout": "oneColumn",

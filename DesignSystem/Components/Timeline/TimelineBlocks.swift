@@ -84,8 +84,8 @@ struct TimelineTaskBlock<Content: View>: View {
 
 extension View {
     /// The pool-row plate; for past items the grey tint of finished events.
-    func slotPlate(isPast: Bool, isCompact: Bool = false) -> some View {
-        modifier(SlotPlate(isPast: isPast, isCompact: isCompact))
+    func slotPlate(isPast: Bool, isCompact: Bool = false, tint: Color? = nil) -> some View {
+        modifier(SlotPlate(isPast: isPast, isCompact: isCompact, tint: tint))
     }
 }
 
@@ -93,13 +93,15 @@ private struct SlotPlate: ViewModifier {
     @Environment(\.tokens) private var tokens
     let isPast: Bool
     let isCompact: Bool
+    let tint: Color?
 
     func body(content: Content) -> some View {
         content
             .environment(\.plateTrailingInset, tokens.slotPlateInset)
             .padding(.vertical, isCompact ? tokens.space(.compactPlateVertical) : tokens.space(.rowVertical) / 2)
             .padding(.horizontal, tokens.slotPlateInset)
-            .plate(.row, fill: isPast ? tokens.color(.past).opacity(tokens.opacity(.eventFill)) : nil, clipsContent: true)
+            .plate(.row, fill: isPast ? tokens.color(.past).opacity(tokens.opacity(.eventFill)) : nil, tint: isPast ? nil : tint,
+                   clipsContent: true)
             .opacity(isPast ? tokens.opacity(.past) : 1)
     }
 }

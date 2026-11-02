@@ -9,19 +9,20 @@ enum PoolRowPlate {
 }
 
 extension View {
-    func poolRowPlate(_ plate: PoolRowPlate, isDone: Bool) -> some View {
-        modifier(PoolRowPlateFill(plate: plate, isDone: isDone))
+    func poolRowPlate(_ plate: PoolRowPlate, isDone: Bool, tint: Color? = nil) -> some View {
+        modifier(PoolRowPlateFill(plate: plate, isDone: isDone, tint: tint))
     }
 }
 
 private struct PoolRowPlateFill: ViewModifier {
     let plate: PoolRowPlate
     let isDone: Bool
+    let tint: Color?
 
     func body(content: Content) -> some View {
         switch plate {
-        case .own: content.taskPlate(isDone: isDone)
-        case .piece: content.rowPlatePadding().plate(.piece)
+        case .own: content.taskPlate(isDone: isDone, tint: tint)
+        case .piece: content.rowPlatePadding().plate(.piece, tint: tint)
         }
     }
 }

@@ -29,6 +29,14 @@ struct AppSettings: Codable, Equatable, Sendable {
         var criteria: [String]
         /// The order of the chips in task rows (raw names of `RowChipKind`).
         var chipOrder: [String]
+        /// How a high-priority task stands out in the pool and on the timeline.
+        var highPriorityLook: HighPriorityLook
+    }
+
+    /// How a high-priority task stands out: the priority icon before its name, or its whole plate in a soft red.
+    enum HighPriorityLook: String, Codable, CaseIterable, Sendable {
+        case leadingIcon
+        case fill
     }
 
     /// Where the pool and the timeline sit on Today.

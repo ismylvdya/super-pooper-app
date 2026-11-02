@@ -11,7 +11,7 @@
   "feel": "heart.circle",
   "timeZone": "globe",
   "chipOrder": "line.3.horizontal",
-  "high": "flag.fill",
+  "high": "exclamationmark.triangle.fill",
   "due": "calendar",
   "time": "clock",
   "estimate": "hourglass",
