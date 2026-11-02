@@ -55,4 +55,13 @@ struct RouterTests {
         router.select(.today)
         #expect(router.todayTaps == taps + 1)
     }
+
+    /// Today's tab from another tab, with a page open further in on Today: back to Today's first page, the pool.
+    @Test func theTodayTabFromAnotherTabClosesTodaysPages() {
+        let router = Router()
+        router.open(.task("Report"))
+        router.select(.habits)
+        router.select(.today)
+        #expect(router.tab == .today && router.path.isEmpty)
+    }
 }

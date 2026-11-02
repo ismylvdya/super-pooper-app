@@ -178,6 +178,44 @@ final class TodayUITests: XCTestCase {
         XCTAssertEqual(XCTWaiter().wait(for: [turned], timeout: 5), .completed, "the pages turned to the timeline")
     }
 
+    /// On the pages, the day's name turns back to the pool; the Today tab turns back to the pool and to today's date, also
+    /// from a page opened further in.
+    func testTheDayNameAndTheTodayTabGoBackToTodaysPool() {
+        app.launchArguments += ["-SPArrangement", "paged"]
+        launch()
+        dismissBanners()
+        let edge = app.descendants(matching: .any)["today.pageEdge"]
+        XCTAssertTrue(edge.waitForExistence(timeout: 10))
+        let onPool = NSPredicate(format: "label == 'Show the timeline'")
+        let onTimeline = NSPredicate(format: "label == 'Show the pool'")
+        let wait = { (predicate: NSPredicate) in
+            XCTWaiter().wait(for: [XCTNSPredicateExpectation(predicate: predicate, object: edge)], timeout: 5)
+        }
+        edge.tap()
+        XCTAssertEqual(wait(onTimeline), .completed)
+        app.buttons["today.day"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        XCTAssertEqual(wait(onPool), .completed, "the day's name turns back to the pool")
+
+        edge.tap()
+        XCTAssertEqual(wait(onTimeline), .completed)
+        app.buttons["today.nextDay"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        let tomorrow = NSPredicate(format: "identifier == 'today.day' AND label == 'Tomorrow'")
+        XCTAssertTrue(app.buttons.matching(tomorrow).firstMatch.waitForExistence(timeout: 5))
+        app.tabBars.buttons["Habits"].tap()
+        app.tabBars.buttons["Today"].tap()
+        XCTAssertEqual(wait(onPool), .completed, "the Today tab turns back to the pool")
+        XCTAssertEqual(app.buttons["today.day"].label, "Today", "and to today")
+
+        let row = app.buttons["title:Выпить воды 💧"]
+        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        row.tap()
+        XCTAssertFalse(app.buttons["today.day"].waitForExistence(timeout: 3), "the habit's page is open")
+        app.tabBars.buttons["Habits"].tap()
+        app.tabBars.buttons["Today"].tap()
+        XCTAssertTrue(app.buttons["today.day"].waitForExistence(timeout: 5), "back on Today's first page")
+        XCTAssertEqual(wait(onPool), .completed)
+    }
+
     /// A habit's block dragged from the timeline into the pool stands in the pool today, and dragged back from the pool it
     /// is on the timeline again (.3267). Side by side, both columns are in sight. The note keeps its time: no write
     /// (`check-vault-after-ui-tests.sh`); the notifications are covered by unit tests.
