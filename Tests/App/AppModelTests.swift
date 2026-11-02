@@ -44,6 +44,16 @@ struct AppModelTests {
         #expect(model.newHabitDraft().changes.contains(.showInToday(true)))
     }
 
+    /// A new habit is black (.26893): the page's color control and its marks show its own color, not the habits' one.
+    @Test func aNewHabitIsBlackUnlessTheSettingsPickAnotherColor() throws {
+        let model = try makeModel()
+        let draft = model.newHabitDraft()
+        #expect(draft.changes.contains(.habitColor("#000000")))
+        #expect(draft.note.habit.color == "#000000")
+        model.updateSettings { $0.habits.newHabitColor = "#FF2D55" }
+        #expect(model.newHabitDraft().note.habit.color == "#FF2D55")
+    }
+
     /// Links order tasks but never prevent checking one off.
     @Test func aTaskAfterAnUnfinishedOneCanStillBeChecked() async throws {
         let model = try makeModel()

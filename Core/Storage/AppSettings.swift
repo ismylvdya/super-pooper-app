@@ -100,6 +100,8 @@ struct AppSettings: Codable, Equatable, Sendable {
         /// "Show in Today" of a newly created habit (on by default; the old `showInTodayByDefault`, which was off,
         /// is not read any more).
         var showNewHabitsInToday: Bool
+        /// The own color (`#RRGGBB`) a newly created habit gets; black unless the user picks another.
+        var newHabitColor: String
         /// The order of the morning, day and evening routines in the pool (habit names).
         var morningRoutine: [String]
         var dayRoutine: [String]

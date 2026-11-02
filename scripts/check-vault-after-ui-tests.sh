@@ -24,7 +24,7 @@ check "delete from Habits → repeatable task in .trash" "[ -f \"$VAULT/.trash/�
 check "delete a parent → its subtasks in .trash too"  "[ -f \"$VAULT/.trash/Повесить зеркало.md\" ] && [ -f \"$VAULT/.trash/Купить дюбели.md\" ] && [ -f \"$VAULT/.trash/Найти уровень.md\" ] && [ ! -f \"$TASKS/Купить дюбели.md\" ]"
 check "picker → previous_task link written"          "grep -qF 'uid: \"[[Найти отвёртку]]\"' \"$TASKS/Помыть окна.md\""
 check "event picker → previous_event written"        "grep -q '^previous_event: \".*|Call with dad|' \"$TASKS/Сходить к стоматологу.md\""
-check "plus in Habits → new habit, in Today"         "grep -q '^status: habit' \"$TASKS/Читать 20 минут.md\" && grep -qF '\"show_in_today\":true' \"$TASKS/Читать 20 минут.md\" && grep -q '^recurrence: ' \"$TASKS/Читать 20 минут.md\""
+check "plus in Habits → new habit, in Today, black"  "grep -q '^status: habit' \"$TASKS/Читать 20 минут.md\" && grep -qF '\"show_in_today\":true' \"$TASKS/Читать 20 минут.md\" && grep -q '^recurrence: ' \"$TASKS/Читать 20 минут.md\" && grep -qF '\"habit_color\":\"#000000\"' \"$TASKS/Читать 20 минут.md\""
 check "Return in a new task's name → saved once, edits after it written" "grep -q '^status: this_week' \"$TASKS/Купить хлеб.md\" && grep -q '^priority: high' \"$TASKS/Купить хлеб.md\" && [ ! -f \"$TASKS/Купить хлеб 2.md\" ] && [ -f \"$TASKS/Полить цветы.md\" ] && [ ! -f \"$TASKS/Полить цветы 2.md\" ] && [ ! -f \"$TASKS/Unnamed.md\" ]"
 check "plus in review → new this_week note"           "grep -q '^status: this_week' \"$TASKS/Позвонить врачу.md\""
 check "subtask dragged → its place in subtask_order"  "grep -qF '\"subtask_order\":' \"$TASKS/Шаг один.md\""

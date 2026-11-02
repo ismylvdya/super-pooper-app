@@ -22,9 +22,9 @@ struct NoteDraft: Equatable, Sendable {
         NoteDraft(status: .thisWeek, changes: [.addProject(parent)])
     }
 
-    /// A new habit, daily from `start`.
-    static func newHabit(startingOn start: LocalDate, showInToday: Bool) -> NoteDraft {
-        NoteDraft(status: .habit, changes: [.recurrence(RecurrenceDraft(start: start).rule), .showInToday(showInToday)])
+    /// A new habit, daily from `start`, in its own `color` (`#RRGGBB`).
+    static func newHabit(startingOn start: LocalDate, showInToday: Bool, color: String) -> NoteDraft {
+        NoteDraft(status: .habit, changes: [.recurrence(RecurrenceDraft(start: start).rule), .showInToday(showInToday), .habitColor(color)])
     }
 
     mutating func apply(_ new: [TaskEdit]) {

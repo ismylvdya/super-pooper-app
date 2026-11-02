@@ -4584,7 +4584,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Whether a new habit shows up on Today right away. You can change it on each habit's page."
+            "value": "Whether a new habit shows up on Today right away and its color. You can change both on each habit's page."
           }
         }
       }

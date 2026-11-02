@@ -111,9 +111,10 @@ final class NoteCommands {
         store.nameProblem(in: name)
     }
 
-    /// A new habit: daily from today, shown in Today as the settings say.
+    /// A new habit: daily from today, shown in Today and in the color the settings say.
     func newHabitDraft() -> NoteDraft {
-        .newHabit(startingOn: day.context().today, showInToday: settings.settings.habits.showNewHabitsInToday)
+        let habits = settings.settings.habits
+        return .newHabit(startingOn: day.context().today, showInToday: habits.showNewHabitsInToday, color: habits.newHabitColor)
     }
 
     /// The new task or habit page is left: its note is created (none for a page left untouched), or the user is told why

@@ -62,6 +62,7 @@
   "habits": {
     "order": [],
     "showNewHabitsInToday": true,
+    "newHabitColor": "#000000",
     "morningRoutine": [],
     "dayRoutine": [],
     "eveningRoutine": [],
