@@ -37,7 +37,7 @@ struct TaskListScreen: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
-                Button { router.openNewItem() } label: { Image(systemName: icons[.newTask]) }
+                Button { router.openNewItem() } label: { Image(systemName: icons[.newItem]) }
                     .accessibilityLabel(Text("task.new.title"))
                 SearchBarButton(isSearching: $isSearching, accessibilityID: "list.search")
             }

@@ -50,7 +50,7 @@ struct HabitsScreen: View {
         .actionConfirmation($pendingAction) { handler.run($0) }
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
-                Button { router.openNewItem() } label: { Image(systemName: icons[.newTask]) }
+                Button { router.openNewItem() } label: { Image(systemName: icons[.newItem]) }
                     .tint(tokens.color(.accent))
                     .accessibilityLabel(Text("habits.new"))
                     .accessibilityIdentifier("habits.new")

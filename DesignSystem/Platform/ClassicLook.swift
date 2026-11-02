@@ -10,6 +10,8 @@ struct ClassicLook: ViewModifier {
         switch look {
         case .barCapsule:
             content.background(.bar, in: Capsule())
+        case .newItemBubble:
+            content.background(.bar, in: Capsule())
         case .floatingCapsule:
             content.background(.regularMaterial, in: Capsule())
         case .bannerCard:

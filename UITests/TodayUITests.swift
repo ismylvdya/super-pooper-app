@@ -44,7 +44,7 @@ final class TodayUITests: XCTestCase {
         XCTAssertTrue(app.buttons.matching(date).firstMatch.waitForExistence(timeout: 5))
         XCTAssertEqual(next.frame, arrows.0)
         XCTAssertEqual(previous.frame, arrows.1)
-        app.tabBars.buttons["Today"].tap()
+        app.tabBars.buttons["Tasks"].tap()
         XCTAssertTrue(app.buttons.matching(named("Today")).firstMatch.waitForExistence(timeout: 5))
         previous.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         XCTAssertTrue(app.buttons.matching(named("Yesterday")).firstMatch.waitForExistence(timeout: 5))
@@ -70,7 +70,7 @@ final class TodayUITests: XCTestCase {
         for (arrow, corner) in corners {
             arrow.coordinate(withNormalizedOffset: corner).tap()
             XCTAssertTrue(app.buttons.matching(date).firstMatch.waitForExistence(timeout: 5), "\(arrow.identifier) at \(corner)")
-            app.tabBars.buttons["Today"].tap()
+            app.tabBars.buttons["Tasks"].tap()
             XCTAssertTrue(app.buttons.matching(today).firstMatch.waitForExistence(timeout: 5))
         }
     }
@@ -223,7 +223,7 @@ final class TodayUITests: XCTestCase {
         let tomorrow = NSPredicate(format: "identifier == 'today.day' AND label == 'Tomorrow'")
         XCTAssertTrue(app.buttons.matching(tomorrow).firstMatch.waitForExistence(timeout: 5))
         app.tabBars.buttons["Habits"].tap()
-        app.tabBars.buttons["Today"].tap()
+        app.tabBars.buttons["Tasks"].tap()
         XCTAssertEqual(wait(onPool), .completed, "the Today tab turns back to the pool")
         XCTAssertEqual(app.buttons["today.day"].label, "Today", "and to today")
 
@@ -232,7 +232,7 @@ final class TodayUITests: XCTestCase {
         XCTAssertTrue(row.waitForExistence(timeout: 10))
         row.tap()
         XCTAssertFalse(app.buttons["today.day"].waitForExistence(timeout: 3), "the row's page is open")
-        app.tabBars.buttons["Today"].tap()
+        app.tabBars.buttons["Tasks"].tap()
         XCTAssertTrue(app.buttons["today.day"].waitForExistence(timeout: 5), "back on Today's first page")
         XCTAssertEqual(wait(onPool), .completed)
     }

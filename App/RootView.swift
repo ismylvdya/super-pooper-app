@@ -29,18 +29,19 @@ struct RootView: View {
             if model.settings.onboarding.completed {
                 HStack(spacing: 0) {
                     if physicalBottom == .leading { LandscapeTabBar(bottom: .leading) }
-                    TabView(selection: Binding(get: { router.tab }, set: { router.select($0) })) {
+                    TabView(selection: Binding(get: { TabBarItem.tab(router.tab) }, set: { TabBarItem.selection($0, router: router) })) {
                         ForEach(AppTab.allCases, id: \.self) { tab in
-                            NavigationStack(path: Binding(get: { router.paths[tab] ?? [] }, set: { router.paths[tab] = $0 })) {
-                                root(tab, model: model)
-                                    .systemTabBar(isShown: physicalBottom == nil)
-                                    .navigationDestination(for: Route.self) { route in
-                                        destination(route, in: tab)
-                                            .syncsOnPull()
-                                            .systemTabBar(isShown: physicalBottom == nil)
-                                    }
-                            }
-                            .tabItem {
+                            Tab(value: TabBarItem.tab(tab)) {
+                                NavigationStack(path: Binding(get: { router.paths[tab] ?? [] }, set: { router.paths[tab] = $0 })) {
+                                    root(tab, model: model)
+                                        .systemTabBar(isShown: physicalBottom == nil)
+                                        .navigationDestination(for: Route.self) { route in
+                                            destination(route, in: tab)
+                                                .syncsOnPull()
+                                                .systemTabBar(isShown: physicalBottom == nil)
+                                        }
+                                }
+                            } label: {
                                 Label {
                                     Text(LocalizedStringKey(String("tab.") + tab.rawValue))
                                 } icon: {
@@ -52,9 +53,15 @@ struct RootView: View {
                                         .environment(\.symbolVariants, .none)
                                 }
                             }
-                            .tag(tab)
+                        }
+                        // Only keeps the room the "+" stands over (iOS 26 draws a search-role tab apart, on the right).
+                        Tab(value: TabBarItem.newItem, role: .search) {
+                            Color.clear
+                        } label: {
+                            Label { Text("newItem.title") } icon: { Image(systemName: container.config.icons[.newItem]) }
                         }
                     }
+                    .overlay { if physicalBottom == nil { uprightNewItemButton } }
                     if physicalBottom == .trailing { LandscapeTabBar(bottom: .trailing) }
                 }
                 // The landscape tab bar is laid out from the screen edge at the physical bottom, not from the safe area,
@@ -110,6 +117,22 @@ struct RootView: View {
         .onOpenURL { container.router.handle($0) }
     }
 
+
+    /// The "+" over the room the system tab bar keeps for it, under the keyboard rather than above it. Read within the
+    /// safe area (its insets are lost once a view ignores it) and laid out in screen coordinates.
+    private var uprightNewItemButton: some View {
+        GeometryReader { geometry in
+            let insets = geometry.safeAreaInsets
+            let screen = CGSize(width: geometry.size.width + insets.leading + insets.trailing,
+                                height: geometry.size.height + insets.top + insets.bottom)
+            let frame = SystemLook.newItemSlot(tokens: tokens, tabCount: AppTab.allCases.count + 1)
+                .frame(in: screen, bottomSafeArea: insets.bottom)
+            NewItemButton()
+                .frame(width: frame.width, height: frame.height)
+                .position(x: frame.midX - insets.leading, y: frame.midY - insets.top)
+        }
+        .ignoresSafeArea(.keyboard)
+    }
 
     @ViewBuilder private func root(_ tab: AppTab, model: AppModel) -> some View {
         switch tab {

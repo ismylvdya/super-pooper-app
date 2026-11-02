@@ -44,6 +44,26 @@ final class NewTaskUITests: XCTestCase {
         expectCreatedBanner("Позвонить врачу")
     }
 
+    /// The "+" beside the tab bar opens a new task on Tasks, its name ready for typing, and a new habit on Habits.
+    func testPlusOnEveryTabOpensTheNewItemPage() {
+        launch("superpooper://today")
+        let plus = app.buttons["tabBar.newItem"]
+        XCTAssertTrue(plus.waitForExistence(timeout: 10))
+        app.dismissBanners()
+        plus.tap()
+        let name = app.textFields["taskPage.name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5), "the name is focused")
+        XCTAssertEqual(name.placeholderValue, "New task")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(name.waitForNonExistence(timeout: 5))
+        app.tabBars.buttons["Habits"].tap()
+        plus.tap()
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        XCTAssertEqual(name.placeholderValue, "New habit")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+    }
+
     func testPlusInHabitsCreatesAHabit() {
         launch("superpooper://habits")
         let plus = app.buttons["habits.new"]
@@ -119,7 +139,7 @@ final class NewTaskUITests: XCTestCase {
         expectCreatedBanner("Полить цветы")
         app.tabBars.buttons["Habits"].tap()
         XCTAssertTrue(app.buttons["habits.new"].waitForExistence(timeout: 5))
-        app.tabBars.buttons["Today"].tap()
+        app.tabBars.buttons["Tasks"].tap()
         XCTAssertTrue(name.waitForExistence(timeout: 5))
         XCTAssertEqual(name.value as? String, "Полить цветы")
         XCTAssertTrue(app.buttons["taskPage.more"].exists)

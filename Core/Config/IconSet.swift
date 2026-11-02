@@ -8,7 +8,7 @@ enum Icon: String, CaseIterable, Codable, Sendable {
     case previousTasks, nextTasks, previousEvent, nextEvent, event, reminder, habit
     case vault, calendars, reminderLists, notifications
     case dayBoundary, energyHour, timelineLayout, hoursAfter, hoursBefore, halves, fontSize, poolCount
-    case archive, delete, search, resetOrder, resetSort, add, newTask, colors, remove, chevron, status, note, title, recurrence
+    case archive, delete, search, resetOrder, resetSort, add, newItem, colors, remove, chevron, status, note, title, recurrence
     case checkboxOpen, markDone
     case emptyVault, debugSeed, permissionGranted
     case tabToday, tabHabits, tabSettings

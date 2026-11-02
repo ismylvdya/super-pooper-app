@@ -3137,6 +3137,17 @@
         }
       }
     },
+    "newItem.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New"
+          }
+        }
+      }
+    },
     "note.unnamed": {
       "extractionState": "manual",
       "localizations": {

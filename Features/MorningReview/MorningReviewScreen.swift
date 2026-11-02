@@ -100,7 +100,7 @@ struct MorningReviewScreen: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button { path.append(.newItem(NewItemSeed(kind: .task))) } label: {
-                        Image(systemName: icons[.newTask])
+                        Image(systemName: icons[.newItem])
                     }
                     .accessibilityLabel(Text("task.new.add"))
                     .accessibilityIdentifier("task.new")
