@@ -27,6 +27,8 @@ struct BannerView: View {
         HStack(spacing: tokens.space(.iconTextGap)) {
             message
                 .accessibilityElement(children: .combine)
+                // Read out whole even while collapsed: the notes too, not only the first one shown.
+                .accessibilityLabel(Text(verbatim: ([text] + counts.map(\.label) + items).joined(separator: "\n")))
                 .accessibilityAddTraits(.isStaticText)
                 .accessibilityIdentifier("banner")
                 .accessibilityAction(named: Text("a11y.dismiss")) { onDismiss() }

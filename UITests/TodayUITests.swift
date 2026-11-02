@@ -199,8 +199,8 @@ final class TodayUITests: XCTestCase {
         XCTAssertEqual(XCTWaiter().wait(for: [turned], timeout: 5), .completed, "the pages turned to the timeline")
     }
 
-    /// On the pages, the day's name turns back to the pool; the Today tab turns back to the pool and to today's date, also
-    /// from a page opened further in.
+    /// On the pages, the day's name turns back to the pool; the Today tab turns back to the pool and to today's date, and
+    /// from a page opened further in on Today back to its first page.
     func testTheDayNameAndTheTodayTabGoBackToTodaysPool() {
         app.launchArguments += ["-SPArrangement", "paged"]
         launch()
@@ -227,11 +227,11 @@ final class TodayUITests: XCTestCase {
         XCTAssertEqual(wait(onPool), .completed, "the Today tab turns back to the pool")
         XCTAssertEqual(app.buttons["today.day"].label, "Today", "and to today")
 
-        let row = app.buttons["title:Выпить воды 💧"]
+        // Whichever row the earlier tests left first in the pool.
+        let row = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'title:'")).firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 10))
         row.tap()
-        XCTAssertFalse(app.buttons["today.day"].waitForExistence(timeout: 3), "the habit's page is open")
-        app.tabBars.buttons["Habits"].tap()
+        XCTAssertFalse(app.buttons["today.day"].waitForExistence(timeout: 3), "the row's page is open")
         app.tabBars.buttons["Today"].tap()
         XCTAssertTrue(app.buttons["today.day"].waitForExistence(timeout: 5), "back on Today's first page")
         XCTAssertEqual(wait(onPool), .completed)
