@@ -2,6 +2,8 @@ import Foundation
 
 /// Task level in the weekly planning flow. How a store writes each one is the store's business.
 enum TaskStatus: Hashable, Codable, Sendable {
+    /// Captured and not planned yet (the New Task intent writes here); never in a day.
+    case inbox
     case thisWeek
     /// Started (half done): this week's task the user has begun. It counts as this week everywhere (`planningLevel`).
     case inProgress
@@ -15,11 +17,12 @@ enum TaskStatus: Hashable, Codable, Sendable {
     case other(String)
 
     /// The planning levels of open tasks.
-    static let open: [TaskStatus] = [.thisWeek, .halfYear, .someday, .waiting]
+    static let open: [TaskStatus] = [.inbox, .thisWeek, .halfYear, .someday, .waiting]
     /// Every status a task's page offers: the planning levels, Started next to This week, done and archived.
-    static let known: [TaskStatus] = [.thisWeek, .inProgress] + open.dropFirst() + [.done, .archived]
-    /// Where the review moves a task: a planning level or the archive (done is a check-off, not a move).
-    static let reviewChoices: [TaskStatus] = open + [.archived]
+    static let known: [TaskStatus] = [.inbox, .thisWeek, .inProgress, .halfYear, .someday, .waiting, .done, .archived]
+    /// Where the review moves a task: a planning level or the archive (done is a check-off, not a move). Nothing goes
+    /// back into the Inbox.
+    static let reviewChoices: [TaskStatus] = open.filter { $0 != .inbox } + [.archived]
 
     var isCompleted: Bool { self == .done || self == .archived }
 
@@ -31,10 +34,11 @@ enum TaskStatus: Hashable, Codable, Sendable {
     /// A level as configs name it (`lists.json`, `rules.json`): a name that is not one of these stops the app with a
     /// config error, instead of quietly matching nothing.
     enum Name: String, Codable, Hashable, Sendable {
-        case thisWeek, halfYear, someday, waiting, done, archived
+        case inbox, thisWeek, halfYear, someday, waiting, done, archived
 
         var status: TaskStatus {
             switch self {
+            case .inbox: .inbox
             case .thisWeek: .thisWeek
             case .halfYear: .halfYear
             case .someday: .someday

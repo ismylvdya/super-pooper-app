@@ -6241,6 +6241,17 @@
         }
       }
     },
+    "status.inbox": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inbox"
+          }
+        }
+      }
+    },
     "status.someday": {
       "extractionState": "manual",
       "localizations": {

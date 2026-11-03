@@ -53,6 +53,15 @@ struct ConfigTests {
         #expect(statuses == TaskStatus.open + [.done, .archived], "Started is in This week, not a list of its own")
     }
 
+    /// The Inbox is the first list of the statuses group; the review never moves a task back into it.
+    @Test func theStatusesGroupStartsWithInbox() throws {
+        let config = try AppConfig.load(bundle: Bundle(for: BundleToken.self).appHostBundle)
+        let statuses = try #require(config.lists.groups.first { $0.id == "statuses" })
+        #expect(statuses.lists.first?.filter.statuses == [.inbox])
+        #expect(!TaskStatus.reviewChoices.contains(.inbox))
+        #expect(TaskStatus.known.first == .inbox)
+    }
+
     /// A planning level misspelt in `day.autoPromoteFrom` stops the app with a config error naming the key; it used to
     /// be read as an unknown status that promoted nothing.
     @Test func aMisspeltAutoPromotionLevelIsAConfigError() throws {

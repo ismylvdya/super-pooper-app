@@ -62,6 +62,7 @@
   "listsDoubleGunsFillForward": "ListsDoubleGunsFillForward",
   "listsDoubleGunsFillBack": "ListsDoubleGunsFillBack",
   "listQuick": "hare",
+  "listInbox": "tray",
   "listThisWeek": "7.calendar|calendar",
   "listHalfYear": "calendar.badge.clock",
   "listSomeday": "moon.zzz",

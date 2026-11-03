@@ -3,6 +3,7 @@ import SwiftUI
 enum StatusText {
     static func title(_ status: TaskStatus) -> String {
         switch status {
+        case .inbox: L10n.string("status.inbox")
         case .thisWeek: L10n.string("status.thisWeek")
         case .inProgress: L10n.string("status.inProgress")
         case .halfYear: L10n.string("status.halfYear")
