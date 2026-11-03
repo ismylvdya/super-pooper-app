@@ -10,6 +10,11 @@ struct AppServices {
     let links: ExternalLinking?
     let backups: TaskBackups?
     let folder: FolderInspecting?
+    /// Keeps the store's own look of today in step with the app's.
+    var mirroring: DayMirroring? = nil
+    /// Takes the items of an old TaskNotes folder into the store.
+    var importer: TaskImporting? = nil
+    var readTaskNotes: (@Sendable (URL) async throws -> [ImportedItem])? = nil
     let settingsNote: SettingsNoteRepository
     let calendars: CalendarRepository
     let reminders: RemindersRepository

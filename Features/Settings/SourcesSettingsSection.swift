@@ -7,6 +7,8 @@ struct SourcesSettingsSection: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.openURL) private var openURL
     @State private var isPickingVault = false
+    @State private var isPickingTaskNotes = false
+    @State private var imported: Int?
 
     var body: some View {
         PlateSection(header: "settings.sources", hint: "settings.sources.hint") {
@@ -20,6 +22,16 @@ struct SourcesSettingsSection: View {
                     .foregroundStyle(tokens.color(.warning))
             }
             ObsidianLinkRows(place: model.chosenFolder.obsidianPlace)
+            PlateRow(icon: .vault, title: "settings.import", info: "info.settings.import") {
+                Button("settings.import.choose") { isPickingTaskNotes = true }
+            }
+            .fileImporter(isPresented: $isPickingTaskNotes, allowedContentTypes: [.folder]) { result in
+                guard case .success(let url) = result else { return }
+                Task { imported = await model.importTaskNotes(from: url) }
+            }
+            if let imported {
+                Text(L10n.format("settings.import.done", imported)).secondaryText(.hint)
+            }
             SourceListRows()
             accessRow(.calendars, "settings.access.calendar", "info.settings.access.calendar", model.access.calendars) {
                 await model.requestCalendarAccess()

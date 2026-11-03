@@ -11,7 +11,7 @@ struct TaskFileStoreTests {
 
     init() throws {
         folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
-        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: folder.appendingPathComponent(format.folder), withIntermediateDirectories: true)
     }
 
     private func store(today day: LocalDate? = nil) -> TaskFileStore {
@@ -206,6 +206,16 @@ struct TaskFileStoreTests {
         #expect(loaded.first { $0.name == "Open" }?.status == .someday)
         #expect(loaded.first { $0.name == "Run" }?.marks[today] == .done)
         #expect(try await store.filedTasks().map(\.name) == ["Finished"])
+    }
+
+    /// The old TaskNotes folder, or any other chosen by mistake, stays untouched: a problem, no file made.
+    @Test func aFolderWithoutTheTasksFolderIsNotWrittenTo() async throws {
+        try FileManager.default.removeItem(at: folder.appendingPathComponent(format.folder))
+        let store = store()
+        let result = try await store.load()
+        #expect(result.fileProblems == [.tasksFolderMissing(format.folder)])
+        await #expect(throws: TaskStoreError.folderMissing(format.folder)) { try await store.create(draft(), named: "A") }
+        #expect(try FileManager.default.contentsOfDirectory(atPath: folder.path).isEmpty)
     }
 
     @Test func namesWithAMarkerAreRefused() {

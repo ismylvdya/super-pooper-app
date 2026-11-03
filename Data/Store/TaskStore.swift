@@ -33,6 +33,8 @@ enum TaskStoreError: Error, Equatable, Sendable {
     case notConfirmed(String)
     /// iCloud did not bring the file down in time; nothing was read or written.
     case notDownloaded(String)
+    /// The chosen folder has no folder of the tasks: nothing is created, another folder must be chosen.
+    case folderMissing(String)
 }
 
 /// Where the tasks and habits live. The app state talks only to this protocol, never to a storage format: a second

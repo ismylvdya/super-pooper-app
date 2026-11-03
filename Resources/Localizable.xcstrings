@@ -825,7 +825,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "SuperPooperApp can see your whole vault. Choose only the TaskNotes folder in Settings → Tasks → TaskNotes folder."
+            "value": "SuperPooperApp can see your whole vault. Choose only the SuperPooperApp folder in Settings → Tasks → Tasks folder."
           }
         }
       }
@@ -1166,7 +1166,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "“%@” will be moved to the .trash folder inside the TaskNotes folder. A backup copy is kept in the app."
+            "value": "“%@” will be moved to Trash in the tasks file."
           }
         }
       }
@@ -1530,7 +1530,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "No access to the TaskNotes folder. Choose it again in Settings."
+            "value": "No access to the tasks folder. Choose it again in Settings."
           }
         }
       }
@@ -1541,7 +1541,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Can’t open the TaskNotes folder anymore. Choose it again in Settings."
+            "value": "Can’t open the tasks folder anymore. Choose it again in Settings."
           }
         }
       }
@@ -1552,7 +1552,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choose your TaskNotes folder first."
+            "value": "Choose your SuperPooperApp folder first."
           }
         }
       }
@@ -1563,7 +1563,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "“%@” did not change in the TaskNotes folder. Pull to refresh and try again."
+            "value": "“%@” did not change in the tasks file. Pull to refresh and try again."
           }
         }
       }
@@ -2553,7 +2553,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Like Apple Calendar: every day, week, month or year, on chosen weekdays or a day of the month. The rule is written to the note as a TaskNotes recurrence."
+            "value": "Like Apple Calendar: every day, week, month or year, on chosen weekdays or a day of the month."
           }
         }
       }
@@ -2685,7 +2685,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "For “Open in Obsidian”: the vault’s name and where the TaskNotes folder is inside it. A folder in Obsidian’s iCloud folder tells this by itself; empty = the chosen folder’s parent and the folder’s own name."
+            "value": "For “Open in Obsidian”: the vault’s name and where the folder is inside it. A folder in Obsidian’s iCloud folder tells this by itself."
           }
         }
       }
@@ -2883,7 +2883,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The TaskNotes folder inside your Obsidian vault in iCloud Drive. The app sees only this folder, not the rest of the vault. Tasks are read from its Tasks folder."
+            "value": "The SuperPooperApp folder inside your Obsidian vault in iCloud Drive; inside it, the Task Manager folder. The app sees only this folder."
           }
         }
       }
@@ -2971,7 +2971,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Properties are stored in the note’s frontmatter, exactly where TaskNotes keeps them."
+            "value": "They stand at the end of the task’s line in the tasks file."
           }
         }
       }
@@ -3004,7 +3004,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Each subtask is a note of its own that lists this one in “projects”, as TaskNotes does. A habit’s or a repeatable task’s subtasks repeat with it: they come up on its days and are marked Done for each day. Type a name and press Return to add one."
+            "value": "A subtask is a line under this one in the tasks file. A habit’s or a repeatable task’s subtasks repeat with it."
           }
         }
       }
@@ -3070,7 +3070,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Re-reads the TaskNotes folder, Calendar and Reminders and updates widgets and notifications."
+            "value": "Re-reads the tasks file, Calendar and Reminders and updates widgets and notifications."
           }
         }
       }
@@ -3488,7 +3488,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choose the TaskNotes folder inside your Obsidian vault in iCloud Drive. The app sees only this folder; tasks stay there, there is no database of its own."
+            "value": "Choose the SuperPooperApp folder inside your Obsidian vault in iCloud Drive. The app sees only this folder; tasks stay there, there is no database of its own."
           }
         }
       }
@@ -3499,7 +3499,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Your TaskNotes folder"
+            "value": "Your SuperPooperApp folder"
           }
         }
       }
@@ -3653,7 +3653,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "There is no such tasks folder in the TaskNotes folder. Check Settings → Sources."
+            "value": "There is no Task Manager folder in the chosen folder. Choose the SuperPooperApp folder in Settings → Sources."
           }
         }
       }
@@ -5933,7 +5933,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "TaskNotes folder"
+            "value": "Tasks folder"
           }
         }
       }
@@ -5955,7 +5955,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The app has access to the whole vault. Choose the TaskNotes folder inside it instead."
+            "value": "The app has access to the whole vault. Choose the SuperPooperApp folder inside it instead."
           }
         }
       }
@@ -7055,7 +7055,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choose TaskNotes folder"
+            "value": "Choose the folder"
           }
         }
       }
@@ -7066,7 +7066,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "SuperPooperApp reads tasks and habits from the TaskNotes folder of your Obsidian vault in iCloud Drive. Pick that folder (not the whole vault) to start."
+            "value": "SuperPooperApp keeps tasks and habits in the SuperPooperApp folder of your Obsidian vault in iCloud Drive. Pick that folder (not the whole vault) to start."
           }
         }
       }
@@ -7077,7 +7077,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choose the TaskNotes folder"
+            "value": "Choose the SuperPooperApp folder"
           }
         }
       }
@@ -7088,7 +7088,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Can’t open the TaskNotes folder"
+            "value": "Can’t open the folder"
           }
         }
       }
@@ -7518,6 +7518,50 @@
           "stringUnit": {
             "state": "translated",
             "value": "The words of the reminder"
+          }
+        }
+      }
+    },
+    "settings.import": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From TaskNotes"
+          }
+        }
+      }
+    },
+    "settings.import.choose": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import"
+          }
+        }
+      }
+    },
+    "info.settings.import": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick your old TaskNotes folder: its tasks, habits and history are added to the tasks file. The folder itself is only read and stays as it is; what the file already has by name is skipped."
+          }
+        }
+      }
+    },
+    "settings.import.done": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Imported %lld items."
           }
         }
       }

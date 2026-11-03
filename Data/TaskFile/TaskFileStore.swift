@@ -75,6 +75,8 @@ actor TaskFileStore: TaskStore {
     /// taken for missing, which would write a new empty one over it.
     func read(root: URL) async throws -> Snapshot {
         let url = fileURL(root: root)
+        // A folder chosen by mistake (or the old TaskNotes one) stays as it is: the app makes no folders of its own there.
+        guard fileSystem.fileExists(url.deletingLastPathComponent()) else { throw TaskStoreError.folderMissing(format.folder) }
         try await ensureDownloaded(url)
         let document = fileSystem.fileExists(url)
             ? TaskDocument(text: try fileSystem.read(url).text, format: format)
@@ -118,7 +120,6 @@ actor TaskFileStore: TaskStore {
         let url = fileURL(root: root)
         let text = document.text(format: format)
         if fileSystem.fileExists(url), (try? fileSystem.read(url).text) == text { return }
-        try fileSystem.createFolder(url.deletingLastPathComponent())
         try fileSystem.write(text, to: url)
         guard fileSystem.isWritten(text, at: url) else { throw TaskStoreError.notConfirmed(format.file) }
     }
@@ -141,6 +142,8 @@ actor TaskFileStore: TaskStore {
                 snapshot = try await read(root: root)
             } catch TaskStoreError.notDownloaded(let file) {
                 return VaultScanResult(tasks: [], fileProblems: [.notDownloaded(file: file)], conflicted: [])
+            } catch TaskStoreError.folderMissing(let folder) {
+                return VaultScanResult(tasks: [], fileProblems: [.tasksFolderMissing(folder)], conflicted: [])
             }
             if normalize(&snapshot) { try write(snapshot.document, root: root) }
             snapshot.indexNames()

@@ -17,6 +17,7 @@ final class DerivedStatePublisher {
     private let snoozeStore: SnoozeStore
     private let widgets: WidgetReloading
     private let notifications: NotificationScheduling
+    private let mirroring: DayMirroring?
     private let queue = NotificationQueue()
     /// The last plan of each day asked for (0 = today), with what it was worked out from.
     private var plans: [Int: CachedPlan] = [:]
@@ -34,6 +35,7 @@ final class DerivedStatePublisher {
         snoozeStore = services.snoozeStore
         widgets = services.widgets
         notifications = services.notifications
+        mirroring = services.mirroring
     }
 
     /// Today (`dayOffset` 0) or another day browsed on Today.
@@ -68,6 +70,23 @@ final class DerivedStatePublisher {
         }
         widgets.reloadAll()
         queue.schedulePlan { [weak self] in await self?.reschedule(context: context) }
+        mirrorToday()
+    }
+
+    /// The store's file looks as today does (`DayMirroring`).
+    private func mirrorToday() {
+        guard let mirroring else { return }
+        let plan = plan(at: day.clock.now)
+        let sections = plan.sections.map { section in
+            DayMirror.Section(title: section.isCustom ? section.title : L10n.string(section.title),
+                              names: section.items.filter { $0.depth == 0 }.map(\.id))
+        }
+        var timed: [String: LocalTime] = [:]
+        for slot in plan.timeline {
+            if case .task(let item) = slot.content { timed[item.id] = LocalTime(slot.start, in: day.calendar) }
+        }
+        let mirror = DayMirror(sections: sections, timed: timed, keptOut: day.postponedNames)
+        Task { await mirroring.mirror(mirror) }
     }
 
     /// Only how things look changed: the widgets read that from the settings themselves.

@@ -158,13 +158,13 @@ struct AppModelTests {
     }
 
     /// A setting changed a moment before a sync is not undone by the older copy in the vault note.
-    /// On the store the app uses: the settings file next to the tasks folder.
+    /// On the store the app uses: the settings file in the chosen folder.
     @Test func aSettingChangedJustBeforeASyncStays() async throws {
         let model = try makeModel()
         let root = try await model.parts.services.vault.withRoot { $0 }
         try FileManager.default.createDirectory(at: root.appendingPathComponent("TaskNotes/Tasks"), withIntermediateDirectories: true)
         await model.sync(announce: false)
-        let file = root.appendingPathComponent("TaskNotes").appendingPathComponent(model.config.rules.vault.settingsFile)
+        let file = root.appendingPathComponent(model.config.rules.vault.settingsFile)
         #expect(FileManager.default.fileExists(atPath: file.path))
         model.updateSettings { $0.timeline.hoursBefore = 5 }
         await model.sync(announce: false)

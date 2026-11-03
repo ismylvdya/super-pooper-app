@@ -24,7 +24,7 @@ enum PreviewModel {
             trash: memory,
             versions: memory, links: memory, backups: memory, folder: memory,
             settingsNote: VaultSettingsFile(location: FixedVaultLocation(url: store.directory), fileSystem: CoordinatedFileSystem(),
-                                            rules: config.rules.vault, vaultSettings: { settingsStore.load().vault }),
+                                            fileName: config.rules.vault.settingsFile),
             calendars: calendars, reminders: reminders, notifications: notifications,
             settingsStore: settingsStore, dayStateStore: DayStateStore(store: store),
             daySectionStore: JSONDaySectionStore(store: store),

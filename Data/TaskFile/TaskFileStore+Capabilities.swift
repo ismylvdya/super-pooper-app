@@ -2,7 +2,7 @@ import Foundation
 
 /// The trash (a section of the file for tasks, a folder beside the habits for habits), the day's look, links into
 /// Obsidian, backups and what the chosen folder is.
-extension TaskFileStore: TaskTrash, DayMirroring, ExternalLinking, TaskBackups, FolderInspecting {
+extension TaskFileStore: TaskTrash, DayMirroring, TaskImporting, ExternalLinking, TaskBackups, FolderInspecting {
     private static let taskPrefix = "task:"
     private static let habitPrefix = "habit:"
 

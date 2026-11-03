@@ -6,6 +6,7 @@ import UserNotifications
 @MainActor
 final class AppContainer {
     let config: AppConfig
+    private let format: TaskFileFormat
     let model: AppModel
     let router: Router
     let banners: BannerCenter
@@ -17,7 +18,7 @@ final class AppContainer {
     /// The single instance shared by the SwiftUI app and the UIKit delegate.
     static let shared: Result<AppContainer, ConfigError> = {
         do {
-            return .success(try AppContainer(config: AppConfig.load(), mapping: FieldMapping.load(), launch: .current()))
+            return .success(try AppContainer(config: AppConfig.load(), mapping: FieldMapping.load(), format: TaskFileFormat.load(), launch: .current()))
         } catch let error as ConfigError {
             return .failure(error)
         } catch {
@@ -33,8 +34,9 @@ final class AppContainer {
     }
     #endif
 
-    init(config: AppConfig, mapping: FieldMapping, launch: LaunchOptions) {
+    init(config: AppConfig, mapping: FieldMapping, format: TaskFileFormat, launch: LaunchOptions) {
         self.config = config
+        self.format = format
         self.launch = launch
         let calendar = LiveCalendar()
         self.calendar = calendar
@@ -53,10 +55,13 @@ final class AppContainer {
         let fileSystem = CoordinatedFileSystem()
         let backups = BackupService(directory: shared.url("Backups"), keepCount: config.rules.backups.keepCount,
                                     fileSystem: fileSystem, clock: { clock.now }, calendar: calendar)
-        let tasks = TaskNotesStore(location: vaultLocation, fileSystem: fileSystem, ubiquity: ICloudUbiquityService(),
-                                        mapping: mapping, calendar: calendar, rules: config.rules.vault,
-                                        backups: backups, clock: clock,
-                                        vaultSettings: { settingsStore.load().vault })
+        let boundary = { @Sendable in settingsStore.load().day }
+        let tasks = TaskFileStore(location: vaultLocation, fileSystem: fileSystem, ubiquity: ICloudUbiquityService(),
+                                  format: format, obsidian: mapping.obsidian, backups: backups, rules: config.rules.vault,
+                                  vaultSettings: { settingsStore.load().vault }, today: {
+            let day = boundary()
+            return DayContext(now: clock.now, calendar: calendar.current, boundary: day.boundary, energyHour: day.energyHour).today
+        })
         let eventKit = EventKitAccess()
         self.eventKit = eventKit
         let notificationImage = NotificationImageStore(url: shared.url(config.rules.notifications.imageFile),
@@ -68,11 +73,14 @@ final class AppContainer {
            pointSize: config.tokens.size(.notificationIcon), image: notificationImage))
         let services = AppServices(
             vault: vaultLocation, tasks: tasks,
-            trash: TaskNotesTrash(location: vaultLocation, fileSystem: fileSystem, noteExtension: mapping.obsidian.noteExtension,
-                                        vaultSettings: { settingsStore.load().vault }),
-            versions: tasks, links: tasks, backups: tasks, folder: tasks,
-            settingsNote: VaultSettingsFile(location: vaultLocation, fileSystem: fileSystem, rules: config.rules.vault,
-                                            vaultSettings: { settingsStore.load().vault }),
+            trash: tasks,
+            versions: nil, links: tasks, backups: tasks, folder: tasks,
+            mirroring: tasks, importer: tasks,
+            readTaskNotes: { [rules = config.rules.vault] folder in
+                try await TaskNotesImport.items(from: folder, mapping: mapping, calendar: calendar, rules: rules, backups: backups, clock: clock,
+                                                vault: settingsStore.load().vault)
+            },
+            settingsNote: VaultSettingsFile(location: vaultLocation, fileSystem: fileSystem, fileName: config.rules.vault.settingsFile),
             calendars: EventKitCalendarRepository(eventKit: eventKit),
             reminders: EventKitRemindersRepository(eventKit: eventKit, calendar: calendar),
             notifications: notifications, settingsStore: settingsStore,
@@ -130,6 +138,11 @@ final class AppContainer {
         }
         if launch.provisionalNotifications {
             _ = try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .provisional])
+        }
+        // The test vault is written in the old format: the first launch on it imports it.
+        if let root = launch.vaultURL(), !FileManager.default.fileExists(atPath: root.appendingPathComponent(format.folder).path) {
+            try? FileManager.default.createDirectory(at: root.appendingPathComponent(format.folder), withIntermediateDirectories: true)
+            _ = await model.importTaskNotes(from: root)
         }
         #endif
         await model.sync(announce: false)

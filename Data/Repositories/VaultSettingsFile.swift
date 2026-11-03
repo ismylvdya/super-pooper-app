@@ -1,27 +1,20 @@
 import Foundation
 
-/// The app's shared settings (day boundary, timeline, routines, pool order …) in the vault:
-/// `super-pooper-app-settings.json` next to the tasks folder, so every device reads the same ones. Not to be confused
-/// with an item's own settings, which live in its note (`ItemSettingsProperty`). Until the file exists, the older
-/// settings note is read and its settings are written into a new file right away; the note stays as it was.
+/// The app's shared settings (day boundary, timeline, routines, pool order …) in the chosen folder:
+/// `super-pooper-app-settings.json`, so every device reads the same ones. Not to be confused with a habit's own settings
+/// (`HabitFile`).
 struct VaultSettingsFile: SettingsNoteRepository {
     let location: VaultLocating
     let fileSystem: NoteFileSystem
     let fileName: String
-    let vaultSettings: @Sendable () -> AppSettings.Vault
-    /// The older settings note, read while there is no file.
-    let legacy: LegacySettingsReading?
 
     func read() async -> Data? {
         let file: Data?? = try? await location.withRoot { root in
-            let url = try url(root: root)
+            let url = root.appendingPathComponent(fileName)
             guard fileSystem.fileExists(url) else { return nil }
             return try fileSystem.read(url).text.data(using: .utf8)
         }
-        if let file = file.flatMap({ $0 }) { return file }
-        guard let old = await legacy?.read() else { return nil }
-        try? await write(old)
-        return old
+        return file.flatMap { $0 }
     }
 
     /// Pretty-printed with sorted keys, so the file reads well and changes little between writes.
@@ -29,20 +22,6 @@ struct VaultSettingsFile: SettingsNoteRepository {
         let object = try JSONSerialization.jsonObject(with: json)
         let pretty = try JSONSerialization.data(withJSONObject: object, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes])
         let text = String(decoding: pretty, as: UTF8.self) + "\n"
-        try await location.withRoot { root in try fileSystem.write(text, to: try url(root: root)) }
-    }
-
-    private func url(root: URL) throws -> URL {
-        try VaultPaths.besideTasks(fileName, root: root, tasksFolder: vaultSettings().tasksFolder, fileSystem: fileSystem)
-    }
-}
-
-extension VaultSettingsFile {
-    /// The vault's settings file as the app uses it: named by `rules`, reading the older settings note until it exists.
-    init(location: VaultLocating, fileSystem: NoteFileSystem, rules: RulesConfig.Vault,
-         vaultSettings: @escaping @Sendable () -> AppSettings.Vault) {
-        self.init(location: location, fileSystem: fileSystem, fileName: rules.settingsFile, vaultSettings: vaultSettings,
-                  legacy: VaultSettingsNote(location: location, fileSystem: fileSystem, fileName: rules.settingsNote,
-                                            vaultSettings: vaultSettings))
+        try await location.withRoot { root in try fileSystem.write(text, to: root.appendingPathComponent(fileName)) }
     }
 }
