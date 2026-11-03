@@ -31,6 +31,8 @@ enum TaskStoreError: Error, Equatable, Sendable {
     case nameTaken(String)
     /// The change was written, but what was read back does not show it: it does not count as made.
     case notConfirmed(String)
+    /// iCloud did not bring the file down in time; nothing was read or written.
+    case notDownloaded(String)
 }
 
 /// Where the tasks and habits live. The app state talks only to this protocol, never to a storage format: a second
@@ -86,4 +88,36 @@ protocol TaskBackups: Sendable {
 /// What the folder chosen for the store is: the tasks' own folder or a whole vault, and where it is in Obsidian.
 protocol FolderInspecting: Sendable {
     func chosenFolder() async -> ChosenFolder
+}
+
+/// What the day shows, for a store that keeps its file looking as the app does: the pool's sections with their lines in
+/// order, what stands on the timeline, and what was kept out of today.
+struct DayMirror: Equatable, Sendable {
+    struct Section: Equatable, Sendable {
+        let title: String
+        let names: [String]
+    }
+
+    let sections: [Section]
+    /// Items on today's timeline, with the time they stand at today.
+    let timed: [String: LocalTime]
+    let keptOut: [String]
+}
+
+/// Keeps the store's own look of today in step with the app's.
+protocol DayMirroring: Sendable {
+    func mirror(_ day: DayMirror) async
+}
+
+/// An item read elsewhere, to be taken into the store.
+struct ImportedItem: Sendable {
+    let item: TaskItem
+    let text: String
+    /// Put away as done.
+    let isFiled: Bool
+}
+
+/// Takes in items from elsewhere; a name it already has is left as it is. Returns how many it took.
+protocol TaskImporting: Sendable {
+    func importItems(_ items: [ImportedItem]) async throws -> Int
 }

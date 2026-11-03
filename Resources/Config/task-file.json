@@ -1,0 +1,38 @@
+{
+  "folder": "Task Manager",
+  "file": "Tasks.md",
+  "habitsFolder": "Habits settings",
+  "habitsTrashFolder": "Trash",
+  "indent": "    ",
+  "sections": {
+    "inbox": "Inbox",
+    "now": "Now",
+    "soon": "Soon",
+    "halfYear": "Half year",
+    "someday": "Someday",
+    "waiting": "Waiting",
+    "done": "Done",
+    "archive": "Archive",
+    "trash": "Trash"
+  },
+  "boxes": {
+    "open": " ",
+    "started": "/",
+    "done": "x"
+  },
+  "markers": {
+    "id": "🆔",
+    "date": "📅",
+    "time": "⏰",
+    "zone": "🌐",
+    "estimate": "⏳",
+    "high": "🔥",
+    "pleasant": "❤️",
+    "energy": "🐸",
+    "routine": "🌅",
+    "parent": "🔼",
+    "created": "➕",
+    "completed": "✅",
+    "deleted": "🗑️"
+  }
+}
