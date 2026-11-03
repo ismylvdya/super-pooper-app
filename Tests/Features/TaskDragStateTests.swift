@@ -85,4 +85,29 @@ struct TaskDragStateTests {
         drag.end()
         #expect(drag.backlogTarget == nil)
     }
+
+    /// The tab bar's "+" dragged over the pool is no note: its room there is a gap of its own the rows part around.
+    @Test func aNewItemDragHasNoNoteButAGapInThePool() {
+        let drag = TaskDragState()
+        _ = drag.beginNewItem()
+        #expect(drag.item == nil && drag.source == .newItem)
+        #expect(drag.draggedID == TaskDragState.newItemGap && drag.isDragging)
+        #expect(!drag.isGap(TaskDragState.newItemGap), "lifted, not yet over the pool")
+        #expect(drag.hover(poolOrder: ["A", TaskDragState.newItemGap, "B"]))
+        #expect(drag.isGap(TaskDragState.newItemGap))
+        #expect(!drag.isGap("A"))
+    }
+
+    @Test func endingANewItemDragClearsIt() {
+        let drag = TaskDragState()
+        _ = drag.beginNewItem()
+        _ = drag.hover(poolOrder: [TaskDragState.newItemGap])
+        drag.end()
+        #expect(drag.source == .pool && drag.draggedID == nil && !drag.isDragging)
+        #expect(!drag.isGap(TaskDragState.newItemGap))
+        let task = DayItem(listed: makeTask("Pay the internet"))
+        _ = drag.beginNewItem()
+        _ = drag.begin(task, from: .pool)
+        #expect(drag.draggedID == task.id, "a task picked up after it is the task")
+    }
 }

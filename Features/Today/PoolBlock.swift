@@ -5,9 +5,12 @@ import SwiftUI
 /// height and has no counter. Rows can be dragged: within the pool to reorder it (today) and into another section (that
 /// day only), onto the timeline to give a task a time (a habit sent here today gets its time back for today); a timed
 /// task dragged here from the timeline loses its time, a habit's block leaves today's timeline. A task from a backlog
-/// page comes into the pool of any day shown. A section is dragged whole by its header, within the pool only.
+/// page comes into the pool of any day shown. A section is dragged whole by its header, within the pool only. The tab
+/// bar's "+" dragged over today's pool makes an empty faint plate's room; let go, it opens the new task's page, and the
+/// task takes that spot once made.
 struct PoolBlock: View {
     @Environment(AppModel.self) private var model
+    @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     @Environment(\.rules) private var rules
     @Environment(TaskDragState.self) private var dragState: TaskDragState?
@@ -35,18 +38,25 @@ struct PoolBlock: View {
         poolContent
             .coordinateSpace(.named(Self.dropSpace))
             .modifier(PoolDropTarget(drag: drag, animation: tokens.animation, layout: dropLayout, canDrop: canDrop,
-                                     onDrop: dropped, onSectionDrop: sectionDropped))
-            .onChange(of: drag?.item?.id ?? drag?.section) { _, dragged in if dragged == nil { dragLayout = nil } }
+                                     onDrop: dropped, onSectionDrop: sectionDropped, acceptsNewItem: plan.isToday,
+                                     onNewItemDrop: newItemDropped))
+            .onChange(of: drag?.draggedID ?? drag?.section) { _, dragged in if dragged == nil { dragLayout = nil } }
     }
 
     /// While something is dragged over the pool, the sections as the drop would make them.
     private var sections: [PoolSectionContent] {
         if let order = drag?.sectionOrder { return PoolArrangement.reordered(plan.sections, by: order) }
-        guard let order = drag?.poolOrder, let item = drag?.item else { return plan.sections }
+        guard let order = drag?.poolOrder, let item = drag?.item ?? newItemGap else { return plan.sections }
         let along = drag?.source.wormMembers.filter { $0 != item.id } ?? []
         let members = along.compactMap { name in plan.pool.first { $0.id == name } }
         return PoolArrangement.hovering(plan.sections, order: PoolDropOrder.keepingTogether(order, dragged: item.id, along: along),
                                         dragged: [item] + members, into: drag?.poolSection)
+    }
+
+    /// The room a dragged "+" takes among the rows: a row of its own, drawn as an empty plate.
+    private var newItemGap: DayItem? {
+        guard drag?.source == .newItem else { return nil }
+        return DayItem(listed: TaskItem(id: .unsaved, name: TaskDragState.newItemGap, status: .thisWeek))
     }
 
     private func dropLayout() -> PoolDropLayout {
@@ -68,7 +78,7 @@ struct PoolBlock: View {
         case .timeline(let slot): plan.isToday && model.canDropInPool(item.id, slot: slot)
         case .backlog: model.canBringFromBacklog(item.id)
         case .worm: true
-        case .section: false
+        case .section, .newItem: false
         }
     }
 
@@ -85,8 +95,13 @@ struct PoolBlock: View {
         case .worm(_, let members):
             model.moveTasks(members, toSection: section, poolOrder: PoolDropOrder.keepingTogether(order, dragged: item.id, along: members),
                             on: day)
-        case .section: break
+        case .section, .newItem: break
         }
+    }
+
+    private func newItemDropped(order: [String], section: String?) {
+        Haptics.play(.drop)
+        router.openNewItem(NewItemSeed(kind: .task, placement: .pool(order: order, section: section, day: plan.today)))
     }
 
     private func sectionDropped(_ id: String, order: [String]) {
@@ -179,11 +194,14 @@ struct PoolBlock: View {
 
     /// The row of a task dragged over the pool is the gap the others part around (`TaskDragState.isGap`), with a faint copy
     /// of its plate: how it will stand once dropped.
-    private func row(_ item: DayItem, plate: PoolRowContent.PlateKind, source: TaskDragState.Source) -> some View {
-        let isGap = drag?.isGap(item.id) == true
-        return PoolRow(item: item, isToday: plan.isToday, isCompact: fillsHeight, plate: plate, handler: handler,
-                       dragSource: source, poolDay: plan.today)
-            .dropGhost(isGap)
+    @ViewBuilder private func row(_ item: DayItem, plate: PoolRowContent.PlateKind, source: TaskDragState.Source) -> some View {
+        if item.id == TaskDragState.newItemGap {
+            NewItemGapPlate()
+        } else {
+            PoolRow(item: item, isToday: plan.isToday, isCompact: fillsHeight, plate: plate, handler: handler,
+                    dragSource: source, poolDay: plan.today)
+                .dropGhost(drag?.isGap(item.id) == true)
+        }
     }
 
     private func dragSource(of segment: PoolSegments.Segment) -> TaskDragState.Source {
@@ -222,6 +240,8 @@ private struct PoolDropTarget: ViewModifier {
     let canDrop: (DayItem, TaskDragState.Source) -> Bool
     let onDrop: (DayItem, TaskDragState.Source, [String], String?) -> Void
     let onSectionDrop: (String, [String]) -> Void
+    let acceptsNewItem: Bool
+    let onNewItemDrop: ([String], String?) -> Void
 
     func body(content: Content) -> some View {
         if let drag {
@@ -229,7 +249,9 @@ private struct PoolDropTarget: ViewModifier {
                 .contentShape(Rectangle())
                 .onDrop(of: TaskDragState.types, delegate: PoolDropDelegate(drag: drag, animation: animation, layout: layout,
                                                                             canDrop: canDrop, onDrop: onDrop,
-                                                                            onSectionDrop: onSectionDrop))
+                                                                            onSectionDrop: onSectionDrop,
+                                                                            acceptsNewItem: acceptsNewItem,
+                                                                            onNewItemDrop: onNewItemDrop))
         } else {
             content
         }

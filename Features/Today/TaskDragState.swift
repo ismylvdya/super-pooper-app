@@ -3,7 +3,8 @@ import UniformTypeIdentifiers
 
 /// The task being dragged on Tasks, shared by the pool, the timeline, the backlog pages and the page edges: where it
 /// came from, where it would land on the timeline, the pool order and section while it is over the pool and the backlog
-/// page it is over. A pool section dragged by its header is a drag without a task, which only the pool takes.
+/// page it is over. A pool section dragged by its header is a drag without a task, which only the pool takes; so is the
+/// tab bar's "+" (`newItem`), which the pool (today) and the timeline take as the spot of a task still to be made.
 @MainActor
 @Observable
 final class TaskDragState {
@@ -17,6 +18,8 @@ final class TaskDragState {
         case section(String)
         /// A worm's member: the whole worm goes along, within the pool only.
         case worm(id: String, members: [String])
+        /// The tab bar's "+": a new item, made where it lands.
+        case newItem
 
         var slot: LocalTime? {
             if case .timeline(let slot) = self { slot } else { nil }
@@ -33,6 +36,8 @@ final class TaskDragState {
     }
 
     static let types: [UTType] = [.text]
+    /// The pool's id for the room a dragged "+" makes there: it becomes the new task's name once it is made.
+    static let newItemGap = NewItemPlacement.gap
 
     private(set) var item: DayItem?
     private(set) var source: Source = .pool
@@ -57,6 +62,21 @@ final class TaskDragState {
         self.source = source
         return NSItemProvider(object: item.id as NSString)
     }
+
+    /// The tab bar's "+" picked up.
+    func beginNewItem() -> NSItemProvider {
+        reset()
+        source = .newItem
+        return NSItemProvider(object: Self.newItemGap as NSString)
+    }
+
+    /// What stands under the finger in the pool's order: the dragged task, or the new item's gap.
+    var draggedID: String? {
+        item?.id ?? (source == .newItem ? Self.newItemGap : nil)
+    }
+
+    /// A task or a "+" is being dragged (a section's header is not).
+    var isDragging: Bool { draggedID != nil }
 
     /// A pool section picked up by its header.
     func beginSection(_ id: String) -> NSItemProvider {
@@ -107,7 +127,7 @@ final class TaskDragState {
     /// While the task is over the pool its row there is an empty gap the others part around: the task itself is under
     /// the finger. A worm's other members are gaps too.
     func isGap(_ id: String) -> Bool {
-        poolOrder != nil && (item?.id == id || source.wormMembers.containsNoteName(id))
+        poolOrder != nil && (draggedID == id || source.wormMembers.containsNoteName(id))
     }
 
     /// Over the backlog page `list` the dragged task is listed there as a faint copy, unless it is already one of its rows.
@@ -169,19 +189,22 @@ private struct TaskDragSource<Preview: View>: ViewModifier {
     }
 }
 
-/// Dropping on the timeline: the task gets the time under the finger, a habit's block stands there today.
+/// Dropping on the timeline: the task gets the time under the finger, a habit's block stands there today; a "+" opens
+/// the new task's page at that time.
 @MainActor
 struct TimelineDropDelegate: DropDelegate {
     let drag: TaskDragState
     let moment: (CGFloat) -> Date
     let canDrop: (DayItem, TaskDragState.Source) -> Bool
     let onDrop: (DayItem, TaskDragState.Source, Date) -> Void
+    let onNewItemDrop: (Date) -> Void
 
     func validateDrop(info: DropInfo) -> Bool { validate() }
 
-    /// Only a task lands here: a pool section's header never does.
+    /// A task or a "+" lands here: a pool section's header never does.
     func validate() -> Bool {
-        drag.item.map { canDrop($0, drag.source) } ?? false
+        if drag.source == .newItem { return true }
+        return drag.item.map { canDrop($0, drag.source) } ?? false
     }
 
     func dropEntered(info: DropInfo) {
@@ -198,11 +221,12 @@ struct TimelineDropDelegate: DropDelegate {
     }
 
     func performDrop(info: DropInfo) -> Bool {
-        guard let item = drag.item else { return false }
+        guard drag.isDragging else { return false }
         let landing = drag.hoverMoment ?? moment(info.location.y)
+        let item = drag.item
         let source = drag.source
         drag.end()
-        onDrop(item, source, landing)
+        if let item { onDrop(item, source, landing) } else { onNewItemDrop(landing) }
         return true
     }
 }

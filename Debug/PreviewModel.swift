@@ -51,6 +51,7 @@ extension View {
                     .environment(preview.model)
                     .environment(preview.router)
                     .environment(preview.banners)
+                    .environment(TaskDragState())
                     .appConfig(preview.config)
             } else {
                 Text(verbatim: "Config error")

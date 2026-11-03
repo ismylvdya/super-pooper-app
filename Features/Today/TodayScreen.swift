@@ -10,7 +10,7 @@ import SwiftUI
 /// arrangement a swipe turns between the pool and the timeline pages. Left of the pool the backlog pages (Soon, then
 /// Half year, then Someday) open one by one when the first page is pulled right past its edge (`TasksStrip`); a swipe
 /// moves freely between the opened pages, a backlog page has its list's title in the bar, and another tab forgets them.
-/// Tasks are dragged between all these pages (see `TaskDragState`). Select from a pool row's menu turns on Select mode
+/// Tasks, and the tab bar's "+", are dragged between all these pages (see `TaskDragState`, owned by `RootView`). Select from a pool row's menu turns on Select mode
 /// (`PoolSelection`): the bar's buttons give way to Cancel and the actions on the picked tasks (`SelectionToolbar`).
 struct TodayScreen: View {
     @Environment(AppModel.self) private var model
@@ -22,7 +22,7 @@ struct TodayScreen: View {
     @State private var pendingAction: PendingAction?
     @State private var width: CGFloat = 0
     @State private var pager = TodayPager()
-    @State private var taskDrag = TaskDragState()
+    @Environment(TaskDragState.self) private var taskDrag
     @State private var selection = PoolSelection()
     @State private var isNamingSection = false
     @State private var sectionTitle = ""
@@ -60,7 +60,6 @@ struct TodayScreen: View {
             }
         }
         .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
-        .environment(taskDrag)
         .environment(selection)
         .alert("section.new.title", isPresented: $isNamingSection) {
             TextField("section.new.placeholder", text: $sectionTitle)
