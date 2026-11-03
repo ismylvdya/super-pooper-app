@@ -12,13 +12,15 @@ struct PoolRow: View {
     var plate: PoolRowContent.PlateKind = .pool(.own)
     let handler: TaskActionHandler
     var dragSource: TaskDragState.Source?
+    /// The row stands in that day's pool (Select).
+    var poolDay: LocalDate?
 
     var body: some View {
         let lines = item.hasSubtasks ? 0 : rules.pool.extraLines(forEstimate: rules.day.estimate(of: item.task))
         PoolRowContent(item: item, isToday: isToday, isCompact: isCompact,
                        titleLineLimit: item.hasSubtasks ? 1 : nil, plate: plate,
                        minimumHeight: CGFloat(lines) * tokens.uiFont(.taskTitle).lineHeight, handler: handler,
-                       dragSource: dragSource)
+                       dragSource: dragSource, poolDay: poolDay)
             // A subtask sits under its parent, shifted right.
             .padding(.leading, CGFloat(item.depth) * tokens.space(.subtaskIndent))
     }

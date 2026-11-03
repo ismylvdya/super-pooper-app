@@ -56,4 +56,18 @@ struct BatchActionTests {
         await model.undo(try offer(events).id)
         #expect(model.task(named: "Milk")?.status == .thisWeek && model.task(named: "Bank")?.status == .thisWeek)
     }
+
+    /// The selection bar for two pool tasks: Done and Delete as buttons, Worm among the rest; Worm takes them in the
+    /// pool's order.
+    @Test func theSelectionBarOffersWormAndWormsInThePoolsOrder() async throws {
+        let (model, _) = try makeModel([makeTask("Milk"), makeTask("Bank")])
+        let today = model.context().today
+        let entries = model.selectionEntries(for: ["Milk", "Bank"], on: today)
+        #expect(entries.frequent.map(\.id) == [.done, .delete])
+        #expect(entries.more.map(\.id).contains(.worm) && !entries.more.map(\.id).contains(.unworm))
+        await model.perform(action(model, .worm), onSelected: ["Milk", "Bank"], on: today)
+        let order = model.plan(at: model.clock.now).poolNames
+        #expect(model.sections(on: today).worms.first?.members == order)
+        #expect(model.selectionEntries(for: ["Milk"], on: today).more.map(\.id).contains(.unworm))
+    }
 }

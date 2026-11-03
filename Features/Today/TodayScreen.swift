@@ -10,7 +10,8 @@ import SwiftUI
 /// arrangement a swipe turns between the pool and the timeline pages. Left of the pool the backlog pages (Soon, then
 /// Half year, then Someday) open one by one when the first page is pulled right past its edge (`TasksStrip`); a swipe
 /// moves freely between the opened pages, a backlog page has its list's title in the bar, and another tab forgets them.
-/// Tasks are dragged between all these pages (see `TaskDragState`).
+/// Tasks are dragged between all these pages (see `TaskDragState`). Select from a pool row's menu turns on Select mode
+/// (`PoolSelection`): the bar's buttons give way to Cancel and the actions on the picked tasks (`SelectionToolbar`).
 struct TodayScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
@@ -22,6 +23,9 @@ struct TodayScreen: View {
     @State private var width: CGFloat = 0
     @State private var pager = TodayPager()
     @State private var taskDrag = TaskDragState()
+    @State private var selection = PoolSelection()
+    @State private var isNamingSection = false
+    @State private var sectionTitle = ""
     /// Where the bar's buttons stand upright (`DayBarRoom`).
     @State private var barButtons: [TodayButtons.Item: CGRect] = [:]
 
@@ -42,17 +46,33 @@ struct TodayScreen: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             if !isLandscape {
-                ToolbarItemGroup(placement: .topBarLeading) { TodayButtons(placement: .leading, onFrame: barButtonMoved) }
+                ToolbarItemGroup(placement: .topBarLeading) {
+                    if selection.isOn { selectionBar(.leading) } else { TodayButtons(placement: .leading, onFrame: barButtonMoved) }
+                }
                 // As wide as the bar leaves between its button groups: the name shrinks into that room rather than the
                 // arrows reaching under the buttons beside them.
                 ToolbarItem(placement: .principal) {
-                    if let room = dayBarRoom { title.frame(width: room) } else { title }
+                    if selection.isOn { selectionTitle } else if let room = dayBarRoom { title.frame(width: room) } else { title }
                 }
-                ToolbarItemGroup(placement: .topBarTrailing) { TodayButtons(placement: .trailing, onFrame: barButtonMoved) }
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    if selection.isOn { selectionBar(.trailing) } else { TodayButtons(placement: .trailing, onFrame: barButtonMoved) }
+                }
             }
         }
         .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
         .environment(taskDrag)
+        .environment(selection)
+        .alert("section.new.title", isPresented: $isNamingSection) {
+            TextField("section.new.placeholder", text: $sectionTitle)
+                .accessibilityIdentifier("section.new.name")
+            Button("section.new.create") {
+                model.newSection(titled: sectionTitle, withSelected: selection.names, on: shownDay)
+                selection.end()
+            }
+            Button("common.cancel", role: .cancel) {}
+        }
+        // Another day or another tab leaves Select mode.
+        .onChange(of: pager.dayOffset) { selection.end() }
         // A drag asks for a page; the pages shown now turn to it.
         .onChange(of: taskDrag.turnRequest) { _, page in
             guard let page else { return }
@@ -61,7 +81,10 @@ struct TodayScreen: View {
         }
         .onChange(of: router.tasksTaps) { showTodaysPool(forgetsBacklog: true) }
         // Another tab forgets the backlog pages.
-        .onChange(of: router.tab) { _, tab in if tab != .today { pager.closeBacklog(poolBlock: poolBlock) } }
+        .onChange(of: router.tab) { _, tab in
+            if tab != .today { pager.closeBacklog(poolBlock: poolBlock) }
+            selection.end()
+        }
     }
 
     /// Turned sideways, Today has its own arrangement.
@@ -105,6 +128,34 @@ struct TodayScreen: View {
         } else {
             dayNavigation
         }
+    }
+
+    /// The day the pool shows.
+    private var shownDay: LocalDate { model.context().today.adding(days: pager.dayOffset) }
+
+    private var selectionTitle: some View {
+        Text(verbatim: L10n.format("select.count", selection.names.count))
+            .font(tokens.font(.navTitle))
+            .lineLimit(1)
+            .accessibilityAddTraits(.isHeader)
+            .accessibilityIdentifier("select.title")
+    }
+
+    private func selectionBar(_ placement: SelectionToolbar.Placement, bottom: HorizontalEdge? = nil) -> SelectionToolbar {
+        SelectionToolbar(placement: placement, selection: selection, day: shownDay, bottom: bottom, perform: performOnSelection)
+    }
+
+    /// An action of the selection bar: New section asks for its title first; the others act on the picked tasks at once.
+    private func performOnSelection(_ action: ActionDefinition) {
+        guard action.id != .newSection else {
+            sectionTitle = ""
+            isNamingSection = true
+            return
+        }
+        let names = selection.names
+        let day = shownDay
+        selection.end()
+        Task { await model.perform(action, onSelected: names, on: day) }
     }
 
     private func turn(to newPage: Int) {
@@ -165,9 +216,13 @@ struct TodayScreen: View {
         VStack(spacing: tokens.space(.groupGap)) {
             ForEach(PhysicalBottom.physicalOrder(LandscapeSlot.allCases, bottom: bottom), id: \.self) { slot in
                 switch slot {
-                case .leading: bubble(.vertical) { TodayButtons(placement: .leading, bottom: bottom) }
-                case .day: Spacer(minLength: 0); title; Spacer(minLength: 0)
-                case .trailing: bubble(.vertical) { TodayButtons(placement: .trailing, bottom: bottom) }
+                case .leading: bubble(.vertical) {
+                    if selection.isOn { selectionBar(.leading, bottom: bottom) } else { TodayButtons(placement: .leading, bottom: bottom) }
+                }
+                case .day: Spacer(minLength: 0); if selection.isOn { selectionTitle } else { title }; Spacer(minLength: 0)
+                case .trailing: bubble(.vertical) {
+                    if selection.isOn { selectionBar(.trailing, bottom: bottom) } else { TodayButtons(placement: .trailing, bottom: bottom) }
+                }
                 }
             }
         }
@@ -192,7 +247,10 @@ struct TodayScreen: View {
     private enum LandscapeSlot: CaseIterable { case leading, day, trailing }
 
     private var handler: TaskActionHandler {
-        TaskActionHandler(model: model, router: router, openURL: openURL) { pendingAction = $0 }
+        var handler = TaskActionHandler(model: model, router: router, openURL: openURL) { pendingAction = $0 }
+        handler.shownDay = shownDay
+        handler.startSelection = { name in withAnimation(tokens.animation) { selection.start(with: name) } }
+        return handler
     }
 }
 

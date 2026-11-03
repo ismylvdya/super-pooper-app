@@ -10,7 +10,8 @@ struct PoolBlock: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
     @Environment(\.rules) private var rules
-    @Environment(TaskDragState.self) private var drag: TaskDragState?
+    @Environment(TaskDragState.self) private var dragState: TaskDragState?
+    @Environment(PoolSelection.self) private var selection: PoolSelection?
     let plan: DayPlan
     let handler: TaskActionHandler
     /// Space under the block that belongs to the home indicator (the list scrolls under it).
@@ -26,6 +27,9 @@ struct PoolBlock: View {
     /// them again would pull the dragged task back to where it was: the order is read against this layout instead.
     @State private var dragLayout: PoolDropLayout?
     private static let dropSpace = "poolDrop"
+
+    /// In Select mode nothing is dragged in or out of the pool.
+    private var drag: TaskDragState? { selection?.isOn == true ? nil : dragState }
 
     var body: some View {
         poolContent
@@ -178,7 +182,7 @@ struct PoolBlock: View {
     private func row(_ item: DayItem, plate: PoolRowContent.PlateKind, source: TaskDragState.Source) -> some View {
         let isGap = drag?.isGap(item.id) == true
         return PoolRow(item: item, isToday: plan.isToday, isCompact: fillsHeight, plate: plate, handler: handler,
-                       dragSource: source)
+                       dragSource: source, poolDay: plan.today)
             .dropGhost(isGap)
     }
 

@@ -9,10 +9,12 @@ struct ActionMenuContent: View {
     let item: DayItem?
     /// Skip today and Not today only make sense on today's page.
     var isToday = true
+    /// The row stands in that day's pool: Select and Unworm are offered there.
+    var poolDay: LocalDate?
     let perform: (ActionDefinition) -> Void
 
     var body: some View {
-        let entries = model.menuEntries(menu, for: item, isToday: isToday)
+        let entries = model.menuEntries(menu, for: item, isToday: isToday, poolDay: poolDay)
         MenuSections(frequent: entries.filter { !$0.isMore }, more: entries.filter(\.isMore)) { button($0) }
     }
 
