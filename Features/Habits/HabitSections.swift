@@ -13,7 +13,7 @@ struct HabitSections: View {
         if !editor.isDraft {
             if showsHistory { HabitHistorySection(habit: editor.task) }
             TaskNoteSection(taskName: editor.task.name, header: "habitPage.description", placeholder: "habitPage.description.placeholder")
-            // One-off subtasks: ordinary tasks under the habit; done, they do not come back.
+            // Repeatable subtasks: they come up on the habit's days and are marked for each day.
             SubtasksSection(editor: editor)
             if showsHistory { HabitStatsSection(habit: editor.task) }
             TaskLinksSection(task: editor.task)
@@ -22,7 +22,8 @@ struct HabitSections: View {
         // High, estimate and feel, as on a task page: they sort the habit in the pool and show as its chips.
         TaskPropertiesSection(editor: editor)
         HabitGoalSection(editor: editor)
-        RecurrenceEditorSection(editor: editor)
+        // A repeatable subtask comes up on its parent's days: the parent's rule is written to it.
+        if !model.isRepeatableSubtask(editor.task) { RecurrenceEditorSection(editor: editor) }
         HabitRemindersSection(editor: editor)
     }
 }

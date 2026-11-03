@@ -13,7 +13,8 @@ struct DayBuilder: Sendable {
         let resolver = EventLinkResolver(events: inputs.events, calendar: context.calendar, tolerance: rules.eventLinkToleranceSeconds)
         let blocking = BlockingEvaluator(graph: graph, occurrence: occurrence, skipped: inputs.skipped, context: context)
         let sorter = PoolSorter(criteria: sortCriteria, rules: rules, routines: inputs.routines)
-        let membership = DayMembership(occurrence: occurrence, context: context)
+        let membership = DayMembership(occurrence: occurrence, context: context,
+                                       parents: RepeatableSubtasks.parents(in: inputs.tasks))
         let dayProblems = DayProblems(graph: graph, occurrence: occurrence)
         let times = DayTimes(context: context, todayTimes: TodayTimes(inputs.timeMoves))
 

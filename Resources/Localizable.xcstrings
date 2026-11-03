@@ -3004,7 +3004,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Each subtask is a task note of its own that lists this one in “projects”, as TaskNotes does. Type a name and press Return to add one."
+            "value": "Each subtask is a note of its own that lists this one in “projects”, as TaskNotes does. A habit’s or a repeatable task’s subtasks repeat with it: they come up on its days and are marked Done for each day. Type a name and press Return to add one."
           }
         }
       }

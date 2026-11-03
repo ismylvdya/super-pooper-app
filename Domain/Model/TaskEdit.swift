@@ -39,3 +39,10 @@ enum TaskEdit: Hashable, Sendable {
     case weeklyGoal(Int?)
     case allowedSkips(Int?)
 }
+
+extension TaskEdit {
+    var isRecurrence: Bool {
+        if case .recurrence = self { return true }
+        return false
+    }
+}

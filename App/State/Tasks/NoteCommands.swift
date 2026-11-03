@@ -169,14 +169,14 @@ final class NoteCommands {
         return await create(saving.draft, named: saving.name).map(NamedTaskCreation.created) ?? .failed
     }
 
-    /// Creates the note of a draft (a task or a habit) with all its fields, its text and its subtasks (each a task of its
+    /// Creates the note of a draft (a task or a habit) with all its fields, its text and its subtasks (each a note of its
     /// own linked to its parent), at the pool's spot a dragged "+" left (`placement`). Returns the final name.
     func create(_ draft: NoteDraft, named name: String, at placement: NewItemPlacement? = nil) async -> String? {
         do {
             let created = try await store.create(draft, named: name)
             tasks.written(created)
             for subtask in draft.subtasks.map({ $0.trimmingCharacters(in: .whitespacesAndNewlines) }) where !subtask.isEmpty {
-                try await createSubtask(subtask, of: created.name)
+                try await createSubtask(subtask, of: created)
             }
             if let placement { placements.place(created.name, at: placement) }
             await derived.publish()
@@ -188,8 +188,9 @@ final class NoteCommands {
         }
     }
 
-    /// A task of this week that is a subtask of `parent`.
+    /// A subtask of `parent`: a task of this week, or a repeatable task under a habit (`NoteDraft.subtask(of:)`).
     func addSubtask(_ name: String, to parent: String) async {
+        guard let parent = tasks.task(named: parent) else { return }
         do {
             try await createSubtask(name, of: parent)
             await derived.publish()
@@ -210,7 +211,7 @@ final class NoteCommands {
         Task { await derived.publish() }
     }
 
-    private func createSubtask(_ name: String, of parent: String) async throws {
+    private func createSubtask(_ name: String, of parent: TaskItem) async throws {
         tasks.written(try await store.create(.subtask(of: parent), named: name))
     }
 
