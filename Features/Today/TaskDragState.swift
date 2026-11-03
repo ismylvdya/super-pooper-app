@@ -55,7 +55,7 @@ final class TaskDragState {
     private(set) var turnRequest: TasksPage?
     /// The backlog page under the finger: the task shows there, faint, where it would be listed.
     var backlogTarget: String?
-    /// Counts the drags begun; a drag's item provider ends only the drag it was made for.
+    /// Counts the drags begun: a lifted finger ends only the drag it was dragging.
     private var session = 0
 
     func begin(_ item: DayItem, from source: Source) -> NSItemProvider {
@@ -146,21 +146,19 @@ final class TaskDragState {
         reset()
     }
 
-    /// The system lets a drag's item provider go when the drag session ends, dropped or not: a drag let go outside
-    /// every drop target ends then (a drop ends it at once). The provider of an earlier drag ends nothing.
-    private func provider(for id: String) -> NSItemProvider {
-        session += 1
-        let ended = session
-        let provider = DragItemProvider(object: id as NSString)
-        provider.onRelease = { [weak self] in
-            Task { @MainActor in self?.sessionEnded(ended) }
-        }
-        return provider
+    /// The finger dragging has been lifted. A drop ends the drag at once; one let go outside every drop target (or on
+    /// one that does not take it) has no drop, so it ends once `seconds` have passed with no drop and no new drag.
+    func fingerLifted(settling seconds: Double, delay: Delay = SleepDelay()) async {
+        guard item != nil || section != nil || source == .newItem else { return }
+        let lifted = session
+        try? await delay.wait(seconds)
+        guard lifted == session else { return }
+        reset()
     }
 
-    private func sessionEnded(_ ended: Int) {
-        guard ended == session else { return }
-        reset()
+    private func provider(for id: String) -> NSItemProvider {
+        session += 1
+        return NSItemProvider(object: id as NSString)
     }
 
     private func reset() {
@@ -170,15 +168,6 @@ final class TaskDragState {
         hoverMoment = nil
         backlogTarget = nil
         leavePool()
-    }
-}
-
-/// The item provider of one drag; the system keeps it for as long as the drag session lasts.
-private final class DragItemProvider: NSItemProvider {
-    var onRelease: (() -> Void)?
-
-    deinit {
-        onRelease?()
     }
 }
 

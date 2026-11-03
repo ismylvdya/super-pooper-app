@@ -195,6 +195,8 @@ struct TodayScreen: View {
                 if armed { Haptics.play(.pullArmed) }
             }
             .onEnded { value in
+                // The swipe follows a dragged task's finger too: lifted with no drop, the drag ends.
+                Task { await taskDrag.fingerLifted(settling: rules.gestures.dragEndSettleSeconds) }
                 guard taskDrag.item == nil else { return pager.cancelSwipe() }
                 pager.swipeEnded(value.translation, predicted: value.predictedEndTranslation, velocity: value.velocity,
                                  containerWidth: width, pageCount: pageCount, backlogCount: model.backlogLists.count,

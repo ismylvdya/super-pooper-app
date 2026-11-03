@@ -1,4 +1,3 @@
-import Foundation
 import Testing
 @testable import SuperPooperApp
 
@@ -112,34 +111,31 @@ struct TaskDragStateTests {
         #expect(drag.draggedID == task.id, "a task picked up after it is the task")
     }
 
-    /// Let go outside every drop target, a drag ends when the system lets its item provider go, so the day swipe
-    /// (blocked while a task is dragged) works again at once.
+    /// Let go outside every drop target there is no drop to end the drag: the lifted finger ends it, so the day swipe
+    /// (blocked while a task is dragged) works again.
     @Test func aDragLetGoOutsideEveryTargetEnds() async {
         let drag = TaskDragState()
-        autoreleasepool { _ = drag.begin(DayItem(listed: makeTask("Pay the internet")), from: .pool) }
-        #expect(drag.item != nil, "the session's end comes after the release")
-        await drag.settle()
+        _ = drag.begin(DayItem(listed: makeTask("Pay the internet")), from: .pool)
+        await drag.fingerLifted(settling: 1, delay: NoDelay())
         #expect(drag.item == nil && !drag.isDragging)
-        autoreleasepool { _ = drag.beginNewItem() }
-        await drag.settle()
+        _ = drag.beginNewItem()
+        await drag.fingerLifted(settling: 1, delay: NoDelay())
         #expect(!drag.isDragging)
+        _ = drag.beginSection("day")
+        await drag.fingerLifted(settling: 1, delay: NoDelay())
+        #expect(drag.source == .pool)
     }
 
-    /// The provider of a drag before goes after the next drag has begun: the drag going on is left alone.
-    @Test func anEarlierDragsEndLeavesTheNextOne() async {
+    /// A finger lifted from one drag does not end the next one begun while it settled.
+    @Test func aLiftedFingerLeavesTheNextDragAlone() async {
         let drag = TaskDragState()
-        var first: NSItemProvider? = drag.begin(DayItem(listed: makeTask("Pay the internet")), from: .pool)
-        let second = drag.begin(DayItem(listed: makeTask("Call the bank")), from: .timeline(slot: nil))
-        autoreleasepool { first = nil }
-        await drag.settle()
+        let gate = GatedDelay()
+        _ = drag.begin(DayItem(listed: makeTask("Pay the internet")), from: .pool)
+        let lifted = Task { await drag.fingerLifted(settling: 1, delay: gate) }
+        await gate.gate.arrived()
+        _ = drag.begin(DayItem(listed: makeTask("Call the bank")), from: .timeline(slot: nil))
+        await gate.gate.open()
+        await lifted.value
         #expect(drag.item?.id == "Call the bank")
-        #expect(first == nil && second.hasItemConformingToTypeIdentifier("public.text"))
-    }
-}
-
-private extension TaskDragState {
-    /// Lets the main actor run what the released providers asked for.
-    func settle() async {
-        for _ in 0..<10 { await Task.yield() }
     }
 }
