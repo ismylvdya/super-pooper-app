@@ -39,6 +39,16 @@ extension AppModel {
     func listContents(_ filter: TaskListFilter, query: String) -> TaskListContents { parts.lists.contents(filter, query: query) }
     func listCount(_ listID: String) -> Int { parts.lists.count(of: listID) }
 
+    // MARK: - Backlog pages
+
+    /// The pages left of the pool on Tasks, nearest to the pool first.
+    var backlogLists: [BacklogList] { config.lists.backlogLists }
+
+    /// What a backlog page holds for the day `plan` shows (`BacklogContents`).
+    func backlogTasks(_ list: BacklogList, plan: DayPlan) -> [TaskItem] {
+        BacklogContents.tasks(at: list.status, in: tasks, plan: plan, rules: config.rules.day)
+    }
+
     /// The Lists tab shows: the filed tasks are read for the counts of the lists of done tasks.
     func loadFiledTasks() async { await parts.lists.loadFiled() }
 

@@ -36,6 +36,8 @@ struct TaskListsConfig: Codable, Hashable, Sendable {
 
     let groups: [Group]
     let icons: [IconChoice]
+    /// The lists whose pages stand left of the pool on Tasks, nearest to the pool first; each of one planning level.
+    let backlog: [String]
 
     var lists: [List] { groups.flatMap(\.lists) }
 
@@ -45,6 +47,9 @@ struct TaskListsConfig: Codable, Hashable, Sendable {
     func validate(defaultIcon: String, file: String) throws {
         if !icons.contains(where: { $0.id == defaultIcon }) {
             throw ConfigError(file: file, path: "icons", message: "no Lists icon \"\(defaultIcon)\" (the default in defaults.json)")
+        }
+        for (index, id) in backlog.enumerated() where list(id)?.statuses?.count != 1 {
+            throw ConfigError(file: file, path: "backlog[\(index)]", message: "\"\(id)\" is not a list of exactly one planning level")
         }
     }
 
