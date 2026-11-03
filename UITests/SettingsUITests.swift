@@ -39,7 +39,7 @@ final class SettingsUITests: XCTestCase {
     /// The search in Settings (.searchable) finds a row by its title and opens the page it is on.
     func testSearchFindsASettingAndOpensItsPage() {
         openSettings(signatureHoursLeft: 8 * 24)
-        app.swipeDown()
+        app.buttons["settings.search"].tap()
         let field = app.searchFields.firstMatch
         XCTAssertTrue(field.waitForExistence(timeout: 5))
         field.tap()

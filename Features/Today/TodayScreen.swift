@@ -52,7 +52,7 @@ struct TodayScreen: View {
                 // As wide as the bar leaves between its button groups: the name shrinks into that room rather than the
                 // arrows reaching under the buttons beside them.
                 ToolbarItem(placement: .principal) {
-                    if selection.isOn { selectionTitle } else if let room = dayBarRoom { title.frame(width: room) } else { title }
+                    if selection.isOn { selectionTitle } else { title.frame(width: dayBarRoom) }
                 }
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     if selection.isOn { selectionBar(.trailing) } else { TodayButtons(placement: .trailing, onFrame: barButtonMoved) }
@@ -119,22 +119,21 @@ struct TodayScreen: View {
     private var title: some View {
         let shown = pages.indices.contains(pager.page) ? pages[pager.page] : nil
         let list = shown?.backlogID.flatMap(model.config.lists.backlogList)
-        return ZStack {
-            dayNavigation
-                .opacity(list == nil ? 1 : 0)
-                .allowsHitTesting(list == nil)
-                .accessibilityHidden(list != nil)
-            if let list {
-                Text(LocalizedStringKey(list.title))
-                    .font(tokens.font(.navTitle))
-                    .lineLimit(1)
-                    .minimumScaleFactor(isLandscape ? 1 : tokens.size(.navTitleMin) / tokens.uiFont(.navTitle).pointSize)
-                    .accessibilityAddTraits(.isHeader)
-                    .accessibilityIdentifier("today.listTitle")
-                    .transition(.opacity)
+        return dayNavigation
+            .opacity(list == nil ? 1 : 0)
+            .allowsHitTesting(list == nil)
+            .overlay {
+                if let list {
+                    Text(LocalizedStringKey(list.title))
+                        .font(tokens.font(.navTitle))
+                        .lineLimit(1)
+                        .minimumScaleFactor(isLandscape ? 1 : tokens.size(.navTitleMin) / tokens.uiFont(.navTitle).pointSize)
+                        .accessibilityAddTraits(.isHeader)
+                        .accessibilityIdentifier("today.listTitle")
+                        .transition(.opacity)
+                }
             }
-        }
-        .animation(tokens.animation, value: list?.id)
+            .animation(tokens.animation, value: list?.id)
     }
 
     /// The day the pool shows.

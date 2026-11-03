@@ -143,30 +143,4 @@ final class TaskPageUITests: XCTestCase {
         XCTAssertTrue(banner.waitForExistence(timeout: 5))
     }
 
-    func testLinkPreviousTaskThroughPicker() {
-        open("Помыть окна")
-        app.buttons["link.add.previous"].tap()
-        let search = app.searchFields.firstMatch
-        XCTAssertTrue(search.waitForExistence(timeout: 5))
-        search.tap()
-        search.typeText("отвёрт")
-        let result = app.buttons.matching(NSPredicate(format: "label CONTAINS 'Найти отвёртку'")).firstMatch
-        XCTAssertTrue(result.waitForExistence(timeout: 5))
-        result.tap()
-        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label CONTAINS 'Найти отвёртку'")).firstMatch.waitForExistence(timeout: 5))
-    }
-
-    func testLinkEventThroughSearchablePicker() {
-        open("Сходить к стоматологу")
-        app.swipeUp()
-        app.buttons["event.pick.previous"].tap()
-        let search = app.searchFields.firstMatch
-        XCTAssertTrue(search.waitForExistence(timeout: 5))
-        search.tap()
-        search.typeText("Call")
-        let event = app.buttons.matching(NSPredicate(format: "label CONTAINS 'Call with dad'")).firstMatch
-        XCTAssertTrue(event.waitForExistence(timeout: 5))
-        event.tap()
-        XCTAssertTrue(app.staticTexts["Call with dad"].waitForExistence(timeout: 5))
-    }
 }

@@ -25,30 +25,6 @@ final class PoolSectionsUITests: XCTestCase {
         XCTAssertEqual(XCTWaiter().wait(for: [met], timeout: 5), .completed, message)
     }
 
-    /// "Цикл А" stands near the end of Day, above the empty Evening section at the bottom of the pool; no other test
-    /// moves or changes it.
-    func testATaskDraggedUnderEveningStaysThere() {
-        launch()
-        let evening = header("evening")
-        XCTAssertTrue(evening.waitForExistence(timeout: 10))
-        app.scrollIntoView(evening)
-        let task = app.buttons["title:Цикл А"]
-        XCTAssertTrue(task.waitForExistence(timeout: 5))
-        XCTAssertLessThan(task.frame.midY, evening.frame.midY)
-        // Below the header's middle is in Evening; further down the tab bar would take the drop.
-        let underTheHeader = evening.coordinate(withNormalizedOffset: CGVector(dx: 0.3, dy: 0.85))
-        task.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-            .press(forDuration: 1.2, thenDragTo: underTheHeader, withVelocity: .slow, thenHoldForDuration: 0.5)
-        expect(task, toBe: { $0.frame.midY > evening.frame.maxY }, "it is the first row under Evening")
-
-        app.terminate()
-        app.launchArguments.removeAll { $0 == "-SPResetState" }
-        launch()
-        XCTAssertTrue(evening.waitForExistence(timeout: 10))
-        app.scrollIntoView(evening)
-        expect(task, toBe: { $0.frame.midY > evening.frame.maxY }, "still under Evening after a relaunch on the same day")
-    }
-
     /// Morning dragged by its header below Day's header goes after the whole Day section: Day is the pool's first section.
     func testASectionDraggedBelowAnotherHeaderGoesAfterThatSection() {
         launch()

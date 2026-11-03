@@ -54,7 +54,8 @@ final class SelectUITests: XCTestCase {
 
     func testSelectDeleteOffersUndo() {
         selectBoth()
-        app.buttons["select.delete"].tap()
+        app.buttons["select.more"].tap()
+        app.buttons["action.delete"].tap()
         XCTAssertTrue(row(first).waitForNonExistence(timeout: 5))
         XCTAssertFalse(row(second).exists)
         let undo = app.buttons["banner.undo"]

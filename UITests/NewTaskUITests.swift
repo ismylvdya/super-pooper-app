@@ -79,6 +79,8 @@ final class NewTaskUITests: XCTestCase {
         inToday.switches.firstMatch.tap()
         let off = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == '0'"), object: inToday)
         XCTAssertEqual(XCTWaiter().wait(for: [off], timeout: 5), .completed)
+        // The name is at the top of the page, far above the switch.
+        app.swipeDown()
         name.tap()
         app.typeText("\n")
         expectCreatedBanner("Stretch")
@@ -184,7 +186,7 @@ final class NewTaskUITests: XCTestCase {
         app.dismissBanners()
         plus.tap()
         XCTAssertTrue(app.textViews["taskPage.name"].waitForExistence(timeout: 5))
-        app.typeText("Встреча: Пётр\n")
+        app.typeText("Встреча 🔥 Пётр\n")
         XCTAssertTrue(app.descendants(matching: .any)["taskPage.name.problem"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.descendants(matching: .any).matching(identifier: "banner").firstMatch.waitForExistence(timeout: 3),
                        "nothing is saved")
@@ -252,7 +254,7 @@ final class NewTaskUITests: XCTestCase {
         app.dismissBanners()
         plus.tap()
         XCTAssertTrue(app.textViews["taskPage.name"].waitForExistence(timeout: 5))
-        app.typeText("Встреча: Анна")
+        app.typeText("Встреча 🔥")
         XCTAssertTrue(app.descendants(matching: .any)["taskPage.name.problem"].waitForExistence(timeout: 5))
         app.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 6))
         app.typeText(" Анна")

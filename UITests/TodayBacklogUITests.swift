@@ -27,8 +27,8 @@ final class TodayBacklogUITests: XCTestCase {
         XCTAssertEqual(XCTWaiter().wait(for: [met], timeout: 5), .completed, message)
     }
 
-    /// Left of the pool the backlog pages open one by one: the pool pulled right past its edge opens Soon, pulled again
-    /// Half year, each with its list's title in the bar instead of the day's name; a swipe goes back through them.
+    /// The pool pulled right past its edge opens the backlog pages and shows Soon, its list's title in the bar instead of
+    /// the day's name; a swipe goes on to Half year and back through them.
     func testPullingThePoolRightOpensSoonThenHalfYear() {
         app.launchArguments += ["-SPArrangement", "paged"]
         launch()
@@ -38,8 +38,8 @@ final class TodayBacklogUITests: XCTestCase {
         XCTAssertTrue(title.waitForExistence(timeout: 5))
         XCTAssertEqual(title.label, "Soon")
         XCTAssertFalse(app.buttons["today.day"].exists, "a backlog page has no day arrows")
-        pullRight()
-        expect(title, toBe: { $0.label == "Nearest months" }, "Half year opened next")
+        app.swipeRight()
+        expect(title, toBe: { $0.label == "Nearest months" }, "Half year is next")
         app.swipeLeft()
         expect(title, toBe: { $0.label == "Soon" }, "back to Soon")
         app.swipeLeft()
@@ -92,8 +92,8 @@ final class TodayBacklogUITests: XCTestCase {
 
     /// From the pool's left part to the right: the first page is pulled past its edge.
     private func pullRight() {
-        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.12, dy: 0.55))
-        start.press(forDuration: 0.1, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.55)),
+        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.02, dy: 0.55))
+        start.press(forDuration: 0.1, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 0.55)),
                     withVelocity: .default, thenHoldForDuration: 0.2)
     }
 }

@@ -109,10 +109,10 @@ final class RegressionUITests: XCTestCase {
         let first = app.descendants(matching: .any).matching(identifier: "subtask:Шаг один").firstMatch
         let second = app.descendants(matching: .any).matching(identifier: "subtask:Шаг два").firstMatch
         XCTAssertTrue(first.waitForExistence(timeout: 5) && second.waitForExistence(timeout: 5))
-        XCTAssertLessThan(second.frame.minY, first.frame.minY)
+        XCTAssertLessThan(first.frame.minY, second.frame.minY, "in the order they were added")
         // Slowly, and held over the target: a quick drop can land before the target notices the drag.
-        first.press(forDuration: 1.2, thenDragTo: second, withVelocity: .slow, thenHoldForDuration: 0.5)
-        let moved = NSPredicate { _, _ in first.frame.minY < second.frame.minY }
+        second.press(forDuration: 1.2, thenDragTo: first, withVelocity: .slow, thenHoldForDuration: 0.5)
+        let moved = NSPredicate { _, _ in second.frame.minY < first.frame.minY }
         XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: moved, object: nil)], timeout: 5), .completed,
                        "the dragged subtask is above the one it was dropped on")
     }
@@ -166,7 +166,7 @@ final class RegressionUITests: XCTestCase {
         app.launchArguments = ["-SPVaultPath", "TestVault", "-SPResetState",
                                "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
         app.launch()
-        let message = app.scrollViews.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Choose the TaskNotes folder'")).firstMatch
+        let message = app.scrollViews.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Choose the SuperPooperApp folder'")).firstMatch
         XCTAssertTrue(message.waitForExistence(timeout: 8), "the explanation is in a scroll view")
     }
 }
