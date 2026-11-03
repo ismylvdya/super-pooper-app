@@ -154,7 +154,7 @@ struct TimelineBlock: View {
         Color.clear
             .contentShape(Rectangle())
             .gesture(HoldGesture { point in
-                guard selection?.isOn != true, drag?.isDragging != true else { return }
+                guard selection?.isOn != true, drag?.holdBegan() != false else { return }
                 openNewItem(at: TaskScheduling.placement(atOffset: Double(point.y), windowStart: windowStart,
                                                          hourHeight: Double(hourHeight),
                                                          stepMinutes: model.config.rules.timeline.dropStepMinutes,

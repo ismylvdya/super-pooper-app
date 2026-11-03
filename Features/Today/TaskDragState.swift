@@ -156,6 +156,13 @@ final class TaskDragState {
         reset()
     }
 
+    /// A hold began on the empty timeline; true when it may open a new task's page. The finger holding drags nothing, so
+    /// a "+" drag still standing was let go outside every drop target (its finger was never on Today to lift): it ends.
+    func holdBegan() -> Bool {
+        if item == nil, source == .newItem { reset() }
+        return !isDragging
+    }
+
     private func provider(for id: String) -> NSItemProvider {
         session += 1
         return NSItemProvider(object: id as NSString)
