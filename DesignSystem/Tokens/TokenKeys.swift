@@ -14,6 +14,9 @@ enum SpacingToken: String, CaseIterable, Sendable {
     case swipeIconTitleGap
     /// Between the priority icon before a high-priority task's name and the name.
     case priorityIconGap
+    /// A section header starts this far right of the plates' left edge; a pool section's header stands this far below
+    /// the section above.
+    case sectionHeaderInset, poolSectionGap
 }
 
 enum RadiusToken: String, CaseIterable, Sendable {
@@ -83,6 +86,8 @@ enum ColorToken: String, ConfigName {
     case signingAhead, signingSoon, signingUrgent
     /// A date found in a new task's name.
     case detectedDate
+    /// The title of a section (settings groups, the pool's sections).
+    case sectionHeader
 }
 
 /// The settings sections where the user picks colors (`editableColors`: which colors each offers, in order).

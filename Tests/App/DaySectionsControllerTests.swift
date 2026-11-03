@@ -25,7 +25,7 @@ struct DaySectionsControllerTests {
         let (model, _) = try makeModel(tasks)
         let today = model.context().today
         let order = model.plan(at: model.clock.now).poolNames
-        await model.moveTask("Купить молоко", toSection: "evening", poolOrder: order, on: today)
+        model.moveTask("Купить молоко", toSection: "evening", poolOrder: order, on: today)
         #expect(sectionItems(model, at: model.clock.now)["evening"]?.contains("Купить молоко") == true)
         #expect(model.sections(on: today.adding(days: 1)).section(of: "Купить молоко") == nil)
         #expect(model.sections(on: today).section(of: "Купить молоко") == "evening")
@@ -35,7 +35,7 @@ struct DaySectionsControllerTests {
         let (model, _) = try makeModel(tasks)
         model.updateSettings { $0.habits.eveningRoutine = ["Чтение 📖"] }
         let today = model.context().today
-        await model.moveTask("Чтение 📖", toSection: "day", poolOrder: model.plan(at: model.clock.now).poolNames, on: today)
+        model.moveTask("Чтение 📖", toSection: "day", poolOrder: model.plan(at: model.clock.now).poolNames, on: today)
         #expect(sectionItems(model, at: model.clock.now)["day"]?.contains("Чтение 📖") == true)
         #expect(model.settings.habits.eveningRoutine == ["Чтение 📖"])
         #expect(model.task(named: "Чтение 📖")?.habit.timeOfDay == .evening)
@@ -44,8 +44,8 @@ struct DaySectionsControllerTests {
     @Test func aSectionMovedKeepsItsMembers() async throws {
         let (model, _) = try makeModel(tasks)
         let today = model.context().today
-        await model.moveTask("Позвонить в банк", toSection: "morning", poolOrder: model.plan(at: model.clock.now).poolNames, on: today)
-        await model.moveSection("evening", order: ["evening", "morning", "day"], on: today)
+        model.moveTask("Позвонить в банк", toSection: "morning", poolOrder: model.plan(at: model.clock.now).poolNames, on: today)
+        model.moveSection("evening", order: ["evening", "morning", "day"], on: today)
         let plan = model.plan(at: model.clock.now)
         #expect(plan.sections.map(\.id) == ["evening", "morning", "day"])
         #expect(plan.sections[1].items.map(\.id) == ["Позвонить в банк"])
@@ -57,8 +57,8 @@ struct DaySectionsControllerTests {
         let (model, events) = try makeModel(tasks)
         let today = model.context().today
         let order = model.plan(at: model.clock.now).poolNames
-        await model.moveTask("Купить молоко", toSection: "evening", poolOrder: order, on: today)
-        await model.moveTask("Позвонить в банк", toSection: "morning", poolOrder: order, on: today.adding(days: 1))
+        model.moveTask("Купить молоко", toSection: "evening", poolOrder: order, on: today)
+        model.moveTask("Позвонить в банк", toSection: "morning", poolOrder: order, on: today.adding(days: 1))
         #expect(await model.rename("Купить молоко", to: "Купить кефир"))
         #expect(model.sections(on: today).section(of: "Купить кефир") == "evening")
         #expect(model.sections(on: today).membership["Купить молоко"] == nil)

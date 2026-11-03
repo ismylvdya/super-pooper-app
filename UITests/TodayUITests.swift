@@ -186,7 +186,9 @@ final class TodayUITests: XCTestCase {
     /// a gap in the pool; what it looks like mid-drag only a screenshot shows, the new order is checked here.
     func testAPoolRowDraggedUpTakesThePlaceAbove() {
         // "Обновить резюме" is due this Sunday: on that day it is in the pool whatever day of the week the run is on.
-        app.launchArguments += ["-SPToday", TestVaultWeek.date(.sunday)]
+        // On the pages the pool is as wide as the screen, wider than the long-press menu (whatever arrangement an earlier
+        // test left in the settings).
+        app.launchArguments += ["-SPToday", TestVaultWeek.date(.sunday), "-SPArrangement", "paged"]
         launch()
         dismissBanners()
         // Rows no other test marks or moves, so the suite's order does not matter.
@@ -194,7 +196,14 @@ final class TodayUITests: XCTestCase {
         let above = app.buttons["title:Неизвестное правило"]
         XCTAssertTrue(resume.waitForExistence(timeout: 10) && above.waitForExistence(timeout: 5))
         XCTAssertLessThan(above.frame.midY, resume.frame.midY)
-        resume.press(forDuration: 1.2, thenDragTo: above, withVelocity: .slow, thenHoldForDuration: 0.5)
+        // The long-press menu can open above the row, over the left part of the pool: a finger moving up on it picks one of
+        // its items instead of dragging. So the row is held and moved near the plates' right end, and let go over the upper
+        // half of the row above (a row goes in front of the first row whose middle is below the finger).
+        let origin = app.coordinate(withNormalizedOffset: .zero)
+        let x = resume.frame.maxX - resume.frame.width * 0.08
+        origin.withOffset(CGVector(dx: x, dy: resume.frame.midY))
+            .press(forDuration: 1.2, thenDragTo: origin.withOffset(CGVector(dx: x, dy: above.frame.minY + above.frame.height * 0.2)),
+                   withVelocity: .slow, thenHoldForDuration: 0.5)
         expect(resume, toBe: { $0.frame.midY < above.frame.midY }, "it stands above the row it was dropped on")
     }
 

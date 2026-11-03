@@ -124,20 +124,20 @@ final class DayCommands {
 
     /// Dropped under a section's header in the pool of `date`: it stands in that section that day only (its routine and
     /// note stay as they are); the pool's order is today's only.
-    func moveTask(_ name: String, toSection id: String, poolOrder: [String], on date: LocalDate) async {
+    func moveTask(_ name: String, toSection id: String, poolOrder: [String], on date: LocalDate) {
         placeInSection(name, id, on: date)
         if isToday(date) { day.setManualOrder(poolOrder) }
-        await derived.publish()
+        Task { await derived.publish() }
     }
 
     /// A whole section dragged by its header: the day's sections in the new order (`order`: their ids).
-    func moveSection(_ id: String, order: [String], on date: LocalDate) async {
+    func moveSection(_ id: String, order: [String], on date: LocalDate) {
         sections.update(on: date) { sections in
             let byID = Dictionary(sections.order.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
             let moved = order.compactMap { byID[$0] }
             sections.order = moved + sections.order.filter { !order.contains($0.id) }
         }
-        await derived.publish()
+        Task { await derived.publish() }
     }
 
     private func placeInSection(_ name: String, _ id: String?, on date: LocalDate) {

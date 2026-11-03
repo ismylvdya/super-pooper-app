@@ -79,11 +79,11 @@ final class AppModel {
 
     /// The pool sections of `day` as the user arranged them, or the defaults.
     func sections(on day: LocalDate) -> DaySections { parts.sections.snapshot(on: day) }
-    func moveTask(_ name: String, toSection id: String, poolOrder: [String], on day: LocalDate) async {
-        await parts.dayCommands.moveTask(name, toSection: id, poolOrder: poolOrder, on: day)
+    func moveTask(_ name: String, toSection id: String, poolOrder: [String], on day: LocalDate) {
+        parts.dayCommands.moveTask(name, toSection: id, poolOrder: poolOrder, on: day)
     }
-    func moveSection(_ id: String, order: [String], on day: LocalDate) async {
-        await parts.dayCommands.moveSection(id, order: order, on: day)
+    func moveSection(_ id: String, order: [String], on day: LocalDate) {
+        parts.dayCommands.moveSection(id, order: order, on: day)
     }
 
     /// The morning review opens by itself once a day, on the first launch with a ready vault after onboarding, unless

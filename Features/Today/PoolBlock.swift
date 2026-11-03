@@ -1,10 +1,11 @@
 import SwiftUI
 
-/// Untimed tasks of the day. Above the timeline it shows N rows (setting) and a "+K more" counter
-/// that follows scrolling; beside it, it takes the full height and has no counter. Today's rows can be
-/// dragged: within the pool to reorder it, onto the timeline to give a task a time (a habit sent here today gets its
-/// time back for today); a timed task dragged here from the timeline loses its time, a habit's block leaves today's
-/// timeline. A task from a backlog page comes into the pool of any day shown.
+/// Untimed tasks of the day, under the headers of the day's sections (Morning, Day, Evening and the user's own). Above
+/// the timeline it shows N rows (setting) and a "+K more" counter that follows scrolling; beside it, it takes the full
+/// height and has no counter. Rows can be dragged: within the pool to reorder it (today) and into another section (that
+/// day only), onto the timeline to give a task a time (a habit sent here today gets its time back for today); a timed
+/// task dragged here from the timeline loses its time, a habit's block leaves today's timeline. A task from a backlog
+/// page comes into the pool of any day shown. A section is dragged whole by its header, within the pool only.
 struct PoolBlock: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
@@ -19,48 +20,67 @@ struct PoolBlock: View {
     @State private var rowHeights: [String: CGFloat] = [:]
     @State private var visibleRows: Set<String> = []
     @State private var rowMids: [String: CGFloat] = [:]
-    /// The rows' middles as they stood when the drag reached the pool. The rows that make room move, and measuring
+    @State private var headerMids: [String: CGFloat] = [:]
+    @State private var headerHeights: [String: CGFloat] = [:]
+    /// The rows and headers as they stood when the drag reached the pool. The rows that make room move, and measuring
     /// them again would pull the dragged task back to where it was: the order is read against this layout instead.
-    @State private var dragMids: [String: CGFloat]?
+    @State private var dragLayout: PoolDropLayout?
     private static let dropSpace = "poolDrop"
 
     var body: some View {
         poolContent
             .coordinateSpace(.named(Self.dropSpace))
-            .modifier(PoolDropTarget(drag: drag, animation: tokens.animation, rows: dropRows, canDrop: canDrop, onDrop: dropped))
-            .onChange(of: drag?.item?.id) { _, dragged in if dragged == nil { dragMids = nil } }
+            .modifier(PoolDropTarget(drag: drag, animation: tokens.animation, layout: dropLayout, canDrop: canDrop,
+                                     onDrop: dropped, onSectionDrop: sectionDropped))
+            .onChange(of: drag?.item?.id ?? drag?.section) { _, dragged in if dragged == nil { dragLayout = nil } }
     }
 
-    /// While a task is dragged over the pool, the rows in the order it would make.
-    private var items: [DayItem] {
-        guard let order = drag?.poolOrder else { return plan.pool }
-        return order.compactMap { id in plan.pool.first { $0.id == id } ?? (drag?.item?.id == id ? drag?.item : nil) }
+    /// While something is dragged over the pool, the sections as the drop would make them.
+    private var sections: [PoolSectionContent] {
+        if let order = drag?.sectionOrder { return PoolArrangement.reordered(plan.sections, by: order) }
+        guard let order = drag?.poolOrder, let item = drag?.item else { return plan.sections }
+        return PoolArrangement.hovering(plan.sections, order: order, dragged: item, into: drag?.poolSection)
     }
 
-    private func dropRows() -> [PoolDropOrder.Row] {
-        let mids = dragMids ?? rowMids
-        if dragMids == nil { dragMids = rowMids }
-        return plan.pool.compactMap { item in mids[item.id].map { PoolDropOrder.Row(id: item.id, midY: Double($0)) } }
+    private func dropLayout() -> PoolDropLayout {
+        if let dragLayout { return dragLayout }
+        let layout = PoolDropLayout(
+            rows: plan.sections.flatMap { section in
+                section.items.compactMap { item in rowMids[item.id].map { PoolDropOrder.Row(id: item.id, midY: Double($0), section: section.id) } }
+            },
+            headers: plan.sections.compactMap { section in headerMids[section.id].map { SectionDropOrder.Header(id: section.id, midY: Double($0)) } })
+        dragLayout = layout
+        return layout
     }
 
-    /// Today's pool takes its own rows and the timeline's blocks; any day's pool takes a backlog page's tasks.
+    /// Any day's pool takes its own rows (another day's only into another section) and a backlog page's tasks; today's
+    /// the timeline's blocks.
     private func canDrop(_ item: DayItem, from source: TaskDragState.Source) -> Bool {
         switch source {
-        case .pool: plan.isToday
+        case .pool: true
         case .timeline(let slot): plan.isToday && model.canDropInPool(item.id, slot: slot)
         case .backlog: model.canBringFromBacklog(item.id)
+        case .section: false
         }
     }
 
-    private func dropped(_ item: DayItem, from source: TaskDragState.Source, order: [String]) {
+    private func dropped(_ item: DayItem, from source: TaskDragState.Source, order: [String], section: String?) {
         Haptics.play(.drop)
+        let day = plan.today
+        let isToday = plan.isToday
+        if let section { model.moveTask(item.id, toSection: section, poolOrder: order, on: day) }
         switch source {
         // The pool's own order is today's only.
-        case .pool: if plan.isToday { model.setManualOrder(order) }
-        case .timeline(let slot): Task { await model.unschedule(item.id, slot: slot, poolOrder: order, on: plan.today) }
-        case .backlog:
-            Task { await model.bringFromBacklog(item.id, to: plan.today, poolOrder: plan.isToday ? order : nil) }
+        case .pool: if isToday && section == nil { model.setManualOrder(order) }
+        case .timeline(let slot): Task { await model.unschedule(item.id, slot: slot, poolOrder: order, on: day) }
+        case .backlog: Task { await model.bringFromBacklog(item.id, to: day, poolOrder: isToday ? order : nil) }
+        case .section: break
         }
+    }
+
+    private func sectionDropped(_ id: String, order: [String]) {
+        Haptics.play(.drop)
+        model.moveSection(id, order: order, on: plan.today)
     }
 
     private var poolContent: some View {
@@ -86,9 +106,20 @@ struct PoolBlock: View {
     private var list: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: tokens.space(.poolRowGap)) {
-                // One plate for a whole routine; each habit keeps its own tap and long press.
-                ForEach(PoolSegments.make(items)) { segment in
-                    PoolSegmentView(segment: segment) { item, plate in tracked(row(item, plate: .pool(plate)), item) }
+                let shown = sections
+                ForEach(shown) { section in
+                    let isGhost = drag?.isSectionGhost(section.id) == true
+                    PoolSectionHeader(section: section, isFirst: section.id == shown.first?.id, drag: drag)
+                        .dropGhost(isGhost)
+                        .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(Self.dropSpace)) } action: { frame in
+                            headerMids[section.id] = frame.midY
+                            headerHeights[section.id] = frame.height
+                        }
+                    // One plate for a whole routine; each habit keeps its own tap and long press.
+                    ForEach(PoolSegments.make(section.items)) { segment in
+                        PoolSegmentView(segment: segment) { item, plate in tracked(row(item, plate: .pool(plate)), item) }
+                            .dropGhost(isGhost)
+                    }
                 }
             }
         }
@@ -119,10 +150,17 @@ struct PoolBlock: View {
         }
     }
 
+    /// The first N rows with the headers above them.
     private var visibleHeight: CGFloat {
-        let rows = plan.pool.prefix(visibleCount)
-        let heights = rows.map { rowHeights[$0.id] ?? CGFloat(rules.layoutEstimates.poolRowHeight) }
-        return heights.reduce(0, +) + tokens.space(.poolRowGap) * CGFloat(max(rows.count - 1, 0))
+        let estimate = CGFloat(rules.layoutEstimates.poolRowHeight)
+        var remaining = visibleCount
+        var heights: [CGFloat] = []
+        for section in plan.sections where remaining > 0 {
+            heights.append(headerHeights[section.id] ?? estimate)
+            heights += section.items.prefix(remaining).map { rowHeights[$0.id] ?? estimate }
+            remaining -= min(remaining, section.items.count)
+        }
+        return heights.reduce(0, +) + tokens.space(.poolRowGap) * CGFloat(max(heights.count - 1, 0))
     }
 
     /// The row of a task dragged over the pool is the gap the others part around (`TaskDragState.isGap`), with a faint copy
@@ -148,16 +186,18 @@ struct PoolBlock: View {
 private struct PoolDropTarget: ViewModifier {
     let drag: TaskDragState?
     let animation: Animation
-    let rows: () -> [PoolDropOrder.Row]
+    let layout: () -> PoolDropLayout
     let canDrop: (DayItem, TaskDragState.Source) -> Bool
-    let onDrop: (DayItem, TaskDragState.Source, [String]) -> Void
+    let onDrop: (DayItem, TaskDragState.Source, [String], String?) -> Void
+    let onSectionDrop: (String, [String]) -> Void
 
     func body(content: Content) -> some View {
         if let drag {
             content
                 .contentShape(Rectangle())
-                .onDrop(of: TaskDragState.types, delegate: PoolDropDelegate(drag: drag, animation: animation, rows: rows,
-                                                                            canDrop: canDrop, onDrop: onDrop))
+                .onDrop(of: TaskDragState.types, delegate: PoolDropDelegate(drag: drag, animation: animation, layout: layout,
+                                                                            canDrop: canDrop, onDrop: onDrop,
+                                                                            onSectionDrop: onSectionDrop))
         } else {
             content
         }

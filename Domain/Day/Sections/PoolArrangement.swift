@@ -36,3 +36,24 @@ enum PoolArrangement {
         }
     }
 }
+
+extension PoolArrangement {
+    /// The sections while a task is dragged over the pool: the task in `section` (nil: where it stands), each section's
+    /// tasks in the order the finger makes.
+    static func hovering(_ sections: [PoolSectionContent], order: [String], dragged: DayItem,
+                         into section: String?) -> [PoolSectionContent] {
+        let place = Dictionary(order.enumerated().map { ($1, $0) }, uniquingKeysWith: { first, _ in first })
+        let target = section ?? sections.first { $0.items.contains { $0.id == dragged.id } }?.id
+        return sections.map { content in
+            var items = content.items.filter { $0.id != dragged.id }
+            if content.id == target { items.append(dragged) }
+            items.sort { (place[$0.id] ?? .max) < (place[$1.id] ?? .max) }
+            return PoolSectionContent(id: content.id, title: content.title, isCustom: content.isCustom, items: items)
+        }
+    }
+
+    /// The sections in the order of `ids` (those not named keep their places after them).
+    static func reordered(_ sections: [PoolSectionContent], by ids: [String]) -> [PoolSectionContent] {
+        ids.compactMap { id in sections.first { $0.id == id } } + sections.filter { !ids.contains($0.id) }
+    }
+}

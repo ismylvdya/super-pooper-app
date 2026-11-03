@@ -10,7 +10,10 @@ struct BacklogDropDelegate: DropDelegate {
     let canDrop: (DayItem) -> Bool
     let onDrop: (DayItem, TaskDragState.Source) -> Void
 
-    func validateDrop(info: DropInfo) -> Bool {
+    func validateDrop(info: DropInfo) -> Bool { validate() }
+
+    /// Only a task from elsewhere lands here: a pool section's header never does.
+    func validate() -> Bool {
         guard let item = drag.item, drag.source != .backlog(list) else { return false }
         return canDrop(item)
     }
