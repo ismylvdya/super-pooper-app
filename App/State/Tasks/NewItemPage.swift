@@ -2,21 +2,35 @@ import Foundation
 
 /// The new-item page as it is being filled in: the kind shown (a task or a habit), the name typed in the title, a draft
 /// per kind, what Return in the name saves at once and what leaving the page creates. Switching the kind keeps the name
-/// and both drafts, so switching back finds what was set there; only the shown kind is created.
+/// and both drafts, so switching back finds what was set there; only the shown kind is created. A "+" dropped on a
+/// timeline presets that moment (a task's date and time, a habit's reminder time); dropped in the pool, the spot the
+/// note takes there once made.
 struct NewItemPage: Equatable {
     var kind: NewItemSeed.Kind
     var name = ""
+    let placement: NewItemPlacement?
     private var taskDraft: NoteDraft
     private var habitDraft: NoteDraft
     private let untouchedTask: NoteDraft
     private let untouchedHabit: NoteDraft
 
-    init(kind: NewItemSeed.Kind, taskDraft: NoteDraft, habitDraft: NoteDraft) {
-        self.kind = kind
+    init(seed: NewItemSeed, taskDraft: NoteDraft, habitDraft: NoteDraft) {
+        var taskDraft = taskDraft
+        var habitDraft = habitDraft
+        if let placement = seed.placement {
+            taskDraft.apply(placement.presets(.task))
+            habitDraft.apply(placement.presets(.habit))
+        }
+        kind = seed.kind
+        placement = seed.placement
         self.taskDraft = taskDraft
         self.habitDraft = habitDraft
         untouchedTask = taskDraft
         untouchedHabit = habitDraft
+    }
+
+    init(kind: NewItemSeed.Kind, taskDraft: NoteDraft, habitDraft: NoteDraft) {
+        self.init(seed: NewItemSeed(kind: kind), taskDraft: taskDraft, habitDraft: habitDraft)
     }
 
     /// The shown kind's draft.

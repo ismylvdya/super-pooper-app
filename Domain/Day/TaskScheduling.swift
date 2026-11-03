@@ -30,6 +30,14 @@ enum TaskScheduling {
         return [.due(TaskDue(day: context.logicalDay(of: due)))]
     }
 
+    /// Where a "+" let go, or a hold, at `offset` points below the top of a timeline window puts a new item: the moment
+    /// there on the drop step, as a dragged task would get it.
+    static func placement(atOffset offset: Double, windowStart: Date, hourHeight: Double, stepMinutes: Int,
+                          calendar: Calendar) -> NewItemPlacement {
+        .timeline(at: moment(atOffset: offset, windowStart: windowStart, hourHeight: hourHeight, stepMinutes: stepMinutes,
+                             calendar: calendar), calendar: calendar)
+    }
+
     /// The moment at `offset` points below the top of a timeline window, on a multiple of `stepMinutes`.
     static func moment(atOffset offset: Double, windowStart: Date, hourHeight: Double, stepMinutes: Int, calendar: Calendar) -> Date {
         let raw = windowStart.addingTimeInterval(max(offset, 0) / max(hourHeight, 1) * TimelineWindow.hour)

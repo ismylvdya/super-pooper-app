@@ -48,11 +48,12 @@ struct AppParts {
                             filesDoneTasks: config.flags.fileDoneTasks)
         texts = NoteTextEditor(tasks: tasks, store: store, appEvents: appEvents, delay: delay,
                                saveDelay: rules.editing.noteSaveDelaySeconds)
-        notes = NoteCommands(tasks: tasks, writer: writer, texts: texts, store: store, links: services.links, backups: backups,
-                             settings: settings, day: day, sections: sections, derived: derived, appEvents: appEvents, dates: dates)
         undo = UndoController(tasks: tasks, writer: writer, store: store, trash: services.trash, day: day, sections: sections,
                               derived: derived, appEvents: appEvents)
         dayCommands = DayCommands(day: day, sections: sections, tasks: tasks, writer: writer, derived: derived, appEvents: appEvents)
+        notes = NoteCommands(tasks: tasks, writer: writer, texts: texts, store: store, links: services.links, backups: backups,
+                             settings: settings, day: day, sections: sections, derived: derived, appEvents: appEvents, dates: dates,
+                             placements: dayCommands)
         sourceCommands = SourceCommands(sources: sources, services: services, day: day, derived: derived, appEvents: appEvents,
                                         delay: delay, quietSeconds: rules.timeline.externalChangeDelaySeconds)
         lists = TaskLists(tasks: tasks, store: store, config: config)

@@ -17,10 +17,11 @@ final class NoteCommands {
     private let derived: DerivedStatePublisher
     private let appEvents: AppEventSink
     private let dates: DateDetector
+    private let placements: DayCommands
 
     init(tasks: TaskState, writer: NoteWriter, texts: NoteTextEditor, store: TaskStore, links: ExternalLinking?,
          backups: BackupPolicy, settings: SettingsController, day: DayStateController, sections: DaySectionsController,
-         derived: DerivedStatePublisher, appEvents: AppEventSink, dates: DateDetector) {
+         derived: DerivedStatePublisher, appEvents: AppEventSink, dates: DateDetector, placements: DayCommands) {
         self.tasks = tasks
         self.writer = writer
         self.texts = texts
@@ -33,6 +34,7 @@ final class NoteCommands {
         self.derived = derived
         self.appEvents = appEvents
         self.dates = dates
+        self.placements = placements
     }
 
     // MARK: - Marks and statuses
@@ -131,9 +133,9 @@ final class NoteCommands {
         return .newHabit(startingOn: day.context().today, showInToday: habits.showNewHabitsInToday, color: habits.newHabitColor)
     }
 
-    /// The new-item page a "+" opens, showing `kind`, with a fresh task draft and a fresh habit draft behind its slider.
-    func newItemPage(kind: NewItemSeed.Kind) -> NewItemPage {
-        NewItemPage(kind: kind, taskDraft: .newTask, habitDraft: newHabitDraft())
+    /// The new-item page a "+" opens (`seed`), with a fresh task draft and a fresh habit draft behind its slider.
+    func newItemPage(_ seed: NewItemSeed) -> NewItemPage {
+        NewItemPage(seed: seed, taskDraft: .newTask, habitDraft: newHabitDraft())
     }
 
     /// The new-item page is left: its note is created (none for a page left untouched), or the user is told why
@@ -144,21 +146,21 @@ final class NoteCommands {
             return false
         }
         guard let creation = page.creation(unnamed: unnamed, rules: nameProblem(in:)) else { return false }
-        return await create(creation.draft, named: creation.name) != nil
+        return await create(creation.draft, named: creation.name, at: page.placement) != nil
     }
 
     /// Return in the name of the new-item page: its note is created at once (`NewItemPage.savedOnReturn`), and
     /// the page goes on as the note's own. Returns the note's name; nil when nothing was saved.
     func createOnReturn(from page: NewItemPage) async -> String? {
         guard let saving = page.savedOnReturn(rules: nameProblem(in:)) else { return nil }
-        return await create(saving.draft, named: saving.name)
+        return await create(saving.draft, named: saving.name, at: page.placement)
     }
 
     /// A task named outside the app's pages (the New Task intent): created as Return in the new task page's name would
     /// create it, with the same defaults; an empty name is rejected rather than called "Unnamed". A date in the name puts
     /// the task in Soon on that day without the date's words; without one it waits in the Inbox.
     func createTask(named name: String) async -> NamedTaskCreation {
-        var page = newItemPage(kind: .task)
+        var page = newItemPage(NewItemSeed(kind: .task))
         page.name = name
         page.takeNamedDate(dates.detect(in: name, context: day.context()))
         guard let saving = page.savedOnReturn(rules: nameProblem(in:)) else {
@@ -168,14 +170,15 @@ final class NoteCommands {
     }
 
     /// Creates the note of a draft (a task or a habit) with all its fields, its text and its subtasks (each a task of its
-    /// own linked to its parent). Returns the final name.
-    func create(_ draft: NoteDraft, named name: String) async -> String? {
+    /// own linked to its parent), at the pool's spot a dragged "+" left (`placement`). Returns the final name.
+    func create(_ draft: NoteDraft, named name: String, at placement: NewItemPlacement? = nil) async -> String? {
         do {
             let created = try await store.create(draft, named: name)
             tasks.written(created)
             for subtask in draft.subtasks.map({ $0.trimmingCharacters(in: .whitespacesAndNewlines) }) where !subtask.isEmpty {
                 try await createSubtask(subtask, of: created.name)
             }
+            if let placement { placements.place(created.name, at: placement) }
             await derived.publish()
             appEvents.send(.created(created.name))
             return created.name

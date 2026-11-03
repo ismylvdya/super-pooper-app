@@ -135,6 +135,17 @@ final class DayCommands {
         Task { await derived.publish() }
     }
 
+    /// A note made from a "+" dropped in the pool of `day`: it takes the gap's place there and the section of the spot.
+    /// A timeline's drop is already the note's date and time.
+    func place(_ name: String, at placement: NewItemPlacement) {
+        guard case .pool(_, let section, let day) = placement, let order = placement.poolOrder(named: name) else { return }
+        if section != nil {
+            moveTasks([name], toSection: section, poolOrder: order, on: day)
+        } else if isToday(day) {
+            setManualOrder(order)
+        }
+    }
+
     /// A whole section dragged by its header: the day's sections in the new order (`order`: their ids).
     func moveSection(_ id: String, order: [String], on date: LocalDate) {
         sections.update(on: date) { sections in
