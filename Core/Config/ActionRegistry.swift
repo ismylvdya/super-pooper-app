@@ -48,6 +48,8 @@ enum ActionMenu: String, Codable, CaseIterable, Sendable {
     case eventContext
     /// The "…" menu on the page of a note that is in the trash.
     case trashedPage
+    /// The bar of the pool's Select mode: the frequent actions are its buttons, the rarer ones its "…" menu.
+    case selection
 
     /// The long-press menu of a task or a habit.
     static func context(of task: TaskItem) -> ActionMenu { task.isHabit ? .habitContext : .taskContext }

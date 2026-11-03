@@ -179,6 +179,42 @@
       "icon": "bell.slash",
       "destructive": false,
       "haptic": "light"
+    },
+    {
+      "id": "select",
+      "title": "action.select",
+      "icon": "checkmark.circle",
+      "destructive": false,
+      "haptic": "none"
+    },
+    {
+      "id": "highPriority",
+      "title": "action.highPriority",
+      "icon": "exclamationmark.triangle",
+      "destructive": false,
+      "haptic": "light",
+      "undo": "edits"
+    },
+    {
+      "id": "worm",
+      "title": "action.worm",
+      "icon": "link",
+      "destructive": false,
+      "haptic": "light"
+    },
+    {
+      "id": "unworm",
+      "title": "action.unworm",
+      "icon": "scissors",
+      "destructive": false,
+      "haptic": "light"
+    },
+    {
+      "id": "newSection",
+      "title": "action.newSection",
+      "icon": "rectangle.stack.badge.plus",
+      "destructive": false,
+      "haptic": "light"
     }
   ],
   "menus": {
@@ -188,6 +224,10 @@
         "unmark",
         "done",
         "skipToday"
+      ],
+      "more": [
+        "select",
+        "unworm"
       ]
     },
     "taskContext": {
@@ -199,7 +239,9 @@
       ],
       "more": [
         "start",
-        "notStarted"
+        "notStarted",
+        "select",
+        "unworm"
       ]
     },
     "taskPage": {
@@ -294,6 +336,19 @@
     "trashedPage": {
       "actions": [
         "restoreFromTrash"
+      ]
+    },
+    "selection": {
+      "actions": [
+        "done",
+        "delete"
+      ],
+      "more": [
+        "notToday",
+        "highPriority",
+        "worm",
+        "unworm",
+        "newSection"
       ]
     }
   },

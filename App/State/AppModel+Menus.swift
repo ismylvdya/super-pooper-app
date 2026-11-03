@@ -10,10 +10,13 @@ struct MenuEntry: Equatable {
 
 extension AppModel {
     /// The actions a menu offers for `item` now, in the menu's order (`ActionAvailability`): by the item's state, the day
-    /// (Skip today and Not today only on today's page) and what the task store can do.
-    func menuEntries(_ menu: ActionMenu, for item: DayItem?, isToday: Bool = true) -> [MenuEntry] {
+    /// (Skip today and Not today only on today's page) and what the task store can do. `poolDay`: the row stands in that
+    /// day's pool, where Select and that day's Unworm are offered.
+    func menuEntries(_ menu: ActionMenu, for item: DayItem?, isToday: Bool = true, poolDay: LocalDate? = nil) -> [MenuEntry] {
         let definition = config.actions.menus[menu]
-        return ActionAvailability(capabilities: parts.capabilities, isToday: isToday).entries(definition.actions, for: item).map {
+        let availability = ActionAvailability(capabilities: parts.capabilities, isToday: isToday, canSelect: poolDay != nil,
+                                              worms: poolDay.map { sections(on: $0).worms } ?? [])
+        return availability.entries(definition.actions, for: item).map {
             MenuEntry(action: config.actions.definition($0.action), isCurrent: $0.isCurrent, isMore: definition.more.contains($0.action))
         }
     }

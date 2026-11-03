@@ -13,6 +13,8 @@ struct PoolRowContent: View {
     @Environment(\.highPriorityLook) private var highPriorityLook
     @Environment(\.startedFillLength) private var startedFillLength
     @Environment(TaskDragState.self) private var drag: TaskDragState?
+    @Environment(PoolSelection.self) private var selection: PoolSelection?
+    @Environment(\.icons) private var icons
     let item: DayItem
     var isToday = true
     var isCompact = true
@@ -27,16 +29,47 @@ struct PoolRowContent: View {
     let handler: TaskActionHandler
     /// Where a drag of this row starts from; nil = it cannot be dragged.
     var dragSource: TaskDragState.Source?
+    /// The row stands in that day's pool: its menu offers Select, and in Select mode it is picked by a tap.
+    var poolDay: LocalDate?
 
     var body: some View {
-        plated
-            .plateLift(.row, for: .contextMenuPreview)
-            .contextMenu {
-                ActionMenuContent(menu: .context(of: item.task), item: item, isToday: isToday) {
-                    handler.handle($0, taskName: item.id)
+        if let selection, selection.isOn, poolDay != nil {
+            selectable(selection)
+        } else {
+            plated
+                .plateLift(.row, for: .contextMenuPreview)
+                .contextMenu {
+                    ActionMenuContent(menu: .context(of: item.task), item: item, isToday: isToday, poolDay: poolDay) {
+                        handler.handle($0, taskName: item.id)
+                    }
                 }
+                .taskDragSource(item, from: dragSource ?? .pool, drag: drag, isOn: dragSource != nil, lift: .row) { plated }
+        }
+    }
+
+    /// Select mode: the system's selection circle in front of the title, a tap picks or drops the row; no menu, no drag.
+    private func selectable(_ selection: PoolSelection) -> some View {
+        let isSelected = selection.isSelected(item.id)
+        return plated
+            .allowsHitTesting(false)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                Haptics.play(.select)
+                selection.toggle(item.id)
             }
-            .taskDragSource(item, from: dragSource ?? .pool, drag: drag, isOn: dragSource != nil, lift: .row) { plated }
+            .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+    }
+
+    @ViewBuilder private var selectionMark: some View {
+        if let selection, selection.isOn, poolDay != nil {
+            let isSelected = selection.isSelected(item.id)
+            Image(systemName: icons[isSelected ? .selectOn : .selectOff])
+                .font(tokens.font(.taskTitle))
+                // Level with the title's first line, however tall the plate.
+                .frame(height: titleLineHeight ?? tokens.uiFont(.taskTitle).lineHeight)
+                .foregroundStyle(isSelected ? tokens.color(.accent) : tokens.color(.tertiaryText))
+                .accessibilityIdentifier(isSelected ? "pool.selected" : "pool.unselected")
+        }
     }
 
     /// The row on its plate: what stands in the pool or on the timeline, and what a drag lifts.
@@ -48,9 +81,12 @@ struct PoolRowContent: View {
         return Group {
             switch plate {
             case .pool(let plate):
-                VStack(alignment: .leading, spacing: 0) {
-                    row
-                    Spacer(minLength: minimumHeight)
+                HStack(alignment: .top, spacing: tokens.space(.iconTextGap)) {
+                    selectionMark
+                    VStack(alignment: .leading, spacing: 0) {
+                        row
+                        Spacer(minLength: minimumHeight)
+                    }
                 }
                 .poolRowPlate(plate, isDone: item.isDone, tint: tint)
             case .slot(let isPast, let isCompact):

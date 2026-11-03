@@ -12,9 +12,9 @@ struct BacklogDropDelegate: DropDelegate {
 
     func validateDrop(info: DropInfo) -> Bool { validate() }
 
-    /// Only a task from elsewhere lands here: a pool section's header never does.
+    /// Only a task from elsewhere lands here: a pool section's header or a worm dragged whole never does.
     func validate() -> Bool {
-        guard let item = drag.item, drag.source != .backlog(list) else { return false }
+        guard let item = drag.item, drag.source != .backlog(list), drag.source.wormMembers.isEmpty else { return false }
         return canDrop(item)
     }
 

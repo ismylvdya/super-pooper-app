@@ -10,7 +10,8 @@ struct PoolBlock: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
     @Environment(\.rules) private var rules
-    @Environment(TaskDragState.self) private var drag: TaskDragState?
+    @Environment(TaskDragState.self) private var dragState: TaskDragState?
+    @Environment(PoolSelection.self) private var selection: PoolSelection?
     let plan: DayPlan
     let handler: TaskActionHandler
     /// Space under the block that belongs to the home indicator (the list scrolls under it).
@@ -27,6 +28,9 @@ struct PoolBlock: View {
     @State private var dragLayout: PoolDropLayout?
     private static let dropSpace = "poolDrop"
 
+    /// In Select mode nothing is dragged in or out of the pool.
+    private var drag: TaskDragState? { selection?.isOn == true ? nil : dragState }
+
     var body: some View {
         poolContent
             .coordinateSpace(.named(Self.dropSpace))
@@ -39,7 +43,10 @@ struct PoolBlock: View {
     private var sections: [PoolSectionContent] {
         if let order = drag?.sectionOrder { return PoolArrangement.reordered(plan.sections, by: order) }
         guard let order = drag?.poolOrder, let item = drag?.item else { return plan.sections }
-        return PoolArrangement.hovering(plan.sections, order: order, dragged: item, into: drag?.poolSection)
+        let along = drag?.source.wormMembers.filter { $0 != item.id } ?? []
+        let members = along.compactMap { name in plan.pool.first { $0.id == name } }
+        return PoolArrangement.hovering(plan.sections, order: PoolDropOrder.keepingTogether(order, dragged: item.id, along: along),
+                                        dragged: [item] + members, into: drag?.poolSection)
     }
 
     private func dropLayout() -> PoolDropLayout {
@@ -60,6 +67,7 @@ struct PoolBlock: View {
         case .pool: true
         case .timeline(let slot): plan.isToday && model.canDropInPool(item.id, slot: slot)
         case .backlog: model.canBringFromBacklog(item.id)
+        case .worm: true
         case .section: false
         }
     }
@@ -68,12 +76,15 @@ struct PoolBlock: View {
         Haptics.play(.drop)
         let day = plan.today
         let isToday = plan.isToday
-        if let section { model.moveTask(item.id, toSection: section, poolOrder: order, on: day) }
+        if let section, source.wormMembers.isEmpty { model.moveTask(item.id, toSection: section, poolOrder: order, on: day) }
         switch source {
         // The pool's own order is today's only.
         case .pool: if isToday && section == nil { model.setManualOrder(order) }
         case .timeline(let slot): Task { await model.unschedule(item.id, slot: slot, poolOrder: order, on: day) }
         case .backlog: Task { await model.bringFromBacklog(item.id, to: day, poolOrder: isToday ? order : nil) }
+        case .worm(_, let members):
+            model.moveTasks(members, toSection: section, poolOrder: PoolDropOrder.keepingTogether(order, dragged: item.id, along: members),
+                            on: day)
         case .section: break
         }
     }
@@ -115,10 +126,13 @@ struct PoolBlock: View {
                             headerMids[section.id] = frame.midY
                             headerHeights[section.id] = frame.height
                         }
-                    // One plate for a whole routine; each habit keeps its own tap and long press.
-                    ForEach(PoolSegments.make(section.items)) { segment in
-                        PoolSegmentView(segment: segment) { item, plate in tracked(row(item, plate: .pool(plate)), item) }
+                    // One plate for a whole routine or worm; each row keeps its own tap and long press. A worm's member drags
+                    // the whole worm.
+                    ForEach(PoolSegments.make(section.items, worms: plan.worms)) { segment in
+                        let source = dragSource(of: segment)
+                        PoolSegmentView(segment: segment) { item, plate in tracked(row(item, plate: .pool(plate), source: source), item) }
                             .dropGhost(isGhost)
+                            .modifier(WormElement(isWorm: segment.wormID != nil))
                     }
                 }
             }
@@ -165,11 +179,16 @@ struct PoolBlock: View {
 
     /// The row of a task dragged over the pool is the gap the others part around (`TaskDragState.isGap`), with a faint copy
     /// of its plate: how it will stand once dropped.
-    private func row(_ item: DayItem, plate: PoolRowContent.PlateKind) -> some View {
+    private func row(_ item: DayItem, plate: PoolRowContent.PlateKind, source: TaskDragState.Source) -> some View {
         let isGap = drag?.isGap(item.id) == true
         return PoolRow(item: item, isToday: plan.isToday, isCompact: fillsHeight, plate: plate, handler: handler,
-                       dragSource: .pool)
+                       dragSource: source, poolDay: plan.today)
             .dropGhost(isGap)
+    }
+
+    private func dragSource(of segment: PoolSegments.Segment) -> TaskDragState.Source {
+        guard let id = segment.wormID else { return .pool }
+        return .worm(id: id, members: segment.items.filter { $0.depth == 0 }.map(\.id))
     }
 
     private func tracked(_ view: some View, _ item: DayItem) -> some View {
@@ -179,6 +198,19 @@ struct PoolBlock: View {
             .onScrollVisibilityChange(threshold: rules.pool.rowVisibleShare) { visible in
                 if visible { visibleRows.insert(item.id) } else { visibleRows.remove(item.id) }
             }
+    }
+}
+
+/// A worm's plate is one element for accessibility, its rows inside it.
+private struct WormElement: ViewModifier {
+    let isWorm: Bool
+
+    func body(content: Content) -> some View {
+        if isWorm {
+            content.accessibilityElement(children: .contain).accessibilityIdentifier("pool.worm")
+        } else {
+            content
+        }
     }
 }
 

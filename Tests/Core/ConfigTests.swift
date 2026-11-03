@@ -8,7 +8,7 @@ struct ConfigTests {
     /// Done (a twice-a-day habit's second Done is Twice) and Skip today, in red.
     @Test func partialAndTwiceStayOnTheHabitsPage() {
         #expect(TestConfig.actions.menus[.habitDay].actions == [.unmark, .partial, .done, .twice])
-        #expect(TestConfig.actions.menus[.habitContext].actions == [.unmark, .done, .skipToday])
+        #expect(TestConfig.actions.menus[.habitContext].frequent == [.unmark, .done, .skipToday])
         #expect(TestConfig.actions.menus[.habitNotification].actions == [.done, .skipToday, .snooze])
         #expect(TestConfig.actions.menus[.habitNotification].more == [.snooze], "the rarer actions stand under the frequent ones")
         #expect(TestConfig.actions.definition(.skipToday).destructive)
@@ -23,6 +23,19 @@ struct ConfigTests {
         }
         #expect(!TestConfig.actions.definition(.snooze).destructive)
         #expect(TestConfig.rules.notifications.snoozeMinutes == 60)
+    }
+
+    /// Select mode's bar: Done and Delete as buttons, the rest under "…"; the long-press menus start it and offer Unworm.
+    @Test func theSelectionMenuNamesKnownActions() {
+        let selection = TestConfig.actions.menus[.selection]
+        #expect(selection.frequent == [.done, .delete])
+        #expect(selection.more == [.notToday, .highPriority, .worm, .unworm, .newSection])
+        for menu in [ActionMenu.taskContext, .habitContext] {
+            #expect(TestConfig.actions.menus[menu].more.contains(.select), "\(menu)")
+            #expect(TestConfig.actions.menus[menu].more.contains(.unworm), "\(menu)")
+        }
+        #expect(TestConfig.actions.definition(.highPriority).undo == .edits)
+        #expect(TestConfig.actions.definition(.worm).undo == nil, "Unworm takes a worm back")
     }
 
     /// The pool menu of a task takes it out of today (Not today) rather than archiving it.

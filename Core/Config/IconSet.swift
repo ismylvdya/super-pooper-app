@@ -20,6 +20,8 @@ enum Icon: String, CaseIterable, Codable, Sendable {
     case habitMarkOpen, habitMarkDone, habitMarkPartial, habitMarkTwice
     case today, harmful, timeOfDay, goal, trash, restore, links, opacity, obsidian, habitSettings, taskSettings, clockSettings
     case tomorrow, subtask, addSubtask, selected, previousDay, nextDay
+    /// A pool row in Select mode, picked or not, and the mode's Cancel lying sideways.
+    case selectOn, selectOff, selectCancel
     case syncAdded, syncChanged, syncRemoved, signing
 }
 

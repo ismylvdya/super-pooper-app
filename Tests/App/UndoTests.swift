@@ -142,4 +142,22 @@ struct UndoTests {
         #expect(banner.text == "Moved “Report” to trash.")
         #expect(TestConfig.rules.banners.undoSeconds == 5)
     }
+
+    /// Review Focus 5: a batch delete takes the notes out of their section and worm; Undo brings both back.
+    @Test func undoingABatchDeleteBringsBackSectionsAndWorms() async throws {
+        let (model, events) = try makeModel([makeTask("Milk"), makeTask("Bank"), makeTask("Report")])
+        let today = model.context().today
+        model.parts.sections.update(on: today) { sections in
+            sections.membership = ["Milk": "evening", "Bank": "evening"]
+            sections.worms = [DayWorm(id: "w", members: ["Milk", "Bank"])]
+        }
+        await model.performOfferingUndo(action(model, .delete), on: ["Milk", "Bank"], day: nil)
+        #expect(model.sections(on: today).worms.isEmpty && model.sections(on: today).membership.isEmpty)
+
+        await model.undo(try offer(events).id)
+
+        #expect(model.sections(on: today).worms == [DayWorm(id: "w", members: ["Milk", "Bank"])])
+        #expect(model.sections(on: today).section(of: "Bank") == "evening")
+        #expect(model.task(named: "Milk") != nil && model.task(named: "Bank") != nil)
+    }
 }

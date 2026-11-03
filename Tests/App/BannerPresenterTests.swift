@@ -17,6 +17,16 @@ struct BannerPresenterTests {
         #expect(synced.counts.map(\.label) == [L10n.format("banner.sync.added", 2), L10n.format("banner.sync.removed", 1)])
     }
 
+    /// Select mode: the text counts the notes, each named on its own line under it, never joined in one line.
+    @Test func aBatchUndoBannerCountsTheNotes() {
+        let offer = UndoOffer(id: UUID(), action: .delete, names: ["Milk", "Bank"], along: ["Draft"])
+        let batch = banner(.undoable(offer))
+        #expect(batch.text == "Moved 2 tasks to trash.")
+        #expect(batch.items == ["Milk", "Bank", "Draft"])
+        #expect(batch.undo == offer.id)
+        #expect(banner(.undoable(UndoOffer(id: UUID(), action: .done, names: ["Milk"]))).text == "Marked “Milk” done.")
+    }
+
     @Test func aSyncWithoutChangesSaysUpToDate() {
         let synced = banner(.synced(added: 0, changed: 0, removed: 0))
         #expect(synced.text == L10n.string("banner.sync.upToDate"))

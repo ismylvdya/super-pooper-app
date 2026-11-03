@@ -63,4 +63,44 @@ struct DaySections: Codable, Equatable, Sendable {
         result.worms = worms.map { DayWorm(id: $0.id, members: $0.members.filter { !gone($0) }) }.filter { $0.members.count > 1 }
         return result
     }
+
+    /// The worm a task is a member of that day.
+    func worm(of name: String) -> DayWorm? {
+        worms.first { $0.members.containsNoteName(name) }
+    }
+
+    /// The tasks on one plate: a worm any of them was in takes the others along (and keeps its id, else `id`).
+    func worming(_ names: [String], id: String) -> DaySections {
+        let touched = worms.filter { worm in names.contains { worm.members.containsNoteName($0) } }
+        var members = touched.flatMap(\.members)
+        for name in names where !members.containsNoteName(name) { members.append(name) }
+        guard members.count > 1 else { return self }
+        var result = self
+        result.worms = worms.filter { !touched.contains($0) } + [DayWorm(id: touched.first?.id ?? id, members: members)]
+        return result
+    }
+
+    /// The tasks off their worms; a worm left with one member is no worm.
+    func unworming(_ names: [String]) -> DaySections {
+        var result = self
+        result.worms = worms.map { DayWorm(id: $0.id, members: $0.members.filter { !names.containsNoteName($0) }) }
+            .filter { $0.members.count > 1 }
+        return result
+    }
+
+    /// An own section titled `title`, right after the section `after` (nil or unknown: at the end), takes the tasks and
+    /// the whole worms they are in. A blank title makes nothing.
+    func addingSection(id: String, titled title: String, with names: [String], after: String?) -> DaySections? {
+        let title = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !title.isEmpty, !names.isEmpty else { return nil }
+        var result = self
+        let spot = after.flatMap { after in order.firstIndex { $0.id == after } }.map { $0 + 1 } ?? order.count
+        result.order.insert(DaySection(id: id, title: title, isCustom: true), at: spot)
+        let members = names + names.flatMap { worm(of: $0)?.members ?? [] }
+        for name in members {
+            result.membership = result.membership.filter { !$0.key.isSameNoteName(as: name) }
+            result.membership[name] = id
+        }
+        return result
+    }
 }

@@ -55,8 +55,9 @@ struct TimelineBlock: View {
                             TaskScheduling.moment(atOffset: Double(y), windowStart: day.start, hourHeight: Double(hourHeight),
                                                   stepMinutes: model.config.rules.timeline.dropStepMinutes, calendar: model.calendar)
                         }, canDrop: { item, source in
-                            source.isBacklog ? model.canBringFromBacklog(item.id)
-                                : model.canDropOnTimeline(item.id, slot: source.slot, on: plan.today)
+                            // A worm dragged whole stays in the pool.
+                            source.wormMembers.isEmpty && (source.isBacklog ? model.canBringFromBacklog(item.id)
+                                : model.canDropOnTimeline(item.id, slot: source.slot, on: plan.today))
                         }, onDrop: { item, source, moment in
                             Haptics.play(.drop)
                             Task {

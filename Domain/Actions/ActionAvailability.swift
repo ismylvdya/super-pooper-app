@@ -19,6 +19,10 @@ struct ActionAvailability: Sendable {
     let capabilities: StoreCapabilities
     /// Skip today and Not today only make sense on today's page.
     var isToday = true
+    /// Select is offered where the items can be picked (a day's pool).
+    var canSelect = false
+    /// The shown day's worms: Unworm is offered to their members.
+    var worms: [DayWorm] = []
 
     /// `actions`: the menu's actions in order; `item`: what the menu is about (nil: no state to judge by).
     func entries(_ actions: [ActionID], for item: DayItem?) -> [Entry] {
@@ -41,6 +45,8 @@ struct ActionAvailability: Sendable {
         case .notStarted: return !item.isHabit && item.task.status.isStarted
         case .archive: return !item.task.isArchived
         case .restoreFromArchive: return item.task.isArchived
+        case .select: return canSelect
+        case .unworm: return worm(of: item.id) != nil
         default: return true
         }
     }
@@ -49,6 +55,11 @@ struct ActionAvailability: Sendable {
     /// (a swipe button cannot be shown and not pressed).
     func swipe(_ actions: [ActionID], for item: DayItem?) -> [ActionID] {
         entries(actions, for: item).filter { !$0.isCurrent }.map(\.action)
+    }
+
+    /// The worm a task is a member of.
+    func worm(of name: String) -> DayWorm? {
+        worms.first { $0.members.containsNoteName(name) }
     }
 
     private func isCurrentMark(_ action: ActionID, of item: DayItem, offersTwice: Bool) -> Bool {

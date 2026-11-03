@@ -22,6 +22,24 @@ extension AppModel {
         parts.undo.offer(step, trashed: trashed)
     }
 
+    /// Select mode: the action on every selected note, and one Undo in the banner for all of them (`BatchEdits`).
+    /// `day`: the shown day, for a habit's mark and Not today (nil = today).
+    func performOfferingUndo(_ action: ActionDefinition, on names: [String], day: LocalDate?) async {
+        let step = parts.undo.canUndo(action) ? parts.undo.begin(action.id, on: names) : nil
+        var trashed: [TrashedNote] = []
+        switch action.id {
+        case .highPriority:
+            let isHigh = BatchEdits.highPriority(for: names.compactMap(task(named:)))
+            for name in names { await parts.writer.edit(name) { _ in [.highPriority(isHigh)] } }
+        default:
+            // A subtask may have gone along with its parent already.
+            for name in names where task(named: name) != nil {
+                trashed += await run(action.id, on: name, day: day, announcing: step == nil) ?? []
+            }
+        }
+        if let step { parts.undo.offer(step, trashed: trashed) }
+    }
+
     /// The action needs its confirmation first: it has one, and it cannot be taken back here.
     func needsConfirmation(_ action: ActionDefinition) -> Bool {
         action.needsConfirmation && !parts.undo.canUndo(action)
@@ -45,9 +63,13 @@ extension AppModel {
         case .restoreFromArchive: await parts.notes.restoreFromArchive(name)
         case .returnFromDone: await parts.notes.returnToSoon(name)
         case .delete: return await parts.notes.delete(name, announcing: announcing)
+        case .highPriority: await parts.writer.edit(name) { [.highPriority(!$0.isHighPriority)] }
         // Opening is the screen's; the trash restores its own notes, the timeline deletes its events, a notification
         // snoozes or dismisses itself.
         case .open, .openInObsidian, .restoreFromTrash, .deleteEvent, .snooze, .dismissAlert: break
+        case .unworm: unworm([name], on: day)
+        // Select mode is the screen's; Worm and New section take the selected tasks (`worm`, `newSection`).
+        case .select, .worm, .newSection: break
         }
         return []
     }

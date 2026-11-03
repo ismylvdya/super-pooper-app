@@ -15,6 +15,8 @@ final class TaskDragState {
         case backlog(String)
         /// A pool section's header, by the section's id.
         case section(String)
+        /// A worm's member: the whole worm goes along, within the pool only.
+        case worm(id: String, members: [String])
 
         var slot: LocalTime? {
             if case .timeline(let slot) = self { slot } else { nil }
@@ -22,6 +24,11 @@ final class TaskDragState {
 
         var isBacklog: Bool {
             if case .backlog = self { true } else { false }
+        }
+
+        /// The members of a worm dragged whole (none for anything else).
+        var wormMembers: [String] {
+            if case .worm(_, let members) = self { members } else { [] }
         }
     }
 
@@ -98,9 +105,9 @@ final class TaskDragState {
     }
 
     /// While the task is over the pool its row there is an empty gap the others part around: the task itself is under
-    /// the finger.
+    /// the finger. A worm's other members are gaps too.
     func isGap(_ id: String) -> Bool {
-        poolOrder != nil && item?.id == id
+        poolOrder != nil && (item?.id == id || source.wormMembers.containsNoteName(id))
     }
 
     /// Over the backlog page `list` the dragged task is listed there as a faint copy, unless it is already one of its rows.

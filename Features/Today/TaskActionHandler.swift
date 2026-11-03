@@ -10,6 +10,10 @@ struct TaskActionHandler {
     let requestConfirmation: (PendingAction) -> Void
     /// The page showing the task closes itself after a delete.
     var afterDelete: (() -> Void)?
+    /// The day the pool shows (nil: today): Unworm takes the task off that day's worm.
+    var shownDay: LocalDate?
+    /// Select from a row's menu starts the pool's Select mode with that row picked.
+    var startSelection: ((String) -> Void)?
 
     func handle(_ action: ActionDefinition, taskName: String) {
         if model.needsConfirmation(action) {
@@ -48,6 +52,10 @@ struct TaskActionHandler {
             }
         case .restoreFromTrash:
             Task { await model.restoreFromTrash(named: taskName) }
+        case .select:
+            startSelection?(taskName)
+        case .unworm:
+            model.unworm([taskName], on: shownDay)
         case .delete:
             Task {
                 await model.performOfferingUndo(action, on: taskName)
