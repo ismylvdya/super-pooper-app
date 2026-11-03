@@ -1,0 +1,39 @@
+{
+  "relativePrefix": ["in"],
+  "units": {
+    "minute": ["min", "mins", "minute", "minutes"],
+    "hour": ["h", "hr", "hrs", "hour", "hours"],
+    "day": ["day", "days"]
+  },
+  "today": ["today"],
+  "tomorrow": ["tomorrow", "tmrw"],
+  "nextWeek": ["next week"],
+  "weekdays": {
+    "monday": ["mon", "monday"],
+    "tuesday": ["tue", "tues", "tuesday"],
+    "wednesday": ["wed", "wednesday"],
+    "thursday": ["thu", "thur", "thurs", "thursday"],
+    "friday": ["fri", "friday"],
+    "saturday": ["sat", "saturday"],
+    "sunday": ["sun", "sunday"]
+  },
+  "months": {
+    "1": ["jan", "january"],
+    "2": ["feb", "february"],
+    "3": ["mar", "march"],
+    "4": ["apr", "april"],
+    "5": ["may"],
+    "6": ["jun", "june"],
+    "7": ["jul", "july"],
+    "8": ["aug", "august"],
+    "9": ["sep", "sept", "september"],
+    "10": ["oct", "october"],
+    "11": ["nov", "november"],
+    "12": ["dec", "december"]
+  },
+  "at": ["at"],
+  "am": ["am"],
+  "pm": ["pm"],
+  "dateSeparators": ["."],
+  "timeSeparator": ":"
+}

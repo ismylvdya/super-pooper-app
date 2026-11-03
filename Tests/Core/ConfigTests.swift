@@ -75,6 +75,26 @@ struct ConfigTests {
         #expect(icons.resolvingFallbacks { _ in false }[.chevron] == icons[.chevron])
     }
 
+    /// Date detection knows every weekday, month and unit of "in N …".
+    @Test func theDateGrammarHasEveryWeekdayMonthAndUnit() throws {
+        let config = try AppConfig.load(bundle: Bundle(for: BundleToken.self).appHostBundle)
+        #expect(config.dateGrammar.months.keys.sorted() == Array(1...12))
+        #expect(Set(config.dateGrammar.weekdays.keys) == Set(Weekday.allCases))
+        #expect(Set(config.dateGrammar.units.keys) == Set(DateGrammar.Unit.allCases))
+    }
+
+    /// A word in two groups would make a date mean two things: the config is refused, naming the word.
+    @Test func aWordInTwoGroupsIsAConfigError() throws {
+        let text = try String(contentsOf: TestPaths.configFolder.appendingPathComponent("date-grammar.json"), encoding: .utf8)
+        let twice = Data(try text.replacingOnce(#""today": ["today"]"#, with: #""today": ["today", "mon"]"#).utf8)
+        let grammar = try ConfigLoader.decode(DateGrammar.self, from: twice, file: "date-grammar.json")
+        #expect(throws: ConfigError.self) { try grammar.validate(file: "date-grammar.json") }
+        #expect(throws: ConfigError.self) {
+            try ConfigLoader.decode(DateGrammar.self, from: Data(try text.replacingOnce(#""monday": ["#, with: #""mondy": ["#).utf8),
+                                    file: "date-grammar.json")
+        }
+    }
+
     @Test func bundledConfigsLoad() throws {
         let config = try AppConfig.load(bundle: Bundle(for: BundleToken.self).appHostBundle)
         #expect(config.todayStacked.blocks.map(\.block) == [.pool, .timeline])

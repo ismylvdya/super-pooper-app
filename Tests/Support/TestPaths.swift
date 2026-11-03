@@ -32,6 +32,7 @@ enum TestConfig {
     static let defaults = decode(AppSettings.self, "defaults.json")
     static let actions = decode(ActionRegistry.self, "actions.json")
     static let tokens = decode(DesignTokens.self, "tokens.json")
+    static let dateGrammar = decode(DateGrammar.self, "date-grammar.json")
 
     static func decode<T: Decodable>(_ type: T.Type, _ file: String) -> T {
         do {
