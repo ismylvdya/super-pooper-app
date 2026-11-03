@@ -10,7 +10,7 @@ struct ActionAvailabilityTests {
     private let habitDayMenu: [ActionID] = [.unmark, .partial, .done, .twice]
 
     private func item(_ task: TaskItem, _ state: DayItemState = .open) -> DayItem {
-        DayItem(task: task, state: state, blockers: [], problems: [])
+        DayItem(task: task, state: state, problems: [])
     }
 
     private func twiceADay(_ name: String) -> TaskItem { makeHabit(name) { $0.habit.twiceADay = true } }

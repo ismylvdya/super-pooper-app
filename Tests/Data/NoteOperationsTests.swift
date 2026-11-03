@@ -7,71 +7,7 @@ import Testing
 struct NoteOperationsTests {
     // MARK: - previous_task
 
-    @Test func aNewPreviousTaskIsWrittenAsATaskNotesObject() async throws {
-        let note = try await SandboxNote("Повесить зеркало")
-        let original = try note.text()
-        try await note.apply([.addPreviousTask("Купить батарейки 🔋")])
-        expectSameBytes(try note.text(), try original
-            .replacingOnce("    reltype: FINISHTOSTART\n",
-                           with: "    reltype: FINISHTOSTART\n  - uid: \"[[Купить батарейки 🔋]]\"\n    reltype: FINISHTOSTART\n")
-            .replacingOnce("date_modified: 2026-10-20T09:12:44.123+02:00", with: "date_modified: \(note.sandbox.nowStamp)"))
-        #expect(note.task.previousTasks == ["Собрать шкаф", "Купить батарейки 🔋"])
-    }
-
-    @Test func existingEntriesAreKeptAsTheyWere() async throws {
-        let sandbox = try VaultSandbox.make()
-        try sandbox.write(Self.mixedLinks, to: "Связи разных видов")
-        let note = try await SandboxNote("Связи разных видов", sandbox: sandbox)
-        #expect(note.task.previousTasks == ["Найти отвёртку", "Собрать шкаф", "Купить батарейки 🔋"])
-
-        try await note.apply([.addPreviousTask("Повесить зеркало")])
-        expectSameBytes(try note.text(), try Self.mixedLinks
-            .replacingOnce("  - Купить батарейки 🔋\n",
-                           with: "  - Купить батарейки 🔋\n  - uid: \"[[Повесить зеркало]]\"\n    reltype: FINISHTOSTART\n")
-            .replacingOnce("date_modified: 2026-10-20T09:12:44.123+02:00", with: "date_modified: \(sandbox.nowStamp)"))
-
-        try await note.apply([.removePreviousTask("Собрать шкаф"), .removePreviousTask("Повесить зеркало")])
-        expectSameBytes(try note.text(), try Self.mixedLinks
-            .replacingOnce("  - \"[[Собрать шкаф]]\"\n", with: "")
-            .replacingOnce("date_modified: 2026-10-20T09:12:44.123+02:00", with: "date_modified: \(sandbox.nowStamp)"))
-
-        try await note.apply([.removePreviousTask("Найти отвёртку"), .removePreviousTask("купить БАТАРЕЙКИ 🔋")])
-        let withoutLinks = try #require(Self.mixedLinks.components(separatedBy: "previous_task:").first)
-            + "date_modified: \(sandbox.nowStamp)\n---\nТело заметки\n"
-        expectSameBytes(try note.text(), withoutLinks)
-    }
-
     // MARK: - Rename
-
-    @Test func renameMovesTheFileAndRewritesLinksOfDependents() async throws {
-        let sandbox = try VaultSandbox.make()
-        let repository = sandbox.repository()
-        let tasks = try await repository.load().tasks
-        let screwdriver = try #require(tasks.first { $0.name == "Найти отвёртку" })
-        let dependents = tasks.filter { $0.previousTasks.contains("Найти отвёртку") }
-        #expect(dependents.map(\.name).sorted() == ["Связь без скобок", "Собрать шкаф"])
-        let content = try sandbox.text(of: "Найти отвёртку")
-        let wardrobe = try sandbox.text(of: "Собрать шкаф")
-        let plain = try sandbox.text(of: "Связь без скобок")
-
-        let renamed = try await repository.rename(screwdriver, to: "Найти отвёртку 🪛", dependents: dependents)
-
-        #expect(renamed.name == "Найти отвёртку 🪛" && renamed.id.relativePath == "TaskNotes/Tasks/Найти отвёртку 🪛.md")
-        #expect(!sandbox.exists("Найти отвёртку"))
-        expectSameBytes(try sandbox.text(of: "Найти отвёртку 🪛"), content)
-        let newLink = "  - uid: \"[[Найти отвёртку 🪛]]\"\n    reltype: FINISHTOSTART\n"
-        let stamp = "date_modified: \(sandbox.nowStamp)"
-        expectSameBytes(try sandbox.text(of: "Собрать шкаф"), try wardrobe
-            .replacingOnce("  - uid: \"[[Найти отвёртку]]\"\n    reltype: FINISHTOSTART\n", with: newLink)
-            .replacingOnce("date_modified: 2026-10-20T09:12:44.123+02:00", with: stamp))
-        expectSameBytes(try sandbox.text(of: "Связь без скобок"), try plain
-            .replacingOnce("  - Найти отвёртку\n", with: newLink)
-            .replacingOnce("date_modified: 2026-10-20T09:12:44.123+02:00", with: stamp))
-
-        let plan = DayScenario(tasks: try await repository.load().tasks).build()
-        #expect(plan.problems(of: "Собрать шкаф").isEmpty && plan.problems(of: "Связь без скобок").isEmpty)
-        #expect(plan.item(named: "Собрать шкаф")?.blockers == [.task("Найти отвёртку 🪛")])
-    }
 
     @Test func aTakenOrInvalidNameIsRejectedWithoutTouchingFiles() async throws {
         let sandbox = try VaultSandbox.make()

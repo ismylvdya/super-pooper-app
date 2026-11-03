@@ -120,11 +120,6 @@ func makeReminder(_ title: String, day: String = TestCalendar.wednesday, at time
                  listTitle: "Remember", colorHex: "#FF9500", isCompleted: completed)
 }
 
-/// A link from a task to `event`, as the app or the Claude skill would write it.
-func eventLink(to event: CalendarEvent, identifier: String? = nil) -> EventLink {
-    EventLink(eventIdentifier: identifier ?? event.eventIdentifier, title: event.title, start: event.start)
-}
-
 /// Inputs of one day, built with the real rules and sort order from the configs.
 struct DayScenario {
     var tasks: [TaskItem]

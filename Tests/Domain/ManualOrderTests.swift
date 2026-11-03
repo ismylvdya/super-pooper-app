@@ -46,11 +46,6 @@ struct ManualOrderTests {
         #expect(ordered(["Gone", "C", "A", "Archived since", "B"], [a, b, c]) == ["C", "A", "B"])
     }
 
-    @Test func theManualOrderCannotLiftATaskAboveItsPredecessor() {
-        let dependent = b.applying([.addPreviousTask("A")])
-        #expect(ordered(["B", "C", "A"], [a, dependent, c]) == ["C", "A", "B"])
-    }
-
     @Test func doneTasksLeaveThePoolEvenWhenDraggedUp() {
         let doneC = makeTask("C", status: .done) { $0.completedDate = LocalDate("2026-10-21") }
         #expect(ordered(["C", "A", "B"], [a, b, doneC]) == ["A", "B"])

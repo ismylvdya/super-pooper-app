@@ -24,64 +24,11 @@ struct TaskNoteReaderTests {
         #expect(!reader.isTask(try FrontmatterDocument(text: "---\n\(tags)\n---\n")))
     }
 
-    @Test func linksAreReadInEveryFormTheyAreWritten() throws {
-        let task = try read("""
-        previous_task:
-          - uid: "[[Объект]]"
-            reltype: FINISHTOSTART
-          - "[[В кавычках]]"
-          - [[Без кавычек]]
-          - "[[Папка/Путь]]"
-          - "[[С псевдонимом|псевдоним]]"
-          - Просто имя
-        """)
-        #expect(task.previousTasks == ["Объект", "В кавычках", "Без кавычек", "Путь", "С псевдонимом", "Просто имя"])
-        #expect(task.problems.isEmpty)
-        #expect(try read("previous_task: \"[[Одна строка]]\"").previousTasks == ["Одна строка"])
-    }
-
-    @Test func missingFieldsGetDefaults() throws {
-        let task = try read("")
-        #expect(task.status == .other(""))
-        #expect(!task.isHighPriority && task.due == nil && task.timeEstimate == nil)
-        #expect(task.feel == .neutral && !task.isHabit)
-        #expect(task.previousTasks.isEmpty && task.marks.isEmpty && task.problems.isEmpty)
-    }
-
     @Test func statusesAndPrioritiesComeFromTheMapping() throws {
         #expect(try read("status: half_year\npriority: high").status == .halfYear)
         #expect(try read("status: half_year\npriority: high").isHighPriority)
         #expect(try !read("priority: none").isHighPriority)
         #expect(try read("status: in_progress").status == .other("in_progress"))
-    }
-
-    @Test func anEventTitleMayContainTheSeparator() throws {
-        let task = try read("next_event: \"EK-1|Call | dad|2026-10-21T19:00:00+02:00\"")
-        #expect(task.nextEvent == EventLink(eventIdentifier: "EK-1", title: "Call | dad", start: TestCalendar.date("2026-10-21", "19:00")))
-    }
-
-    @Test func unreadableValuesBecomeProblemsAndTheRestIsStillRead() throws {
-        let task = try read("""
-        status: this_week
-        due: tomorrow
-        time_estimate: lots
-        need_energy: maybe
-        previous_event: "not a link"
-        complete_instances:
-          - 2026-10-20
-          - 2026-13-01
-        pleasant: false
-        """)
-        #expect(task.status == .thisWeek && task.feel == .neutral)
-        #expect(task.due == nil && task.timeEstimate == nil && task.previousEvent == nil)
-        #expect(task.marks == [LocalDate("2026-10-20"): .done])
-        #expect(Set(task.problems) == [
-            .invalidValue(field: .due, value: "tomorrow"),
-            .invalidValue(field: .timeEstimate, value: "lots"),
-            .invalidValue(field: .feel, value: "maybe"),
-            .invalidValue(field: .previousEvent, value: "not a link"),
-            .invalidValue(field: .marks, value: "2026-13-01"),
-        ])
     }
 
     @Test func dueKeepsAnOptionalTime() throws {

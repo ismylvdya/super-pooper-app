@@ -5,7 +5,7 @@ import Testing
 /// This week's Morning / Day / Evening groups: dragging a task across a header moves it into that group.
 struct ReviewGroupsTests {
     private func item(_ name: String, _ part: HabitTimeOfDay? = nil) -> DayItem {
-        DayItem(task: makeTask(name) { $0.habit.timeOfDay = part }, state: .open, blockers: [], problems: [])
+        DayItem(task: makeTask(name) { $0.habit.timeOfDay = part }, state: .open, problems: [])
     }
 
     private var pool: [DayItem] { [item("Stretch", .morning), item("Pay rent"), item("Call bank"), item("Read", .evening)] }
@@ -46,7 +46,7 @@ struct ReviewGroupsTests {
 
     /// Tasks with a part of the day sort with it but stand on their own plates, not in a habit routine's.
     @Test func morningTasksStandOnTheirOwnPlates() {
-        let habit = DayItem(task: makeHabit("Water", status: .habit) { $0.habit.timeOfDay = .morning }, state: .open, blockers: [], problems: [])
+        let habit = DayItem(task: makeHabit("Water", status: .habit) { $0.habit.timeOfDay = .morning }, state: .open, problems: [])
         let segments = PoolSegments.make([habit, item("Stretch", .morning), item("Make coffee", .morning)])
         #expect(segments.map { $0.items.map(\.id) } == [["Water"], ["Stretch"], ["Make coffee"]])
         let plan = DayScenario(tasks: [makeTask("Pay rent"), makeTask("Stretch") { $0.habit.timeOfDay = .morning }]).build()

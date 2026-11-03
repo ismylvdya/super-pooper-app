@@ -11,7 +11,7 @@ struct BatchAvailabilityTests {
     }
 
     private func item(_ name: String, _ state: DayItemState = .open, depth: Int = 0) -> DayItem {
-        DayItem(task: makeTask(name), state: state, blockers: [], problems: [], depth: depth)
+        DayItem(task: makeTask(name), state: state, problems: [], depth: depth)
     }
 
     @Test func oneDoneItemAmongOpenOnesStillOffersDone() {

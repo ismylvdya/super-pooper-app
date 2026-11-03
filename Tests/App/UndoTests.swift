@@ -25,7 +25,7 @@ struct UndoTests {
 
     private var family: [TaskItem] {
         [makeTask("Renovation"), makeTask("Paint") { $0.projects = ["Renovation"] },
-         makeTask("Buy paint") { $0.projects = ["Paint"] }, makeTask("Hang pictures") { $0.previousTasks = ["Renovation"] }]
+         makeTask("Buy paint") { $0.projects = ["Paint"] }]
     }
 
     @Test func deletingAsksNothingAndUndoBringsTheSubtasksBackFromTheTrash() async throws {
@@ -45,22 +45,6 @@ struct UndoTests {
         #expect(model.tasks.sorted { $0.name < $1.name }.map(\.name) == before.map(\.name))
         #expect(model.task(named: "Buy paint")?.projects == ["Paint"])
         #expect(try await model.parts.services.trash?.notes().isEmpty == true)
-    }
-
-    @Test func undoingDoneBringsTheTaskItsSubtasksAndTheWaitingLinksBack() async throws {
-        let (model, events) = try makeModel(family)
-        await model.performOfferingUndo(action(model, .done), on: "Renovation")
-        #expect(model.task(named: "Renovation") == nil, "a done task is filed away at once")
-        #expect(model.task(named: "Hang pictures")?.previousTasks.isEmpty == true)
-
-        await model.undo(try offer(events).id)
-
-        for name in ["Renovation", "Paint", "Buy paint"] {
-            let task = try #require(model.task(named: name))
-            #expect(task.status == .thisWeek && task.completedDate == nil, "\(name)")
-        }
-        #expect(model.task(named: "Hang pictures")?.previousTasks == ["Renovation"])
-        #expect(model.filedTasks.isEmpty)
     }
 
     /// The Done list: Delete asks nothing, the banner offers Undo, and Undo puts the task back into the done folder as it was.

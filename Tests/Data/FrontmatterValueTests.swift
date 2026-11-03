@@ -11,6 +11,14 @@ struct FrontmatterValueTests {
     private func quoted(_ text: String) -> YAMLValue { .scalar(text, quoted: true) }
 
     // MARK: - Block collections
+    @Test func blockScalars() throws {
+        #expect(try value("notes: |\n  line 1\n    indented\n\n  line 3\nnext: x", "notes") == quoted("line 1\n  indented\n\nline 3\n"))
+        #expect(try value("notes: >-\n  folded\n  text\n\n  paragraph", "notes") == quoted("folded text\nparagraph"))
+        #expect(try value("notes: |-\n  a\n  b", "notes") == quoted("a\nb"))
+        #expect(try value("notes: |2 # comment\n    two extra\n  base", "notes") == quoted("  two extra\nbase\n"))
+        #expect(try value("list:\n  - |+\n    kept\n\n  - x", "list") == .list([quoted("kept\n\n"), plain("x")]))
+    }
+
 
     @Test func columnZeroSequences() throws {
         #expect(try value("tags:\n- a\n# comment\n- b\nstatus: open", "tags") == .list([plain("a"), plain("b")]))
@@ -86,14 +94,6 @@ struct FrontmatterValueTests {
         #expect(try value(note, "f") == plain("a#b"))
         #expect(try value(note, "g") == plain("8A1F:A2B3|x|2026-10-23T19:00:00+02:00"))
         #expect(try value(note, "h") == .null)
-    }
-
-    @Test func blockScalars() throws {
-        #expect(try value("notes: |\n  line 1\n    indented\n\n  line 3\nnext: x", "notes") == quoted("line 1\n  indented\n\nline 3\n"))
-        #expect(try value("notes: >-\n  folded\n  text\n\n  paragraph", "notes") == quoted("folded text\nparagraph"))
-        #expect(try value("notes: |-\n  a\n  b", "notes") == quoted("a\nb"))
-        #expect(try value("notes: |2 # comment\n    two extra\n  base", "notes") == quoted("  two extra\nbase\n"))
-        #expect(try value("list:\n  - |+\n    kept\n\n  - x", "list") == .list([quoted("kept\n\n"), plain("x")]))
     }
 
     // MARK: - Malformed values

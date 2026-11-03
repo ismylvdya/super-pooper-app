@@ -64,7 +64,7 @@ struct DayMembershipTests {
         let plan = DayScenario(tasks: [makeTask("Open"), makeHabit("Habit", status: .habit)]).build()
         #expect(NotToday.isAvailable(for: try #require(plan.item(named: "Open"))))
         #expect(!NotToday.isAvailable(for: try #require(plan.item(named: "Habit"))))
-        let done = DayItem(task: makeTask("Done", status: .done), state: .marked(.done), blockers: [], problems: [])
+        let done = DayItem(task: makeTask("Done", status: .done), state: .marked(.done), problems: [])
         #expect(!NotToday.isAvailable(for: done))
     }
 
@@ -121,21 +121,4 @@ struct DayMembershipTests {
 
     // MARK: - Problems
 
-    @Test func missingLinksAndCyclesAreReportedOnTheTasks() {
-        let missing = makeTask("Missing link") { $0.previousTasks = ["Nowhere"] }
-        let first = makeTask("Cycle A") { $0.previousTasks = ["Cycle B"] }
-        let second = makeTask("Cycle B") { $0.previousTasks = ["Cycle A"] }
-        let plan = DayScenario(tasks: [missing, first, second]).build()
-        #expect(plan.problems(of: "Missing link") == [.linkedTaskNotFound("Nowhere")])
-        #expect(plan.problems(of: "Cycle A") == [.dependencyCycle])
-        #expect(plan.problems(of: "Cycle B") == [.dependencyCycle])
-        #expect(plan.dayNames == ["Missing link", "Cycle A", "Cycle B"])
-    }
-
-    @Test func linksResolveIgnoringLetterCase() {
-        let task = makeTask("Follow-up") { $0.previousTasks = ["купить батарейки"] }
-        let plan = DayScenario(tasks: [task, makeTask("Купить батарейки")]).build()
-        #expect(plan.problems.isEmpty)
-        #expect(plan.item(named: "Follow-up")?.blockers == [.task("Купить батарейки")])
-    }
 }

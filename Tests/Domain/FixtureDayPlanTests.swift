@@ -15,13 +15,14 @@ struct FixtureDayPlanTests {
         let plan = try await build(at: "13:25")
         #expect(plan.poolNames == [
             // The morning routine first, all day long.
-            "Выпить воды 💧", "Утро — зарядка 🤸", "Утро — душ 🚿", "Утро — завтрак 🥣",
+            "Выпить воды 💧", "Утро — душ 🚿", "Утро — завтрак 🥣", "Утро — зарядка 🤸",
             "Неизвестное правило", "Полить цветы 🌱", "Медитация 🧘",
             // `pleasant: false` of the dentist note is neutral: it sorts with the other neutral tasks by estimate.
             "Оплатить интернет", "Позвонить в банк", "Разобрать почту", "Помыть окна",
-            "Купить батарейки 🔋", "Длинная заметка с незнакомыми ключами", "Найти отвёртку",
-            "Записать идеи", "Связь без скобок", "Связь на несуществующую", "Цикл Б", "Цикл А", "Сходить к стоматологу", "Собрать шкаф",
-            "Повесить зеркало", "Посмотреть сериал 🍿",
+            "Купить батарейки 🔋", "Длинная заметка с незнакомыми ключами", "Найти отвёртку", "Повесить зеркало",
+            "Записать идеи", "Связь без скобок", "Связь на несуществующую", "Цикл А", "Цикл Б",
+            "Записать итоги разговора", "Подготовить вопросы папе", "Распечатать вопросы", "Сходить к стоматологу",
+            "Собрать шкаф", "Посмотреть сериал 🍿",
         ])
         #expect(plan.pool.allSatisfy { !$0.isDone })
     }
@@ -34,7 +35,7 @@ struct FixtureDayPlanTests {
         let dentist = try #require(names.firstIndex(of: "Сходить к стоматологу"))
         let series = try #require(names.firstIndex(of: "Посмотреть сериал 🍿"))
         #expect(dentist < mail && series < mail && mail < windows)
-        #expect(names.prefix(4) == ["Выпить воды 💧", "Утро — зарядка 🤸", "Утро — душ 🚿", "Утро — завтрак 🥣"])
+        #expect(names.prefix(4) == ["Выпить воды 💧", "Утро — душ 🚿", "Утро — завтрак 🥣", "Утро — зарядка 🤸"])
         #expect(names[7...8] == ["Оплатить интернет", "Позвонить в банк"])
     }
 
@@ -48,7 +49,7 @@ struct FixtureDayPlanTests {
         #expect(plan.dayNames.count == 29)
     }
 
-    @Test func timelineHoldsTimedTasksChainsEventsAndReminders() async throws {
+    @Test func timelineHoldsTimedTasksEventsAndReminders() async throws {
         let plan = try await build(at: "13:25")
         let rows = plan.timeline.map { slot -> String in
             let title: String
@@ -62,34 +63,13 @@ struct FixtureDayPlanTests {
         // The vitamins were missed at 09:00: their block rides on the "now" cursor (.1133).
         #expect(rows == [
             "10:00–10:15 event Standup (past)",
-            "13:25–13:40 Подготовить вопросы папе",
             "13:25–13:27 Витамины 💊",
-            "13:40–13:55 Распечатать вопросы",
             "14:00–14:15 Прогулка 🚶",
             "15:00–15:15 reminder Take the laundry out",
             "16:00–17:00 Забрать посылку на почте",
             "19:00–20:00 event Call with dad",
-            "20:00–20:15 Записать итоги разговора",
         ])
-        #expect(plan.problems.count == 4)
-    }
-
-    @Test func blockedItemsAreTheOnesWithUnfinishedPredecessorsOrARunningEvent() async throws {
-        let plan = try await build(at: "13:25")
-        let blocked = (plan.pool + plan.timeline.compactMap { slot in
-            if case .task(let item) = slot.content { return item }
-            return nil
-        }).filter(\.isBlocked).map(\.id)
-        #expect(Set(blocked) == ["Утро — душ 🚿", "Утро — завтрак 🥣", "Повесить зеркало", "Собрать шкаф", "Связь без скобок",
-                                 "Цикл А", "Распечатать вопросы", "Записать итоги разговора"])
-    }
-
-    @Test func afterTheCallTheFollowUpStartsAtNowAndIsFree() async throws {
-        let plan = try await build(at: "21:10")
-        let notes = try #require(plan.slot("Записать итоги разговора"))
-        #expect(clockTime(notes.start) == "21:10")
-        #expect(plan.item(named: "Записать итоги разговора")?.isBlocked == false)
-        #expect(plan.eventSlot("Call with dad")?.isPast == true)
+        #expect(plan.problems.count == 1)
     }
 
     @Test func weeklyAndEveryThirdDayHabitsFollowTheirRules() async throws {

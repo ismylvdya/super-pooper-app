@@ -109,45 +109,12 @@ struct PoolSorterTests {
 
     // MARK: - Links and done tasks
 
-    @Test func aTaskIsNeverAboveItsPreviousTasks() {
-        let third = makeTask("C third") { $0.isHighPriority = true; $0.previousTasks = ["B second"] }
-        let second = makeTask("B second") { $0.due = TaskDue("2026-10-22"); $0.previousTasks = ["A first"] }
-        let first = makeTask("A first")
-        let unrelated = makeTask("X unrelated") { $0.timeEstimate = 2 }
-        #expect(sortedNames([third, second, first, unrelated], at: morning) == ["X unrelated", "A first", "B second", "C third"])
-    }
-
-    @Test func habitsComeInTheOrderOfTheirLinks() {
-        let breakfast = makeHabit("A breakfast") { $0.previousTasks = ["B shower"] }
-        let shower = makeHabit("B shower") { $0.previousTasks = ["C workout"] }
-        let workout = makeHabit("C workout") { $0.timeEstimate = 240 }
-        let urgent = makeTask("Urgent") { $0.due = TaskDue("2026-10-21"); $0.isHighPriority = true }
-        #expect(sortedNames([urgent, breakfast, shower, workout], at: morning)
-            == ["C workout", "B shower", "A breakfast", "Urgent"])
-    }
-
-    @Test func aPredecessorOutsideThePoolDoesNotMoveTheTask() {
-        let task = makeTask("Follow-up") { $0.timeEstimate = 2; $0.previousTasks = ["Somewhere else"] }
-        let other = makeTask("Other")
-        let items = [item(task), item(other)]
-        let graph = TaskGraph(tasks: [task, other, makeTask("Somewhere else")])
-        #expect(sorter.sorted(items, graph: graph, context: morning).map(\.id) == ["Follow-up", "Other"])
-    }
-
     @Test func doneTodayGoesLastKeepingTheirOwnOrder() {
         let doneHigh = makeTask("Done high", status: .done) { $0.isHighPriority = true }
         let donePlain = makeTask("Done plain", status: .done)
         let open = makeTask("Open") { $0.timeEstimate = 240 }
         #expect(sortedNames([donePlain, doneHigh, open], done: ["Done high", "Done plain"], at: morning)
             == ["Open", "Done high", "Done plain"])
-    }
-
-    @Test func doneTasksAlsoStayAfterTheirPreviousTasks() {
-        let workout = makeHabit("C workout")
-        let shower = makeHabit("B shower") { $0.previousTasks = ["C workout"] }
-        let breakfast = makeHabit("A breakfast") { $0.previousTasks = ["B shower"] }
-        #expect(sortedNames([breakfast, shower, workout], done: ["C workout", "B shower"], at: morning)
-            == ["A breakfast", "C workout", "B shower"])
     }
 
     /// A task a criterion knows nothing about (no creation date, no due date this week) comes after every task it knows,
@@ -167,12 +134,12 @@ struct PoolSorterTests {
     private var sorter: PoolSorter { PoolSorter(criteria: TestConfig.sort.pool, rules: TestConfig.rules.day) }
 
     private func item(_ task: TaskItem, done: Bool = false) -> DayItem {
-        DayItem(task: task, state: done ? .marked(.done) : .open, blockers: [], problems: [])
+        DayItem(task: task, state: done ? .marked(.done) : .open, problems: [])
     }
 
     private func sortedNames(_ tasks: [TaskItem], done: Set<String> = [], at context: DayContext) -> [String] {
         let items = tasks.map { item($0, done: done.contains($0.name)) }
-        return sorter.sorted(items, graph: TaskGraph(tasks: tasks), context: context).map(\.id)
+        return sorter.sorted(items, context: context).map(\.id)
     }
 
     /// "Rest": a task that every criterion after `criterion` prefers (and that ties on the ones before it).

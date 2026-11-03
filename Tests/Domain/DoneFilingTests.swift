@@ -13,12 +13,6 @@ struct DoneFilingTests {
         #expect(DoneFiling.due([yesterday, undated, doneToday, open, habit]).map(\.name) == ["Yesterday", "Undated", "Today"])
     }
 
-    @Test func tasksWaitingForAFiledOneLoseThatLink() {
-        let waiting = makeTask("Hang the shelf") { $0.previousTasks = ["buy screws"] }
-        let other = makeTask("Other")
-        #expect(DoneFiling.unlinking("Buy screws", from: [waiting, other]).map(\.name) == ["Hang the shelf"])
-    }
-
     /// The note moves next to the tasks folder; a name taken there gets a number.
     @Test func theNoteMovesToTheDoneFolder() async throws {
         let first = try await SandboxNote("Купить молоко")

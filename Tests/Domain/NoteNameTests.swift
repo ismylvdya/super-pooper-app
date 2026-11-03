@@ -39,15 +39,4 @@ struct NoteNameTests {
         #expect(plan.poolNames == [renamed, "Alpha"])
     }
 
-    @Test func linksAndSubtasksFindTheNote() {
-        let parent = makeTask(renamed)
-        let child = makeTask("Child") { $0.projects = [written] }
-        let after = makeTask("After") { $0.previousTasks = [written] }
-        let graph = TaskGraph(tasks: [parent, child, after])
-        #expect(graph.predecessors(of: "After") == [renamed])
-        #expect(graph.missingLinks.isEmpty)
-        let plan = DayScenario(tasks: [parent, child]).build()
-        #expect(plan.pool.first { $0.id == "Child" }?.depth == 1)
-        #expect(NameReferences.waiting(for: renamed, in: [parent, child, after]).map(\.name) == ["After"])
-    }
 }

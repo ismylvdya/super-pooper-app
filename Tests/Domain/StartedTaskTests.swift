@@ -9,7 +9,7 @@ struct StartedTaskTests {
     private let menu: [ActionID] = [.done, .start, .notStarted]
 
     private func item(_ task: TaskItem, _ state: DayItemState = .open) -> DayItem {
-        DayItem(task: task, state: state, blockers: [], problems: [])
+        DayItem(task: task, state: state, problems: [])
     }
 
     @Test func startedCountsAsThisWeek() {

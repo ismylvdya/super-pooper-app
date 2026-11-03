@@ -5,6 +5,17 @@ import Testing
 /// Undo writes back every field an action changed, from the note as it is now (.27143).
 struct TaskRestoringTests {
     private let day = LocalDate("2026-10-20")
+    @Test func linksAndFieldsGoBack() {
+        let before = makeTask("Hang the shelf") {
+            $0.due = TaskDue("2026-10-20T15:00")
+            $0.isHighPriority = true
+        }
+        let now = before.applying([.due(TaskDue("2026-10-21T15:00")),
+                                   .highPriority(false), .showInToday(false)])
+        let restored = now.applying(TaskRestoring.edits(restoring: before, from: now))
+        #expect(restored == before)
+    }
+
 
     @Test func aDoneTaskGoesBackToItsStatus() {
         let before = makeTask("Report", status: .halfYear)
@@ -26,18 +37,6 @@ struct TaskRestoringTests {
         let edits = TaskRestoring.edits(restoring: before, from: now)
         #expect(Set(edits) == [.mark(.done, on: LocalDate("2026-10-19")), .mark(nil, on: day)])
         #expect(now.applying(edits).marks == before.marks)
-    }
-
-    @Test func linksAndFieldsGoBack() {
-        let before = makeTask("Hang the shelf") {
-            $0.previousTasks = ["Buy screws"]
-            $0.due = TaskDue("2026-10-20T15:00")
-            $0.isHighPriority = true
-        }
-        let now = before.applying([.removePreviousTask("Buy screws"), .addPreviousTask("Find drill"), .due(TaskDue("2026-10-21T15:00")),
-                                   .highPriority(false), .showInToday(false)])
-        let restored = now.applying(TaskRestoring.edits(restoring: before, from: now))
-        #expect(restored == before)
     }
 
     @Test func anUnchangedNoteNeedsNoEdits() {

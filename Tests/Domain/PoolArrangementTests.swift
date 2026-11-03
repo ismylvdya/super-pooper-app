@@ -10,7 +10,7 @@ struct PoolArrangementTests {
     private var definitions: [PoolSectionDefinition] { TestConfig.rules.pool.defaultSections }
 
     private func item(_ name: String, _ routine: HabitTimeOfDay? = nil, depth: Int = 0) -> DayItem {
-        var item = DayItem(task: makeHabit(name, status: .habit) { $0.habit.timeOfDay = routine }, state: .open, blockers: [], problems: [])
+        var item = DayItem(task: makeHabit(name, status: .habit) { $0.habit.timeOfDay = routine }, state: .open, problems: [])
         item.depth = depth
         return item
     }

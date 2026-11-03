@@ -9,6 +9,21 @@ struct DayTimelineTests {
     private let call = makeEvent("Call with dad", from: "19:00", to: "20:00")
 
     // MARK: - Timed tasks
+    @Test func onlyPastEventsAreGreyedOutWhileDoneEntriesLeave() throws {
+        let morning = makeEvent("Standup", from: "10:00", to: "10:15")
+        let doneTimed = makeHabit("Vitamins", time: "09:00") { $0.marks = [LocalDate("2026-10-21"): .done] }
+        let openTimed = makeTask("Missed at noon") { $0.due = TaskDue("2026-10-21T12:00") }
+        let reminders = [makeReminder("Done reminder", at: "16:00", completed: true), makeReminder("Past reminder", at: "11:00")]
+        let plan = DayScenario(tasks: [doneTimed, openTimed], events: [morning, call], reminders: reminders).build()
+
+        #expect(plan.eventSlot("Standup")?.isPast == true)
+        #expect(plan.eventSlot("Call with dad")?.isPast == false)
+        #expect(plan.slot("Vitamins") == nil)
+        #expect(plan.slot("Missed at noon")?.isPast == false)
+        let reminderSlots = plan.timeline.filter { if case .reminder = $0.content { return true } else { return false } }
+        #expect(reminderSlots.count == 1 && !reminderSlots[0].isPast)
+    }
+
 
     @Test func aTaskDueTodayWithTimeIsOnTheTimelineAtItsTime() throws {
         let parcel = makeTask("Pick up parcel") { $0.due = TaskDue("2026-10-21T16:00"); $0.timeEstimate = 60 }
@@ -75,123 +90,6 @@ struct DayTimelineTests {
         #expect(slot.end.timeIntervalSince(slot.start) == Double(TestConfig.rules.day.defaultEstimateMinutes) * 60)
     }
 
-    // MARK: - Chains tied to events
-
-    @Test func nextEventChainsStartAtNowInLinkOrder() throws {
-        let questions = makeTask("Prepare questions") { $0.nextEvent = eventLink(to: call) }
-        let printing = makeTask("Print questions") { $0.previousTasks = ["Prepare questions"]; $0.timeEstimate = 2 }
-        let plan = DayScenario(tasks: [printing, questions], events: [call]).build()
-        let first = try #require(plan.slot("Prepare questions"))
-        let second = try #require(plan.slot("Print questions"))
-        #expect(plan.poolNames.isEmpty)
-        #expect((clockTime(first.start), clockTime(first.end)) == ("13:25", "13:40"))
-        #expect((clockTime(second.start), clockTime(second.end)) == ("13:40", "13:42"))
-    }
-
-    @Test func openChainsFollowNowDuringTheDay() throws {
-        let questions = makeTask("Prepare questions") { $0.nextEvent = eventLink(to: call) }
-        let plan = DayScenario(tasks: [questions], events: [call]).build(at: TestCalendar.context(TestCalendar.wednesday, "17:10"))
-        #expect(try clockTime(#require(plan.slot("Prepare questions")).start) == "17:10")
-    }
-
-    @Test func previousEventChainsStartWhenTheEventEnds() throws {
-        let notes = makeTask("Write down the results") { $0.previousEvent = eventLink(to: call) }
-        let thanks = makeTask("Send thanks") { $0.previousTasks = ["Write down the results"]; $0.timeEstimate = 2 }
-        let plan = DayScenario(tasks: [notes, thanks], events: [call]).build()
-        #expect(try clockTime(#require(plan.slot("Write down the results")).start) == "20:00")
-        #expect(try clockTime(#require(plan.slot("Send thanks")).start) == "20:15")
-    }
-
-    @Test func previousEventChainsStartAtNowOnceTheEventIsOver() throws {
-        let notes = makeTask("Write down the results") { $0.previousEvent = eventLink(to: call) }
-        let plan = DayScenario(tasks: [notes], events: [call]).build(at: TestCalendar.context(TestCalendar.wednesday, "21:40"))
-        #expect(try clockTime(#require(plan.slot("Write down the results")).start) == "21:40")
-    }
-
-    @Test func indirectLinksReachTheTimelineThroughSeveralSteps() {
-        let anchor = makeTask("Step 1") { $0.nextEvent = eventLink(to: call) }
-        let second = makeTask("Step 2") { $0.previousTasks = ["Step 1"] }
-        let third = makeTask("Step 3") { $0.previousTasks = ["Step 2"] }
-        let plan = DayScenario(tasks: [third, second, anchor], events: [call]).build()
-        #expect(plan.timelineTaskNames == ["Step 1", "Step 2", "Step 3"])
-        #expect(plan.poolNames.isEmpty)
-    }
-
-    @Test func whatComesBeforeATaskThatIsBeforeAnEventIsOnTheTimelineToo() {
-        let anchor = makeTask("Get a haircut") { $0.nextEvent = eventLink(to: call); $0.previousTasks = ["Buy shampoo"] }
-        let earlier = makeTask("Buy shampoo")
-        let plan = DayScenario(tasks: [anchor, earlier], events: [call]).build()
-        #expect(plan.timelineTaskNames == ["Buy shampoo", "Get a haircut"])
-        #expect(plan.poolNames.isEmpty)
-    }
-
-    /// What must be done before a task that follows an event goes to the timeline too, from now.
-    @Test func aPredecessorOfATaskAfterAnEventIsOnTheTimelineFromNow() throws {
-        let anchor = makeTask("Write notes") { $0.previousEvent = eventLink(to: call); $0.previousTasks = ["Find pen"] }
-        let earlier = makeTask("Find pen")
-        let plan = DayScenario(tasks: [anchor, earlier], events: [call]).build()
-        #expect(plan.timelineTaskNames == ["Find pen", "Write notes"])
-        #expect(plan.poolNames.isEmpty)
-        #expect(clockTime(try #require(plan.slot("Find pen")).start) == "13:25")
-    }
-
-    @Test func tasksLinkedOnlyToEachOtherStayInThePool() {
-        let first = makeTask("Find screwdriver")
-        let second = makeTask("Assemble wardrobe") { $0.previousTasks = ["Find screwdriver"] }
-        let plan = DayScenario(tasks: [first, second], events: [call]).build()
-        #expect(plan.poolNames == ["Find screwdriver", "Assemble wardrobe"])
-        #expect(plan.timelineTaskNames.isEmpty)
-    }
-
-    /// A task after a timed one follows it on the timeline; one before it is laid out from now; their links carry on.
-    @Test func tasksLinkedToATimedTaskAreOnTheTimelineAroundIt() throws {
-        let timed = makeTask("At four") { $0.due = TaskDue("2026-10-21T16:00"); $0.timeEstimate = 60 }
-        let after = makeTask("After four") { $0.previousTasks = ["At four"]; $0.timeEstimate = 15 }
-        let before = makeTask("Before four") { $0.timeEstimate = 15 }
-        let timedWithBefore = timed.applying([.addPreviousTask("Before four")])
-        let sibling = makeTask("Also after it") { $0.previousTasks = ["After four"]; $0.timeEstimate = 15 }
-        let plan = DayScenario(tasks: [timedWithBefore, after, before, sibling]).build()
-        #expect(Set(plan.timelineTaskNames) == ["At four", "After four", "Before four", "Also after it"])
-        #expect(plan.poolNames.isEmpty)
-        #expect(clockTime(try #require(plan.slot("After four")).start) == "17:00")
-        #expect(clockTime(try #require(plan.slot("Also after it")).start) == "17:15")
-        #expect(clockTime(try #require(plan.slot("Before four")).start) == "13:25")
-    }
-
-    @Test func anEventOnAnotherDayKeepsTheTaskInThePoolWithoutAProblem() {
-        let tomorrow = makeEvent("Dentist", day: "2026-10-22", from: "10:00", to: "11:00")
-        let task = makeTask("Prepare for dentist") { $0.nextEvent = eventLink(to: tomorrow) }
-        let plan = DayScenario(tasks: [task], events: [call, tomorrow]).build()
-        #expect(plan.poolNames == ["Prepare for dentist"])
-        #expect(plan.problems.isEmpty)
-        #expect(plan.eventSlot("Dentist") == nil)
-    }
-
-    @Test func aMissingEventIsAProblemAndTheTaskStaysInThePool() {
-        let gone = makeEvent("Cancelled meeting", from: "11:00", to: "12:00")
-        let task = makeTask("Prepare slides") { $0.nextEvent = eventLink(to: gone) }
-        let plan = DayScenario(tasks: [task], events: [call]).build()
-        #expect(plan.poolNames == ["Prepare slides"])
-        #expect(plan.problems(of: "Prepare slides") == [.eventNotFound("Cancelled meeting")])
-        #expect(plan.item(named: "Prepare slides")?.isBlocked == false)
-    }
-
-    @Test func eventsResolveByIdentifierEvenAfterARenameAndPickTodaysInstance() {
-        let renamed = makeEvent("Call with Dad (moved)", from: "19:00", to: "20:00", id: "series-1")
-        let yesterday = makeEvent("Call with Dad (moved)", day: "2026-10-20", from: "19:00", to: "20:00", id: "series-1")
-        let stale = EventLink(eventIdentifier: "series-1", title: "Call with dad", start: TestCalendar.date("2026-10-21", "19:00"))
-        let task = makeTask("Prepare questions") { $0.nextEvent = stale }
-        let plan = DayScenario(tasks: [task], events: [yesterday, renamed]).build()
-        #expect(plan.timelineTaskNames == ["Prepare questions"])
-        #expect(plan.problems.isEmpty)
-    }
-
-    @Test func eventsResolveByTitleAndStartWhenTheIdentifierIsUnknown() {
-        let task = makeTask("Prepare questions") { $0.nextEvent = eventLink(to: call, identifier: "fixture-event") }
-        let plan = DayScenario(tasks: [task], events: [call]).build()
-        #expect(plan.timelineTaskNames == ["Prepare questions"])
-        #expect(plan.problems.isEmpty)
-    }
 
     // MARK: - Events, reminders and greying out
 
@@ -213,23 +111,4 @@ struct DayTimelineTests {
         #expect(plan.timeline.map { clockTime($0.end) } == ["10:15", "15:15", "20:00"])
     }
 
-    @Test func onlyPastEventsAreGreyedOutWhileDoneEntriesLeave() throws {
-        let morning = makeEvent("Standup", from: "10:00", to: "10:15")
-        let doneTimed = makeHabit("Vitamins", time: "09:00") { $0.marks = [LocalDate("2026-10-21"): .done] }
-        let openTimed = makeTask("Missed at noon") { $0.due = TaskDue("2026-10-21T12:00") }
-        let doneChain = makeTask("Prepared", status: .done) { $0.completedDate = LocalDate("2026-10-21"); $0.nextEvent = eventLink(to: self.call) }
-        let openChain = makeTask("To print") { $0.previousTasks = ["Prepared"] }
-        let reminders = [makeReminder("Done reminder", at: "16:00", completed: true), makeReminder("Past reminder", at: "11:00")]
-        let plan = DayScenario(tasks: [doneTimed, openTimed, doneChain, openChain], events: [morning, call], reminders: reminders).build()
-
-        #expect(plan.eventSlot("Standup")?.isPast == true)
-        #expect(plan.eventSlot("Call with dad")?.isPast == false)
-        #expect(plan.slot("Vitamins") == nil)
-        #expect(plan.slot("Prepared") == nil)
-        #expect(plan.slot("Missed at noon")?.isPast == false)
-        let open = try #require(plan.slot("To print"))
-        #expect(!open.isPast && clockTime(open.start) == "13:25")
-        let reminderSlots = plan.timeline.filter { if case .reminder = $0.content { return true } else { return false } }
-        #expect(reminderSlots.count == 1 && !reminderSlots[0].isPast)
-    }
 }

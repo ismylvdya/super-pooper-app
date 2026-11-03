@@ -147,7 +147,7 @@ struct RoutineOrderTests {
 struct PoolSegmentsTests {
     private func item(_ name: String, _ part: HabitTimeOfDay?, habit: Bool = true, done: Bool = false) -> DayItem {
         let task = habit ? makeHabit(name, status: .habit) { $0.habit.timeOfDay = part } : makeTask(name)
-        return DayItem(task: task, state: done ? .marked(.done) : .open, blockers: [], problems: [])
+        return DayItem(task: task, state: done ? .marked(.done) : .open, problems: [])
     }
 
     @Test func neighbouringHabitsOfOneRoutineShareAPlate() {

@@ -29,7 +29,7 @@ struct PoolDropOrderTests {
     }
 
     @Test func whileHoveringTheTaskStandsInItsNewSection() {
-        func item(_ name: String) -> DayItem { DayItem(task: makeTask(name), state: .open, blockers: [], problems: []) }
+        func item(_ name: String) -> DayItem { DayItem(task: makeTask(name), state: .open, problems: []) }
         let sections = [PoolSectionContent(id: "day", title: "section.day", isCustom: false, items: [item("A"), item("B")]),
                         PoolSectionContent(id: "evening", title: "section.evening", isCustom: false, items: [item("C")])]
         let shown = PoolArrangement.hovering(sections, order: ["B", "C", "A"], dragged: item("A"), into: "evening")

@@ -8,11 +8,12 @@ struct TaskConflictsTests {
         let seen = makeTask("Report")
         var latest = seen
         latest.due = TaskDue("2026-10-23")
-        latest.previousTasks = ["Draft"]
+        latest.projects = ["Draft"]
         latest.timeEstimate = 60
-        let edits: [TaskEdit] = [.due(TaskDue("2026-10-24")), .addPreviousTask("Outline"), .reopen, .highPriority(true)]
+        let edits: [TaskEdit] = [.due(TaskDue("2026-10-24")), .addProject("Outline"), .reopen, .highPriority(true)]
         #expect(TaskConflicts.fields(edits, seen: seen, latest: latest) == [.due])
     }
+
 
     @Test func completingAndReopeningClashWithAStatusChangedElsewhere() {
         let seen = makeTask("Report")

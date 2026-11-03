@@ -2,30 +2,12 @@ import Foundation
 import Testing
 @testable import SuperPooperApp
 
-/// Chain placement, overlapping blocks and the visible timeline windows.
+/// Overlapping blocks and the visible timeline windows.
 @Suite("Timeline layout")
 struct TimelineLayoutTests {
     private let call = makeEvent("Call with dad", from: "19:00", to: "20:00")
     private let now = TestCalendar.date(TestCalendar.wednesday, "13:25")
 
-    // MARK: - ChainLayout
-
-    @Test func aBeforeChainIsPlacedBackToBackFromNow() {
-        let slots = layout(.before(TimelineChain.Target(event: call)), [open("A", 15), open("B", 60), open("C", nil)])
-        #expect(slots.map(\.label) == ["A 13:25–13:40", "B 13:40–14:40", "C 14:40–14:55"])
-        #expect(slots.allSatisfy { !$0.isPast })
-    }
-
-    @Test func anAfterChainStartsAtTheEventEndOrAtNowWhenTheEventIsOver() {
-        #expect(layout(.after(TimelineChain.Target(event: call)), [open("A", 15)]).map(\.label) == ["A 20:00–20:15"])
-        let late = TestCalendar.date(TestCalendar.wednesday, "20:40")
-        #expect(layout(.after(TimelineChain.Target(event: call)), [open("A", 15)], now: late).map(\.label) == ["A 20:40–20:55"])
-    }
-
-    @Test func doneItemsLeaveTheChain() {
-        let slots = layout(.before(TimelineChain.Target(event: call)), [done("Done 1", 15), done("Done 2", 30), open("Open", 15)])
-        #expect(slots.map(\.label) == ["Open 13:25–13:40"])
-    }
 
     // MARK: - CascadeAssigner
 
@@ -76,15 +58,11 @@ struct TimelineLayoutTests {
     // MARK: - Helpers
 
     private func open(_ name: String, _ minutes: Int?) -> DayItem {
-        DayItem(task: makeTask(name) { $0.timeEstimate = minutes }, state: .open, blockers: [], problems: [])
+        DayItem(task: makeTask(name) { $0.timeEstimate = minutes }, state: .open, problems: [])
     }
 
     private func done(_ name: String, _ minutes: Int?) -> DayItem {
-        DayItem(task: makeTask(name) { $0.timeEstimate = minutes }, state: .marked(.done), blockers: [], problems: [])
-    }
-
-    private func layout(_ anchor: TimelineChain.Anchor, _ items: [DayItem], now: Date? = nil) -> [TimelineSlot] {
-        ChainLayout(rules: TestConfig.rules.day).entries(for: TimelineChain(anchor: anchor, items: items), now: now ?? self.now)
+        DayItem(task: makeTask(name) { $0.timeEstimate = minutes }, state: .marked(.done), problems: [])
     }
 
     /// Blocks with a title room of 10 points: [indent, column, column count] each.

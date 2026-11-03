@@ -93,23 +93,6 @@ struct OverdueBlocksTests {
         #expect(plan.slot("Stretch")?.time == LocalTime("08:00"))
     }
 
-    /// What follows an overdue habit follows it from its place at now.
-    @Test func aTaskAfterAnOverdueHabitFollowsIt() throws {
-        let vitamins = makeHabit("Vitamins", time: "09:00")
-        let after = makeTask("Afterwards") { $0.previousTasks = ["Vitamins"] }
-        let plan = DayScenario(tasks: [vitamins, after]).build()
-        #expect(try span(plan, "Afterwards") == "13:40–13:55")
-    }
-
-    /// What follows an overdue task follows it from its place at now.
-    @Test func aTaskAfterAnOverdueOneFollowsIt() throws {
-        let missed = timed("Missed at noon", at: "12:00", minutes: 60)
-        let after = makeTask("Afterwards") { $0.previousTasks = ["Missed at noon"] }
-        let plan = DayScenario(tasks: [missed, after]).build()
-        #expect(try span(plan, "Missed at noon") == "13:25–14:25")
-        #expect(try span(plan, "Afterwards") == "14:25–14:40")
-    }
-
     /// Yesterday browsed on Today: its timeline has no "now", so a task of that day stays at its time.
     @Test func anotherDaysTasksStayAtTheirTimes() throws {
         let config = try AppConfig.load(bundle: .main)

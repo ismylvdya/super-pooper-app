@@ -4,6 +4,15 @@ import Testing
 
 /// The bundled configs load and are complete; config typos produce readable errors.
 struct ConfigTests {
+    @Test func bundledConfigsLoad() throws {
+        let config = try AppConfig.load(bundle: Bundle(for: BundleToken.self).appHostBundle)
+        #expect(config.todayStacked.blocks.map(\.block) == [.pool, .timeline])
+        #expect(config.todayStacked.axis == .vertical)
+        #expect(config.todaySideBySide.axis == .horizontal)
+        #expect(config.sort.pool == PoolSortCriterion.allCases)
+        #expect(config.rules.timeEstimates.map(\.minutes) == [2, 15, 60, 240])
+    }
+
     /// Partially and Twice are picked on the Habits page and in the history only; Today and the notifications offer
     /// Done (a twice-a-day habit's second Done is Twice) and Skip today, in red.
     @Test func partialAndTwiceStayOnTheHabitsPage() {
@@ -144,16 +153,6 @@ struct ConfigTests {
             try ConfigLoader.decode(DateGrammar.self, from: Data(try text.replacingOnce(#""monday": ["#, with: #""mondy": ["#).utf8),
                                     file: "date-grammar.json")
         }
-    }
-
-    @Test func bundledConfigsLoad() throws {
-        let config = try AppConfig.load(bundle: Bundle(for: BundleToken.self).appHostBundle)
-        #expect(config.todayStacked.blocks.map(\.block) == [.pool, .timeline])
-        #expect(config.todayStacked.axis == .vertical)
-        #expect(config.todaySideBySide.axis == .horizontal)
-        #expect(config.sort.pool == PoolSortCriterion.allCases)
-        #expect(config.rules.timeEstimates.map(\.minutes) == [2, 15, 60, 240])
-        #expect(try FieldMapping.load(bundle: Bundle(for: BundleToken.self).appHostBundle).fields.previousTasks == "previous_task")
     }
 
     @Test func everyConfigTextHasACatalogEntry() throws {

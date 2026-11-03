@@ -23,11 +23,4 @@ struct ListQueriesTests {
         #expect(model.listContents("done", query: "банк").filed.map(\.name) == ["Позвонить в банк"])
     }
 
-    @Test func aLinkedEventIsFoundAsTheDayFindsIt() throws {
-        let model = try makeModel()
-        let event = try #require(model.events.first)
-        let link = EventLink(eventIdentifier: "another id", title: event.title, start: event.start)
-        #expect(model.event(for: link) == event)
-        #expect(model.event(for: EventLink(eventIdentifier: "gone", title: "Gone", start: event.start)) == nil)
-    }
 }

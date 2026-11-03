@@ -54,15 +54,6 @@ struct AppModelTests {
         #expect(model.newHabitDraft().note.habit.color == "#FF2D55")
     }
 
-    /// Links order tasks but never prevent checking one off.
-    @Test func aTaskAfterAnUnfinishedOneCanStillBeChecked() async throws {
-        let model = try makeModel()
-        #expect(model.plan(at: model.clock.now).item(named: "Повесить полку")?.isBlocked == true)
-        await model.perform(.done, on: "Повесить полку")
-        await model.loadFiledTasks()
-        #expect(model.filedTasks.first { $0.name == "Повесить полку" }?.status == .done)
-    }
-
     /// The Done list's count sees a task done just now, before the folder is read again.
     @Test func theDoneListCountsATaskDoneJustNow() async throws {
         let model = try makeModel()

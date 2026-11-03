@@ -26,11 +26,6 @@ struct OtherDayTests {
         #expect(!slot.isPast)
     }
 
-    @Test func aTaskAfterTomorrowsEventIsBlockedUntilItEnds() {
-        let followUp = makeTask("Follow up") { $0.due = TaskDue("2026-10-22"); $0.previousEvent = eventLink(to: self.call) }
-        #expect(tomorrow([followUp], events: [call]).item(named: "Follow up")?.isBlocked == true)
-    }
-
     @Test func onlyThisWeeksTasksAreShown() {
         let waiting = makeTask("Waiting", status: .waiting) { $0.due = TaskDue("2026-10-22") }
         let planned = makeTask("Planned") { $0.due = TaskDue("2026-10-22") }
@@ -49,11 +44,4 @@ struct OtherDayTests {
         #expect(sixDaysOn.dayNames == ["Water", "Laundry"] as Set)
     }
 
-    @Test func linksToTasksWithoutThatDateStillWork() {
-        let screwdriver = makeTask("Find screwdriver")
-        let assemble = makeTask("Assemble") { $0.due = TaskDue("2026-10-22"); $0.previousTasks = ["Find screwdriver"] }
-        let plan = tomorrow([screwdriver, assemble])
-        #expect(plan.problems(of: "Assemble").isEmpty)
-        #expect(plan.item(named: "Assemble")?.isBlocked == true)
-    }
 }

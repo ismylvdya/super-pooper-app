@@ -13,19 +13,10 @@ struct WidgetPlanTests {
     }
 
     private func source(eventsKnown: Bool?) -> WidgetDataSource {
-        let notes = makeTask("Notes") { $0.previousEvent = eventLink(to: call) }
+        let notes = makeTask("Notes")
         let snapshot = WidgetSnapshot(generatedAt: TestCalendar.context().now, tasks: [notes], events: [], reminders: [],
                                       dayState: DayState(day: LocalDate(TestCalendar.wednesday)), eventsKnown: eventsKnown)
         return WidgetDataSource(config: config, settings: TestConfig.defaults, snapshot: snapshot, calendar: TestCalendar.calendar)
-    }
-
-    /// Without Calendar access the app's day shows no "event not found" (D-039); the widget's day did, as if the
-    /// calendars were read.
-    @Test func withoutCalendarAccessTheWidgetShowsNoMissingEvent() {
-        let now = TestCalendar.context().now
-        #expect(source(eventsKnown: false).plan(at: now).problems.isEmpty)
-        #expect(source(eventsKnown: nil).plan(at: now).problems.isEmpty)
-        #expect(source(eventsKnown: true).plan(at: now).problems.map(\.problem) == [.eventNotFound("Call")])
     }
 
     /// The widget has its own arrangement: its layout, pool and timeline follow it, and the settings it read keep the
