@@ -411,6 +411,7 @@
     "select": "light",
     "mark": "light",
     "drop": "light",
+    "dropRefused": "medium",
     "reorder": "medium",
     "move": "light",
     "dragStep": "selection",

@@ -2,12 +2,12 @@ import Testing
 import UIKit
 @testable import SuperPooperApp
 
-/// The ":15" of a zoomed-in timeline and of a drag's landing spot: one font, 1.25 times smaller than the hours.
+/// The ":15" of a zoomed-in timeline and of a drag's landing spot: one font, about 2.5 times smaller than the hours.
 @MainActor
 struct TimelineMinuteLabelTests {
-    @Test func minutesAreSmallerThanTheHoursByAQuarter() {
+    @Test func minutesAreMuchSmallerThanTheHours() {
         let tokens = TestConfig.tokens
         let ratio = tokens.uiFont(.timelineHour).pointSize / tokens.uiFont(.timelineMinutes).pointSize
-        #expect(abs(ratio - 1.25) < 0.02, "the scaled size is rounded a little")
+        #expect(ratio > 2, "half the size they used to have")
     }
 }

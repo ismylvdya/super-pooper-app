@@ -18,7 +18,7 @@ struct BannerPlacementTests {
 
     @Test func theAppsBannerComesFromTheBarMetrics() {
         let tokens = TestConfig.tokens
-        #expect(tokens.bannerPlacement == BannerPlacement(bar: tokens.bar(.navigationBar), button: tokens.bar(.barButton),
+        #expect(tokens.bannerPlacement == BannerPlacement(bar: tokens.bar(.navigationBar), button: tokens.bar(.uprightBarButton),
                                                           sideInset: tokens.bar(.barSideInset)))
     }
 }

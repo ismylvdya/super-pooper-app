@@ -72,6 +72,11 @@ private struct PageEdgeDrop: DropDelegate {
         turn()
     }
 
+    /// Without a proposal the system marks the drag with a green "+".
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        DropProposal(operation: .move)
+    }
+
     func performDrop(info: DropInfo) -> Bool {
         false
     }

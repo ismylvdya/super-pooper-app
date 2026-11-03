@@ -33,13 +33,23 @@ struct TodayTimesTests {
         #expect(today.blocks(of: water) == [BlockTime(nine), BlockTime(evening)])
     }
 
-    /// From the pool the habit gets back its first time sent there; a habit without one has nothing to place.
-    @Test func fromThePoolTheFirstTimeSentThereIsPlaced() throws {
+    /// From the pool the habit gets back its first time sent there.
+    @Test func fromThePoolTheFirstTimeSentThereIsPlaced() {
         let pooled = TodayTimes([moved(water, evening, to: nil), moved(water, nine, to: nil)])
-        let placed = TodayTimes(try #require(pooled.placing(water, at: eleven)))
+        let placed = TodayTimes(pooled.placing(water, at: eleven))
         #expect(placed.blocks(of: water) == [BlockTime(written: nine, time: eleven)])
         #expect(placed.pooled(of: water) == [evening])
-        #expect(TodayTimes().placing(water, at: eleven) == nil)
+    }
+
+    /// A habit without reminder times gets a block of today's own: it moves, goes back to the pool and is gone tomorrow.
+    @Test func aHabitWithoutTimesGetsABlockOfTodaysOwn() {
+        let plain = makeHabit("Stretch")
+        let placed = TodayTimes(TodayTimes().placing(plain, at: nine))
+        #expect(placed.blocks(of: plain) == [BlockTime(nine)])
+        let moved = TodayTimes(placed.moving(plain, slot: nine, to: eleven))
+        #expect(moved.blocks(of: plain) == [BlockTime(written: nine, time: eleven)])
+        #expect(TodayTimes(moved.pooling(plain, slot: nine)).blocks(of: plain).isEmpty)
+        #expect(TodayTimes().blocks(of: plain).isEmpty, "another day has no moves")
     }
 
     /// The habit's settings changed its times meanwhile: a move of a time the note no longer has is ignored.
@@ -55,9 +65,6 @@ struct TodayTimesTests {
 
     @Test func habitBlocksMoveOnlyOnTodaysTimelineAndNeverWriteTheNote() {
         #expect(TaskScheduling.canSendToPool(vitamins, slot: nine))
-        #expect(TaskScheduling.canPlace(vitamins, slot: nine, today: TodayTimes()))
-        #expect(!TaskScheduling.canPlace(vitamins, slot: nil, today: TodayTimes()), "nothing of it is in the pool")
-        #expect(TaskScheduling.canPlace(vitamins, slot: nil, today: TodayTimes([moved(vitamins, nine, to: nil)])))
         #expect(TaskScheduling.changes(scheduling: vitamins, at: TestCalendar.date(TestCalendar.wednesday, "11:00"),
                                        calendar: TestCalendar.calendar).isEmpty)
     }

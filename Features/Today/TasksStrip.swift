@@ -36,7 +36,7 @@ struct TasksStrip: View {
         .overlay(alignment: .leading) {
             let lists = model.backlogLists
             if pager.sidePull > 0, lists.indices.contains(pager.openedBacklog) {
-                PullIndicator(icon: lists[pager.openedBacklog].icon, pull: pager.sidePull, threshold: rules.gestures.pullThreshold,
+                PullIndicator(icon: lists[pager.openedBacklog].icon, pull: pager.sidePull, threshold: rules.gestures.sidePullThreshold,
                               isArmed: pager.isPullArmed, axis: .horizontal)
             }
         }

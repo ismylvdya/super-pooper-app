@@ -17,6 +17,8 @@ enum HapticRole: String, ConfigName {
     case mark
     /// A dragged task lands on the timeline or in the pool.
     case drop
+    /// A drop that cannot land.
+    case dropRefused
     /// Rows of a list change places (a subtask moved under another one too).
     case reorder
     /// A task goes to another list or day (+ to Soon, back to today).

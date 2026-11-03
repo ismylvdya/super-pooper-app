@@ -9,6 +9,26 @@ extension View {
     }
 }
 
+extension View {
+    /// The room a dragged row keeps where it would land: empty, with nothing drawn in it (the row itself is under the finger).
+    func dropGap(_ isGap: Bool = true) -> some View {
+        opacity(isGap ? 0 : 1)
+            .allowsHitTesting(!isGap)
+            .accessibilityHidden(isGap)
+    }
+
+    /// A row that left its place: no room at all, the rows below rise. Stays in the hierarchy, so the system's drag keeps
+    /// its source. `gap`: the list's spacing, closed with it.
+    func closedUp(_ isClosed: Bool, gap: CGFloat) -> some View {
+        frame(height: isClosed ? 0 : nil)
+            .opacity(isClosed ? 0 : 1)
+            .clipped()
+            .padding(.bottom, isClosed ? -gap : 0)
+            .allowsHitTesting(!isClosed)
+            .accessibilityHidden(isClosed)
+    }
+}
+
 private struct DropGhost: ViewModifier {
     @Environment(\.tokens) private var tokens
     let isGhost: Bool

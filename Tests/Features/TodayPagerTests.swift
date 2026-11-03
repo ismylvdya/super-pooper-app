@@ -104,12 +104,12 @@ struct TodayPagerTests {
         let stretched = PullArming.stretch(30, dimension: width, resistance: gestures.pullResistance)
         #expect(pager.sidePull == stretched && pager.page == 0 && pager.pageDrag == 0)
         #expect(stretched < 30, "the pull resists the finger")
-        #expect(pulled(pager, 200), "armed")
-        #expect(!pulled(pager, 220), "armed once")
-        #expect(released(pager, 220))
+        #expect(pulled(pager, 320), "armed")
+        #expect(!pulled(pager, 340), "armed once")
+        #expect(released(pager, 340))
         #expect(pager.openedBacklog == 1 && pager.page == 0 && pager.sidePull == 0)
-        #expect(pulled(pager, 200))
-        #expect(released(pager, 200))
+        #expect(pulled(pager, 320))
+        #expect(released(pager, 320))
         #expect(pager.openedBacklog == 2, "then the next one")
     }
 
@@ -119,13 +119,13 @@ struct TodayPagerTests {
         #expect(!released(pager, 40))
         #expect(pager.openedBacklog == 0 && pager.sidePull == 0)
         for _ in 0..<3 {
-            _ = pulled(pager, 200)
-            _ = released(pager, 200)
+            _ = pulled(pager, 320)
+            _ = released(pager, 320)
         }
         #expect(pager.openedBacklog == 3)
-        #expect(!pulled(pager, 200))
+        #expect(!pulled(pager, 320))
         #expect(pager.sidePull == 0, "nothing left to open")
-        #expect(!released(pager, 200))
+        #expect(!released(pager, 320))
         #expect(pager.openedBacklog == 3)
     }
 
@@ -133,11 +133,11 @@ struct TodayPagerTests {
     /// drag turns the page instead.
     @Test func aPullTakenBackOpensNothing() {
         let pager = TodayPager()
-        _ = pulled(pager, 200)
+        _ = pulled(pager, 320)
         _ = pulled(pager, 10)
         #expect(!released(pager, 10))
         #expect(pager.openedBacklog == 0)
-        _ = pulled(pager, 200)
+        _ = pulled(pager, 320)
         _ = pulled(pager, -150)
         #expect(pager.sidePull == 0 && pager.pageDrag == -150)
         #expect(!released(pager, -150))
@@ -147,15 +147,15 @@ struct TodayPagerTests {
     /// Opened pages are free to turn between; another tab forgets them and shows the pool's page.
     @Test func leavingTheTabForgetsTheLeftPages() {
         let pager = TodayPager()
-        _ = pulled(pager, 200)
-        _ = released(pager, 200)
+        _ = pulled(pager, 320)
+        _ = released(pager, 320)
         changed(pager, -10)
         ended(pager, -150)
         #expect(pager.page == 1, "Soon to the pool")
         pager.closeBacklog()
         #expect(pager.openedBacklog == 0 && pager.page == 0)
-        _ = pulled(pager, 200)
-        _ = released(pager, 200)
+        _ = pulled(pager, 320)
+        _ = released(pager, 320)
         pager.closeBacklog(poolBlock: 0)
         #expect(pager.openedBacklog == 0 && pager.page == 0)
     }
@@ -163,8 +163,8 @@ struct TodayPagerTests {
     /// The day's name goes back to the pool and keeps the opened pages; the Tasks tab forgets them.
     @Test func theTasksTabForgetsTheLeftPagesTheDayNameKeepsThem() {
         let pager = TodayPager()
-        _ = pulled(pager, 200)
-        _ = released(pager, 200)
+        _ = pulled(pager, 320)
+        _ = released(pager, 320)
         pager.showPool(animation: .default)
         #expect(pager.openedBacklog == 1 && pager.page == 1, "the pool, Soon still left of it")
         pager.turn(to: 0, pageCount: 3, animation: .default)

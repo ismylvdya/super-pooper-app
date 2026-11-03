@@ -62,7 +62,7 @@ struct DesignTokens: Decodable, Sendable {
     var rowPlateTrailingInset: CGFloat { space(.rowVertical) / 2 }
     /// Where a banner stands: over the navigation bar, its corners on the round bar buttons (back, …).
     var bannerPlacement: BannerPlacement {
-        BannerPlacement(bar: bar(.navigationBar), button: bar(.barButton), sideInset: bar(.barSideInset))
+        BannerPlacement(bar: bar(.navigationBar), button: bar(.uprightBarButton), sideInset: bar(.barSideInset))
     }
     /// The side insets of a timeline slot's plate.
     var slotPlateInset: CGFloat { space(.plateInner) / 2 }

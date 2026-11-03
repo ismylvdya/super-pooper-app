@@ -6,8 +6,8 @@ import SwiftUI
 /// day only), onto the timeline to give a task a time (a habit sent here today gets its time back for today); a timed
 /// task dragged here from the timeline loses its time, a habit's block leaves today's timeline. A task from a backlog
 /// page comes into the pool of any day shown. A section is dragged whole by its header, within the pool only. The tab
-/// bar's "+" dragged over today's pool makes an empty faint plate's room; let go, it opens the new task's page, and the
-/// task takes that spot once made.
+/// bar's "+" dragged over today's pool makes a row's room; let go, it opens the new task's page, and the task takes that
+/// spot once made.
 struct PoolBlock: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
@@ -29,6 +29,8 @@ struct PoolBlock: View {
     /// The rows and headers as they stood when the drag reached the pool. The rows that make room move, and measuring
     /// them again would pull the dragged task back to where it was: the order is read against this layout instead.
     @State private var dragLayout: PoolDropLayout?
+    /// The block on the screen, where the dragged "+" is compared with it.
+    @State private var screenFrame: CGRect = .zero
     private static let dropSpace = "poolDrop"
 
     /// In Select mode nothing is dragged in or out of the pool.
@@ -38,8 +40,10 @@ struct PoolBlock: View {
         poolContent
             .coordinateSpace(.named(Self.dropSpace))
             .modifier(PoolDropTarget(drag: drag, animation: tokens.animation, layout: dropLayout, canDrop: canDrop,
-                                     onDrop: dropped, onSectionDrop: sectionDropped, acceptsNewItem: plan.isToday,
-                                     onNewItemDrop: newItemDropped))
+                                     onDrop: dropped, onSectionDrop: sectionDropped,
+                                     onRefused: { model.refuseDrop($0.id, onto: .pool) }))
+            .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { screenFrame = $0 }
+            .onChange(of: drag?.newItemPoint) { _, point in newItemMoved(to: point) }
             .onChange(of: drag?.draggedID ?? drag?.section) { _, dragged in if dragged == nil { dragLayout = nil } }
     }
 
@@ -97,6 +101,26 @@ struct PoolBlock: View {
                             on: day)
         case .section, .newItem: break
         }
+    }
+
+    /// The dragged "+" over today's pool: rows make room under it and letting go opens the new task's page for the spot.
+    private func newItemMoved(to point: CGPoint?) {
+        guard let drag, let point else {
+            dragLayout = nil
+            return
+        }
+        guard plan.isToday, screenFrame.contains(point) else {
+            if drag.poolOrder != nil { withAnimation(tokens.animation) { drag.leavePool() } }
+            drag.clearNewItemLanding(Self.dropSpace)
+            return
+        }
+        drag.turn(.block(.pool))
+        let layout = dropLayout()
+        let spot = PoolDropOrder.drop(rows: layout.rows, headers: layout.headers, dragged: TaskDragState.newItemGap,
+                                      at: Double(point.y - screenFrame.minY))
+        let moved = withAnimation(tokens.animation) { drag.hover(poolOrder: spot.order, section: spot.section) }
+        if moved { Haptics.play(.dragStep) }
+        drag.setNewItemLanding(Self.dropSpace) { newItemDropped(order: spot.order, section: spot.section) }
     }
 
     private func newItemDropped(order: [String], section: String?) {
@@ -192,15 +216,14 @@ struct PoolBlock: View {
         return heights.reduce(0, +) + tokens.space(.poolRowGap) * CGFloat(max(heights.count - 1, 0))
     }
 
-    /// The row of a task dragged over the pool is the gap the others part around (`TaskDragState.isGap`), with a faint copy
-    /// of its plate: how it will stand once dropped.
+    /// The row of a task dragged over the pool is the empty gap the others part around (`TaskDragState.isGap`).
     @ViewBuilder private func row(_ item: DayItem, plate: PoolRowContent.PlateKind, source: TaskDragState.Source) -> some View {
         if item.id == TaskDragState.newItemGap {
             NewItemGapPlate()
         } else {
             PoolRow(item: item, isToday: plan.isToday, isCompact: fillsHeight, plate: plate, handler: handler,
                     dragSource: source, poolDay: plan.today)
-                .dropGhost(drag?.isGap(item.id) == true)
+                .dropGap(drag?.isGap(item.id) == true)
         }
     }
 
@@ -240,8 +263,7 @@ private struct PoolDropTarget: ViewModifier {
     let canDrop: (DayItem, TaskDragState.Source) -> Bool
     let onDrop: (DayItem, TaskDragState.Source, [String], String?) -> Void
     let onSectionDrop: (String, [String]) -> Void
-    let acceptsNewItem: Bool
-    let onNewItemDrop: ([String], String?) -> Void
+    let onRefused: (DayItem) -> Void
 
     func body(content: Content) -> some View {
         if let drag {
@@ -250,8 +272,7 @@ private struct PoolDropTarget: ViewModifier {
                 .onDrop(of: TaskDragState.types, delegate: PoolDropDelegate(drag: drag, animation: animation, layout: layout,
                                                                             canDrop: canDrop, onDrop: onDrop,
                                                                             onSectionDrop: onSectionDrop,
-                                                                            acceptsNewItem: acceptsNewItem,
-                                                                            onNewItemDrop: onNewItemDrop))
+                                                                            onRefused: onRefused))
         } else {
             content
         }

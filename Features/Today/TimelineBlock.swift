@@ -30,6 +30,8 @@ struct TimelineBlock: View {
     @State private var position = ScrollPosition(edge: .top)
     @State private var opening: TimelineOpening?
     @State private var pull: CGFloat = 0
+    /// Where the hours start on the screen, for the dragged "+".
+    @State private var hoursTop: CGFloat = 0
 
     /// The whole logical day is always there to scroll through; the settings only choose what is shown
     /// first (hours around now, or the day range fitted to the height). Pinch zooms around the point between the
@@ -61,20 +63,21 @@ struct TimelineBlock: View {
                                                   stepMinutes: model.config.rules.timeline.dropStepMinutes, calendar: model.calendar)
                         }, canDrop: { item, source in
                             // A worm dragged whole stays in the pool.
-                            source.wormMembers.isEmpty && (source.isBacklog ? model.canBringFromBacklog(item.id)
-                                : model.canDropOnTimeline(item.id, slot: source.slot, on: plan.today))
+                            source.wormMembers.isEmpty && (!source.isBacklog || model.canBringFromBacklog(item.id))
                         }, onDrop: { item, source, moment in
                             Haptics.play(.drop)
                             Task {
                                 if source.isBacklog { await model.scheduleFromBacklog(item.id, at: moment) }
                                 else { await model.schedule(item.id, slot: source.slot, at: moment) }
                             }
-                        }, onNewItemDrop: { moment in
-                            openNewItem(at: .timeline(at: moment, calendar: model.calendar))
-                        }))
+                        }, onRefused: { model.refuseDrop($0.id, onto: .timeline) }))
+                        .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).minY } action: { hoursTop = $0 }
                         .padding(.vertical, contentInset)
                 }
                 .scrollPosition($position)
+                .onChange(of: drag?.newItemPoint) { _, point in
+                    newItemMoved(to: point, over: geometry.frame(in: .global), windowStart: day.start, hourHeight: hourHeight)
+                }
                 .contentMargins(.bottom, bottomInset + tokens.space(.scrollEndRoom), for: .scrollContent)
                 .onScrollGeometryChange(for: CGFloat.self) { max(0, -($0.contentOffset.y + $0.contentInsets.top)) } action: { _, new in
                     pull = new
@@ -162,6 +165,24 @@ struct TimelineBlock: View {
                                                          calendar: model.calendar))
             })
     }
+
+    /// The dragged "+" over the timeline: the spot shows next to the hours, and letting go opens a new task's page there.
+    private func newItemMoved(to point: CGPoint?, over frame: CGRect, windowStart: Date, hourHeight: CGFloat) {
+        guard let drag, let point else { return }
+        guard frame.contains(point) else {
+            drag.hoverMoment = nil
+            drag.clearNewItemLanding(Self.newItemTarget)
+            return
+        }
+        drag.turn(.block(.timeline))
+        let moment = TaskScheduling.moment(atOffset: Double(point.y - hoursTop), windowStart: windowStart,
+                                           hourHeight: Double(hourHeight), stepMinutes: model.config.rules.timeline.dropStepMinutes,
+                                           calendar: model.calendar)
+        if drag.hover(at: moment) { Haptics.play(.dragStep) }
+        drag.setNewItemLanding(Self.newItemTarget) { openNewItem(at: .timeline(at: moment, calendar: model.calendar)) }
+    }
+
+    private static let newItemTarget = "timeline"
 
     private func openNewItem(at placement: NewItemPlacement) {
         Haptics.play(.drop)
@@ -253,7 +274,7 @@ private struct TimelineDropTarget: ViewModifier {
     let moment: (CGFloat) -> Date
     let canDrop: (DayItem, TaskDragState.Source) -> Bool
     let onDrop: (DayItem, TaskDragState.Source, Date) -> Void
-    let onNewItemDrop: (Date) -> Void
+    let onRefused: (DayItem) -> Void
 
     func body(content: Content) -> some View {
         if let drag {
@@ -261,7 +282,7 @@ private struct TimelineDropTarget: ViewModifier {
             content
                 .contentShape(Rectangle())
                 .onDrop(of: TaskDragState.types, delegate: TimelineDropDelegate(drag: drag, moment: moment, canDrop: canDrop,
-                                                                                onDrop: onDrop, onNewItemDrop: onNewItemDrop))
+                                                                                onDrop: onDrop, onRefused: onRefused))
         } else {
             content
         }

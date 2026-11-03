@@ -5,7 +5,7 @@ extension View {
     /// one host is the root view's): its corners on the bar's round buttons (`BannerPlacement`). The same banner
     /// dismisses once. Pages of a tab show it only while their tab is selected (all tabs stay alive in the tab view).
     func bannerHost(tab: AppTab? = nil) -> some View {
-        overlay(alignment: .top) { BannerOverlay(tab: tab) }
+        overlay(alignment: .top) { BannerOverlay(tab: tab).environment(\.bannerInSheet, true) }
     }
 }
 

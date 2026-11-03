@@ -32,7 +32,23 @@ enum AppEvent: Equatable, Sendable {
     /// A new note was not created: its name cannot be used.
     case nameRejected(NoteNameProblem, name: String)
     case notificationImageFailed
+    /// A dragged task or habit cannot land where it was let go.
+    case dropRefused(DropRefusal)
     case failure(AppFailure)
+}
+
+/// What was dragged and where it could not land.
+struct DropRefusal: Equatable, Sendable {
+    enum Target: Equatable, Sendable {
+        case pool
+        case timeline
+        /// A backlog page, by the text key of its title.
+        case list(String)
+    }
+
+    let name: String
+    let isHabit: Bool
+    let target: Target
 }
 
 /// Where the app state sends its events (the frontend's banner presenter; a recorder in tests).

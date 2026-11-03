@@ -78,7 +78,7 @@ final class DayCommands {
     /// Dropped on the timeline of any day: a task's moment is read on the phone's clock and written in the note's own
     /// zone; a habit's block stands there on that day only and its note stays as it is (`TodayTimes`). `slot`: the habit
     /// block's time as its note has it, when it comes from the timeline; from the pool the habit's first time sent there
-    /// that day.
+    /// that day, or a block of that day's own for a habit without reminder times.
     func schedule(_ name: String, slot: LocalTime?, at moment: Date) async {
         guard let task = tasks.task(named: name), let local = localTask(named: name) else { return }
         guard task.isHabit else {
@@ -88,8 +88,7 @@ final class DayCommands {
         let time = LocalTime(moment, in: day.calendar)
         let shown = day.context().logicalDay(of: moment)
         let times = day.times(on: shown)
-        guard let moves = slot.map({ times.moving(local, slot: $0, to: time) }) ?? times.placing(local, at: time) else { return }
-        day.setTimeMoves(moves, on: shown)
+        day.setTimeMoves(slot.map { times.moving(local, slot: $0, to: time) } ?? times.placing(local, at: time), on: shown)
         await derived.publish()
     }
 
@@ -107,12 +106,6 @@ final class DayCommands {
             await write(task, TaskScheduling.changes(unscheduling: local, context: day.context()))
         }
         if isToday(shown) { setManualOrder(poolOrder) }
-    }
-
-    /// A dragged item can land on the timeline of `shown` (nil: today) (`TaskScheduling.canPlace`).
-    func canPlaceOnTimeline(_ name: String, slot: LocalTime?, on shown: LocalDate? = nil) -> Bool {
-        let times = day.times(on: shown ?? day.context().today)
-        return localTask(named: name).map { TaskScheduling.canPlace($0, slot: slot, today: times) } ?? false
     }
 
     /// A block dragged from the timeline can land in the pool (`TaskScheduling.canSendToPool`).
@@ -208,6 +201,12 @@ final class DayCommands {
     func scheduleFromBacklog(_ name: String, at moment: Date) async {
         guard let local = localTask(named: name) else { return }
         await apply(BacklogMoves.ontoTimeline(local, at: moment, context: day.context()), to: name)
+    }
+
+    /// A drop that cannot land: the banner says so.
+    func refuseDrop(_ name: String, onto target: DropRefusal.Target) {
+        Haptics.play(.dropRefused)
+        appEvents.send(.dropRefused(DropRefusal(name: name, isHabit: tasks.task(named: name)?.isHabit ?? false, target: target)))
     }
 
     /// A task can come out of a backlog page into a day: a task, not a habit (which has no planning level to change).

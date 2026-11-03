@@ -212,7 +212,7 @@ struct ConfigTests {
     /// selection tick, the rest light.
     @Test func hapticRolesKeepTheirStyles() {
         let haptics = TestConfig.actions.haptics
-        #expect(HapticRole.allCases.filter { haptics[$0] == .medium } == [.reorder, .extend])
+        #expect(HapticRole.allCases.filter { haptics[$0] == .medium } == [.dropRefused, .reorder, .extend])
         #expect(HapticRole.allCases.filter { haptics[$0] == .light } == [.select, .mark, .drop, .move, .pullArmed])
         #expect(HapticRole.allCases.filter { haptics[$0] == .selection } == [.dragStep])
     }

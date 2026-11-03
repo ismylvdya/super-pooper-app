@@ -3,8 +3,9 @@ import UniformTypeIdentifiers
 
 /// The task being dragged on Tasks, shared by the pool, the timeline, the backlog pages and the page edges: where it
 /// came from, where it would land on the timeline, the pool order and section while it is over the pool and the backlog
-/// page it is over. A pool section dragged by its header is a drag without a task, which only the pool takes; so is the
-/// tab bar's "+" (`newItem`), which the pool (today) and the timeline take as the spot of a task still to be made.
+/// page it is over. A pool section dragged by its header is a drag without a task, which only the pool takes. The tab
+/// bar's "+" (`newItem`) follows the finger by a gesture of its own, not a system drag: the pool (today) and the timeline
+/// watch its point and say what letting it go there would do (`setNewItemLanding`).
 @MainActor
 @Observable
 final class TaskDragState {
@@ -57,6 +58,12 @@ final class TaskDragState {
     var backlogTarget: String?
     /// Counts the drags begun: a lifted finger ends only the drag it was dragging.
     private var session = 0
+    /// Where the finger holds the dragged "+", on the screen; nil while it stands in its place.
+    private(set) var newItemPoint: CGPoint?
+    /// The bubble's size, for drawing it under the finger.
+    var newItemSize: CGSize = .zero
+    /// What letting the "+" go now does, and which target said so.
+    private var newItemLanding: (owner: String, land: () -> Void)?
 
     func begin(_ item: DayItem, from source: Source) -> NSItemProvider {
         reset()
@@ -65,11 +72,34 @@ final class TaskDragState {
         return provider(for: item.id)
     }
 
-    /// The tab bar's "+" picked up.
-    func beginNewItem() -> NSItemProvider {
+    /// The dragged "+" is at `point` on the screen (its first move picks it up).
+    func moveNewItem(to point: CGPoint) {
+        if source != .newItem {
+            reset()
+            source = .newItem
+        }
+        newItemPoint = point
+    }
+
+    /// The target under the "+" says what letting it go there does.
+    func setNewItemLanding(_ owner: String, _ land: @escaping () -> Void) {
+        newItemLanding = (owner, land)
+    }
+
+    /// The "+" left the target `owner`.
+    func clearNewItemLanding(_ owner: String) {
+        if newItemLanding?.owner == owner { newItemLanding = nil }
+    }
+
+    /// The finger lifted the "+": it lands where a target took it, and is back in its place either way.
+    func releaseNewItem() {
+        let land = newItemLanding?.land
         reset()
-        source = .newItem
-        return provider(for: Self.newItemGap)
+        land?()
+    }
+
+    func cancelNewItem() {
+        reset()
     }
 
     /// What stands under the finger in the pool's order: the dragged task, or the new item's gap.
@@ -137,6 +167,12 @@ final class TaskDragState {
         backlogTarget == list && item?.id == id && source != .backlog(list)
     }
 
+    /// A row dragged from the backlog page `list` closes up once the finger has moved off its lift: the rows below rise
+    /// into its place, as in the pool.
+    func isBacklogGap(_ id: String, on list: String) -> Bool {
+        item?.id == id && source == .backlog(list) && (backlogTarget != nil || poolOrder != nil || hoverMoment != nil)
+    }
+
     /// While its header is dragged over the pool, the section stands faint where it would land.
     func isSectionGhost(_ id: String) -> Bool {
         sectionOrder != nil && section == id
@@ -149,18 +185,16 @@ final class TaskDragState {
     /// The finger dragging has been lifted. A drop ends the drag at once; one let go outside every drop target (or on
     /// one that does not take it) has no drop, so it ends once `seconds` have passed with no drop and no new drag.
     func fingerLifted(settling seconds: Double, delay: Delay = SleepDelay()) async {
-        guard item != nil || section != nil || source == .newItem else { return }
+        guard item != nil || section != nil else { return }
         let lifted = session
         try? await delay.wait(seconds)
         guard lifted == session else { return }
         reset()
     }
 
-    /// A hold began on the empty timeline; true when it may open a new task's page. The finger holding drags nothing, so
-    /// a "+" drag still standing was let go outside every drop target (its finger was never on Today to lift): it ends.
+    /// A hold began on the empty timeline; true when it may open a new task's page.
     func holdBegan() -> Bool {
-        if item == nil, source == .newItem { reset() }
-        return !isDragging
+        !isDragging
     }
 
     private func provider(for id: String) -> NSItemProvider {
@@ -174,6 +208,8 @@ final class TaskDragState {
         source = .pool
         hoverMoment = nil
         backlogTarget = nil
+        newItemPoint = nil
+        newItemLanding = nil
         leavePool()
     }
 }
@@ -213,22 +249,19 @@ private struct TaskDragSource<Preview: View>: ViewModifier {
     }
 }
 
-/// Dropping on the timeline: the task gets the time under the finger, a habit's block stands there today; a "+" opens
-/// the new task's page at that time.
+/// Dropping on the timeline: the task gets the time under the finger, a habit's block stands there today. What cannot
+/// land here shows no sign while it is held; let go, it is refused with a banner (`onRefused`).
 @MainActor
 struct TimelineDropDelegate: DropDelegate {
     let drag: TaskDragState
     let moment: (CGFloat) -> Date
     let canDrop: (DayItem, TaskDragState.Source) -> Bool
     let onDrop: (DayItem, TaskDragState.Source, Date) -> Void
-    let onNewItemDrop: (Date) -> Void
+    let onRefused: (DayItem) -> Void
 
-    func validateDrop(info: DropInfo) -> Bool { validate() }
-
-    /// A task or a "+" lands here: a pool section's header never does.
-    func validate() -> Bool {
-        if drag.source == .newItem { return true }
-        return drag.item.map { canDrop($0, drag.source) } ?? false
+    /// A task lands here when `canDrop` says so.
+    func accepts() -> Bool {
+        drag.item.map { canDrop($0, drag.source) } ?? false
     }
 
     func dropEntered(info: DropInfo) {
@@ -236,7 +269,7 @@ struct TimelineDropDelegate: DropDelegate {
     }
 
     func dropUpdated(info: DropInfo) -> DropProposal? {
-        if drag.hover(at: moment(info.location.y)) { Haptics.play(.dragStep) }
+        if accepts(), drag.hover(at: moment(info.location.y)) { Haptics.play(.dragStep) }
         return DropProposal(operation: .move)
     }
 
@@ -245,12 +278,12 @@ struct TimelineDropDelegate: DropDelegate {
     }
 
     func performDrop(info: DropInfo) -> Bool {
-        guard drag.isDragging else { return false }
+        guard let item = drag.item else { return false }
         let landing = drag.hoverMoment ?? moment(info.location.y)
-        let item = drag.item
         let source = drag.source
+        let accepted = accepts()
         drag.end()
-        if let item { onDrop(item, source, landing) } else { onNewItemDrop(landing) }
+        if accepted { onDrop(item, source, landing) } else { onRefused(item) }
         return true
     }
 }

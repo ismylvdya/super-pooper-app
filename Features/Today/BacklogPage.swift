@@ -2,7 +2,8 @@ import SwiftUI
 
 /// A backlog page left of the pool (Soon, Half year, Someday): the list's tasks for the day shown, on the pool's plates,
 /// with the pool's tap and long-press menu; each can be dragged to another page, into the pool or onto the timeline.
-/// A task dragged here takes the list's level and shows, faint, where the list will hold it.
+/// A task dragged here takes the list's level, and the rows part where the list will hold it; a row dragged off the page
+/// closes up, as in the pool.
 struct BacklogPage: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
@@ -24,7 +25,8 @@ struct BacklogPage: View {
             LazyVStack(alignment: .leading, spacing: tokens.space(.poolRowGap)) {
                 ForEach(items) { item in
                     PoolRow(item: item, isToday: false, isCompact: true, handler: handler, dragSource: .backlog(list.id))
-                        .dropGhost(drag?.isBacklogGhost(item.id, on: list.id) == true)
+                        .dropGap(drag?.isBacklogGhost(item.id, on: list.id) == true)
+                        .closedUp(drag?.isBacklogGap(item.id, on: list.id) == true, gap: tokens.space(.poolRowGap))
                 }
             }
         }
@@ -54,7 +56,7 @@ struct BacklogPage: View {
 
     private var dropTarget: BacklogDropTarget {
         BacklogDropTarget(drag: drag, list: list.id, animation: tokens.animation, canDrop: { model.canBringFromBacklog($0.id) },
-                          onDrop: dropped)
+                          onDrop: dropped, onRefused: { model.refuseDrop($0.id, onto: .list(list.title)) })
     }
 
     /// The list's tasks; while a task from elsewhere is over the page, it too, where the name order puts it.
@@ -83,11 +85,12 @@ private struct BacklogDropTarget: ViewModifier {
     let animation: Animation
     let canDrop: (DayItem) -> Bool
     let onDrop: (DayItem, TaskDragState.Source) -> Void
+    let onRefused: (DayItem) -> Void
 
     func body(content: Content) -> some View {
         if let drag {
             content.onDrop(of: TaskDragState.types, delegate: BacklogDropDelegate(drag: drag, list: list, animation: animation,
-                                                                                canDrop: canDrop, onDrop: onDrop))
+                                                                                canDrop: canDrop, onDrop: onDrop, onRefused: onRefused))
         } else {
             content
         }

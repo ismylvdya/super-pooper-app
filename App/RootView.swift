@@ -73,6 +73,7 @@ struct RootView: View {
                 .screenBackground()
                 // The banner sits over the navigation bar, its corners on the bar buttons, on every tab.
                 .overlay(alignment: .top) { BannerOverlay(yieldsToSheets: true) }
+                .overlay { NewItemDragOverlay() }
                 .sheet(isPresented: $router.isReviewPresented) {
                     MorningReviewScreen().tint(tokens.color(.accent)).presentationDragIndicator(.visible)
                 }

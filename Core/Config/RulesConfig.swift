@@ -161,6 +161,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let bannerDismissFling: Double
         /// Pulling a list down this far arms "load more".
         let pullThreshold: Double
+        /// Pulling Tasks' first page sideways this far arms opening the next backlog page.
+        let sidePullThreshold: Double
         /// How a pull past an edge resists the finger (a scroll view's bounce: the content moves less the further it goes).
         let pullResistance: Double
     }

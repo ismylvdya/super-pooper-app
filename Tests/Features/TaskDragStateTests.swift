@@ -1,3 +1,4 @@
+import CoreGraphics
 import Testing
 @testable import SuperPooperApp
 
@@ -89,7 +90,7 @@ struct TaskDragStateTests {
     /// The tab bar's "+" dragged over the pool is no note: its room there is a gap of its own the rows part around.
     @Test func aNewItemDragHasNoNoteButAGapInThePool() {
         let drag = TaskDragState()
-        _ = drag.beginNewItem()
+        drag.moveNewItem(to: .zero)
         #expect(drag.item == nil && drag.source == .newItem)
         #expect(drag.draggedID == TaskDragState.newItemGap && drag.isDragging)
         #expect(!drag.isGap(TaskDragState.newItemGap), "lifted, not yet over the pool")
@@ -100,13 +101,13 @@ struct TaskDragStateTests {
 
     @Test func endingANewItemDragClearsIt() {
         let drag = TaskDragState()
-        _ = drag.beginNewItem()
+        drag.moveNewItem(to: .zero)
         _ = drag.hover(poolOrder: [TaskDragState.newItemGap])
         drag.end()
         #expect(drag.source == .pool && drag.draggedID == nil && !drag.isDragging)
         #expect(!drag.isGap(TaskDragState.newItemGap))
         let task = DayItem(listed: makeTask("Pay the internet"))
-        _ = drag.beginNewItem()
+        drag.moveNewItem(to: .zero)
         _ = drag.begin(task, from: .pool)
         #expect(drag.draggedID == task.id, "a task picked up after it is the task")
     }
@@ -118,24 +119,30 @@ struct TaskDragStateTests {
         _ = drag.begin(DayItem(listed: makeTask("Pay the internet")), from: .pool)
         await drag.fingerLifted(settling: 1, delay: NoDelay())
         #expect(drag.item == nil && !drag.isDragging)
-        _ = drag.beginNewItem()
-        await drag.fingerLifted(settling: 1, delay: NoDelay())
-        #expect(!drag.isDragging)
         _ = drag.beginSection("day")
         await drag.fingerLifted(settling: 1, delay: NoDelay())
         #expect(drag.source == .pool)
     }
 
-    /// A "+" let go outside every drop target leaves no lifted finger on Today: the next hold on the timeline ends it and
-    /// opens the page; a task still dragged keeps the hold off.
-    @Test func aHoldEndsANewItemDragLetGoOverNothing() {
+    /// The "+" works every time: let go on a target it lands there, let go over nothing it goes back; either way it is
+    /// back in its place and the next swipe picks it up again.
+    @Test func theNewItemLandsAndCanBeDraggedAgain() {
         let drag = TaskDragState()
-        _ = drag.beginNewItem()
-        #expect(drag.holdBegan())
-        #expect(!drag.isDragging && drag.source == .pool)
-        _ = drag.begin(DayItem(listed: makeTask("Pay the internet")), from: .pool)
-        #expect(!drag.holdBegan())
-        #expect(drag.item?.id == "Pay the internet")
+        var landed = 0
+        for _ in 0..<3 {
+            drag.moveNewItem(to: CGPoint(x: 1, y: 2))
+            #expect(drag.newItemPoint == CGPoint(x: 1, y: 2) && drag.source == .newItem)
+            drag.setNewItemLanding("pool") { landed += 1 }
+            drag.releaseNewItem()
+            #expect(drag.newItemPoint == nil && !drag.isDragging)
+        }
+        #expect(landed == 3)
+        drag.moveNewItem(to: .zero)
+        drag.setNewItemLanding("pool") { landed += 1 }
+        drag.clearNewItemLanding("timeline")
+        drag.clearNewItemLanding("pool")
+        drag.releaseNewItem()
+        #expect(landed == 3, "let go over nothing")
     }
 
     /// A finger lifted from one drag does not end the next one begun while it settled.

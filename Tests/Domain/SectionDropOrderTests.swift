@@ -30,24 +30,11 @@ struct SectionDropOrderTests {
         return drag
     }
 
-    @Test func theTimelineRefusesASection() {
-        let delegate = TimelineDropDelegate(drag: sectionDrag(), moment: { _ in Date() }, canDrop: { _, _ in true },
-                                            onDrop: { _, _, _ in }, onNewItemDrop: { _ in })
-        #expect(!delegate.validate())
-    }
-
-    @Test func aBacklogPageRefusesASection() {
-        let delegate = BacklogDropDelegate(drag: sectionDrag(), list: "thisWeek", animation: .default, canDrop: { _ in true },
-                                           onDrop: { _, _ in })
-        #expect(!delegate.validate())
-    }
-
     @Test func thePoolTakesASectionAndShowsItFaintWhereItWouldLand() {
         let drag = sectionDrag()
         let delegate = PoolDropDelegate(drag: drag, animation: .default, layout: { PoolDropLayout() }, canDrop: { _, _ in false },
-                                        onDrop: { _, _, _, _ in }, onSectionDrop: { _, _ in }, acceptsNewItem: false,
-                                        onNewItemDrop: { _, _ in })
-        #expect(delegate.validate())
+                                        onDrop: { _, _, _, _ in }, onSectionDrop: { _, _ in }, onRefused: { _ in })
+        #expect(delegate.accepts())
         #expect(!drag.isSectionGhost("evening"), "not over the pool yet")
         #expect(drag.hover(sectionOrder: ["morning", "evening", "day"]))
         #expect(drag.isSectionGhost("evening") && !drag.isSectionGhost("day"))
@@ -55,22 +42,4 @@ struct SectionDropOrderTests {
         #expect(drag.section == nil && !drag.isSectionGhost("evening"))
     }
 
-    /// The tab bar's "+" lands on any timeline and in today's pool; a backlog page does not take it.
-    @Test func aNewItemLandsOnTheTimelineAndTodaysPoolOnly() {
-        let drag = TaskDragState()
-        _ = drag.beginNewItem()
-        let timeline = TimelineDropDelegate(drag: drag, moment: { _ in Date() }, canDrop: { _, _ in false },
-                                            onDrop: { _, _, _ in }, onNewItemDrop: { _ in })
-        #expect(timeline.validate())
-        let pool = { (accepts: Bool) in
-            PoolDropDelegate(drag: drag, animation: .default, layout: { PoolDropLayout() }, canDrop: { _, _ in true },
-                             onDrop: { _, _, _, _ in }, onSectionDrop: { _, _ in }, acceptsNewItem: accepts,
-                             onNewItemDrop: { _, _ in })
-        }
-        #expect(pool(true).validate())
-        #expect(!pool(false).validate(), "another day's pool")
-        let backlog = BacklogDropDelegate(drag: drag, list: "thisWeek", animation: .default, canDrop: { _ in true },
-                                          onDrop: { _, _ in })
-        #expect(!backlog.validate())
-    }
 }

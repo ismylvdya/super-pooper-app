@@ -9,6 +9,7 @@ struct BannerView: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.rules) private var rules
     @Environment(\.icons) private var icons
+    @Environment(\.bannerInSheet) private var isInSheet
     let text: String
     let icon: Icon?
     let tint: Color
@@ -51,7 +52,7 @@ struct BannerView: View {
         .frame(minHeight: tokens.bannerPlacement.height, maxHeight: isExpanded ? nil : tokens.bannerPlacement.height)
         .systemLook(.bannerCard)
         .padding(.horizontal, tokens.bannerPlacement.side)
-        .padding(.top, tokens.bannerPlacement.top)
+        .padding(.top, isInSheet ? tokens.bar(.sheetBarTop) : tokens.bannerPlacement.top)
         .offset(y: min(dragOffset, 0))
         .contentShape(Rectangle())
         .gesture(tapOrSwipe)
@@ -121,5 +122,17 @@ struct BannerView: View {
                     withAnimation(tokens.animation) { dragOffset = 0 }
                 }
             }
+    }
+}
+
+private struct BannerInSheetKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
+extension EnvironmentValues {
+    /// The banner stands on a sheet's bar, whose buttons start further under its top than a screen's.
+    var bannerInSheet: Bool {
+        get { self[BannerInSheetKey.self] }
+        set { self[BannerInSheetKey.self] = newValue }
     }
 }

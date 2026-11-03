@@ -62,10 +62,8 @@ final class AppModel {
     func unschedule(_ name: String, slot: LocalTime? = nil, poolOrder: [String], on day: LocalDate? = nil) async {
         await parts.dayCommands.unschedule(name, slot: slot, poolOrder: poolOrder, on: day)
     }
-    func canDropOnTimeline(_ name: String, slot: LocalTime?, on day: LocalDate? = nil) -> Bool {
-        parts.dayCommands.canPlaceOnTimeline(name, slot: slot, on: day)
-    }
     func canDropInPool(_ name: String, slot: LocalTime?) -> Bool { parts.dayCommands.canSendToPool(name, slot: slot) }
+    func refuseDrop(_ name: String, onto target: DropRefusal.Target) { parts.dayCommands.refuseDrop(name, onto: target) }
 
     /// Dropped on a backlog page while `shown` is shown; `fromShownDay`: from that day's pool or timeline.
     func moveToBacklog(_ name: String, list: BacklogList, shown: LocalDate, fromShownDay: Bool) async {

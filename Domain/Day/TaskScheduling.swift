@@ -8,12 +8,6 @@ enum TaskScheduling {
     /// A drag writes the note (tasks).
     static func canMove(_ task: TaskItem) -> Bool { !task.isHabit }
 
-    /// A dragged item can land on the shown day's timeline: a task; a habit's block from the timeline (`slot`: its time
-    /// as the note has it); a habit from the pool only with a reminder time sent there that day.
-    static func canPlace(_ task: TaskItem, slot: LocalTime?, today: TodayTimes) -> Bool {
-        canMove(task) || slot != nil || !today.pooled(of: task).isEmpty
-    }
-
     /// A block dragged from the timeline can land in the pool: a task (it loses its time) or a habit's block (today only).
     static func canSendToPool(_ task: TaskItem, slot: LocalTime?) -> Bool {
         canMove(task) || slot != nil

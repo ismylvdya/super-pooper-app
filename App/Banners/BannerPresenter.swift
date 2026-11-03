@@ -45,9 +45,21 @@ final class BannerPresenter: AppEventSink {
             BannerCenter.Banner(text: NoteNameProblemText.describe(problem, name: name), style: .problem)
         case .notificationImageFailed:
             BannerCenter.Banner(text: L10n.string("banner.notificationImageFailed"), style: .warning)
+        case .dropRefused(let refusal):
+            BannerCenter.Banner(text: dropRefused(refusal), style: .warning)
         case .failure(let failure):
             BannerCenter.Banner(text: FailureText.describe(failure), style: .problem)
         }
+    }
+
+    private static func dropRefused(_ refusal: DropRefusal) -> String {
+        let place: String
+        switch refusal.target {
+        case .pool: place = L10n.string("banner.dropRefused.pool")
+        case .timeline: place = L10n.string("banner.dropRefused.timeline")
+        case .list(let title): place = L10n.string(title)
+        }
+        return L10n.format(refusal.isHabit ? "banner.dropRefused.habit" : "banner.dropRefused.task", refusal.name, place)
     }
 
     private static func success(_ key: String, _ name: String) -> BannerCenter.Banner {

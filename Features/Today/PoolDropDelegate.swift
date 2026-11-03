@@ -2,8 +2,8 @@ import SwiftUI
 
 /// Dropping on the pool: rows make room under the finger and the task joins the section whose header is above it; a
 /// task from the timeline loses its time, a habit's block leaves today's timeline, a task from a backlog page comes into
-/// the day. A section dragged by its header goes before or after the others whole. A "+" makes room as a task does and,
-/// let go, opens the new task's page for that spot (`acceptsNewItem`: today's pool only).
+/// the day. A section dragged by its header goes before or after the others whole. What cannot land here shows no sign
+/// while it is held; let go, it is refused with a banner (`onRefused`).
 @MainActor
 struct PoolDropDelegate: DropDelegate {
     let drag: TaskDragState
@@ -13,14 +13,11 @@ struct PoolDropDelegate: DropDelegate {
     let canDrop: (DayItem, TaskDragState.Source) -> Bool
     let onDrop: (DayItem, TaskDragState.Source, [String], String?) -> Void
     let onSectionDrop: (String, [String]) -> Void
-    let acceptsNewItem: Bool
-    let onNewItemDrop: ([String], String?) -> Void
+    let onRefused: (DayItem) -> Void
 
-    func validateDrop(info: DropInfo) -> Bool { validate() }
-
-    func validate() -> Bool {
+    /// A section's header, or a task when `canDrop` says so.
+    func accepts() -> Bool {
         if drag.section != nil { return true }
-        if drag.source == .newItem { return acceptsNewItem }
         return drag.item.map { canDrop($0, drag.source) } ?? false
     }
 
@@ -29,6 +26,7 @@ struct PoolDropDelegate: DropDelegate {
     }
 
     func dropUpdated(info: DropInfo) -> DropProposal? {
+        guard accepts() else { return DropProposal(operation: .move) }
         let layout = layout()
         let moved: Bool
         if let section = drag.section {
@@ -38,7 +36,7 @@ struct PoolDropDelegate: DropDelegate {
             let drop = PoolDropOrder.drop(rows: layout.rows, headers: layout.headers, dragged: dragged, at: info.location.y)
             moved = withAnimation(animation) { drag.hover(poolOrder: drop.order, section: drop.section) }
         } else {
-            return nil
+            return DropProposal(operation: .move)
         }
         if moved { Haptics.play(.dragStep) }
         return DropProposal(operation: .move)
@@ -56,14 +54,19 @@ struct PoolDropDelegate: DropDelegate {
             onSectionDrop(section, order)
             return true
         }
-        guard let dragged = drag.draggedID else { return false }
+        guard let item = drag.item else { return false }
+        guard accepts() else {
+            drag.end()
+            onRefused(item)
+            return true
+        }
+        let dragged = item.id
         let fresh = PoolDropOrder.drop(rows: layout.rows, headers: layout.headers, dragged: dragged, at: info.location.y)
         let order = drag.poolOrder ?? fresh.order
         let section = drag.poolOrder != nil ? drag.poolSection : fresh.section
-        let item = drag.item
         let source = drag.source
         drag.end()
-        if let item { onDrop(item, source, order, section) } else { onNewItemDrop(order, section) }
+        onDrop(item, source, order, section)
         return true
     }
 }

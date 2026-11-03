@@ -38,6 +38,9 @@ enum SystemBarMetric: String, CaseIterable, Sendable {
     case newItemBubble, newItemBubbleInset, classicTabBar, newItemBubbleGap
     /// The height of an upright navigation bar, from the top of the safe area (a banner stands with its buttons).
     case navigationBar
+    /// A system bar button upright (a banner is as tall and as round), and how far under a sheet's top its bar's buttons
+    /// start.
+    case uprightBarButton, sheetBarTop
 }
 
 /// `systemBar.font`: a tab's symbol lying sideways (`tabIcon`) and upright in the system tab bar (`systemTabIcon`, only

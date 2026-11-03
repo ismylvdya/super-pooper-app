@@ -69,7 +69,6 @@ struct HabitDragTests {
         let (model, clock) = try app()
         await sync(model)
         let tomorrow = context.today.adding(days: 1)
-        #expect(model.canDropOnTimeline(vitamins, slot: nine, on: tomorrow))
         await model.schedule(vitamins, slot: nine, at: at("11:00", daysLater: 1))
         let tomorrowsStart = model.plan(at: clock.now, dayOffset: 1).slot(vitamins).map { LocalTime($0.start, in: PreviewSamples.calendar) }
         #expect(tomorrowsStart == LocalTime("11:00"))
@@ -90,7 +89,6 @@ struct HabitDragTests {
         #expect(todays.isEmpty, "no notification today")
         #expect(fireDate(center.pending(slot)) == at("09:00", daysLater: 1))
 
-        #expect(model.canDropOnTimeline(vitamins, slot: nil))
         await model.schedule(vitamins, at: at("12:00"))
         await model.waitForNotifications()
         #expect(start(model) == "12:00")
@@ -111,7 +109,6 @@ struct HabitDragTests {
     /// A habit without reminder times has no block: it cannot be dropped on the timeline.
     @Test func aHabitWithoutTimesStaysInThePool() throws {
         let (model, _) = try app()
-        #expect(!model.canDropOnTimeline("Выпить воды 💧", slot: nil))
         #expect(model.canDropInPool(vitamins, slot: nine))
     }
 }

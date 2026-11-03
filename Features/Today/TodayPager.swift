@@ -61,11 +61,11 @@ final class TodayPager {
         if page == 0, translation.width > 0, openedBacklog < backlogCount {
             pageDrag = 0
             sidePull = PullArming.stretch(translation.width, dimension: containerWidth, resistance: gestures.pullResistance)
-            return arming.update(pull: sidePull, threshold: gestures.pullThreshold)
+            return arming.update(pull: sidePull, threshold: gestures.sidePullThreshold)
         }
         if sidePull != 0 {
             sidePull = 0
-            _ = arming.update(pull: 0, threshold: gestures.pullThreshold)
+            _ = arming.update(pull: 0, threshold: gestures.sidePullThreshold)
         }
         guard TodaySwipe.page(forward: translation.width < 0, page: page, pageCount: pageCount) != nil else { return false }
         pageDrag = translation.width

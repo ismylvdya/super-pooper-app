@@ -7356,6 +7356,50 @@
           }
         }
       }
+    },
+    "banner.dropRefused.pool": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "the pool"
+          }
+        }
+      }
+    },
+    "banner.dropRefused.timeline": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "the timeline"
+          }
+        }
+      }
+    },
+    "banner.dropRefused.habit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habit “%1$@” can’t go to %2$@"
+          }
+        }
+      }
+    },
+    "banner.dropRefused.task": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%1$@” can’t go to %2$@"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
