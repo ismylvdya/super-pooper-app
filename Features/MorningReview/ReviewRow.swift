@@ -68,7 +68,8 @@ struct ReviewRow: View {
             Chip(icon: .due, text: task.due.map { DueText.format($0, context: context) }, isOn: task.due != nil)
         }
         .sheet(isPresented: $isPickingDate) {
-            DueDateSheet(due: task.due ?? TaskDue(day: today, time: rules.editing.defaultTime)) { setDue($0) }
+            let due = task.due ?? TaskDue(day: today, time: rules.editing.defaultTime)
+            DuePickerSheet(pick: DuePick(day: due.day, time: due.time), choosesZone: false) { setDue($0?.due) }
         }
     }
 

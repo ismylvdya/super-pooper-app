@@ -27,6 +27,19 @@ struct QuickPlanningTests {
         #expect(QuickDue.toggling(.today, due: friday, context: context) == TaskDue(day: today, time: LocalTime("18:00")))
     }
 
+    /// The date chip names only what Today and Tomorrow cannot: another day, and a time on any day.
+    @Test func theDateChipIsOnlyForAnotherDayThanTodayOrTomorrow() {
+        let context = TestCalendar.context()
+        let friday = TaskDue(day: LocalDate("2026-10-23"))
+        #expect(QuickDue.selection(of: friday, context: context) == nil)
+        #expect(DateChip.title(for: friday, context: context) == LocalDate("2026-10-23"))
+        #expect(DateChip.title(for: TaskDue(day: LocalDate("2026-10-22")), context: context) == nil)
+        #expect(DateChip.title(for: nil, context: context) == nil)
+        let tonight = makeTask("Позвонить") { $0.due = TaskDue(day: self.today, time: LocalTime("18:20")) }
+        let shown = DateChip.shown(of: tonight, context: context)
+        #expect(shown.day == nil && shown.time == LocalTime("18:20"))
+    }
+
     // MARK: - Pool ↔ timeline
 
     @Test func aTaskDroppedOnTheTimelineGetsThatDateAndTime() {

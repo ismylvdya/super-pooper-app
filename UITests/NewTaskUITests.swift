@@ -56,7 +56,7 @@ final class NewTaskUITests: XCTestCase {
     }
 
     /// The slider under the name turns the new task into a new habit without losing what was typed; Return then saves
-    /// a habit (`scripts/check-vault-after-ui-tests.sh` checks its status).
+    /// a habit with what was set on the habit side (`scripts/check-vault-after-ui-tests.sh` checks its status and Today).
     func testSwitchingToHabitKeepsTheTypedName() {
         launch("superpooper://today")
         let plus = app.buttons["tabBar.newItem"]
@@ -73,11 +73,60 @@ final class NewTaskUITests: XCTestCase {
         kind.buttons["Habit"].tap()
         XCTAssertEqual(name.value as? String, "Stretch")
         XCTAssertTrue(app.segmentedControls["habitPage.kind"].waitForExistence(timeout: 5), "the habit's sections show")
+        // Kept out of Today, so the pool the later tests count on stays as the vault has it.
+        let inToday = app.switches["Show in Today"]
+        XCTAssertTrue(inToday.exists)
+        inToday.switches.firstMatch.tap()
+        let off = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == '0'"), object: inToday)
+        XCTAssertEqual(XCTWaiter().wait(for: [off], timeout: 5), .completed)
         name.tap()
         app.typeText("\n")
         expectCreatedBanner("Stretch")
         XCTAssertTrue(app.buttons["taskPage.more"].waitForExistence(timeout: 5), "the page is the habit's own page now")
         XCTAssertTrue(app.segmentedControls["habitPage.kind"].exists)
+    }
+
+    /// The date chip opens the date sheet: a day other than today or tomorrow shows on the chip, and the Time zone is
+    /// None until one is chosen (`scripts/check-vault-after-ui-tests.sh` checks the due and that no zone was written).
+    func testTheDateChipSetsADayAndShowsIt() throws {
+        launch("superpooper://today")
+        let plus = app.buttons["tabBar.newItem"]
+        XCTAssertTrue(plus.waitForExistence(timeout: 10))
+        app.dismissBanners()
+        plus.tap()
+        XCTAssertTrue(app.textFields["taskPage.name"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
+        app.typeText("Оплатить аренду\n")
+        expectCreatedBanner("Оплатить аренду")
+        app.dismissBanners()
+
+        let calendar = Calendar.current
+        let today = Date()
+        let later = calendar.date(byAdding: .day, value: 2, to: today)!
+        let day = calendar.isDate(later, equalTo: today, toGranularity: .month) ? later : calendar.date(byAdding: .day, value: -2, to: today)!
+        let chip = app.buttons["taskPage.chip.date"]
+        XCTAssertTrue(chip.waitForExistence(timeout: 5))
+        chip.tap()
+        // The app speaks English ("Thursday, 5 November"), whatever language the test runner has: find the day by its
+        // English weekday and its number.
+        let english = Locale(identifier: "en")
+        let weekday = app.datePickers.buttons.matching(NSPredicate(format: "label CONTAINS %@",
+                                                                   day.formatted(.dateTime.weekday(.wide).locale(english))))
+        XCTAssertTrue(weekday.firstMatch.waitForExistence(timeout: 5))
+        let number = String(calendar.component(.day, from: day))
+        let numbers = { (label: String) in label.components(separatedBy: CharacterSet.decimalDigits.inverted) }
+        let dayButton = try XCTUnwrap(weekday.allElementsBoundByIndex.first { numbers($0.label).contains(number) })
+        dayButton.tap()
+        let hasTime = app.switches["duePicker.hasTime"]
+        XCTAssertTrue(hasTime.exists)
+        hasTime.switches.firstMatch.tap()
+        let zone = app.buttons["duePicker.timeZone"]
+        XCTAssertTrue(zone.waitForExistence(timeout: 5))
+        XCTAssertTrue(zone.label.contains("None"), "no zone until one is chosen: \(zone.label)")
+        app.buttons["duePicker.done"].tap()
+        let selected = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isSelected == true"), object: chip)
+        XCTAssertEqual(XCTWaiter().wait(for: [selected], timeout: 5), .completed)
+        XCTAssertTrue(numbers(chip.label).contains(number), "the chip names the day: \(chip.label)")
     }
 
     func testPlusInHabitsCreatesAHabit() {
@@ -112,11 +161,11 @@ final class NewTaskUITests: XCTestCase {
         expectCreatedBanner("Купить хлеб")
         XCTAssertTrue(app.buttons["taskPage.more"].waitForExistence(timeout: 5), "the page is the task's own page now")
         XCTAssertEqual(name.value as? String, "Купить хлеб")
-        let high = app.switches["taskPage.high"]
-        app.scrollIntoView(high)
-        high.switches.firstMatch.tap()
-        let switchedOn = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == '1'"), object: high)
+        let high = app.buttons["taskPage.chip.high"]
+        high.tap()
+        let switchedOn = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isSelected == true"), object: high)
         XCTAssertEqual(XCTWaiter().wait(for: [switchedOn], timeout: 5), .completed)
+        XCTAssertFalse(app.switches["taskPage.high"].exists, "High lives in the chips, not again in Properties")
         // The first banner goes first, so a second one would show.
         app.dismissBanners()
         app.navigationBars.buttons.element(boundBy: 0).tap()

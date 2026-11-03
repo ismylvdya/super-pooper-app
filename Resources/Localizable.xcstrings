@@ -1278,6 +1278,28 @@
         }
       }
     },
+    "duePicker.clear": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove date"
+          }
+        }
+      }
+    },
+    "duePicker.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Date and time"
+          }
+        }
+      }
+    },
     "error.event.notFound": {
       "extractionState": "manual",
       "localizations": {
@@ -2741,17 +2763,6 @@
         }
       }
     },
-    "info.taskPage.due": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "One date per task. A backlog task whose date falls in the current week moves to Soon. For recurring tasks the date gives the time of day."
-          }
-        }
-      }
-    },
     "info.taskPage.estimate": {
       "extractionState": "manual",
       "localizations": {
@@ -2862,24 +2873,13 @@
         }
       }
     },
-    "info.taskPage.time": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A task with a time is placed on the timeline and gets a notification."
-          }
-        }
-      }
-    },
     "info.taskPage.timeZone": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Phone's time: 09:00 is 09:00 wherever you are. A zone: 09:00 there, at the matching time of your phone."
+            "value": "None: 09:00 is 09:00 wherever you are. A zone: 09:00 there, at the matching time of your phone."
           }
         }
       }
@@ -4244,17 +4244,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Today"
-          }
-        }
-      }
-    },
-    "review.due.clear": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Remove date"
           }
         }
       }
@@ -6357,18 +6346,29 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "High"
+            "value": "High priority"
           }
         }
       }
     },
-    "taskPage.due": {
+    "taskPage.chip.needEnergy": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Date"
+            "value": "Need energy"
+          }
+        }
+      }
+    },
+    "taskPage.chip.pleasant": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pleasant"
           }
         }
       }
@@ -6780,13 +6780,13 @@
         }
       }
     },
-    "taskPage.timeZone.phone": {
+    "taskPage.timeZone.none": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Phone's time"
+            "value": "None"
           }
         }
       }

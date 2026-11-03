@@ -12,6 +12,7 @@
   "chipOrder": "line.3.horizontal",
   "high": "exclamationmark.triangle.fill",
   "due": "calendar",
+  "datePick": "calendar",
   "time": "clock",
   "estimate": "hourglass",
   "previousTasks": "arrow.turn.left.up",
