@@ -174,7 +174,7 @@ struct TimelineBlock: View {
             drag.clearNewItemLanding(Self.newItemTarget)
             return
         }
-        drag.turn(.block(.timeline))
+        drag.turnAfterDwell(.block(.timeline), seconds: rules.gestures.newItemTurnDwellSeconds)
         let moment = TaskScheduling.moment(atOffset: Double(point.y - hoursTop), windowStart: windowStart,
                                            hourHeight: Double(hourHeight), stepMinutes: model.config.rules.timeline.dropStepMinutes,
                                            calendar: model.calendar)

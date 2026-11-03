@@ -8,11 +8,27 @@ import SwiftUI
 struct NewItemButton: View {
     @Environment(Router.self) private var router
     @Environment(TaskDragState.self) private var drag: TaskDragState?
+    @Environment(\.tokens) private var tokens
 
     var body: some View {
-        Button { TabBarItem.selection(.newItem, router: router) } label: { NewItemBubble() }
-            .buttonStyle(.plain)
-            .modifier(NewItemDragSource(drag: router.tab == .today ? drag : nil))
+        let target = router.tab == .today ? drag : nil
+        NewItemBubble()
+            .opacity(target?.newItemPoint == nil ? 1 : 0)
+            // While it is under the finger nothing stands in its place: the system's own search bubble below is covered too.
+            .background {
+                if target?.newItemPoint != nil { Circle().fill(tokens.color(.screenBackground)) }
+            }
+            .onGeometryChange(for: CGSize.self) { $0.size } action: { drag?.newItemSize = $0 }
+            // The system tab bar under the "+" takes the touches SwiftUI's gestures would wait for: a view of UIKit's own
+            // stands over it.
+            .overlay {
+                NewItemTouchArea(canDrag: target != nil) {
+                    TabBarItem.selection(.newItem, router: router)
+                } onMove: { target?.moveNewItem(to: $0) } onEnd: { target?.releaseNewItem() } onCancel: { target?.cancelNewItem() }
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityAddTraits(.isButton)
+            .accessibilityAction { TabBarItem.selection(.newItem, router: router) }
             .accessibilityLabel(Text("newItem.title"))
             .accessibilityIdentifier("tabBar.newItem")
     }
@@ -28,33 +44,9 @@ private struct NewItemBubble: View {
             .font(tokens.font(.tabIcon))
             .foregroundStyle(tokens.color(.primaryText))
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .contentShape(Capsule())
             .systemLook(.newItemBubble)
-    }
-}
-
-/// A swipe from the "+": it leaves its place and follows the finger in `NewItemDragOverlay`, until the finger lifts.
-private struct NewItemDragSource: ViewModifier {
-    @Environment(\.rules) private var rules
-    let drag: TaskDragState?
-    @GestureState private var isHeld = false
-
-    func body(content: Content) -> some View {
-        if let drag {
-            content
-                .opacity(drag.newItemPoint == nil ? 1 : 0)
-                .onGeometryChange(for: CGSize.self) { $0.size } action: { drag.newItemSize = $0 }
-                .highPriorityGesture(
-                    DragGesture(minimumDistance: rules.gestures.tapSlop, coordinateSpace: .global)
-                        .updating($isHeld) { _, state, _ in state = true }
-                        .onChanged { drag.moveNewItem(to: $0.location) }
-                        .onEnded { _ in drag.releaseNewItem() }
-                )
-                // The system took the touch away (a call, a sheet): the "+" just goes back.
-                .onChange(of: isHeld) { _, held in if !held, drag.newItemPoint != nil { drag.cancelNewItem() } }
-        } else {
-            content
-        }
+            // Outside the glass: what the glass draws takes no touches by itself.
+            .contentShape(Circle())
     }
 }
 

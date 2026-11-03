@@ -64,6 +64,9 @@ final class TaskDragState {
     var newItemSize: CGSize = .zero
     /// What letting the "+" go now does, and which target said so.
     private var newItemLanding: (owner: String, land: () -> Void)?
+    /// The block the "+" is staying over, and the wait before Tasks turns to it.
+    private var dwellPage: TasksPage?
+    private var dwell: Task<Void, Never>?
 
     func begin(_ item: DayItem, from source: Source) -> NSItemProvider {
         reset()
@@ -152,6 +155,19 @@ final class TaskDragState {
         turnRequest = page
     }
 
+    /// The dragged "+" stays over `page`'s block for `seconds`: only then Tasks turns to it. Merely passing over the
+    /// neighbour's edge (the "+" starts right over the timeline's) turns nothing.
+    func turnAfterDwell(_ page: TasksPage, seconds: Double) {
+        guard page != dwellPage else { return }
+        dwellPage = page
+        dwell?.cancel()
+        dwell = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(seconds))
+            guard !Task.isCancelled, let self, self.dwellPage == page else { return }
+            self.turn(page)
+        }
+    }
+
     func turnHandled() {
         turnRequest = nil
     }
@@ -210,6 +226,8 @@ final class TaskDragState {
         backlogTarget = nil
         newItemPoint = nil
         newItemLanding = nil
+        dwellPage = nil
+        dwell?.cancel()
         leavePool()
     }
 }

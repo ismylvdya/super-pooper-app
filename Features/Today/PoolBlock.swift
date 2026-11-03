@@ -114,7 +114,7 @@ struct PoolBlock: View {
             drag.clearNewItemLanding(Self.dropSpace)
             return
         }
-        drag.turn(.block(.pool))
+        drag.turnAfterDwell(.block(.pool), seconds: rules.gestures.newItemTurnDwellSeconds)
         let layout = dropLayout()
         let spot = PoolDropOrder.drop(rows: layout.rows, headers: layout.headers, dragged: TaskDragState.newItemGap,
                                       at: Double(point.y - screenFrame.minY))

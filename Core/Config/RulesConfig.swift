@@ -151,6 +151,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let daySwipeMinimumDistance: Double
         /// A task's drag whose finger was lifted with no drop ends after this many seconds (a drop ends it at once).
         let dragEndSettleSeconds: Double
+        /// The dragged "+" turns Tasks to a neighbouring block only after staying over its edge this long.
+        let newItemTurnDwellSeconds: Double
         /// A drag is sideways when it moves this many times more across than up or down.
         let daySwipeAxisRatio: Double
         /// A sideways drag turns the page past this share of the width, or when flung past `daySwipeFlingShare` of it.

@@ -13,7 +13,8 @@ struct LiquidGlassLook: ViewModifier {
         case .barCapsule:
             content.glassEffect(.regular.interactive(), in: Capsule())
         case .newItemBubble:
-            content.glassEffect(.regular.interactive(), in: Circle())
+            // Not interactive: that glass takes the touch for itself, and a swipe from the "+" must move it at once.
+            content.glassEffect(.regular, in: Circle())
         case .floatingCapsule:
             content.glassEffect(.regular, in: Capsule())
         case .bannerCard:
