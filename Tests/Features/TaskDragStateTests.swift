@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import SuperPooperApp
 
@@ -109,5 +110,36 @@ struct TaskDragStateTests {
         _ = drag.beginNewItem()
         _ = drag.begin(task, from: .pool)
         #expect(drag.draggedID == task.id, "a task picked up after it is the task")
+    }
+
+    /// Let go outside every drop target, a drag ends when the system lets its item provider go, so the day swipe
+    /// (blocked while a task is dragged) works again at once.
+    @Test func aDragLetGoOutsideEveryTargetEnds() async {
+        let drag = TaskDragState()
+        autoreleasepool { _ = drag.begin(DayItem(listed: makeTask("Pay the internet")), from: .pool) }
+        #expect(drag.item != nil, "the session's end comes after the release")
+        await drag.settle()
+        #expect(drag.item == nil && !drag.isDragging)
+        autoreleasepool { _ = drag.beginNewItem() }
+        await drag.settle()
+        #expect(!drag.isDragging)
+    }
+
+    /// The provider of a drag before goes after the next drag has begun: the drag going on is left alone.
+    @Test func anEarlierDragsEndLeavesTheNextOne() async {
+        let drag = TaskDragState()
+        var first: NSItemProvider? = drag.begin(DayItem(listed: makeTask("Pay the internet")), from: .pool)
+        let second = drag.begin(DayItem(listed: makeTask("Call the bank")), from: .timeline(slot: nil))
+        autoreleasepool { first = nil }
+        await drag.settle()
+        #expect(drag.item?.id == "Call the bank")
+        #expect(first == nil && second.hasItemConformingToTypeIdentifier("public.text"))
+    }
+}
+
+private extension TaskDragState {
+    /// Lets the main actor run what the released providers asked for.
+    func settle() async {
+        for _ in 0..<10 { await Task.yield() }
     }
 }
