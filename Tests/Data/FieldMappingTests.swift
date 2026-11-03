@@ -15,6 +15,12 @@ struct FieldMappingTests {
         #expect(Set(mapping.keyedFields.map(\.field)) == Set(TaskField.allCases))
     }
 
+    /// The Inbox is TaskNotes' status `inbox`, read and written as is.
+    @Test func inboxReadsAndWritesAsInbox() {
+        #expect(TestConfig.mapping.status(fromRaw: "inbox") == .inbox)
+        #expect(TestConfig.mapping.raw(.inbox) == "inbox")
+    }
+
     @Test func everyFieldHasAName() {
         // Unit tests run inside the app, whose bundle holds the texts.
         let bundle = Bundle.main

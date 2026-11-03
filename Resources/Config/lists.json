@@ -29,6 +29,12 @@
       "title": "lists.group.statuses",
       "lists": [
         {
+          "id": "inbox",
+          "title": "status.inbox",
+          "icon": "listInbox",
+          "statuses": ["inbox"]
+        },
+        {
           "id": "thisWeek",
           "title": "status.thisWeek",
           "icon": "listThisWeek",

@@ -107,6 +107,8 @@ extension AppModel {
     func nameProblem(in name: String) -> NoteNameProblem? { parts.notes.nameProblem(in: name) }
     func newHabitDraft() -> NoteDraft { parts.notes.newHabitDraft() }
     func newItemPage(kind: NewItemSeed.Kind) -> NewItemPage { parts.notes.newItemPage(kind: kind) }
+    /// A date typed into a name ("tomorrow 18:20"), by now's logical day.
+    func detectDate(in name: String) -> DetectedDate? { parts.dates.detect(in: name, context: context()) }
 
     /// The new-item page is left; true once the page is done with (see `NoteCommands.create(from:unnamed:)`).
     func create(from page: NewItemPage, unnamed: String) async -> Bool { await parts.notes.create(from: page, unnamed: unnamed) }

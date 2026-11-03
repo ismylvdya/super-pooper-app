@@ -8,7 +8,7 @@ enum NewTaskResponder {
         guard model.hasVault else { return .unavailable }
         await model.ensureLoaded()
         switch await model.createTask(named: name) {
-        case .created(let created): return .created(name: created)
+        case .created(let created): return .created(name: created, inInbox: model.task(named: created)?.status == .inbox)
         case .rejected(let problem): return .rejected(reason: NoteNameProblemText.describe(problem, name: name))
         case .failed: return .failed
         }

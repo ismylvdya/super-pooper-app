@@ -179,13 +179,24 @@
   },
   "customStatuses": [
     {
+      "id": "inbox",
+      "value": "inbox",
+      "label": "Inbox",
+      "color": "#5ac8fa",
+      "isCompleted": false,
+      "excludeFromCycle": true,
+      "order": 0,
+      "autoArchive": false,
+      "autoArchiveDelay": 5
+    },
+    {
       "id": "this_week",
       "value": "this_week",
       "label": "This week",
       "color": "#0066cc",
       "isCompleted": false,
       "excludeFromCycle": false,
-      "order": 0,
+      "order": 1,
       "autoArchive": false,
       "autoArchiveDelay": 5
     },
@@ -196,7 +207,7 @@
       "color": "#8e6cd8",
       "isCompleted": false,
       "excludeFromCycle": true,
-      "order": 1,
+      "order": 2,
       "autoArchive": false,
       "autoArchiveDelay": 5
     },
@@ -207,7 +218,7 @@
       "color": "#808080",
       "isCompleted": false,
       "excludeFromCycle": true,
-      "order": 2,
+      "order": 3,
       "autoArchive": false,
       "autoArchiveDelay": 5
     },
@@ -218,7 +229,7 @@
       "color": "#ffaa00",
       "isCompleted": false,
       "excludeFromCycle": true,
-      "order": 3,
+      "order": 4,
       "autoArchive": false,
       "autoArchiveDelay": 5
     },
@@ -229,7 +240,7 @@
       "color": "#00aa00",
       "isCompleted": true,
       "excludeFromCycle": false,
-      "order": 4,
+      "order": 5,
       "autoArchive": false,
       "autoArchiveDelay": 5
     },
@@ -240,7 +251,7 @@
       "color": "#cccccc",
       "isCompleted": true,
       "excludeFromCycle": true,
-      "order": 5,
+      "order": 6,
       "autoArchive": false,
       "autoArchiveDelay": 5
     }

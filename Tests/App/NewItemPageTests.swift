@@ -86,3 +86,63 @@ struct NewItemPageTests {
         #expect(saving.draft.changes == [.highPriority(true)])
     }
 }
+
+/// A date typed into a new task's name is offered in blue; a tap on it sets the date and takes its words out.
+struct NewItemDateSuggestionTests {
+    private let names = ObsidianNoteNames(rules: TestConfig.mapping.obsidian.noteNames)
+    private let detector = DateDetector(grammar: TestConfig.dateGrammar)
+    private let wednesday = TestCalendar.context("2026-11-04", "11:30")
+
+    private func taskPage(named name: String) -> NewItemPage {
+        var page = NewItemPage(kind: .task, taskDraft: NoteDraft(status: .thisWeek),
+                               habitDraft: NoteDraft.newHabit(startingOn: LocalDate("2026-11-04"), showInToday: true, color: "#000000"))
+        page.name = name
+        return page
+    }
+
+    @Test func acceptingADateSetsItAndTakesTheWordsOut() throws {
+        var page = taskPage(named: "Dentist tomorrow 18:20")
+        let found = try #require(detector.detect(in: page.name, context: wednesday))
+        page.accept(found)
+        #expect(page.name == "Dentist")
+        #expect(page.draft.note.due == TaskDue(day: LocalDate("2026-11-05"), time: LocalTime("18:20")))
+    }
+
+    @Test func acceptingTheWholeNameKeepsItAsTheName() throws {
+        var page = taskPage(named: "tomorrow")
+        page.accept(try #require(detector.detect(in: page.name, context: wednesday)))
+        #expect(page.name == "tomorrow")
+        #expect(page.draft.note.due?.day == LocalDate("2026-11-05"))
+    }
+
+    /// The blue is a suggestion: Return without a tap saves the task undated.
+    @Test func aSuggestionNotTappedIsNotSaved() throws {
+        let page = taskPage(named: "Dentist tomorrow")
+        let saved = try #require(page.savedOnReturn(rules: names.problem(in:)))
+        #expect(saved.draft.note.due == nil)
+        #expect(saved.name == "Dentist tomorrow")
+    }
+
+    /// The intent has no blue suggestion: a date in the name is taken at once; without one the task is the Inbox's.
+    @Test func aNamedTaskTakesItsDateOrWaitsInTheInbox() throws {
+        var dated = taskPage(named: "Dentist tomorrow")
+        dated.takeNamedDate(detector.detect(in: dated.name, context: wednesday))
+        #expect(dated.name == "Dentist" && dated.draft.note.status == .thisWeek)
+        #expect(dated.draft.note.due == TaskDue(day: LocalDate("2026-11-05")))
+        var undated = taskPage(named: "Idea")
+        undated.takeNamedDate(nil)
+        #expect(undated.draft.note.status == .inbox && undated.draft.note.due == nil)
+    }
+
+    /// A habit is not dated, and a date the task already has is not offered again.
+    @Test func onlyATaskIsOfferedADateItDoesNotHave() throws {
+        var page = taskPage(named: "tomorrow")
+        let found = try #require(detector.detect(in: page.name, context: wednesday))
+        #expect(page.suggestion(found) == found)
+        page.accept(found)
+        #expect(page.suggestion(found) == nil)
+        var habit = taskPage(named: "Stretch tomorrow")
+        habit.kind = .habit
+        #expect(habit.suggestion(detector.detect(in: habit.name, context: wednesday)) == nil)
+    }
+}

@@ -31,6 +31,7 @@
     "subtaskOrder": "subtask_order"
   },
   "statuses": {
+    "inbox": "inbox",
     "thisWeek": "this_week",
     "inProgress": "in-progress",
     "halfYear": "half_year",

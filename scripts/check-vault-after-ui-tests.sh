@@ -9,6 +9,7 @@ TASKS="$VAULT/TaskNotes/Tasks"
 # A task marked done goes to the done folder beside the tasks folder at once (rules.json → vault.doneFolder).
 DONE="$VAULT/TaskNotes/Done"
 TODAY="$(date +%Y-%m-%d)"
+TOMORROW="$(date -v+1d +%Y-%m-%d)"
 FAILED=0
 check() { if eval "$2"; then echo "OK    $1"; else echo "FAIL  $1"; FAILED=1; fi; }
 
@@ -30,6 +31,7 @@ check "plus in Habits → new habit, in Today, black"  "grep -q '^status: habit'
 check "Return in a new task's name → saved once, edits after it written" "grep -q '^status: this_week' \"$TASKS/Купить хлеб.md\" && grep -q '^priority: high' \"$TASKS/Купить хлеб.md\" && [ ! -f \"$TASKS/Купить хлеб 2.md\" ] && [ -f \"$TASKS/Полить цветы.md\" ] && [ ! -f \"$TASKS/Полить цветы 2.md\" ] && [ ! -f \"$TASKS/Unnamed.md\" ]"
 check "new item switched to Habit, Return → a habit, not in Today" "grep -q '^status: habit' \"$TASKS/Stretch.md\" && grep -q '^recurrence: ' \"$TASKS/Stretch.md\" && grep -qF '\"show_in_today\":false' \"$TASKS/Stretch.md\""
 check "date chip → due with a time, no time zone" "grep -q '^due: [0-9-]*T[0-9:]*$' \"$TASKS/Оплатить аренду.md\" && ! grep -q 'time_zone' \"$TASKS/Оплатить аренду.md\""
+check "blue date tapped in a new task's name → due tomorrow, words out of the name" "grep -q \"^due: $TOMORROW$\" \"$TASKS/Dentist.md\" && [ ! -f \"$TASKS/Dentist tomorrow.md\" ]"
 check "subtask dragged → its place in subtask_order"  "grep -qF '\"subtask_order\":' \"$TASKS/Шаг один.md\""
 check "swipe right in Habits → complete_instances"   "grep -A20 '^complete_instances:' \"$TASKS/Полить цветы 🌱.md\" | grep -q \"$TODAY\""
 check "swipe left in a list → moved to .trash"        "[ -f \"$VAULT/.trash/Ждать ответа от арендодателя.md\" ] && [ ! -f \"$TASKS/Ждать ответа от арендодателя.md\" ]"

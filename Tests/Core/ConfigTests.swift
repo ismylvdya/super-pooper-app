@@ -53,6 +53,15 @@ struct ConfigTests {
         #expect(statuses == TaskStatus.open + [.done, .archived], "Started is in This week, not a list of its own")
     }
 
+    /// The Inbox is the first list of the statuses group; the review never moves a task back into it.
+    @Test func theStatusesGroupStartsWithInbox() throws {
+        let config = try AppConfig.load(bundle: Bundle(for: BundleToken.self).appHostBundle)
+        let statuses = try #require(config.lists.groups.first { $0.id == "statuses" })
+        #expect(statuses.lists.first?.filter.statuses == [.inbox])
+        #expect(!TaskStatus.reviewChoices.contains(.inbox))
+        #expect(TaskStatus.known.first == .inbox)
+    }
+
     /// A planning level misspelt in `day.autoPromoteFrom` stops the app with a config error naming the key; it used to
     /// be read as an unknown status that promoted nothing.
     @Test func aMisspeltAutoPromotionLevelIsAConfigError() throws {
@@ -73,6 +82,26 @@ struct ConfigTests {
         #expect(icons.resolvingFallbacks { $0 == "calendar" }[.listThisWeek] == "calendar")
         #expect(icons.resolvingFallbacks { _ in true }[.listThisWeek] == "7.calendar")
         #expect(icons.resolvingFallbacks { _ in false }[.chevron] == icons[.chevron])
+    }
+
+    /// Date detection knows every weekday, month and unit of "in N …".
+    @Test func theDateGrammarHasEveryWeekdayMonthAndUnit() throws {
+        let config = try AppConfig.load(bundle: Bundle(for: BundleToken.self).appHostBundle)
+        #expect(config.dateGrammar.months.keys.sorted() == Array(1...12))
+        #expect(Set(config.dateGrammar.weekdays.keys) == Set(Weekday.allCases))
+        #expect(Set(config.dateGrammar.units.keys) == Set(DateGrammar.Unit.allCases))
+    }
+
+    /// A word in two groups would make a date mean two things: the config is refused, naming the word.
+    @Test func aWordInTwoGroupsIsAConfigError() throws {
+        let text = try String(contentsOf: TestPaths.configFolder.appendingPathComponent("date-grammar.json"), encoding: .utf8)
+        let twice = Data(try text.replacingOnce(#""today": ["today"]"#, with: #""today": ["today", "mon"]"#).utf8)
+        let grammar = try ConfigLoader.decode(DateGrammar.self, from: twice, file: "date-grammar.json")
+        #expect(throws: ConfigError.self) { try grammar.validate(file: "date-grammar.json") }
+        #expect(throws: ConfigError.self) {
+            try ConfigLoader.decode(DateGrammar.self, from: Data(try text.replacingOnce(#""monday": ["#, with: #""mondy": ["#).utf8),
+                                    file: "date-grammar.json")
+        }
     }
 
     @Test func bundledConfigsLoad() throws {

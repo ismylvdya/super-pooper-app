@@ -27,6 +27,8 @@ enum SizeToken: String, CaseIterable, Sendable {
     case habitHistoryMaxHeight, habitStatsBar, titleFade, hourDigitsWidth, reviewChevron, wrapMinWidth, liftOverhang, pagePeek, dropMarkerHeight, bannerShadowRadius, bannerShadowY, hexFieldWidth, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, allDayFontDelta, previewHeight, previewRow, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewHalvesInset, subtaskDropLine
     /// The problems badge on Today's Lists button: its smallest width and its height.
     case problemBadge
+    /// Room added above and below a date found in a new task's name, so a tap on it lands easily.
+    case detectedDateTapRoom
 }
 
 /// Shares and scale factors: a part of another size, not a size of its own.
@@ -79,6 +81,8 @@ enum ColorToken: String, ConfigName {
     case bannerBackground, infoText, destructive, eventText, timelineGrid
     case success, warning, error, shadow, widgetPlate, widgetTop, widgetBottom, listSeparator
     case signingAhead, signingSoon, signingUrgent
+    /// A date found in a new task's name.
+    case detectedDate
 }
 
 /// The settings sections where the user picks colors (`editableColors`: which colors each offers, in order).
