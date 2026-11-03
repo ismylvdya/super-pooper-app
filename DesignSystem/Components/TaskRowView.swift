@@ -33,7 +33,10 @@ struct TaskRowView: View {
             }
             .padding(.trailing, hasTrailing ? 0 : TitleFade.trailing(corner: reserve, plateInset: plateInset, gap: tokens.space(.fadeGap)))
             if showsDetails, !chips.isEmpty {
-                HStack(spacing: tokens.space(.chipGap)) { chipViews }.fixedSize()
+                // Bare icons, level with the title's first line.
+                HStack(spacing: tokens.space(.chipGap)) { chipViews }
+                    .fixedSize()
+                    .frame(height: titleLineHeight ?? tokens.uiFont(.taskTitle).lineHeight)
             }
             if isDone { MarkGlyph(state: item.state, color: tokens.color(.past), size: tokens.size(.doneMark)) }
         }
