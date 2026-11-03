@@ -74,6 +74,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let zoom: Limits.Range
         /// The finer marks of a zoomed-in timeline (`TimelineGridDetail`).
         let detail: TimelineGridDetail.Rules
+        /// The same with the phone lying sideways, where the column is short.
+        let landscapeDetail: TimelineGridDetail.Rules
         /// The quarter labels and the fine lines stand this many minutes apart.
         let quarterMinutes: Int
         let fineLineMinutes: Int

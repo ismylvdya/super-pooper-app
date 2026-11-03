@@ -2,8 +2,8 @@ import Foundation
 
 /// The shown day's name on Today: "Today", "Yesterday" and "Tomorrow" by name, another day by its date and weekday
 /// ("26 Oct • Wed"); in landscape today is "Tod" and another day its weekday in three letters ("Mon"). The name stands in
-/// a frame as wide as the widest one the style can show (never narrower than "Yesterday"), so the arrows around it never
-/// move.
+/// a frame as wide as the widest name of its kind (`frameNames`): the named days share "Yesterday"'s frame, so the arrows
+/// stand close around it, and the dates share the widest date's.
 enum DayName {
     enum Style { case date, weekday }
 
@@ -29,6 +29,14 @@ enum DayName {
                 .flatMap { date in (0..<7).map { date.adding(days: $0) } }
             return named.sorted { $0.key < $1.key }.map { L10n.string($0.value) } + dates.map { dated($0, calendar: calendar) }
         }
+    }
+
+    /// The names the frame of the day `offset` days from today is measured by.
+    static func frameNames(_ style: Style, offset: Int, around day: LocalDate, calendar: Calendar) -> [String] {
+        let words = named.values.map(L10n.string)
+        guard style == .date else { return all(style, around: day, calendar: calendar) }
+        if named[offset] != nil { return words }
+        return all(style, around: day, calendar: calendar).filter { !words.contains($0) }
     }
 
     /// The widest of `names` by `width`, the one the frame is measured by.

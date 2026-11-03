@@ -23,10 +23,6 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
                 await container.model.ensureLoaded()
                 await container.model.cycleHabit(name, on: container.model.context().today)
             }
-            AppActionBridge.newTaskHandler = { name in
-                guard case .success(let container) = AppContainer.shared else { return .unavailable }
-                return await NewTaskResponder.reply(to: name, model: container.model)
-            }
         }
         return true
     }

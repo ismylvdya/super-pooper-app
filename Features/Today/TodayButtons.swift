@@ -56,6 +56,7 @@ struct TodayButtons: View {
                 // A hand-drawn gun stands within the bar's own symbols, as it did among the tabs.
                 TabIconImage.image(icons[model.listsIcon], font: tokens.uiFont(.barIcon), others: [icons[.search]],
                                    fit: tokens.bar(.tabGlyphFit), scale: displayScale)
+                    .offset(x: -tokens.bar(.tabGlyphShiftLeft), y: tokens.bar(.tabGlyphShiftDown))
                     .overlay(alignment: .topTrailing) { if let badge { ProblemBadge(count: badge) } }
             }
             .tint(tokens.color(.accent))

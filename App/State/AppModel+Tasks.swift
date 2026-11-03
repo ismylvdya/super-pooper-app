@@ -138,8 +138,6 @@ extension AppModel {
     func create(_ draft: NoteDraft, named name: String) async -> String? { await parts.notes.create(draft, named: name) }
     /// Return in the new-item page's name: the note is created at once; its name, or nil when nothing was saved.
     func createOnReturn(from page: NewItemPage) async -> String? { await parts.notes.createOnReturn(from: page) }
-    /// A task named outside the app's pages (the New Task intent), with the new task page's defaults.
-    func createTask(named name: String) async -> NamedTaskCreation { await parts.notes.createTask(named: name) }
 
     @discardableResult
     func rename(_ name: String, to newName: String) async -> Bool { await parts.notes.rename(name, to: newName) }

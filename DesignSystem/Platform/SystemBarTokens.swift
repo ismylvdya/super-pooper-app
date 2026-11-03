@@ -30,6 +30,8 @@ enum SystemBarMetric: String, CaseIterable, Sendable {
     /// A hand-drawn glyph among system symbols (a tab's, or Lists on Today's bar): its ink as a share of the smallest ink
     /// of the symbols beside it, upright in height and sideways in width; 1 keeps it within every one of them.
     case tabGlyphFit
+    /// The Lists glyph inside its bar button: how far left and down of the middle, where its ink looks centred.
+    case tabGlyphShiftLeft, tabGlyphShiftDown
     /// The "+" upright: on iOS 26 a round bubble of `newItemBubble` this far from the screen's side and bottom
     /// (`newItemBubbleInset`); on iOS 18 the last item of a tab bar `classicTabBar` tall. Lying sideways it stands
     /// `newItemBubbleGap` from the app's own tab bar.

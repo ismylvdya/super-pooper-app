@@ -3,8 +3,8 @@ import SwiftUI
 import UIKit
 
 /// The arrows around the shown day's name ("Today", "Yesterday", "26 Oct • Wed"; lying sideways "Mon", "Tod"); on another day, tapping the
-/// name goes back to today. The name's frame is as wide as the widest name, so the arrows stay put; it shrinks if
-/// the room is short. Sideways it is a column in physical order whose arrows point the same physical way as upright.
+/// name goes back to today. The name's frame is as wide as the widest of its kind (the named days, or the dates), so the
+/// arrows stay put within a kind and stand `spacing.dayArrowGap` from it; it shrinks if the room is short. Sideways it is a column in physical order whose arrows point the same physical way as upright.
 /// An arrow takes taps far beyond its glyph while everything stays where it was: the whole height of the bar
 /// (`size.dayArrowTarget`), the room the bar's button style used to leave around the glyph and the gap to the name.
 struct DayNavigation: View {
@@ -22,7 +22,7 @@ struct DayNavigation: View {
         let today = model.context().today
         let style: DayName.Style = bottom == nil ? .date : .weekday
         let title = DayName.title(today.adding(days: dayOffset), offset: dayOffset, style: style, calendar: model.calendar)
-        let names = DayName.all(style, around: today, calendar: model.calendar)
+        let names = DayName.frameNames(style, offset: dayOffset, around: today, calendar: model.calendar)
         let layout = bottom == nil ? AnyLayout(HStackLayout(spacing: 0)) : AnyLayout(VStackLayout(spacing: 0))
         let order = PhysicalBottom.physicalOrder([Part.previous, .name, .next], bottom: bottom)
         let nameIndex = order.firstIndex(of: .name) ?? 0
@@ -56,8 +56,8 @@ struct DayNavigation: View {
         return Button { onStep(step) } label: {
             // Sideways (‹ ›) in every orientation, also when the arrows stand above and below the name.
             Image(systemName: icons[icon])
-                .padding(.horizontal, upright ? tokens.bar(.barButtonPadding) : 0)
-                .padding(Edge.Set(edge), tokens.space(.chipGap))
+                .padding(Edge.Set(edge.opposite), upright ? tokens.bar(.barButtonPadding) : 0)
+                .padding(Edge.Set(edge), upright ? tokens.space(.dayArrowGap) : tokens.space(.chipGap))
                 // Sideways as wide as the bar buttons of the column, and as long as the bar is high upright.
                 .frame(width: upright ? nil : tokens.bar(.barButton), height: tokens.size(.dayArrowTarget), alignment: Alignment(edge))
                 .contentShape(Rectangle())
@@ -70,10 +70,10 @@ struct DayNavigation: View {
         .accessibilityIdentifier(id)
     }
 
-    /// Upright the name may also take the arrows' inner padding (`nameOverlap`, still clear of their glyphs): its frame is
-    /// that much wider on each side while the arrows stay where the widest name puts them, so a date shrinks less.
+    /// Upright the name may also take half the arrows' gap (still clear of their glyphs): its frame is that much wider on
+    /// each side while the arrows stay where the widest name puts them, so a date shrinks less.
     private func name(_ title: String, names: [String]) -> some View {
-        let overlap = bottom == nil ? tokens.bar(.barButtonPadding) : 0
+        let overlap = bottom == nil ? tokens.space(.dayArrowGap) / 2 : 0
         return Button(action: onToday) {
             ZStack {
                 if let widest = widest(of: names) { Text(verbatim: widest).hidden().padding(.horizontal, overlap) }
@@ -105,6 +105,17 @@ extension DayNavigation {
         let digits: [UIFontDescriptor.FeatureKey: Int] = [.type: kNumberSpacingType, .selector: kMonospacedNumbersSelector]
         let font = UIFont(descriptor: base.fontDescriptor.addingAttributes([.featureSettings: [digits]]), size: base.pointSize)
         return DayName.widest(names) { NSAttributedString(string: $0, attributes: [.font: font]).size().width }
+    }
+}
+
+private extension Edge {
+    var opposite: Edge {
+        switch self {
+        case .top: .bottom
+        case .bottom: .top
+        case .leading: .trailing
+        case .trailing: .leading
+        }
     }
 }
 

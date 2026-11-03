@@ -71,6 +71,16 @@
       "min": 0.4,
       "max": 6
     },
+    "landscapeDetail": {
+      "quarters": {
+        "hiddenAboveHours": 2.5,
+        "fullAtHours": 2
+      },
+      "fiveMinutes": {
+        "hiddenAboveHours": 1.25,
+        "fullAtHours": 1
+      }
+    },
     "detail": {
       "quarters": {
         "hiddenAboveHours": 6,

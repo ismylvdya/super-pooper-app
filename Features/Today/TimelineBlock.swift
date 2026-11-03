@@ -9,6 +9,7 @@ struct TimelineBlock: View {
     @Environment(PoolSelection.self) private var selection: PoolSelection?
     @Environment(\.tokens) private var tokens
     @Environment(\.rules) private var rules
+    @Environment(\.physicalBottom) private var physicalBottom
     @Environment(\.openURL) private var openURL
     @Environment(\.liftRoom) private var liftRoom
     @Environment(TaskDragState.self) private var drag: TaskDragState?
@@ -50,7 +51,7 @@ struct TimelineBlock: View {
                 let hourHeight = scale(zoom * pinch)
                 let stripRoom = stripHeight == 0 ? 0 : stripHeight + tokens.space(.chipGap) * 2
                 let detail = TimelineGridDetail(visibleHours: Double(geometry.size.height / hourHeight),
-                                                rules: model.config.rules.timeline.detail)
+                                                rules: physicalBottom == nil ? model.config.rules.timeline.detail : model.config.rules.timeline.landscapeDetail)
                 ScrollView {
                     DayTimelineView(slots: plan.timeline, window: day, now: plan.now,
                                     hourHeight: hourHeight, style: style(gridDetail: detail), taskContent: taskRow)
