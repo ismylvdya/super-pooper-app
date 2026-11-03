@@ -83,12 +83,19 @@ struct DesignTokens: Decodable, Sendable {
         return tokens
     }
 
-    /// User color choices (settings) over the bundled palette; unknown names and bad hex are ignored.
+    /// The settings key of a token's own color in the dark theme, beside its plain name.
+    static func darkColorKey(_ token: ColorToken) -> String { token.rawValue + ".dark" }
+
+    /// User color choices (settings) over the bundled palette: under a token's name its color, in both themes unless the
+    /// dark one has its own (`darkColorKey`). Unknown names and bad hex are ignored.
     func overridingColors(_ hexByName: [String: String]) -> DesignTokens {
         var overrides: [ColorToken: ColorSpec] = [:]
-        for (name, hex) in hexByName {
-            guard let token = ColorToken(rawValue: name), UIColor(hex: hex) != nil else { continue }
-            overrides[token] = ColorSpec(hex: hex)
+        let valid = hexByName.filter { UIColor(hex: $0.value) != nil }
+        for token in ColorToken.allCases {
+            let own = valid[token.rawValue]
+            let dark = valid[Self.darkColorKey(token)]
+            guard own != nil || dark != nil else { continue }
+            overrides[token] = ColorSpec(light: own ?? color[token].light, dark: dark ?? own ?? color[token].dark)
         }
         var tokens = self
         tokens.color = color.replacing(overrides)

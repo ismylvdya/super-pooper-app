@@ -1,8 +1,9 @@
 import SwiftUI
 
 /// The bar of the pool's Select mode, in place of Today's own buttons: leading Cancel; trailing the selection menu's
-/// frequent actions as buttons (Done, Delete) and its rarer ones in the system "…" menu (`actions.json` → `selection`).
-/// A button the picked tasks cannot take is dimmed; the menu lists only what they can. Lying sideways (`bottom` set)
+/// frequent actions as buttons (Done, then Not today or, with a habit picked, Skip today) and its rarer ones in the system
+/// "…" menu (`actions.json` → `selection`). The bar and the menu offer only what the picked tasks can take; the first
+/// button is always there, dimmed, so the bar keeps its shape. Lying sideways (`bottom` set)
 /// Cancel is an icon and the buttons stand in their physical left-to-right order.
 struct SelectionToolbar: View {
     enum Placement { case leading, trailing }
@@ -41,7 +42,10 @@ struct SelectionToolbar: View {
 
     @ViewBuilder private var trailing: some View {
         let entries = model.selectionEntries(for: selection.names, on: day)
-        let buttons = actions.menus[.selection].frequent.map(actions.definition).filter { !model.needsConfirmation($0) }
+        let frequent = actions.menus[.selection].frequent
+        let buttons = frequent.map(actions.definition).filter { action in
+            !model.needsConfirmation(action) && (action.id == frequent.first || entries.frequent.contains(action))
+        }
         let items = buttons.map { Item.action($0.id) } + [.more]
         ForEach(PhysicalBottom.physicalOrder(items, bottom: bottom), id: \.self) { item in
             switch item {

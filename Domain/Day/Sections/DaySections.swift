@@ -42,6 +42,15 @@ struct DaySections: Codable, Equatable, Sendable {
         DaySections(day: day, order: definitions.map { DaySection(id: $0.id, title: nil, isCustom: false) })
     }
 
+    /// The section under another title that day; a blank title leaves it as it is.
+    func renamingSection(_ id: String, to title: String) -> DaySections {
+        let title = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !title.isEmpty else { return self }
+        var result = self
+        result.order = order.map { $0.id == id ? DaySection(id: $0.id, title: title, isCustom: $0.isCustom) : $0 }
+        return result
+    }
+
     /// The section a task was moved into that day, if any.
     func section(of name: String) -> String? {
         membership[name] ?? membership.first { $0.key.isSameNoteName(as: name) }?.value

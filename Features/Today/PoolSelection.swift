@@ -1,6 +1,6 @@
 import Observation
 
-/// The pool's Select mode: which tasks are picked. While it is on, the rows show a selection circle, a tap picks or drops
+/// The pool's Select mode: which tasks are picked. While it is on, a tap picks or drops
 /// a row, and the bar's buttons act on the picked ones.
 @MainActor
 @Observable

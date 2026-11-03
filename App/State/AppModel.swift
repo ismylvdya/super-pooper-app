@@ -77,6 +77,7 @@ final class AppModel {
 
     /// The pool sections of `day` as the user arranged them, or the defaults.
     func sections(on day: LocalDate) -> DaySections { parts.sections.snapshot(on: day) }
+    func renameSection(_ id: String, to title: String, on day: LocalDate) { parts.dayCommands.renameSection(id, to: title, on: day) }
     func moveTask(_ name: String, toSection id: String, poolOrder: [String], on day: LocalDate) {
         parts.dayCommands.moveTask(name, toSection: id, poolOrder: poolOrder, on: day)
     }

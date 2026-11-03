@@ -23,7 +23,11 @@ extension AppModel {
         switch action.id {
         case .worm: worm(BatchAvailability.wormable(items).map(\.id), on: day)
         case .unworm: unworm(items.map(\.id), on: day)
-        default: await performOfferingUndo(action, on: items.map(\.id), day: day == context().today ? nil : day)
+        default:
+            for target in BatchAvailability.targets(of: action.id, in: items) where !target.items.isEmpty {
+                await performOfferingUndo(config.actions.definition(target.action), on: target.items.map(\.id),
+                                          day: day == context().today ? nil : day)
+            }
         }
     }
 

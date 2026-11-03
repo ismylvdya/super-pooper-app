@@ -159,7 +159,9 @@ struct PoolBlock: View {
                 let shown = sections
                 ForEach(shown) { section in
                     let isGhost = drag?.isSectionGhost(section.id) == true
-                    PoolSectionHeader(section: section, isFirst: section.id == shown.first?.id, drag: drag)
+                    PoolSectionHeader(section: section, isFirst: section.id == shown.first?.id, drag: drag, canRename: selection?.isOn != true) {
+                        model.renameSection(section.id, to: $0, on: plan.today)
+                    }
                         .dropGhost(isGhost)
                         .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(Self.dropSpace)) } action: { frame in
                             headerMids[section.id] = frame.midY

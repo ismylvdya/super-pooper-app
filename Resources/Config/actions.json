@@ -160,7 +160,7 @@
     {
       "id": "start",
       "title": "action.start",
-      "icon": "circle.lefthalf.filled",
+      "icon": "ActionStarted",
       "destructive": false,
       "haptic": "light",
       "undo": "edits"
@@ -341,14 +341,17 @@
     "selection": {
       "actions": [
         "done",
-        "delete"
+        "notToday",
+        "skipToday"
       ],
       "more": [
-        "notToday",
+        "start",
+        "notStarted",
         "highPriority",
         "worm",
         "unworm",
-        "newSection"
+        "newSection",
+        "delete"
       ]
     }
   },

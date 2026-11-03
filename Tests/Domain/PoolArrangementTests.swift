@@ -32,12 +32,11 @@ struct PoolArrangementTests {
         #expect(content[2].items.map(\.id) == ["Стирка 🧺"])
     }
 
-    @Test func anEmptyCustomSectionGoesButAnEmptyDefaultStays() {
+    @Test func anEmptySectionGoesWhateverItIs() {
         var sections = DaySections.defaults(on: wednesday, definitions: definitions)
         sections.order.insert(DaySection(id: "errands", title: "Errands", isCustom: true), at: 1)
         let content = arrange(sections, [item("Купить молоко")])
-        #expect(content.map(\.id) == ["morning", "day", "evening"])
-        #expect(content[0].items.isEmpty && content[2].items.isEmpty)
+        #expect(content.map(\.id) == ["day"])
     }
 
     @Test func aCustomSectionShowsItsTitleWhereItStands() {

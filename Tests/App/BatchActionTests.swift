@@ -63,7 +63,8 @@ struct BatchActionTests {
         let (model, _) = try makeModel([makeTask("Milk"), makeTask("Bank")])
         let today = model.context().today
         let entries = model.selectionEntries(for: ["Milk", "Bank"], on: today)
-        #expect(entries.frequent.map(\.id) == [.done, .delete])
+        #expect(entries.frequent.map(\.id) == [.done, .notToday])
+        #expect(entries.more.map(\.id).contains(.delete))
         #expect(entries.more.map(\.id).contains(.worm) && !entries.more.map(\.id).contains(.unworm))
         await model.perform(action(model, .worm), onSelected: ["Milk", "Bank"], on: today)
         let order = model.plan(at: model.clock.now).poolNames

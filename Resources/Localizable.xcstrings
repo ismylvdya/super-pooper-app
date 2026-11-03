@@ -4820,7 +4820,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Leave a field empty to use the built-in color."
+            "value": "Each color has a circle for the light theme and one for the dark. A color set only for light stands in both until dark gets its own."
           }
         }
       }

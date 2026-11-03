@@ -171,6 +171,12 @@ final class DayCommands {
         return id
     }
 
+    /// A section's header edited in place: its title on `date` only; the next day starts from its own sections.
+    func renameSection(_ id: String, to title: String, on date: LocalDate) {
+        sections.update(on: date) { $0 = $0.renamingSection(id, to: title) }
+        Task { await derived.publish() }
+    }
+
     private func placeInSection(_ name: String, _ id: String?, on date: LocalDate) {
         guard let id else { return }
         sections.update(on: date) { sections in

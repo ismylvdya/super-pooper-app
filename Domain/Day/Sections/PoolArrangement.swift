@@ -14,7 +14,7 @@ enum PoolArrangement {
     /// Sections in their order; each holds its tasks in the pool's sort and manual order. A task moved into a section
     /// that day stands there; the others go by their routine (`time_of_day`) or to the section that catches the rest. A
     /// subtask stays with its parent. A worm's members stand together, with their subtasks, after the first of them in the
-    /// shown order and in its section. Own sections without tasks are left out; the default ones always show.
+    /// shown order and in its section. A section without tasks is left out, whether a default or the user's own.
     static func arrange(_ pool: [DayItem], sections: DaySections, definitions: [PoolSectionDefinition]) -> [PoolSectionContent] {
         guard !definitions.isEmpty else { return [] }
         let known = Set(sections.order.map(\.id))
@@ -32,9 +32,9 @@ enum PoolArrangement {
         let titles = Dictionary(definitions.map { ($0.id, $0.title) }, uniquingKeysWith: { first, _ in first })
         return sections.order.compactMap { section in
             let members = items[section.id] ?? []
-            guard !section.isCustom || !members.isEmpty else { return nil }
+            guard !members.isEmpty else { return nil }
             return PoolSectionContent(id: section.id, title: section.title ?? titles[section.id] ?? section.id,
-                                      isCustom: section.isCustom, items: members)
+                                      isCustom: section.title != nil, items: members)
         }
     }
 }

@@ -14,6 +14,13 @@ struct ColorSpec: Decodable, Sendable {
         system = nil
     }
 
+    /// A color with its own hex per theme (already checked).
+    init(light: String?, dark: String?) {
+        self.light = light
+        self.dark = dark
+        system = nil
+    }
+
     private enum CodingKeys: String, CodingKey { case light, dark, system }
 
     init(from decoder: Decoder) throws {

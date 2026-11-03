@@ -45,7 +45,22 @@ struct BatchAvailabilityTests {
 
     @Test func theSelectionMenuSplitsIntoButtonsAndMore() {
         let entries = batch().entries(TestConfig.actions.menus[.selection], for: [item("Milk")])
-        #expect(entries.frequent == [.done, .delete])
-        #expect(entries.more == [.notToday, .highPriority, .newSection], "one task is no worm")
+        #expect(entries.frequent == [.done, .notToday])
+        #expect(entries.more == [.start, .highPriority, .newSection, .delete], "one task is no worm")
+    }
+
+    /// With a habit picked Skip today stands in for Not today; Delete is for tasks alone, habits never go with it.
+    @Test func skipTodayStandsInWithAHabitAndDeleteLeavesHabits() {
+        let habit = DayItem(listed: makeHabit("Run"))
+        let menu = TestConfig.actions.menus[.selection]
+        let mixed = batch().entries(menu, for: [item("Milk"), habit])
+        #expect(mixed.frequent == [.done, .skipToday])
+        #expect(mixed.more.contains(.delete))
+        let habits = batch().entries(menu, for: [habit])
+        #expect(habits.frequent == [.done, .skipToday])
+        #expect(!habits.more.contains(.delete))
+        let targets = BatchAvailability.targets(of: .skipToday, in: [item("Milk"), habit])
+        #expect(targets.map(\.action) == [.skipToday, .notToday])
+        #expect(BatchAvailability.targets(of: .delete, in: [item("Milk"), habit])[0].items.map(\.id) == ["Milk"])
     }
 }

@@ -24,6 +24,8 @@ enum RadiusToken: String, CaseIterable, Sendable {
 }
 
 enum SizeToken: String, CaseIterable, Sendable {
+    /// The outline of a row picked in Select mode.
+    case selectionOutline
     case iconColumn, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, notificationIcon
     case dayArrowTarget
     case habitDotMinimum, cornerInsetMinimum, eventDot, sourceDot, fadeHeight, poolCounter, poolWidth

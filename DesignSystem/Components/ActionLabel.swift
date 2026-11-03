@@ -21,6 +21,8 @@ struct ActionLabel: View {
                 Image(uiImage: image)
             } else if let markIcon {
                 Image(icons[markIcon]).renderingMode(.template)
+            } else if UIImage(named: action.icon) != nil {
+                Image(action.icon).renderingMode(.template)
             } else {
                 Image(systemName: action.icon)
             }

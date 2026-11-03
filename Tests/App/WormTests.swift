@@ -28,7 +28,7 @@ struct WormTests {
         let day = try #require(sections(model)["day"])
         let index = try #require(day.firstIndex(of: first))
         #expect(day[index + 1] == "Чтение 📖", "the evening habit stands right after the first member, in its section")
-        #expect(sections(model)["evening"]?.isEmpty == true)
+        #expect(sections(model)["evening"] == nil, "an empty section goes")
         #expect(PoolSegments.make(plan.pool, worms: plan.worms).contains { $0.items.map(\.id) == [first, "Чтение 📖"] })
     }
 

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// One task or habit row: the title with its property chips on the right, on the same line (a task waiting for
+/// One task or habit row: the title with its property icons on the right, bare, without capsules, on the same line (a task waiting for
 /// another has the link chip, nothing else). Tasks are marked from the long-press menu, so there is no checkbox; a marked row is grey and ends
 /// with its mark.
 /// The same view is used in the pool, on the timeline and in widgets.
@@ -52,7 +52,11 @@ struct TaskRowView: View {
     }
 
     private var chipViews: some View {
-        ForEach(chips) { chip in Chip(icon: chip.look.icon, tint: tokens.color(of: chip.look)) }
+        ForEach(chips) { chip in
+            IconGlyph(chip.look.icon, font: .chip)
+                .font(tokens.font(.chip))
+                .foregroundStyle(tokens.color(of: chip.look))
+        }
     }
 
     /// Limited titles fade out instead of ending with "…".
