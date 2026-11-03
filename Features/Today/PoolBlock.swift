@@ -4,7 +4,7 @@ import SwiftUI
 /// that follows scrolling; beside it, it takes the full height and has no counter. Today's rows can be
 /// dragged: within the pool to reorder it, onto the timeline to give a task a time (a habit sent here today gets its
 /// time back for today); a timed task dragged here from the timeline loses its time, a habit's block leaves today's
-/// timeline.
+/// timeline. A task from a backlog page comes into the pool of any day shown.
 struct PoolBlock: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
@@ -27,8 +27,7 @@ struct PoolBlock: View {
     var body: some View {
         poolContent
             .coordinateSpace(.named(Self.dropSpace))
-            .modifier(PoolDropTarget(drag: plan.isToday ? drag : nil, animation: tokens.animation, rows: dropRows,
-                                     canDrop: { item, source in model.canDropInPool(item.id, slot: source.slot) }, onDrop: dropped))
+            .modifier(PoolDropTarget(drag: drag, animation: tokens.animation, rows: dropRows, canDrop: canDrop, onDrop: dropped))
             .onChange(of: drag?.item?.id) { _, dragged in if dragged == nil { dragMids = nil } }
     }
 
@@ -44,12 +43,23 @@ struct PoolBlock: View {
         return plan.pool.compactMap { item in mids[item.id].map { PoolDropOrder.Row(id: item.id, midY: Double($0)) } }
     }
 
+    /// Today's pool takes its own rows and the timeline's blocks; any day's pool takes a backlog page's tasks.
+    private func canDrop(_ item: DayItem, from source: TaskDragState.Source) -> Bool {
+        switch source {
+        case .pool: plan.isToday
+        case .timeline(let slot): plan.isToday && model.canDropInPool(item.id, slot: slot)
+        case .backlog: model.canBringFromBacklog(item.id)
+        }
+    }
+
     private func dropped(_ item: DayItem, from source: TaskDragState.Source, order: [String]) {
         Haptics.play(.drop)
         switch source {
-        // The pool's own order is today's only; another day's pool takes blocks from its timeline.
+        // The pool's own order is today's only.
         case .pool: if plan.isToday { model.setManualOrder(order) }
         case .timeline(let slot): Task { await model.unschedule(item.id, slot: slot, poolOrder: order, on: plan.today) }
+        case .backlog:
+            Task { await model.bringFromBacklog(item.id, to: plan.today, poolOrder: plan.isToday ? order : nil) }
         }
     }
 
@@ -134,7 +144,7 @@ struct PoolBlock: View {
     }
 }
 
-/// The pool as a drop target (today only).
+/// The pool as a drop target.
 private struct PoolDropTarget: ViewModifier {
     let drag: TaskDragState?
     let animation: Animation

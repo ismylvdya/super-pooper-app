@@ -117,6 +117,42 @@ final class DayCommands {
         tasks.task(named: name).map { TaskScheduling.canSendToPool($0, slot: slot) } ?? false
     }
 
+    // MARK: - Backlog pages
+
+    /// Dropped on the backlog page of `level` while `shown` is shown (`BacklogMoves.onto`); `fromShownDay`: from that day's
+    /// pool or timeline.
+    func moveToBacklog(_ name: String, level: TaskStatus, shown: LocalDate, fromShownDay: Bool) async {
+        guard let local = localTask(named: name) else { return }
+        let outcome = BacklogMoves.onto(level, task: local, fromShownDay: fromShownDay, shown: shown, context: day.context())
+        if outcome.isNotToday { return await notToday(name, on: shown) }
+        await apply(outcome, to: name)
+    }
+
+    /// From a backlog page into the pool of `day` (`BacklogMoves.intoPool`), at the dropped spot when it is today.
+    func bringFromBacklog(_ name: String, to day: LocalDate, poolOrder: [String]?) async {
+        guard let local = localTask(named: name) else { return }
+        await apply(BacklogMoves.intoPool(local, day: day, context: self.day.context()), to: name)
+        if let poolOrder, isToday(day) { setManualOrder(poolOrder) }
+    }
+
+    /// From a backlog page onto the timeline of any day, at the dropped moment.
+    func scheduleFromBacklog(_ name: String, at moment: Date) async {
+        guard let local = localTask(named: name) else { return }
+        await apply(BacklogMoves.ontoTimeline(local, at: moment, context: day.context()), to: name)
+    }
+
+    /// A task can come out of a backlog page into a day: a task, not a habit (which has no planning level to change).
+    func canBringFromBacklog(_ name: String) -> Bool {
+        tasks.task(named: name).map { !$0.isHabit } ?? false
+    }
+
+    private func apply(_ outcome: BacklogMoves.Outcome, to name: String) async {
+        if outcome.postpones { day.postpone(name) }
+        if outcome.unpostpones { day.unpostpone(name) }
+        if !outcome.edits.isEmpty, let task = tasks.task(named: name) { await write(task, outcome.edits) }
+        await derived.publish()
+    }
+
     /// A task's new time written to its note: what a snooze moved of its old time today no longer applies.
     private func write(_ task: TaskItem, _ changes: [TaskEdit]) async {
         let today = day.todayTimes

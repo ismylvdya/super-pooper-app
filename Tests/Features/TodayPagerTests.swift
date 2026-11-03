@@ -82,7 +82,93 @@ struct TodayPagerTests {
         pager.changeDay(by: 1, width: width, duration: 0)
         pager.showPool(animation: .default)
         #expect(pager.page == 0 && pager.dayOffset == 0)
-        pager.showPool(poolPage: 1, animation: .default)
+        pager.showPool(poolBlock: 1, animation: .default)
         #expect(pager.page == 1, "a layout whose pool is its second page")
+    }
+
+    private func pulled(_ pager: TodayPager, _ x: CGFloat, backlog: Int = 3) -> Bool {
+        pager.swipeChanged(CGSize(width: x, height: 0), containerWidth: width, pageCount: 2 + pager.openedBacklog,
+                           backlogCount: backlog, gestures: gestures)
+    }
+
+    private func released(_ pager: TodayPager, _ x: CGFloat, backlog: Int = 3) -> Bool {
+        pager.swipeEnded(CGSize(width: x, height: 0), predicted: CGSize(width: x, height: 0), containerWidth: width,
+                         pageCount: 2 + pager.openedBacklog, backlogCount: backlog, gestures: gestures, duration: 0)
+    }
+
+    /// The first page pulled right follows the finger with a scroll view's resistance; past the threshold it arms once
+    /// (the moment to feel), and letting go opens the next list at index 0, where the page shown was.
+    @Test func pullingTheFirstPageRightPastTheThresholdOpensTheNextList() {
+        let pager = TodayPager()
+        #expect(!pulled(pager, 30))
+        let stretched = PullArming.stretch(30, dimension: width, resistance: gestures.pullResistance)
+        #expect(pager.sidePull == stretched && pager.page == 0 && pager.pageDrag == 0)
+        #expect(stretched < 30, "the pull resists the finger")
+        #expect(pulled(pager, 200), "armed")
+        #expect(!pulled(pager, 220), "armed once")
+        #expect(released(pager, 220))
+        #expect(pager.openedBacklog == 1 && pager.page == 0 && pager.sidePull == 0)
+        #expect(pulled(pager, 200))
+        #expect(released(pager, 200))
+        #expect(pager.openedBacklog == 2, "then the next one")
+    }
+
+    @Test func aShortPullOpensNothingAndAllListsOpenedPullsNoMore() {
+        let pager = TodayPager()
+        _ = pulled(pager, 40)
+        #expect(!released(pager, 40))
+        #expect(pager.openedBacklog == 0 && pager.sidePull == 0)
+        for _ in 0..<3 {
+            _ = pulled(pager, 200)
+            _ = released(pager, 200)
+        }
+        #expect(pager.openedBacklog == 3)
+        #expect(!pulled(pager, 200))
+        #expect(pager.sidePull == 0, "nothing left to open")
+        #expect(!released(pager, 200))
+        #expect(pager.openedBacklog == 3)
+    }
+
+    /// A pull brought back under half of the threshold before letting go opens nothing; a pull that turns into a leftward
+    /// drag turns the page instead.
+    @Test func aPullTakenBackOpensNothing() {
+        let pager = TodayPager()
+        _ = pulled(pager, 200)
+        _ = pulled(pager, 10)
+        #expect(!released(pager, 10))
+        #expect(pager.openedBacklog == 0)
+        _ = pulled(pager, 200)
+        _ = pulled(pager, -150)
+        #expect(pager.sidePull == 0 && pager.pageDrag == -150)
+        #expect(!released(pager, -150))
+        #expect(pager.page == 1 && pager.openedBacklog == 0)
+    }
+
+    /// Opened pages are free to turn between; another tab forgets them and shows the pool's page.
+    @Test func leavingTheTabForgetsTheLeftPages() {
+        let pager = TodayPager()
+        _ = pulled(pager, 200)
+        _ = released(pager, 200)
+        changed(pager, -10)
+        ended(pager, -150)
+        #expect(pager.page == 1, "Soon to the pool")
+        pager.closeBacklog()
+        #expect(pager.openedBacklog == 0 && pager.page == 0)
+        _ = pulled(pager, 200)
+        _ = released(pager, 200)
+        pager.closeBacklog(poolBlock: 0)
+        #expect(pager.openedBacklog == 0 && pager.page == 0)
+    }
+
+    /// The day's name goes back to the pool and keeps the opened pages; the Tasks tab forgets them.
+    @Test func theTasksTabForgetsTheLeftPagesTheDayNameKeepsThem() {
+        let pager = TodayPager()
+        _ = pulled(pager, 200)
+        _ = released(pager, 200)
+        pager.showPool(animation: .default)
+        #expect(pager.openedBacklog == 1 && pager.page == 1, "the pool, Soon still left of it")
+        pager.turn(to: 0, pageCount: 3, animation: .default)
+        pager.showPool(forgetsBacklog: true, animation: .default)
+        #expect(pager.openedBacklog == 0 && pager.page == 0)
     }
 }
