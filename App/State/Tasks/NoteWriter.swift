@@ -111,7 +111,7 @@ final class NoteWriter {
         filedFrom[id].flatMap { tasks.filedTask($0.id) }
     }
 
-    /// Done tasks are filed away by the store; the tasks that waited for them lose those met links first. Runs after every
+    /// Done tasks are filed away by the store. Runs after every
     /// write that marks a task done and at every sync (a task done in Obsidian).
     func fileAwayDoneTasks() async {
         guard filesDoneTasks else { return }
@@ -119,9 +119,6 @@ final class NoteWriter {
     }
 
     private func fileAway(_ task: TaskItem) async {
-        for dependent in DoneFiling.unlinking(task.name, from: tasks.tasks) {
-            await edit(dependent.name) { _ in [.removePreviousTask(task.name)] }
-        }
         do {
             try await backups.backup([task], reason: "done")
             let filed = try await store.fileAway(task)

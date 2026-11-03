@@ -14,7 +14,6 @@ struct TimelineBlock: View {
     @Environment(\.liftRoom) private var liftRoom
     @Environment(TaskDragState.self) private var drag: TaskDragState?
     @State private var eventToDelete: CalendarEvent?
-    @State private var highlightedSlot: String?
     let plan: DayPlan
     let handler: TaskActionHandler
     /// Space under the block that belongs to the home indicator (the timeline scrolls under it).
@@ -233,14 +232,9 @@ struct TimelineBlock: View {
         style.onEventDelete = { eventToDelete = $0 }
         style.rowsHaveOwnPlates = true
         style.showsNow = plan.isToday
-        style.highlightedSlot = highlightedSlot
         style.dropMarker = drag?.hoverMoment
         if let item = drag?.item, let moment = drag?.hoverMoment {
             style.dropGhost = TimelineSlot.landing(item, at: moment, rules: model.config.rules.day)
-        }
-        style.onLinkTap = { slot in
-            Haptics.play(.select)
-            withAnimation(tokens.animation) { highlightedSlot = highlightedSlot == slot.id ? nil : slot.id }
         }
         style.onReminderToggle = { reminder in
             Haptics.play(.mark)
@@ -257,7 +251,7 @@ struct TimelineBlock: View {
 
     /// The same row as in the pool, without chips or a done mark, always on one line (a long title dissolves): what is
     /// finished has left the timeline, what is on it is shown plainly (a twice-a-day habit after its first Done too). A task on the timeline
-    /// by its own time (not a chain) can be dragged to another time or back to the pool on any day; a habit's block too,
+    /// by its own time can be dragged to another time or back to the pool on any day; a habit's block too,
     /// for that day only.
     private func taskRow(_ item: DayItem, _ slot: TimelineSlot) -> some View {
         let movable = slot.time != nil

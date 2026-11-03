@@ -4,7 +4,6 @@ import Foundation
 struct DayItem: Identifiable, Hashable, Sendable {
     let task: TaskItem
     let state: DayItemState
-    let blockers: [Blocker]
     let problems: [TaskProblem]
     /// How many parents above it in the pool (a subtask sits under its parent, indented).
     var depth = 0
@@ -14,7 +13,6 @@ struct DayItem: Identifiable, Hashable, Sendable {
     var id: String { task.name }
     var isHabit: Bool { task.isHabit }
     var isDone: Bool { state.isDone }
-    var isBlocked: Bool { !isDone && !blockers.isEmpty }
     /// Nothing is left to do today (see `HabitMarking.isDayClosed`): it leaves the pool and the timeline.
     var isFinished: Bool {
         guard isHabit else { return isDone }
@@ -24,13 +22,13 @@ struct DayItem: Identifiable, Hashable, Sendable {
 
 extension DayItem {
     /// A note as an item outside a day plan (a list of the Lists tab, a task waiting under Not today): done by its
-    /// status, no blockers.
+    /// status.
     init(listed task: TaskItem) {
-        self.init(task: task, state: task.status == .done ? .marked(.done) : .open, blockers: [], problems: task.problems)
+        self.init(task: task, state: task.status == .done ? .marked(.done) : .open, problems: task.problems)
     }
 
-    /// A habit on one of its days outside a day plan (a day of its history): the day's mark, no blockers.
+    /// A habit on one of its days outside a day plan (a day of its history): the day's mark.
     init(habit: TaskItem, on day: LocalDate) {
-        self.init(task: habit, state: habit.mark(on: day).map(DayItemState.marked) ?? .open, blockers: [], problems: habit.problems)
+        self.init(task: habit, state: habit.mark(on: day).map(DayItemState.marked) ?? .open, problems: habit.problems)
     }
 }

@@ -7,13 +7,8 @@ enum NameReferences {
         names.map { $0.isSameNoteName(as: old) ? new : $0 }
     }
 
-    /// The tasks that wait for `name`: their previous tasks name it (its Next tasks).
-    static func waiting(for name: String, in tasks: [TaskItem]) -> [TaskItem] {
-        tasks.filter { $0.previousTasks.containsNoteName(name) }
-    }
-
-    /// The tasks that refer to `name`, as a previous task or as their parent: a rename rewrites them.
+    /// The tasks that have `name` as their parent: a rename rewrites them.
     static func referring(to name: String, in tasks: [TaskItem]) -> [TaskItem] {
-        tasks.filter { ($0.previousTasks + $0.projects).containsNoteName(name) }
+        tasks.filter { $0.projects.containsNoteName(name) }
     }
 }

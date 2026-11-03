@@ -99,7 +99,5 @@ struct NoWidgets: WidgetReloading {
 #Preview("Settings") { SettingsScreen().previewEnvironment() }
 #Preview("Archive") { ArchiveScreen().previewEnvironment() }
 #Preview("Onboarding") { OnboardingFlow().previewEnvironment() }
-#Preview("Event picker") { EventPickerScreen { _ in }.previewEnvironment() }
-#Preview("Task picker") { TaskPickerScreen(excluded: []) { _ in }.previewEnvironment() }
 #Preview("Problems") { ProblemsSheet().previewEnvironment() }
 #endif

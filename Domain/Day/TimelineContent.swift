@@ -6,7 +6,7 @@ enum TimelineContent: Hashable, Sendable {
     case task(DayItem)
     case reminder(ReminderItem)
 
-    /// What the block shows, by kind and id: a block's id, and what a chain hangs on (`TimelineChain.Target`).
+    /// What the block shows, by kind and id: a block's id.
     var id: String {
         switch self {
         case .event(let event): "event:\(event.id)"

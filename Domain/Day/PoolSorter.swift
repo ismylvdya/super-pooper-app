@@ -1,12 +1,12 @@
 import Foundation
 
-/// Orders tasks: criteria from config, then "never above its predecessors", then done ones last.
+/// Orders tasks: criteria from config, then done ones last.
 struct PoolSorter: Sendable {
     let criteria: [PoolSortCriterion]
     let rules: DayRules
     var routines = HabitRoutines()
 
-    func sorted(_ items: [DayItem], graph: TaskGraph, context: DayContext) -> [DayItem] {
+    func sorted(_ items: [DayItem], context: DayContext) -> [DayItem] {
         let auto = items.sorted { lhs, rhs in
             for criterion in criteria {
                 let left = key(criterion, lhs.task, context)
@@ -15,13 +15,13 @@ struct PoolSorter: Sendable {
             }
             return NameOrder.precedes(lhs.task.name, rhs.task.name)
         }
-        return finalize(auto, graph: graph)
+        return finalize(auto)
     }
 
     /// Keeps the user's order for known tasks; tasks that appeared later are inserted
     /// right after their auto-sorted neighbour.
-    func applyingManualOrder(_ manual: [String], to items: [DayItem], graph: TaskGraph, context: DayContext) -> [DayItem] {
-        let auto = sorted(items, graph: graph, context: context)
+    func applyingManualOrder(_ manual: [String], to items: [DayItem], context: DayContext) -> [DayItem] {
+        let auto = sorted(items, context: context)
         let byName = Dictionary(items.map { ($0.id.noteName, $0) }, uniquingKeysWith: { first, _ in first })
         var result = manual.compactMap { byName[$0.noteName] }
         let placed = Set(result.map(\.id))
@@ -30,14 +30,12 @@ struct PoolSorter: Sendable {
             let position = previous.flatMap { prev in result.firstIndex { $0.id == prev.id } }.map { $0 + 1 } ?? 0
             result.insert(item, at: position)
         }
-        return finalize(result, graph: graph)
+        return finalize(result)
     }
 
-    /// Done tasks go last; within each part a task never stands above its predecessors.
-    private func finalize(_ items: [DayItem], graph: TaskGraph) -> [DayItem] {
-        let open = TopologicalOrder.stable(items.filter { !$0.isDone }, graph: graph)
-        let done = TopologicalOrder.stable(items.filter(\.isDone), graph: graph)
-        return open + done
+    /// Done tasks go last.
+    private func finalize(_ items: [DayItem]) -> [DayItem] {
+        items.filter { !$0.isDone } + items.filter(\.isDone)
     }
 
     /// A criterion's place for a task; a task the criterion knows nothing about (no routine place, no due date this week,

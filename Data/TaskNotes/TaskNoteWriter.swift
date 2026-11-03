@@ -38,25 +38,11 @@ struct TaskNoteWriter: Sendable {
                 set(keys.due, due.map { .scalar($0.rawValue, quoted: false) }, in: &document)
             case .timeEstimate(let minutes):
                 set(keys.timeEstimate, minutes.map(YAMLValue.int), in: &document)
-            case .addPreviousTask(let name):
-                var entries = listItems(keys.previousTasks, in: document)
-                guard !entries.contains(where: { linkName($0)?.isSameNoteName(as: name) == true }) else { continue }
-                entries.append(newLink(to: name))
-                document.set(keys.previousTasks, to: .list(entries))
-            case .removePreviousTask(let name):
-                let entries = listItems(keys.previousTasks, in: document)
-                let kept = entries.filter { linkName($0)?.isSameNoteName(as: name) != true }
-                guard kept.count != entries.count else { continue }
-                set(keys.previousTasks, kept.isEmpty ? nil : .list(kept), in: &document)
             case .addProject(let name):
                 var entries = listItems(keys.projects, in: document)
                 guard !entries.contains(where: { linkName($0)?.isSameNoteName(as: name) == true }) else { continue }
                 entries.append(.scalar(WikiLink.make(name), quoted: true))
                 document.set(keys.projects, to: .list(entries))
-            case .previousEvent(let link):
-                set(keys.previousEvent, link.map { .scalar(EventLinkCodec.format($0, timeZone: timeZone), quoted: true) }, in: &document)
-            case .nextEvent(let link):
-                set(keys.nextEvent, link.map { .scalar(EventLinkCodec.format($0, timeZone: timeZone), quoted: true) }, in: &document)
             case .feel(let value):
                 setFeel(value, in: &document)
             case .mark(let mark, let day):
@@ -94,14 +80,11 @@ struct TaskNoteWriter: Sendable {
         stamp(&document, now: now)
     }
 
-    /// Links name notes by their file names (`[[Name]]`): a renamed note is renamed in the `previous_task` and
-    /// `projects` links to it, other entries and their `reltype` stay.
+    /// Links name notes by their file names (`[[Name]]`): a renamed note is renamed in the `projects` links to it,
+    /// other entries stay.
     func renameLinks(from old: String, to new: String, in document: inout FrontmatterDocument, now: Date) {
         let keys = mapping.fields
         migrateLegacyFields(in: &document)
-        let previous = listItems(keys.previousTasks, in: document)
-        let renamedPrevious = previous.map { linkName($0)?.isSameNoteName(as: old) == true ? relink($0, to: new) : $0 }
-        if renamedPrevious != previous { document.set(keys.previousTasks, to: .list(renamedPrevious)) }
         let projects = listItems(keys.projects, in: document)
         let renamedProjects = projects.map { linkName($0)?.isSameNoteName(as: old) == true ? .scalar(WikiLink.make(new), quoted: true) : $0 }
         if renamedProjects != projects { document.set(keys.projects, to: .list(renamedProjects)) }

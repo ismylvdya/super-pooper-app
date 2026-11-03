@@ -15,9 +15,6 @@ struct TimelineStyle {
     /// Reminder long-press menu (completes it in Reminders) and tap (opens it in Reminders).
     var onReminderToggle: ((ReminderItem) -> Void)?
     var onReminderTap: ((ReminderItem) -> Void)?
-    /// The block whose links are highlighted (the rest dims), and the tap on a block's link mark.
-    var highlightedSlot: String?
-    var onLinkTap: ((TimelineSlot) -> Void)?
     /// Another day than today has no "now" cursor.
     var showsNow = true
     /// Task rows draw their own plates (and long-press highlight) instead of getting one here.

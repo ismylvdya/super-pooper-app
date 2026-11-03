@@ -63,9 +63,6 @@ enum ProblemText {
         case .unknownRecurrence(let rule): L10n.format("problem.unknownRecurrence", rule)
         case .recurrenceWithoutStart: L10n.string("problem.recurrenceWithoutStart")
         case .invalidValue(let field, let value): L10n.format("problem.invalidField", TaskFieldText.title(field), value)
-        case .linkedTaskNotFound(let name): L10n.format("problem.linkNotFound", name)
-        case .eventNotFound(let title): L10n.format("problem.eventNotFound", title)
-        case .dependencyCycle: L10n.string("problem.cycle")
         }
     }
 }

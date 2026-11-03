@@ -5,7 +5,6 @@
   "notifications": true,
   "habitNotificationActions": true,
   "reminders": true,
-  "eventLinks": true,
   "widgetSnapshot": true,
   "problemBadge": true,
   "backups": true,

@@ -7,7 +7,6 @@ struct FeatureFlags: Codable, Hashable, Sendable {
     var notifications: Bool
     var habitNotificationActions: Bool
     var reminders: Bool
-    var eventLinks: Bool
     var widgetSnapshot: Bool
     var problemBadge: Bool
     var backups: Bool

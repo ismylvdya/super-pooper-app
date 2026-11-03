@@ -31,12 +31,10 @@ enum PreviewSamples {
         report.timeEstimate = 60
         report.feel = .needEnergy
         var shelf = TaskItem(id: TaskID("TaskNotes/Tasks/shelf.md"), name: "Повесить полку", status: .thisWeek)
-        shelf.previousTasks = ["Позвонить в банк"]
         var parcel = TaskItem(id: TaskID("TaskNotes/Tasks/parcel.md"), name: "Забрать посылку", status: .thisWeek)
         parcel.due = TaskDue(day: today, time: LocalTime(hour: 16, minute: 0))
         parcel.timeEstimate = 60
         var questions = TaskItem(id: TaskID("TaskNotes/Tasks/questions.md"), name: "Подготовить вопросы", status: .thisWeek)
-        questions.nextEvent = EventLink(eventIdentifier: "call", title: "Call with dad", start: callStart)
         return [water, vitamins, bank, report, shelf, parcel, questions]
     }
 

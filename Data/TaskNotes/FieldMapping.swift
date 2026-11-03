@@ -18,11 +18,8 @@ struct FieldMapping: Codable, Hashable, Sendable {
         let priority: String
         let due: String
         let timeEstimate: String
-        let previousTasks: String
         /// TaskNotes subtasks: a subtask lists its parent notes here.
         let projects: String
-        let previousEvent: String
-        let nextEvent: String
         /// How doing the task feels (`feels` values; absent = neutral).
         let feel: String
         let recurrence: String
@@ -171,8 +168,8 @@ struct FieldMapping: Codable, Hashable, Sendable {
     /// instance lists the marks.
     var keyedFields: [(key: String, field: TaskField)] {
         [(fields.status, .status), (fields.priority, .priority), (fields.due, .due), (fields.timeEstimate, .timeEstimate),
-         (fields.previousTasks, .previousTasks), (fields.projects, .projects), (fields.subtaskOrder, .subtaskOrder),
-         (fields.previousEvent, .previousEvent), (fields.nextEvent, .nextEvent), (fields.feel, .feel),
+         (fields.projects, .projects), (fields.subtaskOrder, .subtaskOrder),
+         (fields.feel, .feel),
          (legacyFields.needEnergy, .feel), (legacyFields.pleasant, .feel), (fields.recurrence, .recurrence),
          (fields.completeInstances, .marks), (fields.partialInstances, .marks), (fields.twiceInstances, .marks),
          (fields.completedDate, .completedDate), (fields.dateCreated, .created), (fields.dateModified, .modified),

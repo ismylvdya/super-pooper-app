@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// The sections of a task (also used by the new-item page), from what is changed most: the three chip rows under the name,
-/// its status and estimate, subtasks, the text, then what links it.
+/// its status and estimate, subtasks, the text.
 struct TaskSections: View {
     let editor: TaskEditor
 
@@ -14,7 +14,5 @@ struct TaskSections: View {
         } else {
             TaskNoteSection(taskName: editor.task.name)
         }
-        TaskEventsSection(editor: editor)
-        if !editor.isDraft { TaskLinksSection(task: editor.task) }
     }
 }

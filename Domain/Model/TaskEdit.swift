@@ -1,7 +1,7 @@
 import Foundation
 
 /// One edit of a task or habit, in the domain's terms; the store turns it into its own fields. List fields change by
-/// deltas (mark one day, add or remove one link): the store applies them to the latest stored version, so entries added
+/// deltas (mark one day): the store applies them to the latest stored version, so entries added
 /// elsewhere meanwhile are never lost.
 enum TaskEdit: Hashable, Sendable {
     /// Moves the item to a planning level or the archive. A task that was done is no longer done (its day of completion
@@ -14,13 +14,9 @@ enum TaskEdit: Hashable, Sendable {
     case highPriority(Bool)
     case due(TaskDue?)
     case timeEstimate(Int?)
-    case addPreviousTask(String)
-    case removePreviousTask(String)
     /// Makes the item a subtask of another one.
     case addProject(String)
     case subtaskOrder(Int?)
-    case previousEvent(EventLink?)
-    case nextEvent(EventLink?)
     case feel(TaskFeel)
     /// Exactly one mark (or none) of a recurring task for `day`.
     case mark(HabitMark?, on: LocalDate)

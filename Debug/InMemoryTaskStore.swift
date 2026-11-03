@@ -65,7 +65,6 @@ actor InMemoryTaskStore: TaskStore, TaskTrash, VersionConflictResolving, Externa
         tasks = tasks.map { item in
             guard item.name != task.name else { return renamed }
             var updated = item
-            updated.previousTasks = rename(item.previousTasks)
             updated.projects = rename(item.projects)
             return updated
         }

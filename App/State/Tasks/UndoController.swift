@@ -2,7 +2,7 @@ import Foundation
 
 /// Undo (.27143): an action from a menu or a swipe that can be taken back happens at once, and the banner offers Undo
 /// for a few seconds instead of asking first. A step remembers, as they were, the notes the action may change — the note,
-/// the subtasks that go along with it, the tasks waiting for any of them (filing a done task unlinks them) — and what was
+/// the subtasks that go along with it — and what was
 /// decided about today. Taking it back puts all of that back: notes out of the trash or the done folder, their fields,
 /// today's decisions. Only the latest step can be taken back.
 @MainActor
@@ -67,9 +67,8 @@ final class UndoController {
             action.subtaskChange.map { SubtaskCascade.subtasks(of: note, in: tasks.tasks, change: $0) } ?? []
         }
         let going = Self.unique(chosen + along)
-        let waiting = going.flatMap { NameReferences.waiting(for: $0.name, in: tasks.tasks) }
         let chosenIDs = Set(chosen.map(\.id))
-        return Step(action: action, names: chosen.map(\.name), notes: Self.unique(going + waiting),
+        return Step(action: action, names: chosen.map(\.name), notes: Self.unique(going),
                     along: Self.unique(along).filter { !chosenIDs.contains($0.id) }.map(\.name), day: day.dayState,
                     sections: sections.storedSnapshots())
     }

@@ -30,11 +30,8 @@ struct TaskNoteReader: Sendable {
         let dueCalendar = ZonedTimes.calendar(of: task, phone: calendar)
         task.due = fields.parsed(keys.due) { TaskDue(rawValue: $0) ?? TaskDue(moment: $0, in: dueCalendar) }
         task.timeEstimate = fields.int(keys.timeEstimate)
-        task.previousTasks = fields.links(keys.previousTasks)
         task.projects = fields.links(keys.projects)
         task.subtaskOrder = fields.int(keys.subtaskOrder)
-        task.previousEvent = fields.parsed(keys.previousEvent, EventLinkCodec.parse)
-        task.nextEvent = fields.parsed(keys.nextEvent, EventLinkCodec.parse)
         task.feel = feel(&fields)
         if let raw = fields.string(keys.recurrence), !raw.trimmingCharacters(in: .whitespaces).isEmpty {
             switch RecurrenceCodec.parse(raw) {

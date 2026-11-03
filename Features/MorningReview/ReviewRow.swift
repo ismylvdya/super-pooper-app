@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// One table row: title and editable chips: High, date, estimate, energy,
-/// pleasant, status, links.
+/// pleasant, status.
 struct ReviewRow: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
@@ -19,7 +19,6 @@ struct ReviewRow: View {
             HStack(spacing: tokens.space(.chipGap)) {
                 if item.isHabit { Image(systemName: icons[ChipLook.habit.icon]).foregroundStyle(tokens.color(of: .habit)) }
                 Text(task.name).font(tokens.font(.taskTitle)).foregroundStyle(item.isDone ? tokens.color(.secondaryText) : tokens.color(.primaryText))
-                if item.isBlocked { Image(systemName: icons[ChipLook.blocked.icon]).foregroundStyle(tokens.color(of: .blocked)) }
             }
             ChipFlow(spacing: tokens.space(.chipGap)) {
                 toggleChip(.high, isOn: task.isHighPriority) { [.highPriority(!$0.isHighPriority)] }
@@ -29,9 +28,6 @@ struct ReviewRow: View {
                 toggleChip(.needEnergy, isOn: task.feel == .needEnergy) { [.feel($0.feel == .needEnergy ? .neutral : .needEnergy)] }
                 toggleChip(.pleasant, isOn: task.feel == .pleasant) { [.feel($0.feel == .pleasant ? .neutral : .pleasant)] }
                 if !task.isHabit { statusChip }
-                if !task.previousTasks.isEmpty || item.isBlocked {
-                    Chip(icon: .previousTasks, text: "\(task.previousTasks.count)")
-                }
             }
         }
         .padding(.vertical, tokens.space(.reviewRowVertical))

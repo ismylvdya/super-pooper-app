@@ -18,7 +18,7 @@ enum DayPlanning {
     }
 
     /// Today, or another day `offset` days away (swiping on Today): that day's events, reminders and this week's
-    /// tasks dated that day. "Past" and blocking are measured from the real now; links reach every task.
+    /// tasks dated that day. "Past" is measured from the real now.
     static func plan(config: AppConfig, settings: AppSettings, tasks: [TaskItem], events: [CalendarEvent],
                      reminders: [ReminderItem], dayState: DayState, sections: DaySections? = nil, context: DayContext,
                      dayOffset: Int, eventsKnown: Bool) -> DayPlan {
@@ -38,10 +38,9 @@ enum DayPlanning {
         return result
     }
 
-    /// Times kept in a zone of their own moved to the phone's; event links dropped when the feature is off.
+    /// Times kept in a zone of their own moved to the phone's.
     private static func usable(_ tasks: [TaskItem], config: AppConfig, context: DayContext) -> [TaskItem] {
-        let local = ZonedTimes.local(tasks, calendar: context.calendar, today: context.today)
-        return config.flags.eventLinks ? local : local.map(\.withoutEventLinks)
+        ZonedTimes.local(tasks, calendar: context.calendar, today: context.today)
     }
 
     private static func builder(config: AppConfig, settings: AppSettings) -> DayBuilder {
@@ -53,14 +52,5 @@ enum DayPlanning {
     static func sortCriteria(config: AppConfig, settings: AppSettings) -> [PoolSortCriterion] {
         let custom = settings.pool.criteria.compactMap(PoolSortCriterion.init(rawValue:))
         return custom.isEmpty ? config.sort.pool : custom
-    }
-}
-
-private extension TaskItem {
-    var withoutEventLinks: TaskItem {
-        var copy = self
-        copy.previousEvent = nil
-        copy.nextEvent = nil
-        return copy
     }
 }

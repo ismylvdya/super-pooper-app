@@ -18,15 +18,9 @@ extension TaskItem {
             case .highPriority(let value): task.isHighPriority = value
             case .due(let value): task.due = value
             case .timeEstimate(let value): task.timeEstimate = value
-            case .addPreviousTask(let name):
-                if !task.previousTasks.contains(where: { $0.isSameNoteName(as: name) }) { task.previousTasks.append(name) }
-            case .removePreviousTask(let name):
-                task.previousTasks.removeAll { $0.isSameNoteName(as: name) }
             case .addProject(let name):
                 if !task.projects.contains(where: { $0.isSameNoteName(as: name) }) { task.projects.append(name) }
             case .subtaskOrder(let value): task.subtaskOrder = value
-            case .previousEvent(let value): task.previousEvent = value
-            case .nextEvent(let value): task.nextEvent = value
             case .feel(let value): task.feel = value
             case .timeZone(let value): task.timeZone = value
             case .mark(let mark, let day): task.marks[day] = mark

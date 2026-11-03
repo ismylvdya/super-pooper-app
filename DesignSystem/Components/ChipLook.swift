@@ -3,12 +3,11 @@ import SwiftUI
 /// What a task's property looks like wherever it is drawn as a chip or an icon: its symbol and its color. One table
 /// for the chips of the rows, their order in the settings and the morning review.
 enum ChipLook: CaseIterable {
-    case problem, blocked, high, needEnergy, pleasant, habit
+    case problem, high, needEnergy, pleasant, habit
 
     var icon: Icon {
         switch self {
         case .problem: .problem
-        case .blocked: .links
         case .high: .high
         case .needEnergy: .energy
         case .pleasant: .pleasant
@@ -20,7 +19,6 @@ enum ChipLook: CaseIterable {
     var tint: ColorToken? {
         switch self {
         case .problem: .problem
-        case .blocked: nil
         case .high: .high
         case .needEnergy: .energy
         case .pleasant: .heart

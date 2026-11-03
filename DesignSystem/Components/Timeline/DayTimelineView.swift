@@ -17,8 +17,6 @@ struct DayTimelineView<TaskContent: View>: View {
     @ViewBuilder let taskContent: (DayItem, TimelineSlot) -> TaskContent
 
     var body: some View {
-        let links = TimelineLinks(slots: slots, calendar: calendar, rules: rules.day)
-        let highlighted = style.highlightedSlot.map(links.connected(to:))
         let placements = layout.place(slots)
         GeometryReader { geometry in
             let itemsWidth = max(geometry.size.width - labelWidth, 0)
@@ -28,18 +26,15 @@ struct DayTimelineView<TaskContent: View>: View {
                 TimelineFineGrid(hours: hourMarks, detail: style.gridDetail, labelWidth: style.showsHourLabels ? labelWidth : 0,
                                  width: geometry.size.width, labelHeight: hourLabelHeight, y: y)
                 ForEach(blocks) { item in
-                    let isLinked = links.isLinked(item.slot.id)
                     block(for: item.slot)
-                        .environment(\.titleReserve, cornerWidth(linked: isLinked, bell: item.slot.showsBell))
+                        .environment(\.titleReserve, cornerWidth(bell: item.slot.showsBell))
                         .overlay(alignment: .topTrailing) {
                             HStack(spacing: tokens.space(.cornerMarkGap)) {
-                                if isLinked { linkBadge(item.slot, isOn: style.highlightedSlot == item.slot.id) }
                                 if item.slot.showsBell { AlertBell() }
                             }
                             .padding(.top, cornerInset)
                             .padding(.trailing, cornerInset)
                         }
-                        .opacity(highlighted.map { $0.contains(item.slot.id) ? 1 : tokens.opacity(.unlinked) } ?? 1)
                         .frame(width: max(item.frame.width - tokens.space(.timelineItemGap), 0),
                                height: max(item.frame.height - tokens.space(.timelineItemGap), 0), alignment: .topLeading)
                         .offset(x: labelWidth + item.frame.minX, y: item.frame.minY)
@@ -59,12 +54,9 @@ struct DayTimelineView<TaskContent: View>: View {
         style.compactPlates ? max((style.minimumItemHeight - tokens.space(.timelineItemGap) - bell.size) / 2, tokens.size(.cornerInsetMinimum)) : tokens.space(.bellInset)
     }
 
-    /// How far from the block's right edge the corner marks reach (their inset, the link mark, the bell and the gap
-    /// between them); 0 without marks. The title fades out `fadeGap` before that (`TitleFade`).
-    private func cornerWidth(linked: Bool, bell showsBell: Bool) -> CGFloat {
-        let marks = [linked ? tokens.uiFont(.linkBadge).pointSize : nil, showsBell ? bell.size : nil].compactMap { $0 }
-        guard !marks.isEmpty else { return 0 }
-        return cornerInset + marks.reduce(0, +) + tokens.space(.cornerMarkGap) * CGFloat(marks.count - 1)
+    /// How far from the block's right edge the corner marks reach (their inset and the bell); 0 without one. The title fades out `fadeGap` before that (`TitleFade`).
+    private func cornerWidth(bell showsBell: Bool) -> CGFloat {
+        showsBell ? cornerInset + bell.size : 0
     }
 
     /// The hour column and the hour labels' line grow with the hour font.
@@ -135,20 +127,6 @@ struct DayTimelineView<TaskContent: View>: View {
             .frame(width: max(width - gap, 0), height: max(height - gap, 0), alignment: .topLeading)
             .offset(x: labelWidth, y: y(slot.start))
             .dropGhost()
-    }
-
-    /// A small link mark; tapping it highlights everything linked to the block (widgets only show it).
-    @ViewBuilder private func linkBadge(_ slot: TimelineSlot, isOn: Bool) -> some View {
-        let mark = Image(systemName: icons[.links])
-            .font(tokens.font(.linkBadge))
-            .foregroundStyle(isOn ? tokens.color(.primaryText) : tokens.color(.secondaryText))
-        if let onLinkTap = style.onLinkTap {
-            Button { onLinkTap(slot) } label: { mark.contentShape(Rectangle()) }
-                .buttonStyle(.plain)
-                .accessibilityLabel(Text("timeline.links"))
-        } else {
-            mark
-        }
     }
 
     /// Hours as plain numbers ("9", "14"), right-aligned next to the grid line.

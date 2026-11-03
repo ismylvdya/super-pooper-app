@@ -11,14 +11,10 @@ struct TaskItem: Identifiable, Hashable, Codable, Sendable {
     var isHighPriority: Bool = false
     var due: TaskDue?
     var timeEstimate: Int?
-    /// Names of the tasks that come before this one (it waits for them).
-    var previousTasks: [String] = []
     /// Names of the items this one is a subtask of.
     var projects: [String] = []
     /// Its place among the parent's subtasks, once they were put in order; nil = after those, by name.
     var subtaskOrder: Int?
-    var previousEvent: EventLink?
-    var nextEvent: EventLink?
     var feel: TaskFeel = .neutral
     var recurrence: RecurrenceRule?
     /// The item repeats by a rule the app cannot read (a problem on it): it never comes up in a day, yet it is a habit.
@@ -44,8 +40,6 @@ struct TaskItem: Identifiable, Hashable, Codable, Sendable {
     var statusOutOfArchive: TaskStatus { isHabit ? .habit : .thisWeek }
     /// A task of a later planning level (or done, or archived) can be brought to this week.
     var canPromote: Bool { !isHabit && !status.isThisWeek }
-    /// Another task can be linked to it (before or after it); archived notes are out of the way.
-    var isLinkable: Bool { !isArchived }
     /// Habits that are not archived, and only those switched on for Today, take part in the day.
     var isInTodayHabits: Bool { isHabit && !isArchived && habit.showInToday }
     /// Times of day a habit is planned at: its reminders, or the time of an older-style `due`.
@@ -70,7 +64,4 @@ enum TaskProblem: Hashable, Codable, Sendable {
     case recurrenceWithoutStart
     /// A value the store could not read (as written there).
     case invalidValue(field: TaskField, value: String)
-    case linkedTaskNotFound(String)
-    case eventNotFound(String)
-    case dependencyCycle
 }

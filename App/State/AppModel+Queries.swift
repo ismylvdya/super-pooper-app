@@ -15,11 +15,6 @@ extension AppModel {
     var archivedHabits: [TaskItem] { NameOrder.sorted(tasks.filter { $0.isHabit && $0.isArchived }) }
     var archivedNotesCount: Int { archivedTasks.count + archivedHabits.count }
 
-    /// The tasks that wait for `name`, by name: its Next tasks.
-    func nextTasks(of name: String) -> [String] {
-        NameOrder.sorted(NameReferences.waiting(for: name, in: tasks).map(\.name))
-    }
-
     /// Subtasks of a note (notes whose `projects` link to it), in their order.
     func subtasks(of parent: String) -> [TaskItem] { parts.tasks.subtasks(of: parent) }
 

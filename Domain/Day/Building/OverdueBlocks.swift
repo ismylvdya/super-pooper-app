@@ -1,6 +1,6 @@
 import Foundation
 
-/// Open timed blocks of today whose time has come ride on the "now" cursor, as chain tasks do (`ChainLayout`): tasks,
+/// Open timed blocks of today whose time has come ride on the "now" cursor: tasks,
 /// repeatable tasks and habits alike (a habit's block at the time today has, after today's drags). They stack one after
 /// another from now in the order of those times and slide along during the day until marked. Nothing is written: the
 /// note keeps its time.
