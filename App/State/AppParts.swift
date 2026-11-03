@@ -10,6 +10,7 @@ struct AppParts {
     let capabilities: StoreCapabilities
     let settings: SettingsController
     let day: DayStateController
+    let sections: DaySectionsController
     let tasks: TaskState
     /// Finds dates typed into names (`date-grammar.json`).
     let dates: DateDetector
@@ -36,21 +37,22 @@ struct AppParts {
         let backups = BackupPolicy(isOn: config.flags.backups, backups: services.backups)
         settings = SettingsController(store: services.settingsStore, note: services.settingsNote, rules: rules, delay: delay)
         day = DayStateController(clock: clock, calendar: calendar, store: services.dayStateStore, settings: settings)
+        sections = DaySectionsController(store: services.daySectionStore, day: day, definitions: rules.pool.defaultSections)
         tasks = TaskState()
         dates = DateDetector(grammar: config.dateGrammar)
         sources = SourcesController(calendars: services.calendars, reminders: services.reminders,
                                     notifications: services.notifications, config: config, settings: settings, day: day)
-        derived = DerivedStatePublisher(config: config, tasks: tasks, day: day, sources: sources, settings: settings,
-                                        services: services)
+        derived = DerivedStatePublisher(config: config, tasks: tasks, day: day, sections: sections, sources: sources,
+                                        settings: settings, services: services)
         writer = NoteWriter(tasks: tasks, store: store, day: day, derived: derived, backups: backups, appEvents: appEvents,
                             filesDoneTasks: config.flags.fileDoneTasks)
         texts = NoteTextEditor(tasks: tasks, store: store, appEvents: appEvents, delay: delay,
                                saveDelay: rules.editing.noteSaveDelaySeconds)
         notes = NoteCommands(tasks: tasks, writer: writer, texts: texts, store: store, links: services.links, backups: backups,
-                             settings: settings, day: day, derived: derived, appEvents: appEvents, dates: dates)
-        undo = UndoController(tasks: tasks, writer: writer, store: store, trash: services.trash, day: day, derived: derived,
-                              appEvents: appEvents)
-        dayCommands = DayCommands(day: day, tasks: tasks, writer: writer, derived: derived, appEvents: appEvents)
+                             settings: settings, day: day, sections: sections, derived: derived, appEvents: appEvents, dates: dates)
+        undo = UndoController(tasks: tasks, writer: writer, store: store, trash: services.trash, day: day, sections: sections,
+                              derived: derived, appEvents: appEvents)
+        dayCommands = DayCommands(day: day, sections: sections, tasks: tasks, writer: writer, derived: derived, appEvents: appEvents)
         sourceCommands = SourceCommands(sources: sources, services: services, day: day, derived: derived, appEvents: appEvents,
                                         delay: delay, quietSeconds: rules.timeline.externalChangeDelaySeconds)
         lists = TaskLists(tasks: tasks, store: store, config: config)

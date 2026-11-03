@@ -13,13 +13,14 @@ final class NoteCommands {
     private let backups: BackupPolicy
     private let settings: SettingsController
     private let day: DayStateController
+    private let sections: DaySectionsController
     private let derived: DerivedStatePublisher
     private let appEvents: AppEventSink
     private let dates: DateDetector
 
     init(tasks: TaskState, writer: NoteWriter, texts: NoteTextEditor, store: TaskStore, links: ExternalLinking?,
-         backups: BackupPolicy, settings: SettingsController, day: DayStateController, derived: DerivedStatePublisher,
-         appEvents: AppEventSink, dates: DateDetector) {
+         backups: BackupPolicy, settings: SettingsController, day: DayStateController, sections: DaySectionsController,
+         derived: DerivedStatePublisher, appEvents: AppEventSink, dates: DateDetector) {
         self.tasks = tasks
         self.writer = writer
         self.texts = texts
@@ -28,6 +29,7 @@ final class NoteCommands {
         self.backups = backups
         self.settings = settings
         self.day = day
+        self.sections = sections
         self.derived = derived
         self.appEvents = appEvents
         self.dates = dates
@@ -224,6 +226,7 @@ final class NoteCommands {
                 if let place = try await store.delete(note) { trashed?.append(place) }
                 tasks.remove(note)
             }
+            sections.forget(notes.map(\.name))
             if announcing { appEvents.send(.deleted(task.name)) }
         } catch {
             appEvents.send(.failure(AppFailure(error)))
@@ -292,5 +295,6 @@ final class NoteCommands {
             }
         }
         day.followRename(from: old, to: new)
+        sections.followRename(from: old, to: new)
     }
 }

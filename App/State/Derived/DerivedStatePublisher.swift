@@ -9,6 +9,7 @@ final class DerivedStatePublisher {
     private let config: AppConfig
     private let tasks: TaskState
     private let day: DayStateController
+    private let sections: DaySectionsController
     private let sources: SourcesController
     private let settings: SettingsController
     private let snapshotStore: SnapshotStore
@@ -20,11 +21,12 @@ final class DerivedStatePublisher {
     /// The last plan of each day asked for (0 = today), with what it was worked out from.
     private var plans: [Int: CachedPlan] = [:]
 
-    init(config: AppConfig, tasks: TaskState, day: DayStateController, sources: SourcesController, settings: SettingsController,
-         services: AppServices) {
+    init(config: AppConfig, tasks: TaskState, day: DayStateController, sections: DaySectionsController, sources: SourcesController,
+         settings: SettingsController, services: AppServices) {
         self.config = config
         self.tasks = tasks
         self.day = day
+        self.sections = sections
         self.sources = sources
         self.settings = settings
         snapshotStore = services.snapshotStore
@@ -37,11 +39,13 @@ final class DerivedStatePublisher {
     /// Today (`dayOffset` 0) or another day browsed on Today.
     func plan(at date: Date, dayOffset: Int = 0) -> DayPlan {
         let settings = settings.settings
+        let context = day.context(at: date)
         let key = PlanKey(tasks: tasks.tasks, events: sources.events, reminders: sources.reminders, dayState: day.dayState,
-                          settings: settings, calendar: day.calendar, eventsKnown: sources.eventsKnown, minute: PlanKey.minute(of: date))
+                          sections: sections.snapshot(on: context.today.adding(days: dayOffset)), settings: settings,
+                          calendar: day.calendar, eventsKnown: sources.eventsKnown, minute: PlanKey.minute(of: date))
         if let cached = plans[dayOffset], cached.key == key { return cached.plan }
         let plan = DayPlanning.plan(config: config, settings: settings, tasks: key.tasks, events: key.events, reminders: key.reminders,
-                                    dayState: key.dayState, context: day.context(at: date), dayOffset: dayOffset,
+                                    dayState: key.dayState, sections: key.sections, context: context, dayOffset: dayOffset,
                                     eventsKnown: key.eventsKnown)
         plans[dayOffset] = CachedPlan(key: key, plan: plan)
         return plan

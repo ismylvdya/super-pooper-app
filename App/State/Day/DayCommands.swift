@@ -1,18 +1,21 @@
 import Foundation
 
 /// What the user decides about today's pool: Skip today, Not today, the manual order, a drag in Soon across the
-/// parts of the day, a task or a habit's block dragged onto the timeline or back to the pool. The widgets and
-/// notifications follow.
+/// parts of the day, a task or a habit's block dragged onto the timeline or back to the pool, a task or a whole section
+/// moved among a day's sections. The widgets and notifications follow.
 @MainActor
 final class DayCommands {
     private let day: DayStateController
+    private let sections: DaySectionsController
     private let tasks: TaskState
     private let writer: NoteWriter
     private let derived: DerivedStatePublisher
     private let appEvents: AppEventSink
 
-    init(day: DayStateController, tasks: TaskState, writer: NoteWriter, derived: DerivedStatePublisher, appEvents: AppEventSink) {
+    init(day: DayStateController, sections: DaySectionsController, tasks: TaskState, writer: NoteWriter, derived: DerivedStatePublisher,
+         appEvents: AppEventSink) {
         self.day = day
+        self.sections = sections
         self.tasks = tasks
         self.writer = writer
         self.derived = derived
@@ -115,6 +118,34 @@ final class DayCommands {
     /// A block dragged from the timeline can land in the pool (`TaskScheduling.canSendToPool`).
     func canSendToPool(_ name: String, slot: LocalTime?) -> Bool {
         tasks.task(named: name).map { TaskScheduling.canSendToPool($0, slot: slot) } ?? false
+    }
+
+    // MARK: - Sections
+
+    /// Dropped under a section's header in the pool of `date`: it stands in that section that day only (its routine and
+    /// note stay as they are); the pool's order is today's only.
+    func moveTask(_ name: String, toSection id: String, poolOrder: [String], on date: LocalDate) async {
+        placeInSection(name, id, on: date)
+        if isToday(date) { day.setManualOrder(poolOrder) }
+        await derived.publish()
+    }
+
+    /// A whole section dragged by its header: the day's sections in the new order (`order`: their ids).
+    func moveSection(_ id: String, order: [String], on date: LocalDate) async {
+        sections.update(on: date) { sections in
+            let byID = Dictionary(sections.order.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+            let moved = order.compactMap { byID[$0] }
+            sections.order = moved + sections.order.filter { !order.contains($0.id) }
+        }
+        await derived.publish()
+    }
+
+    private func placeInSection(_ name: String, _ id: String?, on date: LocalDate) {
+        guard let id else { return }
+        sections.update(on: date) { sections in
+            sections.membership = sections.membership.filter { !$0.key.isSameNoteName(as: name) }
+            sections.membership[name] = id
+        }
     }
 
     // MARK: - Backlog pages

@@ -7,6 +7,8 @@ struct WidgetDataSource: Sendable {
     let settings: AppSettings
     let snapshot: WidgetSnapshot?
     let calendar: Calendar
+    /// The days' pool sections the app keeps in the App Group.
+    var sections: [DaySections] = []
 
     static func load(bundle: Bundle = .main) -> WidgetDataSource? {
         guard let config = try? AppConfig.load(bundle: bundle) else { return nil }
@@ -17,7 +19,8 @@ struct WidgetDataSource: Sendable {
         return WidgetDataSource(config: config,
                                 settings: SettingsStore(store: store, defaults: config.defaultSettings).load(),
                                 snapshot: SnapshotStore(store: store).load(),
-                                calendar: calendar)
+                                calendar: calendar,
+                                sections: JSONDaySectionStore(store: store).snapshots())
     }
 
     /// The Today widget's own arrangement, independent from the app's; a widget has no pages.
@@ -34,7 +37,8 @@ struct WidgetDataSource: Sendable {
         let context = context(at: date)
         guard let snapshot else { return .empty(today: context.today, now: date) }
         return DayPlanning.plan(config: config, settings: settings, tasks: snapshot.tasks, events: snapshot.events, reminders: snapshot.reminders,
-                                dayState: snapshot.dayState, context: context, eventsKnown: snapshot.eventsKnown ?? false)
+                                dayState: snapshot.dayState, sections: sections.first { $0.day == context.today }, context: context,
+                                eventsKnown: snapshot.eventsKnown ?? false)
     }
 
     /// Active habits in the user's list order.
