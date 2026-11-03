@@ -157,6 +157,16 @@ final class DayCommands {
         Task { await derived.publish() }
     }
 
+    /// Select → New section: an own section of `date` titled `title`, after the section `after`, takes the tasks. Its id,
+    /// or nil for a blank title.
+    func newSection(titled title: String, with names: [String], after: String?, on date: LocalDate) -> String? {
+        let id = UUID().uuidString
+        guard let added = sections.snapshot(on: date).addingSection(id: id, titled: title, with: names, after: after) else { return nil }
+        sections.update(on: date) { $0 = added }
+        Task { await derived.publish() }
+        return id
+    }
+
     private func placeInSection(_ name: String, _ id: String?, on date: LocalDate) {
         guard let id else { return }
         sections.update(on: date) { sections in

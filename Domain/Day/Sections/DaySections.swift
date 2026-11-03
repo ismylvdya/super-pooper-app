@@ -87,4 +87,20 @@ struct DaySections: Codable, Equatable, Sendable {
             .filter { $0.members.count > 1 }
         return result
     }
+
+    /// An own section titled `title`, right after the section `after` (nil or unknown: at the end), takes the tasks and
+    /// the whole worms they are in. A blank title makes nothing.
+    func addingSection(id: String, titled title: String, with names: [String], after: String?) -> DaySections? {
+        let title = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !title.isEmpty, !names.isEmpty else { return nil }
+        var result = self
+        let spot = after.flatMap { after in order.firstIndex { $0.id == after } }.map { $0 + 1 } ?? order.count
+        result.order.insert(DaySection(id: id, title: title, isCustom: true), at: spot)
+        let members = names + names.flatMap { worm(of: $0)?.members ?? [] }
+        for name in members {
+            result.membership = result.membership.filter { !$0.key.isSameNoteName(as: name) }
+            result.membership[name] = id
+        }
+        return result
+    }
 }

@@ -92,6 +92,14 @@ final class AppModel {
     func worm(_ names: [String], on day: LocalDate) { parts.dayCommands.worm(names, on: day) }
     /// `day` nil: today.
     func unworm(_ names: [String], on day: LocalDate?) { parts.dayCommands.unworm(names, on: day ?? context().today) }
+    /// An own section of `day`, right after the section of the first of the tasks in the pool's order, takes them; its
+    /// id, or nil for a blank title.
+    @discardableResult
+    func newSection(titled title: String, with names: [String], on day: LocalDate) -> String? {
+        let shown = plan(at: clock.now, dayOffset: context().today.days(until: day))
+        let after = shown.sections.first { $0.items.contains { names.containsNoteName($0.id) } }?.id
+        return parts.dayCommands.newSection(titled: title, with: names, after: after, on: day)
+    }
 
     /// The morning review opens by itself once a day, on the first launch with a ready vault after onboarding, unless
     /// the app was opened for something else. True when it is to open now (it then counts as shown).
