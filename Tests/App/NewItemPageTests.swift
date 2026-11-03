@@ -123,6 +123,17 @@ struct NewItemDateSuggestionTests {
         #expect(saved.name == "Dentist tomorrow")
     }
 
+    /// The intent has no blue suggestion: a date in the name is taken at once; without one the task is the Inbox's.
+    @Test func aNamedTaskTakesItsDateOrWaitsInTheInbox() throws {
+        var dated = taskPage(named: "Dentist tomorrow")
+        dated.takeNamedDate(detector.detect(in: dated.name, context: wednesday))
+        #expect(dated.name == "Dentist" && dated.draft.note.status == .thisWeek)
+        #expect(dated.draft.note.due == TaskDue(day: LocalDate("2026-11-05")))
+        var undated = taskPage(named: "Idea")
+        undated.takeNamedDate(nil)
+        #expect(undated.draft.note.status == .inbox && undated.draft.note.due == nil)
+    }
+
     /// A habit is not dated, and a date the task already has is not offered again.
     @Test func onlyATaskIsOfferedADateItDoesNotHave() throws {
         var page = taskPage(named: "tomorrow")

@@ -47,7 +47,7 @@ struct AppParts {
         texts = NoteTextEditor(tasks: tasks, store: store, appEvents: appEvents, delay: delay,
                                saveDelay: rules.editing.noteSaveDelaySeconds)
         notes = NoteCommands(tasks: tasks, writer: writer, texts: texts, store: store, links: services.links, backups: backups,
-                             settings: settings, day: day, derived: derived, appEvents: appEvents)
+                             settings: settings, day: day, derived: derived, appEvents: appEvents, dates: dates)
         undo = UndoController(tasks: tasks, writer: writer, store: store, trash: services.trash, day: day, derived: derived,
                               appEvents: appEvents)
         dayCommands = DayCommands(day: day, tasks: tasks, writer: writer, derived: derived, appEvents: appEvents)

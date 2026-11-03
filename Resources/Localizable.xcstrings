@@ -2895,13 +2895,24 @@
         }
       }
     },
+    "intent.newTask.createdInInbox %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Added “%@” to the Inbox."
+          }
+        }
+      }
+    },
     "intent.newTask.description": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Asks for a name and adds the task to Soon without opening the app."
+            "value": "Asks for a name and adds the task to the Inbox without opening the app. A date in the name puts it in Soon on that day."
           }
         }
       }

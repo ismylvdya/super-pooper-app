@@ -44,6 +44,16 @@ struct NewItemPage: Equatable {
         if !rest.isEmpty { name = rest }
     }
 
+    /// A task named outside the app's pages (the New Task intent) has no blue suggestion: a date in its name is taken
+    /// at once; without one the task waits in the Inbox.
+    mutating func takeNamedDate(_ detected: DetectedDate?) {
+        if let detected {
+            accept(detected)
+        } else {
+            draft = NoteDraft(status: .inbox, changes: draft.changes)
+        }
+    }
+
     /// What is wrong with the typed name by the store's `rules`; an empty name is fine (the note is called "Unnamed").
     func nameProblem(_ rules: (String) -> NoteNameProblem?) -> NoteNameProblem? {
         trimmedName.isEmpty ? nil : rules(trimmedName)

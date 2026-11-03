@@ -15,10 +15,11 @@ final class NoteCommands {
     private let day: DayStateController
     private let derived: DerivedStatePublisher
     private let appEvents: AppEventSink
+    private let dates: DateDetector
 
     init(tasks: TaskState, writer: NoteWriter, texts: NoteTextEditor, store: TaskStore, links: ExternalLinking?,
          backups: BackupPolicy, settings: SettingsController, day: DayStateController, derived: DerivedStatePublisher,
-         appEvents: AppEventSink) {
+         appEvents: AppEventSink, dates: DateDetector) {
         self.tasks = tasks
         self.writer = writer
         self.texts = texts
@@ -29,6 +30,7 @@ final class NoteCommands {
         self.day = day
         self.derived = derived
         self.appEvents = appEvents
+        self.dates = dates
     }
 
     // MARK: - Marks and statuses
@@ -151,10 +153,12 @@ final class NoteCommands {
     }
 
     /// A task named outside the app's pages (the New Task intent): created as Return in the new task page's name would
-    /// create it, with the same defaults; an empty name is rejected rather than called "Unnamed".
+    /// create it, with the same defaults; an empty name is rejected rather than called "Unnamed". A date in the name puts
+    /// the task in Soon on that day without the date's words; without one it waits in the Inbox.
     func createTask(named name: String) async -> NamedTaskCreation {
         var page = newItemPage(kind: .task)
         page.name = name
+        page.takeNamedDate(dates.detect(in: name, context: day.context()))
         guard let saving = page.savedOnReturn(rules: nameProblem(in:)) else {
             return .rejected(page.nameProblem(nameProblem(in:)) ?? .empty)
         }
