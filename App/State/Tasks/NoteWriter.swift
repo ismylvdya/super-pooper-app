@@ -3,7 +3,7 @@ import Foundation
 /// Every edit of a task's or habit's fields goes through here. The edits of one note run one after another, and each
 /// decides from the note as the edit before it left it: a second quick tap (a toggle, a habit mark) does not repeat the
 /// first one's decision. After a write the fields changed in two places are reported, a task written done takes its open
-/// subtasks along (`SubtaskCascade`), the widgets and notifications follow, and what is done is filed away.
+/// subtasks along (`SubtaskCascade`), a habit's new rule reaches its repeatable subtasks, the widgets and notifications follow, and what is done is filed away.
 @MainActor
 final class NoteWriter {
     private let tasks: TaskState
@@ -59,6 +59,7 @@ final class NoteWriter {
         guard !changes.isEmpty else { return true }
         guard let written = await apply(changes, to: task) else { return false }
         if cascades, task.status != .done, written.status == .done, !written.isHabit { await completeSubtasks(of: written) }
+        if changes.contains(where: \.isRecurrence) { await passRuleOn(from: written) }
         await derived.publish()
         if DoneFiling.isDue(written) { await fileAwayDoneTasks() }
         return true
@@ -83,6 +84,14 @@ final class NoteWriter {
         let marking = TaskMarking(today: day.context().today)
         for subtask in SubtaskCascade.subtasks(of: parent, in: tasks.tasks, change: .completion) {
             await apply(marking.changes(marking: subtask, as: .done), to: subtask)
+        }
+    }
+
+    /// The parent's rule is written to its repeatable subtasks, and from them to theirs (`RepeatableSubtasks.followingRule`).
+    private func passRuleOn(from parent: TaskItem) async {
+        for (name, edits) in RepeatableSubtasks.followingRule(of: parent, in: tasks.tasks) {
+            guard let subtask = tasks.task(named: name) else { continue }
+            await write(subtask, edits)
         }
     }
 

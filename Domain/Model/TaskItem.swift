@@ -54,6 +54,10 @@ struct TaskItem: Identifiable, Hashable, Codable, Sendable {
         return due?.time.map { [$0] } ?? []
     }
     func mark(on day: LocalDate) -> HabitMark? { marks[day] }
+    /// Done as of `day`: a task done at all, a habit (a repeatable subtask too) marked so that day is closed.
+    func isDone(on day: LocalDate) -> Bool {
+        isHabit ? HabitMarking.isDayClosed(mark(on: day), twiceADay: isTwiceADay) : status.isCompleted
+    }
 
     /// A habit done twice a day: the Twice option, or two or more reminders a day (the second Done is Twice).
     var isTwiceADay: Bool { habit.twiceADay || habitTimes.count >= 2 }

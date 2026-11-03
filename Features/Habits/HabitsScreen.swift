@@ -17,7 +17,7 @@ struct HabitsScreen: View {
 
     var body: some View {
         let today = model.context().today
-        let groups = HabitGroups(model.habits.filter { SearchMatcher.matches($0.name, query) })
+        let groups = HabitGroups(model.habits.filter { SearchMatcher.matches($0.name, query) }, active: model.habits)
         List {
             LargePageTitle(isNested: false, height: $titleHeight) { Text("tab.habits") }
                 .listGroupSpacer()

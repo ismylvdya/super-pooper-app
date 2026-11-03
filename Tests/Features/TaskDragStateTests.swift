@@ -110,4 +110,32 @@ struct TaskDragStateTests {
         _ = drag.begin(task, from: .pool)
         #expect(drag.draggedID == task.id, "a task picked up after it is the task")
     }
+
+    /// Let go outside every drop target there is no drop to end the drag: the lifted finger ends it, so the day swipe
+    /// (blocked while a task is dragged) works again.
+    @Test func aDragLetGoOutsideEveryTargetEnds() async {
+        let drag = TaskDragState()
+        _ = drag.begin(DayItem(listed: makeTask("Pay the internet")), from: .pool)
+        await drag.fingerLifted(settling: 1, delay: NoDelay())
+        #expect(drag.item == nil && !drag.isDragging)
+        _ = drag.beginNewItem()
+        await drag.fingerLifted(settling: 1, delay: NoDelay())
+        #expect(!drag.isDragging)
+        _ = drag.beginSection("day")
+        await drag.fingerLifted(settling: 1, delay: NoDelay())
+        #expect(drag.source == .pool)
+    }
+
+    /// A finger lifted from one drag does not end the next one begun while it settled.
+    @Test func aLiftedFingerLeavesTheNextDragAlone() async {
+        let drag = TaskDragState()
+        let gate = GatedDelay()
+        _ = drag.begin(DayItem(listed: makeTask("Pay the internet")), from: .pool)
+        let lifted = Task { await drag.fingerLifted(settling: 1, delay: gate) }
+        await gate.gate.arrived()
+        _ = drag.begin(DayItem(listed: makeTask("Call the bank")), from: .timeline(slot: nil))
+        await gate.gate.open()
+        await lifted.value
+        #expect(drag.item?.id == "Call the bank")
+    }
 }

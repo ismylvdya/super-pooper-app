@@ -208,6 +208,7 @@
   "gestures": {
     "tapSlop": 6,
     "daySwipeMinimumDistance": 20,
+    "dragEndSettleSeconds": 0.5,
     "daySwipeAxisRatio": 1.5,
     "daySwipeShare": 0.25,
     "daySwipeFlingShare": 0.5,

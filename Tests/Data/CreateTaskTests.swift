@@ -25,4 +25,23 @@ struct CreateTaskTests {
         #expect(second.name == "New task 2")
         #expect(sandbox.exists("New task 2"))
     }
+
+    /// A habit's subtask is a TaskNotes recurring task: the habit status, the parent's rule, a link to the parent in
+    /// `projects`, and "repeatable" among the app's settings of the note.
+    @Test func aRepeatableSubtaskIsWrittenAsTaskNotesWrites() async throws {
+        let sandbox = try VaultSandbox.make()
+        let repository = sandbox.repository()
+        let rule = try RecurrenceCodec.parse("DTSTART:20260901;FREQ=WEEKLY;BYDAY=MO,WE,FR").get()
+        let parent = try await repository.create(NoteDraft(status: .habit, changes: [.recurrence(rule)]), named: "Зарядка")
+        let subtask = try await repository.create(.subtask(of: parent), named: "Отжимания")
+        let lines = try sandbox.text(of: "Отжимания").split(separator: "\n").map(String.init)
+        #expect(lines.contains("status: habit"))
+        #expect(lines.contains("recurrence: DTSTART:20260901;FREQ=WEEKLY;BYDAY=MO,WE,FR"))
+        #expect(lines.contains("projects:") && lines.contains("  - \"[[Зарядка]]\""))
+        let settings = try #require(lines.first { $0.hasPrefix("fromSuperPooperApp: '{") })
+        #expect(settings.contains("\"repeatable\":true"))
+        let read = try #require(try await repository.load().tasks.first { $0.name == "Отжимания" })
+        #expect(read.isHabit && read.habit.repeatable && read.recurrence == rule && read.projects == ["Зарядка"])
+        #expect(subtask.recurrence == rule)
+    }
 }

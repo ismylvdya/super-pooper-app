@@ -147,6 +147,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let tapSlop: Double
         /// A drag on Today starts deciding its direction after this distance.
         let daySwipeMinimumDistance: Double
+        /// A task's drag whose finger was lifted with no drop ends after this many seconds (a drop ends it at once).
+        let dragEndSettleSeconds: Double
         /// A drag is sideways when it moves this many times more across than up or down.
         let daySwipeAxisRatio: Double
         /// A sideways drag turns the page past this share of the width, or when flung past `daySwipeFlingShare` of it.

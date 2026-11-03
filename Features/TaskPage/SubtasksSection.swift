@@ -19,9 +19,10 @@ struct SubtasksSection: View {
                 // A link, not the router: in the morning review the page is in the sheet's own stack.
                 let subtasks = model.subtasks(of: editor.task.name)
                 let names = subtasks.map(\.name)
+                let today = model.context().today
                 ForEach(subtasks, id: \.name) { subtask in
                     NavigationLink(value: Route.task(subtask.name)) {
-                        SubtaskLabel(name: subtask.name, isDone: subtask.status.isCompleted)
+                        SubtaskLabel(name: subtask.name, isDone: subtask.isDone(on: today))
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .buttonStyle(.plain)
