@@ -35,3 +35,19 @@ enum QuickDue: CaseIterable, Sendable {
         return ZonedTimes.stored(toggling(chip, due: local.due, context: context), of: task, calendar: context.calendar)
     }
 }
+
+/// The date chip beside Today and Tomorrow: it opens the date sheet and names what the two cannot — a day other than
+/// today or tomorrow, and a time on any day.
+enum DateChip {
+    /// The day the chip names; nil without a due or with one on a day the chips beside it name.
+    static func title(for due: TaskDue?, context: DayContext) -> LocalDate? {
+        guard let due, QuickDue.selection(of: due, context: context) == nil else { return nil }
+        return due.day
+    }
+
+    /// The day and time the chip shows for a note as written, on the phone's clock (as the Today / Tomorrow chips).
+    static func shown(of task: TaskItem, context: DayContext) -> (day: LocalDate?, time: LocalTime?) {
+        let due = ZonedTimes.local(task, calendar: context.calendar, today: context.today).due
+        return (title(for: due, context: context), due?.time)
+    }
+}

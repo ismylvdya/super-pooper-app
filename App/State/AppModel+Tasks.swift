@@ -106,12 +106,13 @@ extension AppModel {
 
     func nameProblem(in name: String) -> NoteNameProblem? { parts.notes.nameProblem(in: name) }
     func newHabitDraft() -> NoteDraft { parts.notes.newHabitDraft() }
+    func newItemPage(kind: NewItemSeed.Kind) -> NewItemPage { parts.notes.newItemPage(kind: kind) }
 
-    /// The new task or habit page is left; true once the page is done with (see `NoteCommands.create(from:unnamed:)`).
-    func create(from page: NewNotePage, unnamed: String) async -> Bool { await parts.notes.create(from: page, unnamed: unnamed) }
+    /// The new-item page is left; true once the page is done with (see `NoteCommands.create(from:unnamed:)`).
+    func create(from page: NewItemPage, unnamed: String) async -> Bool { await parts.notes.create(from: page, unnamed: unnamed) }
     func create(_ draft: NoteDraft, named name: String) async -> String? { await parts.notes.create(draft, named: name) }
-    /// Return in the new task or habit page's name: the note is created at once; its name, or nil when nothing was saved.
-    func createOnReturn(from page: NewNotePage) async -> String? { await parts.notes.createOnReturn(from: page) }
+    /// Return in the new-item page's name: the note is created at once; its name, or nil when nothing was saved.
+    func createOnReturn(from page: NewItemPage) async -> String? { await parts.notes.createOnReturn(from: page) }
     /// A task named outside the app's pages (the New Task intent), with the new task page's defaults.
     func createTask(named name: String) async -> NamedTaskCreation { await parts.notes.createTask(named: name) }
 

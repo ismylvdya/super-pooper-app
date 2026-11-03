@@ -8,7 +8,7 @@ struct SaveOnReturnTests {
     @Test func returnCreatesTheNoteWithItsDraftAndSaysSo() async throws {
         let events = RecordingEvents()
         let model = try #require(PreviewModel.make(appEvents: events)).model
-        var page = NewNotePage(draft: .newTask)
+        var page = model.newItemPage(kind: .task)
         page.draft.apply([.highPriority(true)])
         page.name = "Купить хлеб"
 
@@ -22,7 +22,7 @@ struct SaveOnReturnTests {
     @Test func anEmptyOrForbiddenNameSavesNothing() async throws {
         let events = RecordingEvents()
         let model = try #require(PreviewModel.make(appEvents: events)).model
-        var page = NewNotePage(draft: .newTask)
+        var page = model.newItemPage(kind: .task)
         #expect(await model.createOnReturn(from: page) == nil)
         page.name = "Встреча: Анна"
         #expect(await model.createOnReturn(from: page) == nil)

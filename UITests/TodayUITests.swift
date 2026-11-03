@@ -154,10 +154,10 @@ final class TodayUITests: XCTestCase {
         let title = app.buttons["title:Распечатать вопросы"]
         XCTAssertTrue(title.waitForExistence(timeout: 10))
         title.tap()
-        let high = app.switches["taskPage.high"]
+        let high = app.buttons["taskPage.chip.high"]
         XCTAssertTrue(high.waitForExistence(timeout: 5))
-        high.switches.firstMatch.tap()
-        let switchedOn = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == '1'"), object: high)
+        high.tap()
+        let switchedOn = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isSelected == true"), object: high)
         XCTAssertEqual(XCTWaiter().wait(for: [switchedOn], timeout: 5), .completed)
     }
 

@@ -21,7 +21,7 @@ struct AppEventTests {
     /// Leaving the new task page with a name a note cannot take creates nothing and says why.
     @Test func aNewNoteWithANameItCannotTakeIsRejected() async throws {
         let model = try makeModel()
-        var page = NewNotePage(draft: NoteDraft(status: .thisWeek))
+        var page = model.newItemPage(kind: .task)
         page.name = "Meet: Anna"
         #expect(await model.create(from: page, unnamed: "Unnamed") == false)
         #expect(events.sent == [.nameRejected(.forbidden(":"), name: "Meet: Anna")])
@@ -30,15 +30,15 @@ struct AppEventTests {
 
     @Test func aNewNoteIsReportedCreated() async throws {
         let model = try makeModel()
-        var page = NewNotePage(draft: NoteDraft(status: .thisWeek))
+        var page = model.newItemPage(kind: .task)
         page.name = "Meet Anna"
         #expect(await model.create(from: page, unnamed: "Unnamed"))
         #expect(events.sent == [.created("Meet Anna")])
     }
 
-    @Test func anUntouchedNewNotePageCreatesNothingAndSaysNothing() async throws {
+    @Test func anUntouchedNewItemPageCreatesNothingAndSaysNothing() async throws {
         let model = try makeModel()
-        #expect(await model.create(from: NewNotePage(draft: NoteDraft(status: .thisWeek)), unnamed: "Unnamed") == false)
+        #expect(await model.create(from: model.newItemPage(kind: .task), unnamed: "Unnamed") == false)
         #expect(events.sent.isEmpty)
     }
 
