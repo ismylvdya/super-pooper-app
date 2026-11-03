@@ -126,6 +126,18 @@ struct TaskDragStateTests {
         #expect(drag.source == .pool)
     }
 
+    /// A "+" let go outside every drop target leaves no lifted finger on Today: the next hold on the timeline ends it and
+    /// opens the page; a task still dragged keeps the hold off.
+    @Test func aHoldEndsANewItemDragLetGoOverNothing() {
+        let drag = TaskDragState()
+        _ = drag.beginNewItem()
+        #expect(drag.holdBegan())
+        #expect(!drag.isDragging && drag.source == .pool)
+        _ = drag.begin(DayItem(listed: makeTask("Pay the internet")), from: .pool)
+        #expect(!drag.holdBegan())
+        #expect(drag.item?.id == "Pay the internet")
+    }
+
     /// A finger lifted from one drag does not end the next one begun while it settled.
     @Test func aLiftedFingerLeavesTheNextDragAlone() async {
         let drag = TaskDragState()
