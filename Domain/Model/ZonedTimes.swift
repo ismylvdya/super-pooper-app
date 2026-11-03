@@ -13,10 +13,14 @@ enum ZonedTimes {
 
     static func local(_ task: TaskItem, calendar: Calendar, today: LocalDate) -> TaskItem {
         guard let source = ownCalendar(of: task, phone: calendar) else { return task }
+        let movedToday = { (time: LocalTime) in convert(TaskDue(day: today, time: time), from: source, to: calendar).time ?? time }
         var result = task
-        result.due = task.due.map { convert($0, from: source, to: calendar) }
-        // Reminder times have no day: they are moved as they fall today.
-        result.reminderTimes = task.reminderTimes.map { convert(TaskDue(day: today, time: $0), from: source, to: calendar).time ?? $0 }
+        // A habit's due day is where its rule starts, not a day its time rings on: only the time moves, as it falls today
+        // (moved on that day, a day of another season would put it an hour off). Reminder times have no day at all.
+        result.due = task.due.map { due in
+            task.isHabit ? TaskDue(day: due.day, time: due.time.map(movedToday)) : convert(due, from: source, to: calendar)
+        }
+        result.reminderTimes = task.reminderTimes.map(movedToday)
         return result
     }
 
