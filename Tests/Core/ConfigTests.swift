@@ -44,7 +44,7 @@ struct ConfigTests {
         #expect(!TestConfig.actions.menus[.taskContext].actions.contains(.archive))
     }
 
-    /// A tap on an event alert opens Calendar on its day, on a reminder its list; habits and tasks stay in the app.
+    /// A tap on an event alert opens Calendar on its day, on a reminder its list, on a habit or a task its page.
     @Test func notificationTapsLeadToCalendarAndReminders() {
         let links = TestConfig.rules.eventLinks
         let start = TestCalendar.date("2026-10-21", "19:00")
@@ -52,7 +52,9 @@ struct ConfigTests {
         let reminder: [AnyHashable: Any] = ["kind": "reminder", "reminder": "REM-1"]
         #expect(NotificationTapTarget.url(for: event, links: links) == links.calendarURL(at: start))
         #expect(NotificationTapTarget.url(for: reminder, links: links) == links.reminderURL(id: "REM-1"))
-        #expect(NotificationTapTarget.url(for: ["kind": "habit"], links: links) == nil)
+        #expect(NotificationTapTarget.url(for: ["kind": "habit"], links: links) == nil, "without a name")
+        let habit: [AnyHashable: Any] = ["kind": "habit", NotificationPayload.taskKey: "Morning run"]
+        #expect(NotificationTapTarget.url(for: habit, links: links) == DeepLink.habit("Morning run"))
     }
 
     /// Every group and list of the Lists tab has a title text; All statuses has a list per planning level.

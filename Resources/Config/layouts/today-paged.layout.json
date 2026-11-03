@@ -1,6 +1,6 @@
 {
   "axis": "horizontal",
-  "spacing": "screenHorizontal",
+  "spacing": "pagesGap",
   "paged": true,
   "peek": "pagePeek",
   "blocks": [

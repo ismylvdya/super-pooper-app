@@ -107,10 +107,7 @@ struct TodayPagerTests {
         #expect(pulled(pager, 320), "armed")
         #expect(!pulled(pager, 340), "armed once")
         #expect(released(pager, 340))
-        #expect(pager.openedBacklog == 1 && pager.page == 0 && pager.sidePull == 0)
-        #expect(pulled(pager, 320))
-        #expect(released(pager, 320))
-        #expect(pager.openedBacklog == 2, "then the next one")
+        #expect(pager.openedBacklog == 3 && pager.page == 2 && pager.sidePull == 0, "the nearest list, with the others left of it")
     }
 
     @Test func aShortPullOpensNothingAndAllListsOpenedPullsNoMore() {
@@ -118,11 +115,10 @@ struct TodayPagerTests {
         _ = pulled(pager, 40)
         #expect(!released(pager, 40))
         #expect(pager.openedBacklog == 0 && pager.sidePull == 0)
-        for _ in 0..<3 {
-            _ = pulled(pager, 320)
-            _ = released(pager, 320)
-        }
+        _ = pulled(pager, 320)
+        _ = released(pager, 320)
         #expect(pager.openedBacklog == 3)
+        pager.turn(to: 0, pageCount: 5, animation: .default)
         #expect(!pulled(pager, 320))
         #expect(pager.sidePull == 0, "nothing left to open")
         #expect(!released(pager, 320))
@@ -151,7 +147,7 @@ struct TodayPagerTests {
         _ = released(pager, 320)
         changed(pager, -10)
         ended(pager, -150)
-        #expect(pager.page == 1, "Soon to the pool")
+        #expect(pager.page == 2, "Soon stays: the helper counts two pages")
         pager.closeBacklog()
         #expect(pager.openedBacklog == 0 && pager.page == 0)
         _ = pulled(pager, 320)
@@ -166,8 +162,8 @@ struct TodayPagerTests {
         _ = pulled(pager, 320)
         _ = released(pager, 320)
         pager.showPool(animation: .default)
-        #expect(pager.openedBacklog == 1 && pager.page == 1, "the pool, Soon still left of it")
-        pager.turn(to: 0, pageCount: 3, animation: .default)
+        #expect(pager.openedBacklog == 3 && pager.page == 3, "the pool, the lists still left of it")
+        pager.turn(to: 0, pageCount: 5, animation: .default)
         pager.showPool(forgetsBacklog: true, animation: .default)
         #expect(pager.openedBacklog == 0 && pager.page == 0)
     }

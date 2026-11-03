@@ -55,7 +55,8 @@
     }
   },
   "notifications": {
-    "enabled": true
+    "enabled": true,
+    "signingMessage": ""
   },
   "onboarding": {
     "completed": false

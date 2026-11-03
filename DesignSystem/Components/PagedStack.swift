@@ -14,6 +14,9 @@ struct PagedStack<Page: Hashable, Content: View>: View {
     let peeks: [CGFloat]
     var edgeInset: CGFloat = 0
     var home = 0
+    /// The first pages stay in sight of each other by `listPeek` (`PageStrip`).
+    var listCount = 0
+    var listPeek: CGFloat = 0
     var page = 0
     var drag: CGFloat = 0
     var pull: CGFloat = 0
@@ -25,7 +28,7 @@ struct PagedStack<Page: Hashable, Content: View>: View {
     var body: some View {
         GeometryReader { geometry in
             let strip = PageStrip(count: pages.count, width: geometry.size.width, spacing: spacing, peeks: peeks,
-                                  edgeInset: edgeInset, home: home)
+                                  edgeInset: edgeInset, home: home, listCount: listCount, listPeek: listPeek)
             let shown = strip.offset(showing: page) + drag
             let offset = min(max(shown, strip.offset(showing: pages.count - 1)), strip.offset(showing: 0)) + pull
             ZStack(alignment: .topLeading) {
@@ -47,7 +50,7 @@ struct PagedStack<Page: Hashable, Content: View>: View {
     /// reaching it. A neighbour without a peek has its edge in the screen's margin beside the stack.
     @ViewBuilder private func edge(to other: Int, leading: Bool, strip: PageStrip) -> some View {
         if let onTurn, pages.indices.contains(other) {
-            let peek = strip.peek(of: other)
+            let peek = strip.visiblePeek(of: other, showing: page)
             let margin = leading || peek == 0 ? edgeInset : 0
             Color.clear
                 .frame(width: peek + margin)

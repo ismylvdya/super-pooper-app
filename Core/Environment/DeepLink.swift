@@ -9,6 +9,9 @@ enum DeepLink {
     /// The habit's page in the Habits tab (habit widgets open it).
     static func habit(_ name: String) -> URL? { url(host: "habit", name: name) }
 
+    /// The task's page on Tasks (its notification opens it).
+    static func task(_ name: String) -> URL? { url(host: "task", name: name) }
+
     static let habits = URL(string: "\(scheme)://habits")
     static let clock = URL(string: "\(scheme)://clock")
 

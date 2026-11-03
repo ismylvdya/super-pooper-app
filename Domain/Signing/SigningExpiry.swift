@@ -20,6 +20,15 @@ enum SigningExpiry {
         return warning > now ? warning : nil
     }
 
+    /// When to remind: every `everyHours` from `leadHours` before the end up to the end, the moments still ahead.
+    static func reminderDates(expiration: Date?, leadHours: Double, everyHours: Double, now: Date) -> [Date] {
+        guard let expiration, everyHours > 0 else { return [] }
+        let start = expiration.addingTimeInterval(-leadHours * secondsPerHour)
+        return stride(from: start.timeIntervalSinceReferenceDate, to: expiration.timeIntervalSinceReferenceDate, by: everyHours * secondsPerHour)
+            .map(Date.init(timeIntervalSinceReferenceDate:))
+            .filter { $0 > now }
+    }
+
     /// The plate for a signature ending at `expiration`; nil when it is unknown or further away than the plate shows.
     /// Days are whole days still left (2 days 20 hours is 2 days); the hours of the last day are rounded up, so the
     /// plate never says 0 hours while some time is left.

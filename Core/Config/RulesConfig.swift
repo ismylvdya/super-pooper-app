@@ -9,13 +9,15 @@ struct RulesConfig: Codable, Hashable, Sendable {
     }
 
     struct Notifications: Codable, Hashable, Sendable {
-        /// iOS keeps at most 64 pending local notifications.
+        /// iOS keeps at most 64 pending local notifications; the signature's hourly ones need their room.
         let limit: Int
         let horizonDays: Int
         /// The user's own picture for habit notifications, in the app group.
         let imageFile: String
         /// The warning that the app's signature runs out comes this many hours before.
         let signingWarningHours: Double
+        /// Through that time it comes again every this many hours (the pending ones count towards iOS's 64: `limit`).
+        let signingWarningEveryHours: Double
         let signingWarningID: String
         /// The user's picture is scaled down to at most this many pixels on its longer side.
         let imageMaxPixels: Double

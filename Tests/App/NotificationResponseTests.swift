@@ -18,7 +18,7 @@ struct NotificationResponseTests {
         #expect(router.route(action: UNNotificationDismissActionIdentifier, info: event) == .putBack(opening: nil))
         #expect(router.route(action: UNNotificationDefaultActionIdentifier, info: event) == .putBack(opening: links.calendarURL(at: start)))
         #expect(router.route(action: UNNotificationDefaultActionIdentifier, info: ["kind": "habit", "task": "Water"])
-            == .putBack(opening: nil))
+            == .putBack(opening: DeepLink.habit("Water")))
     }
 
     @Test func theButtonsOfRemindersAndEvents() {

@@ -27,10 +27,11 @@
     }
   ],
   "notifications": {
-    "limit": 60,
+    "limit": 38,
     "horizonDays": 7,
     "imageFile": "notification-image.png",
     "signingWarningHours": 24,
+    "signingWarningEveryHours": 1,
     "signingWarningID": "signing-expiry",
     "imageMaxPixels": 400,
     "restoreDelaySeconds": 1,

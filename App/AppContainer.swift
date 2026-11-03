@@ -110,9 +110,10 @@ final class AppContainer {
     private var signingReminder: SigningExpiryReminder {
         let rules = config.rules.notifications
         return SigningExpiryReminder(identifier: rules.signingWarningID, leadHours: rules.signingWarningHours,
-                                     signature: ProvisioningProfileSignature()) { expiration in
+                                     everyHours: rules.signingWarningEveryHours,
+                                     signature: ProvisioningProfileSignature()) { [message = model.settings.notifications.signingMessage] expiration in
             (L10n.string("notification.signing.title"),
-             L10n.format("notification.signing.body", expiration.formatted(date: .abbreviated, time: .shortened)))
+             message.isEmpty ? L10n.format("notification.signing.body", expiration.formatted(date: .abbreviated, time: .shortened)) : message)
         }
     }
 

@@ -98,6 +98,8 @@ struct AppSettings: Codable, Equatable, Sendable {
 
     struct Notifications: Codable, Equatable, Sendable {
         var enabled: Bool
+        /// The words of the signature's hourly reminder; empty = the bundled ones.
+        var signingMessage: String
     }
 
     struct Onboarding: Codable, Equatable, Sendable {

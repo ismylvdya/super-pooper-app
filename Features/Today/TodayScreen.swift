@@ -114,19 +114,27 @@ struct TodayScreen: View {
         pager.showPool(poolBlock: poolBlock, forgetsBacklog: forgetsBacklog, animation: tokens.animation)
     }
 
-    /// On a backlog page its list's title, plainly; on the day's pages the day's name with its arrows.
-    @ViewBuilder private var title: some View {
+    /// On a backlog page its list's title, plainly; on the day's pages the day's name with its arrows. Both always stand
+    /// in the same place and fade into each other: the bar animates a view it sees come and go from somewhere else.
+    private var title: some View {
         let shown = pages.indices.contains(pager.page) ? pages[pager.page] : nil
-        if let id = shown?.backlogID, let list = model.config.lists.backlogList(id) {
-            Text(LocalizedStringKey(list.title))
-                .font(tokens.font(.navTitle))
-                .lineLimit(1)
-                .minimumScaleFactor(isLandscape ? 1 : tokens.size(.navTitleMin) / tokens.uiFont(.navTitle).pointSize)
-                .accessibilityAddTraits(.isHeader)
-                .accessibilityIdentifier("today.listTitle")
-        } else {
+        let list = shown?.backlogID.flatMap(model.config.lists.backlogList)
+        return ZStack {
             dayNavigation
+                .opacity(list == nil ? 1 : 0)
+                .allowsHitTesting(list == nil)
+                .accessibilityHidden(list != nil)
+            if let list {
+                Text(LocalizedStringKey(list.title))
+                    .font(tokens.font(.navTitle))
+                    .lineLimit(1)
+                    .minimumScaleFactor(isLandscape ? 1 : tokens.size(.navTitleMin) / tokens.uiFont(.navTitle).pointSize)
+                    .accessibilityAddTraits(.isHeader)
+                    .accessibilityIdentifier("today.listTitle")
+                    .transition(.opacity)
+            }
         }
+        .animation(tokens.animation, value: list?.id)
     }
 
     /// The day the pool shows.

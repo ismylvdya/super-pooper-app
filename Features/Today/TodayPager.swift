@@ -6,11 +6,11 @@ import SwiftUI
 @MainActor
 @Observable
 final class TodayPager {
-    /// The page of the strip shown; opening a backlog page puts it at index 0, where the page shown already was.
+    /// The page of the strip shown.
     private(set) var page = 0
     /// How far a sideways drag has moved the pages with the finger.
     private(set) var pageDrag: CGFloat = 0
-    /// How many backlog pages stand left of the pool (0…the backlog's count).
+    /// How many backlog pages stand left of the pool: none, or all of them once the pull opened them.
     private(set) var openedBacklog = 0
     /// How far the first page is pulled right to open the next backlog page (the finger's way, resisted).
     private(set) var sidePull: CGFloat = 0
@@ -58,7 +58,7 @@ final class TodayPager {
                                    axisRatio: gestures.daySwipeAxisRatio)
         swipeAxis = axis
         guard axis == .horizontal else { return false }
-        if page == 0, translation.width > 0, openedBacklog < backlogCount {
+        if page == 0, translation.width > 0, openedBacklog == 0, backlogCount > 0 {
             pageDrag = 0
             sidePull = PullArming.stretch(translation.width, dimension: containerWidth, resistance: gestures.pullResistance)
             return arming.update(pull: sidePull, threshold: gestures.sidePullThreshold)
@@ -81,7 +81,7 @@ final class TodayPager {
         sidePull = 0
     }
 
-    /// Once the finger lifts: a pull that armed opens the next backlog page, which slides in at index 0 (true then);
+    /// Once the finger lifts: a pull that armed opens the backlog pages and shows the nearest (true then);
     /// past `daySwipeShare` of the width or flung far enough, the page turns at the finger's speed; otherwise the pages go
     /// back.
     @discardableResult
@@ -91,9 +91,13 @@ final class TodayPager {
                                    axisRatio: gestures.daySwipeAxisRatio)
         swipeAxis = nil
         if sidePull > 0 {
-            let opens = arming.release() && openedBacklog < backlogCount
+            let opens = arming.release() && openedBacklog == 0 && backlogCount > 0
             withAnimation(.interpolatingSpring(duration: duration, bounce: 0)) {
-                if opens { openedBacklog += 1 }
+                if opens {
+                    // The nearest list, with the others left of it and the pool's page right of it.
+                    openedBacklog = backlogCount
+                    page = backlogCount - 1
+                }
                 sidePull = 0
             }
             return opens
