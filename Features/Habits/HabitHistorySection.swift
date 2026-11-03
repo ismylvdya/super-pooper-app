@@ -24,7 +24,7 @@ struct HabitHistorySection: View {
         let grid = HabitGrid(task: habit, weekCount: weeks, today: today, days: context.days)
         let inner = tokens.space(.plateInner)
         VStack(alignment: .leading, spacing: 0) {
-            PlateHeader(title: "habitPage.history", info: "info.habitPage.history")
+            SectionHeader(title: "habitPage.history", info: "info.habitPage.history")
             Group {
                 if let width {
                     history(grid, metrics: tokens.habitDots(fitting: width - inner * 2))

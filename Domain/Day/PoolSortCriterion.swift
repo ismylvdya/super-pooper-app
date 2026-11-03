@@ -2,13 +2,9 @@ import Foundation
 
 /// Pool ordering criteria, compared one after another (order comes from `sort.json`).
 enum PoolSortCriterion: String, Codable, CaseIterable, Sendable {
-    /// The morning routine (habits of the morning) goes above everything.
-    case morningRoutine
     /// Habits without a time of day (no reminder) go first.
     case habitsFirst
-    /// Habits of the current part of the day go up, habits of another part go down.
-    case habitTimeOfDay
-    /// Within each routine (morning, day, evening), the user's order of it (Habits → Routines).
+    /// Within each routine (morning, evening), the user's order of it (Habits → Routines).
     case routineOrder
     /// `due` today (with or without time) beats everything below.
     case dueToday

@@ -2,8 +2,8 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 /// The task being dragged on Tasks, shared by the pool, the timeline, the backlog pages and the page edges: where it
-/// came from, where it would land on the timeline, the pool order while it is over the pool and the backlog page it is
-/// over.
+/// came from, where it would land on the timeline, the pool order and section while it is over the pool and the backlog
+/// page it is over. A pool section dragged by its header is a drag without a task, which only the pool takes.
 @MainActor
 @Observable
 final class TaskDragState {
@@ -13,6 +13,8 @@ final class TaskDragState {
         case timeline(slot: LocalTime?)
         /// A row of a backlog page, by its list's id.
         case backlog(String)
+        /// A pool section's header, by the section's id.
+        case section(String)
 
         var slot: LocalTime? {
             if case .timeline(let slot) = self { slot } else { nil }
@@ -31,18 +33,30 @@ final class TaskDragState {
     var hoverMoment: Date?
     /// The pool with the task at the spot under the finger.
     var poolOrder: [String]?
+    /// The section of the spot under the finger.
+    private(set) var poolSection: String?
+    /// The pool section dragged by its header.
+    private(set) var section: String?
+    /// The pool's sections with the dragged one at the spot under the finger.
+    private(set) var sectionOrder: [String]?
     /// The page a drag asks Tasks to turn to; the screen turns by its pages of the moment and clears it.
     private(set) var turnRequest: TasksPage?
     /// The backlog page under the finger: the task shows there, faint, where it would be listed.
     var backlogTarget: String?
 
     func begin(_ item: DayItem, from source: Source) -> NSItemProvider {
+        reset()
         self.item = item
         self.source = source
-        hoverMoment = nil
-        poolOrder = nil
-        backlogTarget = nil
         return NSItemProvider(object: item.id as NSString)
+    }
+
+    /// A pool section picked up by its header.
+    func beginSection(_ id: String) -> NSItemProvider {
+        reset()
+        section = id
+        source = .section(id)
+        return NSItemProvider(object: id as NSString)
     }
 
     /// The finger is over `moment` on the timeline (a drop step); true when the spot moved, a step to feel.
@@ -52,11 +66,26 @@ final class TaskDragState {
         return true
     }
 
-    /// The pool in the order the finger makes; true when the row passed another, a step to feel.
-    func hover(poolOrder order: [String]) -> Bool {
-        guard order != poolOrder else { return false }
+    /// The pool in the order the finger makes and the section it is in; true when the row passed another or went into
+    /// another section, a step to feel.
+    func hover(poolOrder order: [String], section: String? = nil) -> Bool {
+        guard order != poolOrder || section != poolSection else { return false }
         poolOrder = order
+        poolSection = section
         return true
+    }
+
+    /// The sections in the order the dragged header makes; true when it passed another, a step to feel.
+    func hover(sectionOrder order: [String]) -> Bool {
+        guard order != sectionOrder else { return false }
+        sectionOrder = order
+        return true
+    }
+
+    func leavePool() {
+        poolOrder = nil
+        poolSection = nil
+        sectionOrder = nil
     }
 
     /// The drag reached a page: Tasks turns to it (nothing when it is already in sight).
@@ -79,11 +108,22 @@ final class TaskDragState {
         backlogTarget == list && item?.id == id && source != .backlog(list)
     }
 
+    /// While its header is dragged over the pool, the section stands faint where it would land.
+    func isSectionGhost(_ id: String) -> Bool {
+        sectionOrder != nil && section == id
+    }
+
     func end() {
+        reset()
+    }
+
+    private func reset() {
         item = nil
+        section = nil
+        source = .pool
         hoverMoment = nil
-        poolOrder = nil
         backlogTarget = nil
+        leavePool()
     }
 }
 
@@ -130,7 +170,10 @@ struct TimelineDropDelegate: DropDelegate {
     let canDrop: (DayItem, TaskDragState.Source) -> Bool
     let onDrop: (DayItem, TaskDragState.Source, Date) -> Void
 
-    func validateDrop(info: DropInfo) -> Bool {
+    func validateDrop(info: DropInfo) -> Bool { validate() }
+
+    /// Only a task lands here: a pool section's header never does.
+    func validate() -> Bool {
         drag.item.map { canDrop($0, drag.source) } ?? false
     }
 
@@ -153,47 +196,6 @@ struct TimelineDropDelegate: DropDelegate {
         let source = drag.source
         drag.end()
         onDrop(item, source, landing)
-        return true
-    }
-}
-
-/// Dropping on the pool: rows make room under the finger; a task from the timeline loses its time, a habit's block
-/// leaves today's timeline, a task from a backlog page comes into the day.
-@MainActor
-struct PoolDropDelegate: DropDelegate {
-    let drag: TaskDragState
-    let animation: Animation
-    let rows: () -> [PoolDropOrder.Row]
-    /// Whether the dragged item can land here from where it came.
-    let canDrop: (DayItem, TaskDragState.Source) -> Bool
-    let onDrop: (DayItem, TaskDragState.Source, [String]) -> Void
-
-    func validateDrop(info: DropInfo) -> Bool {
-        return drag.item.map { canDrop($0, drag.source) } ?? false
-    }
-
-    func dropEntered(info: DropInfo) {
-        drag.turn(.block(.pool))
-    }
-
-    func dropUpdated(info: DropInfo) -> DropProposal? {
-        guard let item = drag.item else { return nil }
-        let order = PoolDropOrder.order(rows: rows(), dragged: item.id, at: info.location.y)
-        let moved = withAnimation(animation) { drag.hover(poolOrder: order) }
-        if moved { Haptics.play(.dragStep) }
-        return DropProposal(operation: .move)
-    }
-
-    func dropExited(info: DropInfo) {
-        withAnimation(animation) { drag.poolOrder = nil }
-    }
-
-    func performDrop(info: DropInfo) -> Bool {
-        guard let item = drag.item else { return false }
-        let order = drag.poolOrder ?? PoolDropOrder.order(rows: rows(), dragged: item.id, at: info.location.y)
-        let source = drag.source
-        drag.end()
-        onDrop(item, source, order)
         return true
     }
 }

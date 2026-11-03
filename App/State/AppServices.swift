@@ -16,6 +16,7 @@ struct AppServices {
     let notifications: NotificationScheduling
     let settingsStore: SettingsStore
     let dayStateStore: DayStateStore
+    let daySectionStore: DaySectionStorage
     let snapshotStore: SnapshotStore
     let alertStateStore: AlertStateStore
     let snoozeStore: SnoozeStore

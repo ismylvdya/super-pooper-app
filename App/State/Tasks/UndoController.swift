@@ -16,6 +16,8 @@ final class UndoController {
         /// The subtasks that go along with the note.
         let along: [String]
         let day: DayState
+        /// The days' pool sections (a delete takes the notes out of them).
+        let sections: [DaySections]
         /// Where the deleted notes lie in the trash.
         var trashed: [TrashedNote] = []
         /// A task of the done folder deleted from the Done list: taken back, it lies there again as it was.
@@ -27,17 +29,19 @@ final class UndoController {
     private let store: TaskStore
     private let trash: TaskTrash?
     private let day: DayStateController
+    private let sections: DaySectionsController
     private let derived: DerivedStatePublisher
     private let appEvents: AppEventSink
     private(set) var last: Step?
 
     init(tasks: TaskState, writer: NoteWriter, store: TaskStore, trash: TaskTrash?, day: DayStateController,
-         derived: DerivedStatePublisher, appEvents: AppEventSink) {
+         sections: DaySectionsController, derived: DerivedStatePublisher, appEvents: AppEventSink) {
         self.tasks = tasks
         self.writer = writer
         self.store = store
         self.trash = trash
         self.day = day
+        self.sections = sections
         self.derived = derived
         self.appEvents = appEvents
     }
@@ -59,12 +63,13 @@ final class UndoController {
         let waiting = going.flatMap { NameReferences.waiting(for: $0.name, in: tasks.tasks) }
         var notes: [TaskItem] = []
         for task in going + waiting where !notes.contains(where: { $0.id == task.id }) { notes.append(task) }
-        return Step(action: action, name: note.name, notes: notes, along: along.map(\.name), day: day.dayState)
+        return Step(action: action, name: note.name, notes: notes, along: along.map(\.name), day: day.dayState,
+                    sections: sections.storedSnapshots())
     }
 
     /// What a delete of a task of the done folder changes: only that file, which goes to the trash.
     func begin(_ action: ActionID, onFiled task: TaskItem) -> Step {
-        Step(action: action, name: task.name, notes: [], along: [], day: day.dayState, filed: task)
+        Step(action: action, name: task.name, notes: [], along: [], day: day.dayState, sections: sections.storedSnapshots(), filed: task)
     }
 
     /// The action has run: when it changed anything, the banner offers to take it back.
@@ -91,6 +96,7 @@ final class UndoController {
             await writer.write(now, TaskRestoring.edits(restoring: before, from: now), cascades: false)
         }
         day.restore(step.day)
+        sections.restore(step.sections)
         await derived.publish()
     }
 

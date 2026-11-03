@@ -1,10 +1,8 @@
 import SwiftUI
 
-/// Settings of the habits side: whether new habits show in Today, the habit colors, and how the parts of
-/// the day are split for sorting (read-only, from rules).
+/// Settings of the habits side: whether new habits show in Today, the habit colors, rings and notification pictures.
 struct HabitSettingsScreen: View {
     @Environment(AppModel.self) private var model
-    @Environment(\.rules) private var rules
     @Environment(\.tokens) private var tokens
 
     var body: some View {
@@ -36,14 +34,6 @@ struct HabitSettingsScreen: View {
             }
             HabitRingSettingsSection()
             NotificationImageSection()
-            PlateSection(header: "settings.habits.partsOfDay", info: "info.settings.habits.partsOfDay") {
-                PlateRow(icon: .timeOfDay, title: "habitPage.timeOfDay.morning") {
-                    Text(L10n.format("settings.habits.until", rules.day.morningEnds.string)).foregroundStyle(tokens.color(.secondaryText))
-                }
-                PlateRow(icon: nil, title: "habitPage.timeOfDay.evening") {
-                    Text(L10n.format("settings.habits.from", rules.day.eveningStarts.string)).foregroundStyle(tokens.color(.secondaryText))
-                }
-            }
         }
     }
 }

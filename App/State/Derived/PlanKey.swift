@@ -7,6 +7,7 @@ struct PlanKey: Equatable {
     let events: [CalendarEvent]
     let reminders: [ReminderItem]
     let dayState: DayState
+    let sections: DaySections
     let settings: AppSettings
     let calendar: Calendar
     let eventsKnown: Bool

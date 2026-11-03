@@ -1,7 +1,8 @@
 import Foundation
 
 /// Settings older versions stored that the current one no longer has, dropped as they are read (this device's settings
-/// file and the vault's settings), so nothing that uses the settings has to know about them.
+/// file and the vault's settings), so nothing that uses the settings has to know about them. Fields a struct no longer
+/// has (the day routine) are read past by the decoder and not written back.
 enum SettingsMigration {
     /// Colors older versions let the user pick and the current one does not: the accent (the interface became black and
     /// white), the Twice and the missed-day colors (drawn nowhere).
@@ -10,6 +11,7 @@ enum SettingsMigration {
     static func migrated(_ settings: AppSettings) -> AppSettings {
         var settings = settings
         settings.colors = settings.colors.filter { !retiredColors.contains($0.key) }
+        settings.pool.criteria = settings.pool.criteria.filter { PoolSortCriterion(rawValue: $0) != nil }
         return settings
     }
 }

@@ -6,8 +6,6 @@
       "halfYear",
       "someday"
     ],
-    "morningEnds": "12:00",
-    "eveningStarts": "18:00",
     "eventLinkToleranceSeconds": 60
   },
   "timeEstimates": [
@@ -128,6 +126,23 @@
     "highPriorityLooks": [
       "leadingIcon",
       "fill"
+    ],
+    "defaultSections": [
+      {
+        "id": "morning",
+        "title": "section.morning",
+        "routine": "morning"
+      },
+      {
+        "id": "day",
+        "title": "section.day",
+        "catchesRest": true
+      },
+      {
+        "id": "evening",
+        "title": "section.evening",
+        "routine": "evening"
+      }
     ]
   },
   "limits": {

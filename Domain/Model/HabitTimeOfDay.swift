@@ -1,8 +1,7 @@
 import Foundation
 
-/// The part of the day a habit belongs to; the pool lifts habits of the current part.
+/// The routine a habit belongs to: its section of the pool by default and its shared plate there.
 enum HabitTimeOfDay: String, Codable, CaseIterable, Sendable {
     case morning
-    case day
     case evening
 }

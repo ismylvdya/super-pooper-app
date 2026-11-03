@@ -43,6 +43,7 @@ final class AppContainer {
         if launch.resetState {
             shared.remove(SettingsStore.fileName)
             shared.remove(DayStateStore.fileName)
+            shared.remove(JSONDaySectionStore.fileName)
         }
         let clock = launch.clock(calendar: calendar.current)
 
@@ -75,7 +76,7 @@ final class AppContainer {
             calendars: EventKitCalendarRepository(eventKit: eventKit),
             reminders: EventKitRemindersRepository(eventKit: eventKit, calendar: calendar),
             notifications: notifications, settingsStore: settingsStore,
-            dayStateStore: DayStateStore(store: shared), snapshotStore: SnapshotStore(store: shared),
+            dayStateStore: DayStateStore(store: shared), daySectionStore: JSONDaySectionStore(store: shared), snapshotStore: SnapshotStore(store: shared),
             alertStateStore: AlertStateStore(store: shared), snoozeStore: SnoozeStore(store: shared),
             widgets: WidgetKitReloader(), notificationImage: notificationImage, signature: launch.signature(now: clock.now))
 

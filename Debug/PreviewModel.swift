@@ -27,6 +27,7 @@ enum PreviewModel {
                                             rules: config.rules.vault, vaultSettings: { settingsStore.load().vault }),
             calendars: calendars, reminders: reminders, notifications: notifications,
             settingsStore: settingsStore, dayStateStore: DayStateStore(store: store),
+            daySectionStore: JSONDaySectionStore(store: store),
             snapshotStore: SnapshotStore(store: store), alertStateStore: AlertStateStore(store: store),
             snoozeStore: SnoozeStore(store: store), widgets: NoWidgets(),
             notificationImage: NotificationImageStore(url: store.url(config.rules.notifications.imageFile), maxPixels: 1),

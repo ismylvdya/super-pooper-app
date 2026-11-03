@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The order of the morning, day and evening routines: drag habits within a routine; the pool follows it. A swipe to
+/// The order of the morning and evening routines: drag habits within a routine; the pool follows it. A swipe to
 /// the right is Done, to the left Delete, as in Habits. Habits join a routine on their page (habit page → Routine).
 struct RoutinesScreen: View {
     @Environment(AppModel.self) private var model
@@ -13,7 +13,6 @@ struct RoutinesScreen: View {
     var body: some View {
         List {
             section(.morning, title: "routines.morning")
-            section(.day, title: "routines.day")
             section(.evening, title: "routines.evening")
         }
         .listGroupStyle()

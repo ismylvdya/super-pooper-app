@@ -31,7 +31,7 @@ struct PlateSection<Content: View>: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            if let header { PlateHeader(title: header, info: info) }
+            if let header { SectionHeader(title: header, info: info) }
             Plate { content }
             if let hint { PlateHint(text: hint) }
         }

@@ -1,10 +1,9 @@
 import Foundation
 
-/// The user's order of the morning, day and evening routines (habits with that part of the day).
+/// The user's order of the morning and evening routines (habits with that part of the day).
 /// Habits not in the order follow it by name.
 struct HabitRoutines: Hashable, Sendable {
     var morning: [String] = []
-    var day: [String] = []
     var evening: [String] = []
 
     /// Position of a habit within its routine; nil for habits outside the routines.
@@ -18,7 +17,6 @@ struct HabitRoutines: Hashable, Sendable {
     func order(_ part: HabitTimeOfDay) -> [String] {
         switch part {
         case .morning: morning
-        case .day: day
         case .evening: evening
         }
     }
