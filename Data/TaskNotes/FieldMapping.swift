@@ -51,7 +51,6 @@ struct FieldMapping: Codable, Hashable, Sendable {
     /// Raw values of `time_of_day`.
     struct TimesOfDay: Codable, Hashable, Sendable {
         let morning: String
-        let day: String
         let evening: String
     }
 
@@ -124,7 +123,6 @@ struct FieldMapping: Codable, Hashable, Sendable {
     func timeOfDay(fromRaw raw: String) -> HabitTimeOfDay? {
         switch raw {
         case timesOfDay.morning: .morning
-        case timesOfDay.day: .day
         case timesOfDay.evening: .evening
         default: nil
         }
@@ -150,7 +148,6 @@ struct FieldMapping: Codable, Hashable, Sendable {
     func raw(_ timeOfDay: HabitTimeOfDay) -> String {
         switch timeOfDay {
         case .morning: timesOfDay.morning
-        case .day: timesOfDay.day
         case .evening: timesOfDay.evening
         }
     }

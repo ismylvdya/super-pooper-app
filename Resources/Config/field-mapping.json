@@ -56,7 +56,6 @@
   "dependencyRelType": "FINISHTOSTART",
   "timesOfDay": {
     "morning": "morning",
-    "day": "day",
     "evening": "evening"
   },
   "itemSettings": {

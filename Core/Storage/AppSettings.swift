@@ -112,9 +112,8 @@ struct AppSettings: Codable, Equatable, Sendable {
         var showNewHabitsInToday: Bool
         /// The own color (`#RRGGBB`) a newly created habit gets; black unless the user picks another.
         var newHabitColor: String
-        /// The order of the morning, day and evening routines in the pool (habit names).
+        /// The order of the morning and evening routines in the pool (habit names).
         var morningRoutine: [String]
-        var dayRoutine: [String]
         var eveningRoutine: [String]
         /// Opacity of the ring of a habit's day not done or done partly (on its page's grid, in the Habits list, the widget).
         var ringOpacity: Double
@@ -129,7 +128,6 @@ struct AppSettings: Codable, Equatable, Sendable {
         static func routine(_ part: HabitTimeOfDay) -> WritableKeyPath<Habits, [String]> {
             switch part {
             case .morning: \.morningRoutine
-            case .day: \.dayRoutine
             case .evening: \.eveningRoutine
             }
         }
@@ -139,7 +137,7 @@ struct AppSettings: Codable, Equatable, Sendable {
 
         /// The orders of all routines, for the day.
         var routines: HabitRoutines {
-            HabitRoutines(morning: morningRoutine, day: dayRoutine, evening: eveningRoutine)
+            HabitRoutines(morning: morningRoutine, evening: eveningRoutine)
         }
     }
 

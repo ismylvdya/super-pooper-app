@@ -21,6 +21,12 @@ struct FieldMappingTests {
         #expect(TestConfig.mapping.raw(.inbox) == "inbox")
     }
 
+    /// There is no day routine any more: a note's `time_of_day: day` reads as no routine, so the habit goes to Day.
+    @Test func aDayTimeOfDayReadsAsNoRoutine() {
+        #expect(TestConfig.mapping.timeOfDay(fromRaw: "day") == nil)
+        #expect(TestConfig.mapping.timeOfDay(fromRaw: "evening") == .evening)
+    }
+
     @Test func everyFieldHasAName() {
         // Unit tests run inside the app, whose bundle holds the texts.
         let bundle = Bundle.main

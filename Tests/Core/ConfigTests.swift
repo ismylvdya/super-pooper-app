@@ -88,6 +88,21 @@ struct ConfigTests {
         }
     }
 
+    /// Morning, Day and Evening by default; a pool needs exactly one section for what no routine places.
+    @Test func defaultSectionsHaveExactlyOneForTheRest() throws {
+        let sections = TestConfig.rules.pool.defaultSections
+        #expect(sections.map(\.id) == ["morning", "day", "evening"])
+        #expect(sections.map(\.routine) == [.morning, nil, .evening])
+        #expect(sections.restID == "day")
+        let rules = try String(contentsOf: TestPaths.configFolder.appendingPathComponent("rules.json"), encoding: .utf8)
+        for broken in [try rules.replacingOnce(#""catchesRest": true"#, with: #""catchesRest": false"#),
+                       try rules.replacingOnce(#""id": "evening""#, with: #""id": "day""#),
+                       try rules.replacingOnce(#""routine": "evening""#, with: #""routine": "morning""#)] {
+            let decoded = try ConfigLoader.decode(RulesConfig.self, from: Data(broken.utf8), file: "rules.json")
+            #expect(throws: ConfigError.self) { try decoded.pool.validate(file: "rules.json") }
+        }
+    }
+
     /// "new|old" in icons.json: the newer symbol where the system has it, the fallback otherwise.
     @Test func iconFallbacksPickTheFirstAvailableSymbol() throws {
         let icons = TestConfig.decode(IconSet.self, "icons.json")
@@ -132,6 +147,7 @@ struct ConfigTests {
         var keys = config.actions.actions.flatMap { [$0.title, $0.confirmMessage, $0.confirmSubtasks].compactMap { $0 } }
         keys += config.actions.actions.flatMap { action in NoteKind.allCases.compactMap { action.confirmTitle(for: $0) } }
         keys += config.rules.timeEstimates.map(\.label)
+        keys += config.rules.pool.defaultSections.map(\.title)
         for key in keys {
             #expect(bundle.localizedString(forKey: key, value: "∅", table: nil) != "∅", "missing text for \(key)")
         }

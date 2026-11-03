@@ -2125,17 +2125,6 @@
         }
       }
     },
-    "habitPage.timeOfDay.day": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Day"
-          }
-        }
-      }
-    },
     "habitPage.timeOfDay.evening": {
       "extractionState": "manual",
       "localizations": {
@@ -2384,7 +2373,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The routine the habit belongs to. Habits of one routine stand together in the pool, joined on one plate, in the order set in Habits → Routines; morning ones rise to the top in the morning, evening ones in the evening."
+            "value": "The routine the habit belongs to. Morning habits stand in the pool's Morning section, evening ones in Evening, joined on one plate in the order set in Habits → Routines."
           }
         }
       }
@@ -2495,17 +2484,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Before this hour tasks that need energy go up in the pool; after it they go down."
-          }
-        }
-      }
-    },
-    "info.settings.habits.partsOfDay": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Where the morning ends and the evening starts, for sorting habits by part of the day. Set in rules.json."
           }
         }
       }
@@ -4369,17 +4347,6 @@
         }
       }
     },
-    "routines.day": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Day routine"
-          }
-        }
-      }
-    },
     "routines.empty": {
       "extractionState": "manual",
       "localizations": {
@@ -4408,7 +4375,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Drag to change the order. The pool shows the routine in this order; the morning routine comes first in the pool."
+            "value": "Drag to change the order. The pool shows each routine in this order, in its own section."
           }
         }
       }
@@ -4519,6 +4486,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "Search"
+          }
+        }
+      }
+    },
+    "section.day": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day"
+          }
+        }
+      }
+    },
+    "section.evening": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Evening"
+          }
+        }
+      }
+    },
+    "section.morning": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Morning"
           }
         }
       }
@@ -4853,17 +4853,6 @@
         }
       }
     },
-    "settings.habits.from": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "from %@"
-          }
-        }
-      }
-    },
     "settings.habits.marks": {
       "extractionState": "manual",
       "localizations": {
@@ -4893,17 +4882,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Whether a new habit shows up on Today right away and its color. You can change both on each habit's page."
-          }
-        }
-      }
-    },
-    "settings.habits.partsOfDay": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Parts of the day"
           }
         }
       }
@@ -4948,17 +4926,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ring of an open day"
-          }
-        }
-      }
-    },
-    "settings.habits.until": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "until %@"
           }
         }
       }
@@ -5977,28 +5944,6 @@
         }
       }
     },
-    "sort.habitTimeOfDay": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Part of the day"
-          }
-        }
-      }
-    },
-    "sort.habitTimeOfDay.hint": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Habits of the current part of the day go up, others down."
-          }
-        }
-      }
-    },
     "sort.habitsFirst": {
       "extractionState": "manual",
       "localizations": {
@@ -6039,28 +5984,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tasks with High."
-          }
-        }
-      }
-    },
-    "sort.morningRoutine": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Morning routine first"
-          }
-        }
-      }
-    },
-    "sort.morningRoutine.hint": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Habits of the morning go above everything."
           }
         }
       }

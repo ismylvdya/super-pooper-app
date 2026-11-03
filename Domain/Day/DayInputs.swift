@@ -22,4 +22,6 @@ struct DayInputs: Sendable {
     var eventsKnown = true
     /// Habit blocks dragged on today's timeline (to another time or to the pool); none on another day.
     var timeMoves: [TimeMove] = []
+    /// The day's sections as the user arranged them; nil = the defaults.
+    var sections: DaySections?
 }

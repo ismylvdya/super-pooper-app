@@ -121,6 +121,20 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let rowVisibleShare: Double
         /// The ways of showing a high-priority task the settings offer, in their order.
         let highPriorityLooks: [AppSettings.HighPriorityLook]
+        /// The sections every day's pool starts with, in their order.
+        let defaultSections: [PoolSectionDefinition]
+
+        func validate(file: String) throws {
+            let path = "pool.defaultSections"
+            let sections = defaultSections
+            if sections.isEmpty { throw ConfigError(file: file, path: path, message: "no sections") }
+            if Set(sections.map(\.id)).count != sections.count { throw ConfigError(file: file, path: path, message: "section ids repeat") }
+            if sections.filter(\.catchesRest).count != 1 {
+                throw ConfigError(file: file, path: path, message: "exactly one section needs \"catchesRest\"")
+            }
+            let routines = sections.compactMap(\.routine)
+            if Set(routines).count != routines.count { throw ConfigError(file: file, path: path, message: "a routine has two sections") }
+        }
 
         func extraLines(forEstimate minutes: Int) -> Int {
             extraLines.filter { minutes >= $0.minutes }.map(\.lines).max() ?? 0

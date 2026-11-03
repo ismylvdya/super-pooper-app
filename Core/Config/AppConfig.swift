@@ -47,6 +47,8 @@ struct AppConfig: Sendable {
                                        values: try ConfigLoader.decode(AppSettings.self, from: defaultsJSON, file: File.defaults))
         let lists = try loader.load(TaskListsConfig.self, from: File.lists)
         try lists.validate(defaultIcon: defaults.values.lists.icon, file: File.lists)
+        let rules = try loader.load(RulesConfig.self, from: File.rules)
+        try rules.pool.validate(file: File.rules)
         let dateGrammar = try loader.load(DateGrammar.self, from: File.dateGrammar)
         try dateGrammar.validate(file: File.dateGrammar)
         func layout(_ file: String) throws -> ScreenLayout {
@@ -64,7 +66,7 @@ struct AppConfig: Sendable {
             todayPaged: try layout(File.todayPaged),
             sort: try loader.load(SortConfig.self, from: File.sort),
             flags: try loader.load(FeatureFlags.self, from: File.flags),
-            rules: try loader.load(RulesConfig.self, from: File.rules),
+            rules: rules,
             lists: lists,
             defaultSettings: defaults,
             dateGrammar: dateGrammar

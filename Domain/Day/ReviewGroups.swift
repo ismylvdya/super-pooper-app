@@ -10,7 +10,7 @@ enum ReviewGroups {
             switch part {
             case .morning: self = .morning
             case .evening: self = .evening
-            case .day, nil: self = .day
+            case nil: self = .day
             }
         }
 

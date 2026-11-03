@@ -4,6 +4,8 @@ import Foundation
 struct DayBuilder: Sendable {
     let rules: DayRules
     let sortCriteria: [PoolSortCriterion]
+    /// The sections every day starts with (`rules.json` → `pool.defaultSections`).
+    let sections: [PoolSectionDefinition]
 
     func build(_ inputs: DayInputs, context: DayContext) -> DayPlan {
         let graph = TaskGraph(tasks: inputs.tasks)
@@ -58,8 +60,11 @@ struct DayBuilder: Sendable {
             !$0.isFinished && (!timedNames.contains($0.id) || times.isPooledToday($0)) && chainAnchors[$0.id] == nil
         }
 
-        let pool = SubtaskNesting.nested(inputs.manualOrder.map { sorter.applyingManualOrder($0, to: poolItems, graph: graph, context: context) }
+        let sorted = SubtaskNesting.nested(inputs.manualOrder.map { sorter.applyingManualOrder($0, to: poolItems, graph: graph, context: context) }
             ?? sorter.sorted(poolItems, graph: graph, context: context))
+        let arranged = PoolArrangement.arrange(sorted, sections: inputs.sections ?? .defaults(on: context.today, definitions: sections),
+                                               definitions: sections)
+        let pool = arranged.isEmpty ? sorted : arranged.flatMap(\.items)
 
         var timeline = FixedSlots(rules: rules, times: times, overdue: overdue)
             .slots(timed: shownTimed, events: inputs.timelineFilter.events ? inputs.events : [],
@@ -74,6 +79,7 @@ struct DayBuilder: Sendable {
             .sorted { NameOrder.precedes($0.title, $1.title) }
         var plan = DayPlan(today: context.today, now: context.now, pool: pool, timeline: timeline, problems: problems, allDayEvents: allDay)
         plan.focus = context.focus
+        plan.sections = arranged
         return plan
     }
 }

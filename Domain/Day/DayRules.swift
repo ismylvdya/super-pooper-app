@@ -8,9 +8,6 @@ struct DayRules: Codable, Hashable, Sendable {
     var reminderMinutes: Int
     /// Which planning levels are promoted to this week when the date falls in the current week.
     var autoPromoteFrom: [TaskStatus.Name]
-    /// Parts of the day for habits' time of day: morning until `morningEnds`, evening from `eveningStarts`.
-    var morningEnds: LocalTime
-    var eveningStarts: LocalTime
     /// A link found by an event's title matches an event starting at most this far from the start it names.
     var eventLinkToleranceSeconds: Double
 
@@ -27,12 +24,5 @@ struct DayRules: Codable, Hashable, Sendable {
     /// How long a reminder's block lasts on the timeline.
     var reminderDuration: TimeInterval {
         TimeInterval(reminderMinutes * 60)
-    }
-
-    /// Hours after midnight (before the day boundary) still belong to the evening.
-    func partOfDay(_ context: DayContext) -> HabitTimeOfDay {
-        let time = LocalTime(context.now, in: context.calendar)
-        if time < context.boundary || time >= eveningStarts { return .evening }
-        return time < morningEnds ? .morning : .day
     }
 }

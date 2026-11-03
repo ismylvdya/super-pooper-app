@@ -49,15 +49,10 @@ struct PoolSorter: Sendable {
 
     private func key(_ criterion: PoolSortCriterion, _ task: TaskItem, _ context: DayContext) -> SortKey {
         switch criterion {
-        case .morningRoutine:
-            return .known(task.habit.timeOfDay == .morning ? 0 : 1)
         case .routineOrder:
             return routines.position(of: task).map { .known(Double($0)) } ?? .unknown
         case .habitsFirst:
             return .known(task.isHabit && task.habitTimes.isEmpty ? 0 : 1)
-        case .habitTimeOfDay:
-            guard let part = task.habit.timeOfDay else { return .known(1) }
-            return .known(part == rules.partOfDay(context) ? 0 : 2)
         case .dueToday:
             return .known(!task.isHabit && task.due.map(context.logicalDay(of:)) == context.today ? 0 : 1)
         case .highPriority:

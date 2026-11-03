@@ -42,7 +42,6 @@ enum SettingsSearchIndex {
         Section(title: "settings.habits.marks", route: .habitSettings, rows: ["settings.habits.ringOpacity"]),
         Section(title: "settings.notificationImage", route: .habitSettings,
                 rows: ["settings.notificationImage.show", "settings.notificationImage.picture", "settings.notificationImage.habitColor"]),
-        Section(title: "settings.habits.partsOfDay", route: .habitSettings, rows: []),
     ]
 
     /// The sections `query` finds, in the order the pages show them; none for an empty query.

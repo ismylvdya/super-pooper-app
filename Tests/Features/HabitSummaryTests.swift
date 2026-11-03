@@ -18,7 +18,7 @@ struct HabitSummaryTests {
         #expect(HabitSummary.traitsLine(habit)?.spoken == "Evening, Twice")
     }
 
-    @Test(arguments: [(HabitTimeOfDay.morning, "Morning"), (.day, "Day"), (.evening, "Evening")])
+    @Test(arguments: [(HabitTimeOfDay.morning, "Morning"), (.evening, "Evening")])
     func eachRoutineHasItsName(part: HabitTimeOfDay, name: String) {
         let habit = makeHabit("Stretch") { $0.habit.timeOfDay = part }
         #expect(HabitSummary.traitsLine(habit) == HabitSummary.TraitsLine(text: name, spoken: name))

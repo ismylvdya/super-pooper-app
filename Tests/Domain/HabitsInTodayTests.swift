@@ -67,19 +67,11 @@ struct HabitsInTodayTests {
 
     // MARK: - Part of the day
 
-    /// The morning routine stays on top all day; the rest follows the current part of the day.
-    @Test(arguments: [("08:00", ["Morning", "Any", "Evening"]), ("14:00", ["Morning", "Any", "Evening"]), ("20:00", ["Morning", "Evening", "Any"])])
-    func habitsOfTheCurrentPartGoUp(time: String, expected: [String]) {
+    /// The hour no longer moves routines: their sections place them, the same all day.
+    @Test func theHourDoesNotMoveRoutines() {
         let tasks = [habit("Any"), habit("Evening") { $0.habit.timeOfDay = .evening }, habit("Morning") { $0.habit.timeOfDay = .morning }]
-        let names = DayScenario(tasks: tasks).build(at: TestCalendar.context(TestCalendar.wednesday, time)).poolNames
-        #expect(names == expected)
-    }
-
-    @Test func afterMidnightIsStillEvening() {
-        let rules = TestConfig.rules.day
-        #expect(rules.partOfDay(TestCalendar.context("2026-10-22", "01:30")) == .evening)
-        #expect(rules.partOfDay(TestCalendar.context(TestCalendar.wednesday, "04:30")) == .morning)
-        #expect(rules.partOfDay(TestCalendar.context(TestCalendar.wednesday, "12:00")) == .day)
+        let orders = ["08:00", "14:00", "20:00"].map { DayScenario(tasks: tasks).build(at: TestCalendar.context(TestCalendar.wednesday, $0)).poolNames }
+        #expect(Set(orders).count == 1)
     }
 
     // MARK: - All-day events
@@ -91,14 +83,15 @@ struct HabitsInTodayTests {
         #expect(plan.allDayEvents.map(\.title) == ["Today off"])
     }
 
-    /// Each part of the day keeps its routine in its own setting, and the day reads all three from there.
+    /// Only Morning and Evening are routines; each keeps its order in its own setting, and the day reads both from there.
     @Test func eachRoutineHasItsSetting() {
+        #expect(HabitTimeOfDay.allCases == [.morning, .evening])
         var habits = TestConfig.defaults.habits
-        for (part, names) in zip(HabitTimeOfDay.allCases, [["M"], ["D"], ["E"]]) {
+        for (part, names) in zip(HabitTimeOfDay.allCases, [["M"], ["E"]]) {
             habits[keyPath: AppSettings.Habits.routine(part)] = names
         }
-        #expect(habits.morningRoutine == ["M"] && habits.dayRoutine == ["D"] && habits.eveningRoutine == ["E"])
-        #expect(HabitTimeOfDay.allCases.map(habits.routines.order) == [["M"], ["D"], ["E"]])
+        #expect(habits.morningRoutine == ["M"] && habits.eveningRoutine == ["E"])
+        #expect(HabitTimeOfDay.allCases.map(habits.routines.order) == [["M"], ["E"]])
     }
 
     /// All-day bars go by name as everything else does (`NameOrder`): letter case does not matter, numbers count as numbers.
@@ -163,14 +156,14 @@ struct PoolSegmentsTests {
         #expect(segments.map { $0.items.map(\.id) } == [["A", "B"], ["C"], ["D", "E"], ["F"]])
     }
 
-    @Test func theDayRoutineSharesAPlateToo() {
-        let segments = PoolSegments.make([item("A", .day), item("B", .day), item("C", .evening)])
+    @Test func theEveningRoutineSharesAPlateToo() {
+        let segments = PoolSegments.make([item("A", .evening), item("B", .evening), item("C", .morning)])
         #expect(segments.map { $0.items.map(\.id) } == [["A", "B"], ["C"]])
     }
 
     @Test func eachRoutineKeepsItsOwnOrder() {
-        let routines = HabitRoutines(morning: ["M2", "M1"], day: ["D2", "D1"], evening: [])
-        #expect(routines.position(of: makeHabit("D1", status: .habit) { $0.habit.timeOfDay = .day }) == 1)
+        let routines = HabitRoutines(morning: ["M2", "M1"], evening: ["E2", "E1"])
+        #expect(routines.position(of: makeHabit("E1", status: .habit) { $0.habit.timeOfDay = .evening }) == 1)
         #expect(routines.position(of: makeHabit("M2", status: .habit) { $0.habit.timeOfDay = .morning }) == 0)
         #expect(routines.position(of: makeHabit("Any", status: .habit)) == nil)
     }

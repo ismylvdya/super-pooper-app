@@ -66,7 +66,6 @@
     "showNewHabitsInToday": true,
     "newHabitColor": "#000000",
     "morningRoutine": [],
-    "dayRoutine": [],
     "eveningRoutine": [],
     "repeatableShowsHistory": false,
     "ringOpacity": 0.5,
