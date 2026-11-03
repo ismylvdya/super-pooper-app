@@ -27,6 +27,17 @@ struct ZonedTimesTests {
         #expect(local.reminderTimes == [LocalTime("00:30")])
     }
 
+    /// A habit's time kept in `due` carries the day its rule starts (here in September, when Sydney is on standard time):
+    /// the time moves as it falls today, on summer time, and the day stays as written.
+    @Test func aZonedHabitsDueTimeMovesAsItFallsToday() {
+        var istanbul = Calendar(identifier: .gregorian)
+        istanbul.timeZone = TimeZone(identifier: "Europe/Istanbul")!
+        let habit = makeHabit("Call mum", status: .habit) { $0.timeZone = "Australia/Sydney"; $0.due = TaskDue("2026-09-01T09:00") }
+        let local = ZonedTimes.local(habit, calendar: istanbul, today: LocalDate("2026-11-04"))
+        #expect(local.due == TaskDue("2026-09-01T01:00"))
+        #expect(local.habitTimes == [LocalTime("01:00")])
+    }
+
     /// What the day decides on the phone's clock goes back into the item's zone, so the note keeps its own times.
     @Test func aStoredTimeUndoesTheMoveToThePhonesZone() {
         let task = makeTask("Call") { $0.timeZone = "Europe/Moscow"; $0.due = TaskDue("2026-10-21T09:00") }
