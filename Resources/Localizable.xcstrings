@@ -830,17 +830,6 @@
         }
       }
     },
-    "chipOrder.blocked": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Waits for another task"
-          }
-        }
-      }
-    },
     "chipOrder.feel": {
       "extractionState": "manual",
       "localizations": {
@@ -2910,17 +2899,6 @@
         }
       }
     },
-    "info.taskPage.events": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Link the task to a calendar event: before it (Next event) or after it (Previous event). Linked tasks line up on the timeline."
-          }
-        }
-      }
-    },
     "info.taskPage.feel": {
       "extractionState": "manual",
       "localizations": {
@@ -2939,17 +2917,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "High-priority tasks go higher in the pool."
-          }
-        }
-      }
-    },
-    "info.taskPage.links": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Previous tasks and habits come before this one and hold it back until they are done (a habit — until it is marked or skipped today). Next ones wait for this one. Each link is stored once, in the later note."
           }
         }
       }
@@ -3504,94 +3471,6 @@
         }
       }
     },
-    "picker.event.allDay": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "All day"
-          }
-        }
-      }
-    },
-    "picker.event.empty": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No upcoming events"
-          }
-        }
-      }
-    },
-    "picker.event.noCalendars": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Choose anchor calendars in Settings → Sources first."
-          }
-        }
-      }
-    },
-    "picker.event.search": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Search events"
-          }
-        }
-      }
-    },
-    "picker.event.title": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Choose event"
-          }
-        }
-      }
-    },
-    "picker.task.empty": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No tasks found"
-          }
-        }
-      }
-    },
-    "picker.task.search": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Search tasks and habits"
-          }
-        }
-      }
-    },
-    "picker.task.title": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Choose task or habit"
-          }
-        }
-      }
-    },
     "pool.empty": {
       "extractionState": "manual",
       "localizations": {
@@ -3625,28 +3504,6 @@
         }
       }
     },
-    "problem.cycle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Task links form a loop; one link is ignored."
-          }
-        }
-      }
-    },
-    "problem.eventNotFound": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Event “%@” not found; the link is ignored."
-          }
-        }
-      }
-    },
     "problem.folderMissing": {
       "extractionState": "manual",
       "localizations": {
@@ -3665,17 +3522,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Can’t read “%@”: %@"
-          }
-        }
-      }
-    },
-    "problem.linkNotFound": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Linked task “%@” not found; it does not block."
           }
         }
       }
@@ -6400,17 +6246,6 @@
         }
       }
     },
-    "taskPage.addLink": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Add link"
-          }
-        }
-      }
-    },
     "taskPage.chip.high": {
       "extractionState": "manual",
       "localizations": {
@@ -6488,39 +6323,6 @@
         }
       }
     },
-    "taskPage.eventNotFound": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Event not found"
-          }
-        }
-      }
-    },
-    "taskPage.events": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Events"
-          }
-        }
-      }
-    },
-    "taskPage.events.hint": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A task linked to an event is not checked against the event time — it is a guide, not a promise."
-          }
-        }
-      }
-    },
     "taskPage.feel": {
       "extractionState": "manual",
       "localizations": {
@@ -6572,17 +6374,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "High priority"
-          }
-        }
-      }
-    },
-    "taskPage.links": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Order"
           }
         }
       }
@@ -6642,28 +6433,6 @@
         }
       }
     },
-    "taskPage.nextEvent": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Next event"
-          }
-        }
-      }
-    },
-    "taskPage.nextTasks": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Next tasks"
-          }
-        }
-      }
-    },
     "taskPage.note": {
       "extractionState": "manual",
       "localizations": {
@@ -6693,39 +6462,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "The text of this note can’t be read right now, so it can’t be edited here. Pull down to try again."
-          }
-        }
-      }
-    },
-    "taskPage.pickEvent": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Choose event"
-          }
-        }
-      }
-    },
-    "taskPage.previousEvent": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Previous event"
-          }
-        }
-      }
-    },
-    "taskPage.previousTasks": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Previous tasks"
           }
         }
       }
@@ -6792,17 +6528,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Time"
-          }
-        }
-      }
-    },
-    "taskPage.removeLink": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Remove link"
           }
         }
       }
@@ -6902,17 +6627,6 @@
           "stringUnit": {
             "state": "translated",
             "value": ":%02lld"
-          }
-        }
-      }
-    },
-    "timeline.links": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Show linked blocks"
           }
         }
       }

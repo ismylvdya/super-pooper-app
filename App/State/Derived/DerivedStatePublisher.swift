@@ -83,7 +83,10 @@ final class DerivedStatePublisher {
         }
         var timed: [String: LocalTime] = [:]
         for slot in plan.timeline {
-            if case .task(let item) = slot.content { timed[item.id] = LocalTime(slot.start, in: day.calendar) }
+            // An overdue block rides on the cursor: what the file says is its own time, not the moving one.
+            if case .task(let item) = slot.content {
+                timed[item.id] = slot.start > plan.now ? LocalTime(slot.start, in: day.calendar) : slot.time
+            }
         }
         let mirror = DayMirror(sections: sections, timed: timed, keptOut: day.postponedNames)
         Task { await mirroring.mirror(mirror) }
