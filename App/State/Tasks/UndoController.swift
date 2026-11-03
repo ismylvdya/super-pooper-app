@@ -10,7 +10,8 @@ final class UndoController {
     struct Step: Equatable {
         let id = UUID()
         let action: ActionID
-        let name: String
+        /// The notes the action was taken on (several in Select mode).
+        let names: [String]
         /// The notes as they were before the action.
         let notes: [TaskItem]
         /// The subtasks that go along with the note.
@@ -56,20 +57,26 @@ final class UndoController {
     }
 
     /// What the action on the note may change, as it is before the action runs.
-    func begin(_ action: ActionID, on name: String) -> Step? {
-        guard let note = tasks.task(named: name) else { return nil }
-        let along = action.subtaskChange.map { SubtaskCascade.subtasks(of: note, in: tasks.tasks, change: $0) } ?? []
-        let going = [note] + along
+    func begin(_ action: ActionID, on name: String) -> Step? { begin(action, on: [name]) }
+
+    /// What the action on the notes (Select mode) may change, as they are before it runs: one step for all of them.
+    func begin(_ action: ActionID, on names: [String]) -> Step? {
+        let chosen = names.compactMap(tasks.task(named:))
+        guard !chosen.isEmpty else { return nil }
+        let along = chosen.flatMap { note in
+            action.subtaskChange.map { SubtaskCascade.subtasks(of: note, in: tasks.tasks, change: $0) } ?? []
+        }
+        let going = Self.unique(chosen + along)
         let waiting = going.flatMap { NameReferences.waiting(for: $0.name, in: tasks.tasks) }
-        var notes: [TaskItem] = []
-        for task in going + waiting where !notes.contains(where: { $0.id == task.id }) { notes.append(task) }
-        return Step(action: action, name: note.name, notes: notes, along: along.map(\.name), day: day.dayState,
+        let chosenIDs = Set(chosen.map(\.id))
+        return Step(action: action, names: chosen.map(\.name), notes: Self.unique(going + waiting),
+                    along: Self.unique(along).filter { !chosenIDs.contains($0.id) }.map(\.name), day: day.dayState,
                     sections: sections.storedSnapshots())
     }
 
     /// What a delete of a task of the done folder changes: only that file, which goes to the trash.
     func begin(_ action: ActionID, onFiled task: TaskItem) -> Step {
-        Step(action: action, name: task.name, notes: [], along: [], day: day.dayState, sections: sections.storedSnapshots(), filed: task)
+        Step(action: action, names: [task.name], notes: [], along: [], day: day.dayState, sections: sections.storedSnapshots(), filed: task)
     }
 
     /// The action has run: when it changed anything, the banner offers to take it back.
@@ -79,7 +86,7 @@ final class UndoController {
         guard trashed.count > 0 || day.dayState != step.day || step.notes.contains(where: { tasks.task(named: $0.name) != $0 })
         else { return }
         last = step
-        appEvents.send(.undoable(UndoOffer(id: step.id, action: step.action, name: step.name, along: step.along)))
+        appEvents.send(.undoable(UndoOffer(id: step.id, action: step.action, names: step.names, along: step.along)))
     }
 
     /// Puts back what the step's action changed; a step that is no longer the latest is left alone.
@@ -98,6 +105,12 @@ final class UndoController {
         day.restore(step.day)
         sections.restore(step.sections)
         await derived.publish()
+    }
+
+    private static func unique(_ notes: [TaskItem]) -> [TaskItem] {
+        var result: [TaskItem] = []
+        for note in notes where !result.contains(where: { $0.id == note.id }) { result.append(note) }
+        return result
     }
 
     /// The deleted notes out of the trash (a filed one back into the done folder), the tasks filed as done back among the
@@ -122,7 +135,21 @@ final class UndoController {
 struct UndoOffer: Equatable, Sendable {
     let id: UUID
     let action: ActionID
-    let name: String
-    /// The subtasks that went along with it.
+    /// The notes the action was taken on (several in Select mode).
+    let names: [String]
+    /// The subtasks that went along with them.
     var along: [String] = []
+
+    init(id: UUID, action: ActionID, names: [String], along: [String] = []) {
+        self.id = id
+        self.action = action
+        self.names = names
+        self.along = along
+    }
+
+    init(id: UUID, action: ActionID, name: String, along: [String] = []) {
+        self.init(id: id, action: action, names: [name], along: along)
+    }
+
+    var name: String { names.first ?? "" }
 }

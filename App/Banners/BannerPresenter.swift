@@ -23,9 +23,7 @@ final class BannerPresenter: AppEventSink {
         case .restored(let name): success("banner.restored", name)
         case .returned(let name): success("banner.returned", name)
         case .deletedForever(let name): success("banner.deletedForever", name)
-        case .undoable(let offer):
-            BannerCenter.Banner(text: L10n.format(String("banner.undoable.") + offer.action.rawValue, offer.name), style: .success,
-                                items: offer.along, undo: offer.id)
+        case .undoable(let offer): undoable(offer)
         case .conflictResolved(let name): success("banner.conflictResolved", name)
         case .promoted(let names):
             BannerCenter.Banner(text: L10n.string("banner.promoted"), style: .success, items: names)
@@ -54,6 +52,16 @@ final class BannerPresenter: AppEventSink {
 
     private static func success(_ key: String, _ name: String) -> BannerCenter.Banner {
         BannerCenter.Banner(text: L10n.format(key, name), style: .success)
+    }
+
+    /// One note named in the text; several (Select mode) counted, and each named on its own line under it.
+    private static func undoable(_ offer: UndoOffer) -> BannerCenter.Banner {
+        let key = String("banner.undoable.") + offer.action.rawValue
+        guard offer.names.count > 1 else {
+            return BannerCenter.Banner(text: L10n.format(key, offer.name), style: .success, items: offer.along, undo: offer.id)
+        }
+        return BannerCenter.Banner(text: L10n.format(String("banner.undoable.many.") + offer.action.rawValue, offer.names.count),
+                                   style: .success, items: offer.names + offer.along, undo: offer.id)
     }
 
     /// "Synced" and a count per kind of change, each its own element; the kinds without one are left out.
