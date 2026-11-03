@@ -10,6 +10,8 @@ struct RootView: View {
     @Environment(\.displayScale) private var displayScale
     /// Which side the physical bottom took the last time the phone lay sideways.
     @State private var landscapeBottom: HorizontalEdge = .trailing
+    /// What is being dragged on Tasks: a task, a section or the tab bar's "+", which stands outside the tabs.
+    @State private var taskDrag = TaskDragState()
 
     private var physicalBottom: HorizontalEdge? { verticalSizeClass == .compact ? landscapeBottom : nil }
 
@@ -91,6 +93,7 @@ struct RootView: View {
         // The user's colors and opacity sit closest to the views, over the bundled tokens of `appConfig`.
         .designTokens(tokens)
         .environment(model)
+        .environment(taskDrag)
         .environment(container.router)
         .environment(container.banners)
         .appConfig(container.config)

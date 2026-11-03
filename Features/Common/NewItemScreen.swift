@@ -29,7 +29,7 @@ struct NewItemScreen: View {
     }
 
     private var draftPage: some View {
-        let current = page ?? model.newItemPage(kind: seed.kind)
+        let current = page ?? model.newItemPage(seed)
         let editor = TaskEditor.draft(Binding(get: { page?.draft ?? current.draft }, set: { page?.draft = $0 }))
         return PageScaffold(title: current.name.isEmpty ? L10n.string(Self.titleKey(current.kind)) : current.name,
                             titleView: AnyView(NewNoteNameField(placeholder: LocalizedStringKey(Self.titleKey(current.kind)),

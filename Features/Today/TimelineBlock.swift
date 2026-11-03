@@ -1,9 +1,12 @@
 import SwiftUI
 
 /// The timeline block. Stacked arrangement: one rolling column or two fixed halves; side by side:
-/// hours around now or the whole day fitted into one column. Tapping an event opens Calendar.
+/// hours around now or the whole day fitted into one column. Tapping an event opens Calendar. A "+" let go on the
+/// one-column timeline, or a hold on its empty space, opens a new task's page at that time.
 struct TimelineBlock: View {
     @Environment(AppModel.self) private var model
+    @Environment(Router.self) private var router
+    @Environment(PoolSelection.self) private var selection: PoolSelection?
     @Environment(\.tokens) private var tokens
     @Environment(\.rules) private var rules
     @Environment(\.openURL) private var openURL
@@ -51,6 +54,7 @@ struct TimelineBlock: View {
                 ScrollView {
                     DayTimelineView(slots: plan.timeline, window: day, now: plan.now,
                                     hourHeight: hourHeight, style: style(gridDetail: detail), taskContent: taskRow)
+                        .background { hold(windowStart: day.start, hourHeight: hourHeight) }
                         .modifier(TimelineDropTarget(drag: drag, moment: { y in
                             TaskScheduling.moment(atOffset: Double(y), windowStart: day.start, hourHeight: Double(hourHeight),
                                                   stepMinutes: model.config.rules.timeline.dropStepMinutes, calendar: model.calendar)
@@ -64,6 +68,8 @@ struct TimelineBlock: View {
                                 if source.isBacklog { await model.scheduleFromBacklog(item.id, at: moment) }
                                 else { await model.schedule(item.id, slot: source.slot, at: moment) }
                             }
+                        }, onNewItemDrop: { moment in
+                            openNewItem(at: .timeline(at: moment, calendar: model.calendar))
                         }))
                         .padding(.vertical, contentInset)
                 }
@@ -140,6 +146,25 @@ struct TimelineBlock: View {
                 .syncsOnPull()
             }
         }
+    }
+
+    /// The empty space between the timeline's events and blocks (they lie over it and keep their own long press): a hold
+    /// there opens a new task's page at the moment held, as a "+" let go there would.
+    private func hold(windowStart: Date, hourHeight: CGFloat) -> some View {
+        Color.clear
+            .contentShape(Rectangle())
+            .gesture(HoldGesture { point in
+                guard selection?.isOn != true, drag?.isDragging != true else { return }
+                openNewItem(at: TaskScheduling.placement(atOffset: Double(point.y), windowStart: windowStart,
+                                                         hourHeight: Double(hourHeight),
+                                                         stepMinutes: model.config.rules.timeline.dropStepMinutes,
+                                                         calendar: model.calendar))
+            })
+    }
+
+    private func openNewItem(at placement: NewItemPlacement) {
+        Haptics.play(.drop)
+        router.openNewItem(NewItemSeed(kind: .task, placement: placement))
     }
 
     /// Half a group gap above the timeline's content and half below: a group gap in all, which the heights leave free.
@@ -227,6 +252,7 @@ private struct TimelineDropTarget: ViewModifier {
     let moment: (CGFloat) -> Date
     let canDrop: (DayItem, TaskDragState.Source) -> Bool
     let onDrop: (DayItem, TaskDragState.Source, Date) -> Void
+    let onNewItemDrop: (Date) -> Void
 
     func body(content: Content) -> some View {
         if let drag {
@@ -234,7 +260,7 @@ private struct TimelineDropTarget: ViewModifier {
             content
                 .contentShape(Rectangle())
                 .onDrop(of: TaskDragState.types, delegate: TimelineDropDelegate(drag: drag, moment: moment, canDrop: canDrop,
-                                                                                onDrop: onDrop))
+                                                                                onDrop: onDrop, onNewItemDrop: onNewItemDrop))
         } else {
             content
         }
