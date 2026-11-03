@@ -42,16 +42,16 @@ final class NewTaskUITests: XCTestCase {
         XCTAssertTrue(plus.waitForExistence(timeout: 10))
         app.dismissBanners()
         plus.tap()
-        let name = app.textFields["taskPage.name"]
+        let name = app.textViews["taskPage.name"]
         XCTAssertTrue(name.waitForExistence(timeout: 5))
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5), "the name is focused")
-        XCTAssertEqual(name.placeholderValue, "New task")
+        XCTAssertEqual(app.staticTexts["taskPage.name.placeholder"].label, "New task")
         app.navigationBars.buttons.element(boundBy: 0).tap()
         XCTAssertTrue(name.waitForNonExistence(timeout: 5))
         app.tabBars.buttons["Habits"].tap()
         plus.tap()
         XCTAssertTrue(name.waitForExistence(timeout: 5))
-        XCTAssertEqual(name.placeholderValue, "New habit")
+        XCTAssertEqual(app.staticTexts["taskPage.name.placeholder"].label, "New habit")
         app.navigationBars.buttons.element(boundBy: 0).tap()
     }
 
@@ -63,7 +63,7 @@ final class NewTaskUITests: XCTestCase {
         XCTAssertTrue(plus.waitForExistence(timeout: 10))
         app.dismissBanners()
         plus.tap()
-        let name = app.textFields["taskPage.name"]
+        let name = app.textViews["taskPage.name"]
         XCTAssertTrue(name.waitForExistence(timeout: 5))
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
         app.typeText("Stretch")
@@ -94,7 +94,7 @@ final class NewTaskUITests: XCTestCase {
         XCTAssertTrue(plus.waitForExistence(timeout: 10))
         app.dismissBanners()
         plus.tap()
-        XCTAssertTrue(app.textFields["taskPage.name"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.textViews["taskPage.name"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
         app.typeText("Оплатить аренду\n")
         expectCreatedBanner("Оплатить аренду")
@@ -135,10 +135,11 @@ final class NewTaskUITests: XCTestCase {
         XCTAssertTrue(plus.waitForExistence(timeout: 10))
         app.dismissBanners()
         plus.tap()
-        let name = app.textFields["taskPage.name"]
+        let name = app.textViews["taskPage.name"]
         XCTAssertTrue(name.waitForExistence(timeout: 5))
         name.tap()
         name.typeText("Читать 20 минут")
+        XCTAssertEqual(name.value as? String, "Читать 20 минут")
         app.navigationBars.buttons.element(boundBy: 0).tap()
         expectCreatedBanner("Читать 20 минут")
         XCTAssertTrue(app.descendants(matching: .any)["habitDay:Читать 20 минут"].waitForExistence(timeout: 5))
@@ -153,14 +154,14 @@ final class NewTaskUITests: XCTestCase {
         XCTAssertTrue(plus.waitForExistence(timeout: 10))
         app.dismissBanners()
         plus.tap()
-        let name = app.textFields["taskPage.name"]
+        let name = app.textViews["taskPage.name"]
         XCTAssertTrue(name.waitForExistence(timeout: 5))
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5), "the keyboard is up without a tap")
         app.typeText("Купить хлеб\n")
         XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout: 5), "Return closes the keyboard")
         expectCreatedBanner("Купить хлеб")
         XCTAssertTrue(app.buttons["taskPage.more"].waitForExistence(timeout: 5), "the page is the task's own page now")
-        XCTAssertEqual(name.value as? String, "Купить хлеб")
+        XCTAssertEqual(app.textFields["taskPage.name"].value as? String, "Купить хлеб")
         let high = app.buttons["taskPage.chip.high"]
         high.tap()
         let switchedOn = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isSelected == true"), object: high)
@@ -182,7 +183,7 @@ final class NewTaskUITests: XCTestCase {
         XCTAssertTrue(plus.waitForExistence(timeout: 10))
         app.dismissBanners()
         plus.tap()
-        XCTAssertTrue(app.textFields["taskPage.name"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.textViews["taskPage.name"].waitForExistence(timeout: 5))
         app.typeText("Встреча: Пётр\n")
         XCTAssertTrue(app.descendants(matching: .any)["taskPage.name.problem"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.descendants(matching: .any).matching(identifier: "banner").firstMatch.waitForExistence(timeout: 3),
@@ -198,21 +199,49 @@ final class NewTaskUITests: XCTestCase {
         XCTAssertTrue(plus.waitForExistence(timeout: 10))
         app.dismissBanners()
         plus.tap()
-        let name = app.textFields["taskPage.name"]
+        let name = app.textViews["taskPage.name"]
         XCTAssertTrue(name.waitForExistence(timeout: 5))
         app.typeText("Полить цветы\n")
         expectCreatedBanner("Полить цветы")
         app.tabBars.buttons["Habits"].tap()
         XCTAssertTrue(app.buttons["tabBar.newItem"].waitForExistence(timeout: 5))
         app.tabBars.buttons["Tasks"].tap()
-        XCTAssertTrue(name.waitForExistence(timeout: 5))
-        XCTAssertEqual(name.value as? String, "Полить цветы")
+        let ownName = app.textFields["taskPage.name"]
+        XCTAssertTrue(ownName.waitForExistence(timeout: 5))
+        XCTAssertEqual(ownName.value as? String, "Полить цветы")
         XCTAssertTrue(app.buttons["taskPage.more"].exists)
         app.dismissBanners()
         app.navigationBars.buttons.element(boundBy: 0).tap()
         let second = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier == 'banner' AND label BEGINSWITH 'Created'")).firstMatch
         XCTAssertFalse(second.waitForExistence(timeout: 3), "Back creates no second note")
+    }
+
+    /// A date typed into a new task's name is blue; a tap on it sets the date (the Tomorrow chip lights up) and takes the
+    /// words out of the name. Back then creates the task on that day (`scripts/check-vault-after-ui-tests.sh`).
+    func testTappingTheBlueDateSetsItAndCleansTheName() {
+        launch("superpooper://today")
+        let plus = app.buttons["tabBar.newItem"]
+        XCTAssertTrue(plus.waitForExistence(timeout: 10))
+        app.dismissBanners()
+        plus.tap()
+        let name = app.textViews["taskPage.name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
+        app.typeText("Dentist tomorrow")
+        let suggestion = app.buttons["newItem.detectedDate"].firstMatch
+        XCTAssertTrue(suggestion.waitForExistence(timeout: 5), "the date is offered")
+        XCTAssertEqual(suggestion.label, "tomorrow")
+        let tomorrow = app.buttons["taskPage.chip.tomorrow"]
+        XCTAssertFalse(tomorrow.isSelected, "not set until tapped")
+        suggestion.tap()
+        let cleaned = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == 'Dentist'"), object: name)
+        XCTAssertEqual(XCTWaiter().wait(for: [cleaned], timeout: 5), .completed)
+        let selected = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isSelected == true"), object: tomorrow)
+        XCTAssertEqual(XCTWaiter().wait(for: [selected], timeout: 5), .completed)
+        XCTAssertFalse(app.buttons["newItem.detectedDate"].exists, "nothing left to offer")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        expectCreatedBanner("Dentist")
     }
 
     /// A name a note cannot take is pointed out in the title while it is typed.
@@ -222,7 +251,7 @@ final class NewTaskUITests: XCTestCase {
         XCTAssertTrue(plus.waitForExistence(timeout: 10))
         app.dismissBanners()
         plus.tap()
-        XCTAssertTrue(app.textFields["taskPage.name"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.textViews["taskPage.name"].waitForExistence(timeout: 5))
         app.typeText("Встреча: Анна")
         XCTAssertTrue(app.descendants(matching: .any)["taskPage.name.problem"].waitForExistence(timeout: 5))
         app.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 6))

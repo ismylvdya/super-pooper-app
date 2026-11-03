@@ -7,6 +7,7 @@ import SwiftUI
 /// Without Return nothing is written while it is open; leaving the page with Back creates the note of the shown kind
 /// with everything set here. Another tab only hides the page: the draft waits for the user to come back.
 /// A name a note cannot take is shown right in the title; Return does not save it, and Back waits until it is changed.
+/// A date typed into a task's name is blue: a tap on it sets the date and takes the words out; untapped, it stays words.
 struct NewItemScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
@@ -34,6 +35,8 @@ struct NewItemScreen: View {
                             titleView: AnyView(NewNoteNameField(placeholder: LocalizedStringKey(Self.titleKey(current.kind)),
                                                                 name: Binding(get: { page?.name ?? "" }, set: { page?.name = $0 }),
                                                                 problem: current.nameProblem(model.nameProblem(in:)),
+                                                                suggestion: current.suggestion(model.detectDate(in: current.name)),
+                                                                onAccept: { found in Haptics.play(.select); page?.accept(found) },
                                                                 onReturn: saveOnReturn))) {
             Picker("newItem.kind", selection: Binding(get: { page?.kind ?? current.kind }, set: { page?.kind = $0 })) {
                 Text("newItem.kind.task").tag(NewItemSeed.Kind.task)
