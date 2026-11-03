@@ -27,16 +27,6 @@ struct HabitsScreen: View {
             }
             group(groups.tracked, header: nil, groups: groups, isRepeatable: false, today: today)
             group(groups.repeatable, header: "habits.repeatable", groups: groups, isRepeatable: true, today: today)
-            gap
-            // The same plate and row as on the Lists tab.
-            Plate {
-                Button { router.open(.routines) } label: {
-                    PlateRow(icon: .timeOfDay, title: "routines.title") { DisclosureAccessory() }
-                }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("habits.routines")
-            }
-            .listGroupSpacer()
         }
         .listGroupStyle()
         .listGroupBacking(frames)

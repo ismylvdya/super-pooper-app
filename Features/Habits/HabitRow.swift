@@ -84,7 +84,8 @@ struct HabitDayButton: View {
         let own = HabitDotMetrics(dot: tokens.size(.iconColumn), ringRatio: ratio)
         guard let innerWidth else { return own }
         let grid = tokens.habitDots(fitting: innerWidth)
-        return .cell(own.cell, ring: grid.ring)
+        // A wide plate (the phone sideways) has large grid dots: their ring would nearly fill this small circle.
+        return .cell(own.cell, ring: min(grid.ring, own.ring))
     }
 
     var body: some View {

@@ -43,6 +43,7 @@ private struct LargeTitleTracking: ViewModifier {
 /// (shrinking to fit between the bar buttons).
 private struct BarTitle: ViewModifier {
     @Environment(\.tokens) private var tokens
+    @Environment(\.physicalBottom) private var physicalBottom
     let title: String
     let isHidden: Bool
 
@@ -50,13 +51,28 @@ private struct BarTitle: ViewModifier {
         content
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                // Lying sideways the system centres it in the bar, off the page's middle: see below.
                 ToolbarItem(placement: .principal) {
-                    Text(title)
-                        .font(tokens.font(.navTitle))
-                        .lineLimit(1)
-                        .minimumScaleFactor(tokens.size(.navTitleMin) / tokens.uiFont(.navTitle).pointSize)
-                        .foregroundStyle(isHidden ? Color.clear : tokens.color(.primaryText))
+                    text.foregroundStyle(isHidden || physicalBottom != nil ? Color.clear : tokens.color(.primaryText))
                 }
             }
+            // On the page's own middle, as the large title it follows.
+            .overlay(alignment: .top) {
+                if physicalBottom != nil, !isHidden {
+                    text
+                        .foregroundStyle(tokens.color(.primaryText))
+                        .frame(height: tokens.bar(.navigationBar))
+                        .ignoresSafeArea(.container, edges: .top)
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                }
+            }
+    }
+
+    private var text: some View {
+        Text(title)
+            .font(tokens.font(.navTitle))
+            .lineLimit(1)
+            .minimumScaleFactor(tokens.size(.navTitleMin) / tokens.uiFont(.navTitle).pointSize)
     }
 }

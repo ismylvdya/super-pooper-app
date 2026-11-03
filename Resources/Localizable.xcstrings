@@ -7400,6 +7400,127 @@
           }
         }
       }
+    },
+    "settings.tasks.summary": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day, pool, timeline and colors"
+          }
+        }
+      }
+    },
+    "settings.habits.summary": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Routines, marks and pictures"
+          }
+        }
+      }
+    },
+    "settings.notes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes"
+          }
+        }
+      }
+    },
+    "settings.notes.soon": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings of the notes widget will be here"
+          }
+        }
+      }
+    },
+    "settings.storage": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archive and trash"
+          }
+        }
+      }
+    },
+    "settings.habits.routines": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Morning and evening order"
+          }
+        }
+      }
+    },
+    "settings.habits.routines.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Which habits stand together on one plate, and in what order."
+          }
+        }
+      }
+    },
+    "habitPage.day": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In the day"
+          }
+        }
+      }
+    },
+    "settings.notifications.signing": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signature reminder"
+          }
+        }
+      }
+    },
+    "info.settings.notifications.signing": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On the last day of the signature a notification comes every hour. Empty: the standard words."
+          }
+        }
+      }
+    },
+    "notification.signing.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The words of the reminder"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

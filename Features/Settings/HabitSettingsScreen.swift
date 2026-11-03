@@ -1,12 +1,16 @@
 import SwiftUI
 
-/// Settings of the habits side: whether new habits show in Today, the habit colors, rings and notification pictures.
+/// Settings of the habits side: the routines, what a new habit starts with, repeatable tasks, the colors, rings and
+/// notification pictures.
 struct HabitSettingsScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
 
     var body: some View {
         PageScaffold(title: L10n.string("settings.habits")) {
+            PlateSection(header: "routines.title", hint: "settings.habits.routines.hint") {
+                SettingsLink(route: .routines, icon: .timeOfDay, title: "settings.habits.routines")
+            }
             PlateSection(header: "settings.habits.new", hint: "settings.habits.new.hint") {
                 PlateRow(icon: .today, title: "habitPage.showInToday", info: "info.habitPage.showInToday") {
                     Toggle("habitPage.showInToday", isOn: Binding(

@@ -12,16 +12,19 @@ struct ToggleChip: View {
     let tint: ColorToken
     let isOn: Bool
     var capsule = ChipCapsule.large
+    /// The chip may be narrower than its title, which then dissolves at the right instead of ending with "…".
+    var fadesTitle = false
     let action: () -> Void
 
     init(icon: Icon, title: LocalizedStringKey? = nil, values: [String] = [], tint: ColorToken, isOn: Bool,
-         capsule: ChipCapsule = .large, action: @escaping () -> Void) {
+         capsule: ChipCapsule = .large, fadesTitle: Bool = false, action: @escaping () -> Void) {
         self.icon = icon
         self.title = title
         self.values = values
         self.tint = tint
         self.isOn = isOn
         self.capsule = capsule
+        self.fadesTitle = fadesTitle
         self.action = action
     }
 
@@ -49,12 +52,29 @@ struct ToggleChip: View {
         case .large:
             HStack(spacing: tokens.space(.chipGap)) {
                 IconGlyph(icon, font: .toggleChip)
-                if let title { Text(title).lineLimit(1) }
+                if let title { titleText(title) }
                 ForEach(values, id: \.self) { Text(verbatim: $0).lineLimit(1) }
             }
             .font(tokens.font(.toggleChip))
             .foregroundStyle(foreground)
             .chipCapsule(fill, .large)
+        }
+    }
+
+    /// The title in a line of its own width, or one that takes what the chip has left and clips and dissolves there.
+    @ViewBuilder private func titleText(_ title: LocalizedStringKey) -> some View {
+        if fadesTitle {
+            Text(title).lineLimit(1).fixedSize()
+                .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+                .clipped()
+                .mask {
+                    HStack(spacing: 0) {
+                        Color.black
+                        LinearGradient(colors: [.black, .clear], startPoint: .leading, endPoint: .trailing).frame(width: tokens.size(.titleFade))
+                    }
+                }
+        } else {
+            Text(title).lineLimit(1)
         }
     }
 

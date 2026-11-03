@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Color, harmful, repeatable task, Today, routine, twice a day.
+/// What is set once for a habit: what kind of note it is, its color, harmful, twice a day, the time zone of its reminders.
 struct HabitOptionsSection: View {
     @Environment(\.tokens) private var tokens
     let editor: TaskEditor
@@ -17,7 +17,6 @@ struct HabitOptionsSection: View {
             }
             .pickerStyle(.segmented)
             .accessibilityIdentifier("habitPage.kind")
-            toggle(.today, "habitPage.showInToday", "info.habitPage.showInToday", \.showInToday, TaskEdit.showInToday)
             PlateRow(icon: .colors, title: "habitPage.color") {
                 // Reset: back to the habit color from the settings.
                 HexColorField(color: tokens.habitColor(editor.task), stored: options.color, accessibilityID: "habitPage.color") {
@@ -25,22 +24,13 @@ struct HabitOptionsSection: View {
                 }
             }
             toggle(.harmful, "habitPage.harmful", "info.habitPage.harmful", \.harmful, TaskEdit.harmful)
-            PlateRow(icon: .timeOfDay, title: "habitPage.timeOfDay", info: "info.habitPage.timeOfDay") {
-                Picker("habitPage.timeOfDay", selection: Binding(
-                    get: { options.timeOfDay },
-                    set: { editor.apply([.timeOfDay($0)]) }
-                )) {
-                    Text("habitPage.timeOfDay.any").tag(HabitTimeOfDay?.none)
-                    ForEach(HabitTimeOfDay.allCases, id: \.self) { Text(LocalizedStringKey(String("habitPage.timeOfDay.") + $0.rawValue)).tag(HabitTimeOfDay?.some($0)) }
-                }
-                .labelsHidden()
-            }
             toggle(.habitMarkTwice, "habitPage.twiceADay", "info.habitPage.twiceADay", \.twiceADay, TaskEdit.twiceADay)
             if options.twiceADay {
                 PlateRow(icon: nil, title: "habitPage.twiceCountsDouble", indent: true) {
                     Toggle("habitPage.twiceCountsDouble", isOn: binding(\.twiceCountsDouble, TaskEdit.twiceCountsDouble)).labelsHidden()
                 }
             }
+            TimeZoneRow(editor: editor)
         }
     }
 

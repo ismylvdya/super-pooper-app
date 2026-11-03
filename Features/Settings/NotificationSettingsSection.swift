@@ -13,6 +13,12 @@ struct NotificationSettingsSection: View {
                 .labelsHidden()
                 .disabled(!model.config.flags.notifications)
             }
+            PlateRow(icon: .signing, title: "settings.notifications.signing", info: "info.settings.notifications.signing") {}
+            TextField("notification.signing.placeholder", text: Binding(
+                get: { model.settings.notifications.signingMessage },
+                set: { value in model.updateSettings { $0.notifications.signingMessage = value } }
+            ), axis: .vertical)
+            .accessibilityIdentifier("settings.notifications.signingMessage")
         }
     }
 }

@@ -15,12 +15,13 @@ struct TaskChipRows: View {
             highChip
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: spacing) {
-                    dueChips
+                    dueChips(fades: false)
                     dateChip
                 }
-                VStack(spacing: spacing) {
-                    HStack(spacing: spacing) { dueChips }
-                    dateChip
+                // A long date stays in the row: the chips beside it give way and their titles dissolve.
+                HStack(spacing: spacing) {
+                    dueChips(fades: true)
+                    dateChip.fixedSize().layoutPriority(1)
                 }
             }
             HStack(spacing: spacing) { feelChips }
@@ -41,11 +42,11 @@ struct TaskChipRows: View {
         .accessibilityIdentifier("taskPage.chip.high")
     }
 
-    @ViewBuilder private var dueChips: some View {
+    @ViewBuilder private func dueChips(fades: Bool) -> some View {
         let context = model.context()
         let selected = QuickDue.selection(of: editor.task, context: context)
         ForEach(QuickDue.allCases, id: \.self) { chip in
-            ToggleChip(icon: chip.icon, title: chip.title, tint: .task, isOn: selected == chip) {
+            ToggleChip(icon: chip.icon, title: chip.title, tint: .task, isOn: selected == chip, fadesTitle: fades) {
                 Haptics.play(.select)
                 editor.edit { [.due(QuickDue.toggling(chip, task: $0, context: context))] }
             }

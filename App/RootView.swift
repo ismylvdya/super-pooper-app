@@ -12,12 +12,15 @@ struct RootView: View {
     @State private var landscapeBottom: HorizontalEdge = .trailing
     /// What is being dragged on Tasks: a task, a section or the tab bar's "+", which stands outside the tabs.
     @State private var taskDrag = TaskDragState()
+    /// The keyboard is up: lying sideways the app's own tab bar makes room for it (the system's upright does so itself).
+    @State private var isKeyboardUp = false
 
     private var physicalBottom: HorizontalEdge? { verticalSizeClass == .compact ? landscapeBottom : nil }
 
     /// The screen edge the landscape tab bar stands at (none upright).
     private var landscapeTabBarEdge: Edge.Set {
-        switch physicalBottom {
+        if isKeyboardUp { return [] }
+        return switch physicalBottom {
         case .leading: .leading
         case .trailing: .trailing
         case nil: []
@@ -30,7 +33,7 @@ struct RootView: View {
         Group {
             if model.settings.onboarding.completed {
                 HStack(spacing: 0) {
-                    if physicalBottom == .leading { LandscapeTabBar(bottom: .leading) }
+                    if physicalBottom == .leading, !isKeyboardUp { LandscapeTabBar(bottom: .leading) }
                     TabView(selection: Binding(get: { TabBarItem.tab(router.tab) }, set: { TabBarItem.selection($0, router: router) })) {
                         ForEach(AppTab.allCases, id: \.self) { tab in
                             Tab(value: TabBarItem.tab(tab)) {
@@ -64,7 +67,7 @@ struct RootView: View {
                         }
                     }
                     .overlay { if physicalBottom == nil { uprightNewItemButton } }
-                    if physicalBottom == .trailing { LandscapeTabBar(bottom: .trailing) }
+                    if physicalBottom == .trailing, !isKeyboardUp { LandscapeTabBar(bottom: .trailing) }
                 }
                 // The landscape tab bar is laid out from the screen edge at the physical bottom, not from the safe area,
                 // so no empty strip is left between it and the tabs.
@@ -85,6 +88,8 @@ struct RootView: View {
         .tint(tokens.color(.accent))
         .onGeometryChange(for: CGSize.self) { $0.size } action: { _ in updateLandscapeBottom() }
         .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in updateLandscapeBottom() }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in isKeyboardUp = true }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in isKeyboardUp = false }
         .environment(\.physicalBottom, physicalBottom)
         .environment(\.timelineBell, model.settings.timeline.bellStyle)
         .environment(\.chipOrder, RowChipKind.ordered(model.settings.pool.chipOrder))

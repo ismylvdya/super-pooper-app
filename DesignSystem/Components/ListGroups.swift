@@ -118,9 +118,9 @@ private struct ListGroupBacking: View {
     var body: some View {
         GeometryReader { proxy in
             let list = proxy.frame(in: .global)
-            // A side left open (its row out of sight) reaches past the visible part by more than the corner, so no
-            // rounded corner shows there.
-            let overhang = tokens.radius(.plate) * 2
+            // A side left open (its row out of sight) reaches past the whole screen, bars included (rows scroll on under
+            // them), so no corner and no end shows there.
+            let overhang = list.height + list.minY
             ForEach(frames.rows.keys.sorted(), id: \.self) { group in
                 if let plate = frames.plate(of: group, overhang: overhang) {
                     Color.clear
