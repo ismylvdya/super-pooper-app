@@ -78,6 +78,28 @@
         }
       }
     },
+    "action.highPriority": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "High priority"
+          }
+        }
+      }
+    },
+    "action.newSection": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New section"
+          }
+        }
+      }
+    },
     "action.notStarted": {
       "extractionState": "manual",
       "localizations": {
@@ -199,6 +221,17 @@
         }
       }
     },
+    "action.select": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select"
+          }
+        }
+      }
+    },
     "action.skipToday": {
       "extractionState": "manual",
       "localizations": {
@@ -250,6 +283,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Unmark"
+          }
+        }
+      }
+    },
+    "action.unworm": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unworm"
+          }
+        }
+      }
+    },
+    "action.worm": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Worm"
           }
         }
       }
@@ -547,6 +602,109 @@
           "stringUnit": {
             "state": "translated",
             "value": "Marked “%@” done."
+          }
+        }
+      }
+    },
+    "banner.undoable.highPriority": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Changed the priority of “%@”."
+          }
+        }
+      }
+    },
+    "banner.undoable.many.delete": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Moved %lld task to trash."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Moved %lld tasks to trash."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "banner.undoable.many.done": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Marked %lld task done."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Marked %lld tasks done."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "banner.undoable.many.highPriority": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Changed the priority of %lld task."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Changed the priority of %lld tasks."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "banner.undoable.many.notToday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Moved %lld task out of today."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Moved %lld tasks out of today."
+                }
+              }
+            }
           }
         }
       }
@@ -4519,6 +4677,73 @@
           "stringUnit": {
             "state": "translated",
             "value": "Morning"
+          }
+        }
+      }
+    },
+    "section.new.create": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create"
+          }
+        }
+      }
+    },
+    "section.new.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
+          }
+        }
+      }
+    },
+    "section.new.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New section"
+          }
+        }
+      }
+    },
+    "select.count": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld selected"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld selected"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "select.more": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "More actions"
           }
         }
       }
