@@ -22,4 +22,13 @@ enum PoolDropOrder {
                      at y: Double) -> (order: [String], section: String?) {
         (order(rows: rows, dragged: dragged, at: y), SectionDropOrder.section(headers: headers, at: y))
     }
+
+    /// A worm dragged whole: its other members follow the grabbed one, in their order.
+    static func keepingTogether(_ order: [String], dragged: String, along: [String]) -> [String] {
+        let followers = along.filter { $0 != dragged && order.contains($0) }
+        var ids = order.filter { !followers.contains($0) }
+        let spot = (ids.firstIndex(of: dragged) ?? ids.count - 1) + 1
+        ids.insert(contentsOf: followers, at: min(spot, ids.count))
+        return ids
+    }
 }

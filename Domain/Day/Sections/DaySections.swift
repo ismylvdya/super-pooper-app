@@ -63,4 +63,28 @@ struct DaySections: Codable, Equatable, Sendable {
         result.worms = worms.map { DayWorm(id: $0.id, members: $0.members.filter { !gone($0) }) }.filter { $0.members.count > 1 }
         return result
     }
+
+    /// The worm a task is a member of that day.
+    func worm(of name: String) -> DayWorm? {
+        worms.first { $0.members.containsNoteName(name) }
+    }
+
+    /// The tasks on one plate: a worm any of them was in takes the others along (and keeps its id, else `id`).
+    func worming(_ names: [String], id: String) -> DaySections {
+        let touched = worms.filter { worm in names.contains { worm.members.containsNoteName($0) } }
+        var members = touched.flatMap(\.members)
+        for name in names where !members.containsNoteName(name) { members.append(name) }
+        guard members.count > 1 else { return self }
+        var result = self
+        result.worms = worms.filter { !touched.contains($0) } + [DayWorm(id: touched.first?.id ?? id, members: members)]
+        return result
+    }
+
+    /// The tasks off their worms; a worm left with one member is no worm.
+    func unworming(_ names: [String]) -> DaySections {
+        var result = self
+        result.worms = worms.map { DayWorm(id: $0.id, members: $0.members.filter { !names.containsNoteName($0) }) }
+            .filter { $0.members.count > 1 }
+        return result
+    }
 }

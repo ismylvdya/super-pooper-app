@@ -12,6 +12,8 @@ struct DayPlan: Sendable {
     var allDayEvents: [CalendarEvent] = []
     /// The pool split into the day's sections (Morning, Day, Evening and the user's own).
     var sections: [PoolSectionContent] = []
+    /// The day's worms: their members share one plate in the pool.
+    var worms: [DayWorm] = []
     /// False for another day browsed by swiping: no "now" cursor there.
     var isToday = true
     /// The moment the timeline is centred on: `now` for today, the anchor hour of another day.

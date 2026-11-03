@@ -9,8 +9,8 @@ struct WidgetPoolBlock: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: tokens.space(.widgetGap)) {
-            // The same plates as Today, without chips; habits of one routine share a plate.
-            ForEach(PoolSegments.make(visibleCount.map { Array(plan.pool.prefix($0)) } ?? plan.pool)) { segment in
+            // The same plates as Today, without chips; a worm and habits of one routine share a plate.
+            ForEach(PoolSegments.make(visibleCount.map { Array(plan.pool.prefix($0)) } ?? plan.pool, worms: plan.worms)) { segment in
                 PoolSegmentView(segment: segment) { item, plate in
                     TaskRowView(item: item, titleFont: tokens.font(.widgetTitle), showsDetails: false,
                                 isCompact: true, titleLineHeight: tokens.uiFont(.widgetTitle).lineHeight)

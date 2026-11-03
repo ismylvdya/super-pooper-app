@@ -2,7 +2,7 @@ import Foundation
 
 /// What the user decides about today's pool: Skip today, Not today, the manual order, a drag in Soon across the
 /// parts of the day, a task or a habit's block dragged onto the timeline or back to the pool, a task or a whole section
-/// moved among a day's sections. The widgets and notifications follow.
+/// moved among a day's sections, tasks joined in a worm. The widgets and notifications follow.
 @MainActor
 final class DayCommands {
     private let day: DayStateController
@@ -125,7 +125,12 @@ final class DayCommands {
     /// Dropped under a section's header in the pool of `date`: it stands in that section that day only (its routine and
     /// note stay as they are); the pool's order is today's only.
     func moveTask(_ name: String, toSection id: String, poolOrder: [String], on date: LocalDate) {
-        placeInSection(name, id, on: date)
+        moveTasks([name], toSection: id, poolOrder: poolOrder, on: date)
+    }
+
+    /// A worm dropped whole: every member goes into the section (nil: stays where it stands).
+    func moveTasks(_ names: [String], toSection id: String?, poolOrder: [String], on date: LocalDate) {
+        for name in names { placeInSection(name, id, on: date) }
         if isToday(date) { day.setManualOrder(poolOrder) }
         Task { await derived.publish() }
     }
@@ -137,6 +142,18 @@ final class DayCommands {
             let moved = order.compactMap { byID[$0] }
             sections.order = moved + sections.order.filter { !order.contains($0.id) }
         }
+        Task { await derived.publish() }
+    }
+
+    /// Select → Worm: the tasks share one plate on `date` (a worm one of them was in takes the others along). It is the
+    /// app's only: nothing is written to the notes.
+    func worm(_ names: [String], on date: LocalDate) {
+        sections.update(on: date) { $0 = $0.worming(names, id: UUID().uuidString) }
+        Task { await derived.publish() }
+    }
+
+    func unworm(_ names: [String], on date: LocalDate) {
+        sections.update(on: date) { $0 = $0.unworming(names) }
         Task { await derived.publish() }
     }
 

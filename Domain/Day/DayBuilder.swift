@@ -62,8 +62,8 @@ struct DayBuilder: Sendable {
 
         let sorted = SubtaskNesting.nested(inputs.manualOrder.map { sorter.applyingManualOrder($0, to: poolItems, graph: graph, context: context) }
             ?? sorter.sorted(poolItems, graph: graph, context: context))
-        let arranged = PoolArrangement.arrange(sorted, sections: inputs.sections ?? .defaults(on: context.today, definitions: sections),
-                                               definitions: sections)
+        let daySections = inputs.sections ?? .defaults(on: context.today, definitions: sections)
+        let arranged = PoolArrangement.arrange(sorted, sections: daySections, definitions: sections)
         let pool = arranged.isEmpty ? sorted : arranged.flatMap(\.items)
 
         var timeline = FixedSlots(rules: rules, times: times, overdue: overdue)
@@ -80,6 +80,7 @@ struct DayBuilder: Sendable {
         var plan = DayPlan(today: context.today, now: context.now, pool: pool, timeline: timeline, problems: problems, allDayEvents: allDay)
         plan.focus = context.focus
         plan.sections = arranged
+        plan.worms = daySections.worms
         return plan
     }
 }

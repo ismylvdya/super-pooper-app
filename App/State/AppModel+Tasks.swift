@@ -67,8 +67,9 @@ extension AppModel {
         // Opening is the screen's; the trash restores its own notes, the timeline deletes its events, a notification
         // snoozes or dismisses itself.
         case .open, .openInObsidian, .restoreFromTrash, .deleteEvent, .snooze, .dismissAlert: break
-        // Select mode is the screen's; worms and sections are the day's (`DayCommands`).
-        case .select, .worm, .unworm, .newSection: break
+        case .unworm: unworm([name], on: day)
+        // Select mode is the screen's; Worm and New section take the selected tasks (`worm`, `newSection`).
+        case .select, .worm, .newSection: break
         }
         return []
     }

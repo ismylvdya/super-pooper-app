@@ -156,6 +156,20 @@ struct PoolSegmentsTests {
         #expect(segments.map { $0.items.map(\.id) } == [["A", "B"], ["C"], ["D", "E"], ["F"]])
     }
 
+    /// A worm is one shared plate, its members' subtasks on it; a routine's habits beside it keep a plate of their own.
+    @Test func aWormIsOneSharedPlate() {
+        var subtask = item("C1", nil, habit: false)
+        subtask.depth = 1
+        let worms = [DayWorm(id: "w", members: ["A", "C"])]
+        let segments = PoolSegments.make([item("A", .morning), item("C", nil, habit: false), subtask, item("B", .morning),
+                                          item("D", .morning)], worms: worms)
+        #expect(segments.map { $0.items.map(\.id) } == [["A", "C", "C1"], ["B", "D"]])
+        let worm: [String?] = segments.map { $0.wormID }
+        #expect(worm == ["w", nil])
+        #expect(segments.allSatisfy { $0.isShared })
+        #expect(PoolSegments.make([item("A", nil, habit: false)], worms: worms).first?.isShared == false, "one member left is a plain plate")
+    }
+
     @Test func theEveningRoutineSharesAPlateToo() {
         let segments = PoolSegments.make([item("A", .evening), item("B", .evening), item("C", .morning)])
         #expect(segments.map { $0.items.map(\.id) } == [["A", "B"], ["C"]])
