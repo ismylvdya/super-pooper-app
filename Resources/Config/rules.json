@@ -198,7 +198,8 @@
     "daySwipeFlingShare": 0.5,
     "bannerDismissDistance": 20,
     "bannerDismissFling": 60,
-    "pullThreshold": 60
+    "pullThreshold": 60,
+    "pullResistance": 0.55
   },
   "banners": {
     "autoHideSeconds": 10,

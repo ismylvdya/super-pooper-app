@@ -7,8 +7,10 @@ import SwiftUI
 /// physical screen (see `PhysicalBottom`); the layout is the landscape one from settings. The arrows next to the day's name
 /// slide the pool and the timeline together to yesterday / tomorrow (and further): another day shows its own
 /// events, reminders, dated tasks and habits; its name, or the Today tab, brings back today. With the paged
-/// arrangement a swipe turns between the pool and the timeline pages.
-/// Tasks are dragged between the pool and the timeline (see `TaskDragState`).
+/// arrangement a swipe turns between the pool and the timeline pages. Left of the pool the backlog pages (Soon, then
+/// Half year, then Someday) open one by one when the first page is pulled right past its edge (`TasksStrip`); a swipe
+/// moves freely between the opened pages, a backlog page has its list's title in the bar, and another tab forgets them.
+/// Tasks are dragged between all these pages (see `TaskDragState`).
 struct TodayScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
@@ -44,20 +46,22 @@ struct TodayScreen: View {
                 // As wide as the bar leaves between its button groups: the name shrinks into that room rather than the
                 // arrows reaching under the buttons beside them.
                 ToolbarItem(placement: .principal) {
-                    if let room = dayBarRoom { dayNavigation.frame(width: room) } else { dayNavigation }
+                    if let room = dayBarRoom { title.frame(width: room) } else { title }
                 }
                 ToolbarItemGroup(placement: .topBarTrailing) { TodayButtons(placement: .trailing, onFrame: barButtonMoved) }
             }
         }
         .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
         .environment(taskDrag)
-        // A drag asks for a block; the pages of the layout shown now turn to it.
-        .onChange(of: taskDrag.turnRequest) { _, block in
-            guard let block else { return }
-            if let index = layout.blocks.firstIndex(where: { $0.block == block }) { turn(to: index) }
+        // A drag asks for a page; the pages shown now turn to it.
+        .onChange(of: taskDrag.turnRequest) { _, page in
+            guard let page else { return }
+            if let index = TasksPageStrip.index(of: page, in: pages) { turn(to: index) }
             taskDrag.turnHandled()
         }
-        .onChange(of: router.tasksTaps) { showTodaysPool() }
+        .onChange(of: router.tasksTaps) { showTodaysPool(forgetsBacklog: true) }
+        // Another tab forgets the backlog pages.
+        .onChange(of: router.tab) { _, tab in if tab != .today { pager.closeBacklog(poolBlock: poolBlock) } }
     }
 
     /// Turned sideways, Today has its own arrangement.
@@ -76,12 +80,31 @@ struct TodayScreen: View {
     }
 
     private var layout: ScreenLayout { model.config.todayLayout(for: arrangement, landscape: isLandscape) }
-    private var pageCount: Int { layout.isPaged ? layout.blocks.count : 1 }
+    private var pages: [TasksPage] {
+        TasksPageStrip.pages(layout: layout, opened: pager.openedBacklog, backlog: model.backlogLists)
+    }
+    private var pageCount: Int { pages.count }
+    /// The pool's place among the day's pages.
+    private var poolBlock: Int { TasksPageStrip.homeIndex(layout: layout, opened: 0) }
 
-    /// The day's name and the Tasks tab: back to today and, on pages, to the pool's page.
-    private func showTodaysPool() {
-        let pool = layout.isPaged ? layout.blocks.firstIndex(where: { $0.block == .pool }) ?? 0 : 0
-        pager.showPool(poolPage: pool, animation: tokens.animation)
+    /// The day's name: back to today and, on pages, to the pool's page; the Tasks tab also forgets the backlog pages.
+    private func showTodaysPool(forgetsBacklog: Bool = false) {
+        pager.showPool(poolBlock: poolBlock, forgetsBacklog: forgetsBacklog, animation: tokens.animation)
+    }
+
+    /// On a backlog page its list's title, plainly; on the day's pages the day's name with its arrows.
+    @ViewBuilder private var title: some View {
+        let shown = pages.indices.contains(pager.page) ? pages[pager.page] : nil
+        if let id = shown?.backlogID, let list = model.config.lists.backlogList(id) {
+            Text(LocalizedStringKey(list.title))
+                .font(tokens.font(.navTitle))
+                .lineLimit(1)
+                .minimumScaleFactor(isLandscape ? 1 : tokens.size(.navTitleMin) / tokens.uiFont(.navTitle).pointSize)
+                .accessibilityAddTraits(.isHeader)
+                .accessibilityIdentifier("today.listTitle")
+        } else {
+            dayNavigation
+        }
     }
 
     private func turn(to newPage: Int) {
@@ -95,13 +118,8 @@ struct TodayScreen: View {
             TimelineView(.periodic(from: .now, by: model.config.rules.timeline.refreshSeconds)) { _ in
                 let plan = model.plan(at: model.clock.now, dayOffset: pager.dayOffset)
                 let fade = 1 - min(abs(pager.daySlide) / geometry.size.width, 1) * tokens.opacity(.daySwipeFade)
-                ScreenLayoutView(layout: layout, page: pager.page, pageDrag: pager.pageDrag, edgeInset: tokens.space(.screenHorizontal),
-                                 onTurn: turn) { id in
-                    let reachesBottom = Self.touchesBottom(id, in: layout)
-                    TodayBlock(id: id, plan: plan, handler: handler, bottomInset: reachesBottom ? bottomInset : 0,
-                               barEdges: reachesBottom && !isLandscape ? .bottom : [])
-                        .daySlide(pager.daySlide, fade: fade)
-                }
+                TasksStrip(layout: layout, pages: pages, pager: pager, plan: plan, handler: handler, bottomInset: bottomInset,
+                           isLandscape: isLandscape, edgeInset: tokens.space(.screenHorizontal), fade: fade, onTurn: turn)
                 .padding(.horizontal, tokens.space(.screenHorizontal))
                 .padding(.top, tokens.space(.headerToPlate))
                 // An empty pool still takes the swipe.
@@ -115,16 +133,22 @@ struct TodayScreen: View {
         }
     }
 
-    /// On pages a horizontal drag moves them with the finger and, far enough, turns the page (`TodayPager`).
+    /// A horizontal drag moves the pages with the finger and, far enough, turns the page; at the first page it pulls the
+    /// next backlog page open (`TodayPager`).
     private func daySwipe(width: CGFloat) -> some Gesture {
         DragGesture(minimumDistance: rules.gestures.daySwipeMinimumDistance)
             .onChanged { value in
-                pager.swipeChanged(value.translation, containerWidth: width, pageCount: pageCount, gestures: rules.gestures)
+                // A task being dragged moves itself, not the pages: they turn only by its reaching an edge.
+                guard taskDrag.item == nil else { return pager.cancelSwipe() }
+                let armed = pager.swipeChanged(value.translation, containerWidth: width, pageCount: pageCount,
+                                               backlogCount: model.backlogLists.count, gestures: rules.gestures)
+                if armed { Haptics.play(.pullArmed) }
             }
             .onEnded { value in
+                guard taskDrag.item == nil else { return pager.cancelSwipe() }
                 pager.swipeEnded(value.translation, predicted: value.predictedEndTranslation, velocity: value.velocity,
-                                 containerWidth: width, pageCount: pageCount, gestures: rules.gestures,
-                                 duration: tokens.duration(.animation))
+                                 containerWidth: width, pageCount: pageCount, backlogCount: model.backlogLists.count,
+                                 gestures: rules.gestures, duration: tokens.duration(.animation))
             }
     }
 
@@ -142,7 +166,7 @@ struct TodayScreen: View {
             ForEach(PhysicalBottom.physicalOrder(LandscapeSlot.allCases, bottom: bottom), id: \.self) { slot in
                 switch slot {
                 case .leading: bubble(.vertical) { TodayButtons(placement: .leading, bottom: bottom) }
-                case .day: Spacer(minLength: 0); dayNavigation; Spacer(minLength: 0)
+                case .day: Spacer(minLength: 0); title; Spacer(minLength: 0)
                 case .trailing: bubble(.vertical) { TodayButtons(placement: .trailing, bottom: bottom) }
                 }
             }
@@ -167,34 +191,8 @@ struct TodayScreen: View {
     /// The bar upright, from the physical left to the physical right.
     private enum LandscapeSlot: CaseIterable { case leading, day, trailing }
 
-    /// Blocks along a horizontal axis all reach the bottom; along a vertical one only the last does.
-    private static func touchesBottom(_ id: TodayBlockID, in layout: ScreenLayout) -> Bool {
-        layout.axis == .horizontal || layout.blocks.last?.block == id
-    }
-
     private var handler: TaskActionHandler {
         TaskActionHandler(model: model, router: router, openURL: openURL) { pendingAction = $0 }
-    }
-}
-
-private extension View {
-    /// The block follows the day swipe inside its own area; at rest nothing is clipped, so lifted plates
-    /// still reach over the margins.
-    func daySlide(_ offset: CGFloat, fade: Double) -> some View {
-        modifier(DaySlide(offset: offset, fade: fade))
-    }
-}
-
-private struct DaySlide: ViewModifier {
-    @Environment(\.liftRoom) private var liftRoom
-    let offset: CGFloat
-    let fade: Double
-
-    func body(content: Content) -> some View {
-        content
-            .offset(x: offset)
-            .opacity(fade)
-            .clipShape(Rectangle().inset(by: offset == 0 ? -liftRoom.sides : 0))
     }
 }
 

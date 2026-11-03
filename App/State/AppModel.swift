@@ -67,6 +67,16 @@ final class AppModel {
     }
     func canDropInPool(_ name: String, slot: LocalTime?) -> Bool { parts.dayCommands.canSendToPool(name, slot: slot) }
 
+    /// Dropped on a backlog page while `shown` is shown; `fromShownDay`: from that day's pool or timeline.
+    func moveToBacklog(_ name: String, list: BacklogList, shown: LocalDate, fromShownDay: Bool) async {
+        await parts.dayCommands.moveToBacklog(name, level: list.status, shown: shown, fromShownDay: fromShownDay)
+    }
+    func bringFromBacklog(_ name: String, to day: LocalDate, poolOrder: [String]?) async {
+        await parts.dayCommands.bringFromBacklog(name, to: day, poolOrder: poolOrder)
+    }
+    func scheduleFromBacklog(_ name: String, at moment: Date) async { await parts.dayCommands.scheduleFromBacklog(name, at: moment) }
+    func canBringFromBacklog(_ name: String) -> Bool { parts.dayCommands.canBringFromBacklog(name) }
+
     /// The morning review opens by itself once a day, on the first launch with a ready vault after onboarding, unless
     /// the app was opened for something else. True when it is to open now (it then counts as shown).
     func claimMorningReview(openedForSomethingElse: Bool) -> Bool {

@@ -8,12 +8,12 @@ struct TaskDragStateTests {
     @Test func aTurnIsARequestTheScreenClears() {
         let drag = TaskDragState()
         #expect(drag.turnRequest == nil)
-        drag.turn(.timeline)
-        #expect(drag.turnRequest == .timeline)
+        drag.turn(.block(.timeline))
+        #expect(drag.turnRequest == .block(.timeline))
         drag.turnHandled()
         #expect(drag.turnRequest == nil)
-        drag.turn(.timeline)
-        #expect(drag.turnRequest == .timeline)
+        drag.turn(.block(.timeline))
+        #expect(drag.turnRequest == .block(.timeline))
     }
 
     /// Over the pool the dragged task's row is an empty gap the other rows part around (.21800): from the pool or from
@@ -61,5 +61,28 @@ struct TaskDragStateTests {
         #expect(landing.content == .task(task))
         #expect(landing.time == nil, "a copy, never picked up itself")
     }
-}
 
+    /// A drag over a page's edge asks for that page, a backlog page too.
+    @Test func aDragOverAPageEdgeAsksForThatPage() {
+        let drag = TaskDragState()
+        drag.turn(.backlog("thisWeek"))
+        #expect(drag.turnRequest == .backlog("thisWeek"))
+    }
+
+    /// Over a backlog page the dragged task is listed there faintly; a row of that page itself is not listed twice, and
+    /// after the drop nothing is faint any more.
+    @Test func overABacklogPageTheTaskShowsFaintlyThere() {
+        let drag = TaskDragState()
+        let task = DayItem(listed: makeTask("Pay the internet"))
+        _ = drag.begin(task, from: .pool)
+        #expect(!drag.isBacklogGhost(task.id, on: "someday"))
+        drag.backlogTarget = "someday"
+        #expect(drag.isBacklogGhost(task.id, on: "someday"))
+        #expect(!drag.isBacklogGhost(task.id, on: "thisWeek"))
+        _ = drag.begin(task, from: .backlog("someday"))
+        drag.backlogTarget = "someday"
+        #expect(!drag.isBacklogGhost(task.id, on: "someday"), "already one of its rows")
+        drag.end()
+        #expect(drag.backlogTarget == nil)
+    }
+}

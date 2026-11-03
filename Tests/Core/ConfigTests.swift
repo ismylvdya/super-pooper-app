@@ -62,6 +62,18 @@ struct ConfigTests {
         #expect(TaskStatus.known.first == .inbox)
     }
 
+    /// The pages left of the pool are Soon, then Half year, then Someday, each a list of one planning level; a backlog id
+    /// naming a list of several levels stops the app at loading.
+    @Test func theBacklogNamesListsOfOneStatus() throws {
+        let config = try AppConfig.load(bundle: Bundle(for: BundleToken.self).appHostBundle)
+        #expect(config.lists.backlogLists.map(\.status) == [.thisWeek, .halfYear, .someday])
+        #expect(config.lists.backlogLists.map(\.title) == ["status.thisWeek", "status.halfYear", "status.someday"])
+        let lists = try String(contentsOf: TestPaths.configFolder.appendingPathComponent("lists.json"), encoding: .utf8)
+        let broken = Data(try lists.replacingOnce("\"backlog\": [\"thisWeek\"", with: "\"backlog\": [\"quick\"").utf8)
+        let decoded = try ConfigLoader.decode(TaskListsConfig.self, from: broken, file: "lists.json")
+        #expect(throws: ConfigError.self) { try decoded.validate(defaultIcon: TestConfig.defaults.lists.icon, file: "lists.json") }
+    }
+
     /// A planning level misspelt in `day.autoPromoteFrom` stops the app with a config error naming the key; it used to
     /// be read as an unknown status that promoted nothing.
     @Test func aMisspeltAutoPromotionLevelIsAConfigError() throws {

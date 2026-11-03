@@ -1,8 +1,9 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// The task being dragged on Today, shared by the pool, the timeline and the pages: where it came from,
-/// where it would land on the timeline and the pool order while it is over the pool.
+/// The task being dragged on Tasks, shared by the pool, the timeline, the backlog pages and the page edges: where it
+/// came from, where it would land on the timeline, the pool order while it is over the pool and the backlog page it is
+/// over.
 @MainActor
 @Observable
 final class TaskDragState {
@@ -10,9 +11,15 @@ final class TaskDragState {
         case pool
         /// A block on the timeline; `slot`: its time as the note has it (a habit's block moves for today only).
         case timeline(slot: LocalTime?)
+        /// A row of a backlog page, by its list's id.
+        case backlog(String)
 
         var slot: LocalTime? {
             if case .timeline(let slot) = self { slot } else { nil }
+        }
+
+        var isBacklog: Bool {
+            if case .backlog = self { true } else { false }
         }
     }
 
@@ -24,14 +31,17 @@ final class TaskDragState {
     var hoverMoment: Date?
     /// The pool with the task at the spot under the finger.
     var poolOrder: [String]?
-    /// The block a drag asks the Today pages to turn to; the screen turns by its layout of the moment and clears it.
-    private(set) var turnRequest: TodayBlockID?
+    /// The page a drag asks Tasks to turn to; the screen turns by its pages of the moment and clears it.
+    private(set) var turnRequest: TasksPage?
+    /// The backlog page under the finger: the task shows there, faint, where it would be listed.
+    var backlogTarget: String?
 
     func begin(_ item: DayItem, from source: Source) -> NSItemProvider {
         self.item = item
         self.source = source
         hoverMoment = nil
         poolOrder = nil
+        backlogTarget = nil
         return NSItemProvider(object: item.id as NSString)
     }
 
@@ -49,9 +59,9 @@ final class TaskDragState {
         return true
     }
 
-    /// The drag reached a block: the pages turn to it (nothing without pages).
-    func turn(_ block: TodayBlockID) {
-        turnRequest = block
+    /// The drag reached a page: Tasks turns to it (nothing when it is already in sight).
+    func turn(_ page: TasksPage) {
+        turnRequest = page
     }
 
     func turnHandled() {
@@ -64,10 +74,16 @@ final class TaskDragState {
         poolOrder != nil && item?.id == id
     }
 
+    /// Over the backlog page `list` the dragged task is listed there as a faint copy, unless it is already one of its rows.
+    func isBacklogGhost(_ id: String, on list: String) -> Bool {
+        backlogTarget == list && item?.id == id && source != .backlog(list)
+    }
+
     func end() {
         item = nil
         hoverMoment = nil
         poolOrder = nil
+        backlogTarget = nil
     }
 }
 
@@ -119,7 +135,7 @@ struct TimelineDropDelegate: DropDelegate {
     }
 
     func dropEntered(info: DropInfo) {
-        drag.turn(.timeline)
+        drag.turn(.block(.timeline))
     }
 
     func dropUpdated(info: DropInfo) -> DropProposal? {
@@ -142,23 +158,22 @@ struct TimelineDropDelegate: DropDelegate {
 }
 
 /// Dropping on the pool: rows make room under the finger; a task from the timeline loses its time, a habit's block
-/// leaves today's timeline.
+/// leaves today's timeline, a task from a backlog page comes into the day.
 @MainActor
 struct PoolDropDelegate: DropDelegate {
     let drag: TaskDragState
     let animation: Animation
     let rows: () -> [PoolDropOrder.Row]
-    /// Whether a block from the timeline can land here.
+    /// Whether the dragged item can land here from where it came.
     let canDrop: (DayItem, TaskDragState.Source) -> Bool
     let onDrop: (DayItem, TaskDragState.Source, [String]) -> Void
 
     func validateDrop(info: DropInfo) -> Bool {
-        guard let item = drag.item else { return false }
-        return drag.source == .pool || canDrop(item, drag.source)
+        return drag.item.map { canDrop($0, drag.source) } ?? false
     }
 
     func dropEntered(info: DropInfo) {
-        drag.turn(.pool)
+        drag.turn(.block(.pool))
     }
 
     func dropUpdated(info: DropInfo) -> DropProposal? {

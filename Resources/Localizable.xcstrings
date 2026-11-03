@@ -6879,6 +6879,17 @@
         }
       }
     },
+    "today.page.list": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show %@"
+          }
+        }
+      }
+    },
     "today.page.pool": {
       "extractionState": "manual",
       "localizations": {

@@ -9,41 +9,25 @@ extension View {
 }
 
 private struct PullToExtend: ViewModifier {
-    @Environment(\.tokens) private var tokens
     @Environment(\.rules) private var rules
-    @Environment(\.icons) private var icons
     let icon: Icon
     let action: () -> Void
     @State private var pull: CGFloat = 0
-    @State private var isArmed = false
+    @State private var arming = PullArming()
 
     func body(content: Content) -> some View {
         let threshold = rules.gestures.pullThreshold
-        let start = tokens.ratio(.pullStartScale)
         content
             .onScrollGeometryChange(for: CGFloat.self) { max(0, -($0.contentOffset.y + $0.contentInsets.top)) } action: { _, new in
                 pull = new
-                if new >= threshold, !isArmed {
-                    isArmed = true
-                    Haptics.play(.pullArmed)
-                } else if new < threshold / 2 {
-                    isArmed = false
-                }
+                if arming.update(pull: new, threshold: threshold) { Haptics.play(.pullArmed) }
             }
             .onScrollPhaseChange { old, new in
                 guard old == .interacting, new != .interacting else { return }
-                if isArmed { action() }
-                isArmed = false
+                if arming.release() { action() }
             }
             .overlay(alignment: .top) {
-                Image(systemName: icons[icon])
-                    .font(tokens.font(.pullIcon))
-                    .foregroundStyle(tokens.color(.secondaryText))
-                    .scaleEffect(isArmed ? tokens.ratio(.pullArmedScale) : start + (1 - start) * min(pull / threshold, 1))
-                    .opacity(min(pull / threshold, 1))
-                    .offset(y: max(pull / 2 - tokens.uiFont(.pullIcon).pointSize / 2, 0))
-                    .animation(.easeOut(duration: tokens.duration(.animation)), value: isArmed)
-                    .allowsHitTesting(false)
+                PullIndicator(icon: icon, pull: pull, threshold: threshold, isArmed: arming.isArmed, axis: .vertical)
             }
     }
 }

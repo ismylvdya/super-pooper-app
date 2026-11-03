@@ -4,10 +4,7 @@ import SwiftUI
 /// (the first one in previews), moved by `pageDrag`; `onTurn` makes its visible edge turn the page; `edgeInset` is
 /// the margin between the layout and the screen's edge, which a page behind the leading edge shows in too.
 struct ScreenLayoutView<Block: View>: View {
-    @Environment(\.tokens) private var tokens
-    @Environment(\.icons) private var icons
-    @Environment(\.chipOrder) private var chipOrder
-    @Environment(\.displayScale) private var displayScale
+    @Environment(\.screenLayoutMetrics) private var metrics
     let layout: ScreenLayout
     var page = 0
     var pageDrag: CGFloat = 0
@@ -17,28 +14,22 @@ struct ScreenLayoutView<Block: View>: View {
 
     var body: some View {
         if layout.isPaged {
-            PagedStack(slots: layout.blocks, spacing: spacing, peeks: layout.blocks.map(peek), edgeInset: edgeInset, page: page,
-                       drag: pageDrag, onTurn: onTurn, block: block)
+            PagedStack(pages: layout.blocks.map(\.block), spacing: metrics.spacing(of: layout),
+                       peeks: layout.blocks.map { metrics.peek(of: $0, in: layout, edgeInset: edgeInset) }, edgeInset: edgeInset,
+                       page: page, drag: pageDrag, edgeLabel: TodayPageEdge.label, onTurn: onTurn, content: block)
         } else {
-            WeightedStack(axis: layout.axis, spacing: spacing, slots: layout.blocks) {
+            WeightedStack(axis: layout.axis, spacing: metrics.spacing(of: layout), slots: layout.blocks) {
                 ForEach(Array(layout.blocks.enumerated()), id: \.element.block) { index, slot in
                     block(slot.block).zIndex(LiftLayer.block(at: index, of: layout.blocks.count))
                 }
             }
         }
     }
+}
 
-    /// A chip peek is counted from the screen's edge: the row plate's right inset and that part of the rows' last chip
-    /// (in the user's chip order).
-    private func peek(_ slot: ScreenLayout.Slot) -> CGFloat {
-        if let part = slot.peekChip {
-            let chip = chipOrder.last.map { Chip.width(of: $0.icon, tokens: tokens, icons: icons, scale: displayScale) } ?? 0
-            return tokens.rowPlateTrailingInset + chip * part - edgeInset
-        }
-        return layout.peek.flatMap(SizeToken.init(rawValue:)).map(tokens.size) ?? 0
-    }
-
-    private var spacing: CGFloat {
-        SpacingToken(rawValue: layout.spacing).map(tokens.space) ?? 0
+/// What the edge of a block's page says it turns to.
+enum TodayPageEdge {
+    static func label(_ block: TodayBlockID) -> Text {
+        Text(block == .timeline ? "today.page.timeline" : "today.page.pool")
     }
 }

@@ -55,10 +55,14 @@ struct TimelineBlock: View {
                             TaskScheduling.moment(atOffset: Double(y), windowStart: day.start, hourHeight: Double(hourHeight),
                                                   stepMinutes: model.config.rules.timeline.dropStepMinutes, calendar: model.calendar)
                         }, canDrop: { item, source in
-                            model.canDropOnTimeline(item.id, slot: source.slot, on: plan.today)
+                            source.isBacklog ? model.canBringFromBacklog(item.id)
+                                : model.canDropOnTimeline(item.id, slot: source.slot, on: plan.today)
                         }, onDrop: { item, source, moment in
                             Haptics.play(.drop)
-                            Task { await model.schedule(item.id, slot: source.slot, at: moment) }
+                            Task {
+                                if source.isBacklog { await model.scheduleFromBacklog(item.id, at: moment) }
+                                else { await model.schedule(item.id, slot: source.slot, at: moment) }
+                            }
                         }))
                         .padding(.vertical, contentInset)
                 }
