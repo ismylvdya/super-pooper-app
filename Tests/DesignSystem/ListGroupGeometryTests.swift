@@ -20,6 +20,20 @@ struct ListGroupGeometryTests {
         return frames
     }
 
+    /// A row swiped away goes out to the side at its full width: the backing stays where the rows stand.
+    @MainActor @Test func aRowSwipedAwayLeavesTheBackingsSides() {
+        let frames = ListGroupFrames()
+        frames.setSides(0...375)
+        let row = { (x: CGFloat, width: CGFloat) in ListGroupFrames.Row(frame: CGRect(x: x, y: 100, width: width, height: 40), index: 0, count: 1) }
+        frames.set(row(16, 343), group: "g", id: "a")
+        frames.set(row(120, 239), group: "g", id: "a")
+        frames.set(row(375, 343), group: "g", id: "a")
+        #expect(frames.columns == 16...359)
+        frames.setSides(0...812)
+        frames.set(row(16, 780), group: "g", id: "a")
+        #expect(frames.columns == 16...796, "turned sideways")
+    }
+
     @Test func theBackingSpansTheGroup() {
         let frames = frames(["b": row(144, 1, of: 3), "a": row(100, 0, of: 3), "c": row(188, 2, of: 3)])
         #expect(frames.plate(of: "g", overhang: 52) == CGRect(x: 16, y: 100, width: 300, height: 132))

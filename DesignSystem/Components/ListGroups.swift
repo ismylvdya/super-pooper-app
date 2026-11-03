@@ -37,6 +37,10 @@ extension View {
                 let frame = proxy.frame(in: .global)
                 return frame.minY...frame.maxY
             } action: { frames.setViewport($0) }
+            .onGeometryChange(for: ClosedRange<CGFloat>.self) { proxy in
+                let frame = proxy.frame(in: .global)
+                return frame.minX...frame.maxX
+            } action: { frames.setSides($0) }
             .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y } action: { _, offset in
                 frames.setScrollOffset(offset)
             }
