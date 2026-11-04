@@ -3,6 +3,11 @@ import SwiftUI
 struct NotificationSettingsSection: View {
     @Environment(AppModel.self) private var model
 
+    /// The offered lengths, with the one set by hand in the settings file among them.
+    private var snoozeChoices: [Int] {
+        Array(Set(model.config.rules.notifications.snoozeChoices + [model.settings.notifications.snoozeMinutes])).sorted()
+    }
+
     var body: some View {
         PlateSection(header: "settings.notifications", hint: "settings.notifications.hint") {
             PlateRow(icon: .notifications, title: "settings.notifications.enabled", info: "info.settings.notifications") {
@@ -12,6 +17,16 @@ struct NotificationSettingsSection: View {
                 ))
                 .labelsHidden()
                 .disabled(!model.config.flags.notifications)
+            }
+            PlateRow(icon: .snooze, title: "settings.notifications.snooze", info: "info.settings.notifications.snooze") {
+                Picker("settings.notifications.snooze", selection: Binding(
+                    get: { model.settings.notifications.snoozeMinutes },
+                    set: { value in model.updateSettings { $0.notifications.snoozeMinutes = value } }
+                )) {
+                    ForEach(snoozeChoices, id: \.self) { Text(L10n.format("estimate.minutes", $0)).tag($0) }
+                }
+                .labelsHidden()
+                .accessibilityIdentifier("settings.notifications.snooze")
             }
             PlateRow(icon: .signing, title: "settings.notifications.signing", info: "info.settings.notifications.signing") {}
             TextField("notification.signing.placeholder", text: Binding(

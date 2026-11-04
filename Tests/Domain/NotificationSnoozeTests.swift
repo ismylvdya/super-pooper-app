@@ -77,12 +77,11 @@ struct NotificationSnoozeTests {
                                           today: TodayTimes(), context: context)
     }
 
-    @Test func aSnoozedHabitOrTaskMovesItsBlockToWhereItsNotificationComesAgain() {
+    @Test func aSnoozedHabitMovesItsBlockAndATaskDoesNot() {
         #expect(moves([water], key: waterSlot, at: "09:00", until: "10:00")
             == [TimeMove(task: "Вода", slot: LocalTime("09:00"), time: LocalTime("10:00"))])
         let parcel = makeTask("Parcel") { $0.due = TaskDue("2026-10-21T16:00") }
-        #expect(moves([parcel], key: "task|Parcel", at: "16:10", until: "17:10")
-            == [TimeMove(task: "Parcel", slot: LocalTime("16:00"), time: LocalTime("17:10"))])
+        #expect(moves([parcel], key: "task|Parcel", at: "16:10", until: "17:10") == nil, "a task's time is written to its line")
     }
 
     /// Events and reminders are not ours to move: only their notification comes again. Past the end of today nothing moves.

@@ -114,18 +114,21 @@ final class DerivedStatePublisher {
     }
 
     /// A notification snoozed from its button leaves Notification Center and comes again after
-    /// `notifications.snoozeMinutes`, while its day lasts and its item stays open. A task's or habit's block moves on
-    /// today's timeline to that moment and its notification follows it (`NotificationSnoozing.moves`); an event's or
-    /// reminder's notification just comes again (`NotificationSnooze`). Returns when the plan with it is scheduled, so the
-    /// app is not suspended before.
-    func snooze(key: String, day: LocalDate, shown identifier: String) async {
+    /// the minutes the settings say, while its day lasts and its item stays open. A task gets that moment as its time
+    /// (`writeTime`), since a task's time and its notification are one thing, written in its line; a habit's block moves on
+    /// today's timeline only (`NotificationSnoozing.moves`), its times being for every day; an event's or reminder's
+    /// notification just comes again (`NotificationSnooze`). Returns when the plan with it is scheduled, so the app is not
+    /// suspended before.
+    func snooze(key: String, day: LocalDate, shown identifier: String, writeTime: (String, Date) async -> Void) async {
         let context = self.day.context()
         guard !StaleNotifications.isOver(day, today: context.today) else { return }
-        let until = context.now.addingTimeInterval(Double(config.rules.notifications.snoozeMinutes) * 60)
+        let until = context.now.addingTimeInterval(Double(settings.settings.notifications.snoozeMinutes) * 60)
         let inputs = notificationInputs(context: context)
         let snoozed = inputs.all().first { $0.key == key && $0.day == day }
         let task = snoozed?.taskName.flatMap { name in inputs.tasks.first { $0.name.isSameNoteName(as: name) } }
-        if let snoozed, let task, let moves = NotificationSnoozing.moves(snoozing: snoozed, of: task, until: until,
+        if let snoozed, let task, NotificationSnoozing.writesTime(snoozed, until: until, context: context) {
+            await writeTime(task.name, until)
+        } else if let snoozed, let task, let moves = NotificationSnoozing.moves(snoozing: snoozed, of: task, until: until,
                                                                          today: inputs.todayTimes, context: context) {
             self.day.setTimeMoves(moves)
             widgets.reloadAll()

@@ -25,8 +25,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let restoreDelaySeconds: Double
         /// A pending notification whose fire time is at most this far from the planned one is kept.
         let fireTimeToleranceSeconds: Double
-        /// A notification snoozed from its button comes again this many minutes later.
-        let snoozeMinutes: Int
+        /// What the settings offer for how long a snooze lasts, in minutes.
+        let snoozeChoices: [Int]
     }
 
     struct EventLinks: Codable, Hashable, Sendable {

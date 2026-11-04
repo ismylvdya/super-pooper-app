@@ -2,7 +2,7 @@ import Foundation
 
 /// An event's or reminder's notification snoozed from its button: the same notification comes again at `until`. Nothing
 /// about its item changes. It is told apart by its key and day (`PlannedNotification.key`, `day`), which stay the same when
-/// the item is moved. A task's or habit's snooze moves its block instead (`NotificationSnoozing.moves`).
+/// the item is moved. A task's snooze gives it a new time instead, a habit's moves its block (`NotificationSnoozing`).
 struct NotificationSnooze: Codable, Hashable, Sendable {
     let key: String
     let day: LocalDate
@@ -28,13 +28,19 @@ enum NotificationSnoozing {
         current(snoozes, today: today).filter { $0.key != snooze.key || $0.day != snooze.day } + [snooze]
     }
 
-    /// Snooze on a task's or habit's notification moves its block on today's timeline to the moment the notification
-    /// comes again (`until`), for today only, so the timeline and the notification tell the same time; the notification
-    /// follows the block (`NotificationPlanner`). Nil for an event or a reminder (only their notification comes again), a
+    /// Snooze on a task's notification of today makes `until` the task's own time: its line and its notification keep
+    /// telling the same time. Not past the end of today.
+    static func writesTime(_ notification: PlannedNotification, until: Date, context: DayContext) -> Bool {
+        notification.kind == .task && notification.day == context.today && until < context.dayEnd
+    }
+
+    /// Snooze on a habit's notification moves its block on today's timeline to the moment the notification comes again
+    /// (`until`), for today only, so the timeline and the notification tell the same time; the notification follows the
+    /// block (`NotificationPlanner`). Nil for anything else (only an event's or reminder's notification comes again), a
     /// notification of another day, or a moment past the end of today.
     static func moves(snoozing notification: PlannedNotification, of task: TaskItem, until: Date, today: TodayTimes,
                       context: DayContext) -> [TimeMove]? {
-        guard [.habit, .task].contains(notification.kind), let slot = notification.slot, notification.day == context.today,
+        guard notification.kind == .habit, let slot = notification.slot, notification.day == context.today,
               until < context.dayEnd else { return nil }
         return today.moving(task, slot: slot, to: LocalTime(until, in: context.calendar))
     }

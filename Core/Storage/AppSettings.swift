@@ -100,6 +100,8 @@ struct AppSettings: Codable, Equatable, Sendable {
         var enabled: Bool
         /// The words of the signature's hourly reminder; empty = the bundled ones.
         var signingMessage: String
+        /// A notification snoozed from its button comes again this many minutes later.
+        var snoozeMinutes: Int
     }
 
     struct Onboarding: Codable, Equatable, Sendable {

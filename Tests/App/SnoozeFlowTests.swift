@@ -4,7 +4,7 @@ import Testing
 @testable import SuperPooperApp
 
 /// Snooze on a delivered notification, through the app and the in-memory notification center: the shown one goes, the
-/// same comes again an hour later (`notifications.snoozeMinutes`) and stays planned while its item is open and its day lasts.
+/// same comes again later (half an hour, as the settings have it by default) and stays planned while its item is open and its day lasts.
 @MainActor
 struct SnoozeFlowTests {
     private let center = FakeNotificationCenter()
@@ -63,12 +63,12 @@ struct SnoozeFlowTests {
         return shown
     }
 
-    @Test func aSnoozedHabitNotificationComesAgainInAnHourAndSurvivesPlanning() async throws {
+    @Test func aSnoozedHabitNotificationComesAgainInHalfAnHourAndSurvivesPlanning() async throws {
         let app = try app()
         let shown = try await snoozeVitamins(app)
         #expect(center.delivered.isEmpty, "the one shown goes")
         let again = try #require(snoozed(shown).first)
-        #expect(fireDate(again) == at("10:00"))
+        #expect(fireDate(again) == at("09:30"))
         #expect(again.content.title == shown.content.title)
         #expect(again.content.body == shown.content.body)
         #expect(again.content.categoryIdentifier == shown.content.categoryIdentifier, "with the same buttons")
@@ -99,17 +99,17 @@ struct SnoozeFlowTests {
         let app = try app()
         let shown = try await snoozeVitamins(app)
         let again = try #require(snoozed(shown).first)
-        app.clock.now = at("10:00")
+        app.clock.now = at("09:30")
         center.deliver(again.identifier)
         let swiped = try #require(center.dismiss(again.identifier))
         await app.responses.handle(action: UNNotificationDismissActionIdentifier, request: swiped)
         center.deliver(NotificationIdentifier.restored(again.identifier))
-        await app.sync(at: at("10:05"))
+        await app.sync(at: at("09:35"))
         #expect(center.delivered.map(\.identifier) == [NotificationIdentifier.restored(again.identifier)])
         #expect(snoozed(shown).filter { $0.trigger is UNCalendarNotificationTrigger }.isEmpty, "nothing planned again on top")
     }
 
-    /// An event alert comes again with its own text (the event's start), a reminder and a task at an hour after the press.
+    /// An event alert comes again with its own text (the event's start), a reminder half an hour after the press; a task takes that moment as its time.
     @Test func eventsRemindersAndTasksSnoozeToo() async throws {
         let start = at("15:15")
         let standup = CalendarEvent(eventIdentifier: "standup", title: "Standup", start: start, end: at("16:15"), isAllDay: false,
@@ -124,14 +124,14 @@ struct SnoozeFlowTests {
         for shown in center.delivered {
             await app.responses.handle(action: ActionID.snooze.rawValue, request: shown)
             let again = try #require(snoozed(shown).first, "\(shown.content.title)")
-            #expect(fireDate(again) == at("16:00"))
+            #expect(fireDate(again) == at("15:30"))
             #expect(again.content.body == shown.content.body, "\(shown.content.title) keeps its text")
         }
         app.clock.now = at("16:00")
         center.deliver(try #require(center.pending.first { $0.content.title == "Забрать посылку" && fireDate($0) == at("16:00") }).identifier)
         let task = try #require(center.delivered.first { $0.content.title == "Забрать посылку" })
         await app.responses.handle(action: ActionID.snooze.rawValue, request: task)
-        #expect(fireDate(snoozed(task).first) == at("17:00"))
+        #expect(center.pending.filter { $0.content.title == "Забрать посылку" }.map(fireDate) == [at("16:30")])
     }
 
     // MARK: - The timeline follows
@@ -148,10 +148,10 @@ struct SnoozeFlowTests {
     @Test func aSnoozedHabitsBlockMovesOnTodaysTimelineWithItsNotification() async throws {
         let app = try app()
         let shown = try await snoozeVitamins(app)
-        #expect(slotStart(app, vitamins) == at("10:00"))
-        #expect(app.model.dayState.timeMoves == [TimeMove(task: vitamins, slot: LocalTime("09:00"), time: LocalTime("10:00"))])
+        #expect(slotStart(app, vitamins) == at("09:30"))
+        #expect(app.model.dayState.timeMoves == [TimeMove(task: vitamins, slot: LocalTime("09:00"), time: LocalTime("09:30"))])
         #expect(app.model.task(named: vitamins)?.habitTimes == [LocalTime("09:00")], "the note keeps its time")
-        #expect(snoozed(shown).map(fireDate) == [at("10:00")], "one notification, where the block now stands")
+        #expect(snoozed(shown).map(fireDate) == [at("09:30")], "one notification, where the block now stands")
         #expect(fireDate(center.pending(slot)) == at("09:00", daysLater: 1))
         let tomorrow = app.model.plan(at: app.clock.now, dayOffset: 1).timeline.first { slot in
             if case .task(let item) = slot.content { return item.id == vitamins }
@@ -160,8 +160,8 @@ struct SnoozeFlowTests {
         #expect(tomorrow == at("09:00", daysLater: 1), "tomorrow's block stands at the note's time")
     }
 
-    /// A timed task's block moves the same way; its note keeps its due.
-    @Test func aSnoozedTasksBlockMovesOnTodaysTimelineAndItsNoteKeepsItsTime() async throws {
+    /// A timed task takes the snooze as its own time: its line, its block and its notification tell the same.
+    @Test func aSnoozedTaskTakesThatMomentAsItsTime() async throws {
         let parcel = "Забрать посылку"
         let app = try app()
         await app.sync(at: at("15:30"))
@@ -169,14 +169,15 @@ struct SnoozeFlowTests {
         center.deliver(try #require(center.pending.first { $0.content.title == parcel }).identifier)
         let shown = try #require(center.delivered.first)
         await app.responses.handle(action: ActionID.snooze.rawValue, request: shown)
-        #expect(slotStart(app, parcel) == at("17:00"))
-        #expect(app.model.task(named: parcel)?.due?.time == LocalTime("16:00"), "nothing is written to the note")
+        #expect(slotStart(app, parcel) == at("16:30"))
+        #expect(app.model.task(named: parcel)?.due?.time == LocalTime("16:30"), "written to its line")
+        #expect(app.model.dayState.timeMoves.isEmpty, "nothing kept apart from the line")
         #expect(center.delivered.isEmpty)
-        #expect(center.pending.filter { $0.content.title == parcel }.map(fireDate) == [at("17:00")])
+        #expect(center.pending.filter { $0.content.title == parcel }.map(fireDate) == [at("16:30")])
     }
 
     /// Dragged on the timeline later, the snoozed block takes its notification along: the one shown goes, one comes at the
-    /// new time. Dragged back to its own time, a task is as its note has it again.
+    /// new time.
     @Test func aSnoozedBlockDraggedElsewhereTakesItsNotificationAlong() async throws {
         let app = try app()
         let shown = try await snoozeVitamins(app)
@@ -184,14 +185,6 @@ struct SnoozeFlowTests {
         await app.model.waitForNotifications()
         #expect(slotStart(app, vitamins) == at("12:00"))
         #expect(snoozed(shown).map(fireDate) == [at("12:00")])
-
-        let parcel = "Забрать посылку"
-        await app.sync(at: at("15:30"))
-        app.clock.now = at("16:00")
-        center.deliver(try #require(center.pending.first { $0.content.title == parcel }).identifier)
-        await app.responses.handle(action: ActionID.snooze.rawValue, request: try #require(center.delivered.first))
-        await app.model.schedule(parcel, slot: LocalTime("16:00"), at: at("16:00"))
-        #expect(app.model.dayState.timeMoves.allSatisfy { $0.task != parcel }, "the note's time counts again")
     }
 }
 

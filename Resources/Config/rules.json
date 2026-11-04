@@ -36,7 +36,7 @@
     "imageMaxPixels": 400,
     "restoreDelaySeconds": 1,
     "fireTimeToleranceSeconds": 30,
-    "snoozeMinutes": 60
+    "snoozeChoices": [5, 10, 15, 30, 45, 60, 90, 120]
   },
   "signingPlate": {
     "showWithinDays": 7,

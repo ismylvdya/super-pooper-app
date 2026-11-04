@@ -31,7 +31,7 @@ struct ConfigTests {
             #expect(TestConfig.actions.menus[menu].actions.contains(.snooze) == notifications.contains(menu), "\(menu)")
         }
         #expect(!TestConfig.actions.definition(.snooze).destructive)
-        #expect(TestConfig.rules.notifications.snoozeMinutes == 60)
+        #expect(TestConfig.rules.notifications.snoozeChoices.contains(30))
     }
 
     /// Select mode's bar: Done and Not today or Skip today as buttons, the rest under "…"; the long-press menus start it and offer Unworm.

@@ -7301,6 +7301,28 @@
           }
         }
       }
+    },
+    "settings.notifications.snooze": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snooze for"
+          }
+        }
+      }
+    },
+    "info.settings.notifications.snooze": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How much later a notification comes again after you press Snooze on it. A task takes that moment as its new time."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

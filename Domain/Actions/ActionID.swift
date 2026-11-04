@@ -25,7 +25,7 @@ enum ActionID: String, Codable, CaseIterable, Sendable {
     /// A note in the trash back among the tasks.
     case restoreFromTrash
     case deleteEvent
-    /// A notification's button: the same notification comes again later (`rules.json` → `notifications.snoozeMinutes`);
+    /// A notification's button: the same notification comes again later (Settings → Notifications);
     /// nothing about its item changes.
     case snooze
     /// An event alert's button: only the alert goes away; the event stays in Calendar and on the timeline.

@@ -56,7 +56,8 @@
   },
   "notifications": {
     "enabled": true,
-    "signingMessage": ""
+    "signingMessage": "",
+    "snoozeMinutes": 30
   },
   "onboarding": {
     "completed": false
