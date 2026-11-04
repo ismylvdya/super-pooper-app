@@ -10,8 +10,11 @@ final class TodayPager {
     private(set) var page = 0
     /// How far a sideways drag has moved the pages with the finger.
     private(set) var pageDrag: CGFloat = 0
-    /// How many backlog pages stand left of the pool: none, or all of them once the pull opened them.
+    /// How many backlog pages stand left of the pool: none, or all of them once the pull opened the first (a list shown
+    /// keeps its neighbours in sight).
     private(set) var openedBacklog = 0
+    /// How many of them a swipe can reach, nearest first: the next one opens only by a pull past the last reached.
+    private(set) var reachedBacklog = 0
     /// How far the first page is pulled right to open the next backlog page (the finger's way, resisted).
     private(set) var sidePull: CGFloat = 0
     private var arming = PullArming()
@@ -30,6 +33,8 @@ final class TodayPager {
         withAnimation(animation) {
             page = newPage
             pageDrag = 0
+            // A list reached otherwise (its edge tapped, a task dragged there) is reached.
+            if newPage < openedBacklog { reachedBacklog = max(reachedBacklog, openedBacklog - newPage) }
         }
     }
 
@@ -42,15 +47,24 @@ final class TodayPager {
     /// pages.
     func closeBacklog(poolBlock: Int = 0) {
         openedBacklog = 0
+        reachedBacklog = 0
         page = poolBlock
         pageDrag = 0
         sidePull = 0
         arming = PullArming()
     }
 
+    /// The leftmost page a swipe can turn to.
+    private var firstReachedPage: Int { max(openedBacklog - reachedBacklog, 0) }
+
+    /// A rightward drag here pulls the next backlog page open instead of turning.
+    private func canPullOpen(backlogCount: Int) -> Bool {
+        page == firstReachedPage && reachedBacklog < backlogCount
+    }
+
     /// On pages a sideways drag moves them with the finger, all the way until it lifts; past the last page it does
-    /// nothing, and at the first one a rightward drag pulls it to open the next of `backlogCount` backlog pages (the day
-    /// changes with the arrows). True when the pull has just armed: the moment to feel.
+    /// nothing, and at the leftmost one reached a rightward drag pulls it to open the next of `backlogCount` backlog pages
+    /// (the day changes with the arrows). True when the pull has just armed: the moment to feel.
     @discardableResult
     func swipeChanged(_ translation: CGSize, containerWidth: CGFloat, pageCount: Int, backlogCount: Int = 0,
                       gestures: RulesConfig.Gestures) -> Bool {
@@ -58,7 +72,7 @@ final class TodayPager {
                                    axisRatio: gestures.daySwipeAxisRatio)
         swipeAxis = axis
         guard axis == .horizontal else { return false }
-        if page == 0, translation.width > 0, openedBacklog == 0, backlogCount > 0 {
+        if translation.width > 0, canPullOpen(backlogCount: backlogCount) {
             pageDrag = 0
             sidePull = PullArming.stretch(translation.width, dimension: containerWidth, resistance: gestures.pullResistance)
             return arming.update(pull: sidePull, threshold: gestures.sidePullThreshold)
@@ -81,7 +95,7 @@ final class TodayPager {
         sidePull = 0
     }
 
-    /// Once the finger lifts: a pull that armed opens the backlog pages and shows the nearest (true then);
+    /// Once the finger lifts: a pull that armed opens the next backlog page and shows it (true then);
     /// past `daySwipeShare` of the width or flung far enough, the page turns at the finger's speed; otherwise the pages go
     /// back.
     @discardableResult
@@ -91,12 +105,13 @@ final class TodayPager {
                                    axisRatio: gestures.daySwipeAxisRatio)
         swipeAxis = nil
         if sidePull > 0 {
-            let opens = arming.release() && openedBacklog == 0 && backlogCount > 0
+            let opens = arming.release() && canPullOpen(backlogCount: backlogCount)
             withAnimation(.interpolatingSpring(duration: duration, bounce: 0)) {
                 if opens {
-                    // The nearest list, with the others left of it and the pool's page right of it.
+                    // All the lists stand left of the pool from the first pull on; this one is now within a swipe.
                     openedBacklog = backlogCount
-                    page = backlogCount - 1
+                    reachedBacklog += 1
+                    page = backlogCount - reachedBacklog
                 }
                 sidePull = 0
             }
@@ -137,11 +152,13 @@ final class TodayPager {
     /// The Tasks tab also forgets the backlog pages (`forgetsBacklog`).
     func showPool(poolBlock: Int = 0, forgetsBacklog: Bool = false, animation: Animation) {
         let opened = forgetsBacklog ? 0 : openedBacklog
+        let reached = forgetsBacklog ? 0 : reachedBacklog
         let home = opened + poolBlock
         guard dayOffset != 0 || page != home || pageDrag != 0 || opened != openedBacklog else { return }
         withAnimation(animation) {
             dayOffset = 0
             openedBacklog = opened
+            reachedBacklog = reached
             page = home
             pageDrag = 0
             sidePull = 0

@@ -67,7 +67,7 @@ enum OpacityToken: String, CaseIterable, Sendable {
 }
 
 enum DurationToken: String, CaseIterable, Sendable {
-    case animation, bannerAnimation, titleColorAnimation
+    case animation, bannerAnimation, titleColorAnimation, titleSwap
 }
 
 enum FontToken: String, CaseIterable, Sendable {

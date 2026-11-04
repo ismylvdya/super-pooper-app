@@ -77,7 +77,7 @@ struct DayNavigation: View {
         return Button(action: onToday) {
             ZStack {
                 if let widest = widest(of: names) { Text(verbatim: widest).hidden().padding(.horizontal, overlap) }
-                Text(verbatim: title)
+                Text(verbatim: title).titleSwap(title)
             }
             .font(tokens.font(.navTitle))
             .monospacedDigit()

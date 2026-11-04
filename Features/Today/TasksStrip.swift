@@ -1,8 +1,8 @@
 import SwiftUI
 
 /// The pages of Tasks (`TasksPageStrip`): the backlog pages opened left of the pool, then the day's blocks (each its own
-/// page when the layout is paged, else all of Today as one page). The pool pulled right past its edge shows the nearest
-/// backlog list's icon (`TodayPager.sidePull`); a list shown keeps a part of each neighbour in sight.
+/// page when the layout is paged, else all of Today as one page). The leftmost page reached, pulled right past its edge,
+/// shows the next backlog list's icon (`TodayPager.sidePull`); a list shown keeps a part of each neighbour in sight.
 struct TasksStrip: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
@@ -36,7 +36,8 @@ struct TasksStrip: View {
         }
         .overlay(alignment: .leading) {
             let lists = model.backlogLists
-            if pager.sidePull > 0, let list = lists.first {
+            if pager.sidePull > 0, lists.indices.contains(pager.reachedBacklog) {
+                let list = lists[pager.reachedBacklog]
                 PullIndicator(icon: list.icon, pull: pager.sidePull, threshold: rules.gestures.sidePullThreshold,
                               isArmed: pager.isPullArmed, axis: .horizontal)
             }

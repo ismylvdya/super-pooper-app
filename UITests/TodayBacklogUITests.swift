@@ -27,8 +27,8 @@ final class TodayBacklogUITests: XCTestCase {
         XCTAssertEqual(XCTWaiter().wait(for: [met], timeout: 5), .completed, message)
     }
 
-    /// The pool pulled right past its edge opens the backlog pages and shows Soon, its list's title in the bar instead of
-    /// the day's name; a swipe goes on to Half year and back through them.
+    /// The backlog pages open one by one: the pool pulled right past its edge opens Soon, pulled again Half year, each with
+    /// its list's title in the bar instead of the day's name; a swipe goes back through them.
     func testPullingThePoolRightOpensSoonThenHalfYear() {
         app.launchArguments += ["-SPArrangement", "paged"]
         launch()
@@ -38,8 +38,8 @@ final class TodayBacklogUITests: XCTestCase {
         XCTAssertTrue(title.waitForExistence(timeout: 5))
         XCTAssertEqual(title.label, "Soon")
         XCTAssertFalse(app.buttons["today.day"].exists, "a backlog page has no day arrows")
-        app.swipeRight()
-        expect(title, toBe: { $0.label == "Nearest months" }, "Half year is next")
+        pullRight()
+        expect(title, toBe: { $0.label == "Nearest months" }, "Half year opened next")
         app.swipeLeft()
         expect(title, toBe: { $0.label == "Soon" }, "back to Soon")
         app.swipeLeft()

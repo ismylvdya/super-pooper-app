@@ -52,7 +52,7 @@ struct TodayScreen: View {
                 // As wide as the bar leaves between its button groups: the name shrinks into that room rather than the
                 // arrows reaching under the buttons beside them.
                 ToolbarItem(placement: .principal) {
-                    if selection.isOn { selectionTitle } else { title.frame(width: dayBarRoom) }
+                    if selection.isOn { selectionTitle } else if let room = dayBarRoom { title.frame(width: room) } else { title }
                 }
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     if selection.isOn { selectionBar(.trailing) } else { TodayButtons(placement: .trailing, onFrame: barButtonMoved) }
@@ -115,25 +115,28 @@ struct TodayScreen: View {
     }
 
     /// On a backlog page its list's title, plainly; on the day's pages the day's name with its arrows. Both always stand
-    /// in the same place and fade into each other: the bar animates a view it sees come and go from somewhere else.
+    /// in the same place and change the one way titles change (`titleSwap`), whatever moves the pages.
     private var title: some View {
         let shown = pages.indices.contains(pager.page) ? pages[pager.page] : nil
         let list = shown?.backlogID.flatMap(model.config.lists.backlogList)
-        return dayNavigation
-            .opacity(list == nil ? 1 : 0)
-            .allowsHitTesting(list == nil)
-            .overlay {
-                if let list {
-                    Text(LocalizedStringKey(list.title))
-                        .font(tokens.font(.navTitle))
-                        .lineLimit(1)
-                        .minimumScaleFactor(isLandscape ? 1 : tokens.size(.navTitleMin) / tokens.uiFont(.navTitle).pointSize)
-                        .accessibilityAddTraits(.isHeader)
-                        .accessibilityIdentifier("today.listTitle")
-                        .transition(.opacity)
-                }
-            }
-            .animation(tokens.animation, value: list?.id)
+        let fade = Animation.easeInOut(duration: tokens.duration(.titleSwap))
+        return ZStack {
+            dayNavigation
+                .opacity(list == nil ? 1 : 0)
+                .animation(fade, value: list == nil)
+                .allowsHitTesting(list == nil)
+            Text(LocalizedStringKey(list?.title ?? ""))
+                .font(tokens.font(.navTitle))
+                .lineLimit(1)
+                .minimumScaleFactor(isLandscape ? 1 : tokens.size(.navTitleMin) / tokens.uiFont(.navTitle).pointSize)
+                .accessibilityAddTraits(.isHeader)
+                .accessibilityIdentifier("today.listTitle")
+                .titleSwap(list?.id)
+                .opacity(list == nil ? 0 : 1)
+                .animation(fade, value: list == nil)
+                .allowsHitTesting(false)
+        }
+        .transaction { $0.animation = nil }
     }
 
     /// The day the pool shows.
