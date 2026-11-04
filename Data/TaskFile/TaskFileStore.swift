@@ -11,10 +11,13 @@ actor TaskFileStore: TaskStore {
         var habits: [String: HabitFile]
         var names: [String: String] = [:]
 
-        /// Ids to names, for the links between items.
+        /// Ids to names of what is open, for the links between items. What lies in Done or the trash is only a line: its
+        /// name is free for a new task.
         mutating func indexNames() {
             names = habits.mapValues(\.name)
-            document.walk { entry, _, _, _ in if let id = entry.id, habits[id] == nil { names[id] = entry.name } }
+            document.walk { entry, section, _, _ in
+                if let id = entry.id, habits[id] == nil, section != .done, section != .trash { names[id] = entry.name }
+            }
         }
 
         /// Every id a task or a habit goes by, and whether `name` is taken by another item than `except`.

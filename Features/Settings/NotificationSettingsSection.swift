@@ -45,6 +45,7 @@ struct NotificationSettingsSection: View {
                 .labelsHidden()
                 .accessibilityIdentifier("settings.notifications.alarmSound")
             }
+            CustomAlarmSoundRows()
             PlateRow(icon: .signing, title: "settings.notifications.signing", info: "info.settings.notifications.signing") {}
             TextField("notification.signing.placeholder", text: Binding(
                 get: { model.settings.notifications.signingMessage },

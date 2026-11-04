@@ -38,7 +38,7 @@ struct TaskFileStoreTests {
     private func draft(_ changes: [TaskEdit] = []) -> NoteDraft { NoteDraft(status: .thisWeek, changes: changes) }
 
     @Test func aLineRoundTripsWithEveryField() {
-        let line = "- [/] Call the doctor: urgent 📅 2026-11-04 ⏰ 14:00 🌐 Asia/Tokyo ⏳ 60 🔥 ❤️ 🆔 a1"
+        let line = "- [/] Call the doctor: urgent 📅 2026-11-04 ⏰ 14:00 🌐 Asia/Tokyo ⏳ 60 ⚠️ ❤️ 🆔 a1"
         let entry = TaskEntry(line: line, format: format)
         #expect(entry?.name == "Call the doctor: urgent" && entry?.box == .started && entry?.isHigh == true && entry?.feel == .pleasant)
         #expect(entry?.date == LocalDate("2026-11-04") && entry?.time == LocalTime("14:00") && entry?.zone == "Asia/Tokyo" && entry?.estimate == 60)
@@ -46,7 +46,7 @@ struct TaskFileStoreTests {
     }
 
     @Test func aMarkerInsideANameStaysInTheName() {
-        #expect(TaskEntry(line: "- [ ] 🔥 fire drill 🆔 a1", format: format)?.name == "🔥 fire drill")
+        #expect(TaskEntry(line: "- [ ] ⚠️ fire drill 🆔 a1", format: format)?.name == "⚠️ fire drill")
         #expect(TaskEntry(line: "just text", format: format) == nil)
     }
 
@@ -259,9 +259,26 @@ struct TaskFileStoreTests {
     }
 
     @Test func namesWithAMarkerAreRefused() {
-        #expect(store().nameProblem(in: "Run 🔥") != nil)
+        #expect(store().nameProblem(in: "Run ⚠️") != nil)
         #expect(store().nameProblem(in: "Встреча: Анна") == nil, "only the markers and blanks are the file's business")
         #expect(store().nameProblem(in: " ") == .empty)
+    }
+
+    // MARK: - Names
+
+    @Test func aNameInDoneOrTheTrashIsFreeForANewTask() async throws {
+        let store = store()
+        let done = try await store.create(draft(), named: "Haircut")
+        _ = try await store.fileAway(done)
+        let again = try await store.create(draft(), named: "Haircut")
+        #expect(again.name == "Haircut" && again.id != done.id)
+        _ = try await store.delete(again)
+        let third = try await store.create(draft(), named: "Haircut")
+        #expect(third.name == "Haircut")
+        let written = try text()
+        #expect(written.contains("- [x] Haircut ✅ \(today.isoString) 🆔 \(done.id.value)"))
+        #expect(written.contains("- [ ] Haircut 🆔 \(third.id.value)"))
+        #expect(try await store.load().tasks.map(\.name) == ["Haircut"])
     }
 
     // MARK: - The file's words
@@ -276,6 +293,13 @@ struct TaskFileStoreTests {
         #expect(written.contains("## Soon\n- [ ] Later 🆔 l1\n- [ ] Idea 🆔 i1"))
         let today = try #require(written.range(of: "## Today")), soon = try #require(written.range(of: "## Soon"))
         #expect(today.lowerBound < soon.lowerBound, "the sections stay in their order")
+    }
+
+    @Test func theOlderHighPriorityMarkTurnsIntoTheWarningSign() async throws {
+        try write("## Today\n- [ ] Call 🔥 🆔 c1\n")
+        let task = try #require(try await store().load().tasks.first)
+        #expect(task.isHighPriority)
+        #expect(try text().contains("- [ ] Call ⚠️ 🆔 c1"))
     }
 
     @Test func aRenamedHabitKeepsItsOldNameInDone() async throws {

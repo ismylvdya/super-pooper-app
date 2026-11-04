@@ -22,8 +22,8 @@ struct AlarmPlannerTests {
 
     @Test func onlyTheHabitsMarkedTimeRings() {
         let planned = [note(.habit, "Water", slot: "09:00"), note(.habit, "Water", slot: "18:00")]
-        let marked = planner.marking(planned, tasks: [habit(alarmAt: "18:00")])
-        #expect(marked.map(\.hasAlarm) == [false, true], "its notification goes silent, the other keeps its sound")
+        let left = planner.withoutAlarmed(planned, tasks: [habit(alarmAt: "18:00")])
+        #expect(left.map(\.key) == ["Water09:00"], "the alarm rings instead of its notification, the other time keeps it")
         #expect(planner.alarms(planned, tasks: [habit(alarmAt: "18:00")]).count == 1)
     }
 

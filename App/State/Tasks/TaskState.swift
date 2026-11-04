@@ -35,7 +35,7 @@ final class TaskState {
     }
 
     func replace(_ task: TaskItem) {
-        if let index = tasks.firstIndex(where: { $0.id == task.id || $0.name == task.name }) {
+        if let index = tasks.firstIndex(where: { $0.id == task.id }) {
             // A line written keeps its place among the lines (only a read of the file says it).
             var kept = task
             kept.storeOrder = task.storeOrder ?? tasks[index].storeOrder

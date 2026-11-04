@@ -78,8 +78,6 @@ struct UserNotificationScheduler: NotificationScheduling {
         let current = Dictionary(pending.map { ($0.identifier, $0) }, uniquingKeysWith: { first, _ in first })
         let outdated = current.filter { id, request in
             guard let want = wanted[id] else { return true }
-            // An alarm switched on or off changes whether the notification makes a sound.
-            if want.hasAlarm == (request.content.sound != nil) { return true }
             return fireDate(of: request).map { abs($0.timeIntervalSince(want.fireDate)) > rules.fireTimeToleranceSeconds } ?? true
         }
         center.removePendingRequests(withIdentifiers: Array(outdated.keys))
@@ -166,7 +164,7 @@ struct UserNotificationScheduler: NotificationScheduling {
         content.body = notification.start.map { start in
             "\(bodyText(notification.subject)) \(start.formatted(date: .omitted, time: .shortened))"
         } ?? bodyText(notification.subject)
-        content.sound = notification.hasAlarm ? nil : Self.alertSound
+        content.sound = Self.alertSound
         content.threadIdentifier = notification.key
         if notification.kind == .habit, let icon = habitIcon?.attachment(habitColor: notification.colorHex) {
             content.attachments = [icon]

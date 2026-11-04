@@ -39,6 +39,11 @@ extension AppModel {
     /// The sounds an alarm may have: the app's and, as far as they can be read, the phone's.
     var alarmSounds: [RulesConfig.Alarms.Sound] { SystemAlarmSounds.all(config.rules.alarms) }
 
+    /// The user's own alarm sounds.
+    var customAlarmSounds: [RulesConfig.Alarms.Sound] { SystemAlarmSounds.custom() }
+    func addAlarmSound(from file: URL) async -> String? { await SystemAlarmSounds.addCustom(from: file, rules: config.rules.alarms) }
+    func removeAlarmSound(_ id: String) { SystemAlarmSounds.removeCustom(id) }
+
     /// A phone's tone chosen for an alarm is made ready for it.
     func prepareAlarmSound(_ id: String?) async { await SystemAlarmSounds.install(id, rules: config.rules.alarms) }
 

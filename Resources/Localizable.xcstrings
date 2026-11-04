@@ -7297,7 +7297,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Stop"
+            "value": "Done"
           }
         }
       }
@@ -7396,7 +7396,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A time marked as an alarm rings like a clock alarm, even in silent mode and Focus. Its notification still comes, silently, with its buttons."
+            "value": "A time marked as an alarm rings like a clock alarm, even in silent mode and Focus, with no notification beside it. The slider marks it done, Snooze rings it again later."
           }
         }
       }
@@ -7573,6 +7573,94 @@
           "stringUnit": {
             "state": "translated",
             "value": "Type the name of an SF Symbol, such as sun.max.fill. Empty keeps the app’s own."
+          }
+        }
+      }
+    },
+    "intent.alarmDone.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alarm: Done"
+          }
+        }
+      }
+    },
+    "intent.alarmSnooze.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alarm: Snooze"
+          }
+        }
+      }
+    },
+    "intent.alarm.item": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Item"
+          }
+        }
+      }
+    },
+    "intent.alarm.day": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day"
+          }
+        }
+      }
+    },
+    "alarm.custom.add": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a sound…"
+          }
+        }
+      }
+    },
+    "alarm.custom.remove": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove this sound"
+          }
+        }
+      }
+    },
+    "alarm.custom.failed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This file could not be read as a sound."
+          }
+        }
+      }
+    },
+    "alarm.snooze": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snooze"
           }
         }
       }

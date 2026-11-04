@@ -171,14 +171,18 @@ final class DerivedStatePublisher {
         }
         let inputs = notificationInputs(context: context)
         let alarmPlanner = AlarmPlanner(sounds: SystemAlarmSounds.all(config.rules.alarms), defaultSound: settings.notifications.alarmSound)
-        let unmarked = inputs.planner.plan(tasks: inputs.tasks, reminders: inputs.reminders, events: inputs.events,
-                                          skipped: inputs.skipped, todayTimes: inputs.todayTimes, context: context)
-        let planned = alarmPlanner.marking(unmarked, tasks: inputs.tasks)
-        await alarms.sync(alarmPlanner.alarms(planned, tasks: inputs.tasks))
-        let valid = inputs.planner.stillValidToday(tasks: inputs.tasks, reminders: inputs.reminders, events: inputs.events,
-                                                   skipped: inputs.skipped, todayTimes: inputs.todayTimes, context: context)
+        // An alarm rings instead of its notification, when alarms may ring.
+        let rings = alarms.isAuthorized
+        let alarmed = rings ? alarmPlanner : nil
+        let wanted = inputs.planner.plan(tasks: inputs.tasks, reminders: inputs.reminders, events: inputs.events,
+                                         skipped: inputs.skipped, todayTimes: inputs.todayTimes, context: context)
+        await alarms.sync(alarmed?.alarms(wanted, tasks: inputs.tasks) ?? [])
+        let planned = alarmed?.withoutAlarmed(wanted, tasks: inputs.tasks) ?? wanted
+        let stillValid = inputs.planner.stillValidToday(tasks: inputs.tasks, reminders: inputs.reminders, events: inputs.events,
+                                                        skipped: inputs.skipped, todayTimes: inputs.todayTimes, context: context)
+        let valid = alarmed?.withoutAlarmed(stillValid, tasks: inputs.tasks) ?? stillValid
         // Alerts moved into the past or added too late come right away, once.
-        let all = inputs.all()
+        let all = alarmed?.withoutAlarmed(inputs.all(), tasks: inputs.tasks) ?? inputs.all()
         let previous = alertStateStore.load()
         let late = LateAlerts.due(all, pending: previous?.pending ?? [:], known: previous.map { Set($0.known) }, context: context)
         try? alertStateStore.save(AlertState(

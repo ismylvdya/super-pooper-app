@@ -5,22 +5,24 @@ struct PlannedAlarm: Hashable, Sendable {
     let id: String
     let title: String
     let fireDate: Date
-    /// The sound's file in the app's bundle; nil = the system's alarm sound.
+    /// The sound's file; nil = the system's alarm sound.
     let soundFile: String?
+    /// What its notification went by, for Snooze.
+    let key: String
+    let day: LocalDate
+    /// The task or habit it rings for, for Done.
+    let taskName: String?
 }
 
-/// Which planned notifications also ring as alarms. Their notification stays, with its buttons, but silent.
+/// Which planned notifications ring as alarms instead: an alarm has its own Stop and Snooze, so no notification goes with it.
 struct AlarmPlanner: Sendable {
     let sounds: [RulesConfig.Alarms.Sound]
     /// The sound of alarms that have none of their own (the settings).
     let defaultSound: String
 
-    func marking(_ planned: [PlannedNotification], tasks: [TaskItem]) -> [PlannedNotification] {
-        planned.map { notification in
-            var marked = notification
-            marked.hasAlarm = alarm(of: notification, tasks: tasks) != nil
-            return marked
-        }
+    /// The notifications left when alarms ring instead of theirs.
+    func withoutAlarmed(_ planned: [PlannedNotification], tasks: [TaskItem]) -> [PlannedNotification] {
+        planned.filter { alarm(of: $0, tasks: tasks) == nil }
     }
 
     func alarms(_ planned: [PlannedNotification], tasks: [TaskItem]) -> [PlannedAlarm] {
@@ -30,7 +32,8 @@ struct AlarmPlanner: Sendable {
             let file = sounds.first { $0.id == sound }?.file
             let id = [notification.key, notification.day.isoString, "\(notification.fireDate.timeIntervalSince1970)", notification.title,
                       file ?? ""].joined(separator: "|")
-            return PlannedAlarm(id: id, title: notification.title, fireDate: notification.fireDate, soundFile: file)
+            return PlannedAlarm(id: id, title: notification.title, fireDate: notification.fireDate, soundFile: file,
+                                key: notification.key, day: notification.day, taskName: notification.taskName)
         }
     }
 
@@ -44,12 +47,15 @@ struct AlarmPlanner: Sendable {
 protocol AlarmScheduling: Sendable {
     /// False when the user refused them.
     func requestAccess() async -> Bool
+    /// Alarms can ring now.
+    var isAuthorized: Bool { get }
     /// Makes the alarms set equal to `alarms`.
     func sync(_ alarms: [PlannedAlarm]) async
 }
 
 /// Where there are no alarms (previews, tests).
 struct NoAlarms: AlarmScheduling {
+    var isAuthorized: Bool { false }
     func requestAccess() async -> Bool { true }
     func sync(_ alarms: [PlannedAlarm]) async {}
 }

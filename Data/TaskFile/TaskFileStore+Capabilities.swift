@@ -132,7 +132,7 @@ extension TaskFileStore: TaskTrash, DayMirroring, TaskImporting, ExternalLinking
                 }
             }
             let take = { (name: String) -> TaskEntry? in
-                document.remove(where: { $0.name.isSameNoteName(as: name) && $0.completed == nil })?.entry
+                document.remove(where: { $0.name.isSameNoteName(as: name) && $0.completed == nil && $0.deleted == nil })?.entry
             }
             var groups: [TaskDocument.Group] = []
             for section in day.sections {

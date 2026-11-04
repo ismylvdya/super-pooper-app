@@ -33,7 +33,7 @@
     "zone": "🌐",
     "estimate": "⏳",
     "alarm": "🚨",
-    "high": "🔥",
+    "high": "⚠️",
     "pleasant": "❤️",
     "energy": "🐸",
     "routine": "🌅",
@@ -43,5 +43,6 @@
     "completed": "✅",
     "deleted": "🗑️"
   },
-  "legacyMarkers": ["➕"]
+  "legacyMarkers": ["➕"],
+  "legacyHighMarkers": ["🔥", "⚠"]
 }

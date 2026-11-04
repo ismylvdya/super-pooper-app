@@ -1,6 +1,6 @@
 import Foundation
 
-/// One line of the tasks file: `- [ ] Name 📅 2026-11-04 ⏰ 14:00 ⏳ 60 🔥 🆔 a1b2c3`, the lines indented under it that are
+/// One line of the tasks file: `- [ ] Name 📅 2026-11-04 ⏰ 14:00 ⏳ 60 ⚠️ 🆔 a1b2c3`, the lines indented under it that are
 /// not checkboxes (its text), and the checkboxes indented under it (its subtasks).
 struct TaskEntry: Equatable, Sendable {
     enum Box: Equatable, Sendable { case open, started, done }
@@ -48,7 +48,7 @@ extension TaskEntry {
         let markers = format.markers
         let legacy = format.legacyMarkers
         while let last = tokens.last {
-            if last == markers.high { isHigh = true } else if last == markers.pleasant { feel = .pleasant } else if last == markers.energy { feel = .needEnergy } else if last == markers.overdue { isOverdue = true } else if tokens.count >= 2, read(last, marker: tokens[tokens.count - 2], markers, legacy: legacy) {
+            if last == markers.high || format.legacyHighMarkers.contains(last) { isHigh = true } else if last == markers.pleasant { feel = .pleasant } else if last == markers.energy { feel = .needEnergy } else if last == markers.overdue { isOverdue = true } else if tokens.count >= 2, read(last, marker: tokens[tokens.count - 2], markers, legacy: legacy) {
                 tokens.removeLast()
             } else if last.isEmpty {
                 // A double space or a trailing one.

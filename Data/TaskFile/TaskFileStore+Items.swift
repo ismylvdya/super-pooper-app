@@ -215,7 +215,10 @@ extension TaskFileStore {
             var snapshot = try await read(root: root)
             var marks: [(day: LocalDate, mark: HabitMark, id: String, name: String)] = []
             var pending: [(id: String, source: ImportedItem)] = []
-            for source in imported where !snapshot.isTaken(source.item.name) {
+            // An import can be repeated: what it brought into Done last time is not brought again.
+            var filed: Set<NoteName> = []
+            snapshot.document.walk { entry, section, _, _ in if section == .done { filed.insert(entry.name.noteName) } }
+            for source in imported where !snapshot.isTaken(source.item.name) && !filed.contains(source.item.name.noteName) {
                 let id = makeID()
                 snapshot.names[id] = source.item.name
                 pending.append((id, source))

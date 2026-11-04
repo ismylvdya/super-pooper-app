@@ -40,6 +40,8 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
     let markers: Markers
     /// Fields older lines have and the app no longer keeps: read so they are no part of the name, and gone with the next write.
     let legacyMarkers: [String]
+    /// What older lines (and a warning sign typed without its emoji form) say High priority with; written as `markers.high` next.
+    let legacyHighMarkers: [String]
     /// After the alarm's marker: the sound is the one set in the settings.
     let alarmDefaultSound: String
 
