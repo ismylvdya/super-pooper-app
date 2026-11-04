@@ -179,7 +179,7 @@ final class DayCommands {
 
     /// Today's look as it was changed elsewhere (by hand in the file, on another device): its sections, each line's
     /// section and order, and what is kept out of today become the app's.
-    func applyLook(_ look: DayLook) {
+    func applyLook(_ look: DayLook, moved: [String: LocalTime] = [:]) {
         let today = day.context().today
         let definitions = sections.definitions
         sections.update(on: today) { current in
@@ -190,6 +190,16 @@ final class DayCommands {
         for name in day.postponedNames where !look.keptOut.containsNoteName(name) { day.unpostpone(name) }
         for name in look.keptOut { day.postpone(name) }
         day.setManualOrder(look.poolOrder)
+        for (name, time) in moved { moveHabit(named: name, to: time) }
+    }
+
+    /// A habit's line got another time in the file: its first block stands there today, its settings stay.
+    private func moveHabit(named name: String, to time: LocalTime) {
+        guard let habit = tasks.task(named: name), habit.isHabit else { return }
+        let today = TodayTimes(day.dayState.timeMoves)
+        let blocks = today.blocks(of: habit)
+        let moves = blocks.first.map { today.moving(habit, slot: $0.written, to: time) } ?? today.placing(habit, at: time)
+        day.setTimeMoves(moves)
     }
 
     private func placeInSection(_ name: String, _ id: String?, on date: LocalDate) {

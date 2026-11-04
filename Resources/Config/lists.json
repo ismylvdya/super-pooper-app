@@ -30,12 +30,6 @@
       "title": "lists.group.statuses",
       "lists": [
         {
-          "id": "inbox",
-          "title": "status.inbox",
-          "icon": "listInbox",
-          "statuses": ["inbox"]
-        },
-        {
           "id": "thisWeek",
           "title": "status.thisWeek",
           "icon": "listThisWeek",
@@ -64,12 +58,6 @@
           "title": "status.done",
           "icon": "listDone",
           "statuses": ["done"]
-        },
-        {
-          "id": "archived",
-          "title": "status.archived",
-          "icon": "listArchived",
-          "statuses": ["archived"]
         }
       ]
     }

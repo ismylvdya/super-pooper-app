@@ -18,6 +18,7 @@ extension TaskItem {
             case .highPriority(let value): task.isHighPriority = value
             case .due(let value):
                 task.due = value
+                task.isOverdue = false
                 // A task's alarm is of its time: with the time it goes.
                 if value?.time == nil, !task.isHabit { task.alarms = [] }
             case .timeEstimate(let value): task.timeEstimate = value

@@ -13,14 +13,13 @@ extension TaskEntry {
         item.feel = feel
         item.timeZone = zone
         item.completedDate = completed
-        item.created = created.map { TaskDue(day: $0) }
+        item.isOverdue = isOverdue
         return item
     }
 
     private func status(in section: TaskSection) -> TaskStatus {
         if box == .done || section == .done { return .done }
         switch section {
-        case .inbox: return .inbox
         case .now, .soon: return box == .started ? .inProgress : .thisWeek
         case .halfYear: return .halfYear
         case .someday: return .someday
@@ -42,17 +41,17 @@ extension TaskEntry {
         feel = item.feel
         zone = item.timeZone
         completed = item.completedDate
+        isOverdue = item.isOverdue
     }
 }
 
 extension TaskSection {
     /// Where a task of that status stands. This week's: Soon while dated later than `today`, Now from its day on; undated
     /// where it stands (a task kept out of today waits in Soon).
-    static func of(_ item: TaskItem, current: TaskSection, today: LocalDate) -> TaskSection {
+    static func of(_ item: TaskItem, current: TaskSection, today: LocalDate, boundary: LocalTime = .midnight) -> TaskSection {
         switch item.status.planningLevel {
-        case .inbox: return .inbox
         case .thisWeek:
-            guard let day = item.due?.day else { return current == .soon ? .soon : .now }
+            guard let day = item.due?.logicalDay(boundary: boundary) else { return current == .soon ? .soon : .now }
             return day > today ? .soon : .now
         case .halfYear: return .halfYear
         case .someday: return .someday

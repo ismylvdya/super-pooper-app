@@ -30,6 +30,7 @@ struct TaskDocument: Equatable, Sendable {
 
     init(text: String, format: TaskFileFormat) {
         let kinds = Dictionary(TaskSection.allCases.map { (format.title(of: $0), $0) }, uniquingKeysWith: { first, _ in first })
+            .merging(format.legacySections) { current, _ in current }
         // Where lines go: the deepest entries open now, by their indents.
         var path: [(indent: Int, keys: [Int])] = []
         for line in text.components(separatedBy: "\n") {
@@ -85,9 +86,30 @@ struct TaskDocument: Equatable, Sendable {
             while sections[index].other.first?.isEmpty == true { sections[index].other.removeFirst() }
         }
         while prelude.last?.isEmpty == true { prelude.removeLast() }
+        mergeLegacySections(format: format)
         for section in TaskSection.allCases where !sections.contains(where: { $0.kind == section }) {
             sections.append(Section(kind: section, title: format.title(of: section)))
         }
+    }
+
+    /// A section under an older title goes by its title now; when the file has both, its lines join the other's.
+    private mutating func mergeLegacySections(format: TaskFileFormat) {
+        var merged: [Section] = []
+        for section in sections {
+            guard let kind = section.kind else {
+                merged.append(section)
+                continue
+            }
+            if let index = merged.firstIndex(where: { $0.kind == kind }) {
+                merged[index].groups[0].entries += section.groups.flatMap(\.entries)
+                merged[index].other += section.other
+            } else {
+                var section = section
+                section.title = format.title(of: kind)
+                merged.append(section)
+            }
+        }
+        sections = merged
     }
 
     /// The file: an empty line between sections, none between tasks.
@@ -163,6 +185,13 @@ extension TaskDocument {
     func entry(id: String) -> TaskEntry? {
         var found: TaskEntry?
         walk { entry, _, _, _ in if found == nil, entry.id == id { found = entry } }
+        return found
+    }
+
+    /// The line of the item with that id that is not a day in Done.
+    func openLine(of id: String) -> TaskEntry? {
+        var found: TaskEntry?
+        walk { entry, section, _, _ in if found == nil, entry.id == id, section != .done, entry.completed == nil { found = entry } }
         return found
     }
 

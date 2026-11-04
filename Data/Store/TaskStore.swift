@@ -113,6 +113,8 @@ protocol DayMirroring: Sendable {
     func changedLook() async -> DayLook?
     /// The app took `look` in: from now on it is not news.
     func accept(_ look: DayLook) async
+    /// The look this device last saw; what a changed look is told from.
+    func lastLook() async -> DayLook?
 }
 
 /// What this device last saw of today's look in the file. Losing it costs one read of the file's look as news.

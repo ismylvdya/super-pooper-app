@@ -26,6 +26,11 @@ struct RecurrenceSchedule: Sendable {
         }
     }
 
+    /// The nearest day the rule has, `day` itself included.
+    func firstDay(onOrAfter day: LocalDate) -> LocalDate? {
+        pattern.firstMatch(onOrAfter: day, through: day.adding(days: Self.searchHorizonDays))
+    }
+
     func occurs(on day: LocalDate) -> Bool {
         guard let counted = countedOccurrences else {
             return isNotPastUntil(day) && pattern.matches(day)

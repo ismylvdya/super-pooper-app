@@ -74,17 +74,9 @@ struct ConfigTests {
             #expect(bundle.localizedString(forKey: title, value: "∅", table: nil) != "∅", "missing text for \(title)")
         }
         let statuses = config.lists.groups.first { $0.id == "statuses" }?.lists.flatMap(\.filter.statuses)
-        #expect(statuses == TaskStatus.open + [.done, .archived], "Started is in This week, not a list of its own")
+        #expect(statuses == TaskStatus.open + [.done], "Started is in This week, not a list of its own; the archive is in Settings")
     }
 
-    /// The Inbox is the first list of the statuses group; the review never moves a task back into it.
-    @Test func theStatusesGroupStartsWithInbox() throws {
-        let config = try AppConfig.load(bundle: Bundle(for: BundleToken.self).appHostBundle)
-        let statuses = try #require(config.lists.groups.first { $0.id == "statuses" })
-        #expect(statuses.lists.first?.filter.statuses == [.inbox])
-        #expect(!TaskStatus.reviewChoices.contains(.inbox))
-        #expect(TaskStatus.known.first == .inbox)
-    }
 
     /// The pages left of the pool are Soon, then Half year, then Someday, each a list of one planning level; a backlog id
     /// naming a list of several levels stops the app at loading.

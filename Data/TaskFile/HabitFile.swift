@@ -21,6 +21,7 @@ struct HabitFile: Codable, Equatable, Sendable {
     /// The id of the habit it is a subtask of, and its place there.
     var parent: String?
     var order: Int?
+    /// Older files only: where the rule's days start, until the rule says it itself.
     var created: LocalDate?
     /// Its text.
     var note: String = ""
@@ -36,7 +37,9 @@ struct HabitFile: Codable, Equatable, Sendable {
     mutating func update(from item: TaskItem) {
         name = item.name
         isArchived = item.isArchived
-        if let rule = item.recurrence { recurrence = RecurrenceCodec.format(rule) } else if !item.hasUnreadableRecurrence { recurrence = nil }
+        if let rule = item.recurrence {
+            recurrence = RecurrenceCodec.format(rule.startDate == nil ? rule.starting(item.created?.day ?? item.due?.day ?? created) : rule)
+        } else if !item.hasUnreadableRecurrence { recurrence = nil }
         reminderTimes = item.reminderTimes
         alarms = item.alarms.isEmpty ? nil : item.alarms
         timeZone = item.timeZone
@@ -46,7 +49,7 @@ struct HabitFile: Codable, Equatable, Sendable {
         feel = item.feel
         timeEstimate = item.timeEstimate
         order = item.subtaskOrder
-        created = item.created?.day ?? created
+        created = nil
     }
 
     /// The habit as the app knows it, with its marks read from the tasks file.
@@ -66,7 +69,7 @@ struct HabitFile: Codable, Equatable, Sendable {
         item.created = created.map { TaskDue(day: $0) }
         if let recurrence {
             switch RecurrenceCodec.parse(recurrence) {
-            case .success(let rule): item.recurrence = rule
+            case .success(let rule): item.recurrence = rule.withoutEnd
             case .failure:
                 item.hasUnreadableRecurrence = true
                 item.problems.append(.unknownRecurrence(recurrence))

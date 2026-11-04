@@ -49,9 +49,9 @@ struct TaskNoteReaderTests {
         #expect(try read("due: 2026-10-23T16:00 in the evening").problems == [.invalidValue(field: .due, value: "2026-10-23T16:00 in the evening")])
     }
 
-    @Test func anInboxNoteIsReadWithItsStatus() throws {
+    @Test func anInboxNoteIsImportedAsThisWeeks() throws {
         let task = try read("status: inbox")
-        #expect(task.status == .inbox)
+        #expect(task.status == .thisWeek)
         #expect(task.problems.isEmpty)
     }
 

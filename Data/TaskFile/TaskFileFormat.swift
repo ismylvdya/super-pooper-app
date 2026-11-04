@@ -10,7 +10,7 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
     }
 
     struct Sections: Codable, Hashable, Sendable {
-        let inbox, now, soon, halfYear, someday, waiting, done, archive, trash: String
+        let now, soon, halfYear, someday, waiting, done, archive, trash: String
     }
 
     struct Boxes: Codable, Hashable, Sendable {
@@ -18,10 +18,10 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
     }
 
     struct Markers: Codable, Hashable, Sendable {
-        let id, date, time, zone, estimate, alarm, high, pleasant, energy, routine, parent, created, completed, deleted: String
+        let id, date, time, zone, estimate, alarm, high, pleasant, energy, routine, parent, repeats, overdue, completed, deleted: String
 
         /// Every marker: a task's name cannot hold one.
-        var all: [String] { [id, date, time, zone, estimate, alarm, high, pleasant, energy, routine, parent, created, completed, deleted] }
+        var all: [String] { [id, date, time, zone, estimate, alarm, high, pleasant, energy, routine, parent, repeats, overdue, completed, deleted] }
     }
 
     let folder: String
@@ -34,14 +34,17 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
     let dayMarkerPrefix: String
     let dayMarkerSuffix: String
     let sections: Sections
+    /// Titles older files have: read as that section and written under its title now.
+    let legacySections: [String: TaskSection]
     let boxes: Boxes
     let markers: Markers
+    /// Fields older lines have and the app no longer keeps: read so they are no part of the name, and gone with the next write.
+    let legacyMarkers: [String]
     /// After the alarm's marker: the sound is the one set in the settings.
     let alarmDefaultSound: String
 
     func title(of section: TaskSection) -> String {
         switch section {
-        case .inbox: sections.inbox
         case .now: sections.now
         case .soon: sections.soon
         case .halfYear: sections.halfYear
@@ -55,6 +58,6 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
 }
 
 /// The sections of the tasks file, in the order a new file has them.
-enum TaskSection: CaseIterable, Hashable, Sendable {
-    case inbox, now, soon, halfYear, someday, waiting, done, archive, trash
+enum TaskSection: String, CaseIterable, Hashable, Codable, Sendable {
+    case now, soon, halfYear, someday, waiting, done, archive, trash
 }

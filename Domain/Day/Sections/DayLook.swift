@@ -10,6 +10,8 @@ struct DayLook: Codable, Equatable, Sendable {
 
     var sections: [Section] = []
     var keptOut: [String] = []
+    /// The times habits' lines have today: moved by hand in the file, they move on today's timeline.
+    var times: [String: LocalTime]? = nil
 
     /// Every line in order, the pool's only.
     var poolOrder: [String] { sections.flatMap(\.names) }
@@ -19,7 +21,13 @@ struct DayLook: Codable, Equatable, Sendable {
     func differs(from other: DayLook) -> Bool {
         let names = Set(places.map(\.name)).intersection(other.places.map(\.name))
         let common = { (look: DayLook) in look.places.filter { names.contains($0.name) } }
-        return common(self) != common(other)
+        return common(self) != common(other) || !movedTimes(since: other).isEmpty
+    }
+
+    /// The lines' times that are not what `other` had for them.
+    func movedTimes(since other: DayLook?) -> [String: LocalTime] {
+        guard let other else { return [:] }
+        return (times ?? [:]).filter { name, time in (other.times ?? [:])[name].map { $0 != time } ?? false }
     }
 
     private struct Place: Equatable {

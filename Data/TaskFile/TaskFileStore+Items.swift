@@ -28,7 +28,7 @@ extension TaskFileStore {
         let was = try current(id: id, name: name, snapshot: snapshot)
         let updated = was.applying(changes)
         guard let place = place(of: id, in: snapshot.document) else { throw TaskStoreError.fileMissing(name) }
-        let target = TaskSection.of(updated, current: place.section, today: today())
+        let target = TaskSection.of(updated, current: place.section, today: today(), boundary: boundary())
         let parent = updated.projects.first.flatMap(snapshot.id(ofName:))
         let order = changes.compactMap { change -> Int?? in if case .subtaskOrder(let value) = change { value } else { nil } }.last
         if target == place.section, parent == place.parent ?? place.tag, order == nil {
@@ -71,7 +71,8 @@ extension TaskFileStore {
             note.id = TaskID(id)
             let parent = note.projects.first.flatMap(snapshot.id(ofName:))
             if note.isHabit {
-                note.created = note.created ?? TaskDue(day: today())
+                // A repeat with no day of its own starts from today: its first day is the nearest one that fits.
+                note.recurrence = note.recurrence.map { $0.startDate == nil ? $0.starting(today()) : $0 }
                 let file = HabitFile(id: id, item: note, parent: parent, note: draft.body)
                 try write(file, root: root)
                 snapshot.habits[id] = file
@@ -80,10 +81,9 @@ extension TaskFileStore {
             }
             var entry = TaskEntry(name: final)
             entry.id = id
-            entry.created = today()
             entry.update(from: note, format: format)
             entry.note = Self.lines(of: draft.body)
-            let target = TaskSection.of(note, current: .now, today: today())
+            let target = TaskSection.of(note, current: .now, today: today(), boundary: boundary())
             if let parent {
                 if place(of: parent, in: snapshot.document)?.section == target, snapshot.document.insert(entry, under: parent) {
                     try write(snapshot.document, root: root)
@@ -112,7 +112,9 @@ extension TaskFileStore {
                     rename(&entries[index].children)
                 }
             }
-            for section in snapshot.document.sections.indices {
+            // A habit's days in Done keep the name they were done under: they go by the id.
+            let isHabit = snapshot.habits[id] != nil
+            for section in snapshot.document.sections.indices where !(isHabit && snapshot.document.sections[section].kind == .done) {
                 for group in snapshot.document.sections[section].groups.indices { rename(&snapshot.document.sections[section].groups[group].entries) }
             }
             if var file = snapshot.habits[id] {
@@ -167,6 +169,7 @@ extension TaskFileStore {
             guard var taken = snapshot.document.remove(where: { $0.id == task.id.value })?.entry else { throw TaskStoreError.fileMissing(task.name) }
             taken.box = .done
             taken.completed = taken.completed ?? today()
+            taken.isOverdue = false
             snapshot.document.insert(taken, into: .done, atTop: true)
             try write(snapshot.document, root: root)
             var filed = task
@@ -232,10 +235,9 @@ extension TaskFileStore {
                 }
                 var entry = TaskEntry(name: item.name)
                 entry.id = id
-                entry.created = item.created?.day
                 entry.update(from: item, format: format)
                 entry.note = Self.lines(of: source.text)
-                let target: TaskSection = source.isFiled ? .done : TaskSection.of(item, current: .now, today: today())
+                let target: TaskSection = source.isFiled ? .done : TaskSection.of(item, current: .now, today: today(), boundary: boundary())
                 if let parent = parentID(item), place(of: parent, in: snapshot.document)?.section == target,
                    snapshot.document.insert(entry, under: parent) { continue }
                 entry.parent = parentID(item)

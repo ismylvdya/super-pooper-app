@@ -19,10 +19,10 @@ struct HabitHistory: Sendable {
 
     func isScheduled(_ day: LocalDate) -> Bool { schedule.occurs(on: day) }
 
-    /// The first day the habit counts from: its creation or its first mark, whichever is earlier.
+    /// The first day the habit counts from: where its rule starts or its first mark, whichever is earlier.
     func start(today: LocalDate) -> LocalDate {
-        let created = task.created.map(days.day(of:)) ?? today
-        return ([created] + task.marks.keys).min() ?? today
+        let first = task.recurrence?.startDate ?? task.created.map(days.day(of:)) ?? today
+        return ([first] + task.marks.keys).min() ?? today
     }
 
     /// What a day is worth toward the goal and the percentages (`HabitStatsRules`: Partially is part of a day, Twice

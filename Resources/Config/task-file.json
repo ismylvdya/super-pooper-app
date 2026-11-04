@@ -7,8 +7,7 @@
   "dayMarkerPrefix": "%% day ",
   "dayMarkerSuffix": " %%",
   "sections": {
-    "inbox": "Inbox",
-    "now": "Now",
+    "now": "Today",
     "soon": "Soon",
     "halfYear": "Half year",
     "someday": "Someday",
@@ -16,6 +15,10 @@
     "done": "Done",
     "archive": "Archive",
     "trash": "Trash"
+  },
+  "legacySections": {
+    "Now": "now",
+    "Inbox": "soon"
   },
   "boxes": {
     "open": " ",
@@ -35,8 +38,10 @@
     "energy": "🐸",
     "routine": "🌅",
     "parent": "🔼",
-    "created": "➕",
+    "repeats": "🔁",
+    "overdue": "🕰️",
     "completed": "✅",
     "deleted": "🗑️"
-  }
+  },
+  "legacyMarkers": ["➕"]
 }

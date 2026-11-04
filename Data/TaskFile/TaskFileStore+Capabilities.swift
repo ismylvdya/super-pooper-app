@@ -110,23 +110,27 @@ extension TaskFileStore: TaskTrash, DayMirroring, TaskImporting, ExternalLinking
         try? await location.withRoot { root in
             var snapshot = try await read(root: root)
             guard changedLook(in: snapshot) == nil else { return }
+            let dayOfFile = today()
+            let wasOverdue = Set(snapshot.habits.keys.filter { id in
+                let line = snapshot.document.openLine(of: id)
+                return line?.isOverdue == true && line?.date == dayOfFile
+            })
+            let line = { (name: String) -> TaskEntry? in
+                guard let id = snapshot.id(ofName: name), let file = snapshot.habits[id] else { return nil }
+                let item = self.habit(of: file, snapshot: snapshot)
+                // A closed day's habit has its next line in Soon; its copy is in Done.
+                if self.isClosed(item, on: dayOfFile) { return nil }
+                return self.habitLine(file, item: item, date: dayOfFile, time: day.timed[name], isOverdue: wasOverdue.contains(id))
+            }
             // Today's lines of habits are made anew.
             let habitIDs = Set(snapshot.habits.keys)
             let isToday = { (section: TaskDocument.Section) in section.kind == .now || section.kind == .soon }
-            for index in snapshot.document.sections.indices where isToday(snapshot.document.sections[index]) {
-                for group in snapshot.document.sections[index].groups.indices {
-                    snapshot.document.sections[index].groups[group].entries.removeAll { $0.id.map(habitIDs.contains) ?? false }
+            var document = snapshot.document
+            for index in document.sections.indices where isToday(document.sections[index]) {
+                for group in document.sections[index].groups.indices {
+                    document.sections[index].groups[group].entries.removeAll { $0.id.map(habitIDs.contains) ?? false }
                 }
             }
-            let line = { (name: String) -> TaskEntry? in
-                guard let id = snapshot.id(ofName: name), let file = snapshot.habits[id] else { return nil }
-                var entry = TaskEntry(name: file.name)
-                entry.id = id
-                entry.routine = file.options.timeOfDay?.rawValue
-                entry.time = day.timed[name]
-                return entry
-            }
-            var document = snapshot.document
             let take = { (name: String) -> TaskEntry? in
                 document.remove(where: { $0.name.isSameNoteName(as: name) && $0.completed == nil })?.entry
             }
@@ -135,12 +139,15 @@ extension TaskFileStore: TaskTrash, DayMirroring, TaskImporting, ExternalLinking
                 let entries = section.names.compactMap { name in line(name) ?? take(name) }
                 if !entries.isEmpty { groups.append(TaskDocument.Group(title: section.title, entries: entries)) }
             }
-            let timedHabits = day.timed.keys.sorted().compactMap(line)
+            let inSections = Set(day.sections.flatMap(\.names).map(\.noteName))
+            let timedHabits = day.timed.keys.sorted().filter { !inSections.contains($0.noteName) }.compactMap(line)
             let kept = day.keptOut.compactMap(take)
             guard let now = document.sections.firstIndex(where: { $0.kind == .now }) else { return }
             let loose = document.sections[now].groups.flatMap(\.entries)
             document.sections[now].groups = [TaskDocument.Group(title: nil, entries: loose + timedHabits)] + groups
             for entry in kept { document.insert(entry, into: .soon) }
+            let placed = Set((groups.flatMap(\.entries) + timedHabits).compactMap(\.id))
+            for entry in waitingHabitLines(except: placed, snapshot: snapshot, today: dayOfFile) { document.insert(entry, into: .soon) }
             setDayMarker(in: &document)
             try write(document, root: root)
             lookMemory.save(look(of: document, habits: snapshot.habits))
@@ -153,6 +160,10 @@ extension TaskFileStore: TaskTrash, DayMirroring, TaskImporting, ExternalLinking
 
     func accept(_ look: DayLook) async {
         lookMemory.save(look)
+    }
+
+    func lastLook() async -> DayLook? {
+        lookMemory.load()
     }
 
     /// The file's look when it is about today and differs from what this device last saw. A file about another day has
@@ -171,6 +182,11 @@ extension TaskFileStore: TaskTrash, DayMirroring, TaskImporting, ExternalLinking
                 look.sections = section.groups.compactMap { group in
                     group.title.map { DayLook.Section(title: $0, names: group.entries.map(\.name)) }
                 }
+                var times: [String: LocalTime] = [:]
+                for entry in section.groups.flatMap(\.entries) where entry.id.map({ habits[$0] != nil }) ?? false {
+                    if let time = entry.time { times[entry.name] = time }
+                }
+                look.times = times
             } else if section.kind == .soon {
                 look.keptOut = section.groups.flatMap(\.entries)
                     .filter { $0.date == nil && $0.box != .done && !($0.id.map { habits[$0] != nil } ?? false) }

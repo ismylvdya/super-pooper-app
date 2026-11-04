@@ -15,11 +15,6 @@ struct FieldMappingTests {
         #expect(Set(mapping.keyedFields.map(\.field)) == Set(TaskField.allCases).subtracting([.alarms]), "alarms are not in TaskNotes")
     }
 
-    /// The Inbox is TaskNotes' status `inbox`, read and written as is.
-    @Test func inboxReadsAndWritesAsInbox() {
-        #expect(TestConfig.mapping.status(fromRaw: "inbox") == .inbox)
-        #expect(TestConfig.mapping.raw(.inbox) == "inbox")
-    }
 
     /// There is no day routine any more: a note's `time_of_day: day` reads as no routine, so the habit goes to Day.
     @Test func aDayTimeOfDayReadsAsNoRoutine() {

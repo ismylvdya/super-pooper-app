@@ -19,7 +19,10 @@ struct TaskEntry: Equatable, Sendable {
     var routine: String?
     /// The parent's id, when the line does not stand under its parent (they are in different sections).
     var parent: String?
-    var created: LocalDate?
+    /// The repeat rule in words (`RepeatTag`), only to be read: a habit's rule lives in its JSON file.
+    var repeats: String?
+    /// Its time passed with its day and it was not done: it stands in the pool with a mark.
+    var isOverdue = false
     var completed: LocalDate?
     var deleted: LocalDate?
     var note: [String] = []
@@ -43,8 +46,9 @@ extension TaskEntry {
         // Fields stand at the end of the line: the first token from the end that is no field ends them, and a marker in
         // the middle of a name stays part of it.
         let markers = format.markers
+        let legacy = format.legacyMarkers
         while let last = tokens.last {
-            if last == markers.high { isHigh = true } else if last == markers.pleasant { feel = .pleasant } else if last == markers.energy { feel = .needEnergy } else if tokens.count >= 2, read(last, marker: tokens[tokens.count - 2], markers) {
+            if last == markers.high { isHigh = true } else if last == markers.pleasant { feel = .pleasant } else if last == markers.energy { feel = .needEnergy } else if last == markers.overdue { isOverdue = true } else if tokens.count >= 2, read(last, marker: tokens[tokens.count - 2], markers, legacy: legacy) {
                 tokens.removeLast()
             } else if last.isEmpty {
                 // A double space or a trailing one.
@@ -57,7 +61,7 @@ extension TaskEntry {
     }
 
     /// Takes `value` as the field of `marker`; false when it is no such pair.
-    private mutating func read(_ value: String, marker: String, _ markers: TaskFileFormat.Markers) -> Bool {
+    private mutating func read(_ value: String, marker: String, _ markers: TaskFileFormat.Markers, legacy: [String]) -> Bool {
         switch marker {
         case markers.id: id = value
         case markers.date:
@@ -73,16 +77,14 @@ extension TaskEntry {
         case markers.alarm: alarm = value
         case markers.routine: routine = value
         case markers.parent: parent = value
-        case markers.created:
-            guard let day = LocalDate(isoString: value) else { return false }
-            created = day
+        case markers.repeats: repeats = value
         case markers.completed:
             guard let day = LocalDate(isoString: value) else { return false }
             completed = day
         case markers.deleted:
             guard let day = LocalDate(isoString: value) else { return false }
             deleted = day
-        default: return false
+        default: return legacy.contains(marker)
         }
         return true
     }
@@ -110,7 +112,8 @@ extension TaskEntry {
         }
         add(markers.routine, routine)
         add(markers.parent, parent)
-        add(markers.created, created?.isoString)
+        add(markers.repeats, repeats)
+        if isOverdue { parts.append(markers.overdue) }
         add(markers.completed, completed?.isoString)
         add(markers.deleted, deleted?.isoString)
         add(markers.id, id)

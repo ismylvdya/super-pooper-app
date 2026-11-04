@@ -62,7 +62,7 @@ final class AppContainer {
                                   vaultSettings: { settingsStore.load().vault }, today: {
             let day = boundary()
             return DayContext(now: clock.now, calendar: calendar.current, boundary: day.boundary, energyHour: day.energyHour).today
-        }, lookMemory: JSONDayLookMemory(store: shared))
+        }, boundary: { boundary().boundary }, lookMemory: JSONDayLookMemory(store: shared))
         let eventKit = EventKitAccess()
         self.eventKit = eventKit
         let notificationImage = NotificationImageStore(url: shared.url(config.rules.notifications.imageFile),

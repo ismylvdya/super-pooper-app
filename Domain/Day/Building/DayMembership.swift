@@ -35,7 +35,7 @@ struct DayMembership: Sendable {
     /// A habit by its own rule or marked today; a repeatable subtask whenever its parent comes up.
     private func comesUpToday(_ task: TaskItem, depth: Int = 0) -> Bool {
         guard let parent = parent(of: task, depth: depth) else {
-            return occurrence.occurs(task, on: context.today) || (depth > 0 && task.mark(on: context.today) != nil)
+            return occurrence.occurs(task, on: context.today) || task.isOverdue || (depth > 0 && task.mark(on: context.today) != nil)
         }
         return parent.isInTodayHabits && comesUpToday(parent, depth: depth + 1)
     }

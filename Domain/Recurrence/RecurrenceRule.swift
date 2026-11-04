@@ -25,3 +25,17 @@ struct RecurrenceRule: Hashable, Codable, Sendable {
     let untilTime: LocalTime?
     let weekStart: Weekday
 }
+
+extension RecurrenceRule {
+    /// A repeat goes on forever: an end an older rule has (a date, a number of times) is not kept.
+    var withoutEnd: RecurrenceRule {
+        RecurrenceRule(startDate: startDate, startTime: startTime, frequency: frequency, interval: interval, byDay: byDay, byMonthDay: byMonthDay,
+                       byMonth: byMonth, count: nil, untilDate: nil, untilTime: nil, weekStart: weekStart)
+    }
+
+    /// The rule counted from `day`, when one is known.
+    func starting(_ day: LocalDate?) -> RecurrenceRule {
+        RecurrenceRule(startDate: day ?? startDate, startTime: startTime, frequency: frequency, interval: interval, byDay: byDay, byMonthDay: byMonthDay,
+                       byMonth: byMonth, count: count, untilDate: untilDate, untilTime: untilTime, weekStart: weekStart)
+    }
+}

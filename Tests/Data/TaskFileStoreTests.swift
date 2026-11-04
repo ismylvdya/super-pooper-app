@@ -38,7 +38,7 @@ struct TaskFileStoreTests {
     private func draft(_ changes: [TaskEdit] = []) -> NoteDraft { NoteDraft(status: .thisWeek, changes: changes) }
 
     @Test func aLineRoundTripsWithEveryField() {
-        let line = "- [/] Call the doctor: urgent 📅 2026-11-04 ⏰ 14:00 🌐 Asia/Tokyo ⏳ 60 🔥 ❤️ ➕ 2026-11-01 🆔 a1"
+        let line = "- [/] Call the doctor: urgent 📅 2026-11-04 ⏰ 14:00 🌐 Asia/Tokyo ⏳ 60 🔥 ❤️ 🆔 a1"
         let entry = TaskEntry(line: line, format: format)
         #expect(entry?.name == "Call the doctor: urgent" && entry?.box == .started && entry?.isHigh == true && entry?.feel == .pleasant)
         #expect(entry?.date == LocalDate("2026-11-04") && entry?.time == LocalTime("14:00") && entry?.zone == "Asia/Tokyo" && entry?.estimate == 60)
@@ -167,7 +167,7 @@ struct TaskFileStoreTests {
         let store = store()
         let habit = try await store.create(NoteDraft(status: .habit), named: "Run")
         await store.mirror(DayMirror(sections: [.init(title: "Morning", names: ["Run"])], timed: [:], keptOut: []))
-        #expect(try text().contains("### Morning\n- [ ] Run 🆔 \(habit.id.value)"))
+        #expect(try text().contains("### Morning\n- [ ] Run 📅 \(today.isoString) 🆔 \(habit.id.value)"))
         try write(try text().replacingOccurrences(of: "- [ ] Run", with: "- [x] Run"))
         let loaded = try await store.load().tasks
         #expect(loaded.first?.marks[today] == .done)
@@ -263,6 +263,130 @@ struct TaskFileStoreTests {
         #expect(store().nameProblem(in: "Встреча: Анна") == nil, "only the markers and blanks are the file's business")
         #expect(store().nameProblem(in: " ") == .empty)
     }
+
+    // MARK: - The file's words
+
+    @Test func olderTitlesAndFieldsTurnIntoTodaysOnTheFirstRead() async throws {
+        try write("## Inbox\n- [ ] Idea ➕ 2026-11-01 🆔 i1\n## Now\n- [ ] Milk ➕ 2026-11-01 🆔 m1\n## Soon\n- [ ] Later 🆔 l1\n")
+        let tasks = try await store().load().tasks
+        #expect(Set(tasks.map(\.name)) == ["Idea", "Milk", "Later"])
+        let written = try text()
+        #expect(!written.contains("Inbox") && !written.contains("## Now") && !written.contains("➕"))
+        #expect(written.contains("## Today\n- [ ] Milk 🆔 m1"))
+        #expect(written.contains("## Soon\n- [ ] Later 🆔 l1\n- [ ] Idea 🆔 i1") || written.contains("- [ ] Idea 🆔 i1\n- [ ] Later 🆔 l1"))
+    }
+
+    @Test func aRenamedHabitKeepsItsOldNameInDone() async throws {
+        let store = store()
+        let habit = try await store.create(NoteDraft(status: .habit), named: "Run")
+        _ = try await store.apply([.mark(.done, on: today)], to: habit)
+        _ = try await store.rename(habit, to: "Jog", dependents: [])
+        #expect(try text().contains("- [x] Run ✅ \(today.isoString) 🆔 \(habit.id.value)"))
+        #expect(try await store.load().tasks.first?.marks[today] == .done)
+    }
+
+    // MARK: - Repeats and what was missed
+
+    private func weekly(_ days: [Weekday], from start: LocalDate) -> RecurrenceRule {
+        RecurrenceRule(startDate: start, startTime: nil, frequency: .weekly, interval: 1, byDay: days.map { RecurrenceWeekday(weekday: $0, ordinal: nil) },
+                       byMonthDay: [], byMonth: [], count: nil, untilDate: nil, untilTime: nil, weekStart: .monday)
+    }
+
+    private func habitDraft(_ rule: RecurrenceRule, times: [LocalTime] = []) -> NoteDraft {
+        NoteDraft(status: .habit, changes: [.recurrence(rule), .reminderTimes(times)])
+    }
+
+    private func line(of name: String) throws -> String? {
+        try text().components(separatedBy: "\n").first { $0.hasPrefix("- [ ] \(name) ") }
+    }
+
+    /// Everything before the line's own section heading ends there: which section a line stands in.
+    private func section(of name: String) throws -> String? {
+        var current: String?
+        for line in try text().components(separatedBy: "\n") {
+            if line.hasPrefix("## ") { current = String(line.dropFirst(3)) }
+            if line.hasPrefix("- [ ] \(name) ") { return current }
+        }
+        return nil
+    }
+
+    @Test func aHabitNotOfTodayWaitsInSoonOnItsNearestDayWithItsRuleAndTime() async throws {
+        let store = store()
+        let other = today.adding(days: 2).weekday
+        _ = try await store.create(habitDraft(weekly([other], from: today), times: [LocalTime(hour: 9, minute: 30)!]), named: "Gym")
+        await store.mirror(DayMirror(sections: [], timed: [:], keptOut: []))
+        let line = try #require(try line(of: "Gym"))
+        #expect(try section(of: "Gym") == "Soon")
+        #expect(line.contains("📅 \(today.adding(days: 2).isoString) ⏰ 09:30"))
+        #expect(line.contains("🔁 every-"))
+    }
+
+    @Test func aHabitClosedTodayGoesToDoneAndItsNextDayToSoon() async throws {
+        let store = store()
+        let daily = RecurrenceRule(startDate: today, startTime: nil, frequency: .daily, interval: 1, byDay: [], byMonthDay: [], byMonth: [],
+                                   count: nil, untilDate: nil, untilTime: nil, weekStart: .monday)
+        let habit = try await store.create(habitDraft(daily), named: "Read")
+        _ = try await store.apply([.mark(.done, on: today)], to: habit)
+        await store.mirror(DayMirror(sections: [.init(title: "Day", names: ["Read"])], timed: [:], keptOut: []))
+        #expect(try section(of: "Read") == "Soon")
+        #expect(try line(of: "Read")?.contains("📅 \(today.adding(days: 1).isoString)") == true)
+        #expect(try text().contains("- [x] Read ✅ \(today.isoString)"))
+    }
+
+    @Test func aTaskMissedAtItsTimeIsCarriedWithoutItAndMarked() async throws {
+        let yesterday = today.adding(days: -1)
+        try write("## Today\n- [ ] Call 📅 \(yesterday.isoString) ⏰ 14:00 🆔 c1\n- [ ] Plain 📅 \(yesterday.isoString) 🆔 p1\n")
+        let tasks = try await store().load().tasks
+        let call = try #require(tasks.first { $0.name == "Call" })
+        let plain = try #require(tasks.first { $0.name == "Plain" })
+        #expect(call.isOverdue && call.due == TaskDue(day: today))
+        #expect(!plain.isOverdue && plain.due == TaskDue(day: today))
+        #expect(try text().contains("- [ ] Call 📅 \(today.isoString) 🕰️ 🆔 c1"))
+    }
+
+    @Test func aMissedHabitWithoutADayNowIsCarriedOverdueWithNoTimes() async throws {
+        let store = store()
+        let yesterday = today.adding(days: -1)
+        let rule = weekly([yesterday.weekday], from: yesterday)
+        let habit = try await store.create(habitDraft(rule, times: [LocalTime(hour: 8, minute: 0)!]), named: "Gym")
+        try write("## Today\n- [ ] Gym 📅 \(yesterday.isoString) ⏰ 08:00 🔁 every-x 🆔 \(habit.id.value)\n")
+        let loaded = try #require(try await store.load().tasks.first)
+        #expect(loaded.isOverdue && loaded.habitTimes.isEmpty)
+        #expect(try line(of: "Gym")?.contains("📅 \(today.isoString) 🔁 every-x 🕰️") == true)
+        #expect(!loaded.reminderTimes.isEmpty, "its settings stay")
+    }
+
+    @Test func aMissedHabitWithADayNowJustStartsAnew() async throws {
+        let store = store()
+        let yesterday = today.adding(days: -1)
+        let daily = RecurrenceRule(startDate: yesterday, startTime: nil, frequency: .daily, interval: 1, byDay: [], byMonthDay: [], byMonth: [],
+                                   count: nil, untilDate: nil, untilTime: nil, weekStart: .monday)
+        let habit = try await store.create(habitDraft(daily), named: "Read")
+        try write("## Today\n- [ ] Read 📅 \(yesterday.isoString) ⏰ 08:00 🆔 \(habit.id.value)\n")
+        let loaded = try #require(try await store.load().tasks.first)
+        #expect(!loaded.isOverdue)
+        #expect(try line(of: "Read") == nil, "the mirror writes its new line")
+    }
+
+    @Test(arguments: [
+        (RecurrenceFrequency.daily, 1, [String](), [Int](), "every-day"),
+        (.daily, 6, [], [], "every-6-days"),
+        (.monthly, 1, [], [-1], "every-last-day-of-month"),
+        (.monthly, 1, [], [15], "every-15-of-month")
+    ])
+    func aRuleSaysItselfInOneWord(frequency: RecurrenceFrequency, interval: Int, days: [String], monthDays: [Int], expected: String) {
+        let rule = RecurrenceRule(startDate: nil, startTime: nil, frequency: frequency, interval: interval, byDay: [], byMonthDay: monthDays,
+                                  byMonth: [], count: nil, untilDate: nil, untilTime: nil, weekStart: .monday)
+        #expect(RepeatTag.text(of: rule) == expected)
+    }
+
+    @Test func weekdaysAndLastWeekdaySayThemselves() {
+        let week = weekly([.saturday, .monday], from: today)
+        #expect(RepeatTag.text(of: week) == "every-mon-sat")
+        let last = RecurrenceRule(startDate: nil, startTime: nil, frequency: .monthly, interval: 1, byDay: [RecurrenceWeekday(weekday: .saturday, ordinal: -1)],
+                                  byMonthDay: [], byMonth: [], count: nil, untilDate: nil, untilTime: nil, weekStart: .monday)
+        #expect(RepeatTag.text(of: last) == "every-last-sat-of-month")
+    }
 }
 
 private final class Counter: @unchecked Sendable {
@@ -296,4 +420,5 @@ struct AlarmFormatTests {
         #expect(entry.alarm == format.alarmDefaultSound)
         #expect(entry.item(in: .now, parentName: nil, order: nil, format: format).alarms == [TimeAlarm()])
     }
+
 }

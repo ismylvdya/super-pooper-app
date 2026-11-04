@@ -12,12 +12,6 @@ struct DayMembershipTests {
         #expect(plan.poolNames == ["Week task"])
     }
 
-    /// An Inbox task waits to be planned: not in the pool, dated or not.
-    @Test func anInboxTaskIsNeverInADay() {
-        let undated = makeTask("Idea", status: .inbox)
-        let dated = makeTask("Dated idea", status: .inbox) { $0.due = TaskDue("2026-10-21") }
-        #expect(DayScenario(tasks: [undated, dated]).build().dayNames.isEmpty)
-    }
 
     @Test(arguments: [TaskStatus.halfYear, .someday, .waiting, .archived, .other("in_progress")])
     func otherStatusesStayOutOfTheDay(status: TaskStatus) {

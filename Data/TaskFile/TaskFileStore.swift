@@ -38,13 +38,15 @@ actor TaskFileStore: TaskStore {
     let downloadPoll: TimeInterval
     /// Today, logically: what has passed moves up to it.
     let today: @Sendable () -> LocalDate
+    /// When a logical day starts: a line at 01:00 on the 5th still belongs to the 4th with a 04:00 boundary.
+    let boundary: @Sendable () -> LocalTime
     let makeID: @Sendable () -> String
     let lookMemory: DayLookMemory
 
     init(location: VaultLocating, fileSystem: NoteFileSystem, ubiquity: UbiquityService, format: TaskFileFormat,
          obsidian: ObsidianConventions, backups: BackupService, rules: RulesConfig.Vault,
          vaultSettings: @escaping @Sendable () -> AppSettings.Vault, today: @escaping @Sendable () -> LocalDate,
-         lookMemory: DayLookMemory,
+         boundary: @escaping @Sendable () -> LocalTime = { .midnight }, lookMemory: DayLookMemory,
          makeID: @escaping @Sendable () -> String = { String(UUID().uuidString.replacingOccurrences(of: "-", with: "").prefix(8)).lowercased() }) {
         self.location = location
         self.fileSystem = fileSystem
@@ -56,6 +58,7 @@ actor TaskFileStore: TaskStore {
         self.downloadTimeout = rules.downloadTimeoutSeconds
         self.downloadPoll = rules.downloadPollSeconds
         self.today = today
+        self.boundary = boundary
         self.makeID = makeID
         self.lookMemory = lookMemory
     }
@@ -148,7 +151,9 @@ actor TaskFileStore: TaskStore {
             } catch TaskStoreError.folderMissing(let folder) {
                 return VaultScanResult(tasks: [], fileProblems: [.tasksFolderMissing(folder)], conflicted: [])
             }
-            if normalize(&snapshot) { try write(snapshot.document, root: root) }
+            _ = normalize(&snapshot)
+            // Also when nothing changed but how the file says it (an older title, a field no longer kept).
+            try write(snapshot.document, root: root)
             snapshot.indexNames()
             return VaultScanResult(tasks: items(of: snapshot), fileProblems: [], conflicted: [])
         }
@@ -171,7 +176,10 @@ actor TaskFileStore: TaskStore {
     }
 
     func habit(of file: HabitFile, snapshot: Snapshot) -> TaskItem {
-        file.item(parentName: file.parent.flatMap { snapshot.names[$0] }, marks: snapshot.document.marks(of: file.id))
+        var item = file.item(parentName: file.parent.flatMap { snapshot.names[$0] }, marks: snapshot.document.marks(of: file.id))
+        let line = snapshot.document.openLine(of: file.id)
+        item.isOverdue = line?.isOverdue == true && line?.date == today()
+        return item
     }
 
     /// What a day's turn or a hand in Obsidian leaves to tidy: lines without an id get one; a task dated before today
@@ -197,7 +205,7 @@ actor TaskFileStore: TaskStore {
             guard section == .now || section == .soon, let id = entry.id else { return }
             if snapshot.habits[id] != nil {
                 if entry.box != .open { moves.append((id, true)) }
-            } else if section == .soon, parent == nil, entry.box != .done, entry.date.map({ $0 <= day }) == true {
+            } else if section == .soon, parent == nil, entry.box != .done, logicalDay(of: entry).map({ $0 <= day }) == true {
                 moves.append((id, false))
             }
         }
@@ -209,16 +217,25 @@ actor TaskFileStore: TaskStore {
                 snapshot.document.insert(taken.entry, into: .now)
             }
         }
-        rollOver(&snapshot.document, to: day)
+        rollOver(&snapshot.document, to: day, habits: Set(snapshot.habits.keys))
+        carryMissedHabits(&snapshot, to: day)
         return snapshot.document != before
+    }
+
+    /// The logical day a line stands on.
+    func logicalDay(of entry: TaskEntry) -> LocalDate? {
+        entry.date.map { TaskDue(day: $0, time: entry.time).logicalDay(boundary: boundary()) }
     }
 
     /// An open task's date that has passed becomes today's. The time it was meant for has passed with its day, so it goes
     /// (with its zone and its notification), and the task stands in the pool.
-    private func rollOver(_ document: inout TaskDocument, to day: LocalDate) {
+    private func rollOver(_ document: inout TaskDocument, to day: LocalDate, habits: Set<String>) {
         func roll(_ entries: inout [TaskEntry]) {
             for index in entries.indices {
-                if entries[index].box != .done, let date = entries[index].date, date < day {
+                // A habit's line has its own way (`carryMissedHabits`).
+                if entries[index].box != .done, let date = entries[index].date, logicalDay(of: entries[index]) ?? date < day, !(entries[index].id.map(habits.contains) ?? false) {
+                    // Only what had a time was missed; a line without one just waits on.
+                    if entries[index].time != nil { entries[index].isOverdue = true }
                     entries[index].date = day
                     entries[index].time = nil
                     entries[index].zone = nil

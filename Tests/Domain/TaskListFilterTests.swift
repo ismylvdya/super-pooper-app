@@ -14,12 +14,6 @@ struct TaskListFilterTests {
         makeHabit("Water", status: .habit),
     ]
 
-    @Test func theInboxListHoldsOnlyInboxTasks() {
-        let all = tasks + [makeTask("Idea", status: .inbox)]
-        let groups = TaskListFilter(statuses: [.inbox]).groups(of: all, query: "", rules: rules)
-        #expect(groups.map(\.status) == [.inbox])
-        #expect(groups.flatMap(\.tasks).map(\.name) == ["Idea"])
-    }
 
     @Test func theWeeklyReviewHoldsWhatIsNotThisWeekYet() {
         let review = TaskListFilter(statuses: [.halfYear, .someday, .waiting])

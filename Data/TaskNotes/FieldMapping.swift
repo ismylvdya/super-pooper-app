@@ -52,7 +52,7 @@ struct FieldMapping: Codable, Hashable, Sendable {
     }
 
     struct Statuses: Codable, Hashable, Sendable {
-        /// The Inbox: a status the owner adds to TaskNotes himself.
+        /// A status the owner adds to TaskNotes himself; imported as this week's.
         let inbox: String
         let thisWeek: String
         /// Started: TaskNotes' own in-progress status.
@@ -104,7 +104,7 @@ struct FieldMapping: Codable, Hashable, Sendable {
 
     func status(fromRaw raw: String) -> TaskStatus {
         switch raw {
-        case statuses.inbox: .inbox
+        case statuses.inbox: .thisWeek
         case statuses.thisWeek: .thisWeek
         case statuses.inProgress: .inProgress
         case statuses.halfYear: .halfYear
@@ -151,7 +151,6 @@ struct FieldMapping: Codable, Hashable, Sendable {
 
     func raw(_ status: TaskStatus) -> String {
         switch status {
-        case .inbox: statuses.inbox
         case .thisWeek: statuses.thisWeek
         case .inProgress: statuses.inProgress
         case .halfYear: statuses.halfYear

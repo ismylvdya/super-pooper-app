@@ -34,6 +34,8 @@ struct TaskItem: Identifiable, Hashable, Codable, Sendable {
     var created: TaskDue?
     var dateModified: Date?
     var problems: [TaskProblem] = []
+    /// Its day passed with it not done, and it was carried into today's pool without a time (`docs/BACKEND.md`).
+    var isOverdue = false
 
     /// A habit has the habit status or repeats by a rule (even one that cannot be read).
     var isHabit: Bool { status == .habit || recurrence != nil || hasUnreadableRecurrence }
@@ -46,6 +48,8 @@ struct TaskItem: Identifiable, Hashable, Codable, Sendable {
     var isInTodayHabits: Bool { isHabit && !isArchived && habit.showInToday }
     /// Times of day a habit is planned at: its reminders, or the time of an older-style `due`.
     var habitTimes: [LocalTime] {
+        // Carried over from a day it missed: today it has no times of its own.
+        if isOverdue { return [] }
         if !reminderTimes.isEmpty { return reminderTimes }
         return due?.time.map { [$0] } ?? []
     }
@@ -56,7 +60,7 @@ struct TaskItem: Identifiable, Hashable, Codable, Sendable {
     }
 
     /// A habit done twice a day: the Twice option, or two or more reminders a day (the second Done is Twice).
-    var isTwiceADay: Bool { habit.twiceADay || habitTimes.count >= 2 }
+    var isTwiceADay: Bool { habit.twiceADay || reminderTimes.count >= 2 }
 }
 
 /// A data issue found in a single note (shown as a badge, never as a push).
