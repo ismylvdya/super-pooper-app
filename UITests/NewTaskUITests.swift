@@ -74,7 +74,7 @@ final class NewTaskUITests: XCTestCase {
         XCTAssertEqual(name.value as? String, "Stretch")
         XCTAssertTrue(app.segmentedControls["habitPage.kind"].waitForExistence(timeout: 5), "the habit's sections show")
         // Kept out of Today, so the pool the later tests count on stays as the vault has it.
-        let inToday = app.switches["Show in Today"]
+        let inToday = app.switches["Show in pool"]
         XCTAssertTrue(inToday.exists)
         inToday.switches.firstMatch.tap()
         let off = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == '0'"), object: inToday)

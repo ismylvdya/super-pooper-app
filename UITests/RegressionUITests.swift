@@ -158,7 +158,7 @@ final class RegressionUITests: XCTestCase {
         let high = app.buttons["taskPage.chip.high"]
         let tomorrow = app.buttons["taskPage.chip.tomorrow"]
         XCTAssertTrue(tomorrow.waitForExistence(timeout: 8))
-        XCTAssertGreaterThan(tomorrow.frame.minY, high.frame.maxY, "the last chip goes under the first one")
+        XCTAssertGreaterThan(high.frame.minY, tomorrow.frame.maxY, "the icons stand in a row under the days")
     }
 
     /// With the biggest text an onboarding step that does not fit scrolls, so its explanation is not cut.
