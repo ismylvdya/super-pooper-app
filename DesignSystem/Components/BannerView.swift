@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Top banner on the line of the bar's round buttons (`BannerPlacement`): collapsed it is one line exactly as tall as they
+/// Top banner just under the bar's round buttons (`BannerPlacement`): collapsed it is one line exactly as tall as they
 /// are (the first note it is about after the message, how many more beside it, the counts, each its own element); a tap
 /// expands it to the whole message and under it the
 /// notes it is about, one per line, and collapses it again. A swipe up dismisses it; it hides itself after `hidesAfter`
@@ -51,11 +51,12 @@ struct BannerView: View {
         .padding(.vertical, isExpanded ? tokens.space(.bannerPadding) : 0)
         .frame(minHeight: tokens.bannerPlacement.height, maxHeight: isExpanded ? nil : tokens.bannerPlacement.height)
         .systemLook(.bannerCard)
-        .padding(.horizontal, tokens.bannerPlacement.side)
-        .padding(.top, isInSheet ? tokens.bar(.sheetBarTop) : tokens.bannerPlacement.top)
-        .offset(y: min(dragOffset, 0))
+        // Only the card takes touches: the bar's buttons above it stay free.
         .contentShape(Rectangle())
         .gesture(tapOrSwipe)
+        .padding(.horizontal, tokens.bannerPlacement.side)
+        .padding(.top, isInSheet ? tokens.bar(.sheetBarTop) + tokens.bar(.uprightBarButton) + tokens.bar(.bannerBelowButtons) : tokens.bannerPlacement.top)
+        .offset(y: min(dragOffset, 0))
         .task(id: text + items.joined()) {
             try? await Task.sleep(for: .seconds(hidesAfter ?? rules.banners.autoHideSeconds))
             if !Task.isCancelled { onDismiss() }

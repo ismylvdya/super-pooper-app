@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// How missed days count: not at all, by allowed skips in a row, or by a weekly goal.
-struct HabitGoalSection: View {
+struct HabitGoalRows: View {
     @Environment(\.rules) private var rules
     let editor: TaskEditor
 
@@ -11,8 +11,8 @@ struct HabitGoalSection: View {
 
     var body: some View {
         let kind = Self.kind(options.skipRule)
-        PlateSection(header: "habitPage.goal", info: "info.habitPage.goal") {
-            PlateRow(icon: .goal, title: "habitPage.goal.rule") {
+        Group {
+            PlateRow(icon: .goal, title: "habitPage.goal.rule", info: "info.habitPage.goal") {
                 Picker("habitPage.goal.rule", selection: Binding(get: { kind }, set: set)) {
                     Text("habitPage.goal.none").tag(Kind.none)
                     if !options.harmful { Text("habitPage.goal.skips").tag(Kind.skips) }

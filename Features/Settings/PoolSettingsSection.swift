@@ -9,8 +9,7 @@ struct PoolSettingsSection: View {
         PlateSection(header: "settings.pool", hint: isActive ? "settings.pool.hint" : "settings.pool.hint.sideBySide") {
             SettingsLink(route: .poolOrder, icon: .resetOrder, title: "sort.title")
             SettingsLink(route: .chipOrder, icon: .chipOrder, title: "chipOrder.title")
-            PlateRow(icon: .high, title: "settings.pool.highPriority", info: "info.settings.pool.highPriority",
-                     iconTint: tokens.color(.high)) {}
+            PlateRow(icon: .high, title: "settings.pool.highPriority", info: "info.settings.pool.highPriority") {}
             Picker("settings.pool.highPriority", selection: Binding(
                 get: { model.settings.pool.highPriorityLook },
                 set: { look in model.updateSettings { $0.pool.highPriorityLook = look } })) {

@@ -213,10 +213,6 @@
       "min": 1,
       "max": 99
     },
-    "recurrenceCount": {
-      "min": 1,
-      "max": 999
-    },
     "monthDay": {
       "min": 1,
       "max": 31
@@ -226,9 +222,7 @@
     "defaultTime": "09:00",
     "nextReminderGapMinutes": 240,
     "noteSaveDelaySeconds": 1.2,
-    "settingsSaveDelaySeconds": 0.5,
-    "repeatUntilDays": 30,
-    "repeatCount": 10
+    "settingsSaveDelaySeconds": 0.5
   },
   "gestures": {
     "tapSlop": 6,

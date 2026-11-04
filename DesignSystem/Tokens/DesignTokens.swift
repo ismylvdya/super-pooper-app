@@ -60,9 +60,9 @@ struct DesignTokens: Decodable, Sendable {
     var rowPlateRadius: CGFloat { chipHeight / 2 + space(.rowVertical) / 2 }
     /// The right inset of a row's own plate (pool, widgets): the chips stand as far from its right edge as from the top.
     var rowPlateTrailingInset: CGFloat { space(.rowVertical) / 2 }
-    /// Where a banner stands: over the navigation bar, its corners on the round bar buttons (back, …).
+    /// Where a banner stands: under the navigation bar's round buttons (back, …).
     var bannerPlacement: BannerPlacement {
-        BannerPlacement(bar: bar(.navigationBar), button: bar(.uprightBarButton), sideInset: bar(.barSideInset))
+        BannerPlacement(bar: bar(.navigationBar), button: bar(.uprightBarButton), sideInset: bar(.barSideInset), gapBelowButtons: bar(.bannerBelowButtons))
     }
     /// The side insets of a timeline slot's plate.
     var slotPlateInset: CGFloat { space(.plateInner) / 2 }

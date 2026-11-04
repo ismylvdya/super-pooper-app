@@ -239,7 +239,6 @@ struct RulesConfig: Codable, Hashable, Sendable {
         /// How solid the outline of a task picked in Select mode is.
         let selectionOutlineOpacity: Range
         let recurrenceInterval: Range
-        let recurrenceCount: Range
         /// "Each" day number of a monthly repeat.
         let monthDay: Range
     }
@@ -266,8 +265,6 @@ struct RulesConfig: Codable, Hashable, Sendable {
         /// A settings change is written and followed (notifications, widgets) this long after the last one: a slider
         /// sends one per step.
         let settingsSaveDelaySeconds: Double
-        let repeatUntilDays: Int
-        let repeatCount: Int
     }
 
     let pool: Pool

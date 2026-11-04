@@ -3,7 +3,7 @@ import Foundation
 /// What the recurrence editor edits: an Apple-Calendar-like choice that becomes a repeat rule.
 /// `rule` builds it; `init(rule:)` reads an existing rule back. A rule with parts the editor has no control
 /// for (several days of the month, several months, weekdays with a number outside a monthly rule) is not edited at
-/// all (`canEdit`); parts it keeps without showing them — the start's and the end's time, the week start — are
+/// all (`canEdit`); parts it keeps without showing them — the start's time, the week start — are
 /// written back as they were.
 struct RecurrenceDraft: Equatable, Sendable {
     /// How a monthly rule picks its day.
@@ -12,12 +12,6 @@ struct RecurrenceDraft: Equatable, Sendable {
         case lastDayOfMonth
         /// The nth weekday of the month; `-1` is the last one.
         case weekday(ordinal: Int, weekday: Weekday)
-    }
-
-    enum End: Hashable, Sendable {
-        case never
-        case until(LocalDate)
-        case count(Int)
     }
 
     var start: LocalDate
@@ -37,11 +31,8 @@ struct RecurrenceDraft: Equatable, Sendable {
     /// "Each" day number or "On the" first … last day or weekday; kept while editing, so day 1 picked as
     /// "Each 1" does not jump to "On the first day".
     var monthlyMode: MonthlyPattern.Mode
-    var end: End = .never
-    /// The time of DTSTART, kept as the rule had it (it decides whether the UNTIL day itself still counts).
+    /// The time of DTSTART, kept as the rule had it.
     var startTime: LocalTime?
-    /// The time of UNTIL, kept as the rule had it.
-    var untilTime: LocalTime?
     var weekStart: Weekday = .monday
 
     init(start: LocalDate) {
@@ -67,7 +58,6 @@ struct RecurrenceDraft: Equatable, Sendable {
         self.init(start: rule.startDate ?? fallbackStart)
         // Midnight is what a date-only DTSTART means too.
         startTime = rule.startTime == .midnight ? nil : rule.startTime
-        untilTime = rule.untilTime
         weekStart = rule.weekStart
         frequency = rule.frequency
         interval = rule.interval
@@ -78,18 +68,12 @@ struct RecurrenceDraft: Equatable, Sendable {
             monthlyDay = .weekday(ordinal: ordinal, weekday: entry.weekday)
         }
         monthlyMode = MonthlyPattern.mode(of: monthlyDay)
-        if let count = rule.count {
-            end = .count(count)
-        } else if let until = rule.untilDate {
-            end = .until(until)
-        }
     }
 
     /// Whether the editor shows all of `rule`, so that writing it back loses nothing. `start` is where its days start
     /// when it has no DTSTART.
     static func canEdit(_ rule: RecurrenceRule, start: LocalDate) -> Bool {
         let start = rule.startDate ?? start
-        guard rule.count == nil || rule.untilDate == nil else { return false }
         switch rule.frequency {
         case .daily:
             return rule.byDay.isEmpty && rule.byMonthDay.isEmpty && rule.byMonth.isEmpty
@@ -129,15 +113,8 @@ struct RecurrenceDraft: Equatable, Sendable {
             byMonth = [start.month]
             byMonthDay = [start.day]
         }
-        var count: Int?
-        var until: LocalDate?
-        switch end {
-        case .never: break
-        case .until(let day): until = day
-        case .count(let value): count = value
-        }
         return RecurrenceRule(startDate: start, startTime: startTime ?? .midnight, frequency: frequency, interval: interval,
-                              byDay: byDay, byMonthDay: byMonthDay, byMonth: byMonth, count: count, untilDate: until,
-                              untilTime: until == nil ? nil : untilTime, weekStart: weekStart)
+                              byDay: byDay, byMonthDay: byMonthDay, byMonth: byMonth, count: nil, untilDate: nil,
+                              untilTime: nil, weekStart: weekStart)
     }
 }

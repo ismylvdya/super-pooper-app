@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Edits a habit's repeat rule the way Apple Calendar does: frequency, interval, weekdays or the day of
-/// the month, start and end. Every change is written to the note right away. A rule with more than the editor can
+/// the month. It starts on the nearest day that fits and has no end. Every change is written to the note right away. A rule with more than the editor can
 /// show (several days of the month, several months…) is shown in words only: editing it would lose those parts.
 struct RecurrenceEditorSection: View {
     @Environment(AppModel.self) private var model
@@ -45,11 +45,13 @@ struct RecurrenceEditorSection: View {
             }
             if draft.frequency == .weekly { weekdayRow(draft) }
             if draft.frequency == .monthly { monthlyRows(draft) }
-            PlateRow(icon: nil, title: "recurrenceEditor.starts", indent: true) {
-                DayField("recurrenceEditor.starts", day: Binding(get: { draft.start }, set: { day in change { $0.start = day } }))
-                    .labelsHidden()
+            // A yearly rule is the day it falls on.
+            if draft.frequency == .yearly {
+                PlateRow(icon: nil, title: "recurrenceEditor.yearlyDay", indent: true) {
+                    DayField("recurrenceEditor.yearlyDay", day: Binding(get: { draft.start }, set: { day in change { $0.start = day } }))
+                        .labelsHidden()
+                }
             }
-            endRows(draft)
         }
     }
 
@@ -116,32 +118,6 @@ struct RecurrenceEditorSection: View {
         }
     }
 
-    @ViewBuilder private func endRows(_ draft: RecurrenceDraft) -> some View {
-        PlateRow(icon: nil, title: "recurrenceEditor.ends", indent: true) {
-            Picker("recurrenceEditor.ends", selection: Binding(
-                get: { EndKind(draft.end) },
-                set: { kind in change { $0.end = kind.end(after: draft.start, editing: rules.editing) } }
-            )) {
-                ForEach(EndKind.allCases, id: \.self) { Text(LocalizedStringKey($0.titleKey)).tag($0) }
-            }
-            .labelsHidden()
-        }
-        switch draft.end {
-        case .never:
-            EmptyView()
-        case .until(let day):
-            PlateRow(icon: nil, title: "recurrenceEditor.endDate", indent: true) {
-                DayField("recurrenceEditor.endDate", day: Binding(get: { day }, set: { value in change { $0.end = .until(value) } }))
-                    .labelsHidden()
-            }
-        case .count(let count):
-            PlateRow(icon: nil, title: "recurrenceEditor.endCount", indent: true) {
-                Stepper(L10n.format("recurrenceEditor.times", count),
-                        value: Binding(get: { count }, set: { value in change { $0.end = .count(value) } }), in: rules.limits.recurrenceCount.ints)
-            }
-        }
-    }
-
     // MARK: - Editing
 
     private var initialDraft: RecurrenceDraft {
@@ -164,38 +140,12 @@ struct RecurrenceEditorSection: View {
     private func change(_ edit: (inout RecurrenceDraft) -> Void) {
         var updated = draft ?? initialDraft
         edit(&updated)
+        // Its days count from the nearest one that fits; a yearly rule's day is what was picked.
+        if updated.frequency != .yearly { updated.start = model.context().today }
         draft = updated
         let rule = updated.rule
         guard rule != task.recurrence else { return }
         editor.apply([.recurrence(rule)])
-    }
-}
-
-private enum EndKind: CaseIterable {
-    case never, until, count
-
-    init(_ end: RecurrenceDraft.End) {
-        switch end {
-        case .never: self = .never
-        case .until: self = .until
-        case .count: self = .count
-        }
-    }
-
-    var titleKey: String {
-        switch self {
-        case .never: "recurrenceEditor.end.never"
-        case .until: "recurrenceEditor.end.until"
-        case .count: "recurrenceEditor.end.count"
-        }
-    }
-
-    func end(after start: LocalDate, editing: RulesConfig.Editing) -> RecurrenceDraft.End {
-        switch self {
-        case .never: .never
-        case .until: .until(start.adding(days: editing.repeatUntilDays))
-        case .count: .count(editing.repeatCount)
-        }
     }
 }
 

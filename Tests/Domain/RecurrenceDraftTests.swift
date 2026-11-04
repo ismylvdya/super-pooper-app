@@ -19,13 +19,12 @@ import Testing
         #expect(RecurrenceCodec.format(draft.rule).hasSuffix("FREQ=WEEKLY;BYDAY=FR"))
     }
 
-    @Test func everyOtherWeekOnTwoDaysEndingByCount() {
+    @Test func everyOtherWeekOnTwoDays() {
         var draft = RecurrenceDraft(start: start)
         draft.frequency = .weekly
         draft.interval = 2
         draft.weekdays = [.thursday, .monday]
-        draft.end = .count(5)
-        #expect(RecurrenceCodec.format(draft.rule) == "DTSTART:20261023T000000Z;FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,TH;COUNT=5")
+        #expect(RecurrenceCodec.format(draft.rule) == "DTSTART:20261023T000000Z;FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,TH")
         #expect(roundTrip(draft) == draft)
     }
 
@@ -36,7 +35,6 @@ import Testing
         var draft = RecurrenceDraft(start: start)
         draft.frequency = .monthly
         draft.monthlyDay = day
-        draft.end = .until(LocalDate(year: 2027, month: 1, day: 31)!)
         #expect(roundTrip(draft) == draft)
     }
 
@@ -46,8 +44,7 @@ import Testing
         #expect(RecurrenceCodec.format(draft.rule).hasSuffix("FREQ=YEARLY;BYMONTH=10;BYMONTHDAY=23"))
     }
 
-    /// Parts the editor keeps without showing them come back as they were: the start's time, the end's time, the week
-    /// start.
+    /// Parts the editor keeps without showing them come back as they were: the start's time, the week start.
     @Test func hiddenPartsOfARuleAreWrittenBack() throws {
         let rule = try RecurrenceCodec.parse("DTSTART:20261001T090000Z;FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,TH;UNTIL=20261231T235900Z;WKST=SU").get()
         #expect(RecurrenceDraft.canEdit(rule, start: start))
@@ -55,7 +52,7 @@ import Testing
         draft.interval = 3
         let written = try RecurrenceCodec.parse(RecurrenceCodec.format(draft.rule)).get()
         #expect(written.startTime == LocalTime("09:00"))
-        #expect(written.untilDate == LocalDate("2026-12-31") && written.untilTime == LocalTime("23:59"))
+        #expect(written.untilDate == nil && written.count == nil, "a repeat has no end")
         #expect(written.weekStart == .sunday)
         #expect(written.interval == 3 && written.byDay == rule.byDay)
     }
@@ -70,7 +67,6 @@ import Testing
         "DTSTART:20261001;FREQ=YEARLY;BYMONTH=12;BYMONTHDAY=25",
         "DTSTART:20261001;FREQ=WEEKLY;BYDAY=2MO",
         "DTSTART:20261001;FREQ=DAILY;BYMONTH=6",
-        "DTSTART:20261001;FREQ=DAILY;COUNT=3;UNTIL=20261231",
     ])
     func aRuleWithMoreThanTheEditorShowsIsNotEdited(raw: String) throws {
         #expect(!RecurrenceDraft.canEdit(try RecurrenceCodec.parse(raw).get(), start: start))
@@ -78,7 +74,7 @@ import Testing
 
     @Test(arguments: [
         "DTSTART:20261001;FREQ=DAILY;INTERVAL=2",
-        "DTSTART:20261001;FREQ=WEEKLY;BYDAY=MO,TH;COUNT=5",
+        "DTSTART:20261001;FREQ=WEEKLY;BYDAY=MO,TH",
         "FREQ=WEEKLY",
         "DTSTART:20261001;FREQ=MONTHLY;BYMONTHDAY=15",
         "DTSTART:20261001;FREQ=MONTHLY;BYMONTHDAY=-1",

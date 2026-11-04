@@ -7,12 +7,13 @@ struct SubtasksSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
     let editor: TaskEditor
+    var header: LocalizedStringKey = "taskPage.subtasks"
     @State private var newName = ""
     @State private var dragged: String?
     @State private var target: String?
 
     var body: some View {
-        PlateSection(header: "taskPage.subtasks", info: "info.taskPage.subtasks") {
+        PlateSection(header: header, info: "info.taskPage.subtasks") {
             if let draft = editor.draft {
                 draftRows(draft)
             } else {

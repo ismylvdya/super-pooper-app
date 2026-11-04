@@ -39,9 +39,10 @@ struct TaskNoteSection: View {
 struct DraftNoteSection: View {
     @Environment(\.tokens) private var tokens
     @Binding var draft: NoteDraft
+    var header: LocalizedStringKey = "taskPage.note"
 
     var body: some View {
-        PlateSection(header: "taskPage.note", info: "info.taskPage.note") {
+        PlateSection(header: header, info: "info.taskPage.note") {
             TextField("taskPage.note.placeholder", text: $draft.body, axis: .vertical)
                 .font(tokens.font(.rowTitle))
                 .accessibilityIdentifier("taskPage.note")

@@ -2102,7 +2102,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Habit"
+            "value": "Other properties"
           }
         }
       }
@@ -2113,7 +2113,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Show in Today"
+            "value": "Show in pool"
           }
         }
       }
@@ -3779,72 +3779,6 @@
         }
       }
     },
-    "recurrenceEditor.end.count": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "After N times"
-          }
-        }
-      }
-    },
-    "recurrenceEditor.end.never": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Never"
-          }
-        }
-      }
-    },
-    "recurrenceEditor.end.until": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "On date"
-          }
-        }
-      }
-    },
-    "recurrenceEditor.endCount": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Repeats"
-          }
-        }
-      }
-    },
-    "recurrenceEditor.endDate": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "End date"
-          }
-        }
-      }
-    },
-    "recurrenceEditor.ends": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ends"
-          }
-        }
-      }
-    },
     "recurrenceEditor.every": {
       "extractionState": "manual",
       "localizations": {
@@ -4061,28 +3995,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Rule"
-          }
-        }
-      }
-    },
-    "recurrenceEditor.starts": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Starts"
-          }
-        }
-      }
-    },
-    "recurrenceEditor.times": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld times"
           }
         }
       }
@@ -6147,17 +6059,6 @@
         }
       }
     },
-    "status.inbox": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Inbox"
-          }
-        }
-      }
-    },
     "status.someday": {
       "extractionState": "manual",
       "localizations": {
@@ -7198,7 +7099,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "In the day"
+            "value": "In pool"
           }
         }
       }
@@ -7507,6 +7408,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "Alarm"
+          }
+        }
+      }
+    },
+    "habitPage.subtasks.repeatable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subtasks (repeatable)"
+          }
+        }
+      }
+    },
+    "habitPage.subhabits": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subhabits"
+          }
+        }
+      }
+    },
+    "recurrenceEditor.yearlyDay": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Date"
           }
         }
       }

@@ -1,8 +1,8 @@
 import SwiftUI
 
 extension View {
-    /// Shows the banner over the navigation bar of this view, which holds the bar (a sheet's navigation stack; the tabs'
-    /// one host is the root view's): its corners on the bar's round buttons (`BannerPlacement`). The same banner
+    /// Shows the banner under the navigation bar's buttons of this view, which holds the bar (a sheet's navigation stack; the
+    /// tabs' one host is the root view's; `BannerPlacement`). The same banner
     /// dismisses once. Pages of a tab show it only while their tab is selected (all tabs stay alive in the tab view).
     func bannerHost(tab: AppTab? = nil) -> some View {
         overlay(alignment: .top) { BannerOverlay(tab: tab).environment(\.bannerInSheet, true) }

@@ -26,10 +26,11 @@ struct HabitRemindersSection: View {
             }
             .buttonStyle(.borderless)
             .accessibilityIdentifier("taskPage.reminders.add")
+            TimeZoneRow(editor: editor)
         }
     }
 
-    private var times: [LocalTime] { task.habitTimes }
+    private var times: [LocalTime] { task.reminderTimes.isEmpty ? task.habitTimes : task.reminderTimes }
 
     /// A while after the last reminder, or the default time for the first one (`rules.json` → `editing`).
     private var nextTime: LocalTime {
