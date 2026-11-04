@@ -53,6 +53,9 @@ struct RootView: View {
                                                        font: tokens.uiFont(.systemTabIcon),
                                                        others: container.config.icons.otherTabSymbols(than: tab),
                                                        fit: tokens.bar(.tabGlyphFit), scale: displayScale)
+                                        // The symbol as named: the bar's own variant would fill every tab. The current tab's filled one
+                                        // is the item's selected image (`TabBarSelectedSymbols`).
+                                        .environment(\.symbolVariants, .none)
                                 }
                             }
                         }
@@ -64,9 +67,8 @@ struct RootView: View {
                         }
                     }
                     .overlay { if physicalBottom == nil { uprightNewItemButton } }
-                    // The system draws the selected tab's filled symbol under its moving drop by itself; a symbol typed for the
-                    // current tab goes to the same place.
-                    .background { TabBarSelectedSymbols(symbols: AppTab.allCases.map { model.tabBarSymbols.typedSelected(of: $0) }) }
+                    // The bar draws each item's selected image itself, under its moving drop.
+                    .background { TabBarSelectedSymbols(symbols: AppTab.allCases.map { model.tabBarSymbols.symbol(of: $0, isSelected: true) }) }
                 // Lying sideways the app's own tab bar floats over the tabs' edge. Its inner side is the screen's edge for the pages
                 // (`landscapeRoom`); Today's strip keeps that room itself, so what it pushes past shows through the glass.
                 .overlay(alignment: physicalBottom == .leading ? .leading : .trailing) {

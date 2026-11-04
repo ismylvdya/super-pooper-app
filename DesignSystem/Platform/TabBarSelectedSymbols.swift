@@ -1,10 +1,10 @@
 import SwiftUI
 import UIKit
 
-/// Gives the system tab bar's items the symbols typed for their selected state, by position; it draws them itself, under its
-/// moving drop. Items with none keep the system's own.
+/// Gives the system tab bar's items their selected symbols, by position: the bar draws them itself, in layers, so a symbol
+/// is filled exactly where its moving drop covers it.
 struct TabBarSelectedSymbols: UIViewRepresentable {
-    let symbols: [String?]
+    let symbols: [String]
 
     func makeUIView(context: Context) -> UIView {
         let view = UIView()
@@ -16,8 +16,8 @@ struct TabBarSelectedSymbols: UIViewRepresentable {
         DispatchQueue.main.async {
             guard let window = view.window, let items = Self.tabBar(in: window)?.items else { return }
             for (item, symbol) in zip(items, symbols) {
-                guard let symbol else { continue }
-                item.selectedImage = UIImage(systemName: symbol)
+                let configuration = item.image?.symbolConfiguration
+                item.selectedImage = UIImage(systemName: symbol, withConfiguration: configuration)
             }
         }
     }

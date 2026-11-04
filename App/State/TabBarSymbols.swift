@@ -16,9 +16,6 @@ struct TabBarSymbols {
         return own ?? (Self.exists(plain + ".fill") ? plain + ".fill" : plain)
     }
 
-    /// What the user typed for the current tab, when the system's own fill is not what is wanted.
-    func typedSelected(of tab: AppTab) -> String? { valid(Self.key(tab, isSelected: true)) }
-
     var newItem: String { valid(Self.newItemKey) ?? icons[.newItem] }
 
     private func valid(_ key: String) -> String? {
