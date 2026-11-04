@@ -57,7 +57,7 @@ struct RootView: View {
                                 }
                             }
                         }
-                        // Only keeps the room the "+" stands over (iOS 26 draws a search-role tab apart, on the right).
+                        // The "+": iOS 26 draws a search-role tab apart, on the right; `NewItemButton` takes the touches over it.
                         Tab(value: TabBarItem.newItem, role: .search) {
                             Color.clear
                         } label: {
@@ -137,7 +137,7 @@ struct RootView: View {
                                 height: geometry.size.height + insets.top + insets.bottom)
             let frame = SystemLook.newItemSlot(tokens: tokens, tabCount: AppTab.allCases.count + 1)
                 .frame(in: screen, bottomSafeArea: insets.bottom)
-            NewItemButton()
+            NewItemButton(drawsBubble: false)
                 .frame(width: frame.width, height: frame.height)
                 .position(x: frame.midX - insets.leading, y: frame.midY - insets.top)
         }

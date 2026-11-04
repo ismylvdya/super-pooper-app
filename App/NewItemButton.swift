@@ -1,23 +1,26 @@
 import SwiftUI
 
-/// The app's own "+" beside the tab bar: a round bubble that opens the new-item page on the open tab (a habit in
-/// Habits). Upright it stands over the room the system tab bar keeps for its search-role tab (`NewItemSlot`); lying
-/// sideways at the end of the app's own tab bar. On Tasks a swipe starting on it takes the bubble itself along at once,
-/// with no hold; let go on the timeline or in today's pool it opens the new task's page for that spot, and the bubble is
-/// back in its place (`TaskDragState.moveNewItem`, `NewItemDragOverlay`).
+/// The "+" beside the tab bar, which opens the new-item page on the open tab (a habit in Habits). Upright the bubble and
+/// its symbol are the system tab bar's own, of its search-role tab, with the same glass as the bar; this only takes the
+/// touches over it (`NewItemSlot`). Lying sideways it is a bubble of its own at the end of the app's own tab bar. On Tasks a swipe starting on it takes the bubble itself along at once,
+/// with no hold, leaving nothing in its place; let go on the timeline or in today's pool it opens the new task's page for
+/// that spot, and the bubble is back (`TaskDragState.moveNewItem`, `NewItemDragOverlay`).
 struct NewItemButton: View {
     @Environment(Router.self) private var router
     @Environment(TaskDragState.self) private var drag: TaskDragState?
-    @Environment(\.tokens) private var tokens
+    /// False over the system's own bubble.
+    var drawsBubble = true
 
     var body: some View {
         let target = router.tab == .today ? drag : nil
-        NewItemBubble()
-            .opacity(target?.newItemPoint == nil ? 1 : 0)
-            // While it is under the finger nothing stands in its place: the system's own search bubble below is covered too.
-            .background {
-                if target?.newItemPoint != nil { Circle().fill(tokens.color(.screenBackground)) }
+        let isLifted = target?.newItemPoint != nil
+        Group {
+            if drawsBubble {
+                NewItemBubble().opacity(isLifted ? 0 : 1)
+            } else {
+                Color.clear.background { SearchTabBubbleVisibility(isVisible: !isLifted) }
             }
+        }
             .onGeometryChange(for: CGSize.self) { $0.size } action: { drag?.newItemSize = $0 }
             // The system tab bar under the "+" takes the touches SwiftUI's gestures would wait for: a view of UIKit's own
             // stands over it.
