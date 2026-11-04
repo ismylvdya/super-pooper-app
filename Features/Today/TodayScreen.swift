@@ -20,6 +20,8 @@ struct TodayScreen: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.physicalBottom) private var physicalBottom
     @State private var pendingAction: PendingAction?
+    /// A finger is on the day swipe. It clears also when the system takes the touch away, when the gesture does not end.
+    @GestureState private var isDaySwiping = false
     @State private var width: CGFloat = 0
     @State private var pager = TodayPager()
     @Environment(TaskDragState.self) private var taskDrag
@@ -189,6 +191,7 @@ struct TodayScreen: View {
             }
             .ignoresSafeArea(.container, edges: .bottom)
             .simultaneousGesture(daySwipe(width: geometry.size.width))
+            .onChange(of: isDaySwiping) { _, swiping in if !swiping { pager.endSwipe() } }
             .onChange(of: arrangement) { pager.resetPage() }
         }
     }
@@ -197,6 +200,7 @@ struct TodayScreen: View {
     /// next backlog page open (`TodayPager`).
     private func daySwipe(width: CGFloat) -> some Gesture {
         DragGesture(minimumDistance: rules.gestures.daySwipeMinimumDistance)
+            .updating($isDaySwiping) { _, state, _ in state = true }
             .onChanged { value in
                 // A task being dragged moves itself, not the pages: they turn only by its reaching an edge.
                 guard taskDrag.item == nil else { return pager.cancelSwipe() }

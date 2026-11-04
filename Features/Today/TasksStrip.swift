@@ -34,6 +34,8 @@ struct TasksStrip: View {
             case .today: ScreenLayoutView(layout: layout, edgeInset: edgeInset) { block($0) }
             }
         }
+        // A sideways swipe moves only the pages: a list scrolled along with it would wander up and down.
+        .scrollDisabled(pager.isSwipingSideways)
         .overlay(alignment: .leading) {
             let lists = model.backlogLists
             if pager.sidePull > 0, lists.indices.contains(pager.reachedBacklog) {

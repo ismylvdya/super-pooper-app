@@ -26,6 +26,8 @@ final class TodayPager {
     private(set) var daySlide: CGFloat = 0
     /// The direction of the drag in progress, decided by its first movement.
     private var swipeAxis: TodaySwipe.Axis?
+    /// A drag going sideways is in progress: while it lasts only the pages move, the lists on them do not scroll.
+    var isSwipingSideways: Bool { swipeAxis == .horizontal }
 
     /// Turns to a page of `pageCount` (1 without pages: nothing to turn to).
     func turn(to newPage: Int, pageCount: Int, animation: Animation) {
@@ -84,6 +86,13 @@ final class TodayPager {
         guard TodaySwipe.page(forward: translation.width < 0, page: page, pageCount: pageCount) != nil else { return false }
         pageDrag = translation.width
         return false
+    }
+
+    /// The finger is gone without the swipe ending (the system took the touch away): the pages go back to rest. After a
+    /// swipe that ended there is nothing left to do.
+    func endSwipe() {
+        guard swipeAxis != nil else { return }
+        cancelSwipe()
     }
 
     /// The drag is not a swipe after all (a task is being dragged): the pages stay where they are.

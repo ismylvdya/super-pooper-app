@@ -32,7 +32,12 @@ struct PoolSectionHeader: View {
                 isEditing = true
                 isFocused = true
             }
-            .modifier(SectionDragSource(id: section.id, drag: drag) { header })
+            .modifier(SectionDragSource(id: section.id, drag: drag) {
+                // Lifted as a plate: the capsule of the title, the same room all around it.
+                header
+                    .padding(.top, tokens.space(.headerToPlate))
+                    .background(tokens.color(.plateBackground), in: Capsule())
+            })
     }
 
     private var field: some View {
@@ -73,7 +78,11 @@ private struct SectionDragSource<Preview: View>: ViewModifier {
 
     func body(content: Content) -> some View {
         if let drag {
-            content.onDrag { drag.beginSection(id) } preview: { preview() }
+            content
+                .contentShape(.dragPreview, Capsule())
+                .onDrag { drag.beginSection(id) } preview: {
+                    preview().contentShape(.dragPreview, Capsule())
+                }
         } else {
             content
         }

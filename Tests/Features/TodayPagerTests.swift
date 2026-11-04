@@ -132,6 +132,22 @@ struct TodayPagerTests {
         #expect(pager.pageDrag == 150 && pager.sidePull == 0)
     }
 
+    /// While a drag goes sideways the lists do not scroll; a drag that went up or down keeps them scrolling, and the lock
+    /// goes with the finger, also when the gesture never ends.
+    @Test func aSidewaysSwipeLocksScrollingUntilTheFingerIsGone() {
+        let pager = TodayPager()
+        changed(pager, -40)
+        #expect(pager.isSwipingSideways)
+        ended(pager, -40)
+        #expect(!pager.isSwipingSideways)
+        changed(pager, 0, 40)
+        #expect(!pager.isSwipingSideways)
+        ended(pager, 0, 40)
+        changed(pager, -40)
+        pager.endSwipe()
+        #expect(!pager.isSwipingSideways && pager.pageDrag == 0)
+    }
+
     /// Reached by a dragged task or a tap on its edge, a list counts as reached.
     @Test func aListTurnedToIsReached() {
         let pager = TodayPager()
