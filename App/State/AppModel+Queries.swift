@@ -30,6 +30,7 @@ extension AppModel {
     // MARK: - Lists tab
 
     /// The icon of the button to the lists, as picked in the settings.
+    var tabBarSymbols: TabBarSymbols { TabBarSymbols(typed: settings.tabBar.symbols, icons: config.icons) }
     var listsIcon: Icon { config.lists.icon(for: settings.lists.icon) }
 
     /// What a list holds now, the filed tasks included.

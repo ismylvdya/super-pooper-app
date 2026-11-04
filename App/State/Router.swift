@@ -30,6 +30,7 @@ enum Route: Hashable {
     case taskSettings
     case habitSettings
     case clockSettings
+    case tabBarSettings
     case archive
     case trash
     case routines
@@ -80,7 +81,10 @@ final class Router {
 
     /// "+": the new-item page on the selected tab, a habit in Habits unless `seed` says otherwise.
     func openNewItem(_ seed: NewItemSeed? = nil) {
-        open(.newItem(seed ?? .opening(on: tab)))
+        let route = Route.newItem(seed ?? .opening(on: tab))
+        // The page is open already: the "+" and the tab under it may both answer one tap.
+        if path.last == route { return }
+        open(route)
     }
     func popToRoot() { path.removeAll() }
 

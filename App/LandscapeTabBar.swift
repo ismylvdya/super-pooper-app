@@ -5,6 +5,7 @@ import SwiftUI
 /// stays under the same finger. The "+" bubble stands apart at its physical right end, as upright.
 struct LandscapeTabBar: View {
     @Environment(Router.self) private var router
+    @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
     @Environment(\.displayScale) private var displayScale
@@ -35,7 +36,7 @@ struct LandscapeTabBar: View {
                 Button { router.select(tab) } label: {
                     VStack(spacing: tokens.bar(.tabIconLabelGap)) {
                         // The symbol as `icons.json` names it and the small label, as in the tab bar upright.
-                        TabIconImage.image(icons[tab.icon], font: tokens.uiFont(.tabIcon),
+                        TabIconImage.image(model.tabBarSymbols.symbol(of: tab, isSelected: router.tab == tab), font: tokens.uiFont(.tabIcon),
                                            others: icons.otherTabSymbols(than: tab), matching: .width,
                                            fit: tokens.bar(.tabGlyphFit), scale: displayScale)
                             .font(tokens.font(.tabIcon))

@@ -67,6 +67,8 @@ final class TaskDragState {
     private(set) var newItemPoint: CGPoint?
     /// The bubble's size, for drawing it under the finger.
     var newItemSize: CGSize = .zero
+    /// Where the bubble stands on the screen: let go about there, the "+" was just put back.
+    var newItemHome: CGRect = .zero
     /// What letting the "+" go now does, and which target said so.
     private var newItemLanding: (owner: String, land: () -> Void)?
     /// The block the "+" is staying over, and the wait before Tasks turns to it.
@@ -101,7 +103,9 @@ final class TaskDragState {
 
     /// The finger lifted the "+": it lands where a target took it, and is back in its place either way.
     func releaseNewItem() {
-        let land = newItemLanding?.land
+        let home = newItemHome.insetBy(dx: -newItemHome.width / 2, dy: -newItemHome.height / 2)
+        let isBack = newItemPoint.map(home.contains) ?? false
+        let land = isBack ? nil : newItemLanding?.land
         reset()
         land?()
     }

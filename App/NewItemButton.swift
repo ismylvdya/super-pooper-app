@@ -21,7 +21,10 @@ struct NewItemButton: View {
                 Color.clear.background { SearchTabBubbleVisibility(isVisible: !isLifted) }
             }
         }
-            .onGeometryChange(for: CGSize.self) { $0.size } action: { drag?.newItemSize = $0 }
+            .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { frame in
+                drag?.newItemSize = frame.size
+                drag?.newItemHome = frame
+            }
             // The system tab bar under the "+" takes the touches SwiftUI's gestures would wait for: a view of UIKit's own
             // stands over it.
             .overlay {
@@ -40,10 +43,10 @@ struct NewItemButton: View {
 /// The "+" in its round glass.
 private struct NewItemBubble: View {
     @Environment(\.tokens) private var tokens
-    @Environment(\.icons) private var icons
+    @Environment(AppModel.self) private var model
 
     var body: some View {
-        Image(systemName: icons[.newItem])
+        Image(systemName: model.tabBarSymbols.newItem)
             .font(tokens.font(.tabIcon))
             .foregroundStyle(tokens.color(.primaryText))
             .frame(maxWidth: .infinity, maxHeight: .infinity)

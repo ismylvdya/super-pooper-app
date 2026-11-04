@@ -55,6 +55,9 @@
       "habits": true
     }
   },
+  "tabBar": {
+    "symbols": {}
+  },
   "notifications": {
     "enabled": true,
     "signingMessage": "",

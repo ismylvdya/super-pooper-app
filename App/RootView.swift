@@ -32,7 +32,7 @@ struct RootView: View {
         let model = container.model
         Group {
             if model.settings.onboarding.completed {
-                    TabView(selection: Binding(get: { TabBarItem.tab(router.tab) }, set: { TabBarItem.selection($0, router: router) })) {
+                    TabView(selection: Binding(get: { TabBarItem.tab(router.tab) }, set: { selectTabBarItem($0, router: router) })) {
                         ForEach(AppTab.allCases, id: \.self) { tab in
                             Tab(value: TabBarItem.tab(tab)) {
                                 NavigationStack(path: Binding(get: { router.paths[tab] ?? [] }, set: { router.paths[tab] = $0 })) {
@@ -48,7 +48,7 @@ struct RootView: View {
                                 Label {
                                     Text(LocalizedStringKey(String("tab.") + tab.rawValue))
                                 } icon: {
-                                    TabIconImage.image(container.config.icons[tab.icon],
+                                    TabIconImage.image(model.tabBarSymbols.symbol(of: tab, isSelected: router.tab == tab),
                                                        font: tokens.uiFont(.systemTabIcon),
                                                        others: container.config.icons.otherTabSymbols(than: tab),
                                                        fit: tokens.bar(.tabGlyphFit), scale: displayScale)
@@ -61,7 +61,7 @@ struct RootView: View {
                         Tab(value: TabBarItem.newItem, role: .search) {
                             Color.clear
                         } label: {
-                            Label { Text("newItem.title") } icon: { Image(systemName: container.config.icons[.newItem]) }
+                            Label { Text("newItem.title") } icon: { Image(systemName: model.tabBarSymbols.newItem) }
                         }
                     }
                     .overlay { if physicalBottom == nil { uprightNewItemButton } }
@@ -154,6 +154,13 @@ struct RootView: View {
         }
     }
 
+    /// The "+"'s slot chosen on the system bar: the bar first goes back to its tab, then the page opens on it; opened at
+    /// once, the tab's stack would be taken down and put up again under it.
+    private func selectTabBarItem(_ item: TabBarItem, router: Router) {
+        guard item == .newItem else { return TabBarItem.selection(item, router: router) }
+        DispatchQueue.main.async { TabBarItem.selection(item, router: router) }
+    }
+
     /// The window's orientation when it already turned, else the phone's (lying flat keeps the last side).
     private func updateLandscapeBottom() {
         let window = UIApplication.shared.connectedScenes.lazy.compactMap { $0 as? UIWindowScene }.first?.effectiveGeometry.interfaceOrientation
@@ -185,6 +192,7 @@ struct RootView: View {
         case .search(let scope): SearchScreen(scope: scope)
         case .taskSettings: TaskSettingsScreen()
         case .clockSettings: ClockSettingsScreen()
+        case .tabBarSettings: TabBarSettingsScreen()
         case .habitSettings: HabitSettingsScreen()
         case .archive: ArchiveScreen()
         case .trash: TrashScreen()

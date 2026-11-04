@@ -7499,6 +7499,83 @@
           }
         }
       }
+    },
+    "settings.tabBar": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tab bar"
+          }
+        }
+      }
+    },
+    "settings.tabBar.summary": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tab bar icons"
+          }
+        }
+      }
+    },
+    "settings.tabBar.notCurrent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not current"
+          }
+        }
+      }
+    },
+    "settings.tabBar.current": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Current"
+          }
+        }
+      }
+    },
+    "settings.tabBar.symbol": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Icon"
+          }
+        }
+      }
+    },
+    "settings.tabBar.placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SF Symbol name"
+          }
+        }
+      }
+    },
+    "settings.tabBar.hint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type the name of an SF Symbol, such as sun.max.fill. Empty keeps the app’s own."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

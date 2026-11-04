@@ -46,6 +46,9 @@ struct SettingsScreen: View {
         PlateSection(header: "settings.clock") {
             SettingsLink(route: .clockSettings, icon: .clockSettings, title: "settings.clock.summary")
         }
+        PlateSection(header: "settings.tabBar") {
+            SettingsLink(route: .tabBarSettings, icon: .tabBarSettings, title: "settings.tabBar.summary")
+        }
         PlateSection(header: "settings.notes") {
             PlateRow(icon: .title, title: "settings.notes.soon") {}
         }

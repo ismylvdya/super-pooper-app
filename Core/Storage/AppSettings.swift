@@ -108,6 +108,11 @@ struct AppSettings: Codable, Equatable, Sendable {
         var alarmSound: String
     }
 
+    /// The tab bar's symbols the user typed: SF Symbol names by `TabBarSymbols.key`; none = `icons.json`.
+    struct TabBar: Codable, Equatable, Sendable {
+        var symbols: [String: String]
+    }
+
     struct Onboarding: Codable, Equatable, Sendable {
         var completed: Bool
     }
@@ -173,6 +178,7 @@ struct AppSettings: Codable, Equatable, Sendable {
     var pool: Pool
     var timeline: Timeline
     var notifications: Notifications
+    var tabBar: TabBar
     var onboarding: Onboarding
     var habits: Habits
     var clock: Clock

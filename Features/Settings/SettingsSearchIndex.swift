@@ -18,6 +18,7 @@ enum SettingsSearchIndex {
     }
 
     static let sections: [Section] = [
+        Section(title: "settings.tabBar", route: .tabBarSettings, rows: ["settings.tabBar.summary", "newItem.title"]),
         Section(title: "settings.clock", route: .clockSettings, rows: ["settings.clock.prefix", "settings.clock.zone"]),
         Section(title: "settings.sources", route: .taskSettings,
                 rows: ["settings.vault", "settings.access.calendar", "settings.access.reminders", "settings.access.notifications",

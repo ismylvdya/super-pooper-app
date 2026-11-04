@@ -7,6 +7,7 @@
   "sync": "arrow.triangle.2.circlepath",
   "energy": "NeedEnergyFrog",
   "overdue": "clock.fill",
+  "tabBarSettings": "dock.rectangle",
   "pleasant": "heart.fill",
   "feel": "heart.circle",
   "timeZone": "globe",
