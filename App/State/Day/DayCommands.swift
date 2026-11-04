@@ -177,6 +177,21 @@ final class DayCommands {
         Task { await derived.publish() }
     }
 
+    /// Today's look as it was changed elsewhere (by hand in the file, on another device): its sections, each line's
+    /// section and order, and what is kept out of today become the app's.
+    func applyLook(_ look: DayLook) {
+        let today = day.context().today
+        let definitions = sections.definitions
+        sections.update(on: today) { current in
+            current = current.applying(look, title: { section in
+                section.title ?? definitions.first { $0.id == section.id }.map { L10n.string($0.title) } ?? section.id
+            }, makeID: { UUID().uuidString })
+        }
+        for name in day.postponedNames where !look.keptOut.containsNoteName(name) { day.unpostpone(name) }
+        for name in look.keptOut { day.postpone(name) }
+        day.setManualOrder(look.poolOrder)
+    }
+
     private func placeInSection(_ name: String, _ id: String?, on date: LocalDate) {
         guard let id else { return }
         sections.update(on: date) { sections in

@@ -64,7 +64,7 @@ struct AppParts {
                                                 appEvents: appEvents)
         signing = SigningController(signature: services.signature, clock: clock, rules: rules.signingPlate)
         sync = SyncService(config: config, services: services, tasks: tasks, settings: settings, day: day, sources: sources,
-                           writer: writer, texts: texts, derived: derived, backups: backups, appEvents: appEvents)
+                           writer: writer, texts: texts, derived: derived, backups: backups, appEvents: appEvents, dayCommands: dayCommands)
         settings.observer = sync
     }
 }

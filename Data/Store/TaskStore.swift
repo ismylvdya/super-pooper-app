@@ -93,7 +93,7 @@ protocol FolderInspecting: Sendable {
 }
 
 /// What the day shows, for a store that keeps its file looking as the app does: the pool's sections with their lines in
-/// order, what stands on the timeline, and what was kept out of today.
+/// order, what stands on the timeline, and what was kept out of today. What comes back from the file is `DayLook`.
 struct DayMirror: Equatable, Sendable {
     struct Section: Equatable, Sendable {
         let title: String
@@ -109,6 +109,16 @@ struct DayMirror: Equatable, Sendable {
 /// Keeps the store's own look of today in step with the app's.
 protocol DayMirroring: Sendable {
     func mirror(_ day: DayMirror) async
+    /// Today's look in the file, when it was changed elsewhere since this device last saw it; nil otherwise.
+    func changedLook() async -> DayLook?
+    /// The app took `look` in: from now on it is not news.
+    func accept(_ look: DayLook) async
+}
+
+/// What this device last saw of today's look in the file. Losing it costs one read of the file's look as news.
+protocol DayLookMemory: Sendable {
+    func load() -> DayLook?
+    func save(_ look: DayLook)
 }
 
 /// An item read elsewhere, to be taken into the store.

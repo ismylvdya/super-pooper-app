@@ -35,14 +35,14 @@ struct NoteOperationsTests {
         let ideas = try #require(try await repository.load().tasks.first { $0.name == "Записать идеи" })
         let content = try sandbox.text(of: "Записать идеи")
 
-        try await repository.delete(ideas)
+        _ = try await repository.delete(ideas)
         #expect(!sandbox.exists("Записать идеи"))
         let trashed = sandbox.trashFolder.appendingPathComponent("Записать идеи.md")
         expectSameBytes(try String(contentsOf: trashed, encoding: .utf8), content)
         #expect(try await repository.load().tasks.count == 37)
 
         try sandbox.write("---\ntags:\n  - 🔫делишка\nstatus: this_week\n---\nВторая\n", to: "Записать идеи")
-        try await repository.delete(ideas)
+        _ = try await repository.delete(ideas)
         let second = sandbox.trashFolder.appendingPathComponent("Записать идеи 1.md")
         #expect(try String(contentsOf: second, encoding: .utf8).hasSuffix("Вторая\n"))
         expectSameBytes(try String(contentsOf: trashed, encoding: .utf8), content)

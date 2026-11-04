@@ -105,10 +105,11 @@ extension TaskFileStore: TaskTrash, DayMirroring, TaskImporting, ExternalLinking
 
     /// Now as the day stands: first what has no section (timed, or not in the plan), then the pool's sections under their
     /// titles, a habit's line for each habit shown; what was kept out of today goes to Soon. Sections with nothing left
-    /// are gone. Nothing is read back from it: the marks ticked on a habit's line are, by `normalize`.
+    /// are gone. A look changed elsewhere and not taken in yet is not written over: the next sync brings it in.
     func mirror(_ day: DayMirror) async {
         try? await location.withRoot { root in
             var snapshot = try await read(root: root)
+            guard changedLook(in: snapshot) == nil else { return }
             // Today's lines of habits are made anew.
             let habitIDs = Set(snapshot.habits.keys)
             let isToday = { (section: TaskDocument.Section) in section.kind == .now || section.kind == .soon }
@@ -140,8 +141,50 @@ extension TaskFileStore: TaskTrash, DayMirroring, TaskImporting, ExternalLinking
             let loose = document.sections[now].groups.flatMap(\.entries)
             document.sections[now].groups = [TaskDocument.Group(title: nil, entries: loose + timedHabits)] + groups
             for entry in kept { document.insert(entry, into: .soon) }
+            setDayMarker(in: &document)
             try write(document, root: root)
+            lookMemory.save(look(of: document, habits: snapshot.habits))
         }
+    }
+
+    func changedLook() async -> DayLook? {
+        (try? await location.withRoot { root in changedLook(in: try await read(root: root)) }) ?? nil
+    }
+
+    func accept(_ look: DayLook) async {
+        lookMemory.save(look)
+    }
+
+    /// The file's look when it is about today and differs from what this device last saw. A file about another day has
+    /// no news: the day has turned, and its sections start anew.
+    private func changedLook(in snapshot: Snapshot) -> DayLook? {
+        guard snapshot.document.prelude.contains(dayMarker) else { return nil }
+        let look = look(of: snapshot.document, habits: snapshot.habits)
+        return lookMemory.load().map { look.differs(from: $0) } ?? true ? look : nil
+    }
+
+    /// Now's titled groups, and the undated open tasks of Soon: what was kept out of today.
+    private func look(of document: TaskDocument, habits: [String: HabitFile]) -> DayLook {
+        var look = DayLook()
+        for section in document.sections {
+            if section.kind == .now {
+                look.sections = section.groups.compactMap { group in
+                    group.title.map { DayLook.Section(title: $0, names: group.entries.map(\.name)) }
+                }
+            } else if section.kind == .soon {
+                look.keptOut = section.groups.flatMap(\.entries)
+                    .filter { $0.date == nil && $0.box != .done && !($0.id.map { habits[$0] != nil } ?? false) }
+                    .map(\.name)
+            }
+        }
+        return look
+    }
+
+    private var dayMarker: String { format.dayMarkerPrefix + today().isoString + format.dayMarkerSuffix }
+
+    private func setDayMarker(in document: inout TaskDocument) {
+        document.prelude.removeAll { $0.hasPrefix(format.dayMarkerPrefix) && $0.hasSuffix(format.dayMarkerSuffix) }
+        document.prelude.insert(dayMarker, at: 0)
     }
 
     // MARK: - Beyond the file

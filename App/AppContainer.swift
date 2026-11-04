@@ -46,6 +46,7 @@ final class AppContainer {
             shared.remove(SettingsStore.fileName)
             shared.remove(DayStateStore.fileName)
             shared.remove(JSONDaySectionStore.fileName)
+            shared.remove(JSONDayLookMemory.fileName)
         }
         let clock = launch.clock(calendar: calendar.current)
 
@@ -61,7 +62,7 @@ final class AppContainer {
                                   vaultSettings: { settingsStore.load().vault }, today: {
             let day = boundary()
             return DayContext(now: clock.now, calendar: calendar.current, boundary: day.boundary, energyHour: day.energyHour).today
-        })
+        }, lookMemory: JSONDayLookMemory(store: shared))
         let eventKit = EventKitAccess()
         self.eventKit = eventKit
         let notificationImage = NotificationImageStore(url: shared.url(config.rules.notifications.imageFile),

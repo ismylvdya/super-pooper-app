@@ -39,10 +39,12 @@ actor TaskFileStore: TaskStore {
     /// Today, logically: what has passed moves up to it.
     let today: @Sendable () -> LocalDate
     let makeID: @Sendable () -> String
+    let lookMemory: DayLookMemory
 
     init(location: VaultLocating, fileSystem: NoteFileSystem, ubiquity: UbiquityService, format: TaskFileFormat,
          obsidian: ObsidianConventions, backups: BackupService, rules: RulesConfig.Vault,
          vaultSettings: @escaping @Sendable () -> AppSettings.Vault, today: @escaping @Sendable () -> LocalDate,
+         lookMemory: DayLookMemory,
          makeID: @escaping @Sendable () -> String = { String(UUID().uuidString.replacingOccurrences(of: "-", with: "").prefix(8)).lowercased() }) {
         self.location = location
         self.fileSystem = fileSystem
@@ -55,6 +57,7 @@ actor TaskFileStore: TaskStore {
         self.downloadPoll = rules.downloadPollSeconds
         self.today = today
         self.makeID = makeID
+        self.lookMemory = lookMemory
     }
 
     // MARK: - The files

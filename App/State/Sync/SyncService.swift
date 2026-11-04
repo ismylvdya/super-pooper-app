@@ -20,13 +20,14 @@ final class SyncService: SettingsObserver {
     @ObservationIgnored private let derived: DerivedStatePublisher
     @ObservationIgnored private let backups: BackupPolicy
     @ObservationIgnored private let appEvents: AppEventSink
+    @ObservationIgnored private let dayCommands: DayCommands
     @ObservationIgnored private var running: Task<Void, Never>?
     /// Another sync was asked for while one runs (`true`: with the banner).
     @ObservationIgnored private var again: Bool?
 
     init(config: AppConfig, services: AppServices, tasks: TaskState, settings: SettingsController, day: DayStateController,
          sources: SourcesController, writer: NoteWriter, texts: NoteTextEditor, derived: DerivedStatePublisher,
-         backups: BackupPolicy, appEvents: AppEventSink) {
+         backups: BackupPolicy, appEvents: AppEventSink, dayCommands: DayCommands) {
         self.config = config
         self.services = services
         self.tasks = tasks
@@ -38,6 +39,7 @@ final class SyncService: SettingsObserver {
         self.derived = derived
         self.backups = backups
         self.appEvents = appEvents
+        self.dayCommands = dayCommands
     }
 
     /// Another sync waits for the running one.
@@ -147,6 +149,7 @@ final class SyncService: SettingsObserver {
                 let result = try await services.tasks.load()
                 SyncLog.logger.info("vault scan: \(result.tasks.count) tasks in \(Date().timeIntervalSince(started), format: .fixed(precision: 2)) s")
                 tasks.setScanResult(result)
+                await takeInChangedLook()
                 if let folder = services.folder { tasks.setChosenFolder(await folder.chosenFolder()) }
                 await settings.syncWithVaultNote()
                 report.conflicts = result.conflicted
@@ -174,6 +177,13 @@ final class SyncService: SettingsObserver {
         let problems = derived.problemCount
         tell(report, announce: announce, newProblems: day.announceProblems(problems), problems: problems)
         await texts.reopenUnavailable()
+    }
+
+    /// Today's sections and order as another device or a hand left them in the file (what iCloud kept, when two disagreed).
+    private func takeInChangedLook() async {
+        guard let mirroring = services.mirroring, let look = await mirroring.changedLook() else { return }
+        dayCommands.applyLook(look)
+        await mirroring.accept(look)
     }
 
     /// Decided on the day's view (times on the phone's clock), written to the notes as they are.

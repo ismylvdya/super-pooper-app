@@ -4,6 +4,8 @@
   "habitsFolder": "Habits settings",
   "habitsTrashFolder": "Trash",
   "indent": "    ",
+  "dayMarkerPrefix": "%% day ",
+  "dayMarkerSuffix": " %%",
   "sections": {
     "inbox": "Inbox",
     "now": "Now",

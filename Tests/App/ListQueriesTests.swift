@@ -14,7 +14,7 @@ struct ListQueriesTests {
         let model = try makeModel()
         await model.perform(.done, on: "Позвонить в банк")
         let store = try #require(model.parts.services.tasks as? InMemoryTaskStore)
-        try await store.fileAway(makeTask("Filed in Obsidian", status: .done))
+        _ = try await store.fileAway(makeTask("Filed in Obsidian", status: .done))
         await model.openList("someday")
         #expect(!model.filedTasks.contains { $0.name == "Filed in Obsidian" })
         await model.openList("done")

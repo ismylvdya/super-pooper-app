@@ -22,7 +22,9 @@ struct TaskFileStoreTests {
         let counter = Counter()
         return TaskFileStore(location: FixedVaultLocation(url: folder), fileSystem: fileSystem, ubiquity: FakeUbiquityService(), format: format,
                              obsidian: TestConfig.mapping.obsidian, backups: backups, rules: TestConfig.rules.vault,
-                             vaultSettings: { TestConfig.defaults.vault }, today: { day }, makeID: { counter.next() })
+                             vaultSettings: { TestConfig.defaults.vault }, today: { day },
+                             lookMemory: JSONDayLookMemory(store: JSONFileStore(directory: folder.appendingPathComponent("Memory"))),
+                             makeID: { counter.next() })
     }
 
     private var file: URL { folder.appendingPathComponent(format.folder).appendingPathComponent(format.file) }
@@ -206,6 +208,44 @@ struct TaskFileStoreTests {
         #expect(loaded.first { $0.name == "Open" }?.status == .someday)
         #expect(loaded.first { $0.name == "Run" }?.marks[today] == .done)
         #expect(try await store.filedTasks().map(\.name) == ["Finished"])
+    }
+
+    /// Lines moved by hand between Now's sections, or kept out to Soon, come back as news once; the app's own look does not.
+    @Test func aLookChangedInTheFileComesBackAndTheAppsOwnDoesNot() async throws {
+        let store = store()
+        _ = try await store.create(draft(), named: "A")
+        _ = try await store.create(draft(), named: "B")
+        _ = try await store.create(draft(), named: "C")
+        await store.mirror(DayMirror(sections: [.init(title: "Morning", names: ["A", "B"]), .init(title: "Evening", names: ["C"])], timed: [:], keptOut: []))
+        #expect(await store.changedLook() == nil, "what the app wrote itself")
+        _ = try await store.create(draft(), named: "New")
+        #expect(await store.changedLook() == nil, "a new line is no change of the look")
+
+        var document = TaskDocument(text: try text(), format: format)
+        let now = try #require(document.sections.firstIndex { $0.kind == .now })
+        let morning = try #require(document.sections[now].groups.firstIndex { $0.title == "Morning" })
+        let evening = try #require(document.sections[now].groups.firstIndex { $0.title == "Evening" })
+        let moved = document.sections[now].groups[morning].entries.removeFirst()
+        document.sections[now].groups[evening].entries.append(moved)
+        document.sections[now].groups[evening].title = "Night"
+        try write(document.text(format: format))
+
+        let look = try #require(await store.changedLook())
+        #expect(look.sections == [.init(title: "Morning", names: ["B"]), .init(title: "Night", names: ["C", "A"])])
+        await store.mirror(DayMirror(sections: [.init(title: "Lost", names: ["A"])], timed: [:], keptOut: []))
+        #expect(try text().contains("### Night"), "not written over until it is taken in")
+        await store.accept(look)
+        #expect(await store.changedLook() == nil)
+    }
+
+    /// The next day the file's look is yesterday's: no news, the day's sections start anew.
+    @Test func yesterdaysLookIsNoNews() async throws {
+        let first = store()
+        _ = try await first.create(draft(), named: "A")
+        await first.mirror(DayMirror(sections: [.init(title: "Morning", names: ["A"])], timed: [:], keptOut: []))
+        try write(try text().replacingOccurrences(of: "### Morning", with: "### Renamed"))
+        #expect(await first.changedLook() != nil)
+        #expect(await store(today: LocalDate("2026-10-22")).changedLook() == nil)
     }
 
     /// The old TaskNotes folder, or any other chosen by mistake, stays untouched: a problem, no file made.

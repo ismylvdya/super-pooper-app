@@ -30,11 +30,11 @@ enum PreviewSamples {
         report.due = TaskDue(day: today.adding(days: 2))
         report.timeEstimate = 60
         report.feel = .needEnergy
-        var shelf = TaskItem(id: TaskID("TaskNotes/Tasks/shelf.md"), name: "Повесить полку", status: .thisWeek)
+        let shelf = TaskItem(id: TaskID("TaskNotes/Tasks/shelf.md"), name: "Повесить полку", status: .thisWeek)
         var parcel = TaskItem(id: TaskID("TaskNotes/Tasks/parcel.md"), name: "Забрать посылку", status: .thisWeek)
         parcel.due = TaskDue(day: today, time: LocalTime(hour: 16, minute: 0))
         parcel.timeEstimate = 60
-        var questions = TaskItem(id: TaskID("TaskNotes/Tasks/questions.md"), name: "Подготовить вопросы", status: .thisWeek)
+        let questions = TaskItem(id: TaskID("TaskNotes/Tasks/questions.md"), name: "Подготовить вопросы", status: .thisWeek)
         return [water, vitamins, bank, report, shelf, parcel, questions]
     }
 

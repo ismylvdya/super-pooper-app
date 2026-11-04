@@ -30,6 +30,9 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
     /// Inside `habitsFolder`: the settings of deleted habits.
     let habitsTrashFolder: String
     let indent: String
+    /// The line at the top of the file naming the day its look of today is for (an Obsidian comment, not shown there).
+    let dayMarkerPrefix: String
+    let dayMarkerSuffix: String
     let sections: Sections
     let boxes: Boxes
     let markers: Markers
