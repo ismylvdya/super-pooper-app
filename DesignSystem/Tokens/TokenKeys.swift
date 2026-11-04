@@ -10,6 +10,8 @@ enum SpacingToken: String, CaseIterable, Sendable {
     case widgetGap, previewInset, cornerMarkGap, compactPlateVertical, emptyStateInset, widgetGridGap
     /// How much further right a timeline block lying over an earlier one starts, per step.
     case timelineCascadeIndent
+    /// An event's stripe: from the plate's edges, and to the text.
+    case eventStripeInset, eventStripeGap
     /// Between a swipe button's symbol and its title.
     case swipeIconTitleGap
     /// Between the priority icon before a high-priority task's name and the name.
@@ -54,7 +56,7 @@ enum CountToken: String, CaseIterable, Sendable {
 }
 
 enum OpacityToken: String, CaseIterable, Sendable {
-    case blocked, past, eventFill, fadeTop, fadeMiddle, habitEmpty
+    case blocked, past, eventFill, eventFillDark, eventTextLightMix, eventTextDarkMix, fadeTop, fadeMiddle, habitEmpty
     /// The ring of a habit's day not done or done partly (the user's `habits.ringOpacity` over it).
     case habitOpenRing
     case gridFadedWeek, unlinked, eventTime, nowOverBlocks, daySwipeFade, toggleChipFill, bannerShadow, previewBlock, accentedPlate, signingPlate
@@ -85,7 +87,7 @@ enum ColorToken: String, ConfigName {
     case selectionOutline
     case accent, task, habit, high, started, energy, pleasant, heart, nowLine, problem
     case past, swipeNeutral, screenBackground, plateBackground, chipBackground, primaryText, secondaryText, tertiaryText
-    case bannerBackground, infoText, destructive, eventText, timelineGrid
+    case bannerBackground, infoText, destructive, timelineGrid
     case success, warning, error, shadow, widgetPlate, widgetTop, widgetBottom, listSeparator
     case signingAhead, signingSoon, signingUrgent
     /// A date found in a new task's name.

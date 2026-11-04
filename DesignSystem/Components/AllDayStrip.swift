@@ -5,6 +5,7 @@ import WidgetKit
 /// Long titles fade out; in the app a tap opens Calendar and a long press offers deleting the event.
 struct AllDayStrip: View {
     @Environment(\.tokens) private var tokens
+    @Environment(\.colorScheme) private var colorScheme
     let events: [CalendarEvent]
     var font: Font?
     let lineHeight: CGFloat
@@ -35,9 +36,9 @@ struct AllDayStrip: View {
                 .widgetAccentable()
             FadingText(text: event.title, font: font ?? tokens.font(.chip), lineHeight: lineHeight)
         }
-        .foregroundStyle(tokens.color(.eventText))
+        .foregroundStyle(tokens.eventText(Color(hex: event.colorHex), in: colorScheme))
         .frame(maxWidth: .infinity, alignment: .leading)
-        .chipCapsule(Color(hex: event.colorHex).opacity(tokens.opacity(.eventFill)))
+        .chipCapsule(tokens.eventFill(Color(hex: event.colorHex), in: colorScheme))
     }
 }
 

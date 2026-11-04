@@ -1,11 +1,13 @@
 import SwiftUI
 import WidgetKit
 
-/// A calendar event: tinted fill with the calendar color stripe (distinct from tasks).
+/// A calendar event, drawn as in Apple Calendar: a faint tint of the calendar's color, a rounded stripe of the color itself
+/// inset from the plate's edges, the text in a deeper tone of the color (`DesignTokens.eventText`).
 struct TimelineEventBlock: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.calendar) private var calendar
     @Environment(\.titleReserve) private var reserve
+    @Environment(\.colorScheme) private var colorScheme
     let event: CalendarEvent
     let slot: TimelineSlot
     let font: Font
@@ -13,11 +15,14 @@ struct TimelineEventBlock: View {
     let lineHeight: CGFloat
 
     var body: some View {
-        let color = slot.isPast ? tokens.color(.past) : Color(hex: event.colorHex)
-        HStack(spacing: tokens.space(.timelineItemPadding)) {
-            RoundedRectangle(cornerRadius: tokens.size(.eventStripe) / 2)
+        let own = Color(hex: event.colorHex)
+        let color = slot.isPast ? tokens.color(.past) : own
+        let inset = tokens.space(.eventStripeInset)
+        HStack(alignment: .top, spacing: tokens.space(.eventStripeGap)) {
+            Capsule()
                 .fill(color)
                 .frame(width: tokens.size(.eventStripe))
+                .padding(.vertical, inset)
                 .widgetAccentable()
             TopAlignedContent {
                 VStack(alignment: .leading, spacing: 0) {
@@ -28,14 +33,28 @@ struct TimelineEventBlock: View {
                         .opacity(tokens.opacity(.eventTime))
                 }
             }
-            .foregroundStyle(slot.isPast ? tokens.color(.secondaryText) : tokens.color(.eventText))
+            .padding(.top, inset / 2)
+            .foregroundStyle(slot.isPast ? tokens.color(.secondaryText) : tokens.eventText(own, in: colorScheme))
             Spacer(minLength: 0)
         }
-        .padding(.vertical, tokens.space(.timelineItemPadding) / 2)
+        .padding(.leading, inset)
         .padding(.trailing, tokens.space(.timelineItemPadding))
         .frame(maxHeight: .infinity, alignment: .top)
-        .plate(.timelineItem, fill: color.opacity(tokens.opacity(.eventFill)), clipsContent: true)
+        .plate(.timelineItem, fill: tokens.eventFill(color, in: colorScheme), clipsContent: true)
         .opacity(slot.isPast ? tokens.opacity(.past) : 1)
+    }
+}
+
+extension DesignTokens {
+    /// The plate of an event of `color`: as faint as Calendar's in each theme.
+    func eventFill(_ color: Color, in scheme: ColorScheme) -> Color {
+        color.opacity(opacity(scheme == .dark ? .eventFillDark : .eventFill))
+    }
+
+    /// An event's text: its calendar's color, deeper in the light theme and paler in the dark one.
+    func eventText(_ color: Color, in scheme: ColorScheme) -> Color {
+        scheme == .dark ? color.mix(with: .white, by: opacity(.eventTextDarkMix))
+            : color.mix(with: .black, by: opacity(.eventTextLightMix))
     }
 }
 

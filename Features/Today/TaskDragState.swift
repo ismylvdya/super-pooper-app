@@ -208,11 +208,6 @@ final class TaskDragState {
         reset()
     }
 
-    /// A hold began on the empty timeline; true when it may open a new task's page.
-    func holdBegan() -> Bool {
-        !isDragging
-    }
-
     private func provider(for id: String) -> NSItemProvider {
         session += 1
         return NSItemProvider(object: id as NSString)
