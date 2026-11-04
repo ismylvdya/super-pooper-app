@@ -20,8 +20,6 @@ struct PoolSettingsSection: View {
             .pickerStyle(.segmented)
             .accessibilityIdentifier("settings.pool.highPriority")
             PlateRow(icon: nil, title: "settings.pool.highColor") { ThemeColorField(token: .high) }
-            startedFill
-            PlateRow(icon: nil, title: "settings.pool.startedColor") { ThemeColorField(token: .started) }
             selectionOutline
             PlateRow(icon: .poolCount, title: "settings.pool.visible", info: "info.settings.pool.visible") {
                 Stepper(value: Binding(get: { model.settings.pool.visibleCount },
@@ -45,21 +43,5 @@ struct PoolSettingsSection: View {
         Slider(value: Binding(get: { opacity }, set: { value in model.updateSettings { $0.pool.selectionOutlineOpacity = limits.snapped(value) } }),
                in: limits.closed)
             .accessibilityIdentifier("settings.pool.selectionOutline")
-    }
-
-    /// How far a started task's blue fill reaches, with a sample of it.
-    @ViewBuilder private var startedFill: some View {
-        let length = model.settings.pool.startedFillLength
-        let limits = model.config.rules.limits.startedFillLength
-        PlateRow(icon: nil, title: "settings.pool.startedFill", info: "info.settings.pool.startedFill") {
-            Text(length.formatted(.percent.precision(.fractionLength(0)))).monospacedDigit().foregroundStyle(tokens.color(.secondaryText))
-        }
-        // As it stands in the pool: on a row's whole plate.
-        .rowPlatePadding()
-        .environment(\.plateGradient, AnyView(StartedFill(length: length)))
-        .plate(.row)
-        Slider(value: Binding(get: { length }, set: { value in model.updateSettings { $0.pool.startedFillLength = limits.snapped(value) } }),
-               in: limits.closed)
-            .accessibilityIdentifier("settings.pool.startedFill")
     }
 }

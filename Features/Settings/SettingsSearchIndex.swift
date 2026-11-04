@@ -38,6 +38,7 @@ enum SettingsSearchIndex {
         Section(title: "settings.widgetColors", route: .taskSettings, rows: []),
         Section(title: "settings.notifications", route: .taskSettings, rows: ["settings.notifications.enabled", "settings.notifications.snooze", "settings.notifications.alarmSound", "settings.notifications.signing"]),
         Section(title: "routines.title", route: .routines, rows: []),
+        Section(title: "settings.tasks", route: .plainTaskSettings, rows: ["settings.pool.startedFill", "settings.pool.startedColor"]),
         Section(title: "settings.habits.new", route: .habitSettings, rows: ["habitPage.showInToday", "habitPage.color"]),
         Section(title: "settings.habits.repeatable", route: .habitSettings, rows: ["settings.habits.repeatableHistory"]),
         Section(title: "settings.habits.colors", route: .habitSettings, rows: []),

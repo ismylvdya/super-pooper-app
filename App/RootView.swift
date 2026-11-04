@@ -193,6 +193,7 @@ struct RootView: View {
         case .taskSettings: TaskSettingsScreen()
         case .clockSettings: ClockSettingsScreen()
         case .tabBarSettings: TabBarSettingsScreen()
+        case .plainTaskSettings: PlainTaskSettingsScreen()
         case .habitSettings: HabitSettingsScreen()
         case .archive: ArchiveScreen()
         case .trash: TrashScreen()

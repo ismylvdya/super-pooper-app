@@ -102,5 +102,5 @@ enum ColorToken: String, ConfigName {
 
 /// The settings sections where the user picks colors (`editableColors`: which colors each offers, in order).
 enum ColorSettingsGroup: String, CaseIterable, Sendable {
-    case general, habits, widgets
+    case general, tasks, habits, widgets
 }

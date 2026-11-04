@@ -8,6 +8,7 @@
   "energy": "NeedEnergyFrog",
   "overdue": "clock.fill",
   "tabBarSettings": "dock.rectangle",
+  "plainTaskSettings": "checklist",
   "pleasant": "heart.fill",
   "feel": "heart.circle",
   "timeZone": "globe",

@@ -7,7 +7,7 @@ struct HabitSettingsScreen: View {
     @Environment(\.tokens) private var tokens
 
     var body: some View {
-        PageScaffold(title: L10n.string("settings.habits")) {
+        PageScaffold(title: L10n.string("settings.habits.summary")) {
             PlateSection(header: "routines.title", hint: "settings.habits.routines.hint") {
                 SettingsLink(route: .routines, icon: .timeOfDay, title: "settings.habits.routines")
             }

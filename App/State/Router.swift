@@ -31,6 +31,7 @@ enum Route: Hashable {
     case habitSettings
     case clockSettings
     case tabBarSettings
+    case plainTaskSettings
     case archive
     case trash
     case routines
