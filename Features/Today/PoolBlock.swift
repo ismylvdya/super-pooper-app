@@ -34,8 +34,7 @@ struct PoolBlock: View {
     @State private var screenFrame: CGRect = .zero
     private static let dropSpace = "poolDrop"
 
-    /// In Select mode nothing is dragged in or out of the pool.
-    private var drag: TaskDragState? { selection?.isOn == true ? nil : dragState }
+    private var drag: TaskDragState? { dragState }
 
     var body: some View {
         poolContent
@@ -164,7 +163,7 @@ struct PoolBlock: View {
                 let shown = sections
                 ForEach(shown) { section in
                     let isGhost = drag?.isSectionGhost(section.id) == true
-                    PoolSectionHeader(section: section, isFirst: section.id == shown.first?.id, drag: drag, canRename: selection?.isOn != true) {
+                    PoolSectionHeader(section: section, isFirst: section.id == shown.first?.id, drag: selection?.isOn == true ? nil : drag, canRename: selection?.isOn != true) {
                         model.renameSection(section.id, to: $0, on: plan.today)
                     }
                         .dropGhost(isGhost)
@@ -229,9 +228,15 @@ struct PoolBlock: View {
             NewItemGapPlate()
         } else {
             PoolRow(item: item, isToday: plan.isToday, isCompact: fillsHeight, plate: plate, handler: handler,
-                    dragSource: source, poolDay: plan.today)
+                    dragSource: selectionSource ?? source, poolDay: plan.today)
                 .dropGap(drag?.isGap(item.id) == true)
         }
+    }
+
+    /// In Select mode a drag carries all the picked tasks, in the pool's order.
+    private var selectionSource: TaskDragState.Source? {
+        guard let selection, selection.isOn else { return nil }
+        return TaskDragState.selection(plan.pool.map(\.id).filter(selection.isSelected))
     }
 
     private func dragSource(of segment: PoolSegments.Segment) -> TaskDragState.Source {

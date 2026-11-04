@@ -10,6 +10,8 @@ enum SpacingToken: String, CaseIterable, Sendable {
     case widgetGap, previewInset, cornerMarkGap, compactPlateVertical, emptyStateInset, widgetGridGap
     /// How much further right a timeline block lying over an earlier one starts, per step.
     case timelineCascadeIndent
+    /// What a stack of dragged tasks shows of each plate under the top one.
+    case dragStackStep
     /// An event's stripe: from the plate's edges, and to the text.
     case eventStripeInset, eventStripeGap
     /// Between a swipe button's symbol and its title.
@@ -50,6 +52,8 @@ enum RatioToken: String, CaseIterable, Sendable {
     case timelineTitleRoom
     /// How much of a row's height a swipe button's symbol and title take together at most.
     case swipeGlyphFit
+    /// How much narrower each plate under the top one of a dragged stack is.
+    case dragStackShrink
 }
 
 /// How many of something a drawing has (lines of a wrapped title).

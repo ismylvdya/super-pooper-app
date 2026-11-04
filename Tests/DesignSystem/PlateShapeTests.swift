@@ -7,7 +7,7 @@ struct PlateShapeTests {
     @Test func cornersAreCappedByHalfTheHeight() {
         let short = CGRect(x: 0, y: 0, width: 200, height: 20)
         let capped = PlateShape(cornerRadius: 30).path(in: short)
-        let expected = RoundedRectangle(cornerRadius: 10, style: .continuous).path(in: short)
+        let expected = RoundedRectangle(cornerRadius: 10, style: .circular).path(in: short)
         #expect(capped.description == expected.description)
     }
 
@@ -34,7 +34,7 @@ struct PlateShapeTests {
         let corner = stride(from: 0.5, through: radius, by: 0.5).map { CGPoint(x: $0, y: $0 / 2) }
         #expect(corner.map { row.contains($0) } == corner.map { backing.contains($0) })
         let short = CGRect(x: 0, y: 0, width: 360, height: radius)
-        let capsule = RoundedRectangle(cornerRadius: radius / 2, style: .continuous).path(in: short)
+        let capsule = RoundedRectangle(cornerRadius: radius / 2, style: .circular).path(in: short)
         #expect(tokens.plateShape(.group).path(in: short).description == capsule.description)
     }
 

@@ -46,7 +46,7 @@ struct PoolRowContent: View {
         }
     }
 
-    /// Select mode: a tap picks or drops the row, a picked row has a contrasting outline; nothing moves, no menu, no drag.
+    /// Select mode: a tap picks or drops the row, a picked row has an outline and can be dragged with the others picked; no menu.
     private func selectable(_ selection: PoolSelection) -> some View {
         let isSelected = selection.isSelected(item.id)
         return plated
@@ -65,6 +65,9 @@ struct PoolRowContent: View {
                 Haptics.play(.select)
                 selection.toggle(item.id)
             }
+            // A picked row lifts all the picked ones with it, as a stack.
+            .taskDragSource(item, from: dragSource ?? .pool, drag: drag, isOn: isSelected && dragSource?.wormMembers.isEmpty == false,
+                            lift: .row, stackCount: dragSource?.wormMembers.count ?? 1) { plated }
             .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
 

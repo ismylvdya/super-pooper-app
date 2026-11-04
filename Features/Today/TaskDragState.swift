@@ -17,7 +17,8 @@ final class TaskDragState {
         case backlog(String)
         /// A pool section's header, by the section's id.
         case section(String)
-        /// A worm's member: the whole worm goes along, within the pool only.
+        /// A worm's member: the whole worm goes along, within the pool only. The tasks picked in Select mode go the same way
+        /// (`selectionWorm`).
         case worm(id: String, members: [String])
         /// The tab bar's "+": a new item, made where it lands.
         case newItem
@@ -35,6 +36,10 @@ final class TaskDragState {
             if case .worm(_, let members) = self { members } else { [] }
         }
     }
+
+    /// The tasks picked in Select mode, dragged together: they move as a worm does, without becoming one.
+    static func selection(_ members: [String]) -> Source { .worm(id: selectionWorm, members: members) }
+    private static let selectionWorm = "selection"
 
     static let types: [UTType] = [.text]
     /// The pool's id for the room a dragged "+" makes there: it becomes the new task's name once it is made.
@@ -232,10 +237,10 @@ extension View {
     /// finger goes `preview` (the row's plate, drawn again: a drag that starts from the long-press menu shows only the
     /// row's text otherwise) at the row's size, lifted as its plate (`lift`).
     @ViewBuilder func taskDragSource<Preview: View>(_ item: DayItem, from source: TaskDragState.Source, drag: TaskDragState?,
-                                                    isOn: Bool, lift: PlateCorners,
+                                                    isOn: Bool, lift: PlateCorners, stackCount: Int = 1,
                                                     @ViewBuilder preview: @escaping () -> Preview) -> some View {
         if let drag, isOn {
-            modifier(TaskDragSource(item: item, source: source, drag: drag, lift: lift, preview: preview))
+            modifier(TaskDragSource(item: item, source: source, drag: drag, lift: lift, stackCount: stackCount, preview: preview))
         } else {
             self
         }
@@ -247,6 +252,8 @@ private struct TaskDragSource<Preview: View>: ViewModifier {
     let source: TaskDragState.Source
     let drag: TaskDragState
     let lift: PlateCorners
+    /// How many tasks go along: more than one lifts as a stack (`DragStack`).
+    let stackCount: Int
     let preview: () -> Preview
     @State private var size: CGSize?
 
@@ -255,9 +262,10 @@ private struct TaskDragSource<Preview: View>: ViewModifier {
             .plateLift(lift, for: .dragPreview)
             .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
             .onDrag { drag.begin(item, from: source) } preview: {
-                preview()
-                    .frame(width: size?.width, height: size?.height)
-                    .plateLift(lift, for: .dragPreview)
+                DragStack(count: stackCount, corners: lift) {
+                    preview().frame(width: size?.width, height: size?.height)
+                }
+                .plateLift(lift, for: .dragPreview)
             }
     }
 }

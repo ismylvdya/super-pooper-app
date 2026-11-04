@@ -3,7 +3,8 @@ import SwiftUI
 /// The bar of the pool's Select mode, in place of Today's own buttons: leading Cancel; trailing the selection menu's
 /// frequent actions as buttons (Done, then Not today or, with a habit picked, Skip today) and its rarer ones in the system
 /// "…" menu (`actions.json` → `selection`). The bar and the menu offer only what the picked tasks can take; the first
-/// button is always there, dimmed, so the bar keeps its shape. Lying sideways (`bottom` set)
+/// button is always there, dimmed, so the bar keeps its shape. The stack of picked tasks let go on Cancel moves nothing; the
+/// tasks stay picked. Lying sideways (`bottom` set)
 /// Cancel is an icon and the buttons stand in their physical left-to-right order.
 struct SelectionToolbar: View {
     enum Placement { case leading, trailing }
@@ -17,6 +18,9 @@ struct SelectionToolbar: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
     @Environment(\.actions) private var actions
+    @Environment(TaskDragState.self) private var drag: TaskDragState?
+    /// The stack of picked tasks is held over Cancel: let go there, nothing moves.
+    @State private var isCancelTargeted = false
     let placement: Placement
     let selection: PoolSelection
     let day: LocalDate
@@ -34,8 +38,16 @@ struct SelectionToolbar: View {
         Button { selection.end() } label: {
             if bottom == nil { Text("common.cancel") } else { Image(systemName: icons[.selectCancel]) }
         }
-        .tint(tokens.color(.accent))
+        .tint(tokens.color(isCancelTargeted ? .destructive : .accent))
         .modifier(ColumnButton(isInColumn: bottom != nil))
+        .contentShape(Rectangle())
+        .onDrop(of: TaskDragState.types, isTargeted: $isCancelTargeted) { _ in
+            guard let drag, !drag.source.wormMembers.isEmpty else { return false }
+            drag.end()
+            Haptics.play(.select)
+            return true
+        }
+        .onChange(of: isCancelTargeted) { _, isOver in if isOver { Haptics.play(.dragStep) } }
         .accessibilityLabel(Text("common.cancel"))
         .accessibilityIdentifier("select.cancel")
     }
