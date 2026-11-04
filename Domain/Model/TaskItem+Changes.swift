@@ -16,7 +16,10 @@ extension TaskItem {
                 task.status = .thisWeek
                 task.completedDate = nil
             case .highPriority(let value): task.isHighPriority = value
-            case .due(let value): task.due = value
+            case .due(let value):
+                task.due = value
+                // A task's alarm is of its time: with the time it goes.
+                if value?.time == nil, !task.isHabit { task.alarms = [] }
             case .timeEstimate(let value): task.timeEstimate = value
             case .addProject(let name):
                 if !task.projects.contains(where: { $0.isSameNoteName(as: name) }) { task.projects.append(name) }
