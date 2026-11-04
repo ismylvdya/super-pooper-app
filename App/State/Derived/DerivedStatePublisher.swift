@@ -17,6 +17,7 @@ final class DerivedStatePublisher {
     private let snoozeStore: SnoozeStore
     private let widgets: WidgetReloading
     private let notifications: NotificationScheduling
+    private let alarms: AlarmScheduling
     private let mirroring: DayMirroring?
     private let queue = NotificationQueue()
     /// The last plan of each day asked for (0 = today), with what it was worked out from.
@@ -35,6 +36,7 @@ final class DerivedStatePublisher {
         snoozeStore = services.snoozeStore
         widgets = services.widgets
         notifications = services.notifications
+        alarms = services.alarms
         mirroring = services.mirroring
     }
 
@@ -141,6 +143,11 @@ final class DerivedStatePublisher {
         await replanNotifications()
     }
 
+    /// Asks for the system's permission for alarms; false when refused.
+    func requestAlarmAccess() async -> Bool {
+        await alarms.requestAccess()
+    }
+
     /// A notification dismissed from its button leaves Notification Center; its item and the schedule stay as they are.
     func dismiss(shown identifier: String) async {
         let notifications = notifications
@@ -159,11 +166,15 @@ final class DerivedStatePublisher {
         let settings = settings.settings
         guard config.flags.notifications, settings.notifications.enabled else {
             await notifications.removeAll()
+            await alarms.sync([])
             return
         }
         let inputs = notificationInputs(context: context)
-        let planned = inputs.planner.plan(tasks: inputs.tasks, reminders: inputs.reminders, events: inputs.events,
+        let alarmPlanner = AlarmPlanner(sounds: config.rules.alarms.sounds, defaultSound: settings.notifications.alarmSound)
+        let unmarked = inputs.planner.plan(tasks: inputs.tasks, reminders: inputs.reminders, events: inputs.events,
                                           skipped: inputs.skipped, todayTimes: inputs.todayTimes, context: context)
+        let planned = alarmPlanner.marking(unmarked, tasks: inputs.tasks)
+        await alarms.sync(alarmPlanner.alarms(planned, tasks: inputs.tasks))
         let valid = inputs.planner.stillValidToday(tasks: inputs.tasks, reminders: inputs.reminders, events: inputs.events,
                                                    skipped: inputs.skipped, todayTimes: inputs.todayTimes, context: context)
         // Alerts moved into the past or added too late come right away, once.

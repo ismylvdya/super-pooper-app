@@ -9,6 +9,8 @@ struct HabitFile: Codable, Equatable, Sendable {
     /// The rule as text; one the app cannot read stays as it is and the habit shows a problem.
     var recurrence: String?
     var reminderTimes: [LocalTime] = []
+    /// Which of its times ring as alarms (absent in older files).
+    var alarms: [TimeAlarm]?
     var timeZone: String?
     /// An older habit's date and time, which its days may start from.
     var due: TaskDue?
@@ -36,6 +38,7 @@ struct HabitFile: Codable, Equatable, Sendable {
         isArchived = item.isArchived
         if let rule = item.recurrence { recurrence = RecurrenceCodec.format(rule) } else if !item.hasUnreadableRecurrence { recurrence = nil }
         reminderTimes = item.reminderTimes
+        alarms = item.alarms.isEmpty ? nil : item.alarms
         timeZone = item.timeZone
         due = item.due
         options = item.habit
@@ -56,6 +59,7 @@ struct HabitFile: Codable, Equatable, Sendable {
         item.subtaskOrder = order
         item.feel = feel
         item.reminderTimes = reminderTimes
+        item.alarms = alarms ?? []
         item.timeZone = timeZone
         item.habit = options
         item.marks = marks

@@ -87,7 +87,9 @@ final class AppContainer {
             notifications: notifications, settingsStore: settingsStore,
             dayStateStore: DayStateStore(store: shared), daySectionStore: JSONDaySectionStore(store: shared), snapshotStore: SnapshotStore(store: shared),
             alertStateStore: AlertStateStore(store: shared), snoozeStore: SnoozeStore(store: shared),
-            widgets: WidgetKitReloader(), notificationImage: notificationImage, signature: launch.signature(now: clock.now))
+            widgets: WidgetKitReloader(), notificationImage: notificationImage, signature: launch.signature(now: clock.now),
+            alarms: SystemAlarmScheduler(stopTitle: { L10n.string("alarm.stop") }, stopIcon: config.icons[.stopAlarm],
+                                         tint: { [tokens = config.tokens] in tokens.color(.accent) }))
 
         let banners = BannerCenter()
         self.banners = banners

@@ -23,6 +23,8 @@ struct TaskItem: Identifiable, Hashable, Codable, Sendable {
     var marks: [LocalDate: HabitMark] = [:]
     /// Habit reminders, several per day (`reminder_times`, `HH:mm`).
     var reminderTimes: [LocalTime] = []
+    /// The times that ring as alarms.
+    var alarms: [TimeAlarm] = []
     /// The zone the due time and reminder times are kept in (IANA name); nil = wall-clock times (`ZonedTimes`).
     var timeZone: String?
     var habit = HabitOptions()

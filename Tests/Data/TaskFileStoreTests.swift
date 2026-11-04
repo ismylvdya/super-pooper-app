@@ -275,3 +275,25 @@ private final class Counter: @unchecked Sendable {
         }
     }
 }
+
+/// Alarms: in a task's line, and in a habit's file for each of its times.
+struct AlarmFormatTests {
+    private let format = TestConfig.decode(TaskFileFormat.self, "task-file.json")
+
+    @Test func aLineKeepsItsAlarmAndSound() throws {
+        var entry = TaskEntry(name: "Dentist")
+        entry.alarm = "chime"
+        let line = entry.line(format: format)
+        #expect(line.contains("🚨 chime"))
+        #expect(TaskEntry(line: line, format: format)?.alarm == "chime")
+    }
+
+    @Test func theDefaultSoundIsAWordInTheLineAndNilInTheApp() throws {
+        var entry = TaskEntry(name: "Dentist")
+        var task = TaskItem(id: TaskID("1"), name: "Dentist", status: .thisWeek)
+        task.alarms = [TimeAlarm()]
+        entry.update(from: task, format: format)
+        #expect(entry.alarm == format.alarmDefaultSound)
+        #expect(entry.item(in: .now, parentName: nil, order: nil, format: format).alarms == [TimeAlarm()])
+    }
+}

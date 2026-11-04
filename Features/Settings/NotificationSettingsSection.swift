@@ -28,6 +28,20 @@ struct NotificationSettingsSection: View {
                 .labelsHidden()
                 .accessibilityIdentifier("settings.notifications.snooze")
             }
+            PlateRow(icon: .alarm, title: "settings.notifications.alarmSound", info: "info.alarm") {
+                Picker("settings.notifications.alarmSound", selection: Binding(
+                    get: { model.settings.notifications.alarmSound },
+                    set: { value in
+                        model.updateSettings { $0.notifications.alarmSound = value }
+                        AlarmSoundPreview.play(model.config.rules.alarms.sounds.first { $0.id == value }?.file,
+                                               seconds: model.config.rules.alarms.previewSeconds)
+                    }
+                )) {
+                    ForEach(model.config.rules.alarms.sounds, id: \.id) { Text(LocalizedStringKey($0.title)).tag($0.id) }
+                }
+                .labelsHidden()
+                .accessibilityIdentifier("settings.notifications.alarmSound")
+            }
             PlateRow(icon: .signing, title: "settings.notifications.signing", info: "info.settings.notifications.signing") {}
             TextField("notification.signing.placeholder", text: Binding(
                 get: { model.settings.notifications.signingMessage },

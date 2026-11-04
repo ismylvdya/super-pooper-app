@@ -32,11 +32,11 @@ extension TaskFileStore {
         let parent = updated.projects.first.flatMap(snapshot.id(ofName:))
         let order = changes.compactMap { change -> Int?? in if case .subtaskOrder(let value) = change { value } else { nil } }.last
         if target == place.section, parent == place.parent ?? place.tag, order == nil {
-            snapshot.document.update(id: id) { $0.update(from: updated) }
+            snapshot.document.update(id: id) { $0.update(from: updated, format: format) }
             return
         }
         guard var taken = snapshot.document.remove(where: { $0.id == id })?.entry else { throw TaskStoreError.fileMissing(name) }
-        taken.update(from: updated)
+        taken.update(from: updated, format: format)
         taken.parent = nil
         if let parent {
             if self.place(of: parent, in: snapshot.document)?.section == target,
@@ -81,7 +81,7 @@ extension TaskFileStore {
             var entry = TaskEntry(name: final)
             entry.id = id
             entry.created = today()
-            entry.update(from: note)
+            entry.update(from: note, format: format)
             entry.note = Self.lines(of: draft.body)
             let target = TaskSection.of(note, current: .now, today: today())
             if let parent {
@@ -233,7 +233,7 @@ extension TaskFileStore {
                 var entry = TaskEntry(name: item.name)
                 entry.id = id
                 entry.created = item.created?.day
-                entry.update(from: item)
+                entry.update(from: item, format: format)
                 entry.note = Self.lines(of: source.text)
                 let target: TaskSection = source.isFiled ? .done : TaskSection.of(item, current: .now, today: today())
                 if let parent = parentID(item), place(of: parent, in: snapshot.document)?.section == target,

@@ -47,6 +47,8 @@ struct PlannedNotification: Hashable, Sendable {
     var isMoved = false
     /// A habit notification of a habit marked repeatable (a task that simply repeats).
     var isRepeatable = false
+    /// It also rings as an alarm (`AlarmPlanner`), so the notification itself makes no sound.
+    var hasAlarm = false
 
     var subject: Subject {
         switch kind {

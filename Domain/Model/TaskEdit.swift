@@ -23,6 +23,7 @@ enum TaskEdit: Hashable, Sendable {
     /// The repeat rule, or `nil` to remove it.
     case recurrence(RecurrenceRule?)
     case reminderTimes([LocalTime])
+    case alarms([TimeAlarm])
     /// The zone of the item's times; nil = wall-clock times.
     case timeZone(String?)
     case habitColor(String?)

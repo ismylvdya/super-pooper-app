@@ -28,4 +28,5 @@ struct AppServices {
     let widgets: WidgetReloading
     let notificationImage: NotificationImageStore
     let signature: AppSignatureReading
+    var alarms: AlarmScheduling = NoAlarms()
 }

@@ -15,6 +15,7 @@ struct HabitRemindersSection: View {
                 PlateRow(icon: index == 0 ? .reminder : nil, title: "taskPage.reminders.time") {
                     TimeField("taskPage.reminders.time", time: binding(at: index), on: model.context().today)
                         .labelsHidden()
+                    AlarmControl(alarm: task.alarm(at: time), onChange: { setAlarm($0, at: time) }, time: time)
                     RemoveButton(label: "taskPage.reminders.remove") {
                         save(times.enumerated().filter { $0.offset != index }.map(\.element))
                     }
@@ -45,6 +46,10 @@ struct HabitRemindersSection: View {
                 save(updated)
             }
         )
+    }
+
+    private func setAlarm(_ alarm: TimeAlarm?, at time: LocalTime) {
+        editor.apply([.alarms(task.alarms.filter { $0.time != time } + (alarm.map { [$0] } ?? []))])
     }
 
     private func save(_ updated: [LocalTime]) {

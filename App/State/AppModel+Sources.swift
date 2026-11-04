@@ -34,6 +34,8 @@ extension AppModel {
         }
     }
 
+    func requestAlarmAccess() async -> Bool { await parts.derived.requestAlarmAccess() }
+
     /// Dismiss alert on an event alert: the one shown (`identifier`) goes and does not come back; the event stays.
     func dismissNotification(shown identifier: String) async { await parts.derived.dismiss(shown: identifier) }
 

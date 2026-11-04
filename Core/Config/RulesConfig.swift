@@ -29,6 +29,19 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let snoozeChoices: [Int]
     }
 
+    struct Alarms: Codable, Hashable, Sendable {
+        struct Sound: Codable, Hashable, Sendable {
+            let id: String
+            let title: String
+            /// In the app's bundle; absent = the system's alarm sound.
+            let file: String?
+        }
+
+        let sounds: [Sound]
+        /// How much of a sound plays while it is being chosen.
+        let previewSeconds: Double
+    }
+
     struct EventLinks: Codable, Hashable, Sendable {
         /// Range of days searched when resolving `previous_event` / `next_event`.
         let resolveDaysBefore: Int
@@ -234,6 +247,7 @@ struct RulesConfig: Codable, Hashable, Sendable {
     let day: DayRules
     let timeEstimates: [EstimateOption]
     let notifications: Notifications
+    let alarms: Alarms
     /// The plate at the top of Settings that counts down to the end of the app's signature.
     let signingPlate: SigningPlateRules
     let eventLinks: EventLinks

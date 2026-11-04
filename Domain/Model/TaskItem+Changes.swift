@@ -28,6 +28,7 @@ extension TaskItem {
                 task.recurrence = rule
                 task.hasUnreadableRecurrence = false
             case .reminderTimes(let times): task.reminderTimes = times.sorted()
+            case .alarms(let value): task.alarms = value
             case .habitColor(let value): task.habit.color = value
             case .harmful(let value): task.habit.harmful = value
             case .repeatable(let value): task.habit.repeatable = value

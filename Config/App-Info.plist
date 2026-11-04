@@ -42,6 +42,8 @@
 			<string>plus</string>
 		</dict>
 	</array>
+	<key>NSAlarmKitUsageDescription</key>
+	<string>SuperPooperApp rings the times you mark as alarms, even in silent mode.</string>
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string>SuperPooperApp shows your anchor calendar events on the Today timeline.</string>
 	<key>NSRemindersFullAccessUsageDescription</key>

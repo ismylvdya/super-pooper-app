@@ -167,7 +167,7 @@ actor TaskFileStore: TaskStore {
 
     func item(_ entry: TaskEntry, in section: TaskSection, parent: TaskEntry?, index: Int, snapshot: Snapshot) -> TaskItem {
         let parentName = parent?.name ?? entry.parent.flatMap { snapshot.names[$0] }
-        return entry.item(in: section, parentName: parentName, order: parent == nil ? nil : index)
+        return entry.item(in: section, parentName: parentName, order: parent == nil ? nil : index, format: format)
     }
 
     func habit(of file: HabitFile, snapshot: Snapshot) -> TaskItem {
@@ -222,6 +222,7 @@ actor TaskFileStore: TaskStore {
                     entries[index].date = day
                     entries[index].time = nil
                     entries[index].zone = nil
+                    entries[index].alarm = nil
                 }
                 roll(&entries[index].children)
             }

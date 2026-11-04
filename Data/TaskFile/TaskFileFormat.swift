@@ -18,10 +18,10 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
     }
 
     struct Markers: Codable, Hashable, Sendable {
-        let id, date, time, zone, estimate, high, pleasant, energy, routine, parent, created, completed, deleted: String
+        let id, date, time, zone, estimate, alarm, high, pleasant, energy, routine, parent, created, completed, deleted: String
 
         /// Every marker: a task's name cannot hold one.
-        var all: [String] { [id, date, time, zone, estimate, high, pleasant, energy, routine, parent, created, completed, deleted] }
+        var all: [String] { [id, date, time, zone, estimate, alarm, high, pleasant, energy, routine, parent, created, completed, deleted] }
     }
 
     let folder: String
@@ -36,6 +36,8 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
     let sections: Sections
     let boxes: Boxes
     let markers: Markers
+    /// After the alarm's marker: the sound is the one set in the settings.
+    let alarmDefaultSound: String
 
     func title(of section: TaskSection) -> String {
         switch section {

@@ -12,7 +12,7 @@ struct FieldMappingTests {
         for (name, key) in keys where name != "tags" {
             #expect(mapping.field(forKey: key) != nil, "no domain field for \(key)")
         }
-        #expect(Set(mapping.keyedFields.map(\.field)) == Set(TaskField.allCases))
+        #expect(Set(mapping.keyedFields.map(\.field)) == Set(TaskField.allCases).subtracting([.alarms]), "alarms are not in TaskNotes")
     }
 
     /// The Inbox is TaskNotes' status `inbox`, read and written as is.

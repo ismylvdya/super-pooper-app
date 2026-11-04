@@ -53,6 +53,7 @@ struct TaskNoteWriter: Sendable {
                 set(keys.recurrence, rule.map { .scalar(RecurrenceCodec.format($0), quoted: false) }, in: &document)
             case .reminderTimes(let times):
                 set(keys.reminderTimes, times.isEmpty ? nil : .list(times.sorted().map { .string($0.string) }), in: &document)
+            case .alarms: break // TaskNotes has no such field.
             case .timeZone(let id):
                 set(keys.timeZone, id.map { .scalar($0, quoted: true) }, in: &document)
             case .habitColor(let hex):

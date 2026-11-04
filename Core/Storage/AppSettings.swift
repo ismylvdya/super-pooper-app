@@ -104,6 +104,8 @@ struct AppSettings: Codable, Equatable, Sendable {
         var signingMessage: String
         /// A notification snoozed from its button comes again this many minutes later.
         var snoozeMinutes: Int
+        /// The sound of alarms that have none of their own (an id of `rules.json` → `alarms`).
+        var alarmSound: String
     }
 
     struct Onboarding: Codable, Equatable, Sendable {

@@ -12,6 +12,8 @@ struct TaskEntry: Equatable, Sendable {
     var time: LocalTime?
     var zone: String?
     var estimate: Int?
+    /// Rings as an alarm: the sound's id, or the format's word for the settings' sound.
+    var alarm: String?
     var isHigh = false
     var feel: TaskFeel = .neutral
     var routine: String?
@@ -68,6 +70,7 @@ extension TaskEntry {
         case markers.estimate:
             guard let minutes = Int(value) else { return false }
             estimate = minutes
+        case markers.alarm: alarm = value
         case markers.routine: routine = value
         case markers.parent: parent = value
         case markers.created:
@@ -98,6 +101,7 @@ extension TaskEntry {
         add(markers.time, time?.string)
         add(markers.zone, zone)
         add(markers.estimate, estimate.map(String.init))
+        add(markers.alarm, alarm)
         if isHigh { parts.append(markers.high) }
         switch feel {
         case .pleasant: parts.append(markers.pleasant)

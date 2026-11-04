@@ -4,7 +4,7 @@ import Foundation
 /// elsewhere, is about. The store knows where it keeps each one; screens put it in words.
 enum TaskField: String, CaseIterable, Hashable, Codable, Sendable {
     case status, priority, due, timeEstimate, projects, subtaskOrder, feel
-    case recurrence, marks, completedDate, created, modified, reminderTimes, timeZone
+    case recurrence, marks, completedDate, created, modified, reminderTimes, alarms, timeZone
     case habitColor, harmful, repeatable, showInToday, timeOfDay, twiceADay, twiceCountsDouble, weeklyGoal, allowedSkips
 }
 
@@ -22,6 +22,7 @@ extension TaskEdit {
         case .mark: .marks
         case .recurrence: .recurrence
         case .reminderTimes: .reminderTimes
+        case .alarms: .alarms
         case .timeZone: .timeZone
         case .habitColor: .habitColor
         case .harmful: .harmful
@@ -61,6 +62,7 @@ extension TaskItem {
         case .created: created
         case .modified: dateModified
         case .reminderTimes: reminderTimes
+        case .alarms: alarms
         case .timeZone: timeZone
         case .habitColor: habit.color
         case .harmful: habit.harmful

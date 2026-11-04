@@ -22,12 +22,14 @@
     "started": "/",
     "done": "x"
   },
+  "alarmDefaultSound": "default",
   "markers": {
     "id": "🆔",
     "date": "📅",
     "time": "⏰",
     "zone": "🌐",
     "estimate": "⏳",
+    "alarm": "🚨",
     "high": "🔥",
     "pleasant": "❤️",
     "energy": "🐸",

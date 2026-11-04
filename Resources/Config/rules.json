@@ -38,6 +38,15 @@
     "fireTimeToleranceSeconds": 30,
     "snoozeChoices": [5, 10, 15, 30, 45, 60, 90, 120]
   },
+  "alarms": {
+    "previewSeconds": 3,
+    "sounds": [
+      { "id": "system", "title": "alarm.sound.system" },
+      { "id": "chime", "title": "alarm.sound.chime", "file": "alarm-chime.wav" },
+      { "id": "pulse", "title": "alarm.sound.pulse", "file": "alarm-pulse.wav" },
+      { "id": "rise", "title": "alarm.sound.rise", "file": "alarm-rise.wav" }
+    ]
+  },
   "signingPlate": {
     "showWithinDays": 7,
     "soonWithinDays": 2,

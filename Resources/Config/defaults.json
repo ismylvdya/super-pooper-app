@@ -58,7 +58,8 @@
   "notifications": {
     "enabled": true,
     "signingMessage": "",
-    "snoozeMinutes": 30
+    "snoozeMinutes": 30,
+    "alarmSound": "system"
   },
   "onboarding": {
     "completed": false
