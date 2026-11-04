@@ -20,9 +20,9 @@ struct PoolSettingsSection: View {
             }
             .pickerStyle(.segmented)
             .accessibilityIdentifier("settings.pool.highPriority")
-            PlateRow(icon: nil, title: "color.high") { ThemeColorField(token: .high) }
+            PlateRow(icon: nil, title: "settings.pool.highColor") { ThemeColorField(token: .high) }
             startedFill
-            PlateRow(icon: nil, title: "color.started") { ThemeColorField(token: .started) }
+            PlateRow(icon: nil, title: "settings.pool.startedColor") { ThemeColorField(token: .started) }
             PlateRow(icon: .poolCount, title: "settings.pool.visible", info: "info.settings.pool.visible") {
                 Stepper(value: Binding(get: { model.settings.pool.visibleCount },
                                        set: { value in model.updateSettings { $0.pool.visibleCount = value } }), in: model.config.rules.limits.poolVisibleCount.ints) {

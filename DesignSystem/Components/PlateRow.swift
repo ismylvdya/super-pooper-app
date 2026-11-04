@@ -29,29 +29,20 @@ struct PlateRow<Trailing: View>: View {
         self.trailing = trailing()
     }
 
-    /// One line when the title and the control fit side by side; on narrow screens (iPhone mini) the
-    /// control moves under the title instead of squeezing either of them. The whole row takes a tap: a row that
-    /// opens a page opens it from the empty space between its title and chevron too.
+    /// One line whatever the screen: when the title and the control do not fit side by side, the title gives way and
+    /// dissolves at its right, the control stays whole; a hold on it shows the whole title and its description
+    /// (`PlateRowTitle`). The whole row takes a tap: a row that opens a page opens it from the empty space between its
+    /// title and chevron too.
     var body: some View {
         ViewThatFits(in: .horizontal) {
-            HStack(spacing: tokens.space(.iconTextGap)) {
-                label.fixedSize()
-                Spacer(minLength: tokens.space(.chipGap))
-                trailing.fixedSize()
-            }
-            VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
-                label
-                HStack {
-                    Spacer(minLength: 0)
-                    trailing
-                }
-            }
+            row(isFading: false)
+            row(isFading: true)
         }
         .padding(.leading, indent ? tokens.space(.childIndent) : 0)
         .contentShape(Rectangle())
     }
 
-    private var label: some View {
+    private func row(isFading: Bool) -> some View {
         HStack(spacing: tokens.space(.iconTextGap)) {
             if let icon {
                 IconGlyph(icon, font: .rowTitle)
@@ -59,10 +50,46 @@ struct PlateRow<Trailing: View>: View {
                     .frame(width: tokens.size(.iconColumn))
             }
             HStack(spacing: tokens.space(.titleInfoGap)) {
-                title.foregroundStyle(tint ?? tokens.color(.primaryText))
+                let shown = title.foregroundStyle(tint ?? tokens.color(.primaryText))
+                if isFading {
+                    PlateRowTitle(title: shown, wholeTitle: title, info: info)
+                } else {
+                    shown.lineLimit(1).fixedSize()
+                }
                 if let info { InfoButton(text: info, tint: tint ?? tokens.color(.primaryText)) }
             }
+            if !isFading { Spacer(minLength: tokens.space(.chipGap)) }
+            trailing.fixedSize()
         }
+    }
+}
+
+/// A row's title short of room: one line that dissolves at its right, and held, a bubble with the whole of it and the
+/// row's description.
+private struct PlateRowTitle<Shown: View>: View {
+    @Environment(\.tokens) private var tokens
+    let title: Shown
+    let wholeTitle: Text
+    let info: LocalizedStringKey?
+    @State private var isHolding = false
+
+    var body: some View {
+        title
+            .lineLimit(1)
+            .fixedSize()
+            .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+            .clipped()
+            .mask {
+                HStack(spacing: 0) {
+                    Color.black
+                    LinearGradient(colors: [.black, .clear], startPoint: .leading, endPoint: .trailing).frame(width: tokens.size(.titleFade))
+                }
+            }
+            .contentShape(Rectangle())
+            .simultaneousGesture(LongPressGesture().onEnded { _ in isHolding = true })
+            .popover(isPresented: $isHolding) {
+                InfoBubble(title: wholeTitle, text: info).presentationCompactAdaptation(.popover)
+            }
     }
 }
 

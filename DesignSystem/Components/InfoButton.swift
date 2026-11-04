@@ -25,19 +25,23 @@ struct InfoButton: View {
 
 /// The bubble is as tall as its text (plus padding), but at most a third of the window it is shown in; longer texts
 /// scroll.
-private struct InfoBubble: View {
+struct InfoBubble: View {
     @Environment(\.tokens) private var tokens
-    let text: LocalizedStringKey
+    /// The whole title of a row that could not show it, above the text.
+    var title: Text?
+    let text: LocalizedStringKey?
     @State private var textHeight: CGFloat = 0
     @State private var windowHeight: CGFloat?
 
     var body: some View {
         ScrollView {
-            Text(text)
-                .font(tokens.font(.info))
-                .foregroundStyle(tokens.color(.infoText))
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(tokens.space(.infoPadding))
+            VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
+                if let title { title.font(tokens.font(.info)).fontWeight(.semibold).foregroundStyle(tokens.color(.infoText)) }
+                if let text { Text(text).font(tokens.font(.info)).foregroundStyle(tokens.color(.infoText)) }
+            }
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(tokens.space(.infoPadding))
                 .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { textHeight = $0 }
         }
         .scrollBounceBehavior(.basedOnSize)

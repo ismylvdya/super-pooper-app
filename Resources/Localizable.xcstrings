@@ -7154,7 +7154,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Settings of the notes widget will be here"
+            "value": "Notes widget: coming soon"
           }
         }
       }
@@ -7276,6 +7276,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Imported %lld items."
+          }
+        }
+      }
+    },
+    "settings.pool.highColor": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "High priority color"
+          }
+        }
+      }
+    },
+    "settings.pool.startedColor": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Started color"
           }
         }
       }
