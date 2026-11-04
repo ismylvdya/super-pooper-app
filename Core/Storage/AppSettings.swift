@@ -106,6 +106,8 @@ struct AppSettings: Codable, Equatable, Sendable {
         var snoozeMinutes: Int
         /// The sound of alarms that have none of their own (an id of `rules.json` → `alarms`).
         var alarmSound: String
+        /// The word on an alarm's Snooze button; empty = the bundled one.
+        var alarmSnoozeText: String
     }
 
     /// The tab bar's symbols the user typed: SF Symbol names by `TabBarSymbols.key`; none = `icons.json`.

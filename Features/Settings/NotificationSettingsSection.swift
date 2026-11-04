@@ -35,8 +35,7 @@ struct NotificationSettingsSection: View {
                         model.updateSettings { $0.notifications.alarmSound = value }
                         Task {
                             await model.prepareAlarmSound(value)
-                            AlarmSoundPreview.play(model.alarmSounds.first { $0.id == value }?.file,
-                                                   seconds: model.config.rules.alarms.previewSeconds)
+                            AlarmSoundPreview.play(model.alarmSounds.first { $0.id == value }?.file)
                         }
                     }
                 )) {
@@ -46,6 +45,14 @@ struct NotificationSettingsSection: View {
                 .accessibilityIdentifier("settings.notifications.alarmSound")
             }
             CustomAlarmSoundRows()
+            PlateRow(icon: nil, title: "settings.alarm.snoozeText", info: "info.settings.alarm.look") {
+                TextField("alarm.snooze", text: Binding(get: { model.settings.notifications.alarmSnoozeText },
+                                                        set: { value in model.updateSettings { $0.notifications.alarmSnoozeText = value } }))
+                    .multilineTextAlignment(.trailing)
+                    .accessibilityIdentifier("settings.alarm.snoozeText")
+            }
+            PlateRow(icon: nil, title: "settings.alarm.snoozeFill") { ColorField(token: .alarmButton) }
+            PlateRow(icon: nil, title: "settings.alarm.snoozeWords") { ColorField(token: .alarmButtonText) }
             PlateRow(icon: .signing, title: "settings.notifications.signing", info: "info.settings.notifications.signing") {}
             TextField("notification.signing.placeholder", text: Binding(
                 get: { model.settings.notifications.signingMessage },

@@ -88,10 +88,18 @@ final class AppContainer {
             dayStateStore: DayStateStore(store: shared), daySectionStore: JSONDaySectionStore(store: shared), snapshotStore: SnapshotStore(store: shared),
             alertStateStore: AlertStateStore(store: shared), snoozeStore: SnoozeStore(store: shared),
             widgets: WidgetKitReloader(), notificationImage: notificationImage, signature: launch.signature(now: clock.now),
-            alarms: SystemAlarmScheduler(stopTitle: { L10n.string("alarm.stop") }, snoozeTitle: { L10n.string("alarm.snooze") },
+            alarms: SystemAlarmScheduler(stopTitle: { L10n.string("alarm.stop") },
+                                         snoozeTitle: {
+                                             let typed = settingsStore.load().notifications.alarmSnoozeText
+                                             return typed.isEmpty ? L10n.string("alarm.snooze") : typed
+                                         },
                                          snoozeIcon: config.icons[.snooze], stopIcon: config.icons[.stopAlarm],
-                                         tint: { [tokens = config.tokens] in tokens.color(.alarmButton) },
-                                         buttonText: { [tokens = config.tokens] in tokens.color(.alarmButtonText) }))
+                                         tint: { [config] in config.tokens.applying(settingsStore.load(), limits: config.rules.limits).color(.alarmButton) },
+                                         buttonText: { [config] in config.tokens.applying(settingsStore.load(), limits: config.rules.limits).color(.alarmButtonText) },
+                                         styleKey: {
+                                             let settings = settingsStore.load()
+                                             return [settings.notifications.alarmSnoozeText, settings.colors["alarmButton"] ?? "", settings.colors["alarmButtonText"] ?? ""].joined(separator: "|")
+                                         }))
 
         let banners = BannerCenter()
         self.banners = banners

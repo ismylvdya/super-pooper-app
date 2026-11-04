@@ -15,11 +15,14 @@ struct PageStrip: Equatable {
     /// `listPeek`, and while any other is shown, they stay out of it.
     var listCount = 0
     var listPeek: CGFloat = 0
+    /// The first lists, not opened yet: nothing of them is in sight beside the last one opened.
+    var hiddenLists = 0
 
     func peek(of index: Int) -> CGFloat { peeks.indices.contains(index) ? peeks[index] : 0 }
 
     /// The gap between page `index` and the next one.
     func gap(after index: Int) -> CGFloat {
+        if index < hiddenLists { return max(spacing, edgeInset) }
         if index < listCount { return spacing }
         return peek(of: index) > 0 && peek(of: index + 1) > 0 ? spacing : max(spacing, edgeInset)
     }
@@ -37,7 +40,8 @@ struct PageStrip: Equatable {
 
     /// How much of page `other` stays in sight while `shown` is shown.
     func visiblePeek(of other: Int, showing shown: Int) -> CGFloat {
-        shown < listCount ? listPeek : peek(of: other)
+        if other < hiddenLists { return 0 }
+        return shown < listCount ? listPeek : peek(of: other)
     }
 
     /// The strip's offset that shows page `index` with its leading neighbour's peek before it.
@@ -48,7 +52,7 @@ struct PageStrip: Equatable {
 
     /// The part of the stack the leading neighbour keeps while `index` is shown: its peek and the gap.
     private func leadingRoom(of index: Int) -> CGFloat {
-        if index < listCount { return index > 0 ? listPeek + spacing : 0 }
+        if index < listCount { return index > hiddenLists ? listPeek + spacing : 0 }
         return index > 0 && peek(of: index - 1) > 0 ? peek(of: index - 1) + gap(after: index - 1) : 0
     }
 

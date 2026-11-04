@@ -46,7 +46,7 @@ struct AllDayStrip: View {
                 .widgetAccentable()
             FadingText(text: event.title, font: font ?? tokens.font(.chip), lineHeight: lineHeight)
         }
-        .foregroundStyle(Color(hex: event.colorHex))
+        .foregroundStyle(tokens.eventTitle(Color(hex: event.colorHex), in: colorScheme))
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.leading, inset)
         .padding(.trailing, ChipCapsule.standard.horizontalPadding(tokens))

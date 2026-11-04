@@ -80,6 +80,7 @@ struct TodayScreen: View {
             if let index = TasksPageStrip.index(of: page, in: pages) { turn(to: index) }
             taskDrag.turnHandled()
         }
+        .onAppear { taskDrag.turnDwellSeconds = rules.gestures.pageEdgeDwellSeconds }
         .onChange(of: router.tasksTaps) { showTodaysPool(forgetsBacklog: true) }
         // Another tab forgets the backlog pages.
         .onChange(of: router.tab) { _, tab in

@@ -22,7 +22,7 @@ struct PoolDropDelegate: DropDelegate {
     }
 
     func dropEntered(info: DropInfo) {
-        drag.turn(.block(.pool))
+        drag.turnAfterStay(.block(.pool))
     }
 
     func dropUpdated(info: DropInfo) -> DropProposal? {
@@ -43,6 +43,7 @@ struct PoolDropDelegate: DropDelegate {
     }
 
     func dropExited(info: DropInfo) {
+        drag.cancelTurn(.block(.pool))
         withAnimation(animation) { drag.leavePool() }
     }
 

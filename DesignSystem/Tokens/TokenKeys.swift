@@ -5,7 +5,7 @@ enum SpacingToken: String, CaseIterable, Sendable {
     case reviewTop, fadeGap, scrollEndRoom, listRowVertical
     case screenHorizontal, screenBottom, groupGap, plateInner, plateRowGap, headerToPlate, hintToPlate
     case iconTextGap, chipHorizontal, chipVertical, chipGap, dayArrowGap, pagesGap, backlogPeek, infoPadding, nestedTitleInset, nestedTitleLift
-    case childIndent, rowVertical, poolRowGap, blockGap, timelineLabelWidth, timelineItemGap, timelineItemPadding
+    case childIndent, rowVertical, poolRowGap, blockGap, timelineLabelWidth, eventTimeIconGap, timelineItemGap, timelineItemPadding
     case bannerPadding, widgetMargin, habitCellGap, hourLabelGap, bellInset, liftShadow, toggleChipHorizontal, toggleChipVertical, titleInfoGap, chipIconGap, dotTextGap, valueChevronGap, reviewRowVertical, markPadding, badgeGap, progressGap, timelineTitleExtra, previewRowGap, titleDetailGap, footerLineGap, subtaskIndent
     case widgetGap, previewInset, cornerMarkGap, compactPlateVertical, emptyStateInset, widgetGridGap
     /// How much further right a timeline block lying over an earlier one starts, per step.
@@ -32,7 +32,7 @@ enum SizeToken: String, CaseIterable, Sendable {
     case iconColumn, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, notificationIcon
     case dayArrowTarget
     case habitDotMinimum, cornerInsetMinimum, sourceDot, fadeHeight, poolCounter, poolWidth
-    case habitHistoryMaxHeight, habitStatsBar, titleFade, allDayIconScale, dragBadge, rowIconHeight, reviewChevron, wrapMinWidth, liftOverhang, pagePeek, dropMarkerHeight, bannerShadowRadius, bannerShadowY, hexFieldWidth, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, allDayFontDelta, previewHeight, previewRow, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewHalvesInset, subtaskDropLine
+    case habitHistoryMaxHeight, habitStatsBar, titleFade, allDayIconScale, dragBadge, chipRowGap, alarmMark, rowIconHeight, reviewChevron, wrapMinWidth, liftOverhang, pagePeek, dropMarkerHeight, bannerShadowRadius, bannerShadowY, hexFieldWidth, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, allDayFontDelta, previewHeight, previewRow, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewHalvesInset, subtaskDropLine
     /// The problems badge on Today's Lists button: its smallest width and its height.
     case problemBadge
     /// Room added above and below a date found in a new task's name, so a tap on it lands easily.
@@ -60,7 +60,7 @@ enum CountToken: String, CaseIterable, Sendable {
 }
 
 enum OpacityToken: String, CaseIterable, Sendable {
-    case blocked, past, selectionOutline, eventFill, eventFillDark, fadeTop, fadeMiddle, habitEmpty
+    case blocked, past, selectionOutline, eventFill, eventFillDark, eventTitleLightMix, eventTimeLightMix, eventTitleDark, eventTimeDark, fadeTop, fadeMiddle, habitEmpty
     /// The ring of a habit's day not done or done partly (the user's `habits.ringOpacity` over it).
     case habitOpenRing
     case gridFadedWeek, unlinked, eventTime, nowOverBlocks, daySwipeFade, toggleChipFill, bannerShadow, previewBlock, accentedPlate, signingPlate
@@ -73,7 +73,7 @@ enum OpacityToken: String, CaseIterable, Sendable {
 }
 
 enum DurationToken: String, CaseIterable, Sendable {
-    case animation, bannerAnimation, titleColorAnimation, titleSwap
+    case keyboardAfterPush, animation, bannerAnimation, titleColorAnimation, titleSwap
 }
 
 enum FontToken: String, CaseIterable, Sendable {

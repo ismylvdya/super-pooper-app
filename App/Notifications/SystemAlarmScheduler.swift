@@ -17,6 +17,8 @@ struct SystemAlarmScheduler: AlarmScheduling {
     /// The fill of the alarm's button, and its words on it: the alarm's screen is always dark.
     let tint: @Sendable () -> Color
     let buttonText: @Sendable () -> Color
+    /// Changes with how an alarm looks: alarms set with another look are set anew.
+    let styleKey: @Sendable () -> String
 
     func requestAccess() async -> Bool {
         let manager = AlarmManager.shared
@@ -33,7 +35,7 @@ struct SystemAlarmScheduler: AlarmScheduling {
     func sync(_ alarms: [PlannedAlarm]) async {
         let manager = AlarmManager.shared
         guard manager.authorizationState == .authorized else { return }
-        let wanted = Dictionary(alarms.map { (Self.uuid(of: $0.id), $0) }, uniquingKeysWith: { first, _ in first })
+        let wanted = Dictionary(alarms.map { (Self.uuid(of: $0.id + styleKey()), $0) }, uniquingKeysWith: { first, _ in first })
         let current = (try? manager.alarms) ?? []
         let set = Set(current.map(\.id))
         // One ringing now has left the plan with its moment: it rings on until it is stopped.

@@ -82,7 +82,7 @@ struct TaskDragStateTests {
         #expect(!drag.isBacklogGhost(task.id, on: "thisWeek"))
         _ = drag.begin(task, from: .backlog("someday"))
         drag.backlogTarget = "someday"
-        #expect(!drag.isBacklogGhost(task.id, on: "someday"), "already one of its rows")
+        #expect(drag.isBacklogGhost(task.id, on: "someday"), "its own row stands faint where the finger would put it")
         drag.end()
         #expect(drag.backlogTarget == nil)
     }

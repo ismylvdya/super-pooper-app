@@ -48,12 +48,10 @@ struct RootView: View {
                                 Label {
                                     Text(LocalizedStringKey(String("tab.") + tab.rawValue))
                                 } icon: {
-                                    TabIconImage.image(model.tabBarSymbols.symbol(of: tab, isSelected: router.tab == tab),
+                                    TabIconImage.image(model.tabBarSymbols.symbol(of: tab, isSelected: false),
                                                        font: tokens.uiFont(.systemTabIcon),
                                                        others: container.config.icons.otherTabSymbols(than: tab),
                                                        fit: tokens.bar(.tabGlyphFit), scale: displayScale)
-                                        // The symbol exactly as `icons.json` names it: the tab bar fills it otherwise.
-                                        .environment(\.symbolVariants, .none)
                                 }
                             }
                         }
@@ -65,6 +63,9 @@ struct RootView: View {
                         }
                     }
                     .overlay { if physicalBottom == nil { uprightNewItemButton } }
+                    // The system draws the selected tab's filled symbol under its moving drop by itself; a symbol typed for the
+                    // current tab goes to the same place.
+                    .background { TabBarSelectedSymbols(symbols: AppTab.allCases.map { model.tabBarSymbols.typedSelected(of: $0) }) }
                 // Lying sideways the app's own tab bar floats beside the tabs: its inner side is the screen's edge for them, and
                 // only what a page deliberately pushes past that edge (the pool, with a list opened left of it) shows through
                 // its glass.
@@ -194,6 +195,9 @@ struct RootView: View {
         case .clockSettings: ClockSettingsScreen()
         case .tabBarSettings: TabBarSettingsScreen()
         case .plainTaskSettings: PlainTaskSettingsScreen()
+        case .generalSettings: GeneralSettingsScreen()
+        case .notificationSettings: NotificationSettingsScreen()
+        case .widgetSettings: WidgetSettingsScreen()
         case .habitSettings: HabitSettingsScreen()
         case .archive: ArchiveScreen()
         case .trash: TrashScreen()

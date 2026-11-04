@@ -4,7 +4,7 @@ import SwiftUI
 /// with live schematic previews.
 struct TodaySettingsSection: View {
     /// A place with an arrangement of its own: what it is called, where its choice is kept, what it can show.
-    private enum Surface: CaseIterable {
+    enum Surface: CaseIterable {
         case upright, landscape, widget
 
         var header: LocalizedStringKey {
@@ -50,9 +50,10 @@ struct TodaySettingsSection: View {
     }
 
     @Environment(AppModel.self) private var model
+    let surfaces: [Surface]
 
     var body: some View {
-        ForEach(Surface.allCases, id: \.self) { surface in arrangementSection(surface) }
+        ForEach(surfaces, id: \.self) { surface in arrangementSection(surface) }
     }
 
     private func arrangementSection(_ surface: Surface) -> some View {

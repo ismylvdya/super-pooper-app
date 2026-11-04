@@ -61,6 +61,8 @@ final class TaskDragState {
     private(set) var turnRequest: TasksPage?
     /// The backlog page under the finger: the task shows there, faint, where it would be listed.
     var backlogTarget: String?
+    /// The rows of the page a task of its own is dragged within, in the order the finger makes.
+    var backlogOrder: [String]?
     /// Counts the drags begun: a lifted finger ends only the drag it was dragging.
     private var session = 0
     /// Where the finger holds the dragged "+", on the screen; nil while it stands in its place.
@@ -159,6 +161,17 @@ final class TaskDragState {
         sectionOrder = nil
     }
 
+    /// How long a dragged task stays over a neighbour before Tasks turns to it (from the rules).
+    var turnDwellSeconds: Double = 0
+    /// The neighbours' blocks a drag is over: it turns after a stay, not by passing over them.
+    func turnAfterStay(_ page: TasksPage) { turnAfterDwell(page, seconds: turnDwellSeconds) }
+
+    func cancelTurn(_ page: TasksPage) {
+        guard dwellPage == page else { return }
+        dwell?.cancel()
+        dwellPage = nil
+    }
+
     /// The drag reached a page: Tasks turns to it (nothing when it is already in sight).
     func turn(_ page: TasksPage) {
         turnRequest = page
@@ -189,13 +202,13 @@ final class TaskDragState {
 
     /// Over the backlog page `list` the dragged task is listed there as a faint copy, unless it is already one of its rows.
     func isBacklogGhost(_ id: String, on list: String) -> Bool {
-        backlogTarget == list && item?.id == id && source != .backlog(list)
+        backlogTarget == list && item?.id == id
     }
 
     /// A row dragged from the backlog page `list` closes up once the finger has moved off its lift: the rows below rise
     /// into its place, as in the pool.
     func isBacklogGap(_ id: String, on list: String) -> Bool {
-        item?.id == id && source == .backlog(list) && (backlogTarget != nil || poolOrder != nil || hoverMoment != nil)
+        item?.id == id && source == .backlog(list) && backlogTarget != list && (backlogTarget != nil || poolOrder != nil || hoverMoment != nil)
     }
 
     /// While its header is dragged over the pool, the section stands faint where it would land.
@@ -224,6 +237,7 @@ final class TaskDragState {
 
     private func reset() {
         item = nil
+        backlogOrder = nil
         section = nil
         source = .pool
         hoverMoment = nil
@@ -290,7 +304,7 @@ struct TimelineDropDelegate: DropDelegate {
     }
 
     func dropEntered(info: DropInfo) {
-        drag.turn(.block(.timeline))
+        drag.turnAfterStay(.block(.timeline))
     }
 
     func dropUpdated(info: DropInfo) -> DropProposal? {
@@ -299,6 +313,7 @@ struct TimelineDropDelegate: DropDelegate {
     }
 
     func dropExited(info: DropInfo) {
+        drag.cancelTurn(.block(.timeline))
         drag.hoverMoment = nil
     }
 

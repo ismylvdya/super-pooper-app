@@ -18,6 +18,9 @@ struct BacklogPage: View {
     /// The screen's margins beside the page take a drop too: a drag that turned to the page from the edge of the screen
     /// is let go there.
     let edgeInset: CGFloat
+    /// Where the rows stand, for a task dragged within the page.
+    @State private var rowMids: [String: CGFloat] = [:]
+    private static let dropSpace = "backlogDrop"
 
     var body: some View {
         let items = rows
@@ -25,6 +28,7 @@ struct BacklogPage: View {
             LazyVStack(alignment: .leading, spacing: tokens.space(.poolRowGap)) {
                 ForEach(items) { item in
                     PoolRow(item: item, isToday: false, isCompact: true, handler: handler, dragSource: .backlog(list.id))
+                        .onGeometryChange(for: CGFloat.self) { $0.frame(in: .named(Self.dropSpace)).midY } action: { rowMids[item.id] = $0 }
                         .dropGhost(drag?.isBacklogGhost(item.id, on: list.id) == true)
                         .closedUp(drag?.isBacklogGap(item.id, on: list.id) == true, gap: tokens.space(.poolRowGap))
                 }
@@ -43,6 +47,7 @@ struct BacklogPage: View {
                     .frame(maxWidth: .infinity, minHeight: tokens.size(.poolCounter))
             }
         }
+        .coordinateSpace(.named(Self.dropSpace))
         .contentShape(Rectangle())
         .modifier(dropTarget)
         .background {
@@ -57,17 +62,25 @@ struct BacklogPage: View {
 
     private var dropTarget: BacklogDropTarget {
         BacklogDropTarget(drag: drag, list: list.id, animation: tokens.animation, canDrop: { model.canBringFromBacklog($0.id) },
-                          onDrop: dropped, onRefused: { model.refuseDrop($0.id, onto: .list(list.title)) })
+                          onDrop: dropped, onRefused: { model.refuseDrop($0.id, onto: .list(list.title)) },
+                          rows: { rows.compactMap { item in rowMids[item.id].map { PoolDropOrder.Row(id: item.id, midY: Double($0)) } } },
+                          onReorder: { order in
+                              Haptics.play(.drop)
+                              Task { await model.reorderTasks(order) }
+                          })
     }
 
-    /// The list's tasks; while a task from elsewhere is over the page, it too, where the name order puts it.
+    /// The list's tasks; while a task from elsewhere is over the page, it too, at the end of the list.
     private var rows: [DayItem] {
         let tasks = model.backlogTasks(list, plan: plan)
         var items = tasks.map(DayItem.init(listed:))
+        if let order = drag?.backlogOrder {
+            let place = Dictionary(order.enumerated().map { ($1, $0) }, uniquingKeysWith: { first, _ in first })
+            items.sort { (place[$0.id] ?? .max) < (place[$1.id] ?? .max) }
+        }
         if let dragged = drag?.item, drag?.isBacklogGhost(dragged.id, on: list.id) == true,
            !tasks.contains(where: { $0.name.isSameNoteName(as: dragged.id) }) {
-            let spot = items.firstIndex { NameOrder.precedes(dragged.id, $0.id) } ?? items.count
-            items.insert(DayItem(listed: dragged.task), at: spot)
+            items.append(DayItem(listed: dragged.task))
         }
         return items
     }
@@ -87,11 +100,14 @@ private struct BacklogDropTarget: ViewModifier {
     let canDrop: (DayItem) -> Bool
     let onDrop: (DayItem, TaskDragState.Source) -> Void
     let onRefused: (DayItem) -> Void
+    let rows: () -> [PoolDropOrder.Row]
+    let onReorder: ([String]) -> Void
 
     func body(content: Content) -> some View {
         if let drag {
             content.onDrop(of: TaskDragState.types, delegate: BacklogDropDelegate(drag: drag, list: list, animation: animation,
-                                                                                canDrop: canDrop, onDrop: onDrop, onRefused: onRefused))
+                                                                                canDrop: canDrop, onDrop: onDrop, onRefused: onRefused,
+                                                                                rows: rows, onReorder: onReorder))
         } else {
             content
         }

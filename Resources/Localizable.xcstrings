@@ -5007,7 +5007,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Notifications"
+            "value": "Notifications & Alarms"
           }
         }
       }
@@ -7022,7 +7022,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pool, Timeline & Lists"
+            "value": "Pool & Timeline"
           }
         }
       }
@@ -7033,7 +7033,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Routines, History & Colors"
+            "value": "Habits only"
           }
         }
       }
@@ -7682,7 +7682,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Task colors & Started"
+            "value": "Tasks only"
           }
         }
       }
@@ -7694,6 +7694,94 @@
           "stringUnit": {
             "state": "translated",
             "value": "Started"
+          }
+        }
+      }
+    },
+    "settings.taskManager": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Task Manager"
+          }
+        }
+      }
+    },
+    "settings.widgets": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Widgets"
+          }
+        }
+      }
+    },
+    "settings.alarm.snoozeText": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snooze button text"
+          }
+        }
+      }
+    },
+    "settings.alarm.snoozeFill": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snooze button color"
+          }
+        }
+      }
+    },
+    "settings.alarm.snoozeWords": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snooze text color"
+          }
+        }
+      }
+    },
+    "info.settings.alarm.look": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Snooze button can be changed. The “slide to stop” slider is drawn by iOS: an app can change neither its words nor its color."
+          }
+        }
+      }
+    },
+    "color.alarmButton": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snooze button"
+          }
+        }
+      }
+    },
+    "color.alarmButtonText": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snooze text"
           }
         }
       }

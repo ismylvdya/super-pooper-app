@@ -9,6 +9,8 @@
   "overdue": "clock.fill",
   "tabBarSettings": "dock.rectangle",
   "plainTaskSettings": "checklist",
+  "general": "gearshape",
+  "widgets": "square.grid.2x2",
   "pleasant": "heart.fill",
   "feel": "heart.circle",
   "timeZone": "globe",

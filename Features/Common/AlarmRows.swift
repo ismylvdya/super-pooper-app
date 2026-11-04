@@ -4,7 +4,6 @@ import SwiftUI
 /// permission; refused, it stays off and says where to allow it.
 struct AlarmRows: View {
     @Environment(AppModel.self) private var model
-    @Environment(\.rules) private var rules
     @Binding var alarm: TimeAlarm?
     @State private var isRefused = false
 
@@ -24,6 +23,7 @@ struct AlarmRows: View {
                 }
             }
             .accessibilityIdentifier("duePicker.alarmSound")
+            .onDisappear { AlarmSoundPreview.stop() }
         }
     }
 
@@ -41,7 +41,7 @@ struct AlarmRows: View {
         alarm?.sound = sound
         Task {
             await model.prepareAlarmSound(sound)
-            AlarmSoundPreview.play(model.alarmSounds.first { $0.id == sound }?.file, seconds: rules.alarms.previewSeconds)
+            AlarmSoundPreview.play(model.alarmSounds.first { $0.id == (sound ?? model.settings.notifications.alarmSound) }?.file)
         }
     }
 }

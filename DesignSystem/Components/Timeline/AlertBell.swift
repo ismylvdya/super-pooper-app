@@ -13,7 +13,7 @@ struct AlertBell: View {
         Image(systemName: icons[isAlarm ? .alarm : .bell])
             .resizable()
             .scaledToFit()
-            .frame(width: bell.size, height: bell.size)
+            .frame(width: isAlarm ? tokens.size(.alarmMark) : bell.size, height: isAlarm ? tokens.size(.alarmMark) : bell.size)
             .foregroundStyle(color ?? tokens.color(.primaryText).opacity(bell.opacity))
             .accessibilityLabel(Text(isAlarm ? "alarm.title" : "timeline.alert"))
     }

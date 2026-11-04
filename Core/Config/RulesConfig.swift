@@ -45,7 +45,6 @@ struct RulesConfig: Codable, Hashable, Sendable {
 
         let sounds: [Sound]
         /// How much of a sound plays while it is being chosen.
-        let previewSeconds: Double
     }
 
     struct EventLinks: Codable, Hashable, Sendable {
@@ -174,6 +173,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let dragEndSettleSeconds: Double
         /// The dragged "+" turns Tasks to a neighbouring block only after staying over its edge this long.
         let newItemTurnDwellSeconds: Double
+        /// How long a dragged task stays at a page's edge or over a neighbour before Tasks turns to it.
+        let pageEdgeDwellSeconds: Double
         /// A drag is sideways when it moves this many times more across than up or down.
         let daySwipeAxisRatio: Double
         /// A sideways drag turns the page past this share of the width, or when flung past `daySwipeFlingShare` of it.

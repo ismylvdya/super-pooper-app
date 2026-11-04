@@ -18,9 +18,11 @@ struct HighlightingTitleField: UIViewRepresentable {
     /// Return was pressed (the editing has ended).
     var onReturn: () -> Void = {}
     var onHighlightFrames: ([CGRect]) -> Void = { _ in }
+    var focusDelay: TimeInterval = 0
 
     func makeUIView(context: Context) -> TitleTextView {
         let view = TitleTextView()
+        view.focusDelay = focusDelay
         view.delegate = context.coordinator
         view.isScrollEnabled = false
         view.backgroundColor = .clear
@@ -119,13 +121,16 @@ struct HighlightingTitleField: UIViewRepresentable {
 /// The text view of `HighlightingTitleField`: takes the keyboard when it first appears, tells its layout.
 final class TitleTextView: UITextView {
     var onLayout: () -> Void = {}
+    /// How long the keyboard waits after the field appears.
+    var focusDelay: TimeInterval = 0
     private var hasAppeared = false
 
     override func didMoveToWindow() {
         super.didMoveToWindow()
         guard window != nil, !hasAppeared else { return }
         hasAppeared = true
-        DispatchQueue.main.async { [weak self] in self?.becomeFirstResponder() }
+        // After the page has slid in: raising the keyboard is slow the first time, and during the slide it would stall it.
+        DispatchQueue.main.asyncAfter(deadline: .now() + focusDelay) { [weak self] in self?.becomeFirstResponder() }
     }
 
     override func layoutSubviews() {

@@ -22,8 +22,8 @@ struct TasksStrip: View {
     var body: some View {
         PagedStack(pages: pages, spacing: metrics.spacing(of: layout), peeks: pages.map(peek), edgeInset: edgeInset,
                    home: TasksPageStrip.homeIndex(layout: layout, opened: pager.openedBacklog),
-                   listCount: pager.openedBacklog, listPeek: tokens.space(.backlogPeek), page: pager.page,
-                   drag: pager.pageDrag, pull: pager.sidePull, edgeLabel: edgeLabel, onTurn: onTurn) { page in
+                   listCount: pager.openedBacklog, listPeek: tokens.space(.backlogPeek), hiddenLists: pager.openedBacklog - pager.reachedBacklog, page: pager.page,
+                   drag: pager.pageDrag, pull: pager.sidePull, edgeLabel: edgeLabel, onTurn: onTurn, edgeDwell: rules.gestures.pageEdgeDwellSeconds) { page in
             switch page {
             case .backlog(let id):
                 if let list = model.config.lists.backlogList(id) {

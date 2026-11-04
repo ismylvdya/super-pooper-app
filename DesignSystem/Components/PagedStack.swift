@@ -17,18 +17,21 @@ struct PagedStack<Page: Hashable, Content: View>: View {
     /// The first pages stay in sight of each other by `listPeek` (`PageStrip`).
     var listCount = 0
     var listPeek: CGFloat = 0
+    var hiddenLists = 0
     var page = 0
     var drag: CGFloat = 0
     var pull: CGFloat = 0
     /// What an edge says it turns to (VoiceOver, UI tests).
     var edgeLabel: (Page) -> Text = { _ in Text(verbatim: "") }
     var onTurn: ((Int) -> Void)?
+    /// How long a drag stays at an edge before it turns to that neighbour.
+    var edgeDwell: Double = 0
     @ViewBuilder let content: (Page) -> Content
 
     var body: some View {
         GeometryReader { geometry in
             let strip = PageStrip(count: pages.count, width: geometry.size.width, spacing: spacing, peeks: peeks,
-                                  edgeInset: edgeInset, home: home, listCount: listCount, listPeek: listPeek)
+                                  edgeInset: edgeInset, home: home, listCount: listCount, listPeek: listPeek, hiddenLists: hiddenLists)
             let shown = strip.offset(showing: page) + drag
             let offset = min(max(shown, strip.offset(showing: pages.count - 1)), strip.offset(showing: 0)) + pull
             ZStack(alignment: .topLeading) {
@@ -56,7 +59,7 @@ struct PagedStack<Page: Hashable, Content: View>: View {
                 .frame(width: peek + margin)
                 .contentShape(Rectangle())
                 .onTapGesture { if peek > 0 { onTurn(other) } }
-                .onDrop(of: [.text], delegate: PageEdgeDrop { onTurn(other) })
+                .onDrop(of: [.text], delegate: PageEdgeDrop(wait: EdgeWait.shared, seconds: edgeDwell) { onTurn(other) })
                 .accessibilityElement()
                 .accessibilityLabel(edgeLabel(pages[other]))
                 .accessibilityAddTraits(.isButton)
@@ -67,12 +70,30 @@ struct PagedStack<Page: Hashable, Content: View>: View {
     }
 }
 
-/// A drag that reaches the edge of another page turns to it; nothing is dropped there.
+/// The one wait of a drag staying at an edge.
+@MainActor
+private final class EdgeWait {
+    static let shared = EdgeWait()
+    var task: Task<Void, Never>?
+}
+
+/// A drag that stays at the edge of another page turns to it; passing over the edge does nothing, and nothing is dropped there.
+@MainActor
 private struct PageEdgeDrop: DropDelegate {
+    let wait: EdgeWait
+    let seconds: Double
     let turn: () -> Void
 
     func dropEntered(info: DropInfo) {
-        turn()
+        wait.task?.cancel()
+        wait.task = Task {
+            try? await Task.sleep(for: .seconds(seconds))
+            if !Task.isCancelled { turn() }
+        }
+    }
+
+    func dropExited(info: DropInfo) {
+        wait.task?.cancel()
     }
 
     /// Without a proposal the system marks the drag with a green "+".
@@ -81,6 +102,7 @@ private struct PageEdgeDrop: DropDelegate {
     }
 
     func performDrop(info: DropInfo) -> Bool {
-        false
+        wait.task?.cancel()
+        return false
     }
 }

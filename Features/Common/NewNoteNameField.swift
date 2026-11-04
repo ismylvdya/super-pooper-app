@@ -22,7 +22,8 @@ struct NewNoteNameField: View {
             HighlightingTitleField(text: $name, replacement: replacements, font: tokens.uiFont(.pageTitle),
                                    color: tokens.uiColor(problem == nil ? .primaryText : .problem),
                                    highlights: highlights, highlightColor: tokens.uiColor(.detectedDate),
-                                   onReturn: onReturn, onHighlightFrames: { suggestionFrames = $0 })
+                                   onReturn: onReturn, onHighlightFrames: { suggestionFrames = $0 },
+                                   focusDelay: tokens.duration(.keyboardAfterPush))
                 .overlay {
                     if name.isEmpty {
                         Text(placeholder)

@@ -29,6 +29,7 @@ struct AlarmControl: View {
         }
         .accessibilityLabel(Text("alarm.title"))
         .accessibilityIdentifier("alarm.control")
+        .onDisappear { AlarmSoundPreview.stop() }
         .alert("alarm.refused.title", isPresented: $isRefused) {
             Button("common.done") {}
         } message: {
@@ -42,7 +43,7 @@ struct AlarmControl: View {
                 if await model.requestAlarmAccess() {
                     await model.prepareAlarmSound(sound)
                     onChange(TimeAlarm(time: time, sound: sound))
-                    AlarmSoundPreview.play(model.alarmSounds.first { $0.id == sound }?.file, seconds: rules.alarms.previewSeconds)
+                    AlarmSoundPreview.play(model.alarmSounds.first { $0.id == (sound ?? model.settings.notifications.alarmSound) }?.file)
                 } else {
                     isRefused = true
                 }

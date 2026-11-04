@@ -1,8 +1,8 @@
 import SwiftUI
 import WidgetKit
 
-/// A calendar event, drawn as in Apple Calendar, in three colors: the calendar's own for the rounded stripe and the title,
-/// a faint tint of it for the plate, and a paler one for the time and the bell (`DesignTokens.eventSecondary`).
+/// A calendar event, drawn as in Apple Calendar: the calendar's own color for the rounded stripe, a faint tint of it for the
+/// plate, a deep tone for the title and a middle one for the time and the bell (`DesignTokens`).
 struct TimelineEventBlock: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.calendar) private var calendar
@@ -26,15 +26,19 @@ struct TimelineEventBlock: View {
                 .widgetAccentable()
             TopAlignedContent {
                 VStack(alignment: .leading, spacing: 0) {
-                    FadingText(text: event.title, font: font, lineHeight: lineHeight, lines: 2,
+                    FadingText(text: event.title, font: font.weight(.semibold), lineHeight: lineHeight, lines: 2,
                                reserve: TitleFade.trailing(corner: reserve, plateInset: tokens.space(.timelineItemPadding),
                                                            gap: tokens.space(.fadeGap)))
-                    Text(TimeRangeText.format(event.start, event.end, calendar: calendar)).font(tokens.font(.caption)).lineLimit(1)
-                        .opacity(tokens.opacity(.eventTime))
+                        .foregroundStyle(slot.isPast ? tokens.color(.secondaryText) : tokens.eventTitle(own, in: colorScheme))
+                    HStack(spacing: tokens.space(.eventTimeIconGap)) {
+                        IconGlyph(.time, font: .caption)
+                        Text(TimeRangeText.format(event.start, event.end, calendar: calendar)).lineLimit(1)
+                    }
+                    .font(tokens.font(.caption).weight(.medium))
+                    .foregroundStyle(slot.isPast ? tokens.color(.secondaryText) : tokens.eventSecondary(own, in: colorScheme))
                 }
             }
             .padding(.top, inset / 2)
-            .foregroundStyle(slot.isPast ? tokens.color(.secondaryText) : own)
             Spacer(minLength: 0)
         }
         .padding(.leading, inset)
@@ -51,9 +55,14 @@ extension DesignTokens {
         color.opacity(opacity(scheme == .dark ? .eventFillDark : .eventFill))
     }
 
-    /// An event's time and bell: its calendar's color, paler than the title.
-    func eventSecondary(_ color: Color) -> Color {
-        color.opacity(opacity(.eventTime))
+    /// An event's title: its calendar's color, deep in the light theme, nearly itself in the dark one.
+    func eventTitle(_ color: Color, in scheme: ColorScheme) -> Color {
+        scheme == .dark ? color.opacity(opacity(.eventTitleDark)) : color.mix(with: .black, by: opacity(.eventTitleLightMix))
+    }
+
+    /// An event's time and bell: a step toward the color itself from the title.
+    func eventSecondary(_ color: Color, in scheme: ColorScheme) -> Color {
+        scheme == .dark ? color.opacity(opacity(.eventTimeDark)) : color.mix(with: .black, by: opacity(.eventTimeLightMix))
     }
 }
 

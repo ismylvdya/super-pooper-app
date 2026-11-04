@@ -1,8 +1,8 @@
 import SwiftUI
 
 /// The fastest way to plan a task, right under its name, in two rows: Today, Tomorrow and the date chip, which opens the
-/// date sheet and names another day or a time; then icons alone: High priority, a chip's width apart from Pleasant and
-/// Need energy. All off for a new task.
+/// date sheet and names another day or a time; then High priority, a chip's width apart from Pleasant and Need energy, those
+/// two as icons alone. All off for a new task.
 /// What the chips set is not repeated in Properties.
 struct TaskChipRows: View {
     @Environment(AppModel.self) private var model
@@ -26,7 +26,7 @@ struct TaskChipRows: View {
             }
             HStack(spacing: spacing) {
                 highChip
-                highChip.hidden().accessibilityHidden(true)
+                Color.clear.frame(width: tokens.size(.chipRowGap), height: 0)
                 feelChips
             }
         }
@@ -39,11 +39,10 @@ struct TaskChipRows: View {
     }
 
     private var highChip: some View {
-        ToggleChip(.high, isOn: editor.task.isHighPriority) {
+        ToggleChip(.high, title: "taskPage.chip.high", isOn: editor.task.isHighPriority) {
             Haptics.play(.select)
             editor.edit { [.highPriority(!$0.isHighPriority)] }
         }
-        .accessibilityLabel(Text("taskPage.chip.high"))
         .accessibilityIdentifier("taskPage.chip.high")
     }
 
@@ -64,11 +63,17 @@ struct TaskChipRows: View {
         let shown = DateChip.shown(of: editor.task, context: model.context())
         let values = [shown.day.map { DateText.format($0, .dateTime.month(.abbreviated).day(), calendar: model.calendar) },
                       shown.time?.string].compactMap { $0 }
-        return ToggleChip(icon: .datePick, values: values, tint: .task, isOn: !values.isEmpty) {
+        return ToggleChip(icon: dateChipIcon, values: values, tint: .task, isOn: !values.isEmpty) {
             Haptics.play(.select)
             isPickingDate = true
         }
         .accessibilityIdentifier("taskPage.chip.date")
+    }
+
+    /// What it stands for: a day (or nothing yet), a time, a time that rings.
+    private var dateChipIcon: Icon {
+        guard editor.task.due?.time != nil else { return .datePick }
+        return editor.task.alarm(at: nil) == nil ? .time : .alarm
     }
 
     @ViewBuilder private var feelChips: some View {

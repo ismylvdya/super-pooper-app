@@ -39,7 +39,6 @@
     "snoozeChoices": [5, 10, 15, 30, 45, 60, 90, 120]
   },
   "alarms": {
-    "previewSeconds": 3,
     "systemSoundFolders": ["/Library/Ringtones"],
     "systemSoundPrefix": "sys-",
     "systemSoundSeconds": 30,
@@ -233,6 +232,7 @@
     "daySwipeMinimumDistance": 20,
     "dragEndSettleSeconds": 0.5,
     "newItemTurnDwellSeconds": 0.4,
+    "pageEdgeDwellSeconds": 0.5,
     "daySwipeAxisRatio": 1.5,
     "daySwipeShare": 0.25,
     "daySwipeFlingShare": 0.5,

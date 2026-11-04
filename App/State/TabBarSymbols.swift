@@ -1,7 +1,7 @@
 import UIKit
 
 /// Which symbol each place of the tab bar shows: what the user typed in the settings when it is a real SF Symbol, otherwise
-/// `icons.json`. A selected tab without one of its own looks as it does when not selected.
+/// `icons.json`. A selected tab without one of its own has the filled form of its symbol, where there is one.
 struct TabBarSymbols {
     let typed: [String: String]
     let icons: IconSet
@@ -11,8 +11,13 @@ struct TabBarSymbols {
 
     func symbol(of tab: AppTab, isSelected: Bool) -> String {
         let own = isSelected ? valid(Self.key(tab, isSelected: true)) : nil
-        return own ?? valid(Self.key(tab, isSelected: false)) ?? icons[tab.icon]
+        let plain = valid(Self.key(tab, isSelected: false)) ?? icons[tab.icon]
+        guard isSelected else { return plain }
+        return own ?? (Self.exists(plain + ".fill") ? plain + ".fill" : plain)
     }
+
+    /// What the user typed for the current tab, when the system's own fill is not what is wanted.
+    func typedSelected(of tab: AppTab) -> String? { valid(Self.key(tab, isSelected: true)) }
 
     var newItem: String { valid(Self.newItemKey) ?? icons[.newItem] }
 

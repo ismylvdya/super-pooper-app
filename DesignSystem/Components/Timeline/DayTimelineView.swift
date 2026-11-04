@@ -7,6 +7,7 @@ struct DayTimelineView<TaskContent: View>: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
     @Environment(\.timelineBell) private var bell
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.calendar) private var calendar
     @Environment(\.rules) private var rules
     let slots: [TimelineSlot]
@@ -27,14 +28,20 @@ struct DayTimelineView<TaskContent: View>: View {
                                  width: geometry.size.width, labelHeight: hourLabelHeight, y: y)
                 ForEach(blocks) { item in
                     block(for: item.slot)
-                        .environment(\.titleReserve, cornerWidth(bell: item.slot.showsBell || item.slot.hasAlarm))
+                        .environment(\.titleReserve, item.slot.hasAlarm ? alarmInset + tokens.size(.alarmMark) : cornerWidth(bell: item.slot.showsBell))
                         .overlay(alignment: .topTrailing) {
                             HStack(spacing: tokens.space(.cornerMarkGap)) {
                                 if item.slot.showsBell { AlertBell(color: bellColor(of: item.slot)) }
-                                if item.slot.hasAlarm { AlertBell(isAlarm: true) }
                             }
                             .padding(.top, cornerInset)
                             .padding(.trailing, cornerInset)
+                        }
+                        .overlay(alignment: .topTrailing) {
+                            if item.slot.hasAlarm {
+                                AlertBell(isAlarm: true)
+                                    .padding(.top, alarmInset)
+                                    .padding(.trailing, alarmInset)
+                            }
                         }
                         .frame(width: max(item.frame.width - tokens.space(.timelineItemGap), 0),
                                height: max(item.frame.height - tokens.space(.timelineItemGap), 0), alignment: .topLeading)
@@ -58,6 +65,11 @@ struct DayTimelineView<TaskContent: View>: View {
     /// How far from the block's right edge the corner marks reach (their inset and the bell); 0 without one. The title fades out `fadeGap` before that (`TitleFade`).
     private func cornerWidth(bell showsBell: Bool) -> CGFloat {
         showsBell ? cornerInset + bell.size : 0
+    }
+
+    /// On a one-line block the alarm's mark stands as far from the right edge as from the top and the bottom.
+    private var alarmInset: CGFloat {
+        max(((style.minimumTaskHeight ?? style.minimumItemHeight) - tokens.space(.timelineItemGap) - tokens.size(.alarmMark)) / 2, 0)
     }
 
     /// The hour column and the hour labels' line grow with the hour font.
@@ -171,7 +183,7 @@ struct DayTimelineView<TaskContent: View>: View {
     /// An event's bell is in its time's color; a finished event's as its text.
     private func bellColor(of slot: TimelineSlot) -> Color? {
         guard case .event(let event) = slot.content else { return nil }
-        return slot.isPast ? tokens.color(.secondaryText) : tokens.eventSecondary(Color(hex: event.colorHex))
+        return slot.isPast ? tokens.color(.secondaryText) : tokens.eventSecondary(Color(hex: event.colorHex), in: colorScheme)
     }
 
     /// The "now" cursor, as in the old Calendar widget: a dot in the middle of the hour numbers and a
