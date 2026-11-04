@@ -273,7 +273,9 @@ struct TaskFileStoreTests {
         let written = try text()
         #expect(!written.contains("Inbox") && !written.contains("## Now") && !written.contains("➕"))
         #expect(written.contains("## Today\n- [ ] Milk 🆔 m1"))
-        #expect(written.contains("## Soon\n- [ ] Later 🆔 l1\n- [ ] Idea 🆔 i1") || written.contains("- [ ] Idea 🆔 i1\n- [ ] Later 🆔 l1"))
+        #expect(written.contains("## Soon\n- [ ] Later 🆔 l1\n- [ ] Idea 🆔 i1"))
+        let today = try #require(written.range(of: "## Today")), soon = try #require(written.range(of: "## Soon"))
+        #expect(today.lowerBound < soon.lowerBound, "the sections stay in their order")
     }
 
     @Test func aRenamedHabitKeepsItsOldNameInDone() async throws {

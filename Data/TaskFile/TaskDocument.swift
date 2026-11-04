@@ -92,22 +92,22 @@ struct TaskDocument: Equatable, Sendable {
         }
     }
 
-    /// A section under an older title goes by its title now; when the file has both, its lines join the other's.
+    /// A section under an older title goes by its title now. When the file has both, its lines join the other's, which
+    /// stays where it stands.
     private mutating func mergeLegacySections(format: TaskFileFormat) {
         var merged: [Section] = []
-        for section in sections {
-            guard let kind = section.kind else {
-                merged.append(section)
-                continue
-            }
-            if let index = merged.firstIndex(where: { $0.kind == kind }) {
-                merged[index].groups[0].entries += section.groups.flatMap(\.entries)
-                merged[index].other += section.other
-            } else {
-                var section = section
+        let isCurrent = { (section: Section) in section.kind.map { format.title(of: $0) == section.title } ?? false }
+        for section in sections where isCurrent(section) || section.kind == nil || !sections.contains(where: { $0.kind == section.kind && isCurrent($0) }) {
+            var section = section
+            if let kind = section.kind {
                 section.title = format.title(of: kind)
-                merged.append(section)
+                for older in sections where older.kind == kind && !isCurrent(older) && older.title != section.title {
+                    guard isCurrent(sections.first { $0.kind == kind && isCurrent($0) } ?? older) else { continue }
+                    section.groups[0].entries += older.groups.flatMap(\.entries)
+                    section.other += older.other
+                }
             }
+            merged.append(section)
         }
         sections = merged
     }

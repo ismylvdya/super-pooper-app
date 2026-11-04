@@ -106,6 +106,11 @@ struct DayMirror: Equatable, Sendable {
     let keptOut: [String]
 }
 
+/// A store whose lines have an order a person sets.
+protocol TaskOrdering: Sendable {
+    func reorder(_ ids: [TaskID]) async throws
+}
+
 /// Keeps the store's own look of today in step with the app's.
 protocol DayMirroring: Sendable {
     func mirror(_ day: DayMirror) async

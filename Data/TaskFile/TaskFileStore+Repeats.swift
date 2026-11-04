@@ -64,3 +64,24 @@ extension TaskFileStore {
         }
     }
 }
+
+extension TaskFileStore: TaskOrdering {
+    /// The lines of `ids` take the places they have between them in the order given; every other line stays where it is.
+    func reorder(_ ids: [TaskID]) async throws {
+        try await location.withRoot { root in
+            var snapshot = try await read(root: root)
+            let wanted = ids.map(\.value)
+            let members = Set(wanted)
+            for section in snapshot.document.sections.indices {
+                for group in snapshot.document.sections[section].groups.indices {
+                    let entries = snapshot.document.sections[section].groups[group].entries
+                    let places = entries.indices.filter { entries[$0].id.map(members.contains) ?? false }
+                    guard places.count > 1 else { continue }
+                    let here = wanted.compactMap { id in entries.first { $0.id == id } }
+                    for (place, entry) in zip(places, here) { snapshot.document.sections[section].groups[group].entries[place] = entry }
+                }
+            }
+            try write(snapshot.document, root: root)
+        }
+    }
+}

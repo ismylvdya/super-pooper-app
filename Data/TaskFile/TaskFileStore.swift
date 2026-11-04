@@ -165,7 +165,9 @@ actor TaskFileStore: TaskStore {
         var tasks: [TaskItem] = []
         snapshot.document.walk { entry, section, parent, index in
             guard section != .done, section != .trash, let id = entry.id, snapshot.habits[id] == nil else { return }
-            tasks.append(item(entry, in: section, parent: parent, index: index, snapshot: snapshot))
+            var task = item(entry, in: section, parent: parent, index: index, snapshot: snapshot)
+            task.storeOrder = tasks.count
+            tasks.append(task)
         }
         return tasks + snapshot.habits.values.map { habit(of: $0, snapshot: snapshot) }
     }
