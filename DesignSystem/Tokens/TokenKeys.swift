@@ -30,7 +30,7 @@ enum SizeToken: String, CaseIterable, Sendable {
     case selectionOutline
     case iconColumn, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, notificationIcon
     case dayArrowTarget
-    case habitDotMinimum, cornerInsetMinimum, eventDot, sourceDot, fadeHeight, poolCounter, poolWidth
+    case habitDotMinimum, cornerInsetMinimum, sourceDot, fadeHeight, poolCounter, poolWidth
     case habitHistoryMaxHeight, habitStatsBar, titleFade, hourDigitsWidth, reviewChevron, wrapMinWidth, liftOverhang, pagePeek, dropMarkerHeight, bannerShadowRadius, bannerShadowY, hexFieldWidth, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, allDayFontDelta, previewHeight, previewRow, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewHalvesInset, subtaskDropLine
     /// The problems badge on Today's Lists button: its smallest width and its height.
     case problemBadge
@@ -48,6 +48,8 @@ enum RatioToken: String, CaseIterable, Sendable {
     /// The room a timeline block's title needs under its top, in its minimum heights: a block starting closer under it
     /// stands beside it rather than over it.
     case timelineTitleRoom
+    /// How much of a row's height a swipe button's symbol and title take together at most.
+    case swipeGlyphFit
 }
 
 /// How many of something a drawing has (lines of a wrapped title).
@@ -56,7 +58,7 @@ enum CountToken: String, CaseIterable, Sendable {
 }
 
 enum OpacityToken: String, CaseIterable, Sendable {
-    case blocked, past, eventFill, eventFillDark, eventTextLightMix, eventTextDarkMix, fadeTop, fadeMiddle, habitEmpty
+    case blocked, past, selectionOutline, eventFill, eventFillDark, eventTextLightMix, eventTextDarkMix, fadeTop, fadeMiddle, habitEmpty
     /// The ring of a habit's day not done or done partly (the user's `habits.ringOpacity` over it).
     case habitOpenRing
     case gridFadedWeek, unlinked, eventTime, nowOverBlocks, daySwipeFade, toggleChipFill, bannerShadow, previewBlock, accentedPlate, signingPlate
@@ -85,7 +87,7 @@ enum FontToken: String, CaseIterable, Sendable {
 enum ColorToken: String, ConfigName {
     /// The outline of a row picked in Select mode: between a section's title and the text.
     case selectionOutline
-    case accent, task, habit, high, started, energy, pleasant, heart, nowLine, problem
+    case accent, task, habit, high, started, energy, pleasant, heart, energyOnFill, heartOnFill, eventIconGlyph, nowLine, problem
     case past, swipeNeutral, screenBackground, plateBackground, chipBackground, primaryText, secondaryText, tertiaryText
     case bannerBackground, infoText, destructive, timelineGrid
     case success, warning, error, shadow, widgetPlate, widgetTop, widgetBottom, listSeparator

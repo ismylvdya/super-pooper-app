@@ -26,6 +26,7 @@
   "calendars": "calendar",
   "reminderLists": "checklist",
   "notifications": "bell.badge",
+  "allDayEvent": "calendar.circle.fill",
   "dayBoundary": "moon.zzz",
   "energyHour": "bolt.circle",
   "timelineLayout": "rectangle.split.2x1",

@@ -58,7 +58,7 @@ struct TaskRowView: View {
         ForEach(chips) { chip in
             IconGlyph(chip.look.icon, font: .chip)
                 .font(tokens.font(.chip))
-                .foregroundStyle(tokens.color(of: chip.look))
+                .foregroundStyle(tokens.color(of: chip.look, onFill: HighPriorityMark(look: highPriorityLook, task: item.task).fillsPlate))
         }
     }
 

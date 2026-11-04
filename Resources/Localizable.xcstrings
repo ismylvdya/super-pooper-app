@@ -7323,6 +7323,50 @@
           }
         }
       }
+    },
+    "color.energyOnFill": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Need energy on a high-priority fill"
+          }
+        }
+      }
+    },
+    "color.heartOnFill": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Heart on a high-priority fill"
+          }
+        }
+      }
+    },
+    "settings.pool.selectionOutline": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Selection outline"
+          }
+        }
+      }
+    },
+    "info.settings.pool.selectionOutline": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How solid the outline of a task picked in Select mode is. At 60% it matches the color of the section titles."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

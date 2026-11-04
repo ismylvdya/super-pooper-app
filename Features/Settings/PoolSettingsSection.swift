@@ -23,6 +23,7 @@ struct PoolSettingsSection: View {
             PlateRow(icon: nil, title: "settings.pool.highColor") { ThemeColorField(token: .high) }
             startedFill
             PlateRow(icon: nil, title: "settings.pool.startedColor") { ThemeColorField(token: .started) }
+            selectionOutline
             PlateRow(icon: .poolCount, title: "settings.pool.visible", info: "info.settings.pool.visible") {
                 Stepper(value: Binding(get: { model.settings.pool.visibleCount },
                                        set: { value in model.updateSettings { $0.pool.visibleCount = value } }), in: model.config.rules.limits.poolVisibleCount.ints) {
@@ -33,6 +34,18 @@ struct PoolSettingsSection: View {
             .disabled(!isActive)
             .opacity(isActive ? 1 : tokens.opacity(.blocked))
         }
+    }
+
+    /// How solid the outline of a picked task is, over the color of the section titles.
+    @ViewBuilder private var selectionOutline: some View {
+        let opacity = model.settings.pool.selectionOutlineOpacity
+        let limits = model.config.rules.limits.selectionOutlineOpacity
+        PlateRow(icon: .opacity, title: "settings.pool.selectionOutline", info: "info.settings.pool.selectionOutline") {
+            Text(opacity.formatted(.percent.precision(.fractionLength(0)))).monospacedDigit().foregroundStyle(tokens.color(.secondaryText))
+        }
+        Slider(value: Binding(get: { opacity }, set: { value in model.updateSettings { $0.pool.selectionOutlineOpacity = limits.snapped(value) } }),
+               in: limits.closed)
+            .accessibilityIdentifier("settings.pool.selectionOutline")
     }
 
     /// How far a started task's blue fill reaches, with a sample of it.

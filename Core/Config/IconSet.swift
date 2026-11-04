@@ -6,7 +6,7 @@ enum Icon: String, CaseIterable, Codable, Sendable {
     case settings, more, info, problem, sync
     case energy, pleasant, feel, chipOrder, timeZone, high, due, datePick, time, estimate
     case previousTasks, nextTasks, previousEvent, nextEvent, event, reminder, habit
-    case vault, calendars, reminderLists, notifications
+    case vault, calendars, reminderLists, notifications, allDayEvent
     case dayBoundary, energyHour, timelineLayout, hoursAfter, hoursBefore, halves, fontSize, poolCount
     case archive, delete, search, resetOrder, resetSort, add, newItem, colors, remove, chevron, status, note, title, recurrence
     case checkboxOpen, markDone

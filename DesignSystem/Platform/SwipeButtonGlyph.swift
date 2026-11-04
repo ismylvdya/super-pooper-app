@@ -7,6 +7,13 @@ import UIKit
 enum SwipeButtonGlyph {
     private static var drawn: [String: UIImage] = [:]
 
+    /// How much the symbol and the title shrink on a row `rowHeight` high, so together they take at most `fit` of it. Taller
+    /// rows keep the fonts' own size; before the row is measured (nil) they keep it too.
+    static func shrink(rowHeight: CGFloat?, iconFont: UIFont, titleFont: UIFont, gap: CGFloat, fit: CGFloat) -> CGFloat {
+        guard let rowHeight, rowHeight > 0 else { return 1 }
+        return min(rowHeight * fit / (iconFont.lineHeight + gap + titleFont.lineHeight), 1)
+    }
+
     static func image(symbol: String, title: String, iconFont: UIFont, titleFont: UIFont, gap: CGFloat, scale: CGFloat) -> UIImage {
         let key = [symbol, title, iconFont.fontName, "\(iconFont.pointSize)", titleFont.fontName, "\(titleFont.pointSize)", "\(gap)", "\(scale)"]
             .joined(separator: "|")

@@ -24,7 +24,8 @@
     "criteria": [],
     "chipOrder": ["problem", "blocked", "feel", "habit"],
     "highPriorityLook": "leadingIcon",
-    "startedFillLength": 0.33
+    "startedFillLength": 0.33,
+    "selectionOutlineOpacity": 0.6
   },
   "timeline": {
     "layout": "oneColumn",

@@ -6,6 +6,7 @@ import WidgetKit
 struct AllDayStrip: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.icons) private var icons
     let events: [CalendarEvent]
     var font: Font?
     let lineHeight: CGFloat
@@ -31,14 +32,23 @@ struct AllDayStrip: View {
 
     /// Widgets have no buttons: the bar is plain there.
     private func bar(_ event: CalendarEvent) -> some View {
-        HStack(spacing: tokens.space(.dotTextGap)) {
-            Circle().fill(Color(hex: event.colorHex)).frame(width: tokens.size(.eventDot), height: tokens.size(.eventDot))
+        // The round icon stands as far from the capsule's left end as from its top and bottom: concentric with the end.
+        let inset = ChipCapsule.standard.verticalPadding(tokens)
+        return HStack(spacing: tokens.space(.dotTextGap)) {
+            Image(systemName: icons[.allDayEvent])
+                .resizable()
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(tokens.color(.eventIconGlyph), Color(hex: event.colorHex))
+                .frame(width: lineHeight, height: lineHeight)
                 .widgetAccentable()
             FadingText(text: event.title, font: font ?? tokens.font(.chip), lineHeight: lineHeight)
         }
         .foregroundStyle(tokens.eventText(Color(hex: event.colorHex), in: colorScheme))
         .frame(maxWidth: .infinity, alignment: .leading)
-        .chipCapsule(tokens.eventFill(Color(hex: event.colorHex), in: colorScheme))
+        .padding(.leading, inset)
+        .padding(.trailing, ChipCapsule.standard.horizontalPadding(tokens))
+        .padding(.vertical, inset)
+        .background(tokens.eventFill(Color(hex: event.colorHex), in: colorScheme), in: Capsule())
     }
 }
 
@@ -46,7 +56,7 @@ extension AllDayStrip {
     /// The height the strip takes with `count` bars of text `lineHeight` high: what a layout around it leaves for it.
     static func height(count: Int, lineHeight: CGFloat, tokens: DesignTokens) -> CGFloat {
         guard count > 0 else { return 0 }
-        let bar = max(lineHeight, tokens.size(.eventDot)) + ChipCapsule.standard.verticalPadding(tokens) * 2
+        let bar = lineHeight + ChipCapsule.standard.verticalPadding(tokens) * 2
         return CGFloat(count) * bar + CGFloat(count - 1) * tokens.space(.chipGap)
     }
 }

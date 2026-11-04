@@ -27,6 +27,8 @@ struct AppSettings: Codable, Equatable, Sendable {
         var visibleCount: Int
         /// The user's order of the pool rules (raw names); empty = `sort.json`.
         var criteria: [String]
+        /// How solid the outline of a task picked in Select mode is.
+        var selectionOutlineOpacity: Double
         /// The order of the chips in task rows (raw names of `RowChipKind`).
         var chipOrder: [String]
         /// How a high-priority task stands out in the pool and on the timeline.

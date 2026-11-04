@@ -15,6 +15,15 @@ enum ChipLook: CaseIterable {
         }
     }
 
+    /// Its color on a plate filled for high priority, where its own may not read; nil = its own.
+    var tintOnFill: ColorToken? {
+        switch self {
+        case .needEnergy: .energyOnFill
+        case .pleasant: .heartOnFill
+        case .problem, .high, .habit: nil
+        }
+    }
+
     /// Its own color; nil = the grey of a plain chip.
     var tint: ColorToken? {
         switch self {
@@ -31,5 +40,11 @@ extension DesignTokens {
     /// The color a property's chip or icon is drawn in.
     func color(of look: ChipLook) -> Color {
         color(look.tint ?? .secondaryText)
+    }
+
+    /// The same on a row, whose plate may be filled for high priority.
+    func color(of look: ChipLook, onFill: Bool) -> Color {
+        if onFill, let tint = look.tintOnFill { return color(tint) }
+        return color(of: look)
     }
 }

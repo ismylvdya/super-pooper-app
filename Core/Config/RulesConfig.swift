@@ -223,6 +223,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let startedFillLength: Range
         /// The ring of a habit's day not done or done partly.
         let ringOpacity: Range
+        /// How solid the outline of a task picked in Select mode is.
+        let selectionOutlineOpacity: Range
         let recurrenceInterval: Range
         let recurrenceCount: Range
         /// "Each" day number of a monthly repeat.
