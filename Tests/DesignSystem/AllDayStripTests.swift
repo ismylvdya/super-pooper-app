@@ -19,6 +19,18 @@ struct AllDayStripTests {
         #expect(abs(measured - AllDayStrip.height(count: count, lineHeight: fonts.allDayLineHeight, tokens: tokens)) < 0.5)
     }
 
+    @Test func theIconStandsOverTheMiddleOfTheHourNumbers() {
+        let tokens = TestConfig.tokens
+        let lineHeight: CGFloat = 16
+        let iconCenter = AllDayStrip.leadingInset(lineHeight: lineHeight, tokens: tokens)
+            + ChipCapsule.standard.verticalPadding(tokens) + lineHeight / 2
+        #expect(abs(iconCenter - tokens.hourDigitsCenter) < 0.001)
+    }
+
+    @Test func largeTextKeepsTheBarsInsideTheColumn() {
+        #expect(AllDayStrip.leadingInset(lineHeight: 200, tokens: TestConfig.tokens) == 0)
+    }
+
     @Test func noEventsTakeNoRoom() {
         #expect(AllDayStrip.height(count: 0, lineHeight: 20, tokens: TestConfig.tokens) == 0)
     }

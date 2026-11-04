@@ -28,6 +28,7 @@ struct AllDayStrip: View {
                 }
             }
         }
+        .padding(.leading, Self.leadingInset(lineHeight: lineHeight, tokens: tokens))
     }
 
     /// Widgets have no buttons: the bar is plain there.
@@ -58,5 +59,11 @@ extension AllDayStrip {
         guard count > 0 else { return 0 }
         let bar = lineHeight + ChipCapsule.standard.verticalPadding(tokens) * 2
         return CGFloat(count) * bar + CGFloat(count - 1) * tokens.space(.chipGap)
+    }
+
+    /// How far the bars start from the hour column's left edge: their round icons stand over the middle of the hour numbers.
+    /// With text so large that this would take them past the column's edge, they stay at the edge.
+    static func leadingInset(lineHeight: CGFloat, tokens: DesignTokens) -> CGFloat {
+        max(tokens.hourDigitsCenter - ChipCapsule.standard.verticalPadding(tokens) - lineHeight / 2, 0)
     }
 }

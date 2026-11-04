@@ -60,7 +60,7 @@ struct DayTimelineView<TaskContent: View>: View {
     }
 
     /// The hour column and the hour labels' line grow with the hour font.
-    private var labelWidth: CGFloat { style.showsHourLabels ? tokens.scaled(tokens.space(.timelineLabelWidth), with: .timelineHour) : 0 }
+    private var labelWidth: CGFloat { style.showsHourLabels ? tokens.hourColumnWidth : 0 }
     private var hourLabelHeight: CGFloat { tokens.scaled(tokens.size(.hourLabelHeight), with: .timelineHour) }
     private var totalHeight: CGFloat { CGFloat(window.hours) * hourHeight }
 
@@ -169,9 +169,7 @@ struct DayTimelineView<TaskContent: View>: View {
     /// line from its center to the right edge with a rounded end; over blocks it is more see-through.
     private func nowLine(width: CGFloat, blocks: [PlacedSlot]) -> some View {
         let dot = tokens.size(.nowDot)
-        let centerX = style.showsHourLabels
-            ? labelWidth - tokens.space(.hourLabelGap) - tokens.scaled(tokens.size(.hourDigitsWidth), with: .timelineHour) / 2
-            : dot / 2
+        let centerX = style.showsHourLabels ? tokens.hourDigitsCenter : dot / 2
         let origin = CGPoint(x: centerX - dot / 2, y: y(now) - dot / 2)
         let gap = tokens.space(.timelineItemGap)
         let covered = blocks.map { block in
