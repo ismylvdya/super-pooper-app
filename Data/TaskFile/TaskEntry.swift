@@ -27,6 +27,10 @@ struct TaskEntry: Equatable, Sendable {
     var deleted: LocalDate?
     var note: [String] = []
     var children: [TaskEntry] = []
+    /// Its id is written in the line: a habit's and a repeatable task's are. A plain task goes by its line (`TaskLineIDs`).
+    var writesID = true
+    /// The line Obsidian was last asked to open: it carries the block id the link points at.
+    var isOpenTarget = false
 }
 
 extension TaskEntry {
@@ -48,7 +52,7 @@ extension TaskEntry {
         let markers = format.markers
         let legacy = format.legacyMarkers
         while let last = tokens.last {
-            if last == markers.high || format.legacyHighMarkers.contains(last) { isHigh = true } else if last == markers.pleasant { feel = .pleasant } else if last == markers.energy { feel = .needEnergy } else if last == markers.overdue { isOverdue = true } else if tokens.count >= 2, read(last, marker: tokens[tokens.count - 2], markers, legacy: legacy) {
+            if last == format.openBlock { isOpenTarget = true } else if last == markers.high || format.legacyHighMarkers.contains(last) { isHigh = true } else if last == markers.pleasant { feel = .pleasant } else if last == markers.energy { feel = .needEnergy } else if last == markers.overdue { isOverdue = true } else if tokens.count >= 2, read(last, marker: tokens[tokens.count - 2], markers, legacy: legacy) {
                 tokens.removeLast()
             } else if last.isEmpty {
                 // A double space or a trailing one.
@@ -111,12 +115,13 @@ extension TaskEntry {
         case .neutral: break
         }
         add(markers.routine, routine)
-        add(markers.parent, parent)
+        add(markers.parent, parent.map(TaskLineIDs.written))
         add(markers.repeats, repeats)
         if isOverdue { parts.append(markers.overdue) }
         add(markers.completed, completed?.isoString)
         add(markers.deleted, deleted?.isoString)
-        add(markers.id, id)
+        if writesID { add(markers.id, id) }
+        if isOpenTarget { parts.append(format.openBlock) }
         return parts.joined(separator: " ")
     }
 }

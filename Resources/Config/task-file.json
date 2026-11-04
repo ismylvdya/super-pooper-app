@@ -26,6 +26,7 @@
     "done": "x"
   },
   "alarmDefaultSound": "default",
+  "openBlock": "^open",
   "markers": {
     "id": "🆔",
     "date": "📅",

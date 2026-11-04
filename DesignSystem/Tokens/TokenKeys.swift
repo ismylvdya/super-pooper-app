@@ -65,7 +65,7 @@ enum OpacityToken: String, CaseIterable, Sendable {
     case habitOpenRing
     case gridFadedWeek, unlinked, eventTime, nowOverBlocks, daySwipeFade, toggleChipFill, bannerShadow, previewBlock, accentedPlate, signingPlate
     /// The faint copy of a dragged plate where it would land (the pool's parted gap, the timeline's landing spot).
-    case dropGhost
+    case dropGhost, listDropGhost
     /// The ":15", ":30", ":45" of a zoomed-in timeline and its five-minute lines, at their full fade-in.
     case quarterLabel, fineLine
     /// The soft red of a high-priority task's plate (Settings → Pool → High priority → Fill).

@@ -65,7 +65,8 @@ extension TaskFileStore {
         return try await location.withRoot { root in
             var snapshot = try await read(root: root)
             let final = UniqueName.free(name) { snapshot.isTaken($0) }
-            let id = makeID()
+            // Only what repeats keeps an id in the file; a plain task goes by its line.
+            let id = draft.note.isHabit ? makeID() : TaskLineIDs.open(final)
             var note = draft.note
             note.name = final
             note.id = TaskID(id)
@@ -81,6 +82,7 @@ extension TaskFileStore {
             }
             var entry = TaskEntry(name: final)
             entry.id = id
+            entry.writesID = false
             entry.update(from: note, format: format)
             entry.note = Self.lines(of: draft.body)
             let target = TaskSection.of(note, current: .now, today: today(), boundary: boundary())
@@ -127,6 +129,7 @@ extension TaskFileStore {
             try write(snapshot.document, root: root)
             var result = task
             result.name = newName
+            if snapshot.habits[id] == nil { result.id = TaskID(TaskLineIDs.open(newName)) }
             return result
         }
     }
@@ -175,6 +178,8 @@ extension TaskFileStore {
             var filed = task
             filed.status = .done
             filed.completedDate = taken.completed
+            TaskLineIDs.assign(to: &snapshot.document, habits: Set(snapshot.habits.keys))
+            if let line = snapshot.document.newest(named: taken.name, in: .done) { filed.id = TaskID(line) }
             return filed
         }
     }
@@ -201,10 +206,11 @@ extension TaskFileStore {
             taken.name = UniqueName.free(taken.name) { snapshot.isTaken($0) }
             taken.box = .open
             taken.completed = nil
+            taken.id = TaskLineIDs.open(taken.name)
             snapshot.document.insert(taken, into: .now)
             try write(snapshot.document, root: root)
             snapshot.indexNames()
-            return try current(id: task.id.value, name: taken.name, snapshot: snapshot)
+            return try current(id: TaskLineIDs.open(taken.name), name: taken.name, snapshot: snapshot)
         }
     }
 
@@ -219,7 +225,7 @@ extension TaskFileStore {
             var filed: Set<NoteName> = []
             snapshot.document.walk { entry, section, _, _ in if section == .done { filed.insert(entry.name.noteName) } }
             for source in imported where !snapshot.isTaken(source.item.name) && !filed.contains(source.item.name.noteName) {
-                let id = makeID()
+                let id = source.item.isHabit ? makeID() : TaskLineIDs.open(source.item.name)
                 snapshot.names[id] = source.item.name
                 pending.append((id, source))
             }
@@ -238,6 +244,7 @@ extension TaskFileStore {
                 }
                 var entry = TaskEntry(name: item.name)
                 entry.id = id
+                entry.writesID = false
                 entry.update(from: item, format: format)
                 entry.note = Self.lines(of: source.text)
                 let target: TaskSection = source.isFiled ? .done : TaskSection.of(item, current: .now, today: today(), boundary: boundary())

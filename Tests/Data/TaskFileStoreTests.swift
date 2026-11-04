@@ -271,13 +271,13 @@ struct TaskFileStoreTests {
         let done = try await store.create(draft(), named: "Haircut")
         _ = try await store.fileAway(done)
         let again = try await store.create(draft(), named: "Haircut")
-        #expect(again.name == "Haircut" && again.id != done.id)
+        #expect(again.name == "Haircut")
         _ = try await store.delete(again)
         let third = try await store.create(draft(), named: "Haircut")
         #expect(third.name == "Haircut")
         let written = try text()
-        #expect(written.contains("- [x] Haircut ✅ \(today.isoString) 🆔 \(done.id.value)"))
-        #expect(written.contains("- [ ] Haircut 🆔 \(third.id.value)"))
+        #expect(written.contains("- [x] Haircut ✅ \(today.isoString)\n"))
+        #expect(written.contains("- [ ] Haircut\n"), "a plain task keeps no id in the file: \(third.name)")
         #expect(try await store.load().tasks.map(\.name) == ["Haircut"])
     }
 
@@ -289,8 +289,8 @@ struct TaskFileStoreTests {
         #expect(Set(tasks.map(\.name)) == ["Idea", "Milk", "Later"])
         let written = try text()
         #expect(!written.contains("Inbox") && !written.contains("## Now") && !written.contains("➕"))
-        #expect(written.contains("## Today\n- [ ] Milk 🆔 m1"))
-        #expect(written.contains("## Soon\n- [ ] Later 🆔 l1\n- [ ] Idea 🆔 i1"))
+        #expect(written.contains("## Today\n- [ ] Milk\n"))
+        #expect(written.contains("## Soon\n- [ ] Later\n- [ ] Idea\n"))
         let today = try #require(written.range(of: "## Today")), soon = try #require(written.range(of: "## Soon"))
         #expect(today.lowerBound < soon.lowerBound, "the sections stay in their order")
     }
@@ -299,7 +299,36 @@ struct TaskFileStoreTests {
         try write("## Today\n- [ ] Call 🔥 🆔 c1\n")
         let task = try #require(try await store().load().tasks.first)
         #expect(task.isHighPriority)
-        #expect(try text().contains("- [ ] Call ⚠️ 🆔 c1"))
+        #expect(try text().contains("- [ ] Call ⚠️\n"))
+    }
+
+    @Test func twoFiledTasksOfOneNameAreToldApartAndOldIDsLeave() async throws {
+        let store = store()
+        try write("## Today\n- [ ] Parent 🆔 p1\n## Soon\n- [ ] Child 🔼 p1 🆔 c1\n")
+        let tasks = try await store.load().tasks
+        #expect(tasks.first { $0.name == "Child" }?.projects == ["Parent"], "the parent is found by its old id")
+        #expect(try text().contains("- [ ] Child 🔼 Parent\n"))
+        let again = try await store.load().tasks
+        #expect(again.first { $0.name == "Child" }?.projects == ["Parent"], "and by its name from then on")
+        let first = try await store.create(draft(), named: "Haircut")
+        _ = try await store.fileAway(first)
+        let second = try await store.create(draft(), named: "Haircut")
+        _ = try await store.fileAway(second)
+        let filed = try await store.filedTasks()
+        #expect(Set(filed.map(\.id)).count == 2)
+        _ = try await store.unfile(try #require(filed.first))
+        #expect(try await store.filedTasks().count == 1)
+    }
+
+    @Test func openInObsidianPointsAtABlockOnTheOneLine() async throws {
+        let store = store()
+        let first = try await store.create(draft(), named: "One")
+        let second = try await store.create(draft(), named: "Two")
+        let url = await store.externalURL(for: first)
+        #expect(url?.absoluteString.contains("Tasks.md%23") == true || url?.query?.contains("Tasks.md#") == true)
+        #expect(try text().contains("- [ ] One ^open\n"))
+        _ = await store.externalURL(for: second)
+        #expect(try text().contains("- [ ] One\n- [ ] Two ^open\n"))
     }
 
     @Test func aRenamedHabitKeepsItsOldNameInDone() async throws {
@@ -367,7 +396,7 @@ struct TaskFileStoreTests {
         let plain = try #require(tasks.first { $0.name == "Plain" })
         #expect(call.isOverdue && call.due == TaskDue(day: today))
         #expect(!plain.isOverdue && plain.due == TaskDue(day: today))
-        #expect(try text().contains("- [ ] Call 📅 \(today.isoString) 🕰️ 🆔 c1"))
+        #expect(try text().contains("- [ ] Call 📅 \(today.isoString) 🕰️\n"))
     }
 
     @Test func aMissedHabitWithoutADayNowIsCarriedOverdueWithNoTimes() async throws {

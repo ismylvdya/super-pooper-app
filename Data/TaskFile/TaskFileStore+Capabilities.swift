@@ -25,7 +25,8 @@ extension TaskFileStore: TaskTrash, DayMirroring, TaskImporting, ExternalLinking
             entry.parent = nil
             snapshot.document.insert(entry, into: .trash, atTop: true)
             try write(snapshot.document, root: root)
-            return TrashedNote(id: Self.taskPrefix + id, name: entry.name, trashedAt: nil)
+            TaskLineIDs.assign(to: &snapshot.document, habits: Set(snapshot.habits.keys))
+            return TrashedNote(id: Self.taskPrefix + (snapshot.document.newest(named: entry.name, in: .trash) ?? id), name: entry.name, trashedAt: nil)
         }
     }
 
@@ -82,6 +83,7 @@ extension TaskFileStore: TaskTrash, DayMirroring, TaskImporting, ExternalLinking
             snapshot.indexNames()
             taken.name = UniqueName.free(taken.name) { snapshot.isTaken($0) }
             taken.deleted = nil
+            taken.id = TaskLineIDs.open(taken.name)
             snapshot.document.insert(taken, into: .now)
             try write(snapshot.document, root: root)
             return taken.name
@@ -217,8 +219,28 @@ extension TaskFileStore: TaskTrash, DayMirroring, TaskImporting, ExternalLinking
     func externalURL(for task: TaskItem) async -> URL? {
         let settings = vaultSettings()
         return try? await location.withRoot { root in
-            ObsidianLink.url(relativePath: VaultPaths.relative(fileURL(root: root), to: root), root: root, folder: chosenFolder(root: root),
+            var snapshot = try await read(root: root)
+            // The link points at a block id on the item's line (a habit's open one); the last line opened gives it up.
+            markOpenTarget(task.id.value, in: &snapshot.document)
+            try write(snapshot.document, root: root)
+            return ObsidianLink.url(relativePath: VaultPaths.relative(fileURL(root: root), to: root) + "#" + format.openBlock, root: root, folder: chosenFolder(root: root),
                              vaultName: settings.obsidianVault, pathPrefix: settings.obsidianPathPrefix, obsidian: obsidian)
+        }
+    }
+
+    private func markOpenTarget(_ id: String, in document: inout TaskDocument) {
+        func mark(_ entries: inout [TaskEntry], in section: TaskSection?) {
+            for index in entries.indices {
+                // A habit's days in Done have its id too: its open line is the one to show.
+                let isDayInDone = section == .done && entries[index].writesID
+                entries[index].isOpenTarget = entries[index].id == id && !isDayInDone
+                mark(&entries[index].children, in: section)
+            }
+        }
+        for section in document.sections.indices where document.sections[section].kind != nil {
+            for group in document.sections[section].groups.indices {
+                mark(&document.sections[section].groups[group].entries, in: document.sections[section].kind)
+            }
         }
     }
 

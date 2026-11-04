@@ -91,6 +91,7 @@ actor TaskFileStore: TaskStore {
             ? TaskDocument(text: try fileSystem.read(url).text, format: format)
             : TaskDocument(format: format)
         var snapshot = Snapshot(document: document, habits: try await readHabits(root: root))
+        TaskLineIDs.assign(to: &snapshot.document, habits: Set(snapshot.habits.keys))
         snapshot.indexNames()
         return snapshot
     }
@@ -187,23 +188,12 @@ actor TaskFileStore: TaskStore {
         return item
     }
 
-    /// What a day's turn or a hand in Obsidian leaves to tidy: lines without an id get one; a task dated before today
+    /// What a day's turn or a hand in Obsidian leaves to tidy: a task dated before today
     /// comes up to today without its time, so it waits in the pool; a task whose day has come moves from Soon to Now; a habit's line ticked in today's
     /// sections is its mark. True when something changed.
     func normalize(_ snapshot: inout Snapshot) -> Bool {
         let before = snapshot.document
         let day = today()
-        func assignIDs(_ entries: inout [TaskEntry]) {
-            for index in entries.indices {
-                if entries[index].id == nil { entries[index].id = makeID() }
-                assignIDs(&entries[index].children)
-            }
-        }
-        for section in snapshot.document.sections.indices where snapshot.document.sections[section].kind != nil {
-            for group in snapshot.document.sections[section].groups.indices {
-                assignIDs(&snapshot.document.sections[section].groups[group].entries)
-            }
-        }
         // Ticked habit lines and Soon's lines whose day has come leave their sections.
         var moves: [(id: String, habit: Bool)] = []
         snapshot.document.walk { entry, section, parent, _ in
