@@ -30,6 +30,12 @@ struct RulesConfig: Codable, Hashable, Sendable {
     }
 
     struct Alarms: Codable, Hashable, Sendable {
+        /// Folders of the phone where its own tones may be readable.
+        let systemSoundFolders: [String]
+        /// What a tone's id starts with.
+        let systemSoundPrefix: String
+        /// How long a tone may ring at most.
+        let systemSoundSeconds: Double
         struct Sound: Codable, Hashable, Sendable {
             let id: String
             let title: String

@@ -27,10 +27,11 @@ struct DayTimelineView<TaskContent: View>: View {
                                  width: geometry.size.width, labelHeight: hourLabelHeight, y: y)
                 ForEach(blocks) { item in
                     block(for: item.slot)
-                        .environment(\.titleReserve, cornerWidth(bell: item.slot.showsBell))
+                        .environment(\.titleReserve, cornerWidth(bell: item.slot.showsBell || item.slot.hasAlarm))
                         .overlay(alignment: .topTrailing) {
                             HStack(spacing: tokens.space(.cornerMarkGap)) {
-                                if item.slot.showsBell { AlertBell() }
+                                if item.slot.showsBell { AlertBell(color: bellColor(of: item.slot)) }
+                                if item.slot.hasAlarm { AlertBell(isAlarm: true) }
                             }
                             .padding(.top, cornerInset)
                             .padding(.trailing, cornerInset)
@@ -165,6 +166,12 @@ struct DayTimelineView<TaskContent: View>: View {
         return tokens.plateRadius(.row)
     }
 
+    /// An event's bell is in its time's color; a finished event's as its text.
+    private func bellColor(of slot: TimelineSlot) -> Color? {
+        guard case .event(let event) = slot.content else { return nil }
+        return slot.isPast ? tokens.color(.secondaryText) : tokens.eventSecondary(Color(hex: event.colorHex))
+    }
+
     /// The "now" cursor, as in the old Calendar widget: a dot in the middle of the hour numbers and a
     /// line from its center to the right edge with a rounded end; over blocks it is more see-through.
     private func nowLine(width: CGFloat, blocks: [PlacedSlot]) -> some View {
@@ -196,7 +203,7 @@ struct DayTimelineView<TaskContent: View>: View {
                 }
             }
         }
-        .frame(width: width - origin.x, height: dot)
+        .frame(width: width - origin.x + style.nowLineOverhang, height: dot)
         .offset(x: origin.x, y: origin.y)
         .allowsHitTesting(false)
         .accessibilityHidden(true)

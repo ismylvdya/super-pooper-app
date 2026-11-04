@@ -19,7 +19,7 @@ struct AlarmControl: View {
             Button("alarm.off") { onChange(nil) }
             Section {
                 choice(nil, title: L10n.string("alarm.sound.default"))
-                ForEach(rules.alarms.sounds, id: \.id) { sound in
+                ForEach(model.alarmSounds, id: \.id) { sound in
                     choice(sound.id, title: L10n.string(sound.title))
                 }
             }
@@ -40,8 +40,9 @@ struct AlarmControl: View {
         Button {
             Task {
                 if await model.requestAlarmAccess() {
+                    await model.prepareAlarmSound(sound)
                     onChange(TimeAlarm(time: time, sound: sound))
-                    AlarmSoundPreview.play(rules.alarms.sounds.first { $0.id == sound }?.file, seconds: rules.alarms.previewSeconds)
+                    AlarmSoundPreview.play(model.alarmSounds.first { $0.id == sound }?.file, seconds: rules.alarms.previewSeconds)
                 } else {
                     isRefused = true
                 }

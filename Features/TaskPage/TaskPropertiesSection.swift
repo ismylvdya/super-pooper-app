@@ -11,11 +11,6 @@ struct TaskPropertiesSection: View {
     var body: some View {
         PlateSection(header: "taskPage.properties", info: "info.taskPage.properties") {
             statusRow
-            if task.due?.time != nil {
-                PlateRow(icon: .alarm, title: "alarm.title", info: "info.alarm") {
-                    AlarmControl(alarm: task.alarm(at: nil), onChange: { alarm in editor.apply([.alarms(alarm.map { [$0] } ?? [])]) })
-                }
-            }
             PlateRow(icon: .estimate, title: "taskPage.estimate", info: "info.taskPage.estimate") {
                 Picker("taskPage.estimate", selection: estimateBinding) {
                     ForEach(rules.timeEstimates, id: \.minutes) { Text(LocalizedStringKey($0.label)).tag($0.minutes) }

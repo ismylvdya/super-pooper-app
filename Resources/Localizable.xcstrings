@@ -7444,6 +7444,28 @@
           }
         }
       }
+    },
+    "alarm.sound.vibrate": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vibrate only"
+          }
+        }
+      }
+    },
+    "alarm.sound": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sound"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

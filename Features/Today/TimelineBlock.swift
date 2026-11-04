@@ -70,6 +70,7 @@ struct TimelineBlock: View {
                         }, onRefused: { model.refuseDrop($0.id, onto: .timeline) }))
                         .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).minY } action: { hoursTop = $0 }
                         .padding(.vertical, contentInset)
+                        .padding(.trailing, nowLineOverhang)
                 }
                 .scrollPosition($position)
                 .onChange(of: drag?.newItemPoint) { _, point in
@@ -88,6 +89,8 @@ struct TimelineBlock: View {
                 .edgeFades(topInset: stripHeight == 0 ? 0 : liftRoom.top + stripHeight + pull, bottomExtension: bottomInset,
                            barEdges: barEdges)
                 .liftRoom(extraTop: stripRoom)
+                // The scroll reaches past the column so the now line is not cut at its edge; the content stays in it.
+                .padding(.trailing, -nowLineOverhang)
                 .simultaneousGesture(
                     MagnifyGesture()
                         .updating($pinch) { value, state, _ in state = value.magnification }
@@ -140,11 +143,13 @@ struct TimelineBlock: View {
                                        style: style, taskContent: taskRow)
                     }
                     .padding(.vertical, contentInset)
+                    .padding(.trailing, nowLineOverhang)
                 }
                 .contentMargins(.bottom, bottomInset + tokens.space(.scrollEndRoom), for: .scrollContent)
                 .scrollBounceBehavior(.always)
                 .scrollIndicators(.hidden)
                 .syncsOnPull()
+                .padding(.trailing, -nowLineOverhang)
             }
         }
     }
@@ -174,6 +179,8 @@ struct TimelineBlock: View {
 
     /// Half a group gap above the timeline's content and half below: a group gap in all, which the heights leave free.
     private var contentInset: CGFloat { tokens.space(.groupGap) / 2 }
+    /// The now line ends halfway between the timeline's right edge and the screen's.
+    private var nowLineOverhang: CGFloat { tokens.space(.screenHorizontal) / 2 }
 
     private var zoomLimits: (min: CGFloat, max: CGFloat) { (CGFloat(rules.timeline.zoom.min), CGFloat(rules.timeline.zoom.max)) }
     private var fonts: TimelineFonts { .app(model.settings.timeline, tokens: tokens) }
@@ -216,6 +223,7 @@ struct TimelineBlock: View {
         style.onEventDelete = { eventToDelete = $0 }
         style.rowsHaveOwnPlates = true
         style.showsNow = plan.isToday
+        style.nowLineOverhang = nowLineOverhang
         style.dropMarker = drag?.hoverMoment
         if let item = drag?.item, let moment = drag?.hoverMoment {
             style.dropGhost = TimelineSlot.landing(item, at: moment, rules: model.config.rules.day)

@@ -20,7 +20,7 @@ struct FixedSlots: Sendable {
                 let late = overdue[OverdueBlocks.Key(item, block)]
                 let start = late ?? times.moment(of: block)
                 slots.append(TimelineSlot(content: .task(item), start: start, end: start.addingTimeInterval(rules.duration(of: item.task)),
-                                          isPast: false, time: block.written))
+                                          isPast: false, time: block.written, hasAlarm: item.task.alarm(at: block.written) != nil))
             }
         }
         for reminder in reminders where context.contains(reminder.due) && !reminder.isCompleted {

@@ -7,7 +7,7 @@ enum AlarmSoundPreview {
 
     static func play(_ file: String?, seconds: Double) {
         player?.stop()
-        guard let file, let url = Bundle.main.url(forResource: file, withExtension: nil) else { return }
+        guard let file, let url = Bundle.main.url(forResource: file, withExtension: nil) ?? SystemAlarmSounds.installed(file) else { return }
         player = try? AVAudioPlayer(contentsOf: url)
         player?.play()
         let playing = player

@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// The system date picker for a task date: the calendar, an optional time and, where the item keeps a zone, the Time
-/// zone (None unless one is chosen; it only means something with a time). It keeps the wall-clock day and time it
+/// zone (None unless one is chosen; it only means something with a time) and whether it rings as an alarm. It keeps the wall-clock day and time it
 /// shows, so a time zone change while it is open does not move them. Remove date clears the date; Done saves the pick.
 struct DuePickerSheet: View {
     @Environment(\.dismiss) private var dismiss
@@ -28,7 +28,10 @@ struct DuePickerSheet: View {
                 if let time = pick.time {
                     TimeField("taskPage.due.time", time: Binding(get: { time }, set: { pick.time = $0 }), on: pick.day)
                 }
-                if choosesZone { zoneRow }
+                if choosesZone {
+                    zoneRow
+                    if pick.time != nil { AlarmRows(alarm: $pick.alarm) }
+                }
             }
             .navigationTitle(Text("duePicker.title"))
             .navigationBarTitleDisplayMode(.inline)

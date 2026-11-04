@@ -8,6 +8,8 @@ struct TimelineStyle {
     /// Tasks get at least their title and chip lines (short tasks still show two lines).
     var minimumTaskHeight: CGFloat?
     var showsHourLabels = true
+    /// How far past the timeline's right edge the now line reaches.
+    var nowLineOverhang: CGFloat = 0
     /// Tap on an event (the app opens Calendar on that day).
     var onEventTap: ((CalendarEvent) -> Void)?
     /// Long-press menu of an event (asks first).

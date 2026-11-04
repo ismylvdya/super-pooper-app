@@ -33,7 +33,7 @@ enum SizeToken: String, CaseIterable, Sendable {
     case iconColumn, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, notificationIcon
     case dayArrowTarget
     case habitDotMinimum, cornerInsetMinimum, sourceDot, fadeHeight, poolCounter, poolWidth
-    case habitHistoryMaxHeight, habitStatsBar, titleFade, hourDigitsWidth, reviewChevron, wrapMinWidth, liftOverhang, pagePeek, dropMarkerHeight, bannerShadowRadius, bannerShadowY, hexFieldWidth, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, allDayFontDelta, previewHeight, previewRow, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewHalvesInset, subtaskDropLine
+    case habitHistoryMaxHeight, habitStatsBar, titleFade, hourDigitsWidth, allDayIconScale, reviewChevron, wrapMinWidth, liftOverhang, pagePeek, dropMarkerHeight, bannerShadowRadius, bannerShadowY, hexFieldWidth, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, allDayFontDelta, previewHeight, previewRow, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewHalvesInset, subtaskDropLine
     /// The problems badge on Today's Lists button: its smallest width and its height.
     case problemBadge
     /// Room added above and below a date found in a new task's name, so a tap on it lands easily.
@@ -62,7 +62,7 @@ enum CountToken: String, CaseIterable, Sendable {
 }
 
 enum OpacityToken: String, CaseIterable, Sendable {
-    case blocked, past, selectionOutline, eventFill, eventFillDark, eventTextLightMix, eventTextDarkMix, fadeTop, fadeMiddle, habitEmpty
+    case blocked, past, selectionOutline, eventFill, eventFillDark, fadeTop, fadeMiddle, habitEmpty
     /// The ring of a habit's day not done or done partly (the user's `habits.ringOpacity` over it).
     case habitOpenRing
     case gridFadedWeek, unlinked, eventTime, nowOverBlocks, daySwipeFade, toggleChipFill, bannerShadow, previewBlock, accentedPlate, signingPlate

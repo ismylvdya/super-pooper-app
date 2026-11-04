@@ -1,8 +1,8 @@
 import SwiftUI
 import WidgetKit
 
-/// A calendar event, drawn as in Apple Calendar: a faint tint of the calendar's color, a rounded stripe of the color itself
-/// inset from the plate's edges, the text in a deeper tone of the color (`DesignTokens.eventText`).
+/// A calendar event, drawn as in Apple Calendar, in three colors: the calendar's own for the rounded stripe and the title,
+/// a faint tint of it for the plate, and a paler one for the time and the bell (`DesignTokens.eventSecondary`).
 struct TimelineEventBlock: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.calendar) private var calendar
@@ -34,7 +34,7 @@ struct TimelineEventBlock: View {
                 }
             }
             .padding(.top, inset / 2)
-            .foregroundStyle(slot.isPast ? tokens.color(.secondaryText) : tokens.eventText(own, in: colorScheme))
+            .foregroundStyle(slot.isPast ? tokens.color(.secondaryText) : own)
             Spacer(minLength: 0)
         }
         .padding(.leading, inset)
@@ -51,10 +51,9 @@ extension DesignTokens {
         color.opacity(opacity(scheme == .dark ? .eventFillDark : .eventFill))
     }
 
-    /// An event's text: its calendar's color, deeper in the light theme and paler in the dark one.
-    func eventText(_ color: Color, in scheme: ColorScheme) -> Color {
-        scheme == .dark ? color.mix(with: .white, by: opacity(.eventTextDarkMix))
-            : color.mix(with: .black, by: opacity(.eventTextLightMix))
+    /// An event's time and bell: its calendar's color, paler than the title.
+    func eventSecondary(_ color: Color) -> Color {
+        color.opacity(opacity(.eventTime))
     }
 }
 

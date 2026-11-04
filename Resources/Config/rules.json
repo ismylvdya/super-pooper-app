@@ -40,7 +40,11 @@
   },
   "alarms": {
     "previewSeconds": 3,
+    "systemSoundFolders": ["/Library/Ringtones"],
+    "systemSoundPrefix": "sys-",
+    "systemSoundSeconds": 30,
     "sounds": [
+      { "id": "vibrate", "title": "alarm.sound.vibrate", "file": "alarm-silent.wav" },
       { "id": "system", "title": "alarm.sound.system" },
       { "id": "chime", "title": "alarm.sound.chime", "file": "alarm-chime.wav" },
       { "id": "pulse", "title": "alarm.sound.pulse", "file": "alarm-pulse.wav" },

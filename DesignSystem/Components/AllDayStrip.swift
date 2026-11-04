@@ -41,10 +41,12 @@ struct AllDayStrip: View {
                 .symbolRenderingMode(.palette)
                 .foregroundStyle(tokens.color(.eventIconGlyph), Color(hex: event.colorHex))
                 .frame(width: lineHeight, height: lineHeight)
+                // Larger around the same center: the bar's height stays.
+                .scaleEffect(tokens.size(.allDayIconScale))
                 .widgetAccentable()
             FadingText(text: event.title, font: font ?? tokens.font(.chip), lineHeight: lineHeight)
         }
-        .foregroundStyle(tokens.eventText(Color(hex: event.colorHex), in: colorScheme))
+        .foregroundStyle(Color(hex: event.colorHex))
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.leading, inset)
         .padding(.trailing, ChipCapsule.standard.horizontalPadding(tokens))

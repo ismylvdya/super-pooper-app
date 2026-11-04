@@ -170,7 +170,7 @@ final class DerivedStatePublisher {
             return
         }
         let inputs = notificationInputs(context: context)
-        let alarmPlanner = AlarmPlanner(sounds: config.rules.alarms.sounds, defaultSound: settings.notifications.alarmSound)
+        let alarmPlanner = AlarmPlanner(sounds: SystemAlarmSounds.all(config.rules.alarms), defaultSound: settings.notifications.alarmSound)
         let unmarked = inputs.planner.plan(tasks: inputs.tasks, reminders: inputs.reminders, events: inputs.events,
                                           skipped: inputs.skipped, todayTimes: inputs.todayTimes, context: context)
         let planned = alarmPlanner.marking(unmarked, tasks: inputs.tasks)

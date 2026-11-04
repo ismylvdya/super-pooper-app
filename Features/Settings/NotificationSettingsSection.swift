@@ -33,11 +33,14 @@ struct NotificationSettingsSection: View {
                     get: { model.settings.notifications.alarmSound },
                     set: { value in
                         model.updateSettings { $0.notifications.alarmSound = value }
-                        AlarmSoundPreview.play(model.config.rules.alarms.sounds.first { $0.id == value }?.file,
-                                               seconds: model.config.rules.alarms.previewSeconds)
+                        Task {
+                            await model.prepareAlarmSound(value)
+                            AlarmSoundPreview.play(model.alarmSounds.first { $0.id == value }?.file,
+                                                   seconds: model.config.rules.alarms.previewSeconds)
+                        }
                     }
                 )) {
-                    ForEach(model.config.rules.alarms.sounds, id: \.id) { Text(LocalizedStringKey($0.title)).tag($0.id) }
+                    ForEach(model.alarmSounds, id: \.id) { Text(verbatim: L10n.string($0.title)).tag($0.id) }
                 }
                 .labelsHidden()
                 .accessibilityIdentifier("settings.notifications.alarmSound")
