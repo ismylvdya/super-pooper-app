@@ -32,8 +32,6 @@ struct RootView: View {
         let model = container.model
         Group {
             if model.settings.onboarding.completed {
-                HStack(spacing: 0) {
-                    if physicalBottom == .leading, !isKeyboardUp { LandscapeTabBar(bottom: .leading) }
                     TabView(selection: Binding(get: { TabBarItem.tab(router.tab) }, set: { TabBarItem.selection($0, router: router) })) {
                         ForEach(AppTab.allCases, id: \.self) { tab in
                             Tab(value: TabBarItem.tab(tab)) {
@@ -67,12 +65,15 @@ struct RootView: View {
                         }
                     }
                     .overlay { if physicalBottom == nil { uprightNewItemButton } }
-                    if physicalBottom == .trailing, !isKeyboardUp { LandscapeTabBar(bottom: .trailing) }
+                // Lying sideways the app's own tab bar floats over the tabs' edge, as the system's does upright: the pages
+                // keep clear of it by the safe area, and what reaches past that shows through its glass.
+                .safeAreaInset(edge: physicalBottom ?? .trailing, spacing: 0) {
+                    if let physicalBottom, !isKeyboardUp { LandscapeTabBar(bottom: physicalBottom) }
                 }
                 // The landscape tab bar is laid out from the screen edge at the physical bottom, not from the safe area,
                 // so no empty strip is left between it and the tabs.
                 .ignoresSafeArea(.container, edges: landscapeTabBarEdge)
-                // Behind the landscape tab bar, which stands beside the tabs rather than over them.
+                // Behind the tabs and the landscape tab bar.
                 .screenBackground()
                 // The banner sits over the navigation bar, its corners on the bar buttons, on every tab.
                 .overlay(alignment: .top) { BannerOverlay(yieldsToSheets: true) }

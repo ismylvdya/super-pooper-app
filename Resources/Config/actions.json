@@ -198,7 +198,7 @@
     {
       "id": "worm",
       "title": "action.worm",
-      "icon": "link",
+      "icon": "square.split.1x2",
       "destructive": false,
       "haptic": "light"
     },

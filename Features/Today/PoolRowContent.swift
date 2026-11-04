@@ -53,7 +53,10 @@ struct PoolRowContent: View {
             .allowsHitTesting(false)
             .overlay {
                 if isSelected {
-                    tokens.plateShape(.row).stroke(tokens.color(.primaryText), lineWidth: tokens.size(.selectionOutline))
+                    // Inside the plate's outline, so a routine's shared plate and the row below cut nothing of it.
+                    tokens.plateShape(.row)
+                        .stroke(tokens.color(.selectionOutline), lineWidth: tokens.size(.selectionOutline))
+                        .padding(tokens.size(.selectionOutline) / 2)
                         .accessibilityIdentifier("pool.selected")
                 }
             }

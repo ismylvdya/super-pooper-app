@@ -13,6 +13,7 @@ struct PoolBlock: View {
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     @Environment(\.rules) private var rules
+    @Environment(\.physicalBottom) private var physicalBottom
     @Environment(TaskDragState.self) private var dragState: TaskDragState?
     @Environment(PoolSelection.self) private var selection: PoolSelection?
     let plan: DayPlan
@@ -150,7 +151,11 @@ struct PoolBlock: View {
         .frame(idealWidth: tokens.size(.poolWidth))
     }
 
-    private var fillsHeight: Bool { !model.settings.poolUsesVisibleCount }
+    /// By the arrangement Today has now: lying sideways it has its own.
+    private var fillsHeight: Bool {
+        let today = model.settings.today
+        return !model.settings.poolUsesVisibleCount(in: physicalBottom == nil ? today.arrangement : today.landscapeArrangement)
+    }
     private var visibleCount: Int { max(model.settings.pool.visibleCount, 1) }
 
     private var list: some View {

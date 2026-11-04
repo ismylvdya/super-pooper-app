@@ -182,18 +182,27 @@ struct TodayScreen: View {
                 let fade = 1 - min(abs(pager.daySlide) / geometry.size.width, 1) * tokens.opacity(.daySwipeFade)
                 TasksStrip(layout: layout, pages: pages, pager: pager, plan: plan, handler: handler, bottomInset: bottomInset,
                            isLandscape: isLandscape, edgeInset: tokens.space(.screenHorizontal), fade: fade, onTurn: turn)
-                .padding(.horizontal, tokens.space(.screenHorizontal))
+                .padding(.leading, tokens.space(.screenHorizontal))
+                .padding(.trailing, reachesUnderTabBar ? -tokens.bar(.landscapeTabBarRoom) : tokens.space(.screenHorizontal))
                 .padding(.top, tokens.space(.headerToPlate))
                 // An empty pool still takes the swipe.
                 .contentShape(Rectangle())
                 // A lifted row's shadow fits above the first row; sideways it may reach over the margins and the next block.
                 .environment(\.liftRoom, LiftRoom(top: tokens.space(.liftShadow), sides: tokens.size(.liftOverhang)))
             }
+            // Turned, everything is laid out anew: nothing measured on the other side stays.
+            .id(isLandscape)
             .ignoresSafeArea(.container, edges: .bottom)
             .simultaneousGesture(daySwipe(width: geometry.size.width))
             .onChange(of: isDaySwiping) { _, swiping in if !swiping { pager.endSwipe() } }
             .onChange(of: arrangement) { pager.resetPage() }
         }
+    }
+
+    /// Lying sideways the timeline at the tab bar's side runs on under its glass, as the lists do under the bar upright. A
+    /// pool or a page there would hide its text.
+    private var reachesUnderTabBar: Bool {
+        physicalBottom == .trailing && !layout.isPaged && layout.axis == .horizontal && layout.blocks.last?.block == .timeline
     }
 
     /// A horizontal drag moves the pages with the finger and, far enough, turns the page; at the first page it pulls the
