@@ -55,9 +55,9 @@ struct DesignTokens: Decodable, Sendable {
     /// A chip's height: its line and its padding.
     var chipHeight: CGFloat { uiFont(.chip).lineHeight + space(.chipVertical) * 2 }
 
-    /// The corner of a task's plate: half the height of a one-line row, the tallest of its title and chips with half the
-    /// row's vertical padding above and below. A routine's shared plate takes the same, so its ends are its rows' ends.
-    var rowPlateRadius: CGFloat { max(chipHeight, uiFont(.taskTitle).lineHeight) / 2 + space(.rowVertical) / 2 }
+    /// The corner of a task's plate, concentric with its chips: their corner (half their height) plus the distance the
+    /// plate keeps from them on the top, bottom and right (half the row's vertical padding).
+    var rowPlateRadius: CGFloat { chipHeight / 2 + space(.rowVertical) / 2 }
     /// The right inset of a row's own plate (pool, widgets): the chips stand as far from its right edge as from the top.
     var rowPlateTrailingInset: CGFloat { space(.rowVertical) / 2 }
     /// Where a banner stands: over the navigation bar, its corners on the round bar buttons (back, …).

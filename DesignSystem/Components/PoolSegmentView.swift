@@ -6,13 +6,20 @@ import SwiftUI
 struct PoolSegmentView<Row: View>: View {
     let segment: PoolSegments.Segment
     @ViewBuilder let row: (DayItem, PoolRowPlate) -> Row
+    /// How tall the rows of a shared plate are.
+    @State private var rowHeights: [String: CGFloat] = [:]
 
     var body: some View {
         if segment.isShared {
             VStack(alignment: .leading, spacing: 0) {
-                ForEach(segment.items) { item in row(item, .piece) }
+                ForEach(segment.items) { item in
+                    row(item, .piece)
+                        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { rowHeights[item.id] = $0 }
+                }
             }
-            .plate(.row, clipsContent: true)
+            // A row's plate rounds by at most half its height: the shared one rounds no more, or it would cut a row's
+            // outline at its corners.
+            .plate(.row, clipsContent: true, maxRadius: (rowHeights.values.min() ?? .infinity) / 2)
         } else if let item = segment.items.first {
             row(item, .own)
         }

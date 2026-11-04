@@ -6,8 +6,10 @@ extension View {
     /// reaches past the plate (a scroll, a past event's stripe, the pages of a paged preview). In a widget rendered in
     /// one tint the plates' color is see-through (`WidgetRendering`); a given fill is already a tint of its own.
     /// `tint` lies over the fill (a high-priority task's soft red over its plate).
-    func plate(_ corners: PlateCorners, fill: Color? = nil, tint: Color? = nil, clipsContent: Bool = false) -> some View {
-        modifier(PlateFill(corners: corners, fill: fill, tint: tint, clipsContent: clipsContent))
+    /// `maxRadius` rounds it no more than that (a shared plate, no rounder than the rows on it).
+    func plate(_ corners: PlateCorners, fill: Color? = nil, tint: Color? = nil, clipsContent: Bool = false,
+               maxRadius: CGFloat = .infinity) -> some View {
+        modifier(PlateFill(corners: corners, fill: fill, tint: tint, clipsContent: clipsContent, maxRadius: maxRadius))
     }
 
     /// A long press (`.contextMenuPreview`) or a drag (`.dragPreview`) lifts exactly the plate: its shape, not the
@@ -24,10 +26,11 @@ private struct PlateFill: ViewModifier {
     let fill: Color?
     let tint: Color?
     let clipsContent: Bool
+    let maxRadius: CGFloat
     @Environment(\.plateGradient) private var gradient
 
     func body(content: Content) -> some View {
-        let shape = tokens.plateShape(corners)
+        let shape = PlateShape(cornerRadius: min(tokens.plateRadius(corners), maxRadius))
         let color = fill ?? plateColor
         // The gradient belongs to this plate only, not to plates inside it.
         let surfaced = content.environment(\.plateSurface, color).environment(\.plateGradient, nil)
