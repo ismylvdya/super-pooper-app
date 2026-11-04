@@ -183,7 +183,7 @@ struct TodayScreen: View {
                 TasksStrip(layout: layout, pages: pages, pager: pager, plan: plan, handler: handler, bottomInset: bottomInset,
                            isLandscape: isLandscape, edgeInset: tokens.space(.screenHorizontal), fade: fade, onTurn: turn)
                 .padding(.leading, tokens.space(.screenHorizontal))
-                .padding(.trailing, reachesUnderTabBar ? -tokens.bar(.landscapeTabBarRoom) : tokens.space(.screenHorizontal))
+                .padding(.trailing, tokens.space(.screenHorizontal))
                 .padding(.top, tokens.space(.headerToPlate))
                 // An empty pool still takes the swipe.
                 .contentShape(Rectangle())
@@ -197,12 +197,6 @@ struct TodayScreen: View {
             .onChange(of: isDaySwiping) { _, swiping in if !swiping { pager.endSwipe() } }
             .onChange(of: arrangement) { pager.resetPage() }
         }
-    }
-
-    /// Lying sideways the timeline at the tab bar's side runs on under its glass, as the lists do under the bar upright. A
-    /// pool or a page there would hide its text.
-    private var reachesUnderTabBar: Bool {
-        physicalBottom == .trailing && !layout.isPaged && layout.axis == .horizontal && layout.blocks.last?.block == .timeline
     }
 
     /// A horizontal drag moves the pages with the finger and, far enough, turns the page; at the first page it pulls the

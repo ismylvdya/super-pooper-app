@@ -20,7 +20,7 @@ struct SettingsSearchIndexTests {
         let results = SettingsSearchIndex.results("clock", localize: localize)
         #expect(results.first?.title == "Clock")
         #expect(results.first?.rows.contains("Time zone") == true)
-        #expect(results.first?.route == nil, "the clock stands on Settings itself")
+        #expect(results.first?.route == .clockSettings, "the Timezone widget has its own page")
     }
 
     @Test func anEmptyQueryFindsNothing() {

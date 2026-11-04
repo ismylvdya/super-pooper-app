@@ -65,9 +65,11 @@ struct RootView: View {
                         }
                     }
                     .overlay { if physicalBottom == nil { uprightNewItemButton } }
-                // Lying sideways the app's own tab bar floats over the tabs' edge, as the system's does upright: the pages
-                // keep clear of it by the safe area, and what reaches past that shows through its glass.
-                .safeAreaInset(edge: physicalBottom ?? .trailing, spacing: 0) {
+                // Lying sideways the app's own tab bar floats beside the tabs: its inner side is the screen's edge for them, and
+                // only what a page deliberately pushes past that edge (the pool, with a list opened left of it) shows through
+                // its glass.
+                .padding(physicalBottom.map { $0 == .leading ? Edge.Set.leading : .trailing } ?? [], isKeyboardUp ? 0 : tokens.bar(.landscapeTabBarRoom))
+                .overlay(alignment: physicalBottom == .leading ? .leading : .trailing) {
                     if let physicalBottom, !isKeyboardUp { LandscapeTabBar(bottom: physicalBottom) }
                 }
                 // The landscape tab bar is laid out from the screen edge at the physical bottom, not from the safe area,
