@@ -143,6 +143,7 @@ extension AppModel {
     func rename(_ name: String, to newName: String) async -> Bool { await parts.notes.rename(name, to: newName) }
     func externalURL(for name: String) async -> URL? { await parts.notes.externalURL(for: name) }
 
+    func reorderTasks(_ names: [String]) async { await parts.notes.reorderTasks(names) }
     func addSubtask(_ name: String, to parent: String) async { await parts.notes.addSubtask(name, to: parent) }
     func moveSubtask(_ name: String, onto target: String, of parent: String) {
         parts.notes.moveSubtask(name, onto: target, of: parent)

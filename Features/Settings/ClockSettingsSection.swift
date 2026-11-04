@@ -4,6 +4,7 @@ import SwiftUI
 struct ClockSettingsSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.icons) private var icons
+    @Environment(\.tokens) private var tokens
     @State private var prefix = ""
 
     var body: some View {
@@ -30,10 +31,17 @@ struct ClockSettingsSection: View {
                 .accessibilityIdentifier("settings.clock.zone")
             }
             PlateRow(icon: .title, title: "settings.clock.prefix") {
-                TrailingSpaceTextField(placeholder: "settings.clock.prefix.placeholder", text: $prefix) {
-                    model.updateSettings { $0.clock.prefix = prefix }
-                }
+                // The quotes show where the text starts and ends, spaces included; they are outside the field.
+                HStack(spacing: 0) {
+                    Text(verbatim: "“")
+                    TrailingSpaceTextField(placeholder: "settings.clock.prefix.placeholder", text: $prefix) {
+                        model.updateSettings { $0.clock.prefix = prefix }
+                    }
                     .onChange(of: prefix) { _, value in model.updateSettings { $0.clock.prefix = value } }
+                    .fixedSize()
+                    Text(verbatim: "”")
+                }
+                .foregroundStyle(tokens.color(.secondaryText))
             }
         }
         .onAppear { prefix = model.settings.clock.prefix }

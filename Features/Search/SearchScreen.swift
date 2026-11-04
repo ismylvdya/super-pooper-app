@@ -12,6 +12,8 @@ struct SearchScreen: View {
     @State private var query = ""
     @State private var pendingAction: PendingAction?
     @FocusState private var isFocused: Bool
+    /// The field's X closes the search: back to the page it was opened from.
+    @State private var isPresented = true
 
     var body: some View {
         let text = query.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -59,9 +61,12 @@ struct SearchScreen: View {
         .appList()
         .navigationTitle(Text("search.title"))
         .navigationBarTitleDisplayMode(.inline)
-        .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: Text(scope == .tasks ? "search.prompt.tasks" : "search.prompt"))
+        .searchable(text: $query, isPresented: $isPresented, placement: .navigationBarDrawer(displayMode: .always), prompt: Text(scope == .tasks ? "search.prompt.tasks" : "search.prompt"))
         .searchFocused($isFocused)
         .onAppear { isFocused = true }
+        .onChange(of: isPresented) { _, isOn in
+            if !isOn, case .search = router.path.last { router.path.removeLast() }
+        }
         .actionConfirmation($pendingAction) { handler.run($0) }
     }
 

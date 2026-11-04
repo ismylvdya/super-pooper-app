@@ -182,6 +182,7 @@ struct RootView: View {
         case .lists: ListsScreen()
         case .search(let scope): SearchScreen(scope: scope)
         case .taskSettings: TaskSettingsScreen()
+        case .clockSettings: ClockSettingsScreen()
         case .habitSettings: HabitSettingsScreen()
         case .archive: ArchiveScreen()
         case .trash: TrashScreen()

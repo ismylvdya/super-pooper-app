@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// The fastest way to plan a task, right under its name, in three rows: High priority; Today, Tomorrow and the date
-/// chip, which opens the date sheet and names another day or a time; Pleasant and Need energy. All off for a new task.
+/// The fastest way to plan a task, right under its name, in two rows: Today, Tomorrow and the date chip, which opens the
+/// date sheet and names another day or a time; then icons alone: High priority, a chip's width apart from Pleasant and
+/// Need energy. All off for a new task.
 /// What the chips set is not repeated in Properties.
 struct TaskChipRows: View {
     @Environment(AppModel.self) private var model
@@ -12,7 +13,6 @@ struct TaskChipRows: View {
     var body: some View {
         let spacing = tokens.space(.chipGap)
         VStack(spacing: spacing) {
-            highChip
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: spacing) {
                     dueChips(fades: false)
@@ -24,7 +24,11 @@ struct TaskChipRows: View {
                     dateChip.fixedSize().layoutPriority(1)
                 }
             }
-            HStack(spacing: spacing) { feelChips }
+            HStack(spacing: spacing) {
+                highChip
+                highChip.hidden().accessibilityHidden(true)
+                feelChips
+            }
         }
         .frame(maxWidth: .infinity)
         .sheet(isPresented: $isPickingDate) {
@@ -35,10 +39,11 @@ struct TaskChipRows: View {
     }
 
     private var highChip: some View {
-        ToggleChip(.high, title: "taskPage.chip.high", isOn: editor.task.isHighPriority) {
+        ToggleChip(.high, isOn: editor.task.isHighPriority) {
             Haptics.play(.select)
             editor.edit { [.highPriority(!$0.isHighPriority)] }
         }
+        .accessibilityLabel(Text("taskPage.chip.high"))
         .accessibilityIdentifier("taskPage.chip.high")
     }
 
@@ -68,10 +73,11 @@ struct TaskChipRows: View {
 
     @ViewBuilder private var feelChips: some View {
         ForEach(FeelChip.allCases, id: \.self) { chip in
-            ToggleChip(chip.look, title: chip.title, isOn: editor.task.feel == chip.feel) {
+            ToggleChip(chip.look, isOn: editor.task.feel == chip.feel) {
                 Haptics.play(.select)
                 editor.edit { [.feel(FeelChip.toggling(chip, current: $0.feel))] }
             }
+            .accessibilityLabel(Text(chip.title))
             .accessibilityIdentifier(chip.chipIdentifier)
         }
     }

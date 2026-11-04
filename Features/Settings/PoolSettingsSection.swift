@@ -54,7 +54,10 @@ struct PoolSettingsSection: View {
         PlateRow(icon: nil, title: "settings.pool.startedFill", info: "info.settings.pool.startedFill") {
             Text(length.formatted(.percent.precision(.fractionLength(0)))).monospacedDigit().foregroundStyle(tokens.color(.secondaryText))
         }
-        .background { StartedFill(length: length) }
+        // As it stands in the pool: on a row's whole plate.
+        .rowPlatePadding()
+        .environment(\.plateGradient, AnyView(StartedFill(length: length)))
+        .plate(.row)
         Slider(value: Binding(get: { length }, set: { value in model.updateSettings { $0.pool.startedFillLength = limits.snapped(value) } }),
                in: limits.closed)
             .accessibilityIdentifier("settings.pool.startedFill")

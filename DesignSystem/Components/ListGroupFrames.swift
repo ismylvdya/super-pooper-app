@@ -30,6 +30,8 @@ final class ListGroupFrames {
     /// kept while a row is lifted, dragged or moving aside — in its own group or another one (a row dragged into another
     /// group moves that group's rows aside too, sometimes all of them together).
     private(set) var heldSpans: [String: ListGroupGeometry.Span] = [:]
+    /// How many views each row has on screen now.
+    private var appearances: [String: Int] = [:]
     /// The list's sides on screen.
     private var listSides: ClosedRange<CGFloat>?
 
@@ -54,9 +56,14 @@ final class ListGroupFrames {
         for row in rows.values.flatMap(\.values) { takeColumns(from: row.frame) }
     }
 
+    /// A row's view came or went. A list that gets a new identity (search closed) has the new row appear before the old
+    /// one disappears: the row is visible while any of its views is.
     func setVisible(_ isVisible: Bool, group: String, id: String) {
-        guard var row = rows[group]?[id], row.isVisible != isVisible else { return }
-        row.isVisible = isVisible
+        let key = group + "\u{0}" + id
+        appearances[key, default: 0] += isVisible ? 1 : -1
+        let shown = appearances[key, default: 0] > 0
+        guard var row = rows[group]?[id], row.isVisible != shown else { return }
+        row.isVisible = shown
         set(row, group: group, id: id)
     }
 

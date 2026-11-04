@@ -10,14 +10,23 @@ extension View {
 
 /// The search button of a page's bar; it stands to the right of the page's other buttons, in the same bubble.
 struct SearchBarButton: View {
-    @Environment(\.icons) private var icons
     @Binding var isSearching: Bool
     var accessibilityID = "page.search"
 
     var body: some View {
-        Button { isSearching = true } label: { Image(systemName: icons[.search]) }
+        Button { isSearching = true } label: { SearchGlyph() }
             .accessibilityLabel(Text("search.title"))
             .accessibilityIdentifier(accessibilityID)
+    }
+}
+
+/// The magnifier of every search button: a little above the middle of its bubble, where it looks centered.
+struct SearchGlyph: View {
+    @Environment(\.tokens) private var tokens
+    @Environment(\.icons) private var icons
+
+    var body: some View {
+        Image(systemName: icons[.search]).offset(y: -tokens.bar(.searchGlyphLift))
     }
 }
 

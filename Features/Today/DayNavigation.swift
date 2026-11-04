@@ -2,9 +2,9 @@ import CoreText
 import SwiftUI
 import UIKit
 
-/// The arrows around the shown day's name ("Today", "Yesterday", "26 Oct • Wed"; lying sideways "Mon", "Tod"); on another day, tapping the
-/// name goes back to today. The name's frame is as wide as the widest of its kind (the named days, or the dates), so the
-/// arrows stay put within a kind and stand `spacing.dayArrowGap` from it; it shrinks if the room is short. Sideways it is a column in physical order whose arrows point the same physical way as upright.
+/// The arrows around the shown day's name ("Today", "Yesterday", "26 Oct · Wed"; lying sideways "Mon", "Tod"); on another day, tapping the
+/// name goes back to today. The name's frame is as wide as the widest of them, so the
+/// arrows stay put and stand `spacing.dayArrowGap` from it; it shrinks if the room is short. Sideways it is a column in physical order whose arrows point the same physical way as upright.
 /// An arrow takes taps far beyond its glyph while everything stays where it was: the whole height of the bar
 /// (`size.dayArrowTarget`), the room the bar's button style used to leave around the glyph and the gap to the name.
 struct DayNavigation: View {
@@ -22,7 +22,7 @@ struct DayNavigation: View {
         let today = model.context().today
         let style: DayName.Style = bottom == nil ? .date : .weekday
         let title = DayName.title(today.adding(days: dayOffset), offset: dayOffset, style: style, calendar: model.calendar)
-        let names = DayName.frameNames(style, offset: dayOffset, around: today, calendar: model.calendar)
+        let names = DayName.frameNames(style, around: today, calendar: model.calendar)
         let layout = bottom == nil ? AnyLayout(HStackLayout(spacing: 0)) : AnyLayout(VStackLayout(spacing: 0))
         let order = PhysicalBottom.physicalOrder([Part.previous, .name, .next], bottom: bottom)
         let nameIndex = order.firstIndex(of: .name) ?? 0

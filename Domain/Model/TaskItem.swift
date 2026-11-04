@@ -36,6 +36,8 @@ struct TaskItem: Identifiable, Hashable, Codable, Sendable {
     var problems: [TaskProblem] = []
     /// Its day passed with it not done, and it was carried into today's pool without a time (`docs/BACKEND.md`).
     var isOverdue = false
+    /// Its place among the store's lines; a list keeps that order. Nil = by name, after those.
+    var storeOrder: Int?
 
     /// A habit has the habit status or repeats by a rule (even one that cannot be read).
     var isHabit: Bool { status == .habit || recurrence != nil || hasUnreadableRecurrence }

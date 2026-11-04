@@ -24,6 +24,13 @@ struct TaskListScreen: View {
                 ForEach(Array(group.tasks.enumerated()), id: \.element.name) { index, task in
                     row(task, group: StatusText.title(group.status), index: index, count: group.tasks.count)
                 }
+                // Dragged like every list; while a search filters it the rows cannot move.
+                .onMove(perform: query.isEmpty ? { source, destination in
+                    Haptics.play(.reorder)
+                    var order = group.tasks.map(\.name)
+                    order.move(fromOffsets: source, toOffset: destination)
+                    Task { await model.reorderTasks(order) }
+                } : nil)
             }
             filedGroup(contents.filed)
         }

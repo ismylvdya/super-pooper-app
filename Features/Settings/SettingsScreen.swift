@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// The Settings tab, searchable by the titles of its sections and rows (`SettingsSearchIndex`, the bar's magnifier as on
-/// the other tabs). Each part under its own title: tasks, habits, the clock, notes, then the archive and the trash. How
+/// the other tabs). Each part under its own title: tasks, habits, the Timezone widget, notes, then the archive and the trash. How
 /// long the app's signature has left stands at the very end while it is green, at the very top once it turns yellow or red.
 struct SettingsScreen: View {
     @Environment(AppModel.self) private var model
@@ -43,7 +43,9 @@ struct SettingsScreen: View {
                 SettingsLink(route: .conflicts, icon: .problem, title: "conflicts.title", value: "\(model.conflictedNotes.count)")
             }
         }
-        ClockSettingsSection()
+        PlateSection(header: "settings.clock") {
+            SettingsLink(route: .clockSettings, icon: .clockSettings, title: "settings.clock.summary")
+        }
         PlateSection(header: "settings.notes") {
             PlateRow(icon: .title, title: "settings.notes.soon") {}
         }

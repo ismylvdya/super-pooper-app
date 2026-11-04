@@ -33,6 +33,7 @@ struct BacklogPage: View {
         .contentMargins(.bottom, bottomInset + tokens.space(.scrollEndRoom), for: .scrollContent)
         .scrollBounceBehavior(.always)
         .scrollIndicators(.hidden)
+        .syncsOnPull()
         .edgeFades(bottomExtension: bottomInset, barEdges: barEdges)
         .liftRoom()
         .overlay(alignment: .top) {

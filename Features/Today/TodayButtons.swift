@@ -64,7 +64,7 @@ struct TodayButtons: View {
             .accessibilityValue(badge.map { Text("problems.badge \($0)") } ?? Text(verbatim: ""))
             .accessibilityIdentifier("today.lists")
         case .search:
-            Button { router.open(.search(.tasksAndEvents)) } label: { Image(systemName: icons[.search]) }
+            Button { router.open(.search(.tasksAndEvents)) } label: { SearchGlyph() }
                 .tint(tokens.color(.accent))
                 .accessibilityLabel(Text("search.title"))
                 .accessibilityIdentifier("today.search")

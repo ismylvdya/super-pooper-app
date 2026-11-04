@@ -186,6 +186,19 @@ final class NoteCommands {
         }
     }
 
+    /// A list's rows dragged into a new order: shown at once, and their lines in the store take it.
+    func reorderTasks(_ names: [String]) async {
+        let items = names.compactMap(tasks.task(named:))
+        let places = items.compactMap(\.storeOrder).sorted()
+        for (item, place) in zip(items, places) {
+            var moved = item
+            moved.storeOrder = place
+            tasks.replace(moved)
+        }
+        try? await (store as? TaskOrdering)?.reorder(items.map(\.id))
+        await derived.publish()
+    }
+
     /// A subtask dragged onto another one on the parent's page takes its place; the list (and the pool) shows the new
     /// order at once, the places are written to the subtasks after.
     func moveSubtask(_ name: String, onto target: String, of parent: String) {

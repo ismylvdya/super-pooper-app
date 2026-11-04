@@ -29,6 +29,7 @@ enum Route: Hashable {
     case search(SearchScope)
     case taskSettings
     case habitSettings
+    case clockSettings
     case archive
     case trash
     case routines

@@ -7,7 +7,6 @@ struct ListsScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
-    @Environment(\.icons) private var icons
 
     var body: some View {
         PageScaffold(title: L10n.string("lists.title"), isNested: true) {
@@ -41,7 +40,7 @@ struct ListsScreen: View {
         .syncsOnPull { await model.loadFiledTasks() }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button { router.open(.search(.tasks)) } label: { Image(systemName: icons[.search]) }
+                Button { router.open(.search(.tasks)) } label: { SearchGlyph() }
                     .tint(tokens.color(.accent))
                     .accessibilityLabel(Text("search.title"))
                     .accessibilityIdentifier("lists.search")

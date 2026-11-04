@@ -15,8 +15,8 @@ struct DayNameTests {
         #expect(DayName.title(wednesday, offset: 0, style: .date, calendar: calendar) == "Today")
         #expect(DayName.title(wednesday.adding(days: 1), offset: 1, style: .date, calendar: calendar) == "Tomorrow")
         #expect(DayName.title(wednesday.adding(days: -1), offset: -1, style: .date, calendar: calendar) == "Yesterday")
-        #expect(DayName.title(wednesday.adding(days: 5), offset: 5, style: .date, calendar: calendar) == "26 Oct • Mon")
-        #expect(DayName.title(wednesday.adding(days: -2), offset: -2, style: .date, calendar: calendar) == "19 Oct • Mon")
+        #expect(DayName.title(wednesday.adding(days: 5), offset: 5, style: .date, calendar: calendar) == "26 Oct · Mon")
+        #expect(DayName.title(wednesday.adding(days: -2), offset: -2, style: .date, calendar: calendar) == "19 Oct · Mon")
     }
 
     /// The frame holds the widest name: "Yesterday" and every date with its weekday, so the arrows never move.

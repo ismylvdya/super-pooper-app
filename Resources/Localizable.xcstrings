@@ -1332,7 +1332,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%1$@ • %2$@"
+            "value": "%1$@ · %2$@"
           }
         }
       }
@@ -3048,7 +3048,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sync Tasks"
+            "value": "Sync All"
           }
         }
       }
@@ -7022,7 +7022,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Day, pool, timeline and colors"
+            "value": "Pool, Timeline & Lists"
           }
         }
       }
@@ -7033,7 +7033,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Routines, marks and pictures"
+            "value": "Habits, Repeatable tasks & Routines"
           }
         }
       }
@@ -7066,7 +7066,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Archive and trash"
+            "value": "Archive & Trash"
           }
         }
       }
@@ -7485,6 +7485,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Overdue"
+          }
+        }
+      }
+    },
+    "settings.clock.summary": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timezone widget"
           }
         }
       }
