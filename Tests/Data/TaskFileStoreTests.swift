@@ -98,12 +98,12 @@ struct TaskFileStoreTests {
         #expect(try await store.text(of: parent) == "words")
     }
 
-    @Test func aDayLaterAPassedDateComesUpToTodayWithItsTime() async throws {
+    @Test func aDayLaterAPassedDateComesUpToTodayWithoutItsTime() async throws {
         let first = store()
         _ = try await first.create(draft([.due(TaskDue(day: LocalDate("2026-10-22"), time: LocalTime("14:00")))]), named: "Dentist")
         let later = store(today: LocalDate("2026-10-24"))
         let task = try await later.load().tasks.first
-        #expect(task?.due == TaskDue(day: LocalDate("2026-10-24"), time: LocalTime("14:00")))
+        #expect(task?.due == TaskDue(day: LocalDate("2026-10-24")), "the time passed with its day: the task waits in the pool")
         #expect(TaskDocument(text: try text(), format: format).sections.first { $0.kind == .now }?.groups[0].entries.first?.name == "Dentist")
     }
 

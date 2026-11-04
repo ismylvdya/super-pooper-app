@@ -175,7 +175,7 @@ actor TaskFileStore: TaskStore {
     }
 
     /// What a day's turn or a hand in Obsidian leaves to tidy: lines without an id get one; a task dated before today
-    /// comes up to today with its time, a task whose day has come moves from Soon to Now; a habit's line ticked in today's
+    /// comes up to today without its time, so it waits in the pool; a task whose day has come moves from Soon to Now; a habit's line ticked in today's
     /// sections is its mark. True when something changed.
     func normalize(_ snapshot: inout Snapshot) -> Bool {
         let before = snapshot.document
@@ -213,11 +213,16 @@ actor TaskFileStore: TaskStore {
         return snapshot.document != before
     }
 
-    /// An open task's date that has passed becomes today's; its time stays.
+    /// An open task's date that has passed becomes today's. The time it was meant for has passed with its day, so it goes
+    /// (with its zone and its notification), and the task stands in the pool.
     private func rollOver(_ document: inout TaskDocument, to day: LocalDate) {
         func roll(_ entries: inout [TaskEntry]) {
             for index in entries.indices {
-                if entries[index].box != .done, let date = entries[index].date, date < day { entries[index].date = day }
+                if entries[index].box != .done, let date = entries[index].date, date < day {
+                    entries[index].date = day
+                    entries[index].time = nil
+                    entries[index].zone = nil
+                }
                 roll(&entries[index].children)
             }
         }
