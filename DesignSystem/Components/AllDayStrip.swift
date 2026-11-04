@@ -63,9 +63,9 @@ extension AllDayStrip {
         return CGFloat(count) * bar + CGFloat(count - 1) * tokens.space(.chipGap)
     }
 
-    /// How far the bars start from the hour column's left edge: their round icons stand over the middle of the hour numbers.
-    /// With text so large that this would take them past the column's edge, they stay at the edge.
+    /// How far the bars start from the hour column's left edge: their round icons stand over the middle of the hour numbers,
+    /// also when large text takes the bar a little past the column's edge.
     static func leadingInset(lineHeight: CGFloat, tokens: DesignTokens) -> CGFloat {
-        max(tokens.hourDigitsCenter - ChipCapsule.standard.verticalPadding(tokens) - lineHeight / 2, 0)
+        tokens.hourDigitsCenter - ChipCapsule.standard.verticalPadding(tokens) - lineHeight / 2
     }
 }

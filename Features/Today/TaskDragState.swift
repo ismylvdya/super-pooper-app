@@ -263,9 +263,9 @@ private struct TaskDragSource<Preview: View>: ViewModifier {
             .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
             .onDrag { drag.begin(item, from: source) } preview: {
                 DragStack(count: stackCount, corners: lift) {
-                    preview().frame(width: size?.width, height: size?.height)
+                    // The first of several may be taller or shorter than the row the finger took.
+                    preview().frame(width: size?.width, height: stackCount > 1 ? nil : size?.height)
                 }
-                .plateLift(lift, for: .dragPreview)
             }
     }
 }

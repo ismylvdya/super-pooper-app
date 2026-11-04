@@ -41,7 +41,7 @@ struct SelectionToolbar: View {
         .tint(tokens.color(isCancelTargeted ? .destructive : .accent))
         .modifier(ColumnButton(isInColumn: bottom != nil))
         .contentShape(Rectangle())
-        .onDrop(of: TaskDragState.types, isTargeted: $isCancelTargeted) { _ in
+        .moveDrop(of: TaskDragState.types, isTargeted: $isCancelTargeted) {
             guard let drag, !drag.source.wormMembers.isEmpty else { return false }
             drag.end()
             Haptics.play(.select)

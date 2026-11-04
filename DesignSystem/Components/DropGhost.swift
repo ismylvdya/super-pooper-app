@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 extension View {
     /// The faint copy of a dragged plate where it would land (`opacity.dropGhost`): seen, but not touched or read out. The
@@ -26,6 +27,28 @@ extension View {
             .padding(.bottom, isClosed ? -gap : 0)
             .allowsHitTesting(!isClosed)
             .accessibilityHidden(isClosed)
+    }
+}
+
+extension View {
+    /// A drop target that moves what lands on it: the system shows no plus on the finger, as it does for the copy
+    /// `onDrop(of:isTargeted:perform:)` proposes.
+    func moveDrop(of types: [UTType], isTargeted: Binding<Bool>, perform: @escaping () -> Bool) -> some View {
+        onDrop(of: types, delegate: MoveDrop(isTargeted: isTargeted, perform: perform))
+    }
+}
+
+private struct MoveDrop: DropDelegate {
+    @Binding var isTargeted: Bool
+    let perform: () -> Bool
+
+    func dropEntered(info: DropInfo) { isTargeted = true }
+    func dropExited(info: DropInfo) { isTargeted = false }
+    func dropUpdated(info: DropInfo) -> DropProposal? { DropProposal(operation: .move) }
+
+    func performDrop(info: DropInfo) -> Bool {
+        isTargeted = false
+        return perform()
     }
 }
 

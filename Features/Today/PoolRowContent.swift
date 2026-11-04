@@ -30,6 +30,8 @@ struct PoolRowContent: View {
     var dragSource: TaskDragState.Source?
     /// The row stands in that day's pool: its menu offers Select, and in Select mode it is picked by a tap.
     var poolDay: LocalDate?
+    /// Select mode: the row a drag of the picked ones lifts, the first of them.
+    var stackTop: DayItem?
 
     var body: some View {
         if let selection, selection.isOn, poolDay != nil {
@@ -67,8 +69,17 @@ struct PoolRowContent: View {
             }
             // A picked row lifts all the picked ones with it, as a stack.
             .taskDragSource(item, from: dragSource ?? .pool, drag: drag, isOn: isSelected && dragSource?.wormMembers.isEmpty == false,
-                            lift: .row, stackCount: dragSource?.wormMembers.count ?? 1) { plated }
+                            lift: .row, stackCount: dragSource?.wormMembers.count ?? 1) { lifted }
             .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+    }
+
+    /// What a drag in Select mode lifts.
+    @ViewBuilder private var lifted: some View {
+        if let stackTop, stackTop.id != item.id {
+            PoolRowContent(item: stackTop, isCompact: isCompact, titleLineLimit: titleLineLimit, handler: handler)
+        } else {
+            plated
+        }
     }
 
     /// The row on its plate: what stands in the pool or on the timeline, and what a drag lifts.

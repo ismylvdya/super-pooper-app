@@ -32,7 +32,7 @@ struct SubtasksSection: View {
                         dragged = subtask.name
                         return NSItemProvider(object: subtask.name as NSString)
                     }
-                    .onDrop(of: TaskDragState.types, isTargeted: targetBinding(subtask.name)) { _ in
+                    .moveDrop(of: TaskDragState.types, isTargeted: targetBinding(subtask.name)) {
                         drop(onto: subtask.name)
                     }
                     .overlay(alignment: dropEdge(onto: subtask.name, names: names)) {

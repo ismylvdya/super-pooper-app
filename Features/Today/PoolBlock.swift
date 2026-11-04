@@ -222,14 +222,15 @@ struct PoolBlock: View {
         return heights.reduce(0, +) + tokens.space(.poolRowGap) * CGFloat(max(heights.count - 1, 0))
     }
 
-    /// The row of a task dragged over the pool is the empty gap the others part around (`TaskDragState.isGap`).
+    /// The row of a task dragged over the pool stands faint in the gap the others part around (`TaskDragState.isGap`).
     @ViewBuilder private func row(_ item: DayItem, plate: PoolRowContent.PlateKind, source: TaskDragState.Source) -> some View {
         if item.id == TaskDragState.newItemGap {
             NewItemGapPlate()
         } else {
             PoolRow(item: item, isToday: plan.isToday, isCompact: fillsHeight, plate: plate, handler: handler,
-                    dragSource: selectionSource ?? source, poolDay: plan.today)
-                .dropGap(drag?.isGap(item.id) == true)
+                    dragSource: selectionSource ?? source, poolDay: plan.today,
+                    stackTop: selection.flatMap { selection in plan.pool.first { selection.isSelected($0.id) } })
+                .dropGhost(drag?.isGap(item.id) == true)
         }
     }
 

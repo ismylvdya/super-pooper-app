@@ -6,6 +6,7 @@
   "problem": "exclamationmark.triangle.fill",
   "sync": "arrow.triangle.2.circlepath",
   "energy": "NeedEnergyFrog",
+  "overdue": "clock.fill",
   "pleasant": "heart.fill",
   "feel": "heart.circle",
   "timeZone": "globe",

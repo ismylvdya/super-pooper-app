@@ -130,7 +130,7 @@ struct DayTimelineView<TaskContent: View>: View {
             .dropGhost()
     }
 
-    /// Hours as plain numbers ("9", "14"), right-aligned next to the grid line.
+    /// Hours as plain numbers ("9", "14"), centered on one vertical next to the grid line.
     private func hourGrid(width: CGFloat) -> some View {
         ForEach(hourMarks, id: \.self) { mark in
             HStack(alignment: .center, spacing: tokens.space(.hourLabelGap)) {
@@ -138,6 +138,8 @@ struct DayTimelineView<TaskContent: View>: View {
                     Text(verbatim: "\(calendar.component(.hour, from: mark))")
                         .font(tokens.font(.timelineHour).monospacedDigit())
                         .foregroundStyle(tokens.color(.tertiaryText))
+                        // "9" and "14" share one vertical, which the now dot and the all-day icon stand on.
+                        .frame(width: tokens.hourDigitsWidth)
                         .frame(width: labelWidth - tokens.space(.hourLabelGap), alignment: .trailing)
                 }
                 Rectangle().fill(tokens.color(.timelineGrid)).frame(height: tokens.size(.gridLine))

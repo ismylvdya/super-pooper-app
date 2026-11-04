@@ -4,6 +4,7 @@ import SwiftUI
 /// The app's pool and the Today widget draw their rows with it; `row` puts a row on the plate it is given
 /// (`poolRowPlate`), so a row that lifts (the app's long press) lifts with its plate.
 struct PoolSegmentView<Row: View>: View {
+    @Environment(\.tokens) private var tokens
     let segment: PoolSegments.Segment
     @ViewBuilder let row: (DayItem, PoolRowPlate) -> Row
     /// How tall the rows of a shared plate are.
@@ -11,7 +12,8 @@ struct PoolSegmentView<Row: View>: View {
 
     var body: some View {
         if segment.isShared {
-            VStack(alignment: .leading, spacing: 0) {
+            // Rows a selection outline's width apart: two picked rows' outlines do not touch.
+            VStack(alignment: .leading, spacing: tokens.size(.selectionOutline)) {
                 ForEach(segment.items) { item in
                     row(item, .piece)
                         .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { rowHeights[item.id] = $0 }

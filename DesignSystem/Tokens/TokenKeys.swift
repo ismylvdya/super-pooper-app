@@ -11,7 +11,6 @@ enum SpacingToken: String, CaseIterable, Sendable {
     /// How much further right a timeline block lying over an earlier one starts, per step.
     case timelineCascadeIndent
     /// What a stack of dragged tasks shows of each plate under the top one.
-    case dragStackStep
     /// An event's stripe: from the plate's edges, and to the text.
     case eventStripeInset, eventStripeGap
     /// Between a swipe button's symbol and its title.
@@ -33,7 +32,7 @@ enum SizeToken: String, CaseIterable, Sendable {
     case iconColumn, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, notificationIcon
     case dayArrowTarget
     case habitDotMinimum, cornerInsetMinimum, sourceDot, fadeHeight, poolCounter, poolWidth
-    case habitHistoryMaxHeight, habitStatsBar, titleFade, hourDigitsWidth, allDayIconScale, reviewChevron, wrapMinWidth, liftOverhang, pagePeek, dropMarkerHeight, bannerShadowRadius, bannerShadowY, hexFieldWidth, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, allDayFontDelta, previewHeight, previewRow, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewHalvesInset, subtaskDropLine
+    case habitHistoryMaxHeight, habitStatsBar, titleFade, allDayIconScale, dragBadge, rowIconHeight, reviewChevron, wrapMinWidth, liftOverhang, pagePeek, dropMarkerHeight, bannerShadowRadius, bannerShadowY, hexFieldWidth, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, allDayFontDelta, previewHeight, previewRow, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewHalvesInset, subtaskDropLine
     /// The problems badge on Today's Lists button: its smallest width and its height.
     case problemBadge
     /// Room added above and below a date found in a new task's name, so a tap on it lands easily.
@@ -53,7 +52,6 @@ enum RatioToken: String, CaseIterable, Sendable {
     /// How much of a row's height a swipe button's symbol and title take together at most.
     case swipeGlyphFit
     /// How much narrower each plate under the top one of a dragged stack is.
-    case dragStackShrink
 }
 
 /// How many of something a drawing has (lines of a wrapped title).
@@ -91,7 +89,7 @@ enum FontToken: String, CaseIterable, Sendable {
 enum ColorToken: String, ConfigName {
     /// The outline of a row picked in Select mode: between a section's title and the text.
     case selectionOutline
-    case accent, task, habit, high, started, energy, pleasant, heart, energyOnFill, heartOnFill, eventIconGlyph, nowLine, problem
+    case accent, task, habit, high, started, energy, pleasant, heart, overdue, energyOnFill, heartOnFill, eventIconGlyph, nowLine, problem
     case past, swipeNeutral, screenBackground, plateBackground, chipBackground, primaryText, secondaryText, tertiaryText
     case bannerBackground, infoText, destructive, timelineGrid
     case success, warning, error, shadow, widgetPlate, widgetTop, widgetBottom, listSeparator

@@ -2,7 +2,7 @@ import SwiftUI
 
 /// The kinds of property chips at the right of a task row; the user sets their order (Settings → Pool).
 enum RowChipKind: String, CaseIterable, Hashable, Sendable {
-    case problem, feel, habit
+    case problem, overdue, feel, habit
 
     /// The saved order (raw names); kinds it lacks follow in the built-in order, unknown names are skipped.
     static func ordered(_ names: [String]) -> [RowChipKind] {
@@ -14,6 +14,7 @@ enum RowChipKind: String, CaseIterable, Hashable, Sendable {
     var looks: [ChipLook] {
         switch self {
         case .problem: [.problem]
+        case .overdue: [.overdue]
         case .feel: [.needEnergy, .pleasant]
         case .habit: [.habit]
         }
@@ -38,6 +39,7 @@ struct RowChip: Identifiable {
         let task = item.task
         switch kind {
         case .problem: return item.problems.isEmpty ? nil : .problem
+        case .overdue: return task.isOverdue ? .overdue : nil
         case .habit: return task.isHabit ? .habit : nil
         case .feel:
             switch task.feel {

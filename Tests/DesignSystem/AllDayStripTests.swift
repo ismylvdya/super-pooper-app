@@ -27,10 +27,6 @@ struct AllDayStripTests {
         #expect(abs(iconCenter - tokens.hourDigitsCenter) < 0.001)
     }
 
-    @Test func largeTextKeepsTheBarsInsideTheColumn() {
-        #expect(AllDayStrip.leadingInset(lineHeight: 200, tokens: TestConfig.tokens) == 0)
-    }
-
     @Test func noEventsTakeNoRoom() {
         #expect(AllDayStrip.height(count: 0, lineHeight: 20, tokens: TestConfig.tokens) == 0)
     }

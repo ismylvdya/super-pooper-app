@@ -25,7 +25,7 @@ struct BacklogPage: View {
             LazyVStack(alignment: .leading, spacing: tokens.space(.poolRowGap)) {
                 ForEach(items) { item in
                     PoolRow(item: item, isToday: false, isCompact: true, handler: handler, dragSource: .backlog(list.id))
-                        .dropGap(drag?.isBacklogGhost(item.id, on: list.id) == true)
+                        .dropGhost(drag?.isBacklogGhost(item.id, on: list.id) == true)
                         .closedUp(drag?.isBacklogGap(item.id, on: list.id) == true, gap: tokens.space(.poolRowGap))
                 }
             }

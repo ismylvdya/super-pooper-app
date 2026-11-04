@@ -58,8 +58,11 @@ struct DesignTokens: Decodable, Sendable {
     /// The corner of a task's plate, concentric with its chips: their corner (half their height) plus the distance the
     /// plate keeps from them on the top, bottom and right (half the row's vertical padding).
     var rowPlateRadius: CGFloat { chipHeight / 2 + space(.rowVertical) / 2 }
-    /// The right inset of a row's own plate (pool, widgets): the chips stand as far from its right edge as from the top.
-    var rowPlateTrailingInset: CGFloat { space(.rowVertical) / 2 }
+    /// The right inset of a row's own plate (pool, widgets).
+    var rowPlateTrailingInset: CGFloat {
+        // The icons are smaller than the title's line: on a one-line row they stand as far from the right edge as from the top.
+        space(.rowVertical) / 2 + max(uiFont(.taskTitle).lineHeight - size(.rowIconHeight), 0) / 2
+    }
     /// Where a banner stands: under the navigation bar's round buttons (back, …).
     var bannerPlacement: BannerPlacement {
         BannerPlacement(bar: bar(.navigationBar), button: bar(.uprightBarButton), sideInset: bar(.barSideInset), gapBelowButtons: bar(.bannerBelowButtons))
