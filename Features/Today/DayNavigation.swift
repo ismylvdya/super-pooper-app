@@ -20,7 +20,7 @@ struct DayNavigation: View {
 
     var body: some View {
         let today = model.context().today
-        let style: DayName.Style = bottom == nil ? .date : .weekday
+        let style: DayName.Style = .date
         let title = DayName.title(today.adding(days: dayOffset), offset: dayOffset, style: style, calendar: model.calendar)
         let names = DayName.frameNames(style, around: today, calendar: model.calendar)
         let layout = bottom == nil ? AnyLayout(HStackLayout(spacing: 0)) : AnyLayout(VStackLayout(spacing: 0))
@@ -54,8 +54,9 @@ struct DayNavigation: View {
     private func arrow(_ icon: Icon, step: Int, label: LocalizedStringKey, id: String, towardName edge: Edge) -> some View {
         let upright = bottom == nil
         return Button { onStep(step) } label: {
-            // Sideways (‹ ›) in every orientation, also when the arrows stand above and below the name.
+            // Lying sideways it is turned with the name: on the physical screen all stands as it does upright.
             Image(systemName: icons[icon])
+                .quarterTurned(bottom)
                 .padding(Edge.Set(edge.opposite), upright ? tokens.bar(.barButtonPadding) : 0)
                 .padding(Edge.Set(edge), upright ? tokens.space(.dayArrowGap) : tokens.space(.chipGap))
                 // Sideways as wide as the bar buttons of the column, and as long as the bar is high upright.
@@ -87,6 +88,7 @@ struct DayNavigation: View {
             .fixedSize(horizontal: bottom != nil, vertical: false)
             // The whole frame takes the tap, as tall as the arrows beside it.
             .frame(height: bottom == nil ? tokens.size(.dayArrowTarget) : nil)
+            .quarterTurned(bottom)
             .contentShape(Rectangle())
         }
         .padding(.horizontal, -overlap)

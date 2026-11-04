@@ -30,6 +30,7 @@ struct TodayScreen: View {
     @State private var sectionTitle = ""
     /// Where the bar's buttons stand upright (`DayBarRoom`).
     @State private var barButtons: [TodayButtons.Item: CGRect] = [:]
+    @State private var isKeyboardShown = false
 
     private var isLandscape: Bool { physicalBottom != nil }
 
@@ -81,6 +82,8 @@ struct TodayScreen: View {
             taskDrag.turnHandled()
         }
         .onAppear { taskDrag.turnDwellSeconds = rules.gestures.pageEdgeDwellSeconds }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in isKeyboardShown = true }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in isKeyboardShown = false }
         .onChange(of: router.tasksTaps) { showTodaysPool(forgetsBacklog: true) }
         // Another tab forgets the backlog pages.
         .onChange(of: router.tab) { _, tab in
@@ -132,6 +135,7 @@ struct TodayScreen: View {
                 .font(tokens.font(.navTitle))
                 .lineLimit(1)
                 .minimumScaleFactor(isLandscape ? 1 : tokens.size(.navTitleMin) / tokens.uiFont(.navTitle).pointSize)
+                .quarterTurned(physicalBottom)
                 .accessibilityAddTraits(.isHeader)
                 .accessibilityIdentifier("today.listTitle")
                 .titleSwap(list?.id)
@@ -174,6 +178,10 @@ struct TodayScreen: View {
         pager.turn(to: newPage, pageCount: pageCount, animation: tokens.animation)
     }
 
+    /// Lying sideways the tab bar's inner side is the screen's edge for the pages; what the strip pushes past it shows
+    /// through the glass. With the keyboard up there is no bar.
+    private var tabBarRoom: CGFloat { isKeyboardShown ? 0 : tokens.bar(.landscapeTabBarRoom) }
+
     private var content: some View {
         GeometryReader { geometry in
             let layout = layout
@@ -183,8 +191,8 @@ struct TodayScreen: View {
                 let fade = 1 - min(abs(pager.daySlide) / geometry.size.width, 1) * tokens.opacity(.daySwipeFade)
                 TasksStrip(layout: layout, pages: pages, pager: pager, plan: plan, handler: handler, bottomInset: bottomInset,
                            isLandscape: isLandscape, edgeInset: tokens.space(.screenHorizontal), fade: fade, onTurn: turn)
-                .padding(.leading, tokens.space(.screenHorizontal))
-                .padding(.trailing, tokens.space(.screenHorizontal))
+                .padding(.leading, tokens.space(.screenHorizontal) + (physicalBottom == .leading ? tabBarRoom : 0))
+                .padding(.trailing, tokens.space(.screenHorizontal) + (physicalBottom == .trailing ? tabBarRoom : 0))
                 .padding(.top, tokens.space(.headerToPlate))
                 // An empty pool still takes the swipe.
                 .contentShape(Rectangle())

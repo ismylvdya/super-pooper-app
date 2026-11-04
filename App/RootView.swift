@@ -44,6 +44,7 @@ struct RootView: View {
                                                 .systemTabBar(isShown: physicalBottom == nil)
                                         }
                                 }
+                                .padding(landscapeEdge, landscapeRoom(of: tab))
                             } label: {
                                 Label {
                                     Text(LocalizedStringKey(String("tab.") + tab.rawValue))
@@ -66,10 +67,8 @@ struct RootView: View {
                     // The system draws the selected tab's filled symbol under its moving drop by itself; a symbol typed for the
                     // current tab goes to the same place.
                     .background { TabBarSelectedSymbols(symbols: AppTab.allCases.map { model.tabBarSymbols.typedSelected(of: $0) }) }
-                // Lying sideways the app's own tab bar floats beside the tabs: its inner side is the screen's edge for them, and
-                // only what a page deliberately pushes past that edge (the pool, with a list opened left of it) shows through
-                // its glass.
-                .padding(physicalBottom.map { $0 == .leading ? Edge.Set.leading : .trailing } ?? [], isKeyboardUp ? 0 : tokens.bar(.landscapeTabBarRoom))
+                // Lying sideways the app's own tab bar floats over the tabs' edge. Its inner side is the screen's edge for the pages
+                // (`landscapeRoom`); Today's strip keeps that room itself, so what it pushes past shows through the glass.
                 .overlay(alignment: physicalBottom == .leading ? .leading : .trailing) {
                     if let physicalBottom, !isKeyboardUp { LandscapeTabBar(bottom: physicalBottom) }
                 }
@@ -153,6 +152,14 @@ struct RootView: View {
         case .habits: HabitsScreen()
         case .settings: SettingsScreen()
         }
+    }
+
+    private var landscapeEdge: Edge.Set { physicalBottom == .leading ? .leading : .trailing }
+
+    /// The room a tab's stack keeps from the landscape tab bar. Tasks' first page has no system bar and keeps the room itself.
+    private func landscapeRoom(of tab: AppTab) -> CGFloat {
+        guard physicalBottom != nil, !isKeyboardUp else { return 0 }
+        return tab == .today && (container.router.paths[tab] ?? []).isEmpty ? 0 : tokens.bar(.landscapeTabBarRoom)
     }
 
     /// The "+"'s slot chosen on the system bar: the bar first goes back to its tab, then the page opens on it; opened at
