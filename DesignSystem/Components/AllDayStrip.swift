@@ -35,7 +35,7 @@ struct AllDayStrip: View {
     private func bar(_ event: CalendarEvent) -> some View {
         // The round icon stands as far from the capsule's left end as from its top and bottom: concentric with the end.
         let inset = ChipCapsule.standard.verticalPadding(tokens)
-        return HStack(spacing: tokens.space(.dotTextGap)) {
+        return HStack(spacing: tokens.space(.allDayTitleGap)) {
             Image(systemName: icons[.allDayEvent])
                 .resizable()
                 .symbolRenderingMode(.palette)

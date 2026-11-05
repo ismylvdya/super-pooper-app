@@ -30,12 +30,10 @@ struct TimelineEventBlock: View {
                                reserve: TitleFade.trailing(corner: reserve, plateInset: tokens.space(.timelineItemPadding),
                                                            gap: tokens.space(.fadeGap)))
                         .foregroundStyle(slot.isPast ? tokens.color(.secondaryText) : tokens.eventTitle(own, in: colorScheme))
-                    HStack(spacing: tokens.space(.eventTimeIconGap)) {
-                        IconGlyph(.time, font: .caption)
-                        Text(TimeRangeText.format(event.start, event.end, calendar: calendar)).lineLimit(1)
-                    }
-                    .font(tokens.font(.caption))
-                    .foregroundStyle(slot.isPast ? tokens.color(.secondaryText) : tokens.eventSecondary(own, in: colorScheme))
+                    Text(TimeRangeText.format(event.start, event.end, calendar: calendar))
+                        .lineLimit(1)
+                        .font(tokens.font(.caption))
+                        .foregroundStyle(slot.isPast ? tokens.color(.secondaryText) : tokens.eventSecondary(own, in: colorScheme))
                 }
             }
             .padding(.top, inset / 2)
