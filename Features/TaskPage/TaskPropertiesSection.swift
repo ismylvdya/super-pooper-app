@@ -55,7 +55,7 @@ private struct FeelPicker: View {
     let onChange: (TaskFeel) -> Void
 
     var body: some View {
-        PlateRow(icon: nil, title: "taskPage.feel") {
+        PlateRow(icon: .feel, title: "taskPage.feel") {
             Picker("taskPage.feel", selection: Binding(get: { feel }, set: onChange)) {
                 ForEach(TaskFeel.allCases, id: \.self) { feel in
                     image(of: feel).accessibilityLabel(Text(title(of: feel))).tag(feel)
@@ -103,7 +103,7 @@ private struct TaskTagsRow: View {
     let onChange: (TaskEdit) -> Void
 
     var body: some View {
-        PlateRow(icon: nil, title: "taskPage.tags") {
+        PlateRow(icon: .tags, title: "taskPage.tags") {
             Menu {
                 tag("status.inProgress", isOn: task.isStarted) { onChange(.started(!task.isStarted)) }
                 tag("status.waiting", isOn: task.isWaiting) { onChange(.waiting(!task.isWaiting)) }

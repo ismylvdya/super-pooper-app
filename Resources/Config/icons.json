@@ -38,6 +38,7 @@
   "chosen": "checkmark",
   "menuChevrons": "chevron.up.chevron.down",
   "feelNeutral": "circle.slash",
+  "tags": "tag",
   "dayBoundary": "moon.zzz",
   "energyHour": "bolt.circle",
   "timelineLayout": "rectangle.split.2x1",
