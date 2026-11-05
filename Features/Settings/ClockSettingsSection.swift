@@ -13,16 +13,14 @@ struct ClockSettingsSection: View {
                      hint: Text(verbatim: L10n.format("settings.clock.preview",
                                                       ClockLine.text(prefix: prefix, date: model.clock.now, timeZone: zone)))) {
             PlateRow(icon: .clockSettings, title: "settings.clock.zone") {
-                // The row shows the offset alone; in the list each zone is its city, with its offset as the line under it
-                // and a check on the chosen one (a picker's item has room for one line only).
+                // The row shows the offset alone; the list the rows every zone list has, with a check on the chosen one.
                 Menu {
-                    ForEach(zones, id: \.self) { identifier in
+                    ForEach(groups, id: \.identifiers) { group in
                         Button {
-                            model.updateSettings { $0.clock.timeZone = identifier }
+                            model.updateSettings { $0.clock.timeZone = group.identifiers[0] }
                         } label: {
-                            Text(verbatim: TimeZoneName.city(identifier))
-                            Text(verbatim: offset(identifier))
-                            if identifier == model.settings.clock.timeZone { Image(systemName: icons[.selected]) }
+                            Text(verbatim: TimeZoneName.title(of: group, cities: model.config.rules.timeZones.citiesInRow))
+                            if group.identifiers.contains(model.settings.clock.timeZone) { Image(systemName: icons[.selected]) }
                         }
                     }
                 } label: {
@@ -47,13 +45,7 @@ struct ClockSettingsSection: View {
         .onAppear { prefix = model.settings.clock.prefix }
     }
 
-    private func offset(_ identifier: String) -> String {
-        TimeZoneName.offset(TimeZone(identifier: identifier) ?? .current, at: model.clock.now)
-    }
-
-    /// The configured zone first, then all known zones.
-    private var zones: [String] {
-        let current = model.settings.clock.timeZone
-        return [current] + TimeZone.knownTimeZoneIdentifiers.filter { $0 != current }
+    private var groups: [TimeZoneGroup] {
+        TimeZoneName.groups(rules: model.config.rules.timeZones, at: model.clock.now)
     }
 }

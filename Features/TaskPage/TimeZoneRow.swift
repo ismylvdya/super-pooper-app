@@ -5,6 +5,7 @@ import SwiftUI
 /// zone on the date sheet (`DuePickerSheet`).
 struct TimeZoneRow: View {
     @Environment(\.tokens) private var tokens
+    @Environment(AppModel.self) private var model
     let editor: TaskEditor
     @State private var isPicking = false
 
@@ -13,7 +14,7 @@ struct TimeZoneRow: View {
         if task.due?.time != nil || !task.reminderTimes.isEmpty {
             PlateRow(icon: .timeZone, title: "taskPage.timeZone", info: "info.taskPage.timeZone") {
                 Button { isPicking = true } label: {
-                    Text(TimeZonePicker.title(of: task.timeZone))
+                    Text(TimeZonePicker.title(of: task.timeZone, at: model.clock.now))
                         .foregroundStyle(tokens.color(.secondaryText))
                 }
                 .buttonStyle(.plain)

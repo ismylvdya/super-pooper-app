@@ -1,7 +1,8 @@
 import UIKit
 
-/// Which symbol each place of the tab bar shows: what the user typed in the settings when it is a real SF Symbol, otherwise
-/// `icons.json`. A selected tab without one of its own has the filled form of its symbol, where there is one.
+/// Which symbol each place of the tab bar shows: what the user typed in the settings when it is a real SF Symbol, or the SVG
+/// file they added (`TabBarIconFiles`), otherwise `icons.json`. A selected tab without one of its own has the filled form of its symbol, where there is one.
+@MainActor
 struct TabBarSymbols {
     let typed: [String: String]
     let icons: IconSet
@@ -22,5 +23,5 @@ struct TabBarSymbols {
         typed[key].flatMap { Self.exists($0) ? $0 : nil }
     }
 
-    static func exists(_ symbol: String) -> Bool { UIImage(systemName: symbol) != nil }
+    static func exists(_ symbol: String) -> Bool { UIImage(systemName: symbol) != nil || TabBarIconFiles.image(symbol) != nil }
 }

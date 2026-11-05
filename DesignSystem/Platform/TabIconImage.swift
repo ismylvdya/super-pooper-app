@@ -21,6 +21,13 @@ enum TabIconImage {
         return Image(uiImage: glyph)
     }
 
+    /// The same glyph for a place that takes a UIKit image (the bar's selected item); nil for an SF Symbol.
+    static func glyph(_ name: String, font: UIFont, others: [String], fit: CGFloat, scale: CGFloat) -> UIImage? {
+        guard TemplateGlyph.asset(name) != nil else { return nil }
+        return TemplateGlyph.image(name, extent: glyphExtent(font: font, others: others, along: .vertical, fit: fit, scale: scale),
+                                   along: .vertical, scale: scale)
+    }
+
     /// How far a hand-drawn glyph's ink reaches along `axis`: `fit` of the smallest ink of the other tabs' symbols.
     static func glyphExtent(font: UIFont, others: [String], along axis: Axis, fit: CGFloat, scale: CGFloat) -> CGFloat {
         let key = "\(font.fontName)|\(font.pointSize)|\(others)|\(axis)|\(fit)|\(scale)"

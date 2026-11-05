@@ -222,6 +222,10 @@
       "max": 31
     }
   },
+  "timeZones": {
+    "priority": ["Europe/Moscow", "Asia/Bangkok", "Europe/Istanbul", "Europe/Belgrade", "Europe/London", "Europe/Paris", "Europe/Berlin", "Africa/Cairo", "Europe/Kyiv", "Asia/Jerusalem", "Africa/Johannesburg", "Africa/Lagos", "Africa/Nairobi", "Asia/Riyadh", "Asia/Tehran", "Asia/Dubai", "Asia/Tbilisi", "Asia/Yerevan", "Asia/Kabul", "Asia/Karachi", "Asia/Tashkent", "Asia/Yekaterinburg", "Asia/Kolkata", "Asia/Kathmandu", "Asia/Almaty", "Asia/Dhaka", "Asia/Yangon", "Asia/Ho_Chi_Minh", "Asia/Jakarta", "Asia/Novosibirsk", "Asia/Shanghai", "Asia/Singapore", "Asia/Hong_Kong", "Asia/Manila", "Asia/Irkutsk", "Asia/Tokyo", "Asia/Seoul", "Australia/Darwin", "Asia/Vladivostok", "Australia/Brisbane", "Australia/Sydney", "Australia/Melbourne", "Pacific/Auckland", "Pacific/Honolulu", "America/Anchorage", "America/Los_Angeles", "America/Vancouver", "America/Denver", "America/Phoenix", "America/Chicago", "America/Mexico_City", "America/New_York", "America/Toronto", "America/Bogota", "America/Lima", "America/Halifax", "America/Santiago", "America/Sao_Paulo", "America/Argentina/Buenos_Aires", "Atlantic/Azores", "Atlantic/Reykjavik", "Africa/Accra"],
+    "citiesInRow": 2
+  },
   "editing": {
     "defaultTime": "09:00",
     "nextReminderGapMinutes": 240,

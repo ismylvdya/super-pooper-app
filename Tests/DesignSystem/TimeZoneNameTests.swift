@@ -8,10 +8,10 @@ struct TimeZoneNameTests {
 
     @Test func zonesAreShownAsOffsets() throws {
         func offset(_ id: String) throws -> String { TimeZoneName.offset(try #require(TimeZone(identifier: id)), at: winter) }
-        #expect(try offset("Europe/Moscow") == "UTC+3")
-        #expect(try offset("America/New_York") == "UTC−5")
-        #expect(try offset("Asia/Kolkata") == "UTC+5:30")
-        #expect(try offset("Europe/London") == "UTC")
+        #expect(try offset("Europe/Moscow") == "+3 UTC")
+        #expect(try offset("America/New_York") == "−5 UTC")
+        #expect(try offset("Asia/Kolkata") == "+5:30 UTC")
+        #expect(try offset("Europe/London") == "+0 UTC")
     }
 
     @Test func theCityComesFromTheIdentifier() {

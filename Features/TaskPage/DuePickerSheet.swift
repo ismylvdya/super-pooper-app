@@ -7,6 +7,7 @@ struct DuePickerSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.rules) private var rules
     @Environment(\.tokens) private var tokens
+    @Environment(AppModel.self) private var model
     @State private var pick: DuePick
     private let choosesZone: Bool
     private let offersAlarmOff: Bool
@@ -58,7 +59,7 @@ struct DuePickerSheet: View {
             TimeZonePicker(selected: pick.zone) { pick.zone = $0 }
         } label: {
             LabeledContent("taskPage.timeZone") {
-                Text(verbatim: TimeZonePicker.title(of: pick.zone))
+                Text(verbatim: TimeZonePicker.title(of: pick.zone, at: model.clock.now))
             }
         }
         .disabled(pick.time == nil)

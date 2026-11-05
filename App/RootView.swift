@@ -70,7 +70,10 @@ struct RootView: View {
                     }
                     .overlay { if physicalBottom == nil { uprightNewItemButton } }
                     // The bar draws each item's selected image itself, under its moving drop.
-                    .background { TabBarSelectedSymbols(symbols: AppTab.allCases.map { model.tabBarSymbols.symbol(of: $0, isSelected: true) }) }
+                    .background { TabBarSelectedSymbols(symbols: AppTab.allCases.map { model.tabBarSymbols.symbol(of: $0, isSelected: true) }) { name in
+                        TabIconImage.glyph(name, font: tokens.uiFont(.systemTabIcon), others: container.config.icons.otherTabSymbols(than: router.tab),
+                                           fit: tokens.bar(.tabGlyphFit), scale: displayScale)
+                    } }
                 // Lying sideways the app's own tab bar floats over the tabs' edge. Its inner side is the screen's edge for the pages
                 // (`landscapeRoom`); Today's strip keeps that room itself, so what it pushes past shows through the glass.
                 .overlay(alignment: physicalBottom == .leading ? .leading : .trailing) {

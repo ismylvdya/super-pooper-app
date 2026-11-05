@@ -902,7 +902,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "UTC+%@"
+            "value": "+%@ UTC"
           }
         }
       }
@@ -913,7 +913,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "UTC−%@"
+            "value": "−%@ UTC"
           }
         }
       }
@@ -924,7 +924,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "UTC"
+            "value": "+0 UTC"
           }
         }
       }
@@ -7584,6 +7584,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "SF Symbol name"
+          }
+        }
+      }
+    },
+    "settings.tabBar.svg": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SVG"
+          }
+        }
+      }
+    },
+    "settings.tabBar.svg.remove": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove the icon"
+          }
+        }
+      }
+    },
+    "settings.tabBar.svg.failed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This file could not be drawn"
           }
         }
       }

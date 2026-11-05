@@ -5,6 +5,8 @@ import UIKit
 /// is filled exactly where its moving drop covers it.
 struct TabBarSelectedSymbols: UIViewRepresentable {
     let symbols: [String]
+    /// What stands for a name that is no symbol: a glyph's or an added file's picture.
+    let glyph: (String) -> UIImage?
 
     func makeUIView(context: Context) -> UIView {
         let view = UIView()
@@ -17,7 +19,7 @@ struct TabBarSelectedSymbols: UIViewRepresentable {
             guard let window = view.window, let items = Self.tabBar(in: window)?.items else { return }
             for (item, symbol) in zip(items, symbols) {
                 let configuration = item.image?.symbolConfiguration
-                item.selectedImage = UIImage(systemName: symbol, withConfiguration: configuration)
+                item.selectedImage = UIImage(systemName: symbol, withConfiguration: configuration) ?? glyph(symbol)
             }
         }
     }

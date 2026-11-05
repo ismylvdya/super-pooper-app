@@ -32,6 +32,8 @@ enum SystemBarMetric: String, CaseIterable, Sendable {
     case tabGlyphFit
     /// The Lists glyph inside its bar button: how far left and down of the middle, where its ink looks centred.
     case tabGlyphShiftLeft, tabGlyphShiftDown
+    /// The square a tab icon from a file is drawn in, once, before it is cut to its ink.
+    case tabIconFileSide
     /// How far from the screen's edge the landscape tab bar's far side stands: what it keeps clear of the pages.
     case landscapeTabBarRoom
     /// The "+" upright: on iOS 26 a round bubble of `newItemBubble` this far from the screen's side and bottom

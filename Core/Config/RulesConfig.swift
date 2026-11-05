@@ -265,6 +265,14 @@ struct RulesConfig: Codable, Hashable, Sendable {
     let widgets: Widgets
     let habits: Habits
     /// Values a new date, time, reminder or repeat end starts from.
+    /// How the zone lists show a zone.
+    struct TimeZones: Codable, Hashable, Sendable {
+        /// The zones that come first in their offset, in order.
+        let priority: [String]
+        /// How many cities a row names.
+        let citiesInRow: Int
+    }
+
     struct Editing: Codable, Hashable, Sendable {
         let defaultTime: LocalTime
         /// A new habit reminder comes this long after the last one.
@@ -279,6 +287,7 @@ struct RulesConfig: Codable, Hashable, Sendable {
     let pool: Pool
     let limits: Limits
     let editing: Editing
+    let timeZones: TimeZones
     let gestures: Gestures
     let banners: Banners
     let settingsPreview: SettingsPreview

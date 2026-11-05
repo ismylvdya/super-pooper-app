@@ -39,6 +39,11 @@ extension AppModel {
     /// The sounds an alarm may have: the app's and, as far as they can be read, the phone's.
     var alarmSounds: [RulesConfig.Alarms.Sound] { SystemAlarmSounds.all(config.rules.alarms) }
 
+    /// A tab icon from an SVG file; the name a setting keeps it by, nil when the file cannot be drawn.
+    func addTabBarIcon(from file: URL) async -> String? {
+        await TabBarIconFiles.add(from: file, side: config.tokens.bar(.tabIconFileSide))
+    }
+
     /// A sound's name as the menus show it.
     func alarmSoundTitle(_ id: String) -> String {
         alarmSounds.first { $0.id == id }.map { L10n.string($0.title) } ?? id

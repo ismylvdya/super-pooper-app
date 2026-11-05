@@ -9,7 +9,7 @@ enum TemplateGlyph {
     private static var drawn: [String: UIImage] = [:]
 
     /// The asset with that name; nil for an SF Symbol name.
-    static func asset(_ name: String) -> UIImage? { UIImage(named: name) }
+    static func asset(_ name: String) -> UIImage? { TabBarIconFiles.image(name) ?? UIImage(named: name) }
 
     /// The ink of the asset with that name, in its points.
     static func ink(of name: String, scale: CGFloat) -> CGRect? {
