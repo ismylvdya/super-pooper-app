@@ -7,16 +7,14 @@ enum BacklogMoves {
         var edits: [TaskEdit] = []
     }
 
-    /// Onto the page of `level`. Into Next actions: from the shown day the date goes; from a later level it becomes this week's,
-    /// and a date that has come goes too, so it waits there. Onto a later level: that level.
+    /// Onto the page of `level`. Into Next actions: the date goes, so the task waits there; from a later level it also
+    /// becomes this week's. Onto a later level: that level.
     static func onto(_ level: TaskStatus, task: TaskItem, fromShownDay: Bool, shown: LocalDate,
                      context: DayContext) -> Outcome {
         guard level.isThisWeek else {
             return Outcome(edits: TaskMarking(today: context.today).changes(setting: level, on: task))
         }
-        if fromShownDay { return Outcome(edits: task.due == nil ? [] : [.due(nil)]) }
-        let hasCome = task.due.map { context.logicalDay(of: $0) <= context.today } ?? false
-        return Outcome(edits: thisWeek(task, context: context) + (hasCome ? [.due(nil)] : []))
+        return Outcome(edits: thisWeek(task, context: context) + (task.due == nil ? [] : [.due(nil)]))
     }
 
     /// From a backlog page into the pool of `day`: this week's, dated that day without a time. A task already on that day

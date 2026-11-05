@@ -17,6 +17,14 @@ struct PageStripTests {
         #expect(shown + strip.width(of: 0) + 16 + strip.width(of: 1) == 343)
     }
 
+    /// Beside the pool nothing of the last list is in sight even when the pages stand closer than the screen's margin;
+    /// the list itself still keeps the pool's peek.
+    @Test func thePoolHidesTheListBesideIt() {
+        let strip = PageStrip(count: 3, width: 343, spacing: 8, peeks: [0, 0, 52], edgeInset: 16, home: 1, listCount: 1, listPeek: 14)
+        #expect(strip.origin(of: 0) + strip.width(of: 0) + strip.offset(showing: 1) == -16)
+        #expect(strip.offset(showing: 0) + strip.origin(of: 1) == CGFloat(343 - 14))
+    }
+
     /// A strip of four (two backlog pages without a peek, the pool, the timeline): every page has its own offset, the
     /// hidden pages stand beyond the screen's margin, and places count from the pool, so pages added before it move
     /// nothing in sight.

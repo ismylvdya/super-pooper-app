@@ -12,7 +12,8 @@ struct PageStrip: Equatable {
     var edgeInset: CGFloat = 0
     var home = 0
     /// The first pages (the backlog lists): while one of them is shown, both its neighbours stay in sight by
-    /// `listPeek`, and while any other is shown, they stay out of it.
+    /// `listPeek`, and while any other is shown, they stay out of it: the last list stands beyond the screen's edge
+    /// beside the home page.
     var listCount = 0
     var listPeek: CGFloat = 0
     /// The first lists, not opened yet: nothing of them is in sight beside the last one opened.
@@ -23,7 +24,7 @@ struct PageStrip: Equatable {
     /// The gap between page `index` and the next one.
     func gap(after index: Int) -> CGFloat {
         if index < hiddenLists { return max(spacing, edgeInset) }
-        if index < listCount { return spacing }
+        if index < listCount - 1 { return spacing }
         return peek(of: index) > 0 && peek(of: index + 1) > 0 ? spacing : max(spacing, edgeInset)
     }
 
@@ -52,12 +53,12 @@ struct PageStrip: Equatable {
 
     /// The part of the stack the leading neighbour keeps while `index` is shown: its peek and the gap.
     private func leadingRoom(of index: Int) -> CGFloat {
-        if index < listCount { return index > hiddenLists ? listPeek + spacing : 0 }
+        if index < listCount { return index > hiddenLists ? listPeek + gap(after: index - 1) : 0 }
         return index > 0 && peek(of: index - 1) > 0 ? peek(of: index - 1) + gap(after: index - 1) : 0
     }
 
     private func trailingRoom(of index: Int) -> CGFloat {
-        if index < listCount { return index < count - 1 ? listPeek + spacing : 0 }
+        if index < listCount { return index < count - 1 ? listPeek + gap(after: index) : 0 }
         return index < count - 1 && peek(of: index + 1) > 0 ? peek(of: index + 1) + gap(after: index) : 0
     }
 }
