@@ -181,8 +181,11 @@ final class SyncService: SettingsObserver {
 
     /// Today's sections and order as another device or a hand left them in the file (what iCloud kept, when two disagreed).
     private func takeInChangedLook() async {
-        guard let mirroring = services.mirroring, let look = await mirroring.changedLook() else { return }
-        dayCommands.applyLook(look, moved: look.movedTimes(since: await mirroring.lastLook()))
+        guard let mirroring = services.mirroring else { return }
+        // The file is the truth of a habit's time today: its line wins over what this device remembers.
+        if let current = await mirroring.currentLook() { dayCommands.takeTimes(of: current) }
+        guard let look = await mirroring.changedLook() else { return }
+        dayCommands.applyLook(look)
         await mirroring.accept(look)
     }
 

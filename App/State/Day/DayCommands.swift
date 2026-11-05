@@ -164,7 +164,7 @@ final class DayCommands {
 
     /// Today's look as it was changed elsewhere (by hand in the file, on another device): its sections, each line's
     /// section and order, and what is kept out of today become the app's.
-    func applyLook(_ look: DayLook, moved: [String: LocalTime] = [:]) {
+    func applyLook(_ look: DayLook) {
         let today = day.context().today
         let definitions = sections.definitions
         sections.update(on: today) { current in
@@ -174,10 +174,23 @@ final class DayCommands {
         }
         for name in look.skipped { day.skip(name) }
         day.setManualOrder(look.poolOrder)
-        for (name, time) in moved { moveHabit(named: name, to: time) }
     }
 
     /// A habit's line got another time in the file: its first block stands there today, its settings stay.
+    /// What the habits' lines say about today: a habit's first block stands at its line's time, or in the pool for a line with
+    /// no time. The file wins over what this device remembers; a second block of a day has no line of its own.
+    func takeTimes(of look: DayLook) {
+        for (name, time) in look.times ?? [:] {
+            guard let habit = tasks.task(named: name), habit.isHabit else { continue }
+            if TodayTimes(day.dayState.timeMoves).blocks(of: habit).first?.time != time { moveHabit(named: name, to: time) }
+        }
+        for name in look.untimed {
+            guard let habit = tasks.task(named: name), habit.isHabit else { continue }
+            let today = TodayTimes(day.dayState.timeMoves)
+            if let block = today.blocks(of: habit).first { day.setTimeMoves(today.pooling(habit, slot: block.written)) }
+        }
+    }
+
     private func moveHabit(named name: String, to time: LocalTime) {
         guard let habit = tasks.task(named: name), habit.isHabit else { return }
         let today = TodayTimes(day.dayState.timeMoves)

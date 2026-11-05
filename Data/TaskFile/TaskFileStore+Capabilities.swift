@@ -159,6 +159,13 @@ extension TaskFileStore: TaskTrash, DayMirroring, TaskImporting, ExternalLinking
         (try? await location.withRoot { root in changedLook(in: try await read(root: root)) }) ?? nil
     }
 
+    func currentLook() async -> DayLook? {
+        try? await location.withRoot { root in
+            let snapshot = try await read(root: root)
+            return snapshot.document.prelude.contains(dayMarker) ? look(of: snapshot) : nil
+        }
+    }
+
     func accept(_ look: DayLook) async {
         lookMemory.save(look)
     }
@@ -187,7 +194,7 @@ extension TaskFileStore: TaskTrash, DayMirroring, TaskImporting, ExternalLinking
                 }
                 var times: [String: LocalTime] = [:]
                 for entry in section.groups.flatMap(\.entries) where entry.id.map({ habits[$0] != nil }) ?? false {
-                    if let time = entry.time { times[entry.name] = time }
+                    if let time = entry.time { times[entry.name] = time } else { look.untimed.append(entry.name) }
                 }
                 look.times = times
             } else if section.kind == .soon {

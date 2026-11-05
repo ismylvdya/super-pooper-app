@@ -117,6 +117,8 @@ protocol DayMirroring: Sendable {
     func mirror(_ day: DayMirror) async
     /// Today's look in the file, when it was changed elsewhere since this device last saw it; nil otherwise.
     func changedLook() async -> DayLook?
+    /// Today's look in the file as it is, when the file is about today: what its lines say about the habits' times.
+    func currentLook() async -> DayLook?
     /// The app took `look` in: from now on it is not news.
     func accept(_ look: DayLook) async
     /// The look this device last saw; what a changed look is told from.
