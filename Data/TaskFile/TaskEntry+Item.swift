@@ -2,10 +2,11 @@ import Foundation
 
 extension TaskEntry {
     /// The task as the app knows it. `section`: where the line stands, which with its checkbox gives the status.
-    func item(in section: TaskSection, parentName: String?, order: Int?, format: TaskFileFormat) -> TaskItem {
+    /// `follows`: the parent's day, for a subtask with no date of its own.
+    func item(in section: TaskSection, parentName: String?, order: Int?, follows: LocalDate? = nil, format: TaskFileFormat) -> TaskItem {
         var item = TaskItem(id: TaskID(id ?? ""), name: name, status: status(in: section))
         item.isHighPriority = isHigh
-        item.due = date.map { TaskDue(day: $0, time: time) }
+        item.due = date.map { TaskDue(day: $0, time: time) } ?? follows.map { TaskDue(day: $0) }
         item.timeEstimate = estimate
         item.alarms = alarm.map { [TimeAlarm(sound: $0 == format.alarmDefaultSound ? nil : $0)] } ?? []
         item.projects = parentName.map { [$0] } ?? []
@@ -15,8 +16,17 @@ extension TaskEntry {
         item.completedDate = completed
         item.isOverdue = isOverdue
         item.isStarted = box == .started
-        item.waitsInList = section == .soon && date == nil
+        item.waitsInList = section == .soon && item.due == nil
         return item
+    }
+
+    /// The line with its parent's date and time when it has none of its own: where a subtask without a date stands.
+    func following(_ parent: TaskEntry?) -> TaskEntry {
+        guard date == nil, let parent else { return self }
+        var line = self
+        line.date = parent.date
+        line.time = parent.time
+        return line
     }
 
     private func status(in section: TaskSection) -> TaskStatus {

@@ -19,7 +19,8 @@ extension TaskFileStore {
             try update(id: id, name: task.name, changes: changes, in: &snapshot)
             try write(snapshot.document, root: root)
             snapshot.indexNames()
-            return TaskWriteResult(task: try current(id: id, name: task.name, snapshot: snapshot), hadConflict: false)
+            return TaskWriteResult(task: try current(id: id, name: task.name, snapshot: snapshot), hadConflict: false,
+                                   subtasks: subtasks(under: id, snapshot: snapshot))
         }
     }
 
@@ -31,16 +32,24 @@ extension TaskFileStore {
         let target = TaskSection.of(updated, current: place.section, today: today(), boundary: boundary())
         let parent = updated.projects.first.flatMap(snapshot.id(ofName:))
         let order = changes.compactMap { change -> Int?? in if case .subtaskOrder(let value) = change { value } else { nil } }.last
-        if target == place.section, parent == place.parent ?? place.tag, order == nil {
-            snapshot.document.update(id: id) { $0.update(from: updated, format: format) }
+        let day = parent.flatMap { followedDay(of: $0, in: snapshot.document) }
+        // A date taken off a subtask of a dated parent takes it out from under it: there it would just follow again.
+        let goesOut = updated.due == nil && day != nil
+        if target == place.section, parent == place.parent ?? place.tag, order == nil, !(goesOut && place.parent != nil) {
+            snapshot.document.update(id: id) { line in
+                line.update(from: updated, format: format)
+                if place.parent != nil { line.leaveDate(to: day) }
+            }
             return
         }
         guard var taken = snapshot.document.remove(where: { $0.id == id })?.entry else { throw TaskStoreError.fileMissing(name) }
         taken.update(from: updated, format: format)
         taken.parent = nil
         if let parent {
-            if self.place(of: parent, in: snapshot.document)?.section == target,
-               snapshot.document.insert(taken, under: parent, at: order.flatMap { $0 }) { return }
+            var nested = taken
+            nested.leaveDate(to: day)
+            if !goesOut, self.place(of: parent, in: snapshot.document)?.section == target,
+               snapshot.document.insert(nested, under: parent, at: order.flatMap { $0 }) { return }
             taken.parent = parent
         }
         snapshot.document.insert(taken, into: target)
@@ -71,6 +80,7 @@ extension TaskFileStore {
             note.name = final
             note.id = TaskID(id)
             let parent = note.projects.first.flatMap(snapshot.id(ofName:))
+            let day = parent.flatMap { followedDay(of: $0, in: snapshot.document) }
             if note.isHabit {
                 // A repeat with no day of its own starts from today: its first day is the nearest one that fits.
                 note.recurrence = note.recurrence.map { $0.startDate == nil ? $0.starting(today()) : $0 }
@@ -80,6 +90,8 @@ extension TaskFileStore {
                 snapshot.indexNames()
                 return habit(of: file, snapshot: snapshot)
             }
+            // A subtask without a date stands on its parent's day, so it goes where the parent is.
+            if note.due == nil, let day { note.due = TaskDue(day: day) }
             var entry = TaskEntry(name: final)
             entry.id = id
             entry.writesID = false
@@ -87,7 +99,9 @@ extension TaskFileStore {
             entry.note = Self.lines(of: draft.body)
             let target = TaskSection.of(note, current: .now, today: today(), boundary: boundary())
             if let parent {
-                if place(of: parent, in: snapshot.document)?.section == target, snapshot.document.insert(entry, under: parent) {
+                var nested = entry
+                nested.leaveDate(to: day)
+                if place(of: parent, in: snapshot.document)?.section == target, snapshot.document.insert(nested, under: parent) {
                     try write(snapshot.document, root: root)
                     snapshot.indexNames()
                     return try current(id: id, name: final, snapshot: snapshot)

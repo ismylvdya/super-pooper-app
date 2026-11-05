@@ -70,6 +70,7 @@ final class NoteWriter {
         do {
             let result = try await store.apply(changes, to: task)
             tasks.written(result.task)
+            result.subtasks.forEach(tasks.written)
             if let clashes = AppEvent.clashes(in: result, of: task.name) { appEvents.send(clashes) }
             return result.task
         } catch {

@@ -190,7 +190,7 @@ actor TaskFileStore: TaskStore {
 
     func item(_ entry: TaskEntry, in section: TaskSection, parent: TaskEntry?, index: Int, snapshot: Snapshot) -> TaskItem {
         let parentName = parent?.name ?? entry.parent.flatMap { snapshot.names[$0] }
-        return entry.item(in: section, parentName: parentName, order: parent == nil ? nil : index, format: format)
+        return entry.item(in: section, parentName: parentName, order: parent == nil ? nil : index, follows: parent.flatMap(logicalDay(of:)), format: format)
     }
 
     func habit(of file: HabitFile, snapshot: Snapshot) -> TaskItem {
@@ -227,6 +227,7 @@ actor TaskFileStore: TaskStore {
         }
         rollOver(&snapshot.document, to: day, habits: Set(snapshot.habits.keys))
         dateLooseLines(&snapshot.document, to: day, habits: Set(snapshot.habits.keys))
+        gatherSubtasks(&snapshot.document, habits: Set(snapshot.habits.keys))
         carryMissedHabits(&snapshot, to: day)
         return snapshot.document != before
     }

@@ -192,12 +192,12 @@ struct TaskDocument: Equatable, Sendable {
 }
 
 extension TaskDocument {
-    /// Every entry of a section with its parent, depth first.
+    /// Every entry of a section with its parent, depth first. The parent comes with the date it stands on (`following`).
     func walk(_ visit: (TaskEntry, _ section: TaskSection, _ parent: TaskEntry?, _ index: Int) -> Void) {
         func descend(_ entries: [TaskEntry], _ section: TaskSection, _ parent: TaskEntry?) {
             for (index, entry) in entries.enumerated() {
                 visit(entry, section, parent, index)
-                descend(entry.children, section, entry)
+                descend(entry.children, section, entry.following(parent))
             }
         }
         for section in sections {

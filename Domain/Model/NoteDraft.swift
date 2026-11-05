@@ -17,9 +17,9 @@ struct NoteDraft: Equatable, Sendable {
     /// A new task of this week.
     static var newTask: NoteDraft { NoteDraft(status: .thisWeek) }
 
-    /// A new task of this week that is a subtask of `parent`.
-    static func subtask(of parent: String) -> NoteDraft {
-        NoteDraft(status: .thisWeek, changes: [.addProject(parent)])
+    /// A new task that is a subtask of `parent`, in the list `status`.
+    static func subtask(of parent: String, status: TaskStatus = .thisWeek) -> NoteDraft {
+        NoteDraft(status: status, changes: [.addProject(parent)])
     }
 
     /// A subtask of a habit or a repeatable task: a repeatable task with the parent's rule, in Today as the parent is.
@@ -28,9 +28,11 @@ struct NoteDraft: Equatable, Sendable {
                                             .showInToday(parent.habit.showInToday)])
     }
 
-    /// The subtask `parent` gets: repeatable under a habit or a repeatable task, a task of this week otherwise.
+    /// The subtask `parent` gets: repeatable under a habit or a repeatable task, otherwise a task in the parent's list
+    /// (this week's under what is done: a done task's list is no place to start from).
     static func subtask(of parent: TaskItem) -> NoteDraft {
-        parent.isHabit ? repeatableSubtask(of: parent) : subtask(of: parent.name)
+        if parent.isHabit { return repeatableSubtask(of: parent) }
+        return subtask(of: parent.name, status: parent.status == .done ? .thisWeek : parent.status)
     }
 
     /// A new habit, daily from `start`, in its own `color` (`#RRGGBB`).

@@ -21,6 +21,8 @@ struct TaskWriteResult: Sendable {
     let hadConflict: Bool
     /// Fields this edit wrote that had also been changed elsewhere to something else (the edit won).
     var clashingFields: [TaskField] = []
+    /// The subtasks standing under the item: they follow its day and list, so an edit of it changes them too.
+    var subtasks: [TaskItem] = []
 }
 
 enum TaskStoreError: Error, Equatable, Sendable {

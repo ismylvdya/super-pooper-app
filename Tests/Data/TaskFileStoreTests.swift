@@ -426,6 +426,70 @@ struct TaskFileStoreTests {
         #expect(try #require(lines.firstIndex(of: "- [ ] Call")) > lines.firstIndex(of: "## Next actions")!)
     }
 
+    // MARK: - Subtasks go with their parent
+
+    private func parentAndStore(_ lines: String) async throws -> (TaskFileStore, [TaskItem]) {
+        try write("%% day \(today.isoString) %%\n\n\(lines)")
+        let store = store()
+        return (store, try await store.load().tasks)
+    }
+
+    /// A subtask added under a task of today's pool stands under it, on its day, and is not in Next actions.
+    @Test func aNewSubtaskOfATodayTaskStandsUnderIt() async throws {
+        let (store, tasks) = try await parentAndStore("## Today\n- [ ] Pack 📅 \(today.isoString)\n## Next actions\n")
+        let child = try await store.create(.subtask(of: try #require(tasks.first)), named: "Earrings")
+        #expect(child.due == TaskDue(day: today) && !child.waitsInList && child.projects == ["Pack"])
+        #expect(try text().replacingOccurrences(of: "\n\n", with: "\n").contains("- [ ] Pack 📅 \(today.isoString)\n    - [ ] Earrings\n## Next actions"))
+    }
+
+    /// In a later day's or another list's parent the same: the subtask does not fall out to Next actions.
+    @Test func aNewSubtaskGoesToItsParentsList() async throws {
+        let later = today.adding(days: 3)
+        let (store, tasks) = try await parentAndStore("## Today\n## Next actions\n- [ ] Trip 📅 \(later.isoString)\n## Soon\n- [ ] Far\n## Someday\n")
+        let trip = try await store.create(.subtask(of: try #require(tasks.first { $0.name == "Trip" })), named: "Tickets")
+        let far = try await store.create(.subtask(of: try #require(tasks.first { $0.name == "Far" })), named: "Plan")
+        #expect(trip.due == TaskDue(day: later) && far.status == .halfYear && far.due == nil)
+        #expect(try text().replacingOccurrences(of: "\n\n", with: "\n").contains("- [ ] Trip 📅 \(later.isoString)\n    - [ ] Tickets\n## Soon\n- [ ] Far\n    - [ ] Plan\n"))
+    }
+
+    /// The parent moves, and whatever has no date of its own moves with it and is told so; a time of its own stays.
+    @Test func subtasksFollowTheirParentsDate() async throws {
+        let (store, tasks) = try await parentAndStore("## Today\n- [ ] Pack 📅 \(today.isoString)\n    - [ ] Earrings\n    - [ ] Call 📅 \(today.isoString) 🕐 10:00\n## Next actions\n")
+        let result = try await store.apply([.due(nil)], to: try #require(tasks.first { $0.name == "Pack" }))
+        let earrings = try #require(result.subtasks.first { $0.name == "Earrings" })
+        #expect(earrings.due == nil && earrings.waitsInList)
+        #expect(result.subtasks.first { $0.name == "Call" }?.due == TaskDue(day: today, time: LocalTime(hour: 10, minute: 0)))
+    }
+
+    /// Not today on a subtask: it leaves its parent for Next actions; Today brings it back under, with no date of its own.
+    @Test func aSubtaskTakenOutOfTheDayLeavesItsParentAndComesBack() async throws {
+        let (store, tasks) = try await parentAndStore("## Today\n- [ ] Pack 📅 \(today.isoString)\n    - [ ] Earrings\n## Next actions\n")
+        let out = try await store.apply([.due(nil)], to: try #require(tasks.first { $0.name == "Earrings" }))
+        #expect(out.task.due == nil && out.task.waitsInList && out.task.projects == ["Pack"])
+        #expect(try text().contains("## Next actions\n- [ ] Earrings 🔼 Pack\n"))
+        _ = try await store.apply([.due(TaskDue(day: today))], to: out.task)
+        #expect(try text().contains("- [ ] Pack 📅 \(today.isoString)\n    - [ ] Earrings\n"))
+    }
+
+    /// An edit of a following subtask does not write its parent's day into it; the next morning takes a stray line back.
+    @Test func aFollowingSubtaskKeepsNoDateOfItsOwn() async throws {
+        let (store, tasks) = try await parentAndStore("## Today\n- [ ] Pack 📅 \(today.isoString)\n    - [ ] Earrings\n## Next actions\n")
+        _ = try await store.apply([.highPriority(true)], to: try #require(tasks.first { $0.name == "Earrings" }))
+        #expect(try text().contains("    - [ ] Earrings ⚠️\n"))
+        let yesterday = today.adding(days: -1).isoString
+        try write("%% day \(yesterday) %%\n\n## Today\n- [ ] Pack 📅 \(yesterday)\n## Next actions\n- [ ] Earrings 🔼 Pack\n")
+        let morning = try await self.store().load().tasks
+        #expect(morning.first { $0.name == "Earrings" }?.due == TaskDue(day: today))
+        #expect(try text().contains("- [ ] Pack 📅 \(today.isoString)\n    - [ ] Earrings\n"))
+    }
+
+    /// Parents that name each other stay as they are: no line is lost.
+    @Test func aLoopOfParentsLosesNoLine() async throws {
+        let (_, tasks) = try await parentAndStore("## Today\n## Next actions\n- [ ] A 🔼 B\n- [ ] B 🔼 A\n")
+        #expect(Set(tasks.map(\.name)) == ["A", "B"])
+        #expect(try text().contains("A") && text().contains("B"))
+    }
+
     /// Started is the checkbox's slash; the tags of a while ago become it or go, Waiting's section joins Next actions.
     @Test func startedIsTheBoxAndWaitingIsGone() async throws {
         try write("## Soon\n- [/] Begun\n- [ ] Tagged ▶️\n- [ ] Held ⏸️\n## Half year\n- [ ] Far\n## Waiting\n- [ ] Pending\n")

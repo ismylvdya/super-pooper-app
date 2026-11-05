@@ -171,7 +171,7 @@ final class NoteCommands {
         }
     }
 
-    /// A subtask of `parent`: a task of this week, or a repeatable task under a habit (`NoteDraft.subtask(of:)`).
+    /// A subtask of `parent`: a task in its list, on its day, or a repeatable task under a habit (`NoteDraft.subtask(of:)`).
     func addSubtask(_ name: String, to parent: String) async {
         guard let parent = tasks.task(named: parent) else { return }
         do {
