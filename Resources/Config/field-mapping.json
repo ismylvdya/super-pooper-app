@@ -81,7 +81,10 @@
       "scheme": "obsidian",
       "action": "open",
       "vaultParameter": "vault",
-      "fileParameter": "file"
+      "fileParameter": "file",
+      "lineAction": "superpooper-line",
+      "lineParameter": "line",
+      "nameParameter": "name"
     },
     "noteNames": {
       "forbiddenCharacters": "/\\:*?\"<>|#^[]",

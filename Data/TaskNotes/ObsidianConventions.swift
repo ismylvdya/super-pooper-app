@@ -9,6 +9,10 @@ struct ObsidianConventions: Codable, Hashable, Sendable {
         let action: String
         let vaultParameter: String
         let fileParameter: String
+        /// `obsidian://superpooper-line?…&line=…&name=…`: the app's own plugin opens the note on that line.
+        let lineAction: String
+        let lineParameter: String
+        let nameParameter: String
     }
 
     struct NoteNames: Codable, Hashable, Sendable {

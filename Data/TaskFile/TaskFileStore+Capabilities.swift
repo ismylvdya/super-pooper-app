@@ -215,12 +215,15 @@ extension TaskFileStore: TaskTrash, DayMirroring, TaskImporting, ExternalLinking
         }
     }
 
-    /// `obsidian://open?vault=…&file=…`: the tasks file.
+    /// `obsidian://superpooper-line?vault=…&file=…&line=…&name=…`: the tasks file on the item's line (a habit's open one), by the
+    /// app's plugin for Obsidian.
     func externalURL(for task: TaskItem) async -> URL? {
         let settings = vaultSettings()
         return try? await location.withRoot { root in
-            ObsidianLink.url(relativePath: VaultPaths.relative(fileURL(root: root), to: root), root: root, folder: chosenFolder(root: root),
-                             vaultName: settings.obsidianVault, pathPrefix: settings.obsidianPathPrefix, obsidian: obsidian)
+            let document = try await read(root: root).document
+            return ObsidianLink.url(relativePath: VaultPaths.relative(fileURL(root: root), to: root), root: root, folder: chosenFolder(root: root),
+                                    vaultName: settings.obsidianVault, pathPrefix: settings.obsidianPathPrefix, obsidian: obsidian,
+                                    line: document.openLine(of: task.id.value, format: format))
         }
     }
 

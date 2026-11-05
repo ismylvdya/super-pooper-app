@@ -1,0 +1,9 @@
+{
+  "id": "superpooper-open-line",
+  "name": "SuperPooper Open Line",
+  "version": "1.0.0",
+  "minAppVersion": "1.5.0",
+  "description": "Opens a note on a given line and highlights it, by a link from the SuperPooper app.",
+  "author": "SuperPooper",
+  "isDesktopOnly": false
+}

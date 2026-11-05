@@ -6,7 +6,7 @@ enum ObsidianLink {
     /// folder's path in it come from settings, else from the folder's place in Obsidian's iCloud folder, else the
     /// chosen folder is taken as a vault's own folder (the vault is its parent) or as the vault itself.
     static func url(relativePath: String, root: URL, folder: ChosenFolder, vaultName: String,
-                    pathPrefix: String, obsidian: ObsidianConventions) -> URL? {
+                    pathPrefix: String, obsidian: ObsidianConventions, line: TaskDocument.OpenLine? = nil) -> URL? {
         let suffix = "." + obsidian.noteExtension
         let file = relativePath.hasSuffix(suffix) ? String(relativePath.dropLast(suffix.count)) : relativePath
         let guessed = folder.obsidianPlace ?? (folder.isWholeVault
@@ -16,9 +16,13 @@ enum ObsidianLink {
         let prefix = pathPrefix.isEmpty ? guessed.pathPrefix : pathPrefix
         var components = URLComponents()
         components.scheme = obsidian.openURL.scheme
-        components.host = obsidian.openURL.action
+        components.host = line == nil ? obsidian.openURL.action : obsidian.openURL.lineAction
         components.queryItems = [URLQueryItem(name: obsidian.openURL.vaultParameter, value: vault),
                                  URLQueryItem(name: obsidian.openURL.fileParameter, value: prefix.isEmpty ? file : "\(prefix)/\(file)")]
+        if let line {
+            components.queryItems? += [URLQueryItem(name: obsidian.openURL.lineParameter, value: String(line.number)),
+                                       URLQueryItem(name: obsidian.openURL.nameParameter, value: line.name)]
+        }
         return components.url
     }
 }

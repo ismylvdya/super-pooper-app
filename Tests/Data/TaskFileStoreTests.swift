@@ -320,14 +320,29 @@ struct TaskFileStoreTests {
         #expect(try await store.filedTasks().count == 1)
     }
 
-    @Test func openObsidianOpensTheFileAndLeavesItAsItIs() async throws {
+    @Test func openObsidianNamesTheLineAndLeavesTheFileAsItIs() async throws {
         let store = store()
-        let task = try await store.create(draft(), named: "One")
+        _ = try await store.create(draft(), named: "One")
+        let task = try await store.create(draft(), named: "Two")
         let before = try text()
-        let url = await store.externalURL(for: task)
-        #expect(url?.query?.contains("Tasks") == true)
-        #expect(url?.query?.contains("#") == false)
+        let url = try #require(await store.externalURL(for: task))
+        let items = try #require(URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems)
+        #expect(url.host() == "superpooper-line")
+        let line = try #require(items.first { $0.name == "line" }?.value.flatMap(Int.init))
+        #expect(before.components(separatedBy: "\n")[line] == "- [ ] Two")
+        #expect(items.first { $0.name == "name" }?.value == "Two")
         #expect(try text() == before)
+    }
+
+    @Test func aHabitOpensOnItsOpenLineNotItsDaysInDone() async throws {
+        let store = store()
+        let habit = try await store.create(NoteDraft(status: .habit), named: "Run")
+        _ = try await store.apply([.mark(.done, on: today.adding(days: -1))], to: habit)
+        await store.mirror(DayMirror(sections: [.init(title: "Morning", names: ["Run"])], timed: [:], keptOut: []))
+        let url = try #require(await store.externalURL(for: habit))
+        let items = try #require(URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems)
+        let line = try #require(items.first { $0.name == "line" }?.value.flatMap(Int.init))
+        #expect(try text().components(separatedBy: "\n")[line].hasPrefix("- [ ] Run"))
     }
 
     @Test func anOldOpenMarkIsNoPartOfTheNameAndGoesWithTheNextWrite() async throws {
