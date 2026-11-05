@@ -210,7 +210,7 @@ extension TaskFileStore: TaskTrash, DayMirroring, ExternalLinking, TaskBackups, 
         return look
     }
 
-    private var dayMarker: String { format.dayMarkerPrefix + today().isoString + format.dayMarkerSuffix }
+    var dayMarker: String { format.dayMarkerPrefix + today().isoString + format.dayMarkerSuffix }
 
     private func setDayMarker(in document: inout TaskDocument) {
         document.prelude.removeAll { $0.hasPrefix(format.dayMarkerPrefix) && $0.hasSuffix(format.dayMarkerSuffix) }

@@ -206,6 +206,7 @@ actor TaskFileStore: TaskStore {
     func normalize(_ snapshot: inout Snapshot) -> Bool {
         let before = snapshot.document
         let day = today()
+        dateNextActions(&snapshot.document, to: day, habits: Set(snapshot.habits.keys))
         // Ticked habit lines and Soon's lines whose day has come leave their sections.
         var moves: [(id: String, habit: Bool)] = []
         snapshot.document.walk { entry, section, parent, _ in
@@ -234,6 +235,22 @@ actor TaskFileStore: TaskStore {
     /// The logical day a line stands on.
     func logicalDay(of entry: TaskEntry) -> LocalDate? {
         entry.date.map { TaskDue(day: $0, time: entry.time).logicalDay(boundary: boundary()) }
+    }
+
+    /// A new day takes every undated task of Next actions: it stands in today's pool and morning review, whether the review is
+    /// gone through or not. Tomorrow in the review moves it on. Told by the file's day marker, which the day's first mirror
+    /// renews, so a task added during the day waits for the next morning. A file with no marker says nothing about a day.
+    private func dateNextActions(_ document: inout TaskDocument, to day: LocalDate, habits: Set<String>) {
+        let hasMarker = document.prelude.contains { $0.hasPrefix(format.dayMarkerPrefix) && $0.hasSuffix(format.dayMarkerSuffix) }
+        guard hasMarker, !document.prelude.contains(dayMarker), let list = document.sections.firstIndex(where: { $0.kind == .soon }) else { return }
+        for group in document.sections[list].groups.indices {
+            for index in document.sections[list].groups[group].entries.indices {
+                let entry = document.sections[list].groups[group].entries[index]
+                if entry.date == nil, entry.box != .done, !(entry.id.map(habits.contains) ?? false) {
+                    document.sections[list].groups[group].entries[index].date = day
+                }
+            }
+        }
     }
 
     /// A task's started box is how an older file says Started; a habit's is a mark.

@@ -406,6 +406,27 @@ struct TaskFileStoreTests {
         #expect(done.contains("## Done\n- [x] Old ✅ 2026-01-01"))
     }
 
+    /// A new day takes what is undated in Next actions, reviewed or not; what is dated later, and the other lists, stay.
+    @Test func aNewDayDatesNextActionsToday() async throws {
+        let later = today.adding(days: 3).isoString
+        try write("%% day \(today.adding(days: -1).isoString) %%\n\n## Today\n## Next actions\n- [ ] Idle\n- [ ] Later 📅 \(later)\n## Soon\n- [ ] Far\n")
+        let tasks = try await store().load().tasks
+        #expect(tasks.first { $0.name == "Idle" }?.due == TaskDue(day: today))
+        #expect(tasks.first { $0.name == "Idle" }?.waitsInList == false)
+        let lines = try text().components(separatedBy: "\n")
+        let list = try #require(lines.firstIndex(of: "## Next actions"))
+        #expect(try #require(lines.firstIndex(of: "- [ ] Idle 📅 \(today.isoString)")) < list)
+        #expect(try #require(lines.firstIndex(of: "- [ ] Later 📅 \(later)")) > list)
+        #expect(lines.contains("- [ ] Far"))
+    }
+
+    /// A task added during the day waits for the next morning.
+    @Test func theSameDayLeavesNextActionsAsItIs() async throws {
+        try write("%% day \(today.isoString) %%\n\n## Today\n## Next actions\n- [ ] New\n")
+        let tasks = try await store().load().tasks
+        #expect(tasks.first?.due == nil && tasks.first?.waitsInList == true)
+    }
+
     @Test func anOldOpenMarkIsNoPartOfTheNameAndGoesWithTheNextWrite() async throws {
         try write("## Today\n- [ ] One ^open\n- [ ] Two\n")
         let store = store()
