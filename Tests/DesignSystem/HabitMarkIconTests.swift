@@ -9,6 +9,8 @@ struct HabitMarkIconTests {
         #expect(HabitMarkIcon.icon(for: ActionID.twice) == .habitMarkTwice)
         #expect(HabitMarkIcon.icon(for: ActionID.unmark) == .habitMarkOpen)
         #expect(HabitMarkIcon.icon(for: ActionID.archive) == nil)
+        #expect(HabitMarkIcon.symbol(for: ActionID.done) == .habitMarkDoneSymbol)
+        #expect(HabitMarkIcon.symbol(for: ActionID.archive) == nil)
         #expect(ActionID.allCases.filter(\.setsHabitMark) == [.done, .partial, .twice, .unmark])
     }
 }
