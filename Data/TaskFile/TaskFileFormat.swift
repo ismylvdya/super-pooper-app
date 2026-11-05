@@ -44,8 +44,8 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
     let legacyHighMarkers: [String]
     /// After the alarm's marker: the sound is the one set in the settings.
     let alarmDefaultSound: String
-    /// The Obsidian block id at the end of the line "Open in Obsidian" points at.
-    let openBlock: String
+    /// Words older lines end with and the app no longer keeps: read so they are no part of the name, and gone with the next write.
+    let legacyWords: [String]
 
     func title(of section: TaskSection) -> String {
         switch section {

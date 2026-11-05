@@ -320,27 +320,22 @@ struct TaskFileStoreTests {
         #expect(try await store.filedTasks().count == 1)
     }
 
-    @Test func openInObsidianPointsAtABlockOnTheOneLine() async throws {
+    @Test func openObsidianOpensTheFileAndLeavesItAsItIs() async throws {
         let store = store()
-        let first = try await store.create(draft(), named: "One")
-        let second = try await store.create(draft(), named: "Two")
-        let url = await store.externalURL(for: first)
-        #expect(url?.absoluteString.contains("Tasks.md%23") == true || url?.query?.contains("Tasks.md#") == true)
-        #expect(try text().contains("- [ ] One ^open\n"))
-        _ = await store.externalURL(for: second)
-        #expect(try text().contains("- [ ] One\n- [ ] Two ^open\n"))
+        let task = try await store.create(draft(), named: "One")
+        let before = try text()
+        let url = await store.externalURL(for: task)
+        #expect(url?.query?.contains("Tasks") == true)
+        #expect(url?.query?.contains("#") == false)
+        #expect(try text() == before)
     }
 
-    @Test func theOpenMarkOutlivesLaterEdits() async throws {
+    @Test func anOldOpenMarkIsNoPartOfTheNameAndGoesWithTheNextWrite() async throws {
+        try write("## Today\n- [ ] One ^open\n- [ ] Two\n")
         let store = store()
-        let first = try await store.create(draft(), named: "One")
-        let second = try await store.create(draft(), named: "Two")
-        _ = await store.externalURL(for: first)
-        _ = try await store.apply([.highPriority(true)], to: second)
-        _ = try await store.load()
-        #expect(try text().contains("- [ ] One ^open\n"))
-        _ = try await store.apply([.highPriority(true)], to: first)
-        #expect(try text().contains("^open"))
+        let task = try #require(try await store.load().tasks.first { $0.name == "One" })
+        _ = try await store.apply([.highPriority(true)], to: task)
+        #expect(try text().contains("^open") == false)
     }
 
     @Test func aRenamedHabitKeepsItsOldNameInDone() async throws {
