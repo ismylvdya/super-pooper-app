@@ -1,8 +1,8 @@
 import SwiftUI
 
 /// The sections of a habit or repeatable task page (also used by the new-habit draft, which has no history yet): history,
-/// subtasks, text and reminders; its kind; statistics; when it repeats; how it stands in the pool; the rest. History and
-/// statistics are a habit's: a task that simply repeats has none unless the settings ask for them.
+/// subtasks, text and reminders; its kind; when it repeats; how it stands in the pool; the rest; statistics at the very bottom. History
+/// and statistics are a habit's: a task that simply repeats has none unless the settings ask for them.
 struct HabitSections: View {
     @Environment(AppModel.self) private var model
     let editor: TaskEditor
@@ -19,11 +19,11 @@ struct HabitSections: View {
         }
         HabitRemindersSection(editor: editor)
         HabitKindSection(editor: editor)
-        if showsHistory { HabitStatsSection(habit: editor.task) }
         // A repeatable subtask comes up on its parent's days: the parent's rule is written to it.
         if !model.isRepeatableSubtask(editor.task) { RecurrenceEditorSection(editor: editor) }
         HabitDaySection(editor: editor)
         HabitOptionsSection(editor: editor)
+        if showsHistory { HabitStatsSection(habit: editor.task) }
     }
 }
 

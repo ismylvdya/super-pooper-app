@@ -12,10 +12,7 @@ struct TaskPropertiesSection: View {
     var body: some View {
         PlateSection(header: "taskPage.properties", info: "info.taskPage.properties") {
             listRow
-            FeelPicker(feel: task.feel) { feel in
-                Haptics.play(.select)
-                editor.apply([.feel(feel)])
-            }
+            FeelPicker(editor: editor)
             PlateRow(icon: .estimate, title: "taskPage.estimate", info: "info.taskPage.estimate") {
                 Picker("taskPage.estimate", selection: estimateBinding) {
                     ForEach(rules.estimateOptions(including: rules.day.estimate(of: task)), id: \.minutes) { Text(LocalizedStringKey($0.label)).tag($0.minutes) }
@@ -46,56 +43,6 @@ struct TaskPropertiesSection: View {
     private var estimateBinding: Binding<Int> {
         Binding(get: { rules.day.estimate(of: task) },
                 set: { minutes in editor.apply([.timeEstimate(minutes)]) })
-    }
-}
-
-/// Need energy, neutral in the middle, pleasant: the system's segmented control, with an icon for each.
-private struct FeelPicker: View {
-    @Environment(\.tokens) private var tokens
-    @Environment(\.icons) private var icons
-    @Environment(\.displayScale) private var displayScale
-    let feel: TaskFeel
-    let onChange: (TaskFeel) -> Void
-
-    var body: some View {
-        PlateRow(icon: .feel, title: "taskPage.feel") {
-            Picker("taskPage.feel", selection: Binding(get: { feel }, set: onChange)) {
-                ForEach(TaskFeel.allCases, id: \.self) { feel in
-                    image(of: feel).accessibilityLabel(Text(title(of: feel))).tag(feel)
-                }
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .frame(width: tokens.size(.feelPicker))
-            .accessibilityIdentifier("taskPage.feel")
-        }
-    }
-
-    /// In its own color: a segment draws a plain image in one tint.
-    private func image(of feel: TaskFeel) -> Image {
-        let font = tokens.uiFont(.toggleChip)
-        let extent = font.capHeight * tokens.ratio(.handGlyph)
-        let configuration = UIImage.SymbolConfiguration(font: font)
-        let picture: UIImage?
-        switch feel {
-        case .needEnergy:
-            picture = TemplateGlyph.image(icons[.energy], extent: extent, along: .vertical, scale: displayScale)?
-                .withTintColor(UIColor(tokens.color(.energy)), renderingMode: .alwaysOriginal)
-        case .neutral:
-            picture = UIImage(systemName: icons[.feelNeutral], withConfiguration: configuration)
-        case .pleasant:
-            picture = UIImage(systemName: icons[.pleasant], withConfiguration: configuration)?
-                .withTintColor(UIColor(tokens.color(.heart)), renderingMode: .alwaysOriginal)
-        }
-        return picture.map(Image.init(uiImage:)) ?? Image(systemName: icons[.feelNeutral])
-    }
-
-    private func title(of feel: TaskFeel) -> LocalizedStringKey {
-        switch feel {
-        case .needEnergy: "lists.energy"
-        case .neutral: "taskPage.feel.neutral"
-        case .pleasant: "lists.pleasant"
-        }
     }
 }
 

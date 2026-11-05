@@ -27,12 +27,7 @@ struct HabitDaySection: View {
                     }
                     .labelsHidden()
                 }
-                PlateRow(icon: .feel, title: "taskPage.feel", info: "info.taskPage.feel") {}
-                Picker("taskPage.feel", selection: Binding(get: { task.feel }, set: { editor.apply([.feel($0)]) })) {
-                    ForEach(TaskFeel.allCases, id: \.self) { Text(L10n.string("taskPage.feel." + $0.rawValue)).tag($0) }
-                }
-                .pickerStyle(.segmented)
-                .accessibilityIdentifier("taskPage.feel")
+                FeelPicker(editor: editor)
                 PlateRow(icon: .estimate, title: "taskPage.estimate", info: "info.taskPage.estimate") {
                     Picker("taskPage.estimate", selection: Binding(get: { rules.day.estimate(of: task) }, set: { editor.apply([.timeEstimate($0)]) })) {
                         ForEach(rules.estimateOptions(including: rules.day.estimate(of: task)), id: \.minutes) { Text(LocalizedStringKey($0.label)).tag($0.minutes) }

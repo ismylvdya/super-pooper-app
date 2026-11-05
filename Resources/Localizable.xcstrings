@@ -2888,17 +2888,6 @@
         }
       }
     },
-    "info.taskPage.feel": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tasks that need energy (or are unpleasant) go up in the pool before the energy hour and down after it. Pleasant ones are a reward and wait for the rest."
-          }
-        }
-      }
-    },
     "info.taskPage.high": {
       "extractionState": "manual",
       "localizations": {
@@ -6275,50 +6264,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Time estimate"
-          }
-        }
-      }
-    },
-    "taskPage.feel": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Feel"
-          }
-        }
-      }
-    },
-    "taskPage.feel.needEnergy": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Needs energy"
-          }
-        }
-      }
-    },
-    "taskPage.feel.neutral": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Neutral"
-          }
-        }
-      }
-    },
-    "taskPage.feel.pleasant": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pleasant"
           }
         }
       }
