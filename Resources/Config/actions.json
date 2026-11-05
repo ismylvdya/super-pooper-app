@@ -278,7 +278,6 @@
     },
     "habitPage": {
       "actions": [
-        "skipToday",
         "archive",
         "restoreFromArchive",
         "openInObsidian",
