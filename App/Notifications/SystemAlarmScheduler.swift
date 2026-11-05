@@ -41,15 +41,15 @@ struct SystemAlarmScheduler: AlarmScheduling {
         // One ringing now has left the plan with its moment: it rings on until it is stopped.
         for alarm in current where wanted[alarm.id] == nil && alarm.state != .alerting { try? manager.cancel(id: alarm.id) }
         for (id, alarm) in wanted where !set.contains(id) {
-            _ = try? await manager.schedule(id: id, configuration: configuration(of: alarm))
+            _ = try? await manager.schedule(id: id, configuration: configuration(of: alarm, id: id))
         }
     }
 
-    private func configuration(of alarm: PlannedAlarm) -> AlarmManager.AlarmConfiguration<ItemAlarmMetadata> {
+    private func configuration(of alarm: PlannedAlarm, id: UUID) -> AlarmManager.AlarmConfiguration<ItemAlarmMetadata> {
         let attributes = AlarmAttributes(presentation: AlarmPresentation(alert: alert(of: alarm)), metadata: ItemAlarmMetadata(), tintColor: tint())
         return .alarm(schedule: .fixed(alarm.fireDate), attributes: attributes,
                       stopIntent: AlarmStopIntent(key: alarm.key, day: alarm.day.isoString),
-                      secondaryIntent: AlarmSnoozeIntent(key: alarm.key, day: alarm.day.isoString),
+                      secondaryIntent: AlarmSnoozeIntent(alarmID: id.uuidString, key: alarm.key, day: alarm.day.isoString),
                       sound: alarm.soundFile.map { .named($0) } ?? .default)
     }
 
