@@ -26,6 +26,11 @@ extension AppModel {
     /// A notification swiped away or tapped comes back silently while its day lasts.
     func restoreNotification(_ request: UNNotificationRequest) async { await parts.derived.restore(request) }
 
+    /// An alarm's slider: its notification comes in its place, the item stays as it is.
+    func alarmStopped(key: String, day: LocalDate) async {
+        await parts.derived.alarmStopped(key: key, day: day)
+    }
+
     /// Snooze on a notification: the one shown (`identifier`) goes, the same comes again later; a task takes that time.
     func snoozeNotification(key: String, day: LocalDate, shown identifier: String) async {
         let commands = parts.dayCommands

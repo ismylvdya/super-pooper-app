@@ -48,12 +48,12 @@ struct SystemAlarmScheduler: AlarmScheduling {
     private func configuration(of alarm: PlannedAlarm) -> AlarmManager.AlarmConfiguration<ItemAlarmMetadata> {
         let attributes = AlarmAttributes(presentation: AlarmPresentation(alert: alert(of: alarm)), metadata: ItemAlarmMetadata(), tintColor: tint())
         return .alarm(schedule: .fixed(alarm.fireDate), attributes: attributes,
-                      stopIntent: AlarmDoneIntent(taskName: alarm.taskName ?? "", day: alarm.day.isoString),
+                      stopIntent: AlarmStopIntent(key: alarm.key, day: alarm.day.isoString),
                       secondaryIntent: AlarmSnoozeIntent(key: alarm.key, day: alarm.day.isoString),
                       sound: alarm.soundFile.map { .named($0) } ?? .default)
     }
 
-    /// The task's name as its title; the slider does Done (`AlarmDoneIntent`), the button Snooze (`AlarmSnoozeIntent`).
+    /// The task's name as its title; the slider leaves its notification (`AlarmStopIntent`), the button Snooze (`AlarmSnoozeIntent`).
     private func alert(of alarm: PlannedAlarm) -> AlarmPresentation.Alert {
         let title = LocalizedStringResource(stringLiteral: alarm.title)
         let snooze = AlarmButton(text: LocalizedStringResource(stringLiteral: snoozeTitle()), textColor: buttonText(), systemImageName: snoozeIcon)

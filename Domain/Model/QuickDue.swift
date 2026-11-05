@@ -45,9 +45,9 @@ enum DateChip {
         return due.day
     }
 
-    /// The day and time the chip shows for a note as written, on the phone's clock (as the Today / Tomorrow chips).
+    /// The day and time the chip shows: as the note has them, in its own zone if it has one, as the date sheet does. A zone
+    /// added to a time does not change the time.
     static func shown(of task: TaskItem, context: DayContext) -> (day: LocalDate?, time: LocalTime?) {
-        let due = ZonedTimes.local(task, calendar: context.calendar, today: context.today).due
-        return (title(for: due, context: context), due?.time)
+        (title(for: task.due, context: context), task.due?.time)
     }
 }

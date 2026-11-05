@@ -9,10 +9,10 @@ enum AppActionBridge {
     static var signingCheckHandler: (() async -> Date?)?
 
     /// An alarm's slider and Snooze button.
-    static var alarmDoneHandler: ((String, LocalDate?) async -> Void)?
+    static var alarmStopHandler: ((String, LocalDate) async -> Void)?
     static var alarmSnoozeHandler: ((String, LocalDate) async -> Void)?
 
-    static func alarmDone(_ name: String, _ day: LocalDate?) async { await alarmDoneHandler?(name, day) }
+    static func alarmStop(_ key: String, _ day: LocalDate) async { await alarmStopHandler?(key, day) }
     static func alarmSnooze(_ key: String, _ day: LocalDate) async { await alarmSnoozeHandler?(key, day) }
 
     static func sync() async {

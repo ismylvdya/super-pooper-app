@@ -9,6 +9,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
     }
 
     struct Notifications: Codable, Hashable, Sendable {
+        /// An alarm stopped with its slider: its notification comes this long after.
+        let afterAlarmSeconds: Double
         /// iOS keeps at most 64 pending local notifications; the signature's hourly ones need their room.
         let limit: Int
         let horizonDays: Int

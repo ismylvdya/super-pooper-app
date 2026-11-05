@@ -143,6 +143,17 @@ final class DerivedStatePublisher {
         await replanNotifications()
     }
 
+    /// An alarm stopped with its slider: its notification comes right after, under the snooze's own identifier, and stays in
+    /// Notification Center while its item is open. The item is not touched.
+    func alarmStopped(key: String, day: LocalDate) async {
+        let context = self.day.context()
+        guard !StaleNotifications.isOver(day, today: context.today) else { return }
+        let until = context.now.addingTimeInterval(config.rules.notifications.afterAlarmSeconds)
+        let snooze = NotificationSnooze(key: key, day: day, until: until)
+        try? snoozeStore.save(NotificationSnoozing.adding(snooze, to: snoozeStore.load(), today: context.today))
+        await replanNotifications()
+    }
+
     /// Asks for the system's permission for alarms; false when refused.
     func requestAlarmAccess() async -> Bool {
         await alarms.requestAccess()
@@ -188,7 +199,8 @@ final class DerivedStatePublisher {
         try? alertStateStore.save(AlertState(
             pending: Dictionary(planned.map { ($0.key, $0.fireDate) }, uniquingKeysWith: min),
             known: Array(Set(all.map(\.key)))))
-        let snoozed = NotificationSnoozing.notifications(currentSnoozes(today: context.today), valid: valid, context: context)
+        // A snooze may be an alarm's own, stopped with its slider: its item has no notification of its own otherwise.
+        let snoozed = NotificationSnoozing.notifications(currentSnoozes(today: context.today), valid: stillValid, context: context)
         await notifications.sync(planned: planned + snoozed.filter { $0.fireDate > context.now }, stillValid: valid + late + snoozed,
                                  now: late)
     }

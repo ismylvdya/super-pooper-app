@@ -14,10 +14,10 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
                 guard case .success(let container) = AppContainer.shared else { return }
                 await container.model.sync(announce: false)
             }
-            AppActionBridge.alarmDoneHandler = { name, day in
-                guard case .success(let container) = AppContainer.shared, !name.isEmpty else { return }
+            AppActionBridge.alarmStopHandler = { key, day in
+                guard case .success(let container) = AppContainer.shared else { return }
                 await container.model.ensureLoaded()
-                await container.model.performNotificationAction(.done, on: name, day: day)
+                await container.model.alarmStopped(key: key, day: day)
             }
             AppActionBridge.alarmSnoozeHandler = { key, day in
                 guard case .success(let container) = AppContainer.shared else { return }

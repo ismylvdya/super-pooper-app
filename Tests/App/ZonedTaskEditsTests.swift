@@ -53,4 +53,27 @@ struct ZonedTaskEditsTests {
         await model.sync(announce: false)
         #expect(model.task(named: "Visa")?.status == .thisWeek)
     }
+
+    /// A zone added on the date sheet leaves the time as it is: 15:00 stays 15:00, now in that zone, in the note and on the chip.
+    @Test func aZoneAddedToATimeKeepsTheTime() async throws {
+        let model = try makeModel([makeTask("Call") { $0.due = TaskDue("2026-10-21T15:00") }])
+        let task = try #require(model.task(named: "Call"))
+        var pick = DuePick(task: task, today: model.context().today)
+        #expect(pick.time == LocalTime("15:00"))
+        pick.zone = "Asia/Bangkok"
+        await model.edit("Call") { pick.edits(from: $0) }
+        let saved = try #require(model.task(named: "Call"))
+        #expect(saved.due == TaskDue("2026-10-21T15:00") && saved.timeZone == "Asia/Bangkok")
+        #expect(DateChip.shown(of: saved, context: model.context()).time == LocalTime("15:00"))
+        #expect(DuePick(task: saved, today: model.context().today).time == LocalTime("15:00"))
+    }
+
+    /// The same on a new task's draft, as a "+" dropped on the timeline makes it.
+    @Test func aZoneAddedOnADraftKeepsTheTime() {
+        var draft = NoteDraft(status: .thisWeek, changes: [.due(TaskDue("2026-10-21T15:00"))])
+        var pick = DuePick(task: draft.note, today: LocalDate(TestCalendar.wednesday))
+        pick.zone = "Asia/Bangkok"
+        draft.apply(pick.edits(from: draft.note))
+        #expect(draft.note.due == TaskDue("2026-10-21T15:00") && draft.note.timeZone == "Asia/Bangkok")
+    }
 }
