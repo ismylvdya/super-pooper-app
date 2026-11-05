@@ -1,8 +1,8 @@
 import SwiftUI
 
 /// The one menu an alarm's sound is chosen in, for a task, a habit and the settings' default: Off where it may be turned off
-/// here, the default, Vibrate only and, past a divider, Choose with every other sound. Each pick plays the sound; tapping the
-/// sound that is playing stops it and changes nothing.
+/// here, the default, Vibrate only and, past a divider, Choose with every other sound. Each pick plays the sound and leaves the
+/// menu open; tapping the sound that is playing stops it and changes nothing.
 struct AlarmSoundMenu<MenuLabel: View>: View {
     @Environment(AppModel.self) private var model
     @Environment(\.rules) private var rules
@@ -21,7 +21,7 @@ struct AlarmSoundMenu<MenuLabel: View>: View {
 
     var body: some View {
         Menu {
-            if let onOff { Button("alarm.off", action: onOff) }
+            if let onOff { Button("alarm.off", action: onOff).menuActionDismissBehavior(.enabled) }
             item(defaultChoice, title: L10n.format("alarm.sound.defaultNamed", model.alarmSoundTitle(defaultSound)))
             item(rules.alarms.vibrateSound, title: model.alarmSoundTitle(rules.alarms.vibrateSound))
             Divider()
@@ -30,10 +30,13 @@ struct AlarmSoundMenu<MenuLabel: View>: View {
                     item(sound.id, title: L10n.string(sound.title))
                 }
             }
+            .menuActionDismissBehavior(.disabled)
         } label: {
             label()
         }
         .menuOrder(.fixed)
+        // Sounds are tried one after another: the menu stays open for the next.
+        .menuActionDismissBehavior(.disabled)
         .onDisappear { AlarmSoundPreview.stop() }
     }
 
