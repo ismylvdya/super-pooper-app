@@ -3,7 +3,7 @@ import Foundation
 /// Names of every SF Symbol used outside the action registry (`icons.json`), or of a hand-drawn template image of the
 /// asset catalog (the Lists glyphs, the frog of Need energy, the habit marks).
 enum Icon: String, CaseIterable, Codable, Sendable {
-    case menuChevrons
+    case menuChevrons, feelNeutral
     case settings, more, info, problem, sync
     case tabBarSettings, plainTaskSettings, general, widgets, overdue, energy, pleasant, feel, chipOrder, timeZone, high, due, datePick, time, estimate
     case previousTasks, nextTasks, previousEvent, nextEvent, event, reminder, habit

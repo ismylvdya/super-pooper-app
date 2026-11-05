@@ -12,7 +12,7 @@ struct TaskPropertiesSection: View {
     var body: some View {
         PlateSection(header: "taskPage.properties", info: "info.taskPage.properties") {
             listRow
-            FeelSlider(feel: task.feel) { feel in
+            FeelPicker(feel: task.feel) { feel in
                 Haptics.play(.select)
                 editor.apply([.feel(feel)])
             }
@@ -46,30 +46,52 @@ struct TaskPropertiesSection: View {
     }
 }
 
-/// Need energy, neutral in the middle, pleasant: a slider with three stops.
-private struct FeelSlider: View {
+/// Need energy, neutral in the middle, pleasant: the system's segmented control, with an icon for each.
+private struct FeelPicker: View {
     @Environment(\.tokens) private var tokens
+    @Environment(\.icons) private var icons
+    @Environment(\.displayScale) private var displayScale
     let feel: TaskFeel
     let onChange: (TaskFeel) -> Void
 
-    private let stops = TaskFeel.allCases
-
     var body: some View {
         PlateRow(icon: nil, title: "taskPage.feel") {
-            Slider(value: Binding(get: { Double(stops.firstIndex(of: feel) ?? 1) },
-                                  set: { index in
-                                      let picked = stops[Int(index.rounded())]
-                                      if picked != feel { onChange(picked) }
-                                  }),
-                   in: 0...Double(stops.count - 1), step: 1) {
-                Text("taskPage.feel")
-            } minimumValueLabel: {
-                IconGlyph(.energy, font: .toggleChip).foregroundStyle(tokens.color(.energy))
-            } maximumValueLabel: {
-                IconGlyph(.pleasant, font: .toggleChip).foregroundStyle(tokens.color(.heart))
+            Picker("taskPage.feel", selection: Binding(get: { feel }, set: onChange)) {
+                ForEach(TaskFeel.allCases, id: \.self) { feel in
+                    image(of: feel).accessibilityLabel(Text(title(of: feel))).tag(feel)
+                }
             }
-            .frame(width: tokens.size(.feelSlider))
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .frame(width: tokens.size(.feelPicker))
             .accessibilityIdentifier("taskPage.feel")
+        }
+    }
+
+    /// In its own color: a segment draws a plain image in one tint.
+    private func image(of feel: TaskFeel) -> Image {
+        let font = tokens.uiFont(.toggleChip)
+        let extent = font.capHeight * tokens.ratio(.handGlyph)
+        let configuration = UIImage.SymbolConfiguration(font: font)
+        let picture: UIImage?
+        switch feel {
+        case .needEnergy:
+            picture = TemplateGlyph.image(icons[.energy], extent: extent, along: .vertical, scale: displayScale)?
+                .withTintColor(UIColor(tokens.color(.energy)), renderingMode: .alwaysOriginal)
+        case .neutral:
+            picture = UIImage(systemName: icons[.feelNeutral], withConfiguration: configuration)
+        case .pleasant:
+            picture = UIImage(systemName: icons[.pleasant], withConfiguration: configuration)?
+                .withTintColor(UIColor(tokens.color(.heart)), renderingMode: .alwaysOriginal)
+        }
+        return picture.map(Image.init(uiImage:)) ?? Image(systemName: icons[.feelNeutral])
+    }
+
+    private func title(of feel: TaskFeel) -> LocalizedStringKey {
+        switch feel {
+        case .needEnergy: "lists.energy"
+        case .neutral: "taskPage.feel.neutral"
+        case .pleasant: "lists.pleasant"
         }
     }
 }

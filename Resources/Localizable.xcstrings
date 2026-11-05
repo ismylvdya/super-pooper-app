@@ -6004,6 +6004,17 @@
         }
       }
     },
+    "taskPage.feel.neutral": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neutral"
+          }
+        }
+      }
+    },
     "taskPage.tags": {
       "extractionState": "manual",
       "localizations": {
