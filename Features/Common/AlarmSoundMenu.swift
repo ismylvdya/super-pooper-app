@@ -75,6 +75,5 @@ struct AlarmSoundValue: View {
             Text(verbatim: shown).lineLimit(1)
             Image(systemName: icons[.menuChevrons]).imageScale(.small)
         }
-        .foregroundStyle(tokens.color(.secondaryText))
     }
 }
