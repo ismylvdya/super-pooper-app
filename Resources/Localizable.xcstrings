@@ -1425,28 +1425,6 @@
         }
       }
     },
-    "duePicker.clear": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Remove date"
-          }
-        }
-      }
-    },
-    "duePicker.title": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Date and time"
-          }
-        }
-      }
-    },
     "error.event.notFound": {
       "extractionState": "manual",
       "localizations": {
@@ -6230,7 +6208,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Day"
+            "value": "Date"
           }
         }
       }

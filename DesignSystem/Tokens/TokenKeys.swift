@@ -45,7 +45,7 @@ enum RatioToken: String, CaseIterable, Sendable {
     case fadeMiddleStop, widgetWrappedTitle
     /// A hand-drawn glyph standing in a line of text (the frog of Need energy): how tall its ink is, in cap heights of
     /// the text's font, as the wide SF Symbols (the heart, the warning triangle) stand there.
-    case handGlyph
+    case handGlyph, duePickerCalendar
     /// The room a timeline block's title needs under its top, in its minimum heights: a block starting closer under it
     /// stands beside it rather than over it.
     case timelineTitleRoom

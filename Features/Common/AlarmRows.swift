@@ -22,6 +22,7 @@ struct AlarmRows: View {
                 AlarmSoundMenu(selected: alarm.sound, onOff: offersOff ? { self.alarm = nil } : nil, shown: alarm.sound.map(model.alarmSoundTitle) ?? L10n.string("alarm.sound.default")) { self.alarm?.sound = $0 }
                     .accessibilityIdentifier("duePicker.alarmSound")
             }
+            .childRow()
         }
     }
 
