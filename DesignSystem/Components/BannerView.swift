@@ -28,12 +28,16 @@ struct BannerView: View {
     /// The one line's natural width and the room it has.
     @State private var lineWidth: CGFloat = 0
     @State private var lineRoom: CGFloat = 0
+    /// Undo's own height, by the system's button style.
+    @State private var undoHeight: CGFloat = 0
 
     private var overflows: Bool { lineWidth > lineRoom }
+    /// Undo stands as far from the banner's right as from its top: round in the round corner.
+    private var undoInset: CGFloat { (tokens.bannerPlacement.height - undoHeight) / 2 }
     private var canExpand: Bool { overflows || items.count > 1 || isExpanded }
 
     var body: some View {
-        HStack(spacing: tokens.space(.iconTextGap)) {
+        HStack(alignment: isExpanded ? .top : .center, spacing: tokens.space(.iconTextGap)) {
             message
                 .accessibilityElement(children: .combine)
                 // Read out whole even while collapsed: the notes too, not only the first one shown.
@@ -53,9 +57,13 @@ struct BannerView: View {
                 .controlSize(.small)
                 .tint(tokens.color(.accent))
                 .accessibilityIdentifier("banner.undo")
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { undoHeight = $0 }
+                // Expanded the banner's own padding is above it: it stays where it stood.
+                .padding(.top, isExpanded ? undoInset - tokens.space(.bannerPadding) : 0)
             }
         }
-        .padding(.horizontal, tokens.space(.bannerPadding))
+        .padding(.leading, tokens.space(.bannerPadding))
+        .padding(.trailing, onUndo == nil ? tokens.space(.bannerPadding) : undoInset)
         .padding(.vertical, isExpanded ? tokens.space(.bannerPadding) : 0)
         .frame(minHeight: tokens.bannerPlacement.height, maxHeight: isExpanded ? nil : tokens.bannerPlacement.height)
         .systemLook(.bannerCard)
