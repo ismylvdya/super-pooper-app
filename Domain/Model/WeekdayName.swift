@@ -16,8 +16,8 @@ extension Weekday {
 }
 
 enum MonthName {
-    /// "J" for January (month 1…12).
-    static func initial(_ month: Int, in calendar: Calendar) -> String {
-        calendar.veryShortStandaloneMonthSymbols[month - 1]
+    /// "January" (month 1…12), as it stands alone rather than in a date.
+    static func full(_ month: Int, in calendar: Calendar) -> String {
+        calendar.standaloneMonthSymbols[month - 1]
     }
 }

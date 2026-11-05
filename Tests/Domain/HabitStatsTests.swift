@@ -41,11 +41,23 @@ struct HabitStatsTests {
         #expect(last7.map { abs($0 - 3.5 / 6) < 0.0001 } == true)
     }
 
+    /// From the earliest month with a mark to this one, the empty ones between them included.
+    @Test func monthsRunFromTheEarliestMarkedToThisOne() {
+        // Today is 2026-10-21: 1 day ago is October, 60 days ago August; September has no marks.
+        let months = stats(habit(createdDaysAgo: 200, done: [1, 2, 60])).byMonth
+        #expect(months.map(\.month) == [8, 9, 10])
+        #expect(months.map(\.count) == [1, 0, 2])
+    }
+
+    @Test func withNoMarksOnlyThisMonthShows() {
+        #expect(stats(habit()).byMonth.map(\.month) == [10])
+    }
+
     /// The numbers come from `rules.json` → `habits.stats`: the windows, what Partially and a double Twice are worth,
     /// the months of the bars.
     @Test func theNumbersComeFromTheRules() {
         let custom = HabitStatsRules(partialUnits: 0.25, twiceUnits: 3, shareWindowsDays: [3], months: 2)
-        let result = HabitStats(task: habit(done: [1], partial: [2]), today: today, days: TestCalendar.days, rules: custom)
+        let result = HabitStats(task: habit(done: [1, 25, 60], partial: [2]), today: today, days: TestCalendar.days, rules: custom)
         #expect(result.recentShares.map(\.days) == [3])
         // Two finished days in the window (today is open): 1 + 0.25 out of 2.
         #expect(result.recentShares.first?.share == 0.625)

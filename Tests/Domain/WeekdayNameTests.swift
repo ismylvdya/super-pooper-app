@@ -12,8 +12,8 @@ struct WeekdayNameTests {
         #expect(Weekday.wednesday.name(.initial, in: calendar) == "W")
     }
 
-    @Test func monthsHaveInitials() {
-        #expect(MonthName.initial(1, in: calendar) == "J")
-        #expect(MonthName.initial(12, in: calendar) == "D")
+    @Test func monthsHaveFullNames() {
+        #expect(MonthName.full(1, in: calendar) == "January")
+        #expect(MonthName.full(12, in: calendar) == "December")
     }
 }

@@ -33,7 +33,8 @@ struct HabitStats: Sendable {
     let twiceCount: Int
     /// Marked days per weekday, all time.
     let byWeekday: [Weekday: Int]
-    /// Marked days per month, the last `HabitStatsRules.months` months, oldest first.
+    /// Marked days per month, oldest first: from the earliest marked month of the last `HabitStatsRules.months` to this
+    /// one (this month alone with no marks), months with no marks between them included.
     let byMonth: [MonthCount]
 
     enum StreakUnit: Sendable { case days, weeks }
@@ -72,12 +73,13 @@ struct HabitStats: Sendable {
         partialCount = marked.filter { $0.1 == .partial }.count
         twiceCount = marked.filter { $0.1 == .twice }.count
         byWeekday = Dictionary(grouping: marked.map(\.0), by: \.weekday).mapValues(\.count)
-        byMonth = (0..<rules.months).reversed().map { back in
+        let months = (0..<rules.months).reversed().map { back in
             var month = today.month - back
             var year = today.year
             while month < 1 { month += 12; year -= 1 }
             return MonthCount(year: year, month: month, count: marked.filter { $0.0.year == year && $0.0.month == month }.count)
         }
+        byMonth = Array(months.drop { $0.count == 0 && $0 != months.last })
     }
 
     /// A good habit's day counts when marked; a harmful habit's day when it stayed clean.

@@ -33,8 +33,8 @@ struct HabitStatsSection: View {
             BarRow(title: "habitPage.stats.byWeekday", color: color, bars: Weekday.allCases.map { day in
                 (day.name(.initial, in: model.calendar), stats.byWeekday[day] ?? 0)
             })
-            BarRow(title: "habitPage.stats.byMonth", color: color, bars: stats.byMonth.map { month in
-                (MonthName.initial(month.month, in: model.calendar), month.count)
+            MonthBars(title: "habitPage.stats.byMonth", color: color, months: stats.byMonth.map { month in
+                (MonthName.full(month.month, in: model.calendar), month.count)
             })
         }
     }
