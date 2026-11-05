@@ -9,8 +9,6 @@ struct DayState: Codable, Equatable, Sendable {
     var reviewShown = false
     /// How many data problems the banner already told about today.
     var announcedProblems = 0
-    /// Tasks swiped out of today in the morning review (they come back in tomorrow's review).
-    var postponed: [String] = []
     /// Habit blocks dragged on the timeline today: to another time or to the pool (`TodayTimes`).
     var timeMoves: [TimeMove] = []
     /// Blocks dragged on the timeline of another day; a later day's become that day's `timeMoves` once it comes.
@@ -26,7 +24,6 @@ struct DayState: Codable, Equatable, Sendable {
         manualOrder = try container.decodeIfPresent([String].self, forKey: .manualOrder)
         reviewShown = try container.decodeIfPresent(Bool.self, forKey: .reviewShown) ?? false
         announcedProblems = try container.decodeIfPresent(Int.self, forKey: .announcedProblems) ?? 0
-        postponed = try container.decodeIfPresent([String].self, forKey: .postponed) ?? []
         timeMoves = try container.decodeIfPresent([TimeMove].self, forKey: .timeMoves) ?? []
         otherDays = try container.decodeIfPresent([DayMoves].self, forKey: .otherDays) ?? []
     }

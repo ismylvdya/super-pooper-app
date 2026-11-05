@@ -67,12 +67,4 @@ struct ReturnFromDoneTests {
         #expect(model.swipeActions(.task, for: DayItem(listed: done), isToday: false).trailing.map(\.id) == [.delete])
     }
 
-    /// Back to today, from the bottom of Soon (a swipe to the right on a task put off with Not today).
-    @Test func backToTodayBringsAPostponedTaskBack() async throws {
-        let (model, _) = try makeModel()
-        await model.perform(.notToday, on: "Позвонить в банк")
-        #expect(model.postponedTasks.contains { $0.name == "Позвонить в банк" })
-        await model.perform(.backToToday, on: "Позвонить в банк")
-        #expect(!model.postponedTasks.contains { $0.name == "Позвонить в банк" })
-    }
 }

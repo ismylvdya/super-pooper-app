@@ -37,16 +37,7 @@
     {
       "id": "notToday",
       "title": "action.notToday",
-      "icon": "moon.zzz",
-      "destructive": false,
-      "haptic": "light",
-      "swipeTint": "swipeNeutral",
-      "undo": "edits"
-    },
-    {
-      "id": "backToToday",
-      "title": "review.backToToday",
-      "icon": "arrow.uturn.backward",
+      "icon": "forward.end",
       "destructive": false,
       "haptic": "light",
       "swipeTint": "swipeNeutral",
@@ -383,14 +374,6 @@
       "trailing": [
         "notToday",
         "skipToday"
-      ]
-    },
-    "postponed": {
-      "leading": [
-        "done"
-      ],
-      "trailing": [
-        "backToToday"
       ]
     },
     "archivedTask": {

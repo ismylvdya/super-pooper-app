@@ -213,6 +213,7 @@ actor TaskFileStore: TaskStore {
             }
         }
         rollOver(&snapshot.document, to: day, habits: Set(snapshot.habits.keys))
+        dateLooseLines(&snapshot.document, to: day, habits: Set(snapshot.habits.keys))
         carryMissedHabits(&snapshot, to: day)
         return snapshot.document != before
     }
@@ -220,6 +221,19 @@ actor TaskFileStore: TaskStore {
     /// The logical day a line stands on.
     func logicalDay(of entry: TaskEntry) -> LocalDate? {
         entry.date.map { TaskDue(day: $0, time: entry.time).logicalDay(boundary: boundary()) }
+    }
+
+    /// Only a date puts a task in Today: an undated line there (from an older file, or typed in) is today's.
+    private func dateLooseLines(_ document: inout TaskDocument, to day: LocalDate, habits: Set<String>) {
+        guard let now = document.sections.firstIndex(where: { $0.kind == .now }) else { return }
+        for group in document.sections[now].groups.indices {
+            for index in document.sections[now].groups[group].entries.indices {
+                let entry = document.sections[now].groups[group].entries[index]
+                if entry.date == nil, entry.box != .done, !(entry.id.map(habits.contains) ?? false) {
+                    document.sections[now].groups[group].entries[index].date = day
+                }
+            }
+        }
     }
 
     /// An open task's date that has passed becomes today's. The time it was meant for has passed with its day, so it goes

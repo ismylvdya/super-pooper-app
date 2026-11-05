@@ -9,7 +9,8 @@ struct DayLook: Codable, Equatable, Sendable {
     }
 
     var sections: [Section] = []
-    var keptOut: [String] = []
+    /// Habits taken out of today: their lines wait for a later day.
+    var skipped: [String] = []
     /// The times habits' lines have today: moved by hand in the file, they move on today's timeline.
     var times: [String: LocalTime]? = nil
 
@@ -37,7 +38,7 @@ struct DayLook: Codable, Equatable, Sendable {
 
     private var places: [Place] {
         sections.flatMap { section in section.names.map { Place(name: $0.noteName, section: section.title) } }
-            + keptOut.map { Place(name: $0.noteName, section: nil) }.sorted { String(describing: $0.name) < String(describing: $1.name) }
+            + skipped.map { Place(name: $0.noteName, section: nil) }.sorted { String(describing: $0.name) < String(describing: $1.name) }
     }
 }
 

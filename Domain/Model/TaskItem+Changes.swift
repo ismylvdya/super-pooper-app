@@ -7,6 +7,8 @@ extension TaskItem {
         for change in changes {
             switch change {
             case .status(let value):
+                // Coming from another list, undated, it waits in Next actions; only a date brings it into a day.
+                if value.isThisWeek, !task.status.isThisWeek, task.due == nil { task.waitsInList = true }
                 task.status = value
                 if value != .done { task.completedDate = nil }
             case .complete(let day):
@@ -16,9 +18,11 @@ extension TaskItem {
                 task.status = .thisWeek
                 task.completedDate = nil
             case .highPriority(let value): task.isHighPriority = value
+            case .overdue(let value): task.isOverdue = value
             case .due(let value):
                 task.due = value
                 task.isOverdue = false
+                task.waitsInList = value == nil
                 // A task's alarm is of its time: with the time it goes.
                 if value?.time == nil, !task.isHabit { task.alarms = [] }
             case .timeEstimate(let value): task.timeEstimate = value

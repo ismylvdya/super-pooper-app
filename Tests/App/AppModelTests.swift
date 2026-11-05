@@ -29,16 +29,6 @@ struct AppModelTests {
         #expect(model.task(named: "Выпить воды 💧") == before)
     }
 
-    /// "Not today" in the pool menu takes a task out of today without writing; it stays this week.
-    @Test func notTodayFromTheMenuPostponesTheTask() async throws {
-        let model = try makeModel()
-        let before = try #require(model.task(named: "Повесить полку"))
-        await model.perform(.notToday, on: "Повесить полку")
-        #expect(model.dayState.postponed == ["Повесить полку"])
-        #expect(model.plan(at: model.clock.now).item(named: "Повесить полку") == nil)
-        #expect(model.task(named: "Повесить полку") == before)
-    }
-
     @Test func aNewHabitIsShownInTodayByDefault() throws {
         let model = try makeModel()
         #expect(model.newHabitDraft().changes.contains(.showInToday(true)))
@@ -89,15 +79,6 @@ struct AppModelTests {
         #expect(model.dayState.skipped == ["Вода 💧"])
     }
 
-    /// A task put off with Not today and then marked Done (its swipe to the right in Morning review) leaves that group.
-    @Test func aPostponedTaskMarkedDoneLeavesThePostponedGroup() async throws {
-        let model = try makeModel()
-        model.postpone("Сдать отчёт")
-        #expect(model.postponedTasks.map(\.name) == ["Сдать отчёт"])
-        await model.perform(.done, on: "Сдать отчёт")
-        #expect(model.postponedTasks.isEmpty)
-    }
-
     /// Start makes a task Started and it stays in today's pool; Not started puts it back to This week; Done is as usual.
     @Test func startAndNotStartedSetTheStatusAndTheTaskStaysInToday() async throws {
         let model = try makeModel()
@@ -110,18 +91,6 @@ struct AppModelTests {
         await model.perform(.start, on: name)
         await model.perform(.done, on: name)
         #expect(model.task(named: name) == nil, "done and filed away as any task")
-    }
-
-    /// A rename reaches today's Not today list and the manual order of the pool too.
-    @Test func renamingAPostponedTaskKeepsItsPlaceInTheDay() async throws {
-        let model = try makeModel()
-        let name = "Сдать отчёт"
-        model.postpone(name)
-        model.setManualOrder(["Позвонить в банк", name])
-        #expect(await model.rename(name, to: "Отчёт"))
-        #expect(model.dayState.postponed == ["Отчёт"])
-        #expect(model.dayState.manualOrder == ["Позвонить в банк", "Отчёт"])
-        #expect(model.postponedTasks.map(\.name) == ["Отчёт"])
     }
 
     /// A drag in This week into another group: the new order at once, the new part of the day written to the task.

@@ -4,7 +4,7 @@ import Foundation
 /// rule has. The settings stay in its JSON file; the line says what stands for the nearest day (`docs/BACKEND.md`).
 extension TaskFileStore {
     /// The habit's rule as a schedule; nil for what has no line: archived, a subtask, or a rule the app cannot read.
-    private func schedule(of file: HabitFile, snapshot: Snapshot) -> (item: TaskItem, schedule: TaskSchedule)? {
+    func schedule(of file: HabitFile, snapshot: Snapshot) -> (item: TaskItem, schedule: TaskSchedule)? {
         guard !file.isArchived, file.parent == nil else { return nil }
         let item = habit(of: file, snapshot: snapshot)
         guard item.recurrence != nil else { return nil }
@@ -54,13 +54,18 @@ extension TaskFileStore {
         HabitMarking.isDayClosed(item.mark(on: day), twiceADay: item.isTwiceADay)
     }
 
-    /// The habits with no line in today's look wait in Soon, each on the nearest day after today its rule has: today is
-    /// closed, skipped or not theirs.
-    func waitingHabitLines(except placed: Set<String>, snapshot: Snapshot, today day: LocalDate) -> [TaskEntry] {
-        snapshot.habits.values.sorted { $0.name < $1.name }.compactMap { file in
-            guard !placed.contains(file.id), let (item, schedule) = schedule(of: file, snapshot: snapshot),
-                  let next = schedule.recurrence?.firstDay(onOrAfter: day.adding(days: 1)) else { return nil }
-            return habitLine(file, item: item, date: next, time: file.reminderTimes.first)
+    /// The habits with no line in today's look wait in Next actions, each on the nearest day after today its rule has: today is
+    /// closed, skipped or not theirs. One taken out of today (`skipped`) with no day of its own tomorrow stands in tomorrow's pool,
+    /// with no time and marked overdue, as what the day leaves unfinished does (`Tomorrow`).
+    func waitingHabitLines(except placed: Set<String>, skipped: [String], snapshot: Snapshot, today day: LocalDate) -> [TaskEntry] {
+        let tomorrow = day.adding(days: 1)
+        return snapshot.habits.values.sorted { $0.name < $1.name }.compactMap { file in
+            guard !placed.contains(file.id), let (item, schedule) = schedule(of: file, snapshot: snapshot) else { return nil }
+            let next = schedule.recurrence?.firstDay(onOrAfter: tomorrow)
+            if next != tomorrow, skipped.containsNoteName(file.name), !isClosed(item, on: day) {
+                return habitLine(file, item: item, date: tomorrow, time: nil, isOverdue: true)
+            }
+            return next.map { habitLine(file, item: item, date: $0, time: file.reminderTimes.first) }
         }
     }
 }

@@ -27,8 +27,6 @@ final class DayCommands {
         tasks.task(named: name).map(day.local)
     }
 
-    var postponedTasks: [TaskItem] { day.postponedNames.compactMap(tasks.task(named:)).filter { $0.status != .done } }
-
     /// Only on today's page (`day` nil or today).
     func skip(_ name: String, on day: LocalDate?) async {
         guard isToday(day) else { return }
@@ -36,23 +34,10 @@ final class DayCommands {
         await derived.publish()
     }
 
-    /// Not today (`NotToday`): a task with a time moves to the same time of the next logical day, any other waits in
-    /// Soon until tomorrow.
+    /// Tomorrow for a task (`Tomorrow`).
     func notToday(_ name: String, on day: LocalDate?) async {
         guard isToday(day), let task = tasks.task(named: name), let local = localTask(named: name) else { return }
-        let changes = NotToday.changes(for: local, context: self.day.context())
-        if changes.isEmpty { postpone(name) } else { await write(task, changes) }
-    }
-
-    /// The morning review takes a task out of today; it stays this week and is back tomorrow.
-    func postpone(_ name: String) {
-        day.postpone(name)
-        Task { await derived.publish() }
-    }
-
-    func unpostpone(_ name: String) {
-        day.unpostpone(name)
-        Task { await derived.publish() }
+        await write(task, Tomorrow.changes(for: local, context: self.day.context()))
     }
 
     func setManualOrder(_ names: [String]) {
@@ -187,8 +172,7 @@ final class DayCommands {
                 section.title ?? definitions.first { $0.id == section.id }.map { L10n.string($0.title) } ?? section.id
             }, makeID: { UUID().uuidString })
         }
-        for name in day.postponedNames where !look.keptOut.containsNoteName(name) { day.unpostpone(name) }
-        for name in look.keptOut { day.postpone(name) }
+        for name in look.skipped { day.skip(name) }
         day.setManualOrder(look.poolOrder)
         for (name, time) in moved { moveHabit(named: name, to: time) }
     }
@@ -217,7 +201,6 @@ final class DayCommands {
     func moveToBacklog(_ name: String, level: TaskStatus, shown: LocalDate, fromShownDay: Bool) async {
         guard let local = localTask(named: name) else { return }
         let outcome = BacklogMoves.onto(level, task: local, fromShownDay: fromShownDay, shown: shown, context: day.context())
-        if outcome.isNotToday { return await notToday(name, on: shown) }
         await apply(outcome, to: name)
     }
 
@@ -246,8 +229,6 @@ final class DayCommands {
     }
 
     private func apply(_ outcome: BacklogMoves.Outcome, to name: String) async {
-        if outcome.postpones { day.postpone(name) }
-        if outcome.unpostpones { day.unpostpone(name) }
         if !outcome.edits.isEmpty, let task = tasks.task(named: name) { await write(task, outcome.edits) }
         await derived.publish()
     }

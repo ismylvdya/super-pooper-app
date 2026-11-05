@@ -21,6 +21,7 @@ struct TaskNoteWriter: Sendable {
         migrateLegacyFields(in: &document)
         for change in changes {
             switch change {
+            case .overdue: break
             case .status(let status):
                 // Only a done task has a completion day (the TaskNotes convention).
                 document.set(keys.status, to: .string(mapping.raw(status)))

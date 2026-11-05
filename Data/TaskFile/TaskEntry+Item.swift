@@ -14,6 +14,7 @@ extension TaskEntry {
         item.timeZone = zone
         item.completedDate = completed
         item.isOverdue = isOverdue
+        item.waitsInList = section == .soon && date == nil
         return item
     }
 
@@ -46,12 +47,11 @@ extension TaskEntry {
 }
 
 extension TaskSection {
-    /// Where a task of that status stands. This week's: Soon while dated later than `today`, Now from its day on; undated
-    /// where it stands (a task kept out of today waits in Soon).
+    /// Where a task of that status stands. This week's: Today from its day on, otherwise Next actions, undated too.
     static func of(_ item: TaskItem, current: TaskSection, today: LocalDate, boundary: LocalTime = .midnight) -> TaskSection {
         switch item.status.planningLevel {
         case .thisWeek:
-            guard let day = item.due?.logicalDay(boundary: boundary) else { return current == .soon ? .soon : .now }
+            guard let day = item.due?.logicalDay(boundary: boundary) else { return .soon }
             return day > today ? .soon : .now
         case .halfYear: return .halfYear
         case .someday: return .someday

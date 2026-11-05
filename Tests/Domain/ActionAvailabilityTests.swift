@@ -100,14 +100,6 @@ struct ActionAvailabilityTests {
         #expect(swipes(.review, item(makeTask("Report"))).leading == [.done])
     }
 
-    /// Morning review's Not today group swipes as the groups above: Done to the right, back to Today to the left (gray,
-    /// as Not today).
-    @Test func thePostponedGroupSwipesLikeTheOthers() {
-        #expect(swipes(.postponed, item(makeTask("Report"))).leading == [.done])
-        #expect(swipes(.postponed, item(makeTask("Report"))).trailing == [.backToToday])
-        #expect(TestConfig.actions.definition(.backToToday).swipeTint == ColorToken.swipeNeutral.rawValue)
-    }
-
     /// The archive and the trash put a note back with a swipe to the left; nothing to swipe to the right.
     @Test func theArchiveAndTheTrashRestoreToTheLeft() {
         #expect(swipes(.archivedTask, item(makeTask("Old", status: .archived))) == ([], [.restoreThisWeek]))

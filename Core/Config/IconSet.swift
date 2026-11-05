@@ -16,7 +16,7 @@ enum Icon: String, CaseIterable, Codable, Sendable {
     /// The hand-drawn glyphs the Lists icon is picked from (Settings → Lists, `lists.json` → `icons`).
     case listsGun, listsGunFill, listsDoubleGuns, listsDoubleGunsFillForward, listsDoubleGunsFillBack
     case listQuick, listInbox, listThisWeek, listHalfYear, listSomeday, listWaiting, listDone, listArchived
-    case bell, olderWeeks, postpone
+    case bell, olderWeeks
     /// Asset catalog template images (not SF Symbols): the habit marks, shared by menus and notifications.
     case habitMarkOpen, habitMarkDone, habitMarkPartial, habitMarkTwice
     /// The same marks as SF Symbols, for a notification's buttons.

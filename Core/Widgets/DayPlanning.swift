@@ -11,7 +11,7 @@ enum DayPlanning {
         let inputs = DayInputs(tasks: usable(tasks, config: config, context: context), events: events, reminders: reminders,
                                skipped: Set(state.skipped), manualOrder: state.manualOrder,
                                routines: settings.habits.routines,
-                               postponed: Set(state.postponed), timelineFilter: settings.timeline.shown, eventsKnown: eventsKnown,
+                               timelineFilter: settings.timeline.shown, eventsKnown: eventsKnown,
                                timeMoves: state.timeMoves, sections: sections)
         return builder(config: config, settings: settings)
             .build(inputs, context: context)

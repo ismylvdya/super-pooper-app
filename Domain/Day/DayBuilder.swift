@@ -20,7 +20,7 @@ struct DayBuilder: Sendable {
         for task in inputs.tasks {
             let inDay = inputs.isOtherDay
                 ? membership.isOnOtherDay(task)
-                : membership.isInDay(task, skipped: inputs.skipped) && !inputs.postponed.containsNoteName(task.name)
+                : membership.isInDay(task, skipped: inputs.skipped)
             let taskProblems = dayProblems.problems(of: task)
             // Problems of done or archived tasks are not reported.
             if inDay || (task.isHabit && !task.isArchived) || !task.status.isCompleted {

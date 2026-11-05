@@ -14,7 +14,7 @@ struct DayMembership: Sendable {
             guard task.isInTodayHabits, !skipped.containsNoteName(task.name) else { return false }
             return comesUpToday(task) || task.mark(on: context.today) != nil
         }
-        return (task.status.isThisWeek && !isDatedLater(task))
+        return (task.status.isThisWeek && !isDatedLater(task) && !task.waitsInList)
             || (task.status == .done && task.completedDate == context.today)
     }
 

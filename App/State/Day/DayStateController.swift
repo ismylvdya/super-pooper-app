@@ -30,6 +30,10 @@ final class DayStateController {
         return DayContext(now: date ?? clock.now, calendar: calendar, boundary: day.boundary, energyHour: day.energyHour)
     }
 
+    var skippedNames: [String] {
+        dayState.day == context().today ? dayState.skipped : []
+    }
+
     /// The tasks as the day sees them: times kept in a zone of their own moved to the phone's clock (`ZonedTimes`).
     func local(_ tasks: [TaskItem]) -> [TaskItem] {
         let context = context()
@@ -44,11 +48,6 @@ final class DayStateController {
     /// The phone moved to another time zone or its clock jumped: the calendar as it is now.
     func refreshCalendar() {
         calendar = calendarSource.current
-    }
-
-    /// Today's names taken out of today in the morning review; none once the day is over.
-    var postponedNames: [String] {
-        dayState.day == context().today ? dayState.postponed : []
     }
 
     /// Habit blocks dragged on the timeline today; none once the day is over.
@@ -81,14 +80,6 @@ final class DayStateController {
         update { if !$0.skipped.containsNoteName(name) { $0.skipped.append(name) } }
     }
 
-    func postpone(_ name: String) {
-        update { if !$0.postponed.containsNoteName(name) { $0.postponed.append(name) } }
-    }
-
-    func unpostpone(_ name: String) {
-        update { $0.postponed.removeAll { $0.isSameNoteName(as: name) } }
-    }
-
     /// The pool's order for today; nil goes back to the automatic sort.
     func setManualOrder(_ names: [String]?) {
         update { $0.manualOrder = names }
@@ -112,7 +103,6 @@ final class DayStateController {
         guard before.day == dayState.day else { return }
         update {
             $0.skipped = before.skipped
-            $0.postponed = before.postponed
             $0.manualOrder = before.manualOrder
             $0.timeMoves = before.timeMoves
         }
@@ -123,7 +113,6 @@ final class DayStateController {
         let rename = { (names: [String]) in NameReferences.renaming(names, from: old, to: new) }
         update {
             $0.skipped = rename($0.skipped)
-            $0.postponed = rename($0.postponed)
             $0.manualOrder = $0.manualOrder.map(rename)
             $0.timeMoves = TodayTimes($0.timeMoves).renaming(from: old, to: new)
         }

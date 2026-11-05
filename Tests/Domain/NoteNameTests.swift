@@ -26,11 +26,11 @@ struct NoteNameTests {
         #expect(HabitRoutines.members(.morning, of: [shower, water], order: [written, "Shower"]).map(\.name) == [renamed, "Shower"])
     }
 
-    @Test func skipTodayAndNotTodayStillHoldTheNote() {
+    @Test func skipTodayStillHoldsTheNote() {
         let habit = makeHabit(renamed, status: .habit)
         let task = makeTask("Report")
-        let plan = DayScenario(tasks: [habit, task], skipped: [written], postponed: ["report"]).build()
-        #expect(plan.dayNames.isEmpty)
+        let plan = DayScenario(tasks: [habit, task], skipped: [written]).build()
+        #expect(plan.dayNames == ["Report"])
     }
 
     @Test func thePoolOrderKeepsTheTask() {

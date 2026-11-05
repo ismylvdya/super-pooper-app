@@ -73,19 +73,6 @@ struct UndoTests {
         #expect(model.task(named: "Report")?.status == .halfYear)
     }
 
-    @Test func undoingSkipAndNotTodayPutsTheDayBack() async throws {
-        let (model, events) = try makeModel([makeHabit("Water"), makeTask("Call mum")])
-        await model.performOfferingUndo(action(model, .skipToday), on: "Water")
-        #expect(model.dayState.skipped == ["Water"])
-        await model.undo(try offer(events).id)
-        #expect(model.dayState.skipped.isEmpty)
-
-        await model.performOfferingUndo(action(model, .notToday), on: "Call mum")
-        #expect(model.dayState.postponed == ["Call mum"])
-        await model.undo(try offer(events).id)
-        #expect(model.dayState.postponed.isEmpty)
-    }
-
     @Test func undoingAHabitsMarkClearsIt() async throws {
         let (model, events) = try makeModel([makeHabit("Water")])
         await model.performOfferingUndo(action(model, .done), on: "Water")

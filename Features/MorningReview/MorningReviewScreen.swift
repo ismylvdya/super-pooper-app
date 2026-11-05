@@ -58,24 +58,6 @@ struct MorningReviewScreen: View {
                 }
                 ListGroupFooter(text: Text(model.dayState.manualOrder == nil ? "review.footer.auto" : "review.footer.manual"))
                     .accessibilityIdentifier("review.footer")
-                let postponed = model.postponedTasks
-                if !postponed.isEmpty {
-                    Group {
-                        ListGroupHeader(title: Text("review.postponed"))
-                        ForEach(Array(postponed.enumerated()), id: \.element.name) { index, task in
-                            ReviewRow(item: DayItem(listed: task), today: plan.today) {
-                                path.append(.task(task.name))
-                            }
-                            .listGroupRow(group: "postponed", id: task.name, index: index, count: postponed.count,
-                                          frames: frames, vertical: 0)
-                            .accessibilityIdentifier("review.notToday:\(task.name)")
-                            .opacity(tokens.opacity(.blocked))
-                            // Done to the right, back to today to the left, as Done and Not today in the groups above.
-                            .actionSwipes(.postponed, item: DayItem(listed: task)) { perform($0, on: task.name) }
-                        }
-                        ListGroupFooter(text: Text("review.postponed.hint"))
-                    }
-                }
             }
             .listGroupStyle()
             .listGroupBacking(frames)

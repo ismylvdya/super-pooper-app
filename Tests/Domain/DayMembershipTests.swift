@@ -37,31 +37,6 @@ struct DayMembershipTests {
         #expect(DayScenario(tasks: [task]).build().poolNames == ["Overdue"])
     }
 
-    @Test func notTodayMovesATimedTaskToTheSameTimeTomorrow() {
-        let context = TestCalendar.context()
-        let timed = makeTask("Timed") { $0.due = TaskDue("2026-10-21T16:30") }
-        let dated = makeTask("Dated") { $0.due = TaskDue("2026-10-21") }
-        #expect(NotToday.changes(for: timed, context: context) == [.due(TaskDue("2026-10-22T16:30"))])
-        #expect(NotToday.changes(for: dated, context: context).isEmpty)
-    }
-
-    /// 01:00 on the 22nd is still Wednesday the 21st (04:00 boundary): Not today moves it to 01:00 the night after,
-    /// not onto the same value.
-    @Test func notTodayMovesANightTimeToTheNextNight() {
-        let night = makeTask("Night") { $0.due = TaskDue("2026-10-22T01:00") }
-        let changes = NotToday.changes(for: night, context: TestCalendar.context("2026-10-21", "22:00"))
-        #expect(changes == [.due(TaskDue("2026-10-23T01:00"))])
-    }
-
-    /// The pool menu and the swipe in This week offer it for open tasks only: a habit has Skip today.
-    @Test func notTodayIsForOpenTasks() throws {
-        let plan = DayScenario(tasks: [makeTask("Open"), makeHabit("Habit", status: .habit)]).build()
-        #expect(NotToday.isAvailable(for: try #require(plan.item(named: "Open"))))
-        #expect(!NotToday.isAvailable(for: try #require(plan.item(named: "Habit"))))
-        let done = DayItem(task: makeTask("Done", status: .done), state: .marked(.done), problems: [])
-        #expect(!NotToday.isAvailable(for: done))
-    }
-
     // MARK: - Recurring tasks
 
     /// Any status but `archived`: archiving takes a recurring task out of the day (see `ArchivedNotesTests`).
@@ -115,4 +90,20 @@ struct DayMembershipTests {
 
     // MARK: - Problems
 
+
+    /// Tomorrow: tomorrow's pool, with no time and marked overdue, a timed task or not.
+    @Test func tomorrowMovesATaskToTheNextPoolAsOverdue() {
+        let context = TestCalendar.context()
+        let timed = makeTask("Timed") { $0.due = TaskDue(day: context.today, time: LocalTime(string: "16:30")) }
+        #expect(Tomorrow.changes(for: timed, context: context) == [.due(TaskDue(day: context.today.adding(days: 1))), .overdue(true)])
+        let moved = timed.applying(Tomorrow.changes(for: timed, context: context))
+        #expect(moved.isOverdue && moved.due?.time == nil)
+    }
+
+    /// Undated in Next actions a task is not among today's.
+    @Test func anUndatedTaskInItsListIsNotInToday() {
+        var waiting = makeTask("Waits")
+        waiting.waitsInList = true
+        #expect(DayScenario(tasks: [waiting, makeTask("Stays")]).build().item(named: "Waits") == nil)
+    }
 }

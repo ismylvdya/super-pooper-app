@@ -90,7 +90,7 @@ final class DerivedStatePublisher {
                 timed[item.id] = slot.start > plan.now ? LocalTime(slot.start, in: day.calendar) : slot.time
             }
         }
-        let mirror = DayMirror(sections: sections, timed: timed, keptOut: day.postponedNames)
+        let mirror = DayMirror(sections: sections, timed: timed, skipped: day.skippedNames)
         Task { await mirroring.mirror(mirror) }
     }
 
@@ -204,7 +204,7 @@ final class DerivedStatePublisher {
         return NotificationInputs(planner: NotificationPlanner(horizonDays: rules.horizonDays, limit: rules.limit),
                                   tasks: ZonedTimes.local(tasks.tasks, calendar: context.calendar, today: context.today),
                                   reminders: sources.reminders, events: sources.events,
-                                  skipped: Set(isToday ? dayState.skipped + dayState.postponed : []),
+                                  skipped: Set(isToday ? dayState.skipped : []),
                                   todayTimes: TodayTimes(isToday ? dayState.timeMoves : []), context: context)
     }
 

@@ -9,18 +9,6 @@ struct DayStateControllerTests {
         try #require(PreviewModel.make()).model.parts.day
     }
 
-    @Test func aNameIsKeptOnceWhateverItsCase() throws {
-        let day = try makeDay()
-        day.skip("Drink water")
-        day.skip("drink water")
-        day.postpone("Report")
-        day.postpone("report")
-        #expect(day.dayState.skipped == ["Drink water"])
-        #expect(day.postponedNames == ["Report"])
-        day.unpostpone("REPORT")
-        #expect(day.postponedNames.isEmpty)
-    }
-
     /// The problems banner comes only for more problems than the user was last told about.
     @Test func onlyMoreProblemsAreNew() throws {
         let day = try makeDay()
@@ -30,14 +18,4 @@ struct DayStateControllerTests {
         #expect(day.announceProblems(3))
     }
 
-    @Test func aRenamedNoteKeepsItsPlacesInTheDay() throws {
-        let day = try makeDay()
-        day.skip("Water")
-        day.postpone("Report")
-        day.setManualOrder(["Report", "Call"])
-        day.followRename(from: "Report", to: "Final report")
-        #expect(day.dayState.postponed == ["Final report"])
-        #expect(day.dayState.manualOrder == ["Final report", "Call"])
-        #expect(day.dayState.skipped == ["Water"])
-    }
 }

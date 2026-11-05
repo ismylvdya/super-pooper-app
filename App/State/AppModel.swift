@@ -47,10 +47,7 @@ final class AppModel {
     func plan(at date: Date, dayOffset: Int = 0) -> DayPlan { parts.derived.plan(at: date, dayOffset: dayOffset) }
 
     var problemCount: Int { parts.derived.problemCount }
-    var postponedTasks: [TaskItem] { parts.dayCommands.postponedTasks }
 
-    func postpone(_ name: String) { parts.dayCommands.postpone(name) }
-    func unpostpone(_ name: String) { parts.dayCommands.unpostpone(name) }
     func setManualOrder(_ names: [String]) { parts.dayCommands.setManualOrder(names) }
     func resetOrder() { parts.dayCommands.resetOrder() }
     func applyReviewMove(_ move: ReviewGroups.Move) { parts.dayCommands.applyReviewMove(move) }

@@ -14,11 +14,11 @@ struct BacklogContentsTests {
             makeTask("Pay the internet"),
             makeTask("Fix the shelf") { $0.due = TaskDue("2026-10-23") },
             makeTask("Call the bank") { $0.due = TaskDue("2026-10-21T15:00") },
-            makeTask("Wash the car"),
+            makeTask("Wash the car") { $0.waitsInList = true },
             makeTask("Paint the door", status: .halfYear),
             makeHabit("Water", status: .thisWeek),
         ]
-        let plan = DayScenario(tasks: tasks, postponed: ["Wash the car"]).build()
+        let plan = DayScenario(tasks: tasks).build()
         let soon = BacklogContents.tasks(at: .thisWeek, in: tasks, plan: plan, rules: rules)
         #expect(soon.map(\.name) == ["Fix the shelf", "Wash the car"])
     }

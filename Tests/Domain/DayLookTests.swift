@@ -7,18 +7,7 @@ struct DayLookTests {
     private let definitions = [PoolSectionDefinition(id: "morning", title: "Morning"), PoolSectionDefinition(id: "day", title: "Day", catchesRest: true)]
 
     private func look(_ sections: [(String, [String])], kept: [String] = []) -> DayLook {
-        DayLook(sections: sections.map { .init(title: $0.0, names: $0.1) }, keptOut: kept)
-    }
-
-    @Test func onlyWhatBothHaveCanDiffer() {
-        let base = look([("Morning", ["A", "B"]), ("Day", ["C"])])
-        #expect(!base.differs(from: look([("Morning", ["A", "B", "New"]), ("Day", ["C"])])), "a line added")
-        #expect(!base.differs(from: look([("Morning", ["B"]), ("Day", ["C"])])), "a line gone")
-        #expect(!base.differs(from: look([("Morning", ["a", "B"]), ("Day", ["C"])])), "letter case")
-        #expect(base.differs(from: look([("Morning", ["B", "A"]), ("Day", ["C"])])), "another order")
-        #expect(base.differs(from: look([("Morning", ["A"]), ("Day", ["C", "B"])])), "another section")
-        #expect(base.differs(from: look([("Morning", ["A", "B"]), ("Night", ["C"])])), "another title")
-        #expect(base.differs(from: look([("Morning", ["A", "B"])], kept: ["C"])), "kept out")
+        DayLook(sections: sections.map { .init(title: $0.0, names: $0.1) })
     }
 
     @Test func applyingKeepsKnownSectionsAndMakesNewOnes() {

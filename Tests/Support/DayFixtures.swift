@@ -128,14 +128,13 @@ struct DayScenario {
     var skipped: Set<String> = []
     var manualOrder: [String]?
     var routines = HabitRoutines()
-    var postponed: Set<String> = []
     var eventsKnown = true
     var timeMoves: [TimeMove] = []
     var sections: DaySections?
 
     func build(at context: DayContext = TestCalendar.context()) -> DayPlan {
         var inputs = DayInputs(tasks: tasks, events: events, reminders: reminders, skipped: skipped, manualOrder: manualOrder,
-                               routines: routines, postponed: postponed)
+                               routines: routines)
         inputs.eventsKnown = eventsKnown
         inputs.timeMoves = timeMoves
         inputs.sections = sections

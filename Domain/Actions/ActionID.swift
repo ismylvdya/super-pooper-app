@@ -9,7 +9,6 @@ enum ActionID: String, Codable, CaseIterable, Sendable {
     case skipToday
     case notToday
     /// A task put off with Not today back in today.
-    case backToToday
     case unmark
     case open
     case archive

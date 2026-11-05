@@ -20,17 +20,6 @@ struct BacklogMoveTests {
         try #require(model.backlogLists.first { $0.id == id })
     }
 
-    @Test func aPoolTaskDroppedOnSoonIsNotToday() async throws {
-        let model = try model()
-        #expect(model.plan(at: model.clock.now).pool.contains { $0.id == "Pay the internet" })
-        await model.moveToBacklog("Pay the internet", list: try list("thisWeek", model), shown: context.today, fromShownDay: true)
-        #expect(model.dayState.postponed == ["Pay the internet"])
-        #expect(model.task(named: "Pay the internet")?.status == .thisWeek)
-        let plan = model.plan(at: model.clock.now)
-        #expect(!plan.pool.contains { $0.id == "Pay the internet" })
-        #expect(model.backlogTasks(try list("thisWeek", model), plan: plan).map(\.name) == ["Pay the internet"])
-    }
-
     @Test func aTaskDroppedOnSomedayGetsThatStatus() async throws {
         let model = try model()
         await model.moveToBacklog("Pay the internet", list: try list("someday", model), shown: context.today, fromShownDay: true)
@@ -43,7 +32,7 @@ struct BacklogMoveTests {
         let model = try model()
         await model.bringFromBacklog("Read a novel", to: context.today, poolOrder: ["Pay the internet", "Read a novel"])
         let note = try #require(model.task(named: "Read a novel"))
-        #expect(note.status == .thisWeek && note.due == nil)
+        #expect(note.status == .thisWeek && note.due == TaskDue(day: context.today))
         #expect(model.dayState.manualOrder?.firstIndex(of: "Read a novel") == 1)
         #expect(model.plan(at: model.clock.now).pool.contains { $0.id == "Read a novel" })
     }

@@ -117,7 +117,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Not today"
+            "value": "Tomorrow"
           }
         }
       }
@@ -238,7 +238,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Skip today"
+            "value": "Tomorrow"
           }
         }
       }

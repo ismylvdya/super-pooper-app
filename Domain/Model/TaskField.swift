@@ -14,7 +14,7 @@ extension TaskEdit {
         switch self {
         case .status, .complete, .reopen: .status
         case .highPriority: .priority
-        case .due: .due
+        case .due, .overdue: .due
         case .timeEstimate: .timeEstimate
         case .addProject: .projects
         case .subtaskOrder: .subtaskOrder

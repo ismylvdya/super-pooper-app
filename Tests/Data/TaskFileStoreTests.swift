@@ -77,7 +77,7 @@ struct TaskFileStoreTests {
 
     @Test func aNewTaskGoesToNowOrSoonByItsDate() async throws {
         let store = store()
-        let now = try await store.create(draft(), named: "Today's")
+        let now = try await store.create(draft([.due(TaskDue(day: today))]), named: "Today's")
         let later = try await store.create(draft([.due(TaskDue(day: LocalDate("2026-10-25")))]), named: "Later")
         #expect(now.status == .thisWeek && later.status == .thisWeek)
         let document = TaskDocument(text: try text(), format: format)
@@ -166,7 +166,7 @@ struct TaskFileStoreTests {
     @Test func aTickOnAHabitsLineInObsidianIsItsMark() async throws {
         let store = store()
         let habit = try await store.create(NoteDraft(status: .habit), named: "Run")
-        await store.mirror(DayMirror(sections: [.init(title: "Morning", names: ["Run"])], timed: [:], keptOut: []))
+        await store.mirror(DayMirror(sections: [.init(title: "Morning", names: ["Run"])], timed: [:]))
         #expect(try text().contains("### Morning\n- [ ] Run 📅 \(today.isoString) 🆔 \(habit.id.value)"))
         try write(try text().replacingOccurrences(of: "- [ ] Run", with: "- [x] Run"))
         let loaded = try await store.load().tasks
@@ -178,7 +178,7 @@ struct TaskFileStoreTests {
         _ = try await store.create(draft(), named: "A")
         _ = try await store.create(draft(), named: "B")
         _ = try await store.create(draft(), named: "C")
-        await store.mirror(DayMirror(sections: [.init(title: "Evening", names: ["B", "A"]), .init(title: "Empty", names: [])], timed: [:], keptOut: ["C"]))
+        await store.mirror(DayMirror(sections: [.init(title: "Evening", names: ["B", "A"]), .init(title: "Empty", names: [])], timed: [:]))
         let document = TaskDocument(text: try text(), format: format)
         let now = try #require(document.sections.first { $0.kind == .now })
         #expect(now.groups.compactMap(\.title) == ["Evening"])
@@ -216,7 +216,7 @@ struct TaskFileStoreTests {
         _ = try await store.create(draft(), named: "A")
         _ = try await store.create(draft(), named: "B")
         _ = try await store.create(draft(), named: "C")
-        await store.mirror(DayMirror(sections: [.init(title: "Morning", names: ["A", "B"]), .init(title: "Evening", names: ["C"])], timed: [:], keptOut: []))
+        await store.mirror(DayMirror(sections: [.init(title: "Morning", names: ["A", "B"]), .init(title: "Evening", names: ["C"])], timed: [:]))
         #expect(await store.changedLook() == nil, "what the app wrote itself")
         _ = try await store.create(draft(), named: "New")
         #expect(await store.changedLook() == nil, "a new line is no change of the look")
@@ -232,7 +232,7 @@ struct TaskFileStoreTests {
 
         let look = try #require(await store.changedLook())
         #expect(look.sections == [.init(title: "Morning", names: ["B"]), .init(title: "Night", names: ["C", "A"])])
-        await store.mirror(DayMirror(sections: [.init(title: "Lost", names: ["A"])], timed: [:], keptOut: []))
+        await store.mirror(DayMirror(sections: [.init(title: "Lost", names: ["A"])], timed: [:]))
         #expect(try text().contains("### Night"), "not written over until it is taken in")
         await store.accept(look)
         #expect(await store.changedLook() == nil)
@@ -242,7 +242,7 @@ struct TaskFileStoreTests {
     @Test func yesterdaysLookIsNoNews() async throws {
         let first = store()
         _ = try await first.create(draft(), named: "A")
-        await first.mirror(DayMirror(sections: [.init(title: "Morning", names: ["A"])], timed: [:], keptOut: []))
+        await first.mirror(DayMirror(sections: [.init(title: "Morning", names: ["A"])], timed: [:]))
         try write(try text().replacingOccurrences(of: "### Morning", with: "### Renamed"))
         #expect(await first.changedLook() != nil)
         #expect(await store(today: LocalDate("2026-10-22")).changedLook() == nil)
@@ -289,14 +289,14 @@ struct TaskFileStoreTests {
         #expect(Set(tasks.map(\.name)) == ["Idea", "Milk", "Later"])
         let written = try text()
         #expect(!written.contains("Inbox") && !written.contains("## Now") && !written.contains("➕"))
-        #expect(written.contains("## Today\n- [ ] Milk\n"))
+        #expect(written.contains("## Today\n- [ ] Milk 📅 \(today.isoString)\n"))
         #expect(written.contains("## Soon\n- [ ] Later\n- [ ] Idea\n"))
         let today = try #require(written.range(of: "## Today")), soon = try #require(written.range(of: "## Soon"))
         #expect(today.lowerBound < soon.lowerBound, "the sections stay in their order")
     }
 
     @Test func theOlderHighPriorityMarkTurnsIntoTheWarningSign() async throws {
-        try write("## Today\n- [ ] Call 🔥 🆔 c1\n")
+        try write("## Soon\n- [ ] Call 🔥 🆔 c1\n")
         let task = try #require(try await store().load().tasks.first)
         #expect(task.isHighPriority)
         #expect(try text().contains("- [ ] Call ⚠️\n"))
@@ -338,7 +338,7 @@ struct TaskFileStoreTests {
         let store = store()
         let habit = try await store.create(NoteDraft(status: .habit), named: "Run")
         _ = try await store.apply([.mark(.done, on: today.adding(days: -1))], to: habit)
-        await store.mirror(DayMirror(sections: [.init(title: "Morning", names: ["Run"])], timed: [:], keptOut: []))
+        await store.mirror(DayMirror(sections: [.init(title: "Morning", names: ["Run"])], timed: [:]))
         let url = try #require(await store.externalURL(for: habit))
         let items = try #require(URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems)
         let line = try #require(items.first { $0.name == "line" }?.value.flatMap(Int.init))
@@ -350,14 +350,37 @@ struct TaskFileStoreTests {
         let store = store()
         let rule = RecurrenceDraft(start: today).rule
         let habit = try await store.create(NoteDraft(status: .habit, changes: [.recurrence(rule)]), named: "Run")
-        await store.mirror(DayMirror(sections: [.init(title: "Morning", names: ["Run"])], timed: [:], keptOut: []))
+        await store.mirror(DayMirror(sections: [.init(title: "Morning", names: ["Run"])], timed: [:]))
         #expect(try text().contains("### Morning\n- [ ] Run 📅 \(today.isoString)"))
-        await store.mirror(DayMirror(sections: [], timed: [:], keptOut: []))
+        await store.mirror(DayMirror(sections: [], timed: [:]))
         let lines = try text().components(separatedBy: "\n")
         let soon = try #require(lines.firstIndex(of: "## Soon"))
         let line = try #require(lines.firstIndex { $0.hasPrefix("- [ ] Run") && $0.contains(habit.id.value) })
         #expect(line > soon)
         #expect(lines[line].contains("📅 \(today.adding(days: 1).isoString)"))
+    }
+
+    /// Skipped with no day of its own tomorrow: tomorrow's pool, no time, marked overdue.
+    @Test func aSkippedHabitWithNoDayTomorrowStandsThereOverdue() async throws {
+        let store = store()
+        var weekly = RecurrenceDraft(start: today)
+        weekly.frequency = .weekly
+        let rule = weekly.rule
+        _ = try await store.create(NoteDraft(status: .habit, changes: [.recurrence(rule)]), named: "Bins")
+        await store.mirror(DayMirror(sections: [], timed: [:], skipped: ["Bins"]))
+        let line = try #require(try text().components(separatedBy: "\n").first { $0.hasPrefix("- [ ] Bins") })
+        #expect(line.contains("📅 \(today.adding(days: 1).isoString)") && line.contains("🕰️"))
+    }
+
+    /// An undated line in Today (an older file, or typed in) takes today's date; a new undated task waits in Next actions.
+    @Test func onlyADatePutsALineInToday() async throws {
+        try write("## Today\n- [ ] Old\n")
+        let store = store()
+        _ = try await store.load()
+        _ = try await store.create(draft(), named: "New")
+        let lines = try text().components(separatedBy: "\n")
+        #expect(lines.contains("- [ ] Old 📅 \(today.isoString)"))
+        #expect(lines.firstIndex(of: "- [ ] New")! > lines.firstIndex(of: "## Soon")!)
     }
 
     @Test func anOldOpenMarkIsNoPartOfTheNameAndGoesWithTheNextWrite() async throws {
@@ -406,7 +429,7 @@ struct TaskFileStoreTests {
         let store = store()
         let other = today.adding(days: 2).weekday
         _ = try await store.create(habitDraft(weekly([other], from: today), times: [LocalTime(hour: 9, minute: 30)!]), named: "Gym")
-        await store.mirror(DayMirror(sections: [], timed: [:], keptOut: []))
+        await store.mirror(DayMirror(sections: [], timed: [:]))
         let line = try #require(try line(of: "Gym"))
         #expect(try section(of: "Gym") == "Soon")
         #expect(line.contains("📅 \(today.adding(days: 2).isoString) ⏰ 09:30"))
@@ -419,7 +442,7 @@ struct TaskFileStoreTests {
                                    count: nil, untilDate: nil, untilTime: nil, weekStart: .monday)
         let habit = try await store.create(habitDraft(daily), named: "Read")
         _ = try await store.apply([.mark(.done, on: today)], to: habit)
-        await store.mirror(DayMirror(sections: [.init(title: "Day", names: ["Read"])], timed: [:], keptOut: []))
+        await store.mirror(DayMirror(sections: [.init(title: "Day", names: ["Read"])], timed: [:]))
         #expect(try section(of: "Read") == "Soon")
         #expect(try line(of: "Read")?.contains("📅 \(today.adding(days: 1).isoString)") == true)
         #expect(try text().contains("- [x] Read ✅ \(today.isoString)"))

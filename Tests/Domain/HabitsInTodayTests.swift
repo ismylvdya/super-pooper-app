@@ -129,12 +129,6 @@ struct RoutineOrderTests {
         #expect(scenario.build().poolNames == ["C coffee", "A stretch", "B shower"])
     }
 
-    @Test func postponedTasksLeaveToday() {
-        var scenario = DayScenario(tasks: [makeTask("Later"), makeTask("Now")])
-        scenario.postponed = ["Later"]
-        #expect(scenario.build().poolNames == ["Now"])
-    }
-
     @Test func extraLinesGrowWithTheEstimate() {
         let pool = TestConfig.rules.pool
         #expect(pool.extraLines(forEstimate: 15) == 0)

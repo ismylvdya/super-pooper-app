@@ -12,8 +12,6 @@ struct DayInputs: Sendable {
     /// The user's pool order for today, if they dragged something.
     var manualOrder: [String]?
     var routines = HabitRoutines()
-    /// Tasks the morning review moved out of today (they stay this week).
-    var postponed: Set<String> = []
     /// Which kinds of entries the timeline shows; hidden timed tasks and habits stay in the pool.
     var timelineFilter = TimelineFilter()
     /// Another day than today: this week's tasks dated that day and the habits shown in Today that repeat on it.

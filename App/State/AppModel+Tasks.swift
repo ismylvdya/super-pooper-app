@@ -54,7 +54,6 @@ extension AppModel {
         case .done, .partial, .twice, .unmark: await parts.notes.markFromMenu(name, as: action.habitMark, on: day)
         case .skipToday: await parts.dayCommands.skip(name, on: day)
         case .notToday: await parts.dayCommands.notToday(name, on: day)
-        case .backToToday: parts.dayCommands.unpostpone(name)
         case .archive: return await parts.notes.archive(name, announcing: announcing) ? [] : nil
         case .restoreThisWeek, .notStarted: await parts.notes.setStatus(.thisWeek, of: name)
         case .start: await parts.notes.setStatus(.inProgress, of: name)

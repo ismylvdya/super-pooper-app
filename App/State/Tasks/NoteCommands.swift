@@ -153,6 +153,9 @@ final class NoteCommands {
     /// own linked to its parent), at the pool's spot a dragged "+" left (`placement`). Returns the final name.
     func create(_ draft: NoteDraft, named name: String, at placement: NewItemPlacement? = nil) async -> String? {
         do {
+            // Only a date puts a task in a day: dropped in a pool, it takes that day.
+            var draft = draft
+            if case .pool(_, _, let day) = placement, !draft.note.isHabit, draft.note.due == nil { draft.apply([.due(TaskDue(day: day))]) }
             let created = try await store.create(draft, named: name)
             tasks.written(created)
             for subtask in draft.subtasks.map({ $0.trimmingCharacters(in: .whitespacesAndNewlines) }) where !subtask.isEmpty {

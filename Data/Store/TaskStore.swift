@@ -103,7 +103,8 @@ struct DayMirror: Equatable, Sendable {
     let sections: [Section]
     /// Items on today's timeline, with the time they stand at today.
     let timed: [String: LocalTime]
-    let keptOut: [String]
+    /// Habits taken out of today: their lines go to the next day (`waitingHabitLines`).
+    var skipped: [String] = []
 }
 
 /// A store whose lines have an order a person sets.
