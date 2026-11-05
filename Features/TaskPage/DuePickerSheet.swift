@@ -25,12 +25,12 @@ struct DuePickerSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Toggle("taskPage.due.date", isOn: $hasDate)
+                SwitchToggle("taskPage.due.date", isOn: $hasDate)
                     .accessibilityIdentifier("duePicker.hasDate")
                 if hasDate {
                     DayField("taskPage.due.date", day: $pick.day)
                         .datePickerStyle(.graphical)
-                    Toggle("taskPage.due.hasTime", isOn: Binding(get: { pick.time != nil }, set: setHasTime))
+                    SwitchToggle("taskPage.due.hasTime", isOn: Binding(get: { pick.time != nil }, set: setHasTime))
                         .accessibilityIdentifier("duePicker.hasTime")
                     if let time = pick.time {
                         TimeField("taskPage.due.time", time: Binding(get: { time }, set: { pick.time = $0 }), on: pick.day)

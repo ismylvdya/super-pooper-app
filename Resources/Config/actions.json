@@ -124,7 +124,7 @@
       "icon": "arrow.uturn.backward",
       "destructive": false,
       "haptic": "light",
-      "swipeTint": "accent"
+      "swipeTint": "accentSwipe"
     },
     {
       "id": "restoreFromTrash",

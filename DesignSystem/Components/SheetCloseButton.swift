@@ -4,9 +4,11 @@ import SwiftUI
 struct SheetCloseButton: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.icons) private var icons
+    @Environment(\.tokens) private var tokens
 
     var body: some View {
         Button { dismiss() } label: { Image(systemName: icons[.close]) }
+            .tint(tokens.color(.accentToolbar))
             .accessibilityLabel(Text("common.close"))
     }
 }

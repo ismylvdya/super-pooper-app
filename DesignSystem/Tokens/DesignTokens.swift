@@ -74,6 +74,8 @@ struct DesignTokens: Decodable, Sendable {
     /// rings.
     func applying(_ settings: AppSettings, limits: RulesConfig.Limits) -> DesignTokens {
         var tokens = overridingColors(settings.colors)
+        let accented = settings.accent.categories.compactMap(AccentCategory.init(rawValue:)).map { ($0.token, tokens.color[.accentPick]) }
+        tokens.color = tokens.color.replacing(Dictionary(accented, uniquingKeysWith: { first, _ in first }))
         tokens.opacity = opacity.replacing([.past: limits.pastOpacity.clamped(settings.appearance.pastOpacity),
                                             .habitOpenRing: limits.ringOpacity.clamped(settings.habits.ringOpacity),
                                             .selectionOutline: limits.selectionOutlineOpacity.clamped(settings.pool.selectionOutlineOpacity)])

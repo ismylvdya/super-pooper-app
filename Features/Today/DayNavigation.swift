@@ -38,7 +38,7 @@ struct DayNavigation: View {
                 }
             }
         }
-        .tint(tokens.color(.accent))
+        .tint(tokens.color(.accentToolbar))
     }
 
     /// The side of an arrow that faces the name: upright beside it, sideways above or below it.

@@ -27,7 +27,7 @@ struct DragStack<Top: View>: View {
                         .minimumScaleFactor(0.5)
                         .foregroundStyle(tokens.color(.screenBackground))
                         .frame(width: badge, height: badge)
-                        .background(tokens.color(.accent), in: Circle())
+                        .background(tokens.color(.accentDragMark), in: Circle())
                         .offset(x: -Self.arcInset(radius), y: Self.arcInset(radius))
                 }
                 .contentShape(.dragPreview, PlateWithBadge(radius: radius, badge: badge))

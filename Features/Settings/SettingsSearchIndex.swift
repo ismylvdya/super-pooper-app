@@ -36,6 +36,8 @@ enum SettingsSearchIndex {
         Section(title: "settings.estimates", route: .taskSettings, rows: ["settings.estimates.shortest", "settings.estimates.normal", "settings.estimates.long", "estimate.dohuya"]),
         Section(title: "settings.appearance", route: .taskSettings, rows: ["settings.pastOpacity"]),
         Section(title: "settings.colors", route: .taskSettings, rows: []),
+        Section(title: "settings.accent", route: .generalSettings,
+                rows: ["settings.accent.color"] + AccentCategory.allCases.map { "settings.accent." + $0.rawValue }),
         Section(title: "settings.widgets", route: .widgetSettings, rows: ["settings.widget"]),
         Section(title: "settings.widgetColors", route: .widgetSettings, rows: []),
         Section(title: "settings.notifications", route: .notificationSettings, rows: ["settings.notifications.enabled", "settings.notifications.snooze", "settings.notifications.alarmSound", "settings.notifications.signing"]),

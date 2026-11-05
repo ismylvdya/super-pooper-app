@@ -8,6 +8,7 @@ struct GeneralSettingsScreen: View {
         PageScaffold(title: L10n.string("settings.general")) {
             DaySettingsSection()
             ListsSettingsSection()
+            AccentSettingsSection()
             SourcesSettingsSection()
         }
         .task { await model.refreshAccess() }

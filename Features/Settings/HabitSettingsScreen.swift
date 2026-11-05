@@ -13,7 +13,7 @@ struct HabitSettingsScreen: View {
             }
             PlateSection(header: "settings.habits.new", hint: "settings.habits.new.hint") {
                 PlateRow(icon: .today, title: "habitPage.showInToday", info: "info.habitPage.showInToday") {
-                    Toggle("habitPage.showInToday", isOn: Binding(
+                    SwitchToggle("habitPage.showInToday", isOn: Binding(
                         get: { model.settings.habits.showNewHabitsInToday },
                         set: { value in model.updateSettings { $0.habits.showNewHabitsInToday = value } }
                     ))
@@ -23,7 +23,7 @@ struct HabitSettingsScreen: View {
             }
             PlateSection(header: "settings.habits.repeatable", hint: "settings.habits.repeatable.hint") {
                 PlateRow(icon: .recurrence, title: "settings.habits.repeatableHistory") {
-                    Toggle("settings.habits.repeatableHistory", isOn: Binding(
+                    SwitchToggle("settings.habits.repeatableHistory", isOn: Binding(
                         get: { model.settings.habits.repeatableShowsHistory },
                         set: { value in model.updateSettings { $0.habits.repeatableShowsHistory = value } }
                     ))

@@ -171,6 +171,11 @@ struct AppSettings: Codable, Equatable, Sendable {
         var symbols: [String: String]
     }
 
+    /// Which kinds of elements take the accent color (`accentPick`); the others keep their own (raw names of `AccentCategory`).
+    struct Accent: Codable, Equatable, Sendable {
+        var categories: [String]
+    }
+
     struct Appearance: Codable, Equatable, Sendable {
         /// Opacity of done tasks and past events in the pool, the timeline and the widget.
         var pastOpacity: Double
@@ -188,6 +193,7 @@ struct AppSettings: Codable, Equatable, Sendable {
     var habits: Habits
     var clock: Clock
     var appearance: Appearance
+    var accent: Accent
     var lists: Lists
     /// Color overrides by token name (`task`, `habit`, `past`, …) as `#RRGGBB`; empty = tokens.json.
     var colors: [String: String]

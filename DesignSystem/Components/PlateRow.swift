@@ -46,7 +46,7 @@ struct PlateRow<Trailing: View>: View {
         HStack(spacing: tokens.space(.iconTextGap)) {
             if let icon {
                 IconGlyph(icon, font: .rowTitle)
-                    .foregroundStyle(iconTint ?? tint ?? tokens.color(.accent))
+                    .foregroundStyle(iconTint ?? tint ?? tokens.color(.accentIcon))
                     .frame(width: tokens.size(.iconColumn))
             }
             HStack(spacing: tokens.space(.titleInfoGap)) {

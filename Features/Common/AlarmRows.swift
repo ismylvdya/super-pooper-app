@@ -10,7 +10,7 @@ struct AlarmRows: View {
     @State private var isRefused = false
 
     var body: some View {
-        Toggle("alarm.title", isOn: Binding(get: { alarm != nil }, set: setOn))
+        SwitchToggle("alarm.title", isOn: Binding(get: { alarm != nil }, set: setOn))
             .accessibilityIdentifier("duePicker.alarm")
             .alert("alarm.refused.title", isPresented: $isRefused) {
                 Button("common.ok") {}

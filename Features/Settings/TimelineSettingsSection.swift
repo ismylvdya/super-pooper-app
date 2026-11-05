@@ -58,7 +58,7 @@ struct TimelineSettingsSection: View {
     /// Hidden timed tasks and habits go back to the pool; hidden events and reminders are just not drawn.
     private func shownToggle(_ icon: Icon, _ title: LocalizedStringKey, _ keyPath: WritableKeyPath<TimelineFilter, Bool>) -> some View {
         PlateRow(icon: icon, title: title, info: "info.settings.timeline.shown") {
-            Toggle(title, isOn: binding((\AppSettings.Timeline.shown).appending(path: keyPath))).labelsHidden()
+            SwitchToggle(title, isOn: binding((\AppSettings.Timeline.shown).appending(path: keyPath))).labelsHidden()
         }
     }
 

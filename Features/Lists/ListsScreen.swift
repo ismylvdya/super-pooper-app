@@ -41,7 +41,7 @@ struct ListsScreen: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { router.open(.search(.tasks)) } label: { SearchGlyph() }
-                    .tint(tokens.color(.accent))
+                    .tint(tokens.color(.accentToolbar))
                     .accessibilityLabel(Text("search.title"))
                     .accessibilityIdentifier("lists.search")
             }

@@ -11,12 +11,12 @@ struct HabitDaySection: View {
     var body: some View {
         PlateSection(header: "habitPage.day") {
             PlateRow(icon: .today, title: "habitPage.showInToday", info: "info.habitPage.showInToday") {
-                Toggle("habitPage.showInToday", isOn: Binding(get: { task.habit.showInToday }, set: { editor.apply([.showInToday($0)]) }))
+                SwitchToggle("habitPage.showInToday", isOn: Binding(get: { task.habit.showInToday }, set: { editor.apply([.showInToday($0)]) }))
                     .labelsHidden()
             }
             Group {
                 PlateRow(icon: .high, title: "taskPage.high", info: "info.taskPage.high") {
-                    Toggle("taskPage.high", isOn: Binding(get: { task.isHighPriority }, set: { editor.apply([.highPriority($0)]) }))
+                    SwitchToggle("taskPage.high", isOn: Binding(get: { task.isHighPriority }, set: { editor.apply([.highPriority($0)]) }))
                         .labelsHidden()
                         .accessibilityIdentifier("taskPage.high")
                 }

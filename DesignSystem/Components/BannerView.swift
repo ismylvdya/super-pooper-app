@@ -55,7 +55,7 @@ struct BannerView: View {
                 .buttonStyle(.bordered)
                 .buttonBorderShape(.capsule)
                 .controlSize(.small)
-                .tint(tokens.color(.accent))
+                .tint(tokens.color(.accentButton))
                 .accessibilityIdentifier("banner.undo")
                 .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { undoHeight = $0 }
                 // Expanded the banner's own padding is above it: it stays where it stood.

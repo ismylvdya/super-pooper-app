@@ -38,7 +38,7 @@ struct SelectionToolbar: View {
         Button { selection.end() } label: {
             if bottom == nil { Text("common.cancel") } else { Image(systemName: icons[.selectCancel]) }
         }
-        .tint(tokens.color(isCancelTargeted ? .destructive : .accent))
+        .tint(tokens.color(isCancelTargeted ? .destructive : .accentToolbar))
         .modifier(ColumnButton(isInColumn: bottom != nil))
         .contentShape(Rectangle())
         .moveDrop(of: TaskDragState.types, isTargeted: $isCancelTargeted) {
@@ -77,7 +77,7 @@ struct SelectionToolbar: View {
         } label: {
             Image(systemName: action.icon)
         }
-        .tint(action.destructive ? tokens.color(.destructive) : tokens.color(.accent))
+        .tint(action.destructive ? tokens.color(.destructive) : tokens.color(.accentToolbar))
         .disabled(!isOffered)
         .modifier(ColumnButton(isInColumn: bottom != nil))
         .accessibilityLabel(Text(LocalizedStringKey(action.title)))
@@ -98,7 +98,7 @@ struct SelectionToolbar: View {
         } label: {
             Image(systemName: icons[.more])
         }
-        .tint(tokens.color(.accent))
+        .tint(tokens.color(.accentToolbar))
         .disabled(actions.isEmpty)
         .modifier(ColumnButton(isInColumn: bottom != nil))
         .accessibilityLabel(Text("select.more"))

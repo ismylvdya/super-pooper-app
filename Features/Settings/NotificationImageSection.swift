@@ -14,7 +14,7 @@ struct NotificationImageSection: View {
         let isShown = model.settings.habits.showsNotificationPicture
         PlateSection(header: "settings.notificationImage", hint: "settings.notificationImage.hint") {
             PlateRow(icon: nil, title: "settings.notificationImage.show") {
-                Toggle("settings.notificationImage.show", isOn: Binding(
+                SwitchToggle("settings.notificationImage.show", isOn: Binding(
                     get: { isShown },
                     set: { model.setNotificationPictureShown($0) }
                 ))
@@ -43,7 +43,7 @@ struct NotificationImageSection: View {
             }
         }
         PlateRow(icon: nil, title: "settings.notificationImage.habitColor", info: "info.settings.notificationImage.habitColor") {
-            Toggle("settings.notificationImage.habitColor", isOn: Binding(
+            SwitchToggle("settings.notificationImage.habitColor", isOn: Binding(
                 get: { model.settings.habits.notificationUsesHabitColor },
                 set: { model.setNotificationPictureUsesHabitColor($0) }
             ))

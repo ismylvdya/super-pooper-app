@@ -54,7 +54,7 @@ struct ColorSpec: Decodable, Sendable {
     enum SystemColor: String, ConfigName {
         case label, secondaryLabel, tertiaryLabel
         case systemBackground, secondarySystemBackground, systemGroupedBackground, secondarySystemGroupedBackground
-        case tertiarySystemFill, secondarySystemFill, quaternarySystemFill, separator, systemRed, systemBlue
+        case tertiarySystemFill, secondarySystemFill, quaternarySystemFill, separator, systemRed, systemBlue, systemGreen
 
         var uiColor: UIColor {
             switch self {
@@ -71,6 +71,7 @@ struct ColorSpec: Decodable, Sendable {
             case .separator: .separator
             case .systemRed: .systemRed
             case .systemBlue: .systemBlue
+            case .systemGreen: .systemGreen
             }
         }
     }

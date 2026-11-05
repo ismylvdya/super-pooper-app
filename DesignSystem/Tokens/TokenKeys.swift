@@ -89,7 +89,7 @@ enum FontToken: String, CaseIterable, Sendable {
 enum ColorToken: String, ConfigName {
     /// The outline of a row picked in Select mode: between a section's title and the text.
     case selectionOutline
-    case accent, task, habit, high, started, energy, pleasant, heart, alarmButton, alarmButtonText, overdue, energyOnFill, heartOnFill, eventIconGlyph, nowLine, problem
+    case accent, accentPick, accentSelect, accentToolbar, accentCalendar, accentSwitch, accentIcon, accentCheckmark, accentButton, accentSwipe, accentDragMark, task, habit, high, started, energy, pleasant, heart, alarmButton, alarmButtonText, overdue, energyOnFill, heartOnFill, eventIconGlyph, nowLine, problem
     case past, swipeNeutral, screenBackground, plateBackground, chipBackground, primaryText, secondaryText, tertiaryText
     case bannerBackground, infoText, destructive, timelineGrid
     case success, warning, error, shadow, widgetPlate, widgetTop, widgetBottom, listSeparator

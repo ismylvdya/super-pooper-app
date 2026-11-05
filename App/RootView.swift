@@ -90,13 +90,15 @@ struct RootView: View {
                 .overlay(alignment: .top) { BannerOverlay(yieldsToSheets: true) }
                 .overlay { NewItemDragOverlay() }
                 .sheet(isPresented: $router.isReviewPresented) {
-                    MorningReviewScreen().presentationDragIndicator(.visible)
+                    MorningReviewScreen().appControls().presentationDragIndicator(.visible)
                 }
-                .sheet(isPresented: $router.isProblemsPresented) { ProblemsSheet() }
+                .sheet(isPresented: $router.isProblemsPresented) { ProblemsSheet().appControls() }
             } else {
                 OnboardingFlow()
             }
         }
+        .appControls()
+        .onChange(of: tokens.uiColor(.accentToolbar), initial: true) { _, color in UINavigationBar.appearance().tintColor = color }
         .onGeometryChange(for: EdgeInsets.self) { $0.safeAreaInsets } action: { safeArea = $0 }
         .onGeometryChange(for: CGSize.self) { $0.size } action: { _ in updateLandscapeBottom() }
         .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in updateLandscapeBottom() }

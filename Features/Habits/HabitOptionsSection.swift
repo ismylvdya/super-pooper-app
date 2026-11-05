@@ -22,7 +22,7 @@ struct HabitOptionsSection: View {
             toggle(.habitMarkTwice, "habitPage.twiceADay", "info.habitPage.twiceADay", \.twiceADay, TaskEdit.twiceADay)
             if options.twiceADay {
                 PlateRow(icon: nil, title: "habitPage.twiceCountsDouble", indent: true) {
-                    Toggle("habitPage.twiceCountsDouble", isOn: binding(\.twiceCountsDouble, TaskEdit.twiceCountsDouble)).labelsHidden()
+                    SwitchToggle("habitPage.twiceCountsDouble", isOn: binding(\.twiceCountsDouble, TaskEdit.twiceCountsDouble)).labelsHidden()
                 }
             }
             HabitGoalRows(editor: editor)
@@ -32,7 +32,7 @@ struct HabitOptionsSection: View {
     private func toggle(_ icon: Icon, _ title: LocalizedStringKey, _ info: LocalizedStringKey,
                         _ keyPath: KeyPath<HabitOptions, Bool>, _ change: @escaping (Bool) -> TaskEdit) -> some View {
         PlateRow(icon: icon, title: title, info: info) {
-            Toggle(title, isOn: binding(keyPath, change)).labelsHidden()
+            SwitchToggle(title, isOn: binding(keyPath, change)).labelsHidden()
         }
     }
 

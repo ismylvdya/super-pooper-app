@@ -87,6 +87,9 @@
   "appearance": {
     "pastOpacity": 0.2
   },
+  "accent": {
+    "categories": ["selects", "toolbars"]
+  },
   "lists": {
     "icon": "gun",
     "symbols": {}
