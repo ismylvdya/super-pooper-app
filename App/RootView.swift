@@ -47,6 +47,8 @@ struct RootView: View {
                                         }
                                 }
                                 .padding(landscapeEdge, landscapeRoom(of: tab))
+                                // The room is the screen's own background, as on Tasks: no bar of the tab view's shows through it.
+                                .screenBackground()
                             } label: {
                                 Label {
                                     Text(LocalizedStringKey(String("tab.") + tab.rawValue))
