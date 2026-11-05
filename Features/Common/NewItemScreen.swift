@@ -2,33 +2,21 @@ import SwiftUI
 
 /// What a "+" opens: one page for a new task or a new habit, with a Task / Habit slider under the name. The usual page
 /// of the shown kind follows, with an empty name and the cursor already in it; switching the kind keeps the typed name
-/// and what was set for each kind (`NewItemPage`). Return in the name saves the note at once (`AppModel.createOnReturn`):
-/// the keyboard goes and the page stays, now the note's own page, where every edit is written as on any task page.
-/// Without Return nothing is written while it is open; leaving the page with Back creates the note of the shown kind
-/// with everything set here. Another tab only hides the page: the draft waits for the user to come back.
+/// and what was set for each kind (`NewItemPage`). Nothing is written while it is open; Return in the name and Back do the same:
+/// the page closes and the note of the shown kind is created with everything set here, with its banner. Another tab only hides
+/// the page: the draft waits for the user to come back.
 /// A name a note cannot take is shown right in the title; Return does not save it, and Back waits until it is changed.
 /// A date typed into a task's name is blue: a tap on it sets the date and takes the words out; untapped, it stays words.
 struct NewItemScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
+    @Environment(\.dismiss) private var dismiss
     let seed: NewItemSeed
     /// The tab whose stack shows the page.
     var tab: AppTab?
     @State private var page: NewItemPage?
-    /// The note Return saved: the page is its own page from then on.
-    @State private var saved: String?
-    /// Return is saving the note: Back must not create a second one meanwhile.
-    @State private var isSaving = false
 
     var body: some View {
-        if let saved {
-            TaskPageScreen(taskName: saved)
-        } else {
-            draftPage
-        }
-    }
-
-    private var draftPage: some View {
         let current = page ?? model.newItemPage(seed)
         let editor = TaskEditor.draft(Binding(get: { page?.draft ?? current.draft }, set: { page?.draft = $0 }))
         return PageScaffold(title: current.name.isEmpty ? L10n.string(Self.titleKey(current.kind)) : current.name,
@@ -63,22 +51,17 @@ struct NewItemScreen: View {
         }
     }
 
+    /// A name the note can take closes the page, as Back does; `leave` creates the note.
     private func saveOnReturn() {
-        guard let page, !isSaving else { return }
-        isSaving = true
-        Task {
-            defer { isSaving = false }
-            guard let name = await model.createOnReturn(from: page) else { return }
-            self.page = nil
-            saved = name
-        }
+        guard let page, page.savedOnReturn(rules: model.nameProblem(in:)) != nil else { return }
+        dismiss()
     }
 
     /// Another tab was chosen: the page is still in its stack, only hidden. Otherwise the page is left for good, and the
     /// draft goes once its note is created.
     private func leave() {
         if let tab, router.tab != tab { return }
-        guard let page, !isSaving else { return }
+        guard let page else { return }
         Task {
             if await model.create(from: page, unnamed: L10n.string("note.unnamed")) { self.page = nil }
         }

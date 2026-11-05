@@ -84,7 +84,7 @@ struct TaskChipRows: View {
                 isAlarmRefused = true
                 return
             }
-            Haptics.play(.select)
+            Haptics.play(.alarmSet)
             editor.apply([.alarms([TimeAlarm()])])
         }
     }

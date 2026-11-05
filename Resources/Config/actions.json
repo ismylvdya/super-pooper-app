@@ -421,6 +421,7 @@
     "move": "light",
     "dragStep": "selection",
     "pullArmed": "light",
-    "extend": "medium"
+    "extend": "medium",
+    "alarmSet": "medium"
   }
 }

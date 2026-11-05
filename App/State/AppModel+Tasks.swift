@@ -136,8 +136,6 @@ extension AppModel {
     /// The new-item page is left; true once the page is done with (see `NoteCommands.create(from:unnamed:)`).
     func create(from page: NewItemPage, unnamed: String) async -> Bool { await parts.notes.create(from: page, unnamed: unnamed) }
     func create(_ draft: NoteDraft, named name: String) async -> String? { await parts.notes.create(draft, named: name) }
-    /// Return in the new-item page's name: the note is created at once; its name, or nil when nothing was saved.
-    func createOnReturn(from page: NewItemPage) async -> String? { await parts.notes.createOnReturn(from: page) }
 
     @discardableResult
     func rename(_ name: String, to newName: String) async -> Bool { await parts.notes.rename(name, to: newName) }

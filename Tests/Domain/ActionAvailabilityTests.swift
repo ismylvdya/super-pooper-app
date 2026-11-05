@@ -58,7 +58,7 @@ struct ActionAvailabilityTests {
         #expect(marked.first { $0.action == .twice }?.isCurrent == true)
     }
 
-    /// A store without a link to its own app has no Open Obsidian; the rest of the menu stays.
+    /// A store without a link to its own app has no Open in Obsidian; the rest of the menu stays.
     @Test func openInObsidianNeedsTheStoreToOpenItsItems() {
         let page: [ActionID] = [.archive, .openInObsidian, .delete]
         let withoutLinks = ActionAvailability(capabilities: StoreCapabilities(opensExternally: false, hasTrash: true))

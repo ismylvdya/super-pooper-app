@@ -139,7 +139,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open Obsidian"
+            "value": "Open in Obsidian"
           }
         }
       }
@@ -2674,7 +2674,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "For “Open Obsidian”: the vault’s name and where the folder is inside it. A folder in Obsidian’s iCloud folder tells this by itself."
+            "value": "For “Open in Obsidian”: the vault’s name and where the folder is inside it. A folder in Obsidian’s iCloud folder tells this by itself."
           }
         }
       }

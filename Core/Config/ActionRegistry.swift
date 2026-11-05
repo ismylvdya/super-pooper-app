@@ -29,6 +29,8 @@ enum HapticRole: String, ConfigName {
     case pullArmed
     /// A pull let go loads more.
     case extend
+    /// A long press set an alarm: a little stronger than a tap.
+    case alarmSet
 }
 
 enum ActionMenu: String, Codable, CaseIterable, Sendable {

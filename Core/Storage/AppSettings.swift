@@ -8,7 +8,7 @@ struct AppSettings: Codable, Equatable, Sendable {
         var taskTag: String
         var trashFolder: String
         /// The Obsidian vault the TaskNotes folder belongs to and the folder's path inside it, for
-        /// "Open Obsidian" links (the app itself only sees the chosen folder).
+        /// "Open in Obsidian" links (the app itself only sees the chosen folder).
         var obsidianVault: String
         var obsidianPathPrefix: String
     }

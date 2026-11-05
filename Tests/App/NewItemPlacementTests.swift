@@ -35,7 +35,7 @@ struct NewItemPlacementTests {
         var page = model.newItemPage(NewItemSeed(kind: .task, placement: placement))
         page.name = "New"
 
-        #expect(await model.createOnReturn(from: page) == "New")
+        #expect(await model.create(from: page, unnamed: "Unnamed"))
 
         let plan = model.plan(at: model.clock.now)
         #expect(plan.poolNames.filter(["A", "New", "B"].contains) == ["A", "New", "B"])

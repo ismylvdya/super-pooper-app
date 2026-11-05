@@ -76,7 +76,7 @@ struct NewItemPage: Equatable {
         return (draft, trimmedName.isEmpty ? unnamed : trimmedName)
     }
 
-    /// What Return in the name saves at once: the note under the typed name; nothing for an empty name (Return only
+    /// What Return in the name closes the page with: the note under the typed name; nothing for an empty name (Return only
     /// closes the keyboard) or a name a note cannot take (the title already says why).
     func savedOnReturn(rules: (String) -> NoteNameProblem?) -> (draft: NoteDraft, name: String)? {
         guard !trimmedName.isEmpty, nameProblem(rules) == nil else { return nil }
