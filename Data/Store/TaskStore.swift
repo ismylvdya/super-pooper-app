@@ -115,7 +115,8 @@ protocol TaskOrdering: Sendable {
 
 /// Keeps the store's own look of today in step with the app's.
 protocol DayMirroring: Sendable {
-    func mirror(_ day: DayMirror) async
+    /// Says where each habit's line stands now; nil when nothing was written.
+    func mirror(_ day: DayMirror) async -> [TaskID: TaskDue]?
     /// Today's look in the file, when it was changed elsewhere since this device last saw it; nil otherwise.
     func changedLook() async -> DayLook?
     /// Today's look in the file as it is, when the file is about today: what its lines say about the habits' times.

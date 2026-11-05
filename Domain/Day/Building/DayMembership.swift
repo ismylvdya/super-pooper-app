@@ -18,9 +18,10 @@ struct DayMembership: Sendable {
             || (task.status == .done && task.completedDate == context.today)
     }
 
-    /// Another day: the habits shown in Today that repeat on it, this week's tasks dated that day.
+    /// Another day mirrors the file: what has a line dated that day. This week's tasks dated it, and the habits shown in
+    /// Today whose nearest day it is: one still open today stands on today, not on the days after.
     func isOnOtherDay(_ task: TaskItem) -> Bool {
-        if task.isHabit { return task.isInTodayHabits && comesUp(task, on: context.today) }
+        if task.isHabit { return task.isInTodayHabits && hasLineOnDay(task) }
         guard task.status.isThisWeek, let due = task.due else { return false }
         return context.logicalDay(of: due) == context.today
     }
@@ -40,9 +41,12 @@ struct DayMembership: Sendable {
         return parent.isInTodayHabits && comesUpToday(parent, depth: depth + 1)
     }
 
-    private func comesUp(_ task: TaskItem, on day: LocalDate, depth: Int = 0) -> Bool {
-        guard let parent = parent(of: task, depth: depth) else { return occurrence.occurs(task, on: day) }
-        return parent.isInTodayHabits && comesUp(parent, on: day, depth: depth + 1)
+    /// A repeatable subtask has no line of its own: it goes by its parent's.
+    private func hasLineOnDay(_ task: TaskItem, depth: Int = 0) -> Bool {
+        guard let parent = parent(of: task, depth: depth) else {
+            return task.nextLine.map { context.logicalDay(of: $0) == context.today } ?? false
+        }
+        return parent.isInTodayHabits && hasLineOnDay(parent, depth: depth + 1)
     }
 
     /// Parents of parents are followed up to the number of subtasks there are, so a loop of parents ends.

@@ -197,6 +197,7 @@ actor TaskFileStore: TaskStore {
         var item = file.item(parentName: file.parent.flatMap { snapshot.names[$0] }, marks: snapshot.document.marks(of: file.id))
         let line = snapshot.document.openLine(of: file.id)
         item.isOverdue = line?.isOverdue == true && line?.date == today()
+        item.nextLine = line?.date.map { TaskDue(day: $0, time: line?.time) }
         return item
     }
 

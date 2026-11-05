@@ -17,8 +17,8 @@ enum DayPlanning {
             .build(inputs, context: context)
     }
 
-    /// Today, or another day `offset` days away (swiping on Today): that day's events, reminders and this week's
-    /// tasks dated that day. "Past" is measured from the real now.
+    /// Today, or another day `offset` days away (swiping on Today): that day's events, reminders and what has a line dated
+    /// that day, with no sections. "Past" is measured from the real now.
     static func plan(config: AppConfig, settings: AppSettings, tasks: [TaskItem], events: [CalendarEvent],
                      reminders: [ReminderItem], dayState: DayState, sections: DaySections? = nil, context: DayContext,
                      dayOffset: Int, eventsKnown: Bool) -> DayPlan {
@@ -32,7 +32,7 @@ enum DayPlanning {
         let moves = dayState.day == context.today ? dayState.moves(on: day) : []
         let inputs = DayInputs(tasks: usable(tasks, config: config, context: context), events: events, reminders: reminders,
                                skipped: [], manualOrder: nil, timelineFilter: settings.timeline.shown, isOtherDay: true,
-                               eventsKnown: eventsKnown, timeMoves: moves, sections: sections)
+                               eventsKnown: eventsKnown, timeMoves: moves)
         var result = builder(config: config, settings: settings).build(inputs, context: dayContext)
         result.isToday = false
         return result

@@ -7,6 +7,13 @@ struct PoolSectionContent: Identifiable, Hashable, Sendable {
     let title: String
     let isCustom: Bool
     let items: [DayItem]
+
+    /// A pool with no sections (another day's): its tasks under no heading.
+    static func plain(_ items: [DayItem]) -> [PoolSectionContent] {
+        items.isEmpty ? [] : [PoolSectionContent(id: "plain", title: "", isCustom: false, items: items)]
+    }
+
+    var hasHeader: Bool { !title.isEmpty }
 }
 
 /// The pool split into the day's sections.

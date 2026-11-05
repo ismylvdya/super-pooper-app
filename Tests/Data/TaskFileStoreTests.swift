@@ -426,6 +426,19 @@ struct TaskFileStoreTests {
         #expect(try #require(lines.firstIndex(of: "- [ ] Call")) > lines.firstIndex(of: "## Next actions")!)
     }
 
+    /// The mirror says where each habit's line stands, and the item read back knows it: open today it stands on today,
+    /// closed it goes on to its next day.
+    @Test func aHabitKnowsTheDayOfItsLine() async throws {
+        let store = store()
+        var water = try await store.create(habitDraft(RecurrenceDraft(start: today).rule), named: "Water")
+        let open = await store.mirror(DayMirror(sections: [DayMirror.Section(title: "Day", names: ["Water"])], timed: [:], skipped: []))
+        #expect(open?[water.id]?.day == today)
+        water = try await store.apply([.mark(.done, on: today)], to: water).task
+        let closed = await store.mirror(DayMirror(sections: [], timed: [:], skipped: []))
+        #expect(closed?[water.id]?.day == today.adding(days: 1))
+        #expect(try await store.load().tasks.first { $0.name == "Water" }?.nextLine?.day == today.adding(days: 1))
+    }
+
     // MARK: - Subtasks go with their parent
 
     private func parentAndStore(_ lines: String) async throws -> (TaskFileStore, [TaskItem]) {

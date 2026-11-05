@@ -14,7 +14,7 @@ struct DayInputs: Sendable {
     var routines = HabitRoutines()
     /// Which kinds of entries the timeline shows; hidden timed tasks and habits stay in the pool.
     var timelineFilter = TimelineFilter()
-    /// Another day than today: this week's tasks dated that day and the habits shown in Today that repeat on it.
+    /// Another day than today: only what has a line dated that day (`DayMembership.isOnOtherDay`), with no sections.
     var isOtherDay = false
     /// The calendars are readable and chosen: a link to an event that is not found is a problem.
     var eventsKnown = true

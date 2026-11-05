@@ -66,7 +66,9 @@ struct RepeatableSubtasksTests {
     }
 
     @Test func anotherDayShowsItWhenTheParentComes() throws {
-        let tasks = [parent, subtask()]
+        var dated = parent
+        dated.nextLine = TaskDue(day: LocalDate(TestCalendar.wednesday).adding(days: 2))
+        let tasks = [dated, subtask()]
         let config = try AppConfig.load(bundle: .main)
         let plan = { (offset: Int) in
             DayPlanning.plan(config: config, settings: TestConfig.defaults, tasks: tasks, events: [], reminders: [],

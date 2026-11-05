@@ -5,11 +5,16 @@ struct DayTimes: Sendable {
     let context: DayContext
     /// Blocks moved today (dragged to another time or to the pool, or snoozed).
     var todayTimes = TodayTimes()
+    /// Another day: a habit whose line there has no time waits in that day's pool.
+    var followsLines = false
 
     /// Habits are planned at their reminder times as today has them; other tasks need `due` with a time on today's
     /// logical day, moved as today has it.
     func times(of task: TaskItem) -> [BlockTime] {
-        if task.isHabit { return todayTimes.blocks(of: task) }
+        if task.isHabit {
+            if followsLines, let line = task.nextLine, line.time == nil { return [] }
+            return todayTimes.blocks(of: task)
+        }
         guard let due = task.due, let time = due.time, context.logicalDay(of: due) == context.today else { return [] }
         return todayTimes.blocks(of: task, written: [time])
     }

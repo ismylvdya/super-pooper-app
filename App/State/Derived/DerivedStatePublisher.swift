@@ -91,7 +91,10 @@ final class DerivedStatePublisher {
             }
         }
         let mirror = DayMirror(sections: sections, timed: timed, skipped: day.skippedNames)
-        Task { await mirroring.mirror(mirror) }
+        Task {
+            // A habit closed today has its line on its next day now, and that day's pool shows it.
+            if let lines = await mirroring.mirror(mirror) { tasks.setNextLines(lines) }
+        }
     }
 
     /// Only how things look changed: the widgets read that from the settings themselves.

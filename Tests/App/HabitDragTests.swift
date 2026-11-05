@@ -69,6 +69,8 @@ struct HabitDragTests {
         let (model, clock) = try app()
         await sync(model)
         let tomorrow = context.today.adding(days: 1)
+        let habit = try #require(model.task(named: vitamins))
+        model.parts.tasks.setNextLines([habit.id: TaskDue(day: tomorrow, time: nine)])
         await model.schedule(vitamins, slot: nine, at: at("11:00", daysLater: 1))
         let tomorrowsStart = model.plan(at: clock.now, dayOffset: 1).slot(vitamins).map { LocalTime($0.start, in: PreviewSamples.calendar) }
         #expect(tomorrowsStart == LocalTime("11:00"))

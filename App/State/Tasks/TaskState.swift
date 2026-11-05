@@ -45,6 +45,13 @@ final class TaskState {
         }
     }
 
+    /// Where the habits' lines stand in the file now.
+    func setNextLines(_ lines: [TaskID: TaskDue]) {
+        for index in tasks.indices where tasks[index].isHabit && tasks[index].nextLine != lines[tasks[index].id] {
+            tasks[index].nextLine = lines[tasks[index].id]
+        }
+    }
+
     /// A note the app just wrote: shown at once, and kept over a scan that is still running.
     func written(_ task: TaskItem) {
         writtenDuringSync?.insert(task.id)

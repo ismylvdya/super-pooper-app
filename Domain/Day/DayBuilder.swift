@@ -13,7 +13,7 @@ struct DayBuilder: Sendable {
         let membership = DayMembership(occurrence: occurrence, context: context,
                                        parents: RepeatableSubtasks.parents(in: inputs.tasks))
         let dayProblems = DayProblems(occurrence: occurrence)
-        let times = DayTimes(context: context, todayTimes: TodayTimes(inputs.timeMoves))
+        let times = DayTimes(context: context, todayTimes: TodayTimes(inputs.timeMoves), followsLines: inputs.isOtherDay)
 
         var items: [DayItem] = []
         var problems: [PlanProblem] = []
@@ -43,7 +43,8 @@ struct DayBuilder: Sendable {
         let sorted = SubtaskNesting.nested(inputs.manualOrder.map { sorter.applyingManualOrder($0, to: poolItems, context: context) }
             ?? sorter.sorted(poolItems, context: context))
         let daySections = inputs.sections ?? .defaults(on: context.today, definitions: sections)
-        let arranged = PoolArrangement.arrange(sorted, sections: daySections, definitions: sections)
+        // Sections are headings of Today in the file: another day's pool is one plain list.
+        let arranged = inputs.isOtherDay ? PoolSectionContent.plain(sorted) : PoolArrangement.arrange(sorted, sections: daySections, definitions: sections)
         let pool = arranged.isEmpty ? sorted : arranged.flatMap(\.items)
 
         var timeline = FixedSlots(rules: rules, times: times, overdue: overdue)
@@ -56,7 +57,7 @@ struct DayBuilder: Sendable {
         var plan = DayPlan(today: context.today, now: context.now, pool: pool, timeline: timeline, problems: problems, allDayEvents: allDay)
         plan.focus = context.focus
         plan.sections = arranged
-        plan.worms = daySections.worms
+        plan.worms = inputs.isOtherDay ? [] : daySections.worms
         return plan
     }
 }

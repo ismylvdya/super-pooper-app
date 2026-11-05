@@ -108,10 +108,11 @@ extension TaskFileStore: TaskTrash, DayMirroring, ExternalLinking, TaskBackups, 
     /// Now as the day stands: first what has no section (timed, or not in the plan), then the pool's sections under their
     /// titles, a habit's line for each habit shown; what was kept out of today goes to Soon. Sections with nothing left
     /// are gone. A look changed elsewhere and not taken in yet is not written over: the next sync brings it in.
-    func mirror(_ day: DayMirror) async {
-        try? await location.withRoot { root in
+    /// Says where each habit's line stands now; nil when nothing was written.
+    func mirror(_ day: DayMirror) async -> [TaskID: TaskDue]? {
+        try? await location.withRoot { root -> [TaskID: TaskDue]? in
             var snapshot = try await read(root: root)
-            guard changedLook(in: snapshot) == nil else { return }
+            guard changedLook(in: snapshot) == nil else { return nil }
             let dayOfFile = today()
             let wasOverdue = Set(snapshot.habits.keys.filter { id in
                 let line = snapshot.document.openLine(of: id)
@@ -143,7 +144,7 @@ extension TaskFileStore: TaskTrash, DayMirroring, ExternalLinking, TaskBackups, 
             }
             let inSections = Set(day.sections.flatMap(\.names).map(\.noteName))
             let timedHabits = day.timed.keys.sorted().filter { !inSections.contains($0.noteName) }.compactMap(line)
-            guard let now = document.sections.firstIndex(where: { $0.kind == .now }) else { return }
+            guard let now = document.sections.firstIndex(where: { $0.kind == .now }) else { return nil }
             let loose = document.sections[now].groups.flatMap(\.entries)
             document.sections[now].groups = [TaskDocument.Group(title: nil, entries: loose + timedHabits)] + groups
             let placed = Set((groups.flatMap(\.entries) + timedHabits).compactMap(\.id))
@@ -152,6 +153,11 @@ extension TaskFileStore: TaskTrash, DayMirroring, ExternalLinking, TaskBackups, 
             try write(document, root: root)
             snapshot.document = document
             lookMemory.save(look(of: snapshot))
+            var lines: [TaskID: TaskDue] = [:]
+            for id in snapshot.habits.keys {
+                if let line = document.openLine(of: id), let date = line.date { lines[TaskID(id)] = TaskDue(day: date, time: line.time) }
+            }
+            return lines
         }
     }
 

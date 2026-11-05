@@ -157,7 +157,7 @@ struct SnoozeFlowTests {
             if case .task(let item) = slot.content { return item.id == vitamins }
             return false
         }?.start
-        #expect(tomorrow == at("09:00", daysLater: 1), "tomorrow's block stands at the note's time")
+        #expect(tomorrow == nil, "open today, it stands on today's line and not on tomorrow's timeline")
     }
 
     /// A timed task takes the snooze as its own time: its line, its block and its notification tell the same.

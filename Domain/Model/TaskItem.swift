@@ -40,6 +40,8 @@ struct TaskItem: Identifiable, Hashable, Codable, Sendable {
     var isStarted = false
     /// Undated in Next actions: not among today's tasks. Only a date brings a task into a day.
     var waitsInList = false
+    /// What repeats: the day (and time) its open line stands on in the file, the nearest day it is to be done. Nil = no line.
+    var nextLine: TaskDue?
     /// Its place among the store's lines; a list keeps that order. Nil = by name, after those.
     var storeOrder: Int?
 

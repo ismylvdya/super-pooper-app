@@ -74,14 +74,13 @@ struct PoolBlock: View {
         return layout
     }
 
-    /// Any day's pool takes its own rows (another day's only into another section) and a backlog page's tasks; today's
-    /// the timeline's blocks.
+    /// Today's pool takes its own rows and the timeline's blocks; any day's a backlog page's tasks.
     private func canDrop(_ item: DayItem, from source: TaskDragState.Source) -> Bool {
         switch source {
-        case .pool: true
+        case .pool: plan.isToday
         case .timeline(let slot): plan.isToday && model.canDropInPool(item.id, slot: slot)
         case .backlog: model.canBringFromBacklog(item.id)
-        case .worm: true
+        case .worm: plan.isToday
         case .section, .newItem: false
         }
     }
@@ -90,7 +89,7 @@ struct PoolBlock: View {
         Haptics.play(.drop)
         let day = plan.today
         let isToday = plan.isToday
-        if let section, source.wormMembers.isEmpty { model.moveTask(item.id, toSection: section, poolOrder: order, on: day) }
+        if let section, isToday, source.wormMembers.isEmpty { model.moveTask(item.id, toSection: section, poolOrder: order, on: day) }
         switch source {
         // The pool's own order is today's only.
         case .pool: if isToday && section == nil { model.setManualOrder(order) }
@@ -163,14 +162,16 @@ struct PoolBlock: View {
                 let shown = sections
                 ForEach(shown) { section in
                     let isGhost = drag?.isSectionGhost(section.id) == true
-                    PoolSectionHeader(section: section, isFirst: section.id == shown.first?.id, drag: selection?.isOn == true ? nil : drag, canRename: selection?.isOn != true) {
-                        model.renameSection(section.id, to: $0, on: plan.today)
-                    }
-                        .dropGhost(isGhost)
-                        .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(Self.dropSpace)) } action: { frame in
-                            headerMids[section.id] = frame.midY
-                            headerHeights[section.id] = frame.height
+                    if section.hasHeader {
+                        PoolSectionHeader(section: section, isFirst: section.id == shown.first?.id, drag: selection?.isOn == true ? nil : drag, canRename: selection?.isOn != true) {
+                            model.renameSection(section.id, to: $0, on: plan.today)
                         }
+                            .dropGhost(isGhost)
+                            .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(Self.dropSpace)) } action: { frame in
+                                headerMids[section.id] = frame.midY
+                                headerHeights[section.id] = frame.height
+                            }
+                    }
                     // One plate for a whole routine or worm; each row keeps its own tap and long press. A worm's member drags
                     // the whole worm.
                     ForEach(PoolSegments.make(section.items, worms: plan.worms)) { segment in
@@ -215,7 +216,7 @@ struct PoolBlock: View {
         var remaining = visibleCount
         var heights: [CGFloat] = []
         for section in plan.sections where remaining > 0 {
-            heights.append(headerHeights[section.id] ?? estimate)
+            if section.hasHeader { heights.append(headerHeights[section.id] ?? estimate) }
             heights += section.items.prefix(remaining).map { rowHeights[$0.id] ?? estimate }
             remaining -= min(remaining, section.items.count)
         }
