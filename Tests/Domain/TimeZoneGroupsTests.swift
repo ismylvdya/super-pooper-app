@@ -33,9 +33,10 @@ struct TimeZoneGroupsTests {
         #expect(try group(with: "Asia/Bangkok", at: summer).offsetSeconds == 25200)
     }
 
-    /// Lagos has +1 all year, Belgrade only in winter: picking the row of one never gives the other's summer.
-    @Test func zonesThatPartAtTheNextChangeHaveRowsOfTheirOwn() throws {
-        #expect(try group(with: "Africa/Lagos", at: winter).identifiers.contains("Europe/Belgrade") == false)
+    @Test func eachOffsetHasOneRow() throws {
+        let offsets = TimeZoneGroups.groups(of: TimeZone.knownTimeZoneIdentifiers, priority: priority, at: winter).map(\.offsetSeconds)
+        #expect(Set(offsets).count == offsets.count)
+        #expect(try group(with: "Africa/Lagos", at: winter).identifiers.first == "Europe/Belgrade")
     }
 
     @Test func aTaskKeptInAZoneFollowsItsSummerTime() throws {
