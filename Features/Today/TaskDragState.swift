@@ -200,8 +200,8 @@ final class TaskDragState {
         poolOrder != nil && (draggedID == id || source.wormMembers.containsNoteName(id))
     }
 
-    /// Over the backlog page `list` the dragged task is listed there as a faint copy, unless it is already one of its rows.
-    func isBacklogGhost(_ id: String, on list: String) -> Bool {
+    /// Over the backlog page `list` the dragged task keeps an empty gap there, whether it comes from elsewhere or is one of its rows.
+    func isBacklogLanding(_ id: String, on list: String) -> Bool {
         backlogTarget == list && item?.id == id
     }
 
@@ -211,8 +211,8 @@ final class TaskDragState {
         item?.id == id && source == .backlog(list) && backlogTarget != list && (backlogTarget != nil || poolOrder != nil || hoverMoment != nil)
     }
 
-    /// While its header is dragged over the pool, the section stands faint where it would land.
-    func isSectionGhost(_ id: String) -> Bool {
+    /// While its header is dragged over the pool, the section keeps an empty gap where it would land.
+    func isSectionGap(_ id: String) -> Bool {
         sectionOrder != nil && section == id
     }
 

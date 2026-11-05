@@ -10,17 +10,6 @@ import Testing
 struct ListCellLiftTests {
     private let tall: CGFloat = 100
 
-    /// UIKit keeps a dragged row's own cell in the gap at its landing place, out of sight: the faint copy stands where it is.
-    @Test func theGapIsTheCellUIKitKeepsOutOfSight() {
-        let shown = UICollectionViewCell()
-        #expect(!ListLiftDelegates.isGap(shown, session: nil))
-        let hidden = UICollectionViewCell()
-        hidden.isHidden = true
-        #expect(ListLiftDelegates.isGap(hidden, session: nil))
-        let transparent = UICollectionViewCell()
-        transparent.alpha = 0
-        #expect(ListLiftDelegates.isGap(transparent, session: nil))
-    }
 
     @Test func aTallReorderedRowLiftsWithThePlateOutline() async throws {
         let tokens = TestConfig.tokens

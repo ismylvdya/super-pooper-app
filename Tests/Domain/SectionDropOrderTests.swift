@@ -35,11 +35,11 @@ struct SectionDropOrderTests {
         let delegate = PoolDropDelegate(drag: drag, animation: .default, layout: { PoolDropLayout() }, canDrop: { _, _ in false },
                                         onDrop: { _, _, _, _ in }, onSectionDrop: { _, _ in }, onRefused: { _ in })
         #expect(delegate.accepts())
-        #expect(!drag.isSectionGhost("evening"), "not over the pool yet")
+        #expect(!drag.isSectionGap("evening"), "not over the pool yet")
         #expect(drag.hover(sectionOrder: ["morning", "evening", "day"]))
-        #expect(drag.isSectionGhost("evening") && !drag.isSectionGhost("day"))
+        #expect(drag.isSectionGap("evening") && !drag.isSectionGap("day"))
         drag.end()
-        #expect(drag.section == nil && !drag.isSectionGhost("evening"))
+        #expect(drag.section == nil && !drag.isSectionGap("evening"))
     }
 
 }

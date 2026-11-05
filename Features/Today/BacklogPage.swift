@@ -29,7 +29,7 @@ struct BacklogPage: View {
                 ForEach(items) { item in
                     PoolRow(item: item, isToday: false, isCompact: true, handler: handler, dragSource: .backlog(list.id))
                         .onGeometryChange(for: CGFloat.self) { $0.frame(in: .named(Self.dropSpace)).midY } action: { rowMids[item.id] = $0 }
-                        .dropGhost(drag?.isBacklogGhost(item.id, on: list.id) == true)
+                        .dropGap(drag?.isBacklogLanding(item.id, on: list.id) == true)
                         .closedUp(drag?.isBacklogGap(item.id, on: list.id) == true, gap: tokens.space(.poolRowGap))
                 }
             }
@@ -78,7 +78,7 @@ struct BacklogPage: View {
             let place = Dictionary(order.enumerated().map { ($1, $0) }, uniquingKeysWith: { first, _ in first })
             items.sort { (place[$0.id] ?? .max) < (place[$1.id] ?? .max) }
         }
-        if let dragged = drag?.item, drag?.isBacklogGhost(dragged.id, on: list.id) == true,
+        if let dragged = drag?.item, drag?.isBacklogLanding(dragged.id, on: list.id) == true,
            !tasks.contains(where: { $0.name.isSameNoteName(as: dragged.id) }) {
             items.append(DayItem(listed: dragged.task))
         }

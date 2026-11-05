@@ -76,13 +76,13 @@ struct TaskDragStateTests {
         let drag = TaskDragState()
         let task = DayItem(listed: makeTask("Pay the internet"))
         _ = drag.begin(task, from: .pool)
-        #expect(!drag.isBacklogGhost(task.id, on: "someday"))
+        #expect(!drag.isBacklogLanding(task.id, on: "someday"))
         drag.backlogTarget = "someday"
-        #expect(drag.isBacklogGhost(task.id, on: "someday"))
-        #expect(!drag.isBacklogGhost(task.id, on: "thisWeek"))
+        #expect(drag.isBacklogLanding(task.id, on: "someday"))
+        #expect(!drag.isBacklogLanding(task.id, on: "thisWeek"))
         _ = drag.begin(task, from: .backlog("someday"))
         drag.backlogTarget = "someday"
-        #expect(drag.isBacklogGhost(task.id, on: "someday"), "its own row stands faint where the finger would put it")
+        #expect(drag.isBacklogLanding(task.id, on: "someday"), "its own row keeps an empty gap where the finger would put it")
         drag.end()
         #expect(drag.backlogTarget == nil)
     }
