@@ -7,7 +7,7 @@ import Testing
 @MainActor
 struct TimeZoneChangeTests {
     /// 21:30 UTC on 6 November: 04:30 on the 7th in Jakarta (past the 04:00 boundary), 22:30 on the 6th in Belgrade.
-    private let now = ISO8601.parse("2026-11-06T21:30:00Z") ?? .distantPast
+    private let now = ISO8601DateFormatter().date(from: "2026-11-06T21:30:00Z") ?? .distantPast
 
     private func makeModel(calendar: TravellingCalendar, notifications: NotificationScheduling = SilentNotifications()) throws -> AppModel {
         let tasks = [
@@ -46,13 +46,13 @@ struct TimeZoneChangeTests {
         await model.waitForNotifications()
 
         let call = try #require(await recorder.lastPlanned.first { $0.taskName == "Late call" })
-        #expect(call.fireDate == ISO8601.parse("2026-11-06T22:00:00Z"))
+        #expect(call.fireDate == ISO8601DateFormatter().date(from: "2026-11-06T22:00:00Z"))
     }
 
     // MARK: A flight from Sydney to Istanbul
 
     /// 20:00 UTC on 4 November: 07:00 on the 5th in Sydney (summer time, UTC+11), 23:00 on the 4th in Istanbul (UTC+3).
-    private let beforeTheFlight = ISO8601.parse("2026-11-04T20:00:00Z") ?? .distantPast
+    private let beforeTheFlight = ISO8601DateFormatter().date(from: "2026-11-04T20:00:00Z") ?? .distantPast
 
     private func travelling(_ tasks: [TaskItem], from zone: String, at now: Date,
                             notifications: RecordingNotifications) throws -> (AppModel, TravellingCalendar) {
@@ -73,7 +73,7 @@ struct TimeZoneChangeTests {
         let (model, calendar) = try travelling([water], from: "Australia/Sydney", at: beforeTheFlight, notifications: recorder)
         await model.parts.derived.publish()
         await model.waitForNotifications()
-        #expect(try await planned("Water", by: recorder).fireDate == ISO8601.parse("2026-11-04T22:00:00Z"))
+        #expect(try await planned("Water", by: recorder).fireDate == ISO8601DateFormatter().date(from: "2026-11-04T22:00:00Z"))
 
         calendar.fly(to: "Europe/Istanbul")
         await model.timeDidChange()
@@ -81,7 +81,7 @@ struct TimeZoneChangeTests {
 
         let ring = try await planned("Water", by: recorder)
         #expect(!ring.isAbsolute)
-        #expect(ring.fireDate == ISO8601.parse("2026-11-05T06:00:00Z"))
+        #expect(ring.fireDate == ISO8601DateFormatter().date(from: "2026-11-05T06:00:00Z"))
     }
 
     /// 09:00 Sydney time on the 5th is 01:00 in Istanbul, the night of the 4th's logical day: the timeline puts it there
@@ -89,9 +89,9 @@ struct TimeZoneChangeTests {
     @Test func aTaskWithAZoneRingsAtItsMomentAndStandsThereOnTheTimeline() async throws {
         let recorder = RecordingNotifications()
         let call = makeTask("Board call") { $0.due = TaskDue("2026-11-05T09:00"); $0.timeZone = "Australia/Sydney" }
-        let evening = ISO8601.parse("2026-11-04T15:00:00Z") ?? .distantPast
+        let evening = ISO8601DateFormatter().date(from: "2026-11-04T15:00:00Z") ?? .distantPast
         let (model, calendar) = try travelling([call], from: "Europe/Istanbul", at: evening, notifications: recorder)
-        let moment = ISO8601.parse("2026-11-04T22:00:00Z")
+        let moment = ISO8601DateFormatter().date(from: "2026-11-04T22:00:00Z")
         await model.parts.derived.publish()
         await model.waitForNotifications()
         let slot = try #require(model.plan(at: evening).slot("Board call"))
@@ -118,7 +118,7 @@ struct TimeZoneChangeTests {
         let mum = makeHabit("Call mum", status: .habit) { $0.due = TaskDue("2026-09-01T09:00"); $0.timeZone = "Australia/Sydney" }
         let water = makeHabit("Water", status: .habit) { $0.reminderTimes = [LocalTime("09:00")] }
         let (model, calendar) = try travelling([mum, water], from: "Australia/Sydney", at: beforeTheFlight, notifications: recorder)
-        let moment = ISO8601.parse("2026-11-04T22:00:00Z")
+        let moment = ISO8601DateFormatter().date(from: "2026-11-04T22:00:00Z")
         await model.parts.derived.publish()
         await model.waitForNotifications()
         #expect(try await planned("Call mum", by: recorder).fireDate == moment)
@@ -130,6 +130,6 @@ struct TimeZoneChangeTests {
         let ring = try await planned("Call mum", by: recorder)
         #expect(ring.isAbsolute)
         #expect(ring.fireDate == moment)
-        #expect(try await planned("Water", by: recorder).fireDate == ISO8601.parse("2026-11-05T06:00:00Z"))
+        #expect(try await planned("Water", by: recorder).fireDate == ISO8601DateFormatter().date(from: "2026-11-05T06:00:00Z"))
     }
 }

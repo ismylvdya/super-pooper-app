@@ -41,7 +41,7 @@ struct TestVaultRenderer {
         return result
     }
 
-    /// Copies `source` to `destination`, rendering every `.md` file.
+    /// Copies `source` to `destination`, rendering every `.md` and `.json` file.
     func renderVault(from source: URL, to destination: URL) throws {
         let manager = FileManager.default
         if manager.fileExists(atPath: destination.path) { try manager.removeItem(at: destination) }
@@ -52,7 +52,7 @@ struct TestVaultRenderer {
             let target = destination.appendingPathComponent(relative)
             if (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true {
                 try manager.createDirectory(at: target, withIntermediateDirectories: true)
-            } else if url.pathExtension == "md" {
+            } else if ["md", "json"].contains(url.pathExtension) {
                 let text = try String(contentsOf: url, encoding: .utf8)
                 try render(text).write(to: target, atomically: true, encoding: .utf8)
             } else {

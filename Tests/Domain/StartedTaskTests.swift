@@ -35,8 +35,4 @@ struct StartedTaskTests {
         #expect(TestConfig.defaults.pool.startedFillLength == 0.33)
     }
 
-    @Test func theStatusIsTaskNotesInProgress() {
-        #expect(TestConfig.mapping.raw(.inProgress) == "in-progress")
-        #expect(TestConfig.mapping.status(fromRaw: "in-progress") == .inProgress)
-    }
 }

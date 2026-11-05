@@ -108,11 +108,6 @@ final class AppModel {
 
     // MARK: - Settings
 
-    /// Takes an old TaskNotes folder's tasks and habits into the tasks file; the folder only gets read. How many came.
-    func importTaskNotes(from folder: URL) async -> Int? {
-        await parts.sync.importTaskNotes(from: folder)
-    }
-
     func updateSettings(_ change: (inout AppSettings) -> Void) { parts.settings.update(change) }
 
     /// A change still waiting is written and followed now (the app goes to the background).

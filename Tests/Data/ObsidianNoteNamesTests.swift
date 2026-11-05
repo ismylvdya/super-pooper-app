@@ -3,7 +3,7 @@ import Testing
 
 /// Names Obsidian can give a note file, and what is wrong with the others.
 struct NoteNameRulesTests {
-    private let names = ObsidianNoteNames(rules: TestConfig.mapping.obsidian.noteNames)
+    private let names = ObsidianNoteNames(rules: TestConfig.obsidian.noteNames)
 
     @Test func ordinaryNamesAreValid() {
         #expect(names.isValid("Позвонить в банк 🏦"))

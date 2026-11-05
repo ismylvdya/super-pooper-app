@@ -26,14 +26,4 @@ struct WrittenDayTests {
         #expect(HabitHistory(task: habit, days: kiritimati).start(today: LocalDate("2026-10-25")) == LocalDate("2026-10-21"))
     }
 
-    /// The written clock, whatever the offset after it and whatever zone the phone reads it in.
-    @Test func theReaderKeepsTheWrittenDateAndTime() throws {
-        let text = "---\ntags:\n  - t\nstatus: habit\ndate_created: 2026-10-21T22:30:44.123+02:00\n---\n"
-        for zone in ["Pacific/Kiritimati", "America/New_York"] {
-            let reader = TaskNoteReader(mapping: TestConfig.mapping, taskTag: "t", calendar: TestCalendar.calendar(in: zone))
-            let task = reader.task(from: try FrontmatterDocument(text: text), name: "Habit", relativePath: "Habit.md")
-            #expect(task.created == TaskDue("2026-10-21T22:30"))
-            #expect(task.dateCreated == ISO8601.parse("2026-10-21T20:30:44.123Z"))
-        }
-    }
 }

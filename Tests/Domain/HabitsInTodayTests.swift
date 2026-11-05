@@ -34,12 +34,6 @@ struct HabitsInTodayTests {
         #expect(planned.map(\.taskName) == ["Hidden"])
     }
 
-    @Test func notesWithoutTheKeyStayVisible() throws {
-        let reader = TaskNoteReader(mapping: TestConfig.mapping, taskTag: "t", calendar: TestCalendar.calendar)
-        let note = reader.task(from: try FrontmatterDocument(text: "---\ntags: [t]\nstatus: habit\n---\n"), name: "Old", relativePath: "Old.md")
-        #expect(note.habit.showInToday)
-    }
-
     // MARK: - Archive
 
     @Test func anArchivedHabitLeavesTheDayAndTheNotifications() {

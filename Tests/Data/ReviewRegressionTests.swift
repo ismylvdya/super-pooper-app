@@ -5,61 +5,6 @@ import Testing
 /// Regressions from the code review: concurrent edits, odd files and name collisions.
 @Suite("Review regressions")
 struct ReviewRegressionTests {
-    /// The phone's copy is stale (scanned before the Mac marked the 18th); marking the 21st must
-    /// keep the 18th that is in the file now.
-    @Test func markingAppliesToTheLatestFileNotTheStaleCopy() async throws {
-        let note = try await SandboxNote("Медитация 🧘")
-        let original = try note.text()
-        #expect(!original.contains("2026-10-18"))
-        let onMac = try original.replacingOnce("complete_instances:\n", with: "complete_instances:\n  - 2026-10-18\n")
-        try note.sandbox.write(onMac, to: note.task.name)
-        try await note.mark(.done)
-        let instances = note.task.marks.keys.map(\.isoString)
-        #expect(instances.contains("2026-10-18"))
-        #expect(instances.contains("2026-10-21"))
-    }
-
-    @Test func entriesTheAppCannotReadSurviveAMark() async throws {
-        let sandbox = try VaultSandbox.make()
-        let text = "---\ntags:\n  - 🔫делишка\nstatus: half_year\nrecurrence: DTSTART:20260901;FREQ=DAILY\n"
-            + "complete_instances:\n  - not-a-date\n  - 2026-10-19\ndate_modified: 2026-10-20T09:12:44.123+02:00\n---\n"
-        try sandbox.write(text, to: "Странная привычка")
-        let note = try await SandboxNote("Странная привычка", sandbox: sandbox)
-        try await note.mark(.done)
-        #expect(try note.text().contains("  - not-a-date\n  - 2026-10-19\n  - 2026-10-21\n"))
-    }
-
-    @Test func editingTheBodyOfANoteWithoutTrailingNewlineKeepsItValid() async throws {
-        let sandbox = try VaultSandbox.make()
-        try sandbox.write("---\ntags:\n  - 🔫делишка\nstatus: this_week\n---", to: "Без перевода строки")
-        let note = try await SandboxNote("Без перевода строки", sandbox: sandbox)
-        _ = try await note.repository.setText("Hello", of: note.task)
-        let text = try note.text()
-        #expect(text.hasSuffix("\n---\nHello"))
-        #expect(throws: Never.self) { try FrontmatterDocument(text: text) }
-    }
-
-    @Test func renameSurvivesADependentThatVanished() async throws {
-        let sandbox = try VaultSandbox.make()
-        let repository = sandbox.repository()
-        let tasks = try await repository.load().tasks
-        let screwdriver = try #require(tasks.first { $0.name == "Найти отвёртку" })
-        var ghost = try #require(tasks.first { $0.name == "Собрать шкаф" })
-        ghost.id = TaskID(relativePath: "TaskNotes/Tasks/Нет такого файла.md")
-        let renamed = try await repository.rename(screwdriver, to: "Найти отвёртку 2", dependents: [ghost])
-        #expect(renamed.name == "Найти отвёртку 2")
-        #expect(sandbox.exists("Найти отвёртку 2"))
-    }
-
-    @Test func anEvictedFileStillTakesItsName() async throws {
-        let sandbox = try VaultSandbox.make()
-        try "".write(to: sandbox.tasksFolder.appendingPathComponent(".Занято облаком.md.icloud"), atomically: true, encoding: .utf8)
-        let repository = sandbox.repository()
-        let batteries = try #require(try await repository.load().tasks.first { $0.name == "Купить батарейки 🔋" })
-        await #expect(throws: TaskStoreError.nameTaken("Занято облаком")) {
-            _ = try await repository.rename(batteries, to: "Занято облаком", dependents: [])
-        }
-    }
 }
 
 /// Times between midnight and the day boundary belong to the end of the logical day.

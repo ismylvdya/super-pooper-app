@@ -1,0 +1,21 @@
+{
+  "feel" : "neutral",
+  "id" : "54a5d31b",
+  "isArchived" : false,
+  "isHighPriority" : false,
+  "name" : "Утро — зарядка 🤸",
+  "note" : "",
+  "options" : {
+    "harmful" : false,
+    "repeatable" : false,
+    "showInToday" : true,
+    "timeOfDay" : "morning",
+    "twiceADay" : false,
+    "twiceCountsDouble" : false
+  },
+  "recurrence" : "DTSTART:{{compact:-30}};FREQ=DAILY",
+  "reminderTimes" : [
+
+  ],
+  "timeEstimate" : 15
+}

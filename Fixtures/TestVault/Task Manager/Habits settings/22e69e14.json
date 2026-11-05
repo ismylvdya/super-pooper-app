@@ -1,0 +1,23 @@
+{
+  "due" : {
+    "day" : "{{date:-28}}"
+  },
+  "feel" : "neutral",
+  "id" : "22e69e14",
+  "isArchived" : false,
+  "isHighPriority" : false,
+  "name" : "Стирка 🧺",
+  "note" : "",
+  "options" : {
+    "harmful" : false,
+    "repeatable" : false,
+    "showInToday" : true,
+    "twiceADay" : false,
+    "twiceCountsDouble" : false
+  },
+  "recurrence" : "DTSTART:{{compact:-28}};FREQ=WEEKLY;BYDAY=SA",
+  "reminderTimes" : [
+
+  ],
+  "timeEstimate" : 60
+}

@@ -92,18 +92,6 @@ final class SyncService: SettingsObserver {
         await sync(announce: false)
     }
 
-    func importTaskNotes(from folder: URL) async -> Int? {
-        guard let read = services.readTaskNotes, let importer = services.importer else { return nil }
-        do {
-            let count = try await importer.importItems(try await read(folder))
-            await sync(announce: true)
-            return count
-        } catch {
-            appEvents.send(.failure(AppFailure(error)))
-            return nil
-        }
-    }
-
     func selectVault(_ url: URL) async {
         SyncLog.logger.info("vault selected: \(url.path, privacy: .public)")
         do {

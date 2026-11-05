@@ -26,7 +26,7 @@ enum TestPaths {
 
 /// The real configs from `Resources/Config`, so tests follow whatever the app ships with.
 enum TestConfig {
-    static let mapping = decode(FieldMapping.self, "field-mapping.json")
+    static let obsidian = decode(ObsidianConventions.self, "obsidian.json")
     static let rules = decode(RulesConfig.self, "rules.json")
     static let sort = decode(SortConfig.self, "sort.json")
     static let defaults = decode(AppSettings.self, "defaults.json")

@@ -21,7 +21,7 @@ struct TaskFileStoreTests {
                                     clock: { Date() }, calendar: FixedCalendar(current: TestCalendar.calendar))
         let counter = Counter()
         return TaskFileStore(location: FixedVaultLocation(url: folder), fileSystem: fileSystem, ubiquity: FakeUbiquityService(), format: format,
-                             obsidian: TestConfig.mapping.obsidian, backups: backups, rules: TestConfig.rules.vault,
+                             obsidian: TestConfig.obsidian, backups: backups, rules: TestConfig.rules.vault,
                              vaultSettings: { TestConfig.defaults.vault }, today: { day },
                              lookMemory: JSONDayLookMemory(store: JSONFileStore(directory: folder.appendingPathComponent("Memory"))),
                              makeID: { counter.next() })
@@ -193,21 +193,6 @@ struct TaskFileStoreTests {
         let tasks = try await store.load().tasks
         #expect(tasks.first?.name == "By hand" && tasks.first?.id != .unsaved)
         #expect(try text().contains("## Ideas\nfree text"))
-    }
-
-    @Test func importTakesTasksHabitsAndDoneOnceEach() async throws {
-        let store = store()
-        var habit = TaskItem(id: .unsaved, name: "Run", status: .habit)
-        habit.marks = [today: .done]
-        let items = [ImportedItem(item: TaskItem(id: .unsaved, name: "Open", status: .someday), text: "words", isFiled: false),
-                     ImportedItem(item: TaskItem(id: .unsaved, name: "Finished", status: .done), text: "", isFiled: true),
-                     ImportedItem(item: habit, text: "", isFiled: false)]
-        #expect(try await store.importItems(items) == 3)
-        #expect(try await store.importItems(items) == 0, "a name it has stays")
-        let loaded = try await store.load().tasks
-        #expect(loaded.first { $0.name == "Open" }?.status == .someday)
-        #expect(loaded.first { $0.name == "Run" }?.marks[today] == .done)
-        #expect(try await store.filedTasks().map(\.name) == ["Finished"])
     }
 
     /// Lines moved by hand between Now's sections, or kept out to Soon, come back as news once; the app's own look does not.

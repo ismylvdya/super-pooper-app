@@ -1,0 +1,24 @@
+{
+  "due" : {
+    "day" : "{{date:-30}}",
+    "time" : "14:00"
+  },
+  "feel" : "neutral",
+  "id" : "8bb73271",
+  "isArchived" : false,
+  "isHighPriority" : false,
+  "name" : "Прогулка 🚶",
+  "note" : "",
+  "options" : {
+    "harmful" : false,
+    "repeatable" : false,
+    "showInToday" : true,
+    "twiceADay" : false,
+    "twiceCountsDouble" : false
+  },
+  "recurrence" : "DTSTART:{{compact:-30}}T140000Z;FREQ=DAILY",
+  "reminderTimes" : [
+
+  ],
+  "timeEstimate" : 15
+}

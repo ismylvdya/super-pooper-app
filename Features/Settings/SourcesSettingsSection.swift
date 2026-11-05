@@ -6,17 +6,12 @@ struct SourcesSettingsSection: View {
     @Environment(\.icons) private var icons
     @Environment(\.tokens) private var tokens
     @Environment(\.openURL) private var openURL
-    /// One picker for the two buttons: a view shows only one `fileImporter` of those on it and around it.
-    private enum FolderChoice { case vault, taskNotes }
     @State private var isPicking = false
-    @State private var choice = FolderChoice.vault
-    @State private var isImporting = false
-    @State private var imported: Int?
 
     var body: some View {
         PlateSection(header: "settings.sources", hint: "settings.sources.hint") {
             PlateRow(icon: .vault, title: "settings.vault", info: "info.settings.vault") {
-                Button(model.vaultName ?? L10n.string("settings.vault.choose")) { pick(.vault) }
+                Button(model.vaultName ?? L10n.string("settings.vault.choose")) { isPicking = true }
                     .lineLimit(1)
             }
             if model.chosenFolder.isWholeVault {
@@ -25,17 +20,6 @@ struct SourcesSettingsSection: View {
                     .foregroundStyle(tokens.color(.warning))
             }
             ObsidianLinkRows(place: model.chosenFolder.obsidianPlace)
-            PlateRow(icon: .vault, title: "settings.import", info: "info.settings.import") {
-                if isImporting {
-                    ProgressView()
-                } else {
-                    Button("settings.import.choose") { pick(.taskNotes) }
-                        .accessibilityIdentifier("settings.import")
-                }
-            }
-            if let imported {
-                Text(L10n.format("settings.import.done", imported)).secondaryText(.hint)
-            }
             SourceListRows()
             accessRow(.calendars, "settings.access.calendar", "info.settings.access.calendar", model.access.calendars) {
                 await model.requestCalendarAccess()
@@ -49,24 +33,7 @@ struct SourcesSettingsSection: View {
         }
         .fileImporter(isPresented: $isPicking, allowedContentTypes: [.folder]) { result in
             guard case .success(let url) = result else { return }
-            switch choice {
-            case .vault: Task { await model.selectVault(url) }
-            case .taskNotes: runImport(from: url)
-            }
-        }
-    }
-
-    private func pick(_ folder: FolderChoice) {
-        choice = folder
-        isPicking = true
-    }
-
-    private func runImport(from url: URL) {
-        isImporting = true
-        imported = nil
-        Task {
-            imported = await model.importTaskNotes(from: url)
-            isImporting = false
+            Task { await model.selectVault(url) }
         }
     }
 

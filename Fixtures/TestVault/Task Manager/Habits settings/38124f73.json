@@ -1,0 +1,20 @@
+{
+  "feel" : "neutral",
+  "id" : "38124f73",
+  "isArchived" : false,
+  "isHighPriority" : false,
+  "name" : "Медитация 🧘",
+  "note" : "",
+  "options" : {
+    "harmful" : false,
+    "repeatable" : false,
+    "showInToday" : true,
+    "twiceADay" : false,
+    "twiceCountsDouble" : false
+  },
+  "recurrence" : "DTSTART:{{compact:-30}};FREQ=DAILY",
+  "reminderTimes" : [
+
+  ],
+  "timeEstimate" : 15
+}

@@ -1,0 +1,21 @@
+{
+  "feel" : "neutral",
+  "id" : "81c57e22",
+  "isArchived" : false,
+  "isHighPriority" : false,
+  "name" : "Утро — душ 🚿",
+  "note" : "",
+  "options" : {
+    "harmful" : false,
+    "repeatable" : false,
+    "showInToday" : true,
+    "timeOfDay" : "morning",
+    "twiceADay" : false,
+    "twiceCountsDouble" : false
+  },
+  "recurrence" : "DTSTART:{{compact:-30}};FREQ=DAILY",
+  "reminderTimes" : [
+
+  ],
+  "timeEstimate" : 15
+}

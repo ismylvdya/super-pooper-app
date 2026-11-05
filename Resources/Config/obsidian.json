@@ -1,0 +1,18 @@
+{
+  "noteExtension": "md",
+  "configFolder": ".obsidian",
+  "vaultsFolder": "iCloud~md~obsidian/Documents",
+  "openURL": {
+    "scheme": "obsidian",
+    "action": "open",
+    "vaultParameter": "vault",
+    "fileParameter": "file",
+    "lineAction": "superpooper-line",
+    "lineParameter": "line",
+    "nameParameter": "name"
+  },
+  "noteNames": {
+    "forbiddenCharacters": "/\\:*?\"<>|#^[]",
+    "maxLength": 200
+  }
+}

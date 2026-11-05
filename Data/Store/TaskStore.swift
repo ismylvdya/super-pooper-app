@@ -2,7 +2,6 @@ import Foundation
 
 /// A file-level problem found while loading the tasks.
 enum FileProblem: Hashable, Sendable {
-    case brokenYAML(file: String, error: FrontmatterError)
     case notDownloaded(file: String)
     case unreadable(file: String, reason: String)
     case tasksFolderMissing(String)
@@ -131,15 +130,3 @@ protocol DayLookMemory: Sendable {
     func save(_ look: DayLook)
 }
 
-/// An item read elsewhere, to be taken into the store.
-struct ImportedItem: Sendable {
-    let item: TaskItem
-    let text: String
-    /// Put away as done.
-    let isFiled: Bool
-}
-
-/// Takes in items from elsewhere; a name it already has is left as it is. Returns how many it took.
-protocol TaskImporting: Sendable {
-    func importItems(_ items: [ImportedItem]) async throws -> Int
-}

@@ -14,11 +14,11 @@ enum PreviewModel {
                      delay: Delay = SleepDelay(),
                      signature: AppSignatureReading = FixedSignature(date: nil),
                      appEvents: AppEventSink? = nil) -> (model: AppModel, router: Router, config: AppConfig, banners: BannerCenter)? {
-        guard let config = try? AppConfig.load(), let mapping = try? FieldMapping.load() else { return nil }
+        guard let config = try? AppConfig.load(), let obsidian = try? ObsidianConventions.load() else { return nil }
         let store = JSONFileStore(directory: FileManager.default.temporaryDirectory
             .appendingPathComponent("SuperPooperPreview-\(UUID().uuidString)"))
         let settingsStore = SettingsStore(store: store, defaults: config.defaultSettings)
-        let memory = InMemoryTaskStore(tasks: tasks, names: ObsidianNoteNames(rules: mapping.obsidian.noteNames))
+        let memory = InMemoryTaskStore(tasks: tasks, names: ObsidianNoteNames(rules: obsidian.noteNames))
         let services = AppServices(
             vault: FixedVaultLocation(url: store.directory), tasks: memory,
             trash: memory,

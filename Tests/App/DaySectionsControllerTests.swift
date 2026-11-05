@@ -73,16 +73,4 @@ struct DaySectionsControllerTests {
         #expect(model.sections(on: today.adding(days: 1)).section(of: "Позвонить в банк") == "morning")
     }
 
-    @Test func pastDaysAreDroppedWhenTheControllerStarts() throws {
-        let directory = VaultSandbox.baseFolder.appendingPathComponent("Sections-\(UUID().uuidString)", isDirectory: true)
-        defer { try? FileManager.default.removeItem(at: directory) }
-        let store = JSONDaySectionStore(store: JSONFileStore(directory: directory))
-        let (model, _) = try makeModel(tasks)
-        let today = model.context().today
-        let definitions = TestConfig.rules.pool.defaultSections
-        try store.save(DaySections.defaults(on: today.adding(days: -1), definitions: definitions))
-        try store.save(DaySections.defaults(on: today, definitions: definitions))
-        _ = DaySectionsController(store: store, day: model.parts.day, definitions: definitions)
-        #expect(store.snapshots().map(\.day) == [today])
-    }
 }

@@ -5,7 +5,7 @@ import Testing
 /// between Task and Habit loses neither the name nor what was set for each kind.
 struct NewItemPageTests {
     private let unnamed = "Unnamed"
-    private let names = ObsidianNoteNames(rules: TestConfig.mapping.obsidian.noteNames)
+    private let names = ObsidianNoteNames(rules: TestConfig.obsidian.noteNames)
     private let habitDraft = NoteDraft.newHabit(startingOn: LocalDate("2026-11-04"), showInToday: true, color: "#000000")
 
     private func taskPage() -> NewItemPage {
@@ -89,7 +89,7 @@ struct NewItemPageTests {
 
 /// A date typed into a new task's name is offered in blue; a tap on it sets the date and takes its words out.
 struct NewItemDateSuggestionTests {
-    private let names = ObsidianNoteNames(rules: TestConfig.mapping.obsidian.noteNames)
+    private let names = ObsidianNoteNames(rules: TestConfig.obsidian.noteNames)
     private let detector = DateDetector(grammar: TestConfig.dateGrammar)
     private let wednesday = TestCalendar.context("2026-11-04", "11:30")
 

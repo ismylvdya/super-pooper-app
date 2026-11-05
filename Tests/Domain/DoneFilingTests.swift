@@ -13,13 +13,4 @@ struct DoneFilingTests {
         #expect(DoneFiling.due([yesterday, undated, doneToday, open, habit]).map(\.name) == ["Yesterday", "Undated", "Today"])
     }
 
-    /// The note moves next to the tasks folder; a name taken there gets a number.
-    @Test func theNoteMovesToTheDoneFolder() async throws {
-        let first = try await SandboxNote("Купить молоко")
-        _ = try await first.repository.fileAway(first.task)
-        let done = first.sandbox.vault.appendingPathComponent("TaskNotes/Done")
-        #expect(FileManager.default.fileExists(atPath: done.appendingPathComponent("Купить молоко.md").path))
-        #expect(try await first.repository.load().tasks.contains { $0.name == "Купить молоко" } == false)
-        #expect(try await first.repository.filedTasks().map(\.name) == ["Купить молоко"])
-    }
 }

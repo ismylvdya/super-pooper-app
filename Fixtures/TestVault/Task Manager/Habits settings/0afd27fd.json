@@ -1,0 +1,19 @@
+{
+  "feel" : "neutral",
+  "id" : "0afd27fd",
+  "isArchived" : false,
+  "isHighPriority" : false,
+  "name" : "Неизвестное правило",
+  "note" : "",
+  "options" : {
+    "harmful" : false,
+    "repeatable" : false,
+    "showInToday" : true,
+    "twiceADay" : false,
+    "twiceCountsDouble" : false
+  },
+  "reminderTimes" : [
+
+  ],
+  "timeEstimate" : 2
+}

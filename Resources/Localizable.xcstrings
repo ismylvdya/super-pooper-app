@@ -7115,50 +7115,6 @@
         }
       }
     },
-    "settings.import": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "From TaskNotes"
-          }
-        }
-      }
-    },
-    "settings.import.choose": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Import"
-          }
-        }
-      }
-    },
-    "info.settings.import": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pick your old TaskNotes folder: its tasks, habits and history are added to the tasks file. The folder itself is only read and stays as it is; what the file already has by name is skipped."
-          }
-        }
-      }
-    },
-    "settings.import.done": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Imported %lld items."
-          }
-        }
-      }
-    },
     "settings.pool.highColor": {
       "extractionState": "manual",
       "localizations": {

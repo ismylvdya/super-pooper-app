@@ -1,0 +1,20 @@
+{
+  "feel" : "neutral",
+  "id" : "62eb9e75",
+  "isArchived" : false,
+  "isHighPriority" : false,
+  "name" : "Полить цветы 🌱",
+  "note" : "",
+  "options" : {
+    "harmful" : false,
+    "repeatable" : false,
+    "showInToday" : true,
+    "twiceADay" : false,
+    "twiceCountsDouble" : false
+  },
+  "recurrence" : "DTSTART:{{compact:-6}};FREQ=DAILY;INTERVAL=3",
+  "reminderTimes" : [
+
+  ],
+  "timeEstimate" : 2
+}

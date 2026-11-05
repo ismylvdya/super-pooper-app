@@ -45,19 +45,4 @@ struct TimeZoneMatrixTests {
         #expect(planned.map { clock($0.fireDate, in: context) } == ["16:00"])
         #expect(planned.map(\.day) == [LocalDate("2026-10-21")])
     }
-
-    /// Read and written on a phone in that zone: the times in the note stay exactly as written, the stamp takes the zone.
-    @Test(arguments: zones)
-    func notesReadAndWriteTheSameClockTimes(zone: String) async throws {
-        let calendar = TestCalendar.calendar(in: zone)
-        let note = try await SandboxNote("Позвонить в банк", calendar: FixedCalendar(current: calendar))
-        try await note.apply([.due(TaskDue("2026-11-06T09:00"))])
-        #expect(try note.text().contains("due: 2026-11-06T09:00\n"))
-        #expect(try await note.reload().due == TaskDue("2026-11-06T09:00"))
-        let offset = ISO8601.formatWithMilliseconds(note.sandbox.now, timeZone: calendar.timeZone).suffix(6)
-        let stamp = try #require(try note.text().split(separator: "\n").first { $0.hasPrefix("date_modified: ") })
-        #expect(stamp.hasSuffix(offset))
-        // An offset as TaskNotes writes it, `+00:00` at UTC+0 too, never `Z`.
-        #expect(stamp.suffix(6).wholeMatch(of: #/[+-]\d\d:\d\d/#) != nil)
-    }
 }

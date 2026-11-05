@@ -18,7 +18,7 @@ final class AppContainer {
     /// The single instance shared by the SwiftUI app and the UIKit delegate.
     static let shared: Result<AppContainer, ConfigError> = {
         do {
-            return .success(try AppContainer(config: AppConfig.load(), mapping: FieldMapping.load(), format: TaskFileFormat.load(), launch: .current()))
+            return .success(try AppContainer(config: AppConfig.load(), obsidian: ObsidianConventions.load(), format: TaskFileFormat.load(), launch: .current()))
         } catch let error as ConfigError {
             return .failure(error)
         } catch {
@@ -34,7 +34,7 @@ final class AppContainer {
     }
     #endif
 
-    init(config: AppConfig, mapping: FieldMapping, format: TaskFileFormat, launch: LaunchOptions) {
+    init(config: AppConfig, obsidian: ObsidianConventions, format: TaskFileFormat, launch: LaunchOptions) {
         self.config = config
         self.format = format
         self.launch = launch
@@ -58,7 +58,7 @@ final class AppContainer {
                                     fileSystem: fileSystem, clock: { clock.now }, calendar: calendar)
         let boundary = { @Sendable in settingsStore.load().day }
         let tasks = TaskFileStore(location: vaultLocation, fileSystem: fileSystem, ubiquity: ICloudUbiquityService(),
-                                  format: format, obsidian: mapping.obsidian, backups: backups, rules: config.rules.vault,
+                                  format: format, obsidian: obsidian, backups: backups, rules: config.rules.vault,
                                   vaultSettings: { settingsStore.load().vault }, today: {
             let day = boundary()
             return DayContext(now: clock.now, calendar: calendar.current, boundary: day.boundary, energyHour: day.energyHour).today
@@ -76,11 +76,7 @@ final class AppContainer {
             vault: vaultLocation, tasks: tasks,
             trash: tasks,
             versions: nil, links: tasks, backups: tasks, folder: tasks,
-            mirroring: tasks, importer: tasks,
-            readTaskNotes: { [rules = config.rules.vault] folder in
-                try await TaskNotesImport.items(from: folder, mapping: mapping, calendar: calendar, rules: rules, backups: backups, clock: clock,
-                                                vault: settingsStore.load().vault)
-            },
+            mirroring: tasks,
             settingsNote: VaultSettingsFile(location: vaultLocation, fileSystem: fileSystem, fileName: config.rules.vault.settingsFile),
             calendars: EventKitCalendarRepository(eventKit: eventKit),
             reminders: EventKitRemindersRepository(eventKit: eventKit, calendar: calendar),
@@ -151,11 +147,6 @@ final class AppContainer {
         }
         if launch.provisionalNotifications {
             _ = try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .provisional])
-        }
-        // The test vault is written in the old format: the first launch on it imports it.
-        if let root = launch.vaultURL(), !FileManager.default.fileExists(atPath: root.appendingPathComponent(format.folder).path) {
-            try? FileManager.default.createDirectory(at: root.appendingPathComponent(format.folder), withIntermediateDirectories: true)
-            _ = await model.importTaskNotes(from: root)
         }
         #endif
         await model.sync(announce: false)
