@@ -1,5 +1,5 @@
 import SwiftUI
-
+import UIKit
 /// The icon of the button to the lists, picked by name from `lists.json` → `icons`; the row shows the one picked.
 struct ListsSettingsSection: View {
     @Environment(AppModel.self) private var model
@@ -21,6 +21,33 @@ struct ListsSettingsSection: View {
                 .labelsHidden()
                 .accessibilityIdentifier("settings.listsIcon")
             }
+            ForEach(TaskListIcons.editable, id: \.name) { list in
+                ListSymbolRow(title: LocalizedStringKey(list.title), key: list.name.rawValue)
+            }
+        }
+    }
+}
+
+/// A list's icon, by the name of an SF Symbol; empty is the app's own. A name that is no symbol shows in red and changes nothing.
+private struct ListSymbolRow: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.tokens) private var tokens
+    let title: LocalizedStringKey
+    let key: String
+
+    var body: some View {
+        let text = model.settings.lists.symbols[key] ?? ""
+        let isValid = text.isEmpty || UIImage(systemName: text) != nil
+        PlateRow(icon: nil, title: title) {
+            TextField("settings.tabBar.placeholder", text: Binding(get: { text }, set: { value in
+                model.updateSettings { $0.lists.symbols[key] = value.isEmpty ? nil : value }
+            }))
+            .textInputAutocapitalization(.never)
+            .autocorrectionDisabled()
+            .multilineTextAlignment(.trailing)
+            .foregroundStyle(tokens.color(isValid ? .secondaryText : .error))
+            .accessibilityIdentifier("settings.lists.symbol.\(key)")
+            if !text.isEmpty, isValid { Image(systemName: text).foregroundStyle(tokens.color(.primaryText)) }
         }
     }
 }

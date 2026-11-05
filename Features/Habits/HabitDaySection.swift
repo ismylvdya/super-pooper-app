@@ -35,7 +35,7 @@ struct HabitDaySection: View {
                 .accessibilityIdentifier("taskPage.feel")
                 PlateRow(icon: .estimate, title: "taskPage.estimate", info: "info.taskPage.estimate") {
                     Picker("taskPage.estimate", selection: Binding(get: { rules.day.estimate(of: task) }, set: { editor.apply([.timeEstimate($0)]) })) {
-                        ForEach(rules.timeEstimates, id: \.minutes) { Text(LocalizedStringKey($0.label)).tag($0.minutes) }
+                        ForEach(rules.estimateOptions(including: rules.day.estimate(of: task)), id: \.minutes) { Text(LocalizedStringKey($0.label)).tag($0.minutes) }
                     }
                     .labelsHidden()
                 }

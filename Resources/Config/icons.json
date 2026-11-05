@@ -39,6 +39,7 @@
   "menuChevrons": "chevron.up.chevron.down",
   "feelNeutral": "circle.slash",
   "tags": "tag",
+  "tagWaiting": "clock",
   "dayBoundary": "moon.zzz",
   "energyHour": "bolt.circle",
   "timelineLayout": "rectangle.split.2x1",

@@ -253,7 +253,7 @@ struct RulesConfig: Codable, Hashable, Sendable {
     }
 
     let day: DayRules
-    let timeEstimates: [EstimateOption]
+    var timeEstimates: [EstimateOption]
     let notifications: Notifications
     let alarms: Alarms
     /// The plate at the top of Settings that counts down to the end of the app's signature.

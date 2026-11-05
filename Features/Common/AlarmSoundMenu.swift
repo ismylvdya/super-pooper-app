@@ -77,5 +77,6 @@ struct AlarmSoundValue: View {
         }
         // The room a system picker leaves at its end: the values of a plate stand on one line.
         .padding(.trailing, tokens.space(.menuValueInset))
+        .padding(.vertical, tokens.space(.menuValueVertical))
     }
 }

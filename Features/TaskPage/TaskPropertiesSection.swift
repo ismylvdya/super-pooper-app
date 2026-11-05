@@ -18,7 +18,7 @@ struct TaskPropertiesSection: View {
             }
             PlateRow(icon: .estimate, title: "taskPage.estimate", info: "info.taskPage.estimate") {
                 Picker("taskPage.estimate", selection: estimateBinding) {
-                    ForEach(rules.timeEstimates, id: \.minutes) { Text(LocalizedStringKey($0.label)).tag($0.minutes) }
+                    ForEach(rules.estimateOptions(including: rules.day.estimate(of: task)), id: \.minutes) { Text(LocalizedStringKey($0.label)).tag($0.minutes) }
                 }
                 .labelsHidden()
             }
@@ -26,17 +26,21 @@ struct TaskPropertiesSection: View {
         }
     }
 
-    /// An archived task keeps its place in the picker; the archive itself is in the "…" menu.
+    /// The row shows the list's name alone, the menu each with its icon. An archived task's status has its own action in the "…"
+    /// menu, and no place here.
     private var listRow: some View {
         PlateRow(icon: .status, title: "taskPage.list", info: "info.taskPage.status") {
-            Picker("taskPage.list", selection: Binding(
-                get: { task.status },
-                set: { status in editor.setStatus(status, today: model.context().today) }
-            )) {
-                ForEach(TaskStatus.known, id: \.self) { Text(StatusText.title($0)).tag($0) }
-                if !TaskStatus.known.contains(task.status) { Text(StatusText.title(task.status)).tag(task.status) }
+            Menu {
+                ForEach(TaskStatus.known, id: \.self) { status in
+                    Toggle(isOn: Binding(get: { task.status == status },
+                                         set: { _ in editor.setStatus(status, today: model.context().today) })) {
+                        ListLabel(status: status)
+                    }
+                }
+            } label: {
+                AlarmSoundValue(shown: StatusText.title(task.status))
             }
-            .labelsHidden()
+            .accessibilityIdentifier("taskPage.list")
         }
     }
 
@@ -96,8 +100,28 @@ private struct FeelPicker: View {
     }
 }
 
+/// A list in the picker, with its icon (`TaskListIcons`).
+private struct ListLabel: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.tokens) private var tokens
+    @Environment(\.icons) private var icons
+    @Environment(\.displayScale) private var displayScale
+    let status: TaskStatus
+
+    var body: some View {
+        Label {
+            Text(StatusText.title(status))
+        } icon: {
+            let list = TaskListIcons(icons: icons, typed: model.settings.lists.symbols)
+            TabIconImage.image(list.symbol(of: status), font: .preferredFont(forTextStyle: .body), others: list.symbols(besides: status),
+                               matching: .width, fit: tokens.bar(.tabGlyphFit), scale: displayScale)
+        }
+    }
+}
+
 /// Started and Waiting, any of them: tags that leave the task in its list.
 private struct TaskTagsRow: View {
+    @Environment(AppModel.self) private var model
     @Environment(\.icons) private var icons
     let task: TaskItem
     let onChange: (TaskEdit) -> Void
@@ -105,8 +129,16 @@ private struct TaskTagsRow: View {
     var body: some View {
         PlateRow(icon: .tags, title: "taskPage.tags") {
             Menu {
-                tag("status.inProgress", isOn: task.isStarted) { onChange(.started(!task.isStarted)) }
-                tag("status.waiting", isOn: task.isWaiting) { onChange(.waiting(!task.isWaiting)) }
+                Toggle(isOn: Binding(get: { task.isStarted }, set: { onChange(.started($0)) })) {
+                    Label {
+                        Text("status.inProgress")
+                    } icon: {
+                        Image(model.config.actions.definition(.start).icon)
+                    }
+                }
+                Toggle(isOn: Binding(get: { task.isWaiting }, set: { onChange(.waiting($0)) })) {
+                    Label("status.waiting", systemImage: icons[.tagWaiting])
+                }
             } label: {
                 AlarmSoundValue(shown: shown)
             }
@@ -118,11 +150,5 @@ private struct TaskTagsRow: View {
     private var shown: String {
         let tags = [task.isStarted ? "status.inProgress" : nil, task.isWaiting ? "status.waiting" : nil].compactMap { $0 }
         return tags.isEmpty ? L10n.string("taskPage.tags.none") : tags.map(L10n.string).joined(separator: ", ")
-    }
-
-    private func tag(_ title: LocalizedStringKey, isOn: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            if isOn { Label(title, systemImage: icons[.chosen]) } else { Text(title) }
-        }
     }
 }

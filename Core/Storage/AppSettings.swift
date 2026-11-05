@@ -25,6 +25,8 @@ struct AppSettings: Codable, Equatable, Sendable {
 
     struct Pool: Codable, Equatable, Sendable {
         var visibleCount: Int
+        /// The minutes of the time estimates: shortest, normal, long, dohuya.
+        var estimateMinutes: [Int]
         /// The user's order of the pool rules (raw names); empty = `sort.json`.
         var criteria: [String]
         /// How solid the outline of a task picked in Select mode is.
@@ -165,6 +167,8 @@ struct AppSettings: Codable, Equatable, Sendable {
     struct Lists: Codable, Equatable, Sendable {
         /// The id of the Lists icon picked (`lists.json` → `icons`).
         var icon: String
+        /// The SF Symbols the user typed for the lists, by `TaskStatus.Name`; none = `icons.json`.
+        var symbols: [String: String]
     }
 
     struct Appearance: Codable, Equatable, Sendable {
