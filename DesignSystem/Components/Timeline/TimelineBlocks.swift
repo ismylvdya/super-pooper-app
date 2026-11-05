@@ -74,6 +74,8 @@ struct TimelineReminderBlock: View {
     let font: Font
     let lineHeight: CGFloat
     var isCompact = false
+    /// The height of a one-line plate: its ring and title stand in the middle of it.
+    var oneLineHeight: CGFloat = 0
     /// An opaque backing under the plate (see `TimelineStyle.backdrop`).
     var backdrop: Color?
     var onToggle: ((ReminderItem) -> Void)?
@@ -86,6 +88,7 @@ struct TimelineReminderBlock: View {
                        reserve: TitleFade.trailing(corner: reserve, plateInset: tokens.slotPlateInset, gap: tokens.space(.fadeGap)))
                 .foregroundStyle(slot.isPast ? tokens.color(.secondaryText) : tokens.color(.primaryText))
         }
+        .padding(.top, centering)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .slotPlate(isPast: slot.isPast, isCompact: isCompact, corners: .timelineItem)
         if let onToggle, let onOpen {
@@ -101,6 +104,12 @@ struct TimelineReminderBlock: View {
 }
 
 private extension TimelineReminderBlock {
+    /// How far the line stands below the plate's inset, for its middle to be the one-line plate's.
+    var centering: CGFloat {
+        let inset = isCompact ? tokens.space(.compactPlateVertical) : tokens.space(.rowVertical) / 2
+        return max(oneLineHeight / 2 - inset - lineHeight / 2, 0)
+    }
+
     /// An open reminder as Apple's Calendar draws it: a ring in its list's color, standing in the title's line.
     var ring: some View {
         Circle()

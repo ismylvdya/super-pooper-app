@@ -124,7 +124,9 @@ struct DayTimelineView<TaskContent: View>: View {
             }
         case .reminder(let reminder):
             TimelineReminderBlock(reminder: reminder, slot: slot, font: style.fonts.task, lineHeight: style.fonts.taskLineHeight,
-                                  isCompact: style.compactPlates, backdrop: style.backdrop,
+                                  isCompact: style.compactPlates,
+                                  oneLineHeight: (style.minimumTaskHeight ?? style.minimumItemHeight) - tokens.space(.timelineItemGap),
+                                  backdrop: style.backdrop,
                                   onToggle: style.onReminderToggle, onOpen: style.onReminderTap)
         case .task(let item):
             if style.rowsHaveOwnPlates {
