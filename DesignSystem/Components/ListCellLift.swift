@@ -146,12 +146,13 @@ final class ListLiftDelegates: NSObject, UICollectionViewDragDelegate, UICollect
         return cell.isHidden || cell.alpha == 0
     }
 
-    /// The picture is taken while the dragged cell still stands in its place, half seen, with its content back from the menu's
-    /// preview; from then on the copy stands where the hidden cell is on screen, mid-animation too.
+    /// The picture is taken while the dragged cell still stands in its place, with its content back from the menu's preview;
+    /// from then on the copy stands where the hidden cell is on screen, mid-animation too. Of the cell's content, not the
+    /// cell: the cell is half seen then, and a picture of it comes out darker than the plate the row will land on.
     @objc private func followGap() {
         guard let list = ghostList else { return }
         if ghostCopy == nil, let lifted = list.visibleCells.first(where: { $0.configurationState.cellDragState == .dragging && !$0.isHidden }) {
-            ghostCopy = lifted.snapshotView(afterScreenUpdates: false)
+            ghostCopy = lifted.contentView.snapshotView(afterScreenUpdates: false)
             ghostCopy?.isUserInteractionEnabled = false
         }
         guard let copy = ghostCopy, let gap = list.visibleCells.first(where: { Self.isGap($0, session: nil) }) else { return }
