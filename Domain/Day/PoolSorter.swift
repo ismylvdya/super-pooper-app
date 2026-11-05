@@ -33,9 +33,9 @@ struct PoolSorter: Sendable {
         return finalize(result)
     }
 
-    /// Done tasks go last.
+    /// Finished tasks go last (a twice-a-day habit done once is still open).
     private func finalize(_ items: [DayItem]) -> [DayItem] {
-        items.filter { !$0.isDone } + items.filter(\.isDone)
+        items.filter { !$0.isFinished } + items.filter(\.isFinished)
     }
 
     /// A criterion's place for a task; a task the criterion knows nothing about (no routine place, no due date this week,

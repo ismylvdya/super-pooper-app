@@ -85,7 +85,7 @@ struct PoolRowContent: View {
     /// The row on its plate: what stands in the pool or on the timeline, and what a drag lifts.
     private var plated: some View {
         let row = TaskRowView(item: item, titleFont: titleFont, showsDetails: showsDetails, isCompact: isCompact,
-                              titleLineLimit: titleLineLimit, titleLineHeight: titleLineHeight, showsDoneState: showsDoneState,
+                              titleLineLimit: titleLineLimit, titleLineHeight: titleLineHeight, showsDoneState: showsDoneState && item.isFinished,
                               onOpen: { handler.run(actions.definition(.open), taskName: item.id) })
         let tint = tokens.plateTint(HighPriorityMark(look: highPriorityLook, task: item.task))
         return Group {
@@ -95,7 +95,7 @@ struct PoolRowContent: View {
                     row
                     Spacer(minLength: minimumHeight)
                 }
-                .poolRowPlate(plate, isDone: item.isDone, tint: tint)
+                .poolRowPlate(plate, isDone: item.isFinished, tint: tint)
             case .slot(let isPast, let isCompact):
                 row.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading).slotPlate(isPast: isPast, isCompact: isCompact, tint: tint)
             }

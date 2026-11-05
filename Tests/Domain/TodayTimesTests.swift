@@ -101,6 +101,17 @@ struct TodayTimesTests {
         #expect(done.poolNames.isEmpty && done.timeline.isEmpty)
     }
 
+    /// Done once, the second block of a twice-a-day habit goes to the pool: the first, already done, does not come back to
+    /// the timeline, and the habit stands in the pool as open, at the spot it was dropped on.
+    @Test func theSecondBlockOfAHalfDoneHabitInThePool() {
+        let halfDone = water.applying([.mark(.done, on: LocalDate(TestCalendar.wednesday))])
+        let read = makeTask("Read", status: .thisWeek)
+        let plan = DayScenario(tasks: [halfDone, read], manualOrder: ["Water", "Read"],
+                               timeMoves: [moved(water, evening, to: nil)]).build(at: morning)
+        #expect(plan.timeline.isEmpty)
+        #expect(plan.poolNames == ["Water", "Read"])
+    }
+
     // MARK: - Notifications
 
     private let planner = NotificationPlanner(horizonDays: 2, limit: 64)

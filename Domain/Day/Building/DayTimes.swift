@@ -20,12 +20,13 @@ struct DayTimes: Sendable {
     }
 
     /// The blocks still to do today. A closed day leaves the timeline (Twice closes it however many reminders there
-    /// are); before that a habit with several blocks loses one per mark, earliest first (Done the first one); one with a
-    /// single block keeps it until the day is closed (twice a day waits for Twice).
+    /// are); before that a habit with several blocks loses one per mark, earliest first (Done the first one), counting
+    /// the blocks sent to the pool, which stand there for the later ones; one with a single block keeps it until the day
+    /// is closed (twice a day waits for Twice).
     func openTimes(of item: DayItem) -> [BlockTime] {
         guard !item.isFinished else { return [] }
         let times = times(of: item.task)
-        guard item.isHabit, times.count > 1 else { return times }
+        guard item.isHabit, times.count + todayTimes.pooled(of: item.task).count > 1 else { return times }
         let ordered = times.sorted { moment(of: $0) < moment(of: $1) }
         return Array(ordered.dropFirst(HabitMarking.timesClosed(by: item.state.mark)))
     }
