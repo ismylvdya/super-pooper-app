@@ -227,7 +227,6 @@ actor TaskFileStore: TaskStore {
         }
         rollOver(&snapshot.document, to: day, habits: Set(snapshot.habits.keys))
         dateLooseLines(&snapshot.document, to: day, habits: Set(snapshot.habits.keys))
-        tagStartedLines(&snapshot.document, habits: Set(snapshot.habits.keys))
         carryMissedHabits(&snapshot, to: day)
         return snapshot.document != before
     }
@@ -250,22 +249,6 @@ actor TaskFileStore: TaskStore {
                     document.sections[list].groups[group].entries[index].date = day
                 }
             }
-        }
-    }
-
-    /// A task's started box is how an older file says Started; a habit's is a mark.
-    private func tagStartedLines(_ document: inout TaskDocument, habits: Set<String>) {
-        func tag(_ entries: inout [TaskEntry]) {
-            for index in entries.indices {
-                if entries[index].box == .started, !(entries[index].id.map(habits.contains) ?? false) {
-                    entries[index].box = .open
-                    entries[index].isStarted = true
-                }
-                tag(&entries[index].children)
-            }
-        }
-        for section in document.sections.indices where document.sections[section].kind != .done {
-            for group in document.sections[section].groups.indices { tag(&document.sections[section].groups[group].entries) }
         }
     }
 

@@ -22,8 +22,6 @@ struct TaskEntry: Equatable, Sendable {
     /// The repeat rule in words (`RepeatTag`), only to be read: a habit's rule lives in its JSON file.
     var repeats: String?
     /// Its time passed with its day and it was not done: it stands in the pool with a mark.
-    var isStarted = false
-    var isWaiting = false
     var isOverdue = false
     var completed: LocalDate?
     var deleted: LocalDate?
@@ -35,7 +33,7 @@ struct TaskEntry: Equatable, Sendable {
 
 extension TaskEntry {
     /// The line without its indent, or nil for any other line.
-    init?(line: String, format: TaskFileFormat) {
+    init?(line: String, format: TaskFileFormat, alarmClockRings: Bool = true) {
         guard line.hasPrefix("- ["), line.count >= 6 else { return nil }
         let characters = Array(line)
         guard characters[4] == "]", characters[5] == " " else { return nil }
@@ -50,9 +48,8 @@ extension TaskEntry {
         // Fields stand at the end of the line: the first token from the end that is no field ends them, and a marker in
         // the middle of a name stays part of it.
         let markers = format.markers
-        let legacy = format.legacyMarkers
         while let last = tokens.last {
-            if format.legacyWords.contains(last) {} else if last == markers.high || format.legacyHighMarkers.contains(last) { isHigh = true } else if last == markers.pleasant { feel = .pleasant } else if last == markers.energy { feel = .needEnergy } else if last == markers.overdue { isOverdue = true } else if last == markers.started { isStarted = true } else if last == markers.waiting { isWaiting = true } else if tokens.count >= 2, read(last, marker: tokens[tokens.count - 2], markers, legacy: legacy) {
+            if format.legacyWords.contains(last) {} else if last == markers.high || format.legacyHighMarkers.contains(last) { isHigh = true } else if last == markers.pleasant { feel = .pleasant } else if last == markers.energy { feel = .needEnergy } else if last == markers.overdue { isOverdue = true } else if last == format.legacyStartedMarker { box = .started } else if tokens.count >= 2, read(last, marker: tokens[tokens.count - 2], format, alarmClockRings: alarmClockRings) {
                 tokens.removeLast()
             } else if last.isEmpty {
                 // A double space or a trailing one.
@@ -65,7 +62,8 @@ extension TaskEntry {
     }
 
     /// Takes `value` as the field of `marker`; false when it is no such pair.
-    private mutating func read(_ value: String, marker: String, _ markers: TaskFileFormat.Markers, legacy: [String]) -> Bool {
+    private mutating func read(_ value: String, marker: String, _ format: TaskFileFormat, alarmClockRings: Bool) -> Bool {
+        let markers = format.markers
         switch marker {
         case markers.id: id = value
         case markers.date:
@@ -74,11 +72,15 @@ extension TaskEntry {
         case markers.time:
             guard let clock = LocalTime(string: value) else { return false }
             time = clock
+        case markers.alarm:
+            guard let clock = LocalTime(string: value) else { return false }
+            time = clock
+            if alarmClockRings, alarm == nil { alarm = format.alarmDefaultSound }
+        case markers.ringtone, format.legacyAlarmMarker: alarm = value
         case markers.zone: zone = value
         case markers.estimate:
             guard let minutes = Int(value) else { return false }
             estimate = minutes
-        case markers.alarm: alarm = value
         case markers.routine: routine = value
         case markers.parent: parent = value
         case markers.repeats: repeats = value
@@ -88,7 +90,7 @@ extension TaskEntry {
         case markers.deleted:
             guard let day = LocalDate(isoString: value) else { return false }
             deleted = day
-        default: return legacy.contains(marker)
+        default: return format.legacyMarkers.contains(marker)
         }
         return true
     }
@@ -104,10 +106,11 @@ extension TaskEntry {
         var parts = ["- [\(symbol)]", name]
         func add(_ marker: String, _ value: String?) { if let value { parts += [marker, value] } }
         add(markers.date, date?.isoString)
-        add(markers.time, time?.string)
+        // A time that rings says so in its own marker; a sound of its own stands apart, as a rare thing.
+        add(alarm == nil ? markers.time : markers.alarm, time?.string)
         add(markers.zone, zone)
         add(markers.estimate, estimate.map(String.init))
-        add(markers.alarm, alarm)
+        if time != nil, alarm != format.alarmDefaultSound { add(markers.ringtone, alarm) }
         if isHigh { parts.append(markers.high) }
         switch feel {
         case .pleasant: parts.append(markers.pleasant)
@@ -117,8 +120,6 @@ extension TaskEntry {
         add(markers.routine, routine)
         add(markers.parent, parent.map(TaskLineIDs.written))
         add(markers.repeats, repeats)
-        if isStarted { parts.append(markers.started) }
-        if isWaiting { parts.append(markers.waiting) }
         if isOverdue { parts.append(markers.overdue) }
         add(markers.completed, completed?.isoString)
         add(markers.deleted, deleted?.isoString)

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// What the chips and the date sheet do not set: a task's list, how it feels, its estimate and its tags. A habit's stand in
+/// What the chips and the date sheet do not set: a task's list, how it feels and its estimate. A habit's stand in
 /// `HabitDaySection`.
 struct TaskPropertiesSection: View {
     @Environment(AppModel.self) private var model
@@ -22,7 +22,6 @@ struct TaskPropertiesSection: View {
                 }
                 .labelsHidden()
             }
-            TaskTagsRow(task: task) { editor.apply([$0]) }
         }
     }
 
@@ -114,41 +113,7 @@ private struct ListLabel: View {
         } icon: {
             let list = TaskListIcons(icons: icons, typed: model.settings.lists.symbols)
             TabIconImage.image(list.symbol(of: status), font: .preferredFont(forTextStyle: .body), others: list.symbols(besides: status),
-                               matching: .width, fit: tokens.bar(.tabGlyphFit), scale: displayScale)
+                               fit: tokens.bar(.tabGlyphFit), scale: displayScale)
         }
-    }
-}
-
-/// Started and Waiting, any of them: tags that leave the task in its list.
-private struct TaskTagsRow: View {
-    @Environment(AppModel.self) private var model
-    @Environment(\.icons) private var icons
-    let task: TaskItem
-    let onChange: (TaskEdit) -> Void
-
-    var body: some View {
-        PlateRow(icon: .tags, title: "taskPage.tags") {
-            Menu {
-                Toggle(isOn: Binding(get: { task.isStarted }, set: { onChange(.started($0)) })) {
-                    Label {
-                        Text("status.inProgress")
-                    } icon: {
-                        Image(model.config.actions.definition(.start).icon)
-                    }
-                }
-                Toggle(isOn: Binding(get: { task.isWaiting }, set: { onChange(.waiting($0)) })) {
-                    Label("status.waiting", systemImage: icons[.tagWaiting])
-                }
-            } label: {
-                AlarmSoundValue(shown: shown)
-            }
-            .menuActionDismissBehavior(.disabled)
-            .accessibilityIdentifier("taskPage.tags")
-        }
-    }
-
-    private var shown: String {
-        let tags = [task.isStarted ? "status.inProgress" : nil, task.isWaiting ? "status.waiting" : nil].compactMap { $0 }
-        return tags.isEmpty ? L10n.string("taskPage.tags.none") : tags.map(L10n.string).joined(separator: ", ")
     }
 }

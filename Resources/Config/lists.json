@@ -48,12 +48,6 @@
           "statuses": ["someday"]
         },
         {
-          "id": "waiting",
-          "title": "status.waiting",
-          "icon": "listWaiting",
-          "waiting": true
-        },
-        {
           "id": "done",
           "title": "status.done",
           "icon": "listDone",

@@ -18,10 +18,10 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
     }
 
     struct Markers: Codable, Hashable, Sendable {
-        let id, date, time, zone, estimate, alarm, high, pleasant, energy, routine, parent, repeats, started, waiting, overdue, completed, deleted: String
+        let id, date, time, alarm, ringtone, zone, estimate, high, pleasant, energy, routine, parent, repeats, overdue, completed, deleted: String
 
         /// Every marker: a task's name cannot hold one.
-        var all: [String] { [id, date, time, zone, estimate, alarm, high, pleasant, energy, routine, parent, repeats, started, waiting, overdue, completed, deleted] }
+        var all: [String] { [id, date, time, alarm, ringtone, zone, estimate, high, pleasant, energy, routine, parent, repeats, overdue, completed, deleted] }
     }
 
     let folder: String
@@ -44,8 +44,12 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
     let legacyHighMarkers: [String]
     /// After the alarm's marker: the sound is the one set in the settings.
     let alarmDefaultSound: String
-    /// The section older files keep waiting tasks in: they join Next actions, tagged.
-    let legacyWaitingSection: String
+    /// A comment line a file of this format starts with. A file without it is older, and there `markers.alarm` before a time meant
+    /// only a time, and an alarm stood apart under `legacyAlarmMarker`.
+    let formatMarker: String
+    let legacyAlarmMarker: String
+    /// What an older line says Started with; it is `boxes.started` now.
+    let legacyStartedMarker: String
     /// Done has a file of its own next to the tasks.
     let doneFile: String
     /// Words older lines end with and the app no longer keeps: read so they are no part of the name, and gone with the next write.

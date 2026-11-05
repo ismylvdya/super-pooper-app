@@ -37,7 +37,9 @@ struct TaskDocument: Equatable, Sendable {
         }
         // Where lines go: the deepest entries open now, by their indents.
         var path: [(indent: Int, keys: [Int])] = []
-        for line in text.components(separatedBy: "\n") {
+        let lines = text.components(separatedBy: "\n")
+        let alarmClockRings = lines.contains(format.formatMarker)
+        for line in lines where line != format.formatMarker {
             if line.hasPrefix(Self.sectionPrefix) {
                 let title = String(line.dropFirst(Self.sectionPrefix.count)).trimmingCharacters(in: .whitespaces)
                 sections.append(Section(kind: kinds[title], title: title))
@@ -60,7 +62,7 @@ struct TaskDocument: Equatable, Sendable {
             }
             let indent = Self.indent(of: line, format: format)
             let content = String(line.drop(while: \.isWhitespace))
-            if let entry = TaskEntry(line: content, format: format) {
+            if let entry = TaskEntry(line: content, format: format, alarmClockRings: alarmClockRings) {
                 while let top = path.last, top.indent >= indent { path.removeLast() }
                 let group = sections[last].groups.count - 1
                 Self.append(entry, under: path.last?.keys ?? [], in: &sections[last].groups[group].entries)
@@ -90,17 +92,6 @@ struct TaskDocument: Equatable, Sendable {
             while sections[index].other.first?.isEmpty == true { sections[index].other.removeFirst() }
         }
         while prelude.last?.isEmpty == true { prelude.removeLast() }
-        for index in sections.indices where sections[index].title == format.legacyWaitingSection {
-            sections[index].groups = sections[index].groups.map { group in
-                var group = group
-                group.entries = group.entries.map { entry in
-                    var entry = entry
-                    entry.isWaiting = true
-                    return entry
-                }
-                return group
-            }
-        }
         mergeLegacySections(format: format)
         for section in TaskSection.allCases where !sections.contains(where: { $0.kind == section }) {
             sections.append(Section(kind: section, title: format.title(of: section)))
@@ -149,8 +140,7 @@ struct TaskDocument: Equatable, Sendable {
 
     /// A file: an empty line between sections, none between tasks.
     private func text(of sections: [Section], prelude: [String], format: TaskFileFormat) -> String {
-        var lines = prelude
-        if !prelude.isEmpty { lines.append("") }
+        var lines = [format.formatMarker] + prelude + [""]
         for section in sections {
             lines.append(Self.sectionPrefix + section.title)
             for group in section.groups {

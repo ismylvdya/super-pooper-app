@@ -6,13 +6,10 @@ struct TaskListFilter: Hashable, Sendable {
     var statuses: [TaskStatus] = TaskStatus.open
     var feel: TaskFeel?
     var maxEstimate: Int?
-    /// Only what has that tag.
-    var waiting = false
 
     func matches(_ task: TaskItem, rules: DayRules) -> Bool {
         guard !task.isHabit, statuses.contains(task.status) else { return false }
         if let feel, task.feel != feel { return false }
-        if waiting, !task.isWaiting { return false }
         if let maxEstimate, rules.estimate(of: task) > maxEstimate { return false }
         return true
     }

@@ -6015,28 +6015,6 @@
         }
       }
     },
-    "taskPage.tags": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tags"
-          }
-        }
-      }
-    },
-    "taskPage.tags.none": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "None"
-          }
-        }
-      }
-    },
     "settings.estimates": {
       "extractionState": "manual",
       "localizations": {
@@ -6147,17 +6125,6 @@
         }
       }
     },
-    "status.inProgress": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Started"
-          }
-        }
-      }
-    },
     "status.someday": {
       "extractionState": "manual",
       "localizations": {
@@ -6176,17 +6143,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Next actions"
-          }
-        }
-      }
-    },
-    "status.waiting": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Waiting"
           }
         }
       }

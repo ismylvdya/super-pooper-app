@@ -22,7 +22,6 @@ struct TaskListsConfig: Codable, Hashable, Sendable {
         var feel: TaskFeel?
         /// Only tasks estimated at most this many minutes (the default estimate counts).
         var maxEstimate: Int?
-        var waiting: Bool?
     }
 
     /// A glyph the Lists icon can be (Settings → Lists): the icon wherever the button to the lists stands.
@@ -63,6 +62,6 @@ struct TaskListsConfig: Codable, Hashable, Sendable {
 extension TaskListsConfig.List {
     var filter: TaskListFilter {
         TaskListFilter(statuses: statuses?.map(\.status) ?? TaskStatus.open, feel: feel,
-                       maxEstimate: maxEstimate, waiting: waiting ?? false)
+                       maxEstimate: maxEstimate)
     }
 }

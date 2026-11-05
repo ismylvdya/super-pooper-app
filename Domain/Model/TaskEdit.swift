@@ -25,7 +25,6 @@ enum TaskEdit: Hashable, Sendable {
     case reminderTimes([LocalTime])
     case alarms([TimeAlarm])
     case started(Bool)
-    case waiting(Bool)
     /// The zone of the item's times; nil = wall-clock times.
     case timeZone(String?)
     case habitColor(String?)

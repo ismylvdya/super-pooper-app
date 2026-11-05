@@ -14,9 +14,7 @@ extension TaskEntry {
         item.timeZone = zone
         item.completedDate = completed
         item.isOverdue = isOverdue
-        // A started box is how older files say it.
-        item.isStarted = isStarted || box == .started
-        item.isWaiting = isWaiting
+        item.isStarted = box == .started
         item.waitsInList = section == .soon && date == nil
         return item
     }
@@ -35,9 +33,7 @@ extension TaskEntry {
     /// Takes on the fields of `item`; the line's text and subtasks stay. The section follows from `TaskSection.of`.
     mutating func update(from item: TaskItem, format: TaskFileFormat) {
         name = item.name
-        box = item.status == .done ? .done : .open
-        isStarted = item.isStarted
-        isWaiting = item.isWaiting
+        box = item.status == .done ? .done : item.isStarted ? .started : .open
         isHigh = item.isHighPriority
         date = item.due?.day
         time = item.due?.time

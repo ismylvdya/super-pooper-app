@@ -73,7 +73,7 @@ struct ConfigTests {
         for title in config.lists.groups.map(\.title) + config.lists.lists.map(\.title) {
             #expect(bundle.localizedString(forKey: title, value: "∅", table: nil) != "∅", "missing text for \(title)")
         }
-        let statuses = config.lists.groups.first { $0.id == "statuses" }?.lists.filter { !$0.filter.waiting }.flatMap(\.filter.statuses)
+        let statuses = config.lists.groups.first { $0.id == "statuses" }?.lists.flatMap(\.filter.statuses)
         #expect(statuses == TaskStatus.open + [.done], "Started and Waiting are tags, not lists; the archive is in Settings")
     }
 

@@ -379,21 +379,8 @@ struct TaskFileStoreTests {
         try write("## Next actions\n## Archive\n\(line)\n")
         _ = try await store().load()
         let lines = try text().components(separatedBy: "\n")
-        #expect(lines.firstIndex(of: line)! > lines.firstIndex(of: "## Archive")!)
-    }
-
-    /// Started and Waiting are tags in the line; the task stays in its list.
-    @Test func olderStartedAndWaitingLinesBecomeTags() async throws {
-        try write("## Soon\n- [/] Begun\n## Half year\n- [ ] Far\n## Waiting\n- [ ] Pending\n")
-        let tasks = try await store().load().tasks
-        #expect(tasks.first { $0.name == "Begun" }?.isStarted == true)
-        #expect(tasks.first { $0.name == "Pending" }?.isWaiting == true)
-        #expect(tasks.first { $0.name == "Pending" }?.status == .thisWeek)
-        #expect(tasks.first { $0.name == "Far" }?.status == .halfYear)
-        let written = try text()
-        #expect(written.contains("## Next actions\n- [ ] Begun ▶️\n- [ ] Pending ⏸️\n"))
-        #expect(written.contains("## Soon\n- [ ] Far\n"))
-        #expect(!written.contains("Waiting") && !written.contains("Half year"))
+        let written = try #require(lines.firstIndex(of: line.replacingOccurrences(of: "⏰", with: "🕐")))
+        #expect(written > lines.firstIndex(of: "## Archive")!)
     }
 
     /// Done's lines live in a file of their own, an older file's move there.
@@ -437,6 +424,48 @@ struct TaskFileStoreTests {
         #expect(reloaded.due == nil && reloaded.waitsInList)
         let lines = try text().components(separatedBy: "\n")
         #expect(try #require(lines.firstIndex(of: "- [ ] Call")) > lines.firstIndex(of: "## Next actions")!)
+    }
+
+    /// Started is the checkbox's slash; the tags of a while ago become it or go, Waiting's section joins Next actions.
+    @Test func startedIsTheBoxAndWaitingIsGone() async throws {
+        try write("## Soon\n- [/] Begun\n- [ ] Tagged ▶️\n- [ ] Held ⏸️\n## Half year\n- [ ] Far\n## Waiting\n- [ ] Pending\n")
+        let tasks = try await store().load().tasks
+        #expect(tasks.first { $0.name == "Begun" }?.isStarted == true)
+        #expect(tasks.first { $0.name == "Tagged" }?.isStarted == true)
+        #expect(tasks.first { $0.name == "Held" }?.isStarted == false)
+        #expect(tasks.first { $0.name == "Pending" }?.status == .thisWeek)
+        #expect(tasks.first { $0.name == "Far" }?.status == .halfYear)
+        let written = try text()
+        #expect(written.contains("- [/] Tagged"))
+        #expect(!written.contains("▶️") && !written.contains("⏸️") && !written.contains("Waiting") && !written.contains("Half year"))
+    }
+
+    /// In a file of the older format the alarm clock was only a time: nothing starts to ring. A real alarm stays one.
+    @Test func olderLinesKeepTheirMeaning() async throws {
+        let day = today.isoString
+        try write("## Today\n- [ ] Plain 📅 \(day) ⏰ 10:00\n- [ ] Rings 📅 \(day) ⏰ 11:00 🚨 default\n- [ ] Tune 📅 \(day) ⏰ 12:00 🚨 chime\n")
+        let tasks = try await store().load().tasks
+        #expect(tasks.first { $0.name == "Plain" }?.alarms.isEmpty == true)
+        #expect(tasks.first { $0.name == "Rings" }?.alarms == [TimeAlarm()])
+        #expect(tasks.first { $0.name == "Tune" }?.alarms == [TimeAlarm(sound: "chime")])
+        let written = try text()
+        #expect(written.contains("%% format 2 %%"))
+        #expect(written.contains("- [ ] Plain 📅 \(day) 🕐 10:00\n"))
+        #expect(written.contains("- [ ] Rings 📅 \(day) ⏰ 11:00\n"))
+        #expect(written.contains("- [ ] Tune 📅 \(day) ⏰ 12:00 🎵 chime\n"))
+    }
+
+    /// The clock for a time, the alarm clock for one that rings, back to the clock when the alarm goes.
+    @Test func anAlarmSwapsTheTimesMarker() async throws {
+        let store = store()
+        let day = today.isoString
+        let task = try await store.create(draft([.due(TaskDue(day: today, time: LocalTime("15:00")))]), named: "Call")
+        #expect(try text().contains("- [ ] Call 📅 \(day) 🕐 15:00"))
+        let ringing = try await store.apply([.alarms([TimeAlarm()])], to: task).task
+        #expect(try text().contains("- [ ] Call 📅 \(day) ⏰ 15:00\n"))
+        #expect(try await store.load().tasks.first?.alarms == [TimeAlarm()], "and it is read back so")
+        _ = try await store.apply([.alarms([])], to: ringing)
+        #expect(try text().contains("- [ ] Call 📅 \(day) 🕐 15:00\n"))
     }
 
     @Test func anOldOpenMarkIsNoPartOfTheNameAndGoesWithTheNextWrite() async throws {
@@ -488,7 +517,7 @@ struct TaskFileStoreTests {
         await store.mirror(DayMirror(sections: [], timed: [:]))
         let line = try #require(try line(of: "Gym"))
         #expect(try section(of: "Gym") == "Next actions")
-        #expect(line.contains("📅 \(today.adding(days: 2).isoString) ⏰ 09:30"))
+        #expect(line.contains("📅 \(today.adding(days: 2).isoString) 🕐 09:30"))
         #expect(line.contains("🔁 every-"))
     }
 
@@ -577,9 +606,10 @@ struct AlarmFormatTests {
 
     @Test func aLineKeepsItsAlarmAndSound() throws {
         var entry = TaskEntry(name: "Dentist")
+        entry.time = LocalTime("10:00")
         entry.alarm = "chime"
         let line = entry.line(format: format)
-        #expect(line.contains("🚨 chime"))
+        #expect(line.contains("⏰ 10:00 🎵 chime"))
         #expect(TaskEntry(line: line, format: format)?.alarm == "chime")
     }
 
