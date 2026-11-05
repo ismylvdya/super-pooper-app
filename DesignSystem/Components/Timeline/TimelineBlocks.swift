@@ -80,20 +80,34 @@ struct TimelineReminderBlock: View {
     var onOpen: ((ReminderItem) -> Void)?
 
     var body: some View {
-        let plate = FadingText(text: reminder.title, font: font, lineHeight: lineHeight, lines: 1,
-                               reserve: TitleFade.trailing(corner: reserve, plateInset: tokens.slotPlateInset, gap: tokens.space(.fadeGap)))
-            .foregroundStyle(slot.isPast ? tokens.color(.secondaryText) : tokens.color(.primaryText))
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .slotPlate(isPast: slot.isPast, isCompact: isCompact)
+        let plate = HStack(alignment: .top, spacing: tokens.space(.reminderRingGap)) {
+            ring
+            FadingText(text: reminder.title, font: font, lineHeight: lineHeight, lines: 1,
+                       reserve: TitleFade.trailing(corner: reserve, plateInset: tokens.slotPlateInset, gap: tokens.space(.fadeGap)))
+                .foregroundStyle(slot.isPast ? tokens.color(.secondaryText) : tokens.color(.primaryText))
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .slotPlate(isPast: slot.isPast, isCompact: isCompact, corners: .timelineItem)
         if let onToggle, let onOpen {
             plate
-                .background { if let backdrop { tokens.plateShape(.row).fill(backdrop) } }
-                .plateLift(.row, for: .contextMenuPreview)
+                .background { if let backdrop { tokens.plateShape(.timelineItem).fill(backdrop) } }
+                .plateLift(.timelineItem, for: .contextMenuPreview)
                 .onTapGesture { onOpen(reminder) }
                 .contextMenu { RegistryMenu(menu: .reminderContext) { _ in onToggle(reminder) } }
         } else {
             plate
         }
+    }
+}
+
+private extension TimelineReminderBlock {
+    /// An open reminder as Apple's Calendar draws it: a ring in its list's color, standing in the title's line.
+    var ring: some View {
+        Circle()
+            .strokeBorder(slot.isPast ? tokens.color(.secondaryText) : Color(hex: reminder.colorHex), lineWidth: tokens.size(.reminderRingStroke))
+            .frame(width: tokens.size(.reminderRing), height: tokens.size(.reminderRing))
+            .frame(height: lineHeight)
+            .widgetAccentable()
     }
 }
 
@@ -112,8 +126,8 @@ struct TimelineTaskBlock<Content: View>: View {
 
 extension View {
     /// The pool-row plate; for past items the grey tint of finished events.
-    func slotPlate(isPast: Bool, isCompact: Bool = false, tint: Color? = nil) -> some View {
-        modifier(SlotPlate(isPast: isPast, isCompact: isCompact, tint: tint))
+    func slotPlate(isPast: Bool, isCompact: Bool = false, tint: Color? = nil, corners: PlateCorners = .row) -> some View {
+        modifier(SlotPlate(isPast: isPast, isCompact: isCompact, tint: tint, corners: corners))
     }
 }
 
@@ -122,13 +136,14 @@ private struct SlotPlate: ViewModifier {
     let isPast: Bool
     let isCompact: Bool
     let tint: Color?
+    let corners: PlateCorners
 
     func body(content: Content) -> some View {
         content
             .environment(\.plateTrailingInset, tokens.slotPlateInset)
             .padding(.vertical, isCompact ? tokens.space(.compactPlateVertical) : tokens.space(.rowVertical) / 2)
             .padding(.horizontal, tokens.slotPlateInset)
-            .plate(.row, fill: isPast ? tokens.color(.past).opacity(tokens.opacity(.eventFill)) : nil, tint: isPast ? nil : tint,
+            .plate(corners, fill: isPast ? tokens.color(.past).opacity(tokens.opacity(.eventFill)) : nil, tint: isPast ? nil : tint,
                    clipsContent: true)
             .opacity(isPast ? tokens.opacity(.past) : 1)
     }

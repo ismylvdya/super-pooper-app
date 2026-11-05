@@ -6,7 +6,7 @@ enum SpacingToken: String, CaseIterable, Sendable {
     case screenHorizontal, screenBottom, groupGap, plateInner, plateRowGap, headerToPlate, hintToPlate
     case iconTextGap, chipHorizontal, chipVertical, chipGap, dayArrowGap, pagesGap, backlogPeek, infoPadding, nestedTitleInset, nestedTitleLift
     case childIndent, rowVertical, poolRowGap, blockGap, timelineLabelWidth, allDayTitleGap, timelineItemGap, timelineItemPadding
-    case bannerPadding, widgetMargin, habitCellGap, hourLabelGap, bellInset, liftShadow, toggleChipHorizontal, toggleChipVertical, titleInfoGap, chipIconGap, dotTextGap, valueChevronGap, menuValueInset, menuValueVertical, reviewRowVertical, markPadding, badgeGap, progressGap, timelineTitleExtra, previewRowGap, titleDetailGap, footerLineGap, subtaskIndent
+    case bannerPadding, widgetMargin, habitCellGap, hourLabelGap, bellInset, liftShadow, toggleChipHorizontal, toggleChipVertical, titleInfoGap, chipIconGap, dotTextGap, valueChevronGap, reminderRingGap, menuValueInset, menuValueVertical, reviewRowVertical, markPadding, badgeGap, progressGap, timelineTitleExtra, previewRowGap, titleDetailGap, footerLineGap, subtaskIndent
     case widgetGap, previewInset, cornerMarkGap, compactPlateVertical, emptyStateInset, widgetGridGap
     /// How much further right a timeline block lying over an earlier one starts, per step.
     case timelineCascadeIndent
@@ -32,7 +32,7 @@ enum SizeToken: String, CaseIterable, Sendable {
     case iconColumn, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, notificationIcon
     case dayArrowTarget
     case habitDotMinimum, cornerInsetMinimum, sourceDot, fadeHeight, poolCounter, poolWidth
-    case habitHistoryMaxHeight, habitStatsBar, titleFade, allDayIconScale, dragBadge, alarmMark, feelPicker, rowIconHeight, reviewChevron, wrapMinWidth, liftOverhang, pagePeek, dropMarkerHeight, bannerShadowRadius, bannerShadowY, hexFieldWidth, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, previewHeight, previewRow, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewHalvesInset, subtaskDropLine
+    case habitHistoryMaxHeight, habitStatsBar, titleFade, allDayIconScale, dragBadge, alarmMark, feelPicker, reminderRing, reminderRingStroke, rowIconHeight, reviewChevron, wrapMinWidth, liftOverhang, pagePeek, dropMarkerHeight, bannerShadowRadius, bannerShadowY, hexFieldWidth, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, previewHeight, previewRow, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewHalvesInset, subtaskDropLine
     /// The problems badge on Today's Lists button: its smallest width and its height.
     case problemBadge
     /// Room added above and below a date found in a new task's name, so a tap on it lands easily.
