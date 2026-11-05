@@ -33,7 +33,7 @@ struct TaskChipRows: View {
             }
         }
         .alert("alarm.refused.title", isPresented: $isAlarmRefused) {
-            Button("common.done") {}
+            Button("common.ok") {}
         } message: {
             Text("alarm.refused.message")
         }

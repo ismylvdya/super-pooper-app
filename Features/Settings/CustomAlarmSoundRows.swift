@@ -33,7 +33,7 @@ struct CustomAlarmSoundRows: View {
                 reload()
             }
         }
-        .alert("alarm.custom.failed", isPresented: $failed) { Button("common.done") {} }
+        .alert("alarm.custom.failed", isPresented: $failed) { Button("common.ok") {} }
     }
 
     private func reload() { sounds = model.customAlarmSounds }

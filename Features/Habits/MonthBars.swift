@@ -11,7 +11,7 @@ struct MonthBars: View {
     var body: some View {
         let top = max(months.map(\.count).max() ?? 0, 1)
         VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
-            Text(title).secondaryText()
+            StatSubheading(title)
             Grid(horizontalSpacing: tokens.space(.chipGap), verticalSpacing: tokens.space(.habitCellGap)) {
                 ForEach(Array(months.enumerated()), id: \.offset) { _, month in
                     GridRow {

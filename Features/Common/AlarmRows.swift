@@ -13,7 +13,7 @@ struct AlarmRows: View {
         Toggle("alarm.title", isOn: Binding(get: { alarm != nil }, set: setOn))
             .accessibilityIdentifier("duePicker.alarm")
             .alert("alarm.refused.title", isPresented: $isRefused) {
-                Button("common.done") {}
+                Button("common.ok") {}
             } message: {
                 Text("alarm.refused.message")
             }

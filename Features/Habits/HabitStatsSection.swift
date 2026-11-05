@@ -31,7 +31,7 @@ struct HabitStatsSection: View {
                 if habit.isTwiceADay { value("\(stats.twiceCount)", "habitPage.stats.twice") }
             }
             BarRow(title: "habitPage.stats.byWeekday", color: color, bars: Weekday.allCases.map { day in
-                (day.name(.initial, in: model.calendar), stats.byWeekday[day] ?? 0)
+                (day.name(.short, in: model.calendar), stats.byWeekday[day] ?? 0)
             })
             MonthBars(title: "habitPage.stats.byMonth", color: color, months: stats.byMonth.map { month in
                 (MonthName.full(month.month, in: model.calendar), month.count)
@@ -71,6 +71,20 @@ struct HabitStatsSection: View {
     }
 }
 
+/// The title of a part of a statistics plate: the plate's own header, a little smaller.
+struct StatSubheading: View {
+    @Environment(\.tokens) private var tokens
+    private let title: LocalizedStringKey
+
+    init(_ title: LocalizedStringKey) {
+        self.title = title
+    }
+
+    var body: some View {
+        Text(title).font(tokens.font(.statSubheading)).foregroundStyle(tokens.color(.sectionHeader))
+    }
+}
+
 /// A titled row of small bars with a label under each.
 struct BarRow: View {
     @Environment(\.tokens) private var tokens
@@ -81,7 +95,7 @@ struct BarRow: View {
     var body: some View {
         let top = max(bars.map(\.value).max() ?? 0, 1)
         VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
-            Text(title).secondaryText()
+            StatSubheading(title)
             HStack(alignment: .bottom, spacing: tokens.space(.habitCellGap)) {
                 ForEach(Array(bars.enumerated()), id: \.offset) { _, bar in
                     VStack(spacing: tokens.space(.titleDetailGap)) {

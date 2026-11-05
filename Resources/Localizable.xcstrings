@@ -1072,13 +1072,24 @@
         }
       }
     },
-    "common.done": {
+    "common.close": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Done"
+            "value": "Close"
+          }
+        }
+      }
+    },
+    "common.ok": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
           }
         }
       }
@@ -1112,17 +1123,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "%1$@–%2$@"
-          }
-        }
-      }
-    },
-    "common.save": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Save"
           }
         }
       }

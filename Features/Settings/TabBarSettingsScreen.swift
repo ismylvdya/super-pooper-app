@@ -45,7 +45,7 @@ private struct TabSymbolRow: View {
                 if let name = await model.addTabBarIcon(from: file) { set(name) } else { failed = true }
             }
         }
-        .alert("settings.tabBar.svg.failed", isPresented: $failed) { Button("common.done") {} }
+        .alert("settings.tabBar.svg.failed", isPresented: $failed) { Button("common.ok") {} }
     }
 
     /// A symbol's name typed in, or a file instead of it.

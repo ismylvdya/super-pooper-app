@@ -95,6 +95,7 @@
   "themeLight": "sun.max",
   "themeDark": "moon",
   "selectCancel": "xmark",
+  "close": "xmark",
   "opacity": "circle.lefthalf.filled",
   "obsidian": "diamond",
   "habitSettings": "square.grid.3x3",

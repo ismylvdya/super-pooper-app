@@ -22,7 +22,7 @@ struct AlarmControl: View {
         .accessibilityLabel(Text("alarm.title"))
         .accessibilityIdentifier("alarm.control")
         .alert("alarm.refused.title", isPresented: $isRefused) {
-            Button("common.done") {}
+            Button("common.ok") {}
         } message: {
             Text("alarm.refused.message")
         }

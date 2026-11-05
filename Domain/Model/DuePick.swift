@@ -23,7 +23,7 @@ struct DuePick: Equatable, Sendable {
 
     var due: TaskDue { TaskDue(day: day, time: time) }
 
-    /// The edits Done writes to `task`: always its due, its zone and its alarm only when they changed.
+    /// The edits closing the sheet writes to `task`: always its due, its zone and its alarm only when they changed.
     func edits(from task: TaskItem) -> [TaskEdit] {
         let rings = time == nil ? nil : alarm
         return [.due(due)] + (zone == task.timeZone ? [] : [.timeZone(zone)])

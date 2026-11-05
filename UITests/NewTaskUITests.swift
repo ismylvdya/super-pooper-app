@@ -125,7 +125,7 @@ final class NewTaskUITests: XCTestCase {
         let zone = app.buttons["duePicker.timeZone"]
         XCTAssertTrue(zone.waitForExistence(timeout: 5))
         XCTAssertTrue(zone.label.contains("None"), "no zone until one is chosen: \(zone.label)")
-        app.buttons["duePicker.done"].tap()
+        app.buttons["duePicker.close"].tap()
         let selected = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isSelected == true"), object: chip)
         XCTAssertEqual(XCTWaiter().wait(for: [selected], timeout: 5), .completed)
         XCTAssertTrue(numbers(chip.label).contains(number), "the chip names the day: \(chip.label)")
