@@ -75,5 +75,7 @@ struct AlarmSoundValue: View {
             Text(verbatim: shown).lineLimit(1)
             Image(systemName: icons[.menuChevrons]).imageScale(.small)
         }
+        // The room a system picker leaves at its end: the values of a plate stand on one line.
+        .padding(.trailing, tokens.space(.menuValueInset))
     }
 }
