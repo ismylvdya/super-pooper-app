@@ -17,6 +17,7 @@ enum Haptics {
         case .none: return
         case .light: UIImpactFeedbackGenerator(style: .light).impactOccurred()
         case .medium: UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        case .heavy: UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
         case .selection: UISelectionFeedbackGenerator().selectionChanged()
         }
     }

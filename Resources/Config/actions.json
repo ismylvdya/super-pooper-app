@@ -404,6 +404,6 @@
     "dragStep": "selection",
     "pullArmed": "light",
     "extend": "medium",
-    "alarmSet": "medium"
+    "alarmSet": "heavy"
   }
 }

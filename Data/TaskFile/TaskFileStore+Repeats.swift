@@ -56,7 +56,7 @@ extension TaskFileStore {
 
     /// The habits with no line in today's look wait in Next actions, each on the nearest day after today its rule has: today is
     /// closed, skipped or not theirs. One taken out of today (`skipped`) with no day of its own tomorrow stands in tomorrow's pool,
-    /// with no time and marked overdue, as what the day leaves unfinished does (`Tomorrow`).
+    /// with no time and marked overdue, as what the day leaves unfinished does.
     func waitingHabitLines(except placed: Set<String>, skipped: [String], snapshot: Snapshot, today day: LocalDate) -> [TaskEntry] {
         let tomorrow = day.adding(days: 1)
         return snapshot.habits.values.sorted { $0.name < $1.name }.compactMap { file in

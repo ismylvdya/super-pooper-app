@@ -427,6 +427,18 @@ struct TaskFileStoreTests {
         #expect(tasks.first?.due == nil && tasks.first?.waitsInList == true)
     }
 
+    /// Not today during the day: undated in Next actions, and it stays there until the next morning.
+    @Test func aTaskWithItsDateTakenAwayWaitsInNextActions() async throws {
+        try write("%% day \(today.isoString) %%\n\n## Today\n- [ ] Call 📅 \(today.isoString) ⏰ 10:00\n## Next actions\n")
+        let store = store()
+        let task = try #require(try await store.load().tasks.first)
+        _ = try await store.apply([.due(nil)], to: task)
+        let reloaded = try #require(try await store.load().tasks.first)
+        #expect(reloaded.due == nil && reloaded.waitsInList)
+        let lines = try text().components(separatedBy: "\n")
+        #expect(try #require(lines.firstIndex(of: "- [ ] Call")) > lines.firstIndex(of: "## Next actions")!)
+    }
+
     @Test func anOldOpenMarkIsNoPartOfTheNameAndGoesWithTheNextWrite() async throws {
         try write("## Today\n- [ ] One ^open\n- [ ] Two\n")
         let store = store()

@@ -34,12 +34,11 @@ struct ZonedTaskEditsTests {
         #expect(model.task(named: "Standup")?.due == TaskDue("2026-10-21"))
     }
 
-    /// 01:00 on the 22nd in Jakarta is 20:00 on the 21st in Belgrade; Tomorrow is the 22nd of the phone, with no time.
-    @Test func notTodayMovesAZonedTaskByOneDayOfThePhone() async throws {
+    /// Not today takes the date away, whatever zone it is kept in.
+    @Test func notTodayTakesAZonedTasksDateAway() async throws {
         let model = try makeModel([jakartaTask("Call", due: "2026-10-22T01:00")])
         await model.perform(.notToday, on: "Call")
-        #expect(model.task(named: "Call")?.due == TaskDue("2026-10-22"))
-        #expect(model.task(named: "Call")?.isOverdue == true)
+        #expect(model.task(named: "Call")?.due == nil)
     }
 
     @Test func aDatePickedInThisWeekIsWrittenInJakartaTime() async throws {

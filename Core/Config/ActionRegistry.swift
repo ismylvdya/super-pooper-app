@@ -4,6 +4,7 @@ enum HapticStyle: String, Codable, ConfigName {
     case none
     case light
     case medium
+    case heavy
     /// The tick of a picker wheel or a list row passing another while reordered.
     case selection
 }

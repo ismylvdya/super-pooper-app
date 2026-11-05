@@ -15,7 +15,7 @@ extension TaskEdit {
         case .status, .complete, .reopen: .status
         case .highPriority: .priority
         case .started, .waiting: .tags
-        case .due, .overdue: .due
+        case .due: .due
         case .timeEstimate: .timeEstimate
         case .addProject: .projects
         case .subtaskOrder: .subtaskOrder

@@ -34,10 +34,10 @@ final class DayCommands {
         await derived.publish()
     }
 
-    /// Tomorrow for a task (`Tomorrow`).
+    /// Not today for a task (`NotToday`).
     func notToday(_ name: String, on day: LocalDate?) async {
-        guard isToday(day), let task = tasks.task(named: name), let local = localTask(named: name) else { return }
-        await write(task, Tomorrow.changes(for: local, context: self.day.context()))
+        guard isToday(day), let task = tasks.task(named: name) else { return }
+        await write(task, NotToday.changes())
     }
 
     func setManualOrder(_ names: [String]) {

@@ -24,8 +24,6 @@ enum TaskEdit: Hashable, Sendable {
     case recurrence(RecurrenceRule?)
     case reminderTimes([LocalTime])
     case alarms([TimeAlarm])
-    /// Marked as carried over from a day it was not done on.
-    case overdue(Bool)
     case started(Bool)
     case waiting(Bool)
     /// The zone of the item's times; nil = wall-clock times.

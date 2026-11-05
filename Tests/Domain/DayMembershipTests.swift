@@ -91,13 +91,12 @@ struct DayMembershipTests {
     // MARK: - Problems
 
 
-    /// Tomorrow: tomorrow's pool, with no time and marked overdue, a timed task or not.
-    @Test func tomorrowMovesATaskToTheNextPoolAsOverdue() {
-        let context = TestCalendar.context()
-        let timed = makeTask("Timed") { $0.due = TaskDue(day: context.today, time: LocalTime(string: "16:30")) }
-        #expect(Tomorrow.changes(for: timed, context: context) == [.due(TaskDue(day: context.today.adding(days: 1))), .overdue(true)])
-        let moved = timed.applying(Tomorrow.changes(for: timed, context: context))
-        #expect(moved.isOverdue && moved.due?.time == nil)
+    /// Not today: the date goes, with its time, and the task waits in Next actions.
+    @Test func notTodayTakesTheDateAway() {
+        let timed = makeTask("Timed") { $0.due = TaskDue(day: TestCalendar.context().today, time: LocalTime(string: "16:30")) }
+        let moved = timed.applying(NotToday.changes())
+        #expect(moved.due == nil && moved.waitsInList)
+        #expect(DayScenario(tasks: [moved]).build().item(named: "Timed") == nil)
     }
 
     /// Undated in Next actions a task is not among today's.
