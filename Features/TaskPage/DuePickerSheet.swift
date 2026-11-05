@@ -6,7 +6,6 @@ import SwiftUI
 /// changed, and Date switched off takes the date away.
 struct DuePickerSheet: View {
     @Environment(\.rules) private var rules
-    @Environment(\.tokens) private var tokens
     @Environment(AppModel.self) private var model
     @State private var pick: DuePick
     @State private var hasDate = true
@@ -29,7 +28,8 @@ struct DuePickerSheet: View {
                 Toggle("taskPage.due.date", isOn: $hasDate)
                     .accessibilityIdentifier("duePicker.hasDate")
                 if hasDate {
-                    calendar
+                    DayField("taskPage.due.date", day: $pick.day)
+                        .datePickerStyle(.graphical)
                     Toggle("taskPage.due.hasTime", isOn: Binding(get: { pick.time != nil }, set: setHasTime))
                         .accessibilityIdentifier("duePicker.hasTime")
                     if let time = pick.time {
@@ -52,18 +52,6 @@ struct DuePickerSheet: View {
         }
     }
 
-    /// The system's calendar needs a width of its own, wider than a row under a switch: it is laid out wider and drawn smaller.
-    private var calendar: some View {
-        let scale = tokens.ratio(.duePickerCalendar)
-        return ScaledToWidth(scale: scale) {
-            DayField("taskPage.due.date", day: $pick.day)
-                .datePickerStyle(.graphical)
-                .labelsHidden()
-                .scaleEffect(scale, anchor: .topLeading)
-        }
-        .childRow()
-    }
-
     private var zoneRow: some View {
         NavigationLink {
             TimeZonePicker(selected: pick.zone) { pick.zone = $0 }
@@ -79,21 +67,5 @@ struct DuePickerSheet: View {
     private func setHasTime(_ isOn: Bool) {
         pick.time = isOn ? rules.editing.defaultTime : nil
         if !isOn { pick.alarm = nil }
-    }
-}
-
-/// A view laid out `1 / scale` as wide as the width offered and taking `scale` of its height: with the view's own
-/// `scaleEffect` from its top leading corner, it fills that width.
-private struct ScaledToWidth: Layout {
-    let scale: CGFloat
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let width = proposal.replacingUnspecifiedDimensions().width
-        let height = subviews.first?.sizeThatFits(ProposedViewSize(width: width / scale, height: nil)).height ?? 0
-        return CGSize(width: width, height: height * scale)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        subviews.first?.place(at: bounds.origin, anchor: .topLeading, proposal: ProposedViewSize(width: bounds.width / scale, height: nil))
     }
 }
