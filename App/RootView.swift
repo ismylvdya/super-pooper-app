@@ -49,6 +49,8 @@ struct RootView: View {
                                 .padding(landscapeEdge, landscapeRoom(of: tab))
                                 // The room is the screen's own background, as on Tasks: no bar of the tab view's shows through it.
                                 .screenBackground()
+                                // The tab bar's own color stops at the bar.
+                                .tint(tokens.color(.accent))
                             } label: {
                                 Label {
                                     Text(LocalizedStringKey(String("tab.") + tab.rawValue))
@@ -70,6 +72,7 @@ struct RootView: View {
                             Label { Text("newItem.title") } icon: { Image(systemName: model.tabBarSymbols.newItem) }
                         }
                     }
+                    .tint(tokens.color(.tabBar))
                     .overlay { if physicalBottom == nil { uprightNewItemButton } }
                     // The bar draws each item's selected image itself, under its moving drop.
                     .background { TabBarSelectedSymbols(symbols: AppTab.allCases.map { model.tabBarSymbols.symbol(of: $0, isSelected: true) }) { name in
@@ -90,15 +93,14 @@ struct RootView: View {
                 .overlay(alignment: .top) { BannerOverlay(yieldsToSheets: true) }
                 .overlay { NewItemDragOverlay() }
                 .sheet(isPresented: $router.isReviewPresented) {
-                    MorningReviewScreen().appControls().presentationDragIndicator(.visible)
+                    MorningReviewScreen().tint(tokens.color(.accent)).presentationDragIndicator(.visible)
                 }
-                .sheet(isPresented: $router.isProblemsPresented) { ProblemsSheet().appControls() }
+                .sheet(isPresented: $router.isProblemsPresented) { ProblemsSheet().tint(tokens.color(.accent)) }
             } else {
                 OnboardingFlow()
             }
         }
-        .appControls()
-        .onChange(of: tokens.uiColor(.accentToolbar), initial: true) { _, color in UINavigationBar.appearance().tintColor = color }
+        .tint(tokens.color(.accent))
         .onGeometryChange(for: EdgeInsets.self) { $0.safeAreaInsets } action: { safeArea = $0 }
         .onGeometryChange(for: CGSize.self) { $0.size } action: { _ in updateLandscapeBottom() }
         .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in updateLandscapeBottom() }

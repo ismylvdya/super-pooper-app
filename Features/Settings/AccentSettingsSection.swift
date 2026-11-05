@@ -1,31 +1,22 @@
 import SwiftUI
 
-/// The accent color and which kinds of elements take it.
+/// The tab bar's accent color: whether it has one and, if so, which.
 struct AccentSettingsSection: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
-        PlateSection(header: "settings.accent", hint: "settings.accent.hint") {
-            PlateRow(icon: nil, title: "settings.accent.color") {
-                ThemeColorField(token: .accentPick)
+        PlateSection(header: "settings.accent") {
+            PlateRow(icon: nil, title: "settings.accent.tabBar") {
+                SwitchToggle("settings.accent.tabBar", isOn: Binding(get: { model.settings.accent.tabBar },
+                                                                     set: { isOn in model.updateSettings { $0.accent.tabBar = isOn } }))
+                    .labelsHidden()
+                    .accessibilityIdentifier("settings.accent.tabBar")
             }
-            ForEach(AccentCategory.allCases, id: \.self) { category in
-                PlateRow(icon: nil, title: LocalizedStringKey(String("settings.accent.") + category.rawValue)) {
-                    SwitchToggle(isOn: binding(of: category)) { Text(LocalizedStringKey(String("settings.accent.") + category.rawValue)) }
-                        .labelsHidden()
-                        .accessibilityIdentifier("settings.accent.\(category.rawValue)")
+            if model.settings.accent.tabBar {
+                PlateRow(icon: nil, title: "settings.accent.color", indent: true) {
+                    ThemeColorField(token: .tabBarPick)
                 }
             }
         }
-    }
-
-    private func binding(of category: AccentCategory) -> Binding<Bool> {
-        Binding(get: { model.settings.accent.categories.contains(category.rawValue) },
-                set: { isOn in
-                    model.updateSettings { settings in
-                        settings.accent.categories.removeAll { $0 == category.rawValue }
-                        if isOn { settings.accent.categories.append(category.rawValue) }
-                    }
-                })
     }
 }

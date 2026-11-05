@@ -54,7 +54,7 @@ struct SourcePickerScreen: View {
                                 Text(item.title).foregroundStyle(tokens.color(.primaryText))
                                 Spacer()
                                 if selected.contains(item.id) {
-                                    Image(systemName: icons[.selected]).foregroundStyle(tokens.color(.accentCheckmark))
+                                    Image(systemName: icons[.selected]).foregroundStyle(tokens.color(.accent))
                                 }
                             }
                         }

@@ -39,7 +39,7 @@ struct OnboardingFlow: View {
         HStack(spacing: tokens.space(.progressGap)) {
             ForEach(Step.allCases, id: \.self) { item in
                 Capsule()
-                    .fill(item.rawValue <= step.rawValue ? tokens.color(.accentCheckmark) : tokens.color(.chipBackground))
+                    .fill(item.rawValue <= step.rawValue ? tokens.color(.accent) : tokens.color(.chipBackground))
                     .frame(height: tokens.size(.progressHeight))
             }
         }
@@ -86,7 +86,7 @@ struct OnboardingFlow: View {
                 }
             }
             .buttonStyle(.borderedProminent)
-            .tint(tokens.color(.accentButton))
+            .tint(tokens.color(.accent))
         }
     }
 }
@@ -103,7 +103,7 @@ struct OnboardingStep: View {
 
     var body: some View {
         VStack(spacing: tokens.space(.plateRowGap)) {
-            Image(systemName: icons[icon]).font(tokens.font(.emptyIcon)).foregroundStyle(tokens.color(.accentIcon))
+            Image(systemName: icons[icon]).font(tokens.font(.emptyIcon)).foregroundStyle(tokens.color(.accent))
             Text(title).font(tokens.font(.emptyTitle)).multilineTextAlignment(.center)
             Text(message).font(tokens.font(.emptyBody)).foregroundStyle(tokens.color(.secondaryText)).multilineTextAlignment(.center)
             if let status {

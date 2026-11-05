@@ -17,7 +17,7 @@ struct AlarmControl: View {
     var body: some View {
         AlarmSoundMenu(selected: alarm?.sound, isOn: alarm != nil, onOff: { onChange(nil) }, onChoose: choose) {
             Image(systemName: icons[alarm == nil ? .alarm : .alarmOn])
-                .foregroundStyle(tokens.color(alarm == nil ? .secondaryText : .accentIcon))
+                .foregroundStyle(tokens.color(alarm == nil ? .secondaryText : .accent))
         }
         .accessibilityLabel(Text("alarm.title"))
         .accessibilityIdentifier("alarm.control")

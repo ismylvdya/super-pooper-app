@@ -59,13 +59,13 @@ struct TodayButtons: View {
                     .offset(x: -tokens.bar(.tabGlyphShiftLeft), y: tokens.bar(.tabGlyphShiftDown))
                     .overlay(alignment: .topTrailing) { if let badge { ProblemBadge(count: badge) } }
             }
-            .tint(tokens.color(.accentToolbar))
+            .tint(tokens.color(.accent))
             .accessibilityLabel(Text("lists.title"))
             .accessibilityValue(badge.map { Text("problems.badge \($0)") } ?? Text(verbatim: ""))
             .accessibilityIdentifier("today.lists")
         case .search:
             Button { router.open(.search(.tasksAndEvents)) } label: { SearchGlyph() }
-                .tint(tokens.color(.accentToolbar))
+                .tint(tokens.color(.accent))
                 .accessibilityLabel(Text("search.title"))
                 .accessibilityIdentifier("today.search")
         }

@@ -50,7 +50,7 @@ struct LandscapeTabBar: View {
                         .fixedSize(horizontal: false, vertical: true)
                     }
                     .padding(.horizontal, tokens.bar(.tabBarInner))
-                    .foregroundStyle(tokens.color(.primaryText))
+                    .foregroundStyle(tokens.color(router.tab == tab ? .tabBar : .primaryText))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background(tokens.color(.chipBackground).opacity(router.tab == tab ? 1 : 0), in: Capsule())
                     .contentShape(Capsule())

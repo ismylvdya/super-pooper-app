@@ -29,7 +29,7 @@ struct EmptyStateView: View {
         VStack(spacing: tokens.space(.groupGap)) {
             Image(systemName: icons[icon])
                 .font(tokens.font(.emptyIcon))
-                .foregroundStyle(tokens.color(.accentIcon))
+                .foregroundStyle(tokens.color(.accent))
             Text(title).font(tokens.font(.emptyTitle)).multilineTextAlignment(.center)
             message
                 .font(tokens.font(.emptyBody))
@@ -38,7 +38,7 @@ struct EmptyStateView: View {
             if let actionTitle, let action {
                 Button(action: action) { Text(actionTitle).font(tokens.font(.emptyAction)) }
                     .buttonStyle(.borderedProminent)
-                    .tint(tokens.color(.accentButton))
+                    .tint(tokens.color(.accent))
             }
         }
         .padding(tokens.space(.emptyStateInset))

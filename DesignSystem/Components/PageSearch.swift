@@ -10,13 +10,11 @@ extension View {
 
 /// The search button of a page's bar; it stands to the right of the page's other buttons, in the same bubble.
 struct SearchBarButton: View {
-    @Environment(\.tokens) private var tokens
     @Binding var isSearching: Bool
     var accessibilityID = "page.search"
 
     var body: some View {
         Button { isSearching = true } label: { SearchGlyph() }
-            .tint(tokens.color(.accentToolbar))
             .accessibilityLabel(Text("search.title"))
             .accessibilityIdentifier(accessibilityID)
     }

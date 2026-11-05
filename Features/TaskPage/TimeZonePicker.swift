@@ -53,7 +53,7 @@ struct TimeZonePicker: View {
             HStack {
                 Text(verbatim: title).foregroundStyle(tokens.color(.primaryText))
                 Spacer()
-                if isSelected { Image(systemName: icons[.selected]).foregroundStyle(tokens.color(.accentCheckmark)) }
+                if isSelected { Image(systemName: icons[.selected]).foregroundStyle(tokens.color(.accent)) }
             }
         }
         .accessibilityIdentifier("timeZone.\(title)")

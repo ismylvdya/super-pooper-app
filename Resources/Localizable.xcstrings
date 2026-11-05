@@ -4517,13 +4517,13 @@
         }
       }
     },
-    "settings.accent.hint": {
+    "settings.accent.tabBar": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "What is off keeps its own color. The system calendar takes one color for its arrows and its chosen day."
+            "value": "Tab bar"
           }
         }
       }
@@ -4535,105 +4535,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Color"
-          }
-        }
-      }
-    },
-    "settings.accent.selects": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Menus and chosen values"
-          }
-        }
-      }
-    },
-    "settings.accent.toolbars": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Toolbar buttons"
-          }
-        }
-      }
-    },
-    "settings.accent.calendar": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Calendar and its arrows"
-          }
-        }
-      }
-    },
-    "settings.accent.switches": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Switches"
-          }
-        }
-      }
-    },
-    "settings.accent.icons": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Row icons"
-          }
-        }
-      }
-    },
-    "settings.accent.checkmarks": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Checkmarks"
-          }
-        }
-      }
-    },
-    "settings.accent.buttons": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Buttons"
-          }
-        }
-      }
-    },
-    "settings.accent.swipes": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Swipe actions"
-          }
-        }
-      }
-    },
-    "settings.accent.dragMarks": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Drag marks"
           }
         }
       }

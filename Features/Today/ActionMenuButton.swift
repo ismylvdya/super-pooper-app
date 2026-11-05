@@ -18,7 +18,7 @@ struct ActionMenuButton: View {
         } label: {
             Image(systemName: icons[.more])
         }
-        .tint(tokens.color(.accentToolbar))
+        .tint(tokens.color(.accent))
         .accessibilityLabel(Text("taskPage.more"))
         .accessibilityIdentifier(accessibilityID)
     }

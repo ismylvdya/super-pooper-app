@@ -171,9 +171,9 @@ struct AppSettings: Codable, Equatable, Sendable {
         var symbols: [String: String]
     }
 
-    /// Which kinds of elements take the accent color (`accentPick`); the others keep their own (raw names of `AccentCategory`).
+    /// Whether the tab bar takes the accent color (`tabBarPick`). Nothing else in the app does.
     struct Accent: Codable, Equatable, Sendable {
-        var categories: [String]
+        var tabBar: Bool
     }
 
     struct Appearance: Codable, Equatable, Sendable {

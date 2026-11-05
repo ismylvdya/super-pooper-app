@@ -70,7 +70,7 @@ struct RecurrenceEditorSection: View {
                     }
                 } label: {
                     Chip(text: day.name(.initial, in: model.calendar),
-                         tint: tokens.color(.accentSelect), isOn: selected.contains(day))
+                         tint: tokens.color(.accent), isOn: selected.contains(day))
                 }
                 .buttonStyle(.borderless)
             }

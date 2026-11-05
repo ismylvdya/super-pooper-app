@@ -4,7 +4,6 @@ import SwiftUI
 /// calendar, `.appCalendar`) and the binding converts through that same calendar, so the day tapped is the day written.
 struct DayField: View {
     @Environment(\.calendar) private var calendar
-    @Environment(\.tokens) private var tokens
     private let title: LocalizedStringKey
     @Binding private var day: LocalDate
 
@@ -17,7 +16,6 @@ struct DayField: View {
         DatePicker(title, selection: Binding(get: { Self.date(of: day, calendar: calendar) },
                                              set: { day = LocalDate($0, in: calendar) }),
                    displayedComponents: .date)
-            .tint(tokens.color(.accentCalendar))
     }
 
     /// The picker keeps the time of day when another day is tapped; at noon that never tips into a neighbouring date.

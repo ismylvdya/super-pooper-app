@@ -2,35 +2,32 @@ import Testing
 import UIKit
 @testable import SuperPooperApp
 
-/// The accent the user picked goes only to the kinds of elements that are switched on.
+/// The accent color the user picked goes to the tab bar alone, and only while its switch is on.
 struct AccentSettingsTests {
-    private let limits = TestConfig.rules.limits
-
-    private func tokens(_ categories: [String]) throws -> DesignTokens {
+    private func tokens(tabBar: Bool) -> DesignTokens {
         var settings = TestConfig.defaults
-        settings.colors["accentPick"] = "#FF0000"
-        settings.accent.categories = categories
-        return TestConfig.tokens.applying(settings, limits: limits)
+        settings.colors["tabBarPick"] = "#FF0000"
+        settings.accent.tabBar = tabBar
+        return TestConfig.tokens.applying(settings, limits: TestConfig.rules.limits)
     }
 
-    @Test func aCategoryThatIsOnTakesThePickedColor() throws {
-        let shown = try tokens(["selects", "switches"])
-        #expect(shown.uiColor(.accentSelect).hexString == "#FF0000")
-        #expect(shown.uiColor(.accentSwitch).hexString == "#FF0000")
+    @Test func switchedOnTheTabBarTakesThePickedColor() {
+        #expect(tokens(tabBar: true).uiColor(.tabBar).hexString == "#FF0000")
     }
 
-    @Test func aCategoryThatIsOffKeepsItsOwnColor() throws {
-        let shown = try tokens(["selects"])
-        #expect(shown.uiColor(.accentToolbar).hexString != "#FF0000")
-        #expect(shown.uiColor(.accentSwitch).cgColor == UIColor.systemGreen.cgColor)
+    @Test func switchedOffTheTabBarKeepsTheTextColor() {
+        #expect(tokens(tabBar: false).uiColor(.tabBar).hexString != "#FF0000")
     }
 
-    @Test func anUnknownCategoryIsIgnored() throws {
-        #expect(try tokens(["gone"]).uiColor(.accentSelect).hexString != "#FF0000")
+    @Test func nothingElseTakesIt() {
+        #expect(tokens(tabBar: true).uiColor(.accent).hexString != "#FF0000")
     }
 
-    @Test func byDefaultSwitchesAreTheSystemGreen() throws {
-        let shown = TestConfig.tokens.applying(TestConfig.defaults, limits: limits)
-        #expect(shown.uiColor(.accentSwitch).cgColor == UIColor.systemGreen.cgColor)
+    @Test func switchesAreTheSystemGreen() {
+        #expect(tokens(tabBar: true).uiColor(.switchOn).cgColor == UIColor.systemGreen.cgColor)
+    }
+
+    @Test func byDefaultTheSwitchIsOff() {
+        #expect(!TestConfig.defaults.accent.tabBar)
     }
 }

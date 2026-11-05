@@ -54,6 +54,6 @@ private struct ActionSwipeButtons: ViewModifier {
     }
 
     private func tint(of action: ActionDefinition) -> ColorToken {
-        action.swipeTint.flatMap(ColorToken.init(rawValue:)) ?? (action.destructive ? .destructive : .accentSwipe)
+        action.swipeTint.flatMap(ColorToken.init(rawValue:)) ?? (action.destructive ? .destructive : .accent)
     }
 }

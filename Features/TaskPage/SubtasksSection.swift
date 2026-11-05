@@ -37,7 +37,7 @@ struct SubtasksSection: View {
                     }
                     .overlay(alignment: dropEdge(onto: subtask.name, names: names)) {
                         if target == subtask.name, dragged != subtask.name {
-                            Rectangle().fill(tokens.color(.accentDragMark)).frame(height: tokens.size(.subtaskDropLine))
+                            Rectangle().fill(tokens.color(.accent)).frame(height: tokens.size(.subtaskDropLine))
                         }
                     }
                     .accessibilityIdentifier("subtask:\(subtask.name)")
@@ -102,7 +102,7 @@ private struct SubtaskLabel: View {
         HStack(spacing: tokens.space(.iconTextGap)) {
             Image(icon: .subtask, icons: icons)
                 .renderingMode(.template)
-                .foregroundStyle(tokens.color(.accentIcon))
+                .foregroundStyle(tokens.color(.accent))
                 .frame(width: tokens.size(.iconColumn))
             FadingText(text: name, font: tokens.font(.rowTitle), lineHeight: tokens.uiFont(.rowTitle).lineHeight)
                 .strikethrough(isDone)
