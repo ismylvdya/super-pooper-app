@@ -3,11 +3,8 @@ import Foundation
 /// Task level in the weekly planning flow. How a store writes each one is the store's business.
 enum TaskStatus: Hashable, Codable, Sendable {
     case thisWeek
-    /// Started (half done): this week's task the user has begun. It counts as this week everywhere (`planningLevel`).
-    case inProgress
     case halfYear
     case someday
-    case waiting
     case done
     case archived
     /// Habits carry a recurrence instead of a planning level; they are always active.
@@ -15,30 +12,26 @@ enum TaskStatus: Hashable, Codable, Sendable {
     case other(String)
 
     /// The planning levels of open tasks.
-    static let open: [TaskStatus] = [.thisWeek, .halfYear, .someday, .waiting]
-    /// Every status a task's page offers: the planning levels, Started next to This week, done and archived.
-    static let known: [TaskStatus] = [.thisWeek, .inProgress, .halfYear, .someday, .waiting, .done, .archived]
+    static let open: [TaskStatus] = [.thisWeek, .halfYear, .someday]
+    /// The lists a task's page offers. The archive has its own action.
+    static let known: [TaskStatus] = [.thisWeek, .halfYear, .someday, .done]
     /// Where the review moves a task: a planning level or the archive (done is a check-off, not a move).
     static let reviewChoices: [TaskStatus] = open + [.archived]
 
     var isCompleted: Bool { self == .done || self == .archived }
 
-    /// The planning level the status stands for: a started task is this week's.
-    var planningLevel: TaskStatus { self == .inProgress ? .thisWeek : self }
-    var isThisWeek: Bool { planningLevel == .thisWeek }
-    var isStarted: Bool { self == .inProgress }
+    var isThisWeek: Bool { self == .thisWeek }
 
     /// A level as configs name it (`lists.json`, `rules.json`): a name that is not one of these stops the app with a
     /// config error, instead of quietly matching nothing.
     enum Name: String, Codable, Hashable, Sendable {
-        case thisWeek, halfYear, someday, waiting, done, archived
+        case thisWeek, halfYear, someday, done, archived
 
         var status: TaskStatus {
             switch self {
             case .thisWeek: .thisWeek
             case .halfYear: .halfYear
             case .someday: .someday
-            case .waiting: .waiting
             case .done: .done
             case .archived: .archived
             }

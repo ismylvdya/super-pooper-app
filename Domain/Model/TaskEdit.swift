@@ -26,6 +26,8 @@ enum TaskEdit: Hashable, Sendable {
     case alarms([TimeAlarm])
     /// Marked as carried over from a day it was not done on.
     case overdue(Bool)
+    case started(Bool)
+    case waiting(Bool)
     /// The zone of the item's times; nil = wall-clock times.
     case timeZone(String?)
     case habitColor(String?)

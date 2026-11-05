@@ -55,8 +55,9 @@ extension AppModel {
         case .skipToday: await parts.dayCommands.skip(name, on: day)
         case .notToday: await parts.dayCommands.notToday(name, on: day)
         case .archive: return await parts.notes.archive(name, announcing: announcing) ? [] : nil
-        case .restoreThisWeek, .notStarted: await parts.notes.setStatus(.thisWeek, of: name)
-        case .start: await parts.notes.setStatus(.inProgress, of: name)
+        case .restoreThisWeek: await parts.notes.setStatus(.thisWeek, of: name)
+        case .notStarted: await edit(name) { _ in [.started(false)] }
+        case .start: await edit(name) { _ in [.started(true)] }
         case .restoreHalfYear: await parts.notes.setStatus(.halfYear, of: name)
         case .restoreHabit: await parts.notes.setStatus(.habit, of: name)
         case .restoreFromArchive: await parts.notes.restoreFromArchive(name)

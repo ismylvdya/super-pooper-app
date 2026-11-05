@@ -51,7 +51,7 @@
           "id": "waiting",
           "title": "status.waiting",
           "icon": "listWaiting",
-          "statuses": ["waiting"]
+          "waiting": true
         },
         {
           "id": "done",

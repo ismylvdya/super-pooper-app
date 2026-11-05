@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The fill of a started task's plate (`TaskStatus.inProgress`): the started color at full strength at the plate's very
+/// The fill of a started task's plate (`TaskItem.isStarted`): the started color at full strength at the plate's very
 /// left edge, fading evenly to nothing `length` of the plate's width across (`AppSettings.Pool.startedFillLength`).
 struct StartedFill: View {
     @Environment(\.tokens) private var tokens

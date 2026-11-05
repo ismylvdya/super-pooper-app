@@ -14,6 +14,9 @@ extension TaskEntry {
         item.timeZone = zone
         item.completedDate = completed
         item.isOverdue = isOverdue
+        // A started box is how older files say it.
+        item.isStarted = isStarted || box == .started
+        item.isWaiting = isWaiting
         item.waitsInList = section == .soon && date == nil
         return item
     }
@@ -21,10 +24,9 @@ extension TaskEntry {
     private func status(in section: TaskSection) -> TaskStatus {
         if box == .done || section == .done { return .done }
         switch section {
-        case .now, .soon: return box == .started ? .inProgress : .thisWeek
+        case .now, .soon: return .thisWeek
         case .halfYear: return .halfYear
         case .someday: return .someday
-        case .waiting: return .waiting
         case .archive: return .archived
         case .done, .trash: return .done
         }
@@ -33,7 +35,9 @@ extension TaskEntry {
     /// Takes on the fields of `item`; the line's text and subtasks stay. The section follows from `TaskSection.of`.
     mutating func update(from item: TaskItem, format: TaskFileFormat) {
         name = item.name
-        box = item.status == .done ? .done : item.status.isStarted ? .started : .open
+        box = item.status == .done ? .done : .open
+        isStarted = item.isStarted
+        isWaiting = item.isWaiting
         isHigh = item.isHighPriority
         date = item.due?.day
         time = item.due?.time
@@ -49,17 +53,16 @@ extension TaskEntry {
 extension TaskSection {
     /// Where a task of that status stands. This week's: Today from its day on, otherwise Next actions, undated too.
     static func of(_ item: TaskItem, current: TaskSection, today: LocalDate, boundary: LocalTime = .midnight) -> TaskSection {
-        switch item.status.planningLevel {
+        switch item.status {
         case .thisWeek:
             guard let day = item.due?.logicalDay(boundary: boundary) else { return .soon }
             return day > today ? .soon : .now
         case .halfYear: return .halfYear
         case .someday: return .someday
-        case .waiting: return .waiting
         case .archived: return .archive
         // A done task stays where it is until it is put away, and then it is in Done already.
         case .done: return current
-        case .habit, .inProgress, .other: return .now
+        case .habit, .other: return .now
         }
     }
 }

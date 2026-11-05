@@ -28,7 +28,7 @@ struct DayTimelineView<TaskContent: View>: View {
                                  width: geometry.size.width, labelHeight: hourLabelHeight, y: y)
                 ForEach(blocks) { item in
                     block(for: item.slot)
-                        .environment(\.titleReserve, item.slot.hasAlarm ? alarmInset + tokens.size(.alarmMark) : cornerWidth(bell: item.slot.showsBell))
+                        .environment(\.titleReserve, item.slot.hasAlarm ? alarmInset + alarmMark : cornerWidth(bell: item.slot.showsBell))
                         .overlay(alignment: .topTrailing) {
                             HStack(spacing: tokens.space(.cornerMarkGap)) {
                                 if item.slot.showsBell { AlertBell(color: bellColor(of: item.slot)) }
@@ -38,7 +38,7 @@ struct DayTimelineView<TaskContent: View>: View {
                         }
                         .overlay(alignment: .topTrailing) {
                             if item.slot.hasAlarm {
-                                AlertBell(isAlarm: true)
+                                AlertBell(isAlarm: true, sizedAsBell: style.compactPlates)
                                     .padding(.top, alarmInset)
                                     .padding(.trailing, alarmInset)
                             }
@@ -69,8 +69,11 @@ struct DayTimelineView<TaskContent: View>: View {
 
     /// On a one-line block the alarm's mark stands as far from the right edge as from the top and the bottom.
     private var alarmInset: CGFloat {
-        max(((style.minimumTaskHeight ?? style.minimumItemHeight) - tokens.space(.timelineItemGap) - tokens.size(.alarmMark)) / 2, 0)
+        max(((style.minimumTaskHeight ?? style.minimumItemHeight) - tokens.space(.timelineItemGap) - alarmMark) / 2, 0)
     }
+
+    /// In a widget as big as the bells beside it.
+    private var alarmMark: CGFloat { style.compactPlates ? bell.size : tokens.size(.alarmMark) }
 
     /// The hour column and the hour labels' line grow with the hour font.
     private var labelWidth: CGFloat { style.showsHourLabels ? tokens.hourColumnWidth : 0 }

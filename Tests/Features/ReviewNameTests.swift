@@ -6,6 +6,6 @@ import Testing
 struct ReviewNameTests {
     @Test func theSheetIsMorningReviewAndItsListStaysSoon() {
         #expect(L10n.string("review.title") == "Morning review")
-        #expect(L10n.string("status.thisWeek") == "Soon")
+        #expect(L10n.string("status.thisWeek") == "Next actions")
     }
 }

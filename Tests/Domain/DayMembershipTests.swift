@@ -13,7 +13,7 @@ struct DayMembershipTests {
     }
 
 
-    @Test(arguments: [TaskStatus.halfYear, .someday, .waiting, .archived, .other("in_progress")])
+    @Test(arguments: [TaskStatus.halfYear, .someday, .archived, .other("in_progress")])
     func otherStatusesStayOutOfTheDay(status: TaskStatus) {
         let task = makeTask("Backlog", status: status) { $0.due = TaskDue("2026-10-21") }
         #expect(DayScenario(tasks: [task]).build().dayNames.isEmpty)
@@ -40,7 +40,7 @@ struct DayMembershipTests {
     // MARK: - Recurring tasks
 
     /// Any status but `archived`: archiving takes a recurring task out of the day (see `ArchivedNotesTests`).
-    @Test(arguments: [TaskStatus.thisWeek, .halfYear, .someday, .waiting, .done, .habit])
+    @Test(arguments: [TaskStatus.thisWeek, .halfYear, .someday, .done, .habit])
     func recurringTasksFollowTheirRuleRegardlessOfStatus(status: TaskStatus) {
         let daily = makeHabit("Daily", status: status)
         let saturdays = makeHabit("Saturdays", rule: "DTSTART:20260905;FREQ=WEEKLY;BYDAY=SA", status: status)

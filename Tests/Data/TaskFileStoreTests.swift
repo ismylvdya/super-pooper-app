@@ -28,7 +28,12 @@ struct TaskFileStoreTests {
     }
 
     private var file: URL { folder.appendingPathComponent(format.folder).appendingPathComponent(format.file) }
-    private func text() throws -> String { try String(contentsOf: file, encoding: .utf8) }
+    /// The tasks file and, when there is one, Done's beside it.
+    private func text() throws -> String {
+        let done = file.deletingLastPathComponent().appendingPathComponent(format.doneFile)
+        let finished = (try? String(contentsOf: done, encoding: .utf8)) ?? ""
+        return try String(contentsOf: file, encoding: .utf8) + finished
+    }
 
     private func write(_ text: String) throws {
         try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
@@ -71,7 +76,7 @@ struct TaskFileStoreTests {
         #expect(document.prelude == ["intro line"])
         #expect(parent?.note == ["first line", "", "second line"] && parent?.children.map(\.name) == ["Child"])
         #expect(document.sections.first { $0.title == "My own" }?.other.contains("- [ ] not a task of ours") == true)
-        let again = TaskDocument(text: document.text(format: format), format: format)
+        let again = TaskDocument(text: (document.tasksText(format: format) + document.doneText(format: format)), format: format)
         #expect(again == document)
     }
 
@@ -213,7 +218,7 @@ struct TaskFileStoreTests {
         let moved = document.sections[now].groups[morning].entries.removeFirst()
         document.sections[now].groups[evening].entries.append(moved)
         document.sections[now].groups[evening].title = "Night"
-        try write(document.text(format: format))
+        try write((document.tasksText(format: format) + document.doneText(format: format)))
 
         let look = try #require(await store.changedLook())
         #expect(look.sections == [.init(title: "Morning", names: ["B"]), .init(title: "Night", names: ["C", "A"])])
@@ -275,8 +280,8 @@ struct TaskFileStoreTests {
         let written = try text()
         #expect(!written.contains("Inbox") && !written.contains("## Now") && !written.contains("➕"))
         #expect(written.contains("## Today\n- [ ] Milk 📅 \(today.isoString)\n"))
-        #expect(written.contains("## Soon\n- [ ] Later\n- [ ] Idea\n"))
-        let today = try #require(written.range(of: "## Today")), soon = try #require(written.range(of: "## Soon"))
+        #expect(written.contains("## Next actions\n- [ ] Later\n- [ ] Idea\n"))
+        let today = try #require(written.range(of: "## Today")), soon = try #require(written.range(of: "## Next actions"))
         #expect(today.lowerBound < soon.lowerBound, "the sections stay in their order")
     }
 
@@ -339,7 +344,7 @@ struct TaskFileStoreTests {
         #expect(try text().contains("### Morning\n- [ ] Run 📅 \(today.isoString)"))
         await store.mirror(DayMirror(sections: [], timed: [:]))
         let lines = try text().components(separatedBy: "\n")
-        let soon = try #require(lines.firstIndex(of: "## Soon"))
+        let soon = try #require(lines.firstIndex(of: "## Next actions"))
         let line = try #require(lines.firstIndex { $0.hasPrefix("- [ ] Run") && $0.contains(habit.id.value) })
         #expect(line > soon)
         #expect(lines[line].contains("📅 \(today.adding(days: 1).isoString)"))
@@ -365,7 +370,40 @@ struct TaskFileStoreTests {
         _ = try await store.create(draft(), named: "New")
         let lines = try text().components(separatedBy: "\n")
         #expect(lines.contains("- [ ] Old 📅 \(today.isoString)"))
-        #expect(lines.firstIndex(of: "- [ ] New")! > lines.firstIndex(of: "## Soon")!)
+        #expect(lines.firstIndex(of: "- [ ] New")! > lines.firstIndex(of: "## Next actions")!)
+    }
+
+    /// An archived line stays in the archive, whatever date and time it has.
+    @Test func theArchiveKeepsItsLinesWhateverTheirDates() async throws {
+        let line = "- [ ] Old 📅 \(today.adding(days: -3).isoString) ⏰ 10:00"
+        try write("## Next actions\n## Archive\n\(line)\n")
+        _ = try await store().load()
+        let lines = try text().components(separatedBy: "\n")
+        #expect(lines.firstIndex(of: line)! > lines.firstIndex(of: "## Archive")!)
+    }
+
+    /// Started and Waiting are tags in the line; the task stays in its list.
+    @Test func olderStartedAndWaitingLinesBecomeTags() async throws {
+        try write("## Soon\n- [/] Begun\n## Half year\n- [ ] Far\n## Waiting\n- [ ] Pending\n")
+        let tasks = try await store().load().tasks
+        #expect(tasks.first { $0.name == "Begun" }?.isStarted == true)
+        #expect(tasks.first { $0.name == "Pending" }?.isWaiting == true)
+        #expect(tasks.first { $0.name == "Pending" }?.status == .thisWeek)
+        #expect(tasks.first { $0.name == "Far" }?.status == .halfYear)
+        let written = try text()
+        #expect(written.contains("## Next actions\n- [ ] Begun ▶️\n- [ ] Pending ⏸️\n"))
+        #expect(written.contains("## Soon\n- [ ] Far\n"))
+        #expect(!written.contains("Waiting") && !written.contains("Half year"))
+    }
+
+    /// Done's lines live in a file of their own, an older file's move there.
+    @Test func doneMovesToItsOwnFile() async throws {
+        try write("## Next actions\n## Done\n- [x] Old ✅ 2026-01-01\n")
+        _ = try await store().load()
+        let tasks = try String(contentsOf: file, encoding: .utf8)
+        let done = try String(contentsOf: file.deletingLastPathComponent().appendingPathComponent(format.doneFile), encoding: .utf8)
+        #expect(!tasks.contains("Old") && !tasks.contains("## Done"))
+        #expect(done.contains("## Done\n- [x] Old ✅ 2026-01-01"))
     }
 
     @Test func anOldOpenMarkIsNoPartOfTheNameAndGoesWithTheNextWrite() async throws {
@@ -416,7 +454,7 @@ struct TaskFileStoreTests {
         _ = try await store.create(habitDraft(weekly([other], from: today), times: [LocalTime(hour: 9, minute: 30)!]), named: "Gym")
         await store.mirror(DayMirror(sections: [], timed: [:]))
         let line = try #require(try line(of: "Gym"))
-        #expect(try section(of: "Gym") == "Soon")
+        #expect(try section(of: "Gym") == "Next actions")
         #expect(line.contains("📅 \(today.adding(days: 2).isoString) ⏰ 09:30"))
         #expect(line.contains("🔁 every-"))
     }
@@ -428,7 +466,7 @@ struct TaskFileStoreTests {
         let habit = try await store.create(habitDraft(daily), named: "Read")
         _ = try await store.apply([.mark(.done, on: today)], to: habit)
         await store.mirror(DayMirror(sections: [.init(title: "Day", names: ["Read"])], timed: [:]))
-        #expect(try section(of: "Read") == "Soon")
+        #expect(try section(of: "Read") == "Next actions")
         #expect(try line(of: "Read")?.contains("📅 \(today.adding(days: 1).isoString)") == true)
         #expect(try text().contains("- [x] Read ✅ \(today.isoString)"))
     }

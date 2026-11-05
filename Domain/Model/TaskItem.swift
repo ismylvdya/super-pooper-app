@@ -36,6 +36,9 @@ struct TaskItem: Identifiable, Hashable, Codable, Sendable {
     var problems: [TaskProblem] = []
     /// Its day passed with it not done, and it was carried into today's pool without a time (`docs/BACKEND.md`).
     var isOverdue = false
+    /// Tags: begun, and waiting on something. The task stays in its list either way.
+    var isStarted = false
+    var isWaiting = false
     /// Undated in Next actions: not among today's tasks. Only a date brings a task into a day.
     var waitsInList = false
     /// Its place among the store's lines; a list keeps that order. Nil = by name, after those.

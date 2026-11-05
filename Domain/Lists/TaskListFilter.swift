@@ -6,10 +6,13 @@ struct TaskListFilter: Hashable, Sendable {
     var statuses: [TaskStatus] = TaskStatus.open
     var feel: TaskFeel?
     var maxEstimate: Int?
+    /// Only what has that tag.
+    var waiting = false
 
     func matches(_ task: TaskItem, rules: DayRules) -> Bool {
-        guard !task.isHabit, statuses.contains(task.status.planningLevel) else { return false }
+        guard !task.isHabit, statuses.contains(task.status) else { return false }
         if let feel, task.feel != feel { return false }
+        if waiting, !task.isWaiting { return false }
         if let maxEstimate, rules.estimate(of: task) > maxEstimate { return false }
         return true
     }
@@ -18,7 +21,7 @@ struct TaskListFilter: Hashable, Sendable {
     func groups(of tasks: [TaskItem], query: String, rules: DayRules) -> [(status: TaskStatus, tasks: [TaskItem])] {
         let found = NameOrder.sorted(tasks.filter { matches($0, rules: rules) && SearchMatcher.matches($0.name, query) }).inStoreOrder
         return statuses.compactMap { status in
-            let members = found.filter { $0.status.planningLevel == status }
+            let members = found.filter { $0.status == status }
             return members.isEmpty ? nil : (status, members)
         }
     }

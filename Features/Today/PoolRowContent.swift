@@ -105,7 +105,7 @@ struct PoolRowContent: View {
 
     /// A started task, not done yet, has the started fill over its plate, under its text (`PlateFill`).
     private var startedFill: AnyView? {
-        guard let startedFillLength, item.task.status.isStarted, !item.isDone else { return nil }
+        guard let startedFillLength, item.task.isStarted, !item.isDone else { return nil }
         return AnyView(StartedFill(length: startedFillLength))
     }
 }

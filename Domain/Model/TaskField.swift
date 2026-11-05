@@ -3,7 +3,7 @@ import Foundation
 /// A field of a task or habit by the domain's name: what a value that cannot be read, or a change made both here and
 /// elsewhere, is about. The store knows where it keeps each one; screens put it in words.
 enum TaskField: String, CaseIterable, Hashable, Codable, Sendable {
-    case status, priority, due, timeEstimate, projects, subtaskOrder, feel
+    case status, tags, priority, due, timeEstimate, projects, subtaskOrder, feel
     case recurrence, marks, completedDate, created, modified, reminderTimes, alarms, timeZone
     case habitColor, harmful, repeatable, showInToday, timeOfDay, twiceADay, twiceCountsDouble, weeklyGoal, allowedSkips
 }
@@ -14,6 +14,7 @@ extension TaskEdit {
         switch self {
         case .status, .complete, .reopen: .status
         case .highPriority: .priority
+        case .started, .waiting: .tags
         case .due, .overdue: .due
         case .timeEstimate: .timeEstimate
         case .addProject: .projects
@@ -50,6 +51,7 @@ extension TaskItem {
     func value(of field: TaskField) -> AnyHashable? {
         switch field {
         case .status: status
+        case .tags: [isStarted, isWaiting]
         case .priority: isHighPriority
         case .due: due
         case .timeEstimate: timeEstimate

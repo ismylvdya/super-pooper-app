@@ -39,8 +39,4 @@ struct RowChipTests {
         #expect(Chip.width(of: .habit, tokens: TestConfig.tokens, icons: icons, scale: 3) > TestConfig.tokens.space(.chipHorizontal) * 2)
     }
 
-    @Test func aNeutralTaskHasNoFeelChip() {
-        let item = DayItem(task: makeTask("Read"), state: .open, problems: [])
-        #expect(chips(item).isEmpty)
-    }
 }

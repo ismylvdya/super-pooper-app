@@ -8,15 +8,19 @@ struct AlertBell: View {
     @Environment(\.timelineBell) private var bell
     var color: Color?
     var isAlarm = false
+    /// An alarm mark as big as the bells beside it (a widget's timeline).
+    var sizedAsBell = false
 
     var body: some View {
         Image(systemName: icons[isAlarm ? .alarm : .bell])
             .resizable()
             .scaledToFit()
-            .frame(width: isAlarm ? tokens.size(.alarmMark) : bell.size, height: isAlarm ? tokens.size(.alarmMark) : bell.size)
+            .frame(width: size, height: size)
             .foregroundStyle(color ?? tokens.color(.primaryText).opacity(bell.opacity))
             .accessibilityLabel(Text(isAlarm ? "alarm.title" : "timeline.alert"))
     }
+
+    private var size: CGFloat { isAlarm && !sizedAsBell ? tokens.size(.alarmMark) : bell.size }
 }
 
 /// Bell size and opacity from the settings.

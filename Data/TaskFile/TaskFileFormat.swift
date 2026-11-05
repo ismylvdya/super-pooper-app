@@ -10,7 +10,7 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
     }
 
     struct Sections: Codable, Hashable, Sendable {
-        let now, soon, halfYear, someday, waiting, done, archive, trash: String
+        let now, soon, halfYear, someday, done, archive, trash: String
     }
 
     struct Boxes: Codable, Hashable, Sendable {
@@ -18,10 +18,10 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
     }
 
     struct Markers: Codable, Hashable, Sendable {
-        let id, date, time, zone, estimate, alarm, high, pleasant, energy, routine, parent, repeats, overdue, completed, deleted: String
+        let id, date, time, zone, estimate, alarm, high, pleasant, energy, routine, parent, repeats, started, waiting, overdue, completed, deleted: String
 
         /// Every marker: a task's name cannot hold one.
-        var all: [String] { [id, date, time, zone, estimate, alarm, high, pleasant, energy, routine, parent, repeats, overdue, completed, deleted] }
+        var all: [String] { [id, date, time, zone, estimate, alarm, high, pleasant, energy, routine, parent, repeats, started, waiting, overdue, completed, deleted] }
     }
 
     let folder: String
@@ -44,6 +44,10 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
     let legacyHighMarkers: [String]
     /// After the alarm's marker: the sound is the one set in the settings.
     let alarmDefaultSound: String
+    /// The section older files keep waiting tasks in: they join Next actions, tagged.
+    let legacyWaitingSection: String
+    /// Done has a file of its own next to the tasks.
+    let doneFile: String
     /// Words older lines end with and the app no longer keeps: read so they are no part of the name, and gone with the next write.
     let legacyWords: [String]
 
@@ -53,7 +57,6 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
         case .soon: sections.soon
         case .halfYear: sections.halfYear
         case .someday: sections.someday
-        case .waiting: sections.waiting
         case .done: sections.done
         case .archive: sections.archive
         case .trash: sections.trash
@@ -63,5 +66,5 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
 
 /// The sections of the tasks file, in the order a new file has them.
 enum TaskSection: String, CaseIterable, Hashable, Codable, Sendable {
-    case now, soon, halfYear, someday, waiting, done, archive, trash
+    case now, soon, halfYear, someday, archive, trash, done
 }

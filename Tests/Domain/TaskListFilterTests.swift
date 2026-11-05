@@ -9,16 +9,16 @@ struct TaskListFilterTests {
         makeTask("Read a novel", status: .someday) { $0.feel = .pleasant; $0.timeEstimate = 240 },
         makeTask("Paint the door", status: .halfYear) { $0.feel = .needEnergy },
         makeTask("Reply to Anna") { $0.timeEstimate = 2 },
-        makeTask("Wait for the plumber", status: .waiting),
+        makeTask("Wait for the plumber", status: .someday),
         makeTask("Old one", status: .done),
         makeHabit("Water", status: .habit),
     ]
 
 
     @Test func theWeeklyReviewHoldsWhatIsNotThisWeekYet() {
-        let review = TaskListFilter(statuses: [.halfYear, .someday, .waiting])
+        let review = TaskListFilter(statuses: [.halfYear, .someday])
         let groups = review.groups(of: tasks, query: "", rules: rules)
-        #expect(groups.map(\.status) == [.halfYear, .someday, .waiting])
+        #expect(groups.map(\.status) == [.halfYear, .someday])
         #expect(groups.flatMap(\.tasks).map(\.name) == ["Paint the door", "Read a novel", "Wait for the plumber"])
     }
 

@@ -13,8 +13,8 @@ struct StartedTaskTests {
     }
 
     @Test func startedCountsAsThisWeek() {
-        let started = makeTask("Report", status: .inProgress)
-        #expect(started.status.isThisWeek && started.status.planningLevel == .thisWeek)
+        let started = makeTask("Report") { $0.isStarted = true }
+        #expect(started.status.isThisWeek)
         #expect(!started.canPromote)
         #expect(TaskListFilter(statuses: [.thisWeek]).matches(started, rules: TestConfig.rules.day))
         #expect(!TaskListFilter(statuses: [.halfYear]).matches(started, rules: TestConfig.rules.day))
@@ -24,7 +24,7 @@ struct StartedTaskTests {
 
     @Test func startIsOfferedToAnOpenTaskAndNotStartedToAStartedOne() {
         #expect(availability.entries(menu, for: item(makeTask("Report"))).map(\.action) == [.done, .start])
-        #expect(availability.entries(menu, for: item(makeTask("Report", status: .inProgress))).map(\.action) == [.done, .notStarted])
+        #expect(availability.entries(menu, for: item(makeTask("Report") { $0.isStarted = true })).map(\.action) == [.done, .notStarted])
         #expect(availability.entries(menu, for: item(makeTask("Report"), .marked(.done))).map(\.action) == [.done])
         #expect(availability.entries(menu, for: item(makeHabit("Water"))).map(\.action) == [.done])
     }

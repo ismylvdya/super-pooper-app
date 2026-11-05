@@ -84,7 +84,7 @@ struct AppModelTests {
         let model = try makeModel()
         let name = "Позвонить в банк"
         await model.perform(.start, on: name)
-        #expect(model.task(named: name)?.status == .inProgress)
+        #expect(model.task(named: name)?.isStarted == true)
         #expect(model.plan(at: model.clock.now).pool.contains { $0.id == name }, "a started task is still this week's")
         await model.perform(.notStarted, on: name)
         #expect(model.task(named: name)?.status == .thisWeek)

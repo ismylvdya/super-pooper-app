@@ -80,7 +80,7 @@ struct NotificationPlannerTests {
     /// Only tasks of this week notify; backlog tasks get here through auto-promotion first.
     @Test func timedTasksOutsideThisWeekAreNotPlanned() {
         let backlog = makeTask("Backlog", status: .halfYear) { $0.due = TaskDue("2026-10-23T10:00") }
-        let waiting = makeTask("Waiting", status: .waiting) { $0.due = TaskDue("2026-10-22T10:00") }
+        let waiting = makeTask("Waiting", status: .someday) { $0.due = TaskDue("2026-10-22T10:00") }
         #expect(plan([backlog, waiting], at: "08:00").isEmpty)
     }
 

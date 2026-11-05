@@ -29,7 +29,7 @@ enum ActionID: String, Codable, CaseIterable, Sendable {
     case snooze
     /// An event alert's button: only the alert goes away; the event stays in Calendar and on the timeline.
     case dismissAlert
-    /// A task begun: Started (`TaskStatus.inProgress`), still this week's.
+    /// A task begun: Started (a tag: it stays in its list).
     case start
     /// A started task back to plain This week.
     case notStarted

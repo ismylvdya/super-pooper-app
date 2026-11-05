@@ -8,17 +8,18 @@
   "dayMarkerSuffix": " %%",
   "sections": {
     "now": "Today",
-    "soon": "Soon",
-    "halfYear": "Half year",
+    "soon": "Next actions",
+    "halfYear": "Soon",
     "someday": "Someday",
-    "waiting": "Waiting",
-    "done": "Done",
     "archive": "Archive",
-    "trash": "Trash"
+    "trash": "Trash",
+    "done": "Done"
   },
   "legacySections": {
     "Now": "now",
-    "Inbox": "soon"
+    "Inbox": "soon",
+    "Waiting": "soon",
+    "Half year": "halfYear"
   },
   "boxes": {
     "open": " ",
@@ -26,6 +27,8 @@
     "done": "x"
   },
   "alarmDefaultSound": "default",
+  "legacyWaitingSection": "Waiting",
+  "doneFile": "Done.md",
   "legacyWords": ["^open"],
   "markers": {
     "id": "🆔",
@@ -40,6 +43,8 @@
     "routine": "🌅",
     "parent": "🔼",
     "repeats": "🔁",
+    "started": "▶️",
+    "waiting": "⏸️",
     "overdue": "🕰️",
     "completed": "✅",
     "deleted": "🗑️"

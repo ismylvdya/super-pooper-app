@@ -29,8 +29,12 @@ struct TaskDocument: Equatable, Sendable {
     }
 
     init(text: String, format: TaskFileFormat) {
-        let kinds = Dictionary(TaskSection.allCases.map { (format.title(of: $0), $0) }, uniquingKeysWith: { first, _ in first })
+        var kinds = Dictionary(TaskSection.allCases.map { (format.title(of: $0), $0) }, uniquingKeysWith: { first, _ in first })
             .merging(format.legacySections) { current, _ in current }
+        // A file with no Next actions is an older one, where its title today meant what Next actions is.
+        if !text.components(separatedBy: "\n").contains(Self.sectionPrefix + format.sections.soon) {
+            kinds[format.sections.halfYear] = .soon
+        }
         // Where lines go: the deepest entries open now, by their indents.
         var path: [(indent: Int, keys: [Int])] = []
         for line in text.components(separatedBy: "\n") {
@@ -86,34 +90,65 @@ struct TaskDocument: Equatable, Sendable {
             while sections[index].other.first?.isEmpty == true { sections[index].other.removeFirst() }
         }
         while prelude.last?.isEmpty == true { prelude.removeLast() }
+        for index in sections.indices where sections[index].title == format.legacyWaitingSection {
+            sections[index].groups = sections[index].groups.map { group in
+                var group = group
+                group.entries = group.entries.map { entry in
+                    var entry = entry
+                    entry.isWaiting = true
+                    return entry
+                }
+                return group
+            }
+        }
         mergeLegacySections(format: format)
         for section in TaskSection.allCases where !sections.contains(where: { $0.kind == section }) {
             sections.append(Section(kind: section, title: format.title(of: section)))
         }
     }
 
-    /// A section under an older title goes by its title now. When the file has both, its lines join the other's, which
-    /// stays where it stands.
+    /// A section under an older title goes by its title now. Several for one list join in the first that does not have
+    /// an older title, which stays where it stands.
     private mutating func mergeLegacySections(format: TaskFileFormat) {
         var merged: [Section] = []
-        let isCurrent = { (section: Section) in section.kind.map { format.title(of: $0) == section.title } ?? false }
-        for section in sections where isCurrent(section) || section.kind == nil || !sections.contains(where: { $0.kind == section.kind && isCurrent($0) }) {
-            var section = section
-            if let kind = section.kind {
-                section.title = format.title(of: kind)
-                for older in sections where older.kind == kind && !isCurrent(older) && older.title != section.title {
-                    guard isCurrent(sections.first { $0.kind == kind && isCurrent($0) } ?? older) else { continue }
-                    section.groups[0].entries += older.groups.flatMap(\.entries)
-                    section.other += older.other
-                }
+        for section in sections {
+            guard let kind = section.kind else {
+                merged.append(section)
+                continue
             }
-            merged.append(section)
+            let same = sections.filter { $0.kind == kind }
+            let host = same.first { format.legacySections[$0.title] == nil } ?? same[0]
+            guard section.title == host.title else { continue }
+            var joined = section
+            joined.title = format.title(of: kind)
+            for older in same where older.title != host.title {
+                joined.groups[0].entries += older.groups.flatMap(\.entries)
+                joined.other += older.other
+            }
+            merged.append(joined)
         }
         sections = merged
     }
 
-    /// The file: an empty line between sections, none between tasks.
-    func text(format: TaskFileFormat) -> String {
+    /// The tasks file: all but Done, which has a file of its own.
+    func tasksText(format: TaskFileFormat) -> String {
+        text(of: sections.filter { $0.kind != .done }, prelude: prelude, format: format)
+    }
+
+    /// The file of Done.
+    func doneText(format: TaskFileFormat) -> String {
+        text(of: sections.filter { $0.kind == .done }, prelude: [], format: format)
+    }
+
+    /// The lines of another file's Done join this document's.
+    mutating func takeDone(of other: TaskDocument) {
+        guard let done = sections.firstIndex(where: { $0.kind == .done }),
+              let theirs = other.sections.first(where: { $0.kind == .done }) else { return }
+        sections[done].groups[0].entries += theirs.groups.flatMap(\.entries)
+    }
+
+    /// A file: an empty line between sections, none between tasks.
+    private func text(of sections: [Section], prelude: [String], format: TaskFileFormat) -> String {
         var lines = prelude
         if !prelude.isEmpty { lines.append("") }
         for section in sections {

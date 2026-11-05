@@ -194,7 +194,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Back to Half year"
+            "value": "Back to Soon"
           }
         }
       }
@@ -759,7 +759,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Moved “%@” to Half year."
+            "value": "Moved “%@” to Soon."
           }
         }
       }
@@ -2949,7 +2949,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Soon — picked to do soon, the day is built from these. Half year and Someday — backlog. Waiting — not in the day. The app never lowers a status."
+            "value": "Next actions — picked to do next, the day is built from these. Soonear and Someday — backlog. Waiting — not in the day. The app never lowers a status."
           }
         }
       }
@@ -5982,6 +5982,50 @@
         }
       }
     },
+    "taskPage.list": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "List"
+          }
+        }
+      }
+    },
+    "taskPage.feel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feel"
+          }
+        }
+      }
+    },
+    "taskPage.tags": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tags"
+          }
+        }
+      }
+    },
+    "taskPage.tags.none": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None"
+          }
+        }
+      }
+    },
     "status.archived": {
       "extractionState": "manual",
       "localizations": {
@@ -6021,7 +6065,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nearest months"
+            "value": "Soon"
           }
         }
       }
@@ -6054,7 +6098,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Soon"
+            "value": "Next actions"
           }
         }
       }

@@ -68,6 +68,10 @@ actor TaskFileStore: TaskStore {
 
     // MARK: - The files
 
+    func doneURL(root: URL) -> URL {
+        fileURL(root: root).deletingLastPathComponent().appendingPathComponent(format.doneFile)
+    }
+
     func fileURL(root: URL) -> URL {
         root.appendingPathComponent(format.folder, isDirectory: true).appendingPathComponent(format.file)
     }
@@ -87,9 +91,13 @@ actor TaskFileStore: TaskStore {
         // A folder chosen by mistake (or the old TaskNotes one) stays as it is: the app makes no folders of its own there.
         guard fileSystem.fileExists(url.deletingLastPathComponent()) else { throw TaskStoreError.folderMissing(format.folder) }
         try await ensureDownloaded(url)
-        let document = fileSystem.fileExists(url)
+        var document = fileSystem.fileExists(url)
             ? TaskDocument(text: try fileSystem.read(url).text, format: format)
             : TaskDocument(format: format)
+        // Done has a file of its own; lines an older tasks file still has there come first, and leave it with the next write.
+        let done = doneURL(root: root)
+        try await ensureDownloaded(done)
+        if fileSystem.fileExists(done) { document.takeDone(of: TaskDocument(text: try fileSystem.read(done).text, format: format)) }
         var snapshot = Snapshot(document: document, habits: try await readHabits(root: root))
         TaskLineIDs.assign(to: &snapshot.document, habits: Set(snapshot.habits.keys))
         snapshot.indexNames()
@@ -126,12 +134,16 @@ actor TaskFileStore: TaskStore {
     }
 
     /// Writes the file when it changed; what was written is read back before it counts.
+    /// Done first: a write cut short leaves a line in both files, never in neither.
     func write(_ document: TaskDocument, root: URL) throws {
-        let url = fileURL(root: root)
-        let text = document.text(format: format)
+        try write(document.doneText(format: format), to: doneURL(root: root), named: format.doneFile)
+        try write(document.tasksText(format: format), to: fileURL(root: root), named: format.file)
+    }
+
+    private func write(_ text: String, to url: URL, named name: String) throws {
         if fileSystem.fileExists(url), (try? fileSystem.read(url).text) == text { return }
         try fileSystem.write(text, to: url)
-        guard fileSystem.isWritten(text, at: url) else { throw TaskStoreError.notConfirmed(format.file) }
+        guard fileSystem.isWritten(text, at: url) else { throw TaskStoreError.notConfirmed(name) }
     }
 
     func write(_ habit: HabitFile, root: URL) throws {
@@ -214,6 +226,7 @@ actor TaskFileStore: TaskStore {
         }
         rollOver(&snapshot.document, to: day, habits: Set(snapshot.habits.keys))
         dateLooseLines(&snapshot.document, to: day, habits: Set(snapshot.habits.keys))
+        tagStartedLines(&snapshot.document, habits: Set(snapshot.habits.keys))
         carryMissedHabits(&snapshot, to: day)
         return snapshot.document != before
     }
@@ -221,6 +234,22 @@ actor TaskFileStore: TaskStore {
     /// The logical day a line stands on.
     func logicalDay(of entry: TaskEntry) -> LocalDate? {
         entry.date.map { TaskDue(day: $0, time: entry.time).logicalDay(boundary: boundary()) }
+    }
+
+    /// A task's started box is how an older file says Started; a habit's is a mark.
+    private func tagStartedLines(_ document: inout TaskDocument, habits: Set<String>) {
+        func tag(_ entries: inout [TaskEntry]) {
+            for index in entries.indices {
+                if entries[index].box == .started, !(entries[index].id.map(habits.contains) ?? false) {
+                    entries[index].box = .open
+                    entries[index].isStarted = true
+                }
+                tag(&entries[index].children)
+            }
+        }
+        for section in document.sections.indices where document.sections[section].kind != .done {
+            for group in document.sections[section].groups.indices { tag(&document.sections[section].groups[group].entries) }
+        }
     }
 
     /// Only a date puts a task in Today: an undated line there (from an older file, or typed in) is today's.

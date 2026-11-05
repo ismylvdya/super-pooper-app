@@ -221,9 +221,9 @@ extension TaskFileStore: TaskTrash, DayMirroring, ExternalLinking, TaskBackups, 
 
     func backup(_ tasks: [TaskItem], reason: String) async throws {
         try await location.withRoot { root in
-            let url = fileURL(root: root)
-            guard fileSystem.fileExists(url) else { return }
-            _ = try backups.backup([url], reason: reason)
+            let urls = [fileURL(root: root), doneURL(root: root)].filter(fileSystem.fileExists)
+            guard !urls.isEmpty else { return }
+            _ = try backups.backup(urls, reason: reason)
         }
     }
 

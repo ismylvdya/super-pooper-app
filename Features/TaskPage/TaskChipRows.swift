@@ -1,8 +1,7 @@
 import SwiftUI
 
 /// The fastest way to plan a task, right under its name, in two rows: Today, Tomorrow and the date chip, which opens the
-/// date sheet and names another day or a time; then High priority, a chip's width apart from Pleasant and Need energy, those
-/// two as icons alone. All off for a new task.
+/// date sheet and names another day or a time; then High priority. All off for a new task.
 /// What the chips set is not repeated in Properties.
 struct TaskChipRows: View {
     @Environment(AppModel.self) private var model
@@ -25,11 +24,7 @@ struct TaskChipRows: View {
                     dateChip.fixedSize().layoutPriority(1)
                 }
             }
-            HStack(spacing: spacing) {
-                highChip
-                Color.clear.frame(width: tokens.size(.chipRowGap), height: 0)
-                feelChips
-            }
+            highChip
         }
         .frame(maxWidth: .infinity)
         .sheet(isPresented: $isPickingDate) {
@@ -93,16 +88,5 @@ struct TaskChipRows: View {
     private var dateChipIcon: Icon {
         guard editor.task.due?.time != nil else { return .datePick }
         return editor.task.alarm(at: nil) == nil ? .time : .alarm
-    }
-
-    @ViewBuilder private var feelChips: some View {
-        ForEach(FeelChip.allCases, id: \.self) { chip in
-            ToggleChip(chip.look, isOn: editor.task.feel == chip.feel) {
-                Haptics.play(.select)
-                editor.edit { [.feel(FeelChip.toggling(chip, current: $0.feel))] }
-            }
-            .accessibilityLabel(Text(chip.title))
-            .accessibilityIdentifier(chip.chipIdentifier)
-        }
     }
 }

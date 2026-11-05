@@ -27,7 +27,7 @@ struct OtherDayTests {
     }
 
     @Test func onlyThisWeeksTasksAreShown() {
-        let waiting = makeTask("Waiting", status: .waiting) { $0.due = TaskDue("2026-10-22") }
+        let waiting = makeTask("Waiting", status: .someday) { $0.due = TaskDue("2026-10-22") }
         let planned = makeTask("Planned") { $0.due = TaskDue("2026-10-22") }
         #expect(tomorrow([waiting, planned]).dayNames == ["Planned"] as Set)
     }

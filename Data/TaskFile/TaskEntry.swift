@@ -22,6 +22,8 @@ struct TaskEntry: Equatable, Sendable {
     /// The repeat rule in words (`RepeatTag`), only to be read: a habit's rule lives in its JSON file.
     var repeats: String?
     /// Its time passed with its day and it was not done: it stands in the pool with a mark.
+    var isStarted = false
+    var isWaiting = false
     var isOverdue = false
     var completed: LocalDate?
     var deleted: LocalDate?
@@ -50,7 +52,7 @@ extension TaskEntry {
         let markers = format.markers
         let legacy = format.legacyMarkers
         while let last = tokens.last {
-            if format.legacyWords.contains(last) {} else if last == markers.high || format.legacyHighMarkers.contains(last) { isHigh = true } else if last == markers.pleasant { feel = .pleasant } else if last == markers.energy { feel = .needEnergy } else if last == markers.overdue { isOverdue = true } else if tokens.count >= 2, read(last, marker: tokens[tokens.count - 2], markers, legacy: legacy) {
+            if format.legacyWords.contains(last) {} else if last == markers.high || format.legacyHighMarkers.contains(last) { isHigh = true } else if last == markers.pleasant { feel = .pleasant } else if last == markers.energy { feel = .needEnergy } else if last == markers.overdue { isOverdue = true } else if last == markers.started { isStarted = true } else if last == markers.waiting { isWaiting = true } else if tokens.count >= 2, read(last, marker: tokens[tokens.count - 2], markers, legacy: legacy) {
                 tokens.removeLast()
             } else if last.isEmpty {
                 // A double space or a trailing one.
@@ -115,6 +117,8 @@ extension TaskEntry {
         add(markers.routine, routine)
         add(markers.parent, parent.map(TaskLineIDs.written))
         add(markers.repeats, repeats)
+        if isStarted { parts.append(markers.started) }
+        if isWaiting { parts.append(markers.waiting) }
         if isOverdue { parts.append(markers.overdue) }
         add(markers.completed, completed?.isoString)
         add(markers.deleted, deleted?.isoString)
