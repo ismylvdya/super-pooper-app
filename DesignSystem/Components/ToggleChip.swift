@@ -14,10 +14,12 @@ struct ToggleChip: View {
     var capsule = ChipCapsule.large
     /// The chip may be narrower than its title, which then dissolves at the right instead of ending with "…".
     var fadesTitle = false
+    /// A long press does this; the chip then takes its touches itself, as a button would hold on to them.
+    var onLongPress: (() -> Void)?
     let action: () -> Void
 
     init(icon: Icon, title: LocalizedStringKey? = nil, values: [String] = [], tint: ColorToken, isOn: Bool,
-         capsule: ChipCapsule = .large, fadesTitle: Bool = false, action: @escaping () -> Void) {
+         capsule: ChipCapsule = .large, fadesTitle: Bool = false, onLongPress: (() -> Void)? = nil, action: @escaping () -> Void) {
         self.icon = icon
         self.title = title
         self.values = values
@@ -25,6 +27,7 @@ struct ToggleChip: View {
         self.isOn = isOn
         self.capsule = capsule
         self.fadesTitle = fadesTitle
+        self.onLongPress = onLongPress
         self.action = action
     }
 
@@ -34,9 +37,18 @@ struct ToggleChip: View {
     }
 
     var body: some View {
-        Button(action: action) { label }
-            .buttonStyle(.plain)
-            .accessibilityAddTraits(isOn ? .isSelected : [])
+        Group {
+            if let onLongPress {
+                label
+                    .contentShape(Capsule())
+                    .onTapGesture(perform: action)
+                    .onLongPressGesture(perform: onLongPress)
+                    .accessibilityAddTraits(.isButton)
+            } else {
+                Button(action: action) { label }.buttonStyle(.plain)
+            }
+        }
+        .accessibilityAddTraits(isOn ? .isSelected : [])
     }
 
     @ViewBuilder private var label: some View {

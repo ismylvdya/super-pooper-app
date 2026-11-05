@@ -9,11 +9,13 @@ struct DuePickerSheet: View {
     @Environment(\.tokens) private var tokens
     @State private var pick: DuePick
     private let choosesZone: Bool
+    private let offersAlarmOff: Bool
     private let onSave: (DuePick?) -> Void
 
-    init(pick: DuePick, choosesZone: Bool, onSave: @escaping (DuePick?) -> Void) {
+    init(pick: DuePick, choosesZone: Bool, offersAlarmOff: Bool = false, onSave: @escaping (DuePick?) -> Void) {
         _pick = State(initialValue: pick)
         self.choosesZone = choosesZone
+        self.offersAlarmOff = offersAlarmOff
         self.onSave = onSave
     }
 
@@ -30,7 +32,7 @@ struct DuePickerSheet: View {
                 }
                 if choosesZone {
                     zoneRow
-                    if pick.time != nil { AlarmRows(alarm: $pick.alarm) }
+                    if pick.time != nil { AlarmRows(alarm: $pick.alarm, offersOff: offersAlarmOff) }
                 }
             }
             .navigationTitle(Text("duePicker.title"))

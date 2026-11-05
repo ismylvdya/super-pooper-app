@@ -7033,7 +7033,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Habits only"
+            "value": "Habits & Repeatable tasks only"
           }
         }
       }
@@ -7298,6 +7298,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Done"
+          }
+        }
+      }
+    },
+    "alarm.sound.defaultNamed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Default (%@)"
+          }
+        }
+      }
+    },
+    "alarm.sound.choose": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose"
           }
         }
       }

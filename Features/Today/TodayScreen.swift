@@ -31,6 +31,7 @@ struct TodayScreen: View {
     /// Where the bar's buttons stand upright (`DayBarRoom`).
     @State private var barButtons: [TodayButtons.Item: CGRect] = [:]
     @State private var isKeyboardShown = false
+    @State private var safeArea = EdgeInsets()
 
     private var isLandscape: Bool { physicalBottom != nil }
 
@@ -44,6 +45,7 @@ struct TodayScreen: View {
         }
         .screenBackground()
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
+        .onGeometryChange(for: EdgeInsets.self) { $0.safeAreaInsets } action: { safeArea = $0 }
         // Upright, the system bar; lying sideways the buttons stand in their own column along the physical top.
         .toolbar(isLandscape ? .hidden : .visible, for: .navigationBar)
         .navigationBarTitleDisplayMode(.inline)
@@ -178,8 +180,9 @@ struct TodayScreen: View {
         pager.turn(to: newPage, pageCount: pageCount, animation: tokens.animation)
     }
 
-    /// Lying sideways the tab bar's inner side is the screen's edge for the pages; what the strip pushes past it shows
-    /// through the glass. With the keyboard up there is no bar.
+    /// Lying sideways the pages' container is laid out from the screen's edge at the physical bottom, past the safe area
+    /// there: the tab bar's inner side is its edge, and what the strip pushes past it shows through the glass. With the
+    /// keyboard up there is no bar.
     private var tabBarRoom: CGFloat { isKeyboardShown ? 0 : tokens.bar(.landscapeTabBarRoom) }
 
     private var content: some View {
@@ -206,6 +209,7 @@ struct TodayScreen: View {
             .onChange(of: isDaySwiping) { _, swiping in if !swiping { pager.endSwipe() } }
             .onChange(of: arrangement) { pager.resetPage() }
         }
+        .ignoresSafeArea(.container, edges: physicalBottom == .leading ? .leading : physicalBottom == .trailing ? .trailing : [])
     }
 
     /// A horizontal drag moves the pages with the finger and, far enough, turns the page; at the first page it pulls the
@@ -238,26 +242,33 @@ struct TodayScreen: View {
     }
 
     /// The phone lying sideways: the bar's buttons in a column along the physical top, each where it is on the
-    /// physical screen upright (the right end of the bar at the physical right, the arrows pointing the same way).
+    /// physical screen upright (the right end of the bar at the physical right, the arrows pointing the same way). Its
+    /// container is the screen's height less `barSideInset` at both ends, whatever the safe area takes from it; the first
+    /// and the last group stand at its ends and the day's name in its middle, so nothing can push them past the screen.
     private func landscapeColumn(bottom: HorizontalEdge) -> some View {
-        VStack(spacing: tokens.space(.groupGap)) {
-            ForEach(PhysicalBottom.physicalOrder(LandscapeSlot.allCases, bottom: bottom), id: \.self) { slot in
-                switch slot {
-                case .leading: bubble(.vertical) {
-                    if selection.isOn { selectionBar(.leading, bottom: bottom) } else { TodayButtons(placement: .leading, bottom: bottom) }
-                }
-                case .day: Spacer(minLength: 0); if selection.isOn { selectionTitle } else { title }; Spacer(minLength: 0)
-                case .trailing: bubble(.vertical) {
-                    if selection.isOn { selectionBar(.trailing, bottom: bottom) } else { TodayButtons(placement: .trailing, bottom: bottom) }
-                }
-                }
-            }
+        let slots = PhysicalBottom.physicalOrder(LandscapeSlot.allCases, bottom: bottom).filter { $0 != .day }
+        return VStack(spacing: 0) {
+            if let first = slots.first { landscapeButtons(first, bottom: bottom) }
+            Spacer(minLength: 0)
+            if let last = slots.last { landscapeButtons(last, bottom: bottom) }
         }
-        // As far from the physical sides as the bubbles upright: measured from the screen edges in both turns.
-        .padding(.vertical, tokens.bar(.barSideInset))
-        .ignoresSafeArea(.container, edges: .vertical)
+        .frame(maxHeight: .infinity)
+        .overlay { if selection.isOn { selectionTitle.quarterTurned(physicalBottom) } else { title } }
+        .padding(.top, tokens.bar(.barSideInset) - safeArea.top)
+        .padding(.bottom, tokens.bar(.barSideInset) - safeArea.bottom)
         // Their glass casts a shadow over the blocks beside them.
         .zIndex(LiftLayer.beside(blocks: layout.blocks.count))
+    }
+
+    private func landscapeButtons(_ slot: LandscapeSlot, bottom: HorizontalEdge) -> some View {
+        let placement: SelectionToolbar.Placement = slot == .leading ? .leading : .trailing
+        return bubble(.vertical) {
+            if selection.isOn {
+                selectionBar(placement, bottom: bottom)
+            } else {
+                TodayButtons(placement: slot == .leading ? .leading : .trailing, bottom: bottom)
+            }
+        }
     }
 
     /// A group of bar buttons in the glass capsule the system draws around them upright.

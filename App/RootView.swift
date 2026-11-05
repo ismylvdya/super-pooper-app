@@ -14,6 +14,8 @@ struct RootView: View {
     @State private var taskDrag = TaskDragState()
     /// The keyboard is up: lying sideways the app's own tab bar makes room for it (the system's upright does so itself).
     @State private var isKeyboardUp = false
+    /// The window's safe area: the tabs stand inside it whatever the root ignores.
+    @State private var safeArea = EdgeInsets()
 
     private var physicalBottom: HorizontalEdge? { verticalSizeClass == .compact ? landscapeBottom : nil }
 
@@ -91,6 +93,7 @@ struct RootView: View {
             }
         }
         .tint(tokens.color(.accent))
+        .onGeometryChange(for: EdgeInsets.self) { $0.safeAreaInsets } action: { safeArea = $0 }
         .onGeometryChange(for: CGSize.self) { $0.size } action: { _ in updateLandscapeBottom() }
         .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in updateLandscapeBottom() }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in isKeyboardUp = true }
@@ -158,10 +161,12 @@ struct RootView: View {
 
     private var landscapeEdge: Edge.Set { physicalBottom == .leading ? .leading : .trailing }
 
-    /// The room a tab's stack keeps from the landscape tab bar. Tasks' first page has no system bar and keeps the room itself.
+    /// The room a tab's stack keeps from the landscape tab bar. It stands inside the safe area, so that part of the room is
+    /// there already. Tasks' first page has no system bar and keeps the room itself.
     private func landscapeRoom(of tab: AppTab) -> CGFloat {
-        guard physicalBottom != nil, !isKeyboardUp else { return 0 }
-        return tab == .today && (container.router.paths[tab] ?? []).isEmpty ? 0 : tokens.bar(.landscapeTabBarRoom)
+        guard let physicalBottom, !isKeyboardUp else { return 0 }
+        if tab == .today, (container.router.paths[tab] ?? []).isEmpty { return 0 }
+        return max(tokens.bar(.landscapeTabBarRoom) - (physicalBottom == .leading ? safeArea.leading : safeArea.trailing), 0)
     }
 
     /// The "+"'s slot chosen on the system bar: the bar first goes back to its tab, then the page opens on it; opened at

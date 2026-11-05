@@ -44,6 +44,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         }
 
         let sounds: [Sound]
+        /// The sound that rings silently, its own item in the sound menu.
+        let vibrateSound: String
         /// How much of a sound plays while it is being chosen.
     }
 

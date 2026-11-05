@@ -331,6 +331,18 @@ struct TaskFileStoreTests {
         #expect(try text().contains("- [ ] One\n- [ ] Two ^open\n"))
     }
 
+    @Test func theOpenMarkOutlivesLaterEdits() async throws {
+        let store = store()
+        let first = try await store.create(draft(), named: "One")
+        let second = try await store.create(draft(), named: "Two")
+        _ = await store.externalURL(for: first)
+        _ = try await store.apply([.highPriority(true)], to: second)
+        _ = try await store.load()
+        #expect(try text().contains("- [ ] One ^open\n"))
+        _ = try await store.apply([.highPriority(true)], to: first)
+        #expect(try text().contains("^open"))
+    }
+
     @Test func aRenamedHabitKeepsItsOldNameInDone() async throws {
         let store = store()
         let habit = try await store.create(NoteDraft(status: .habit), named: "Run")

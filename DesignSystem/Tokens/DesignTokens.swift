@@ -63,9 +63,9 @@ struct DesignTokens: Decodable, Sendable {
         // The icons are smaller than the title's line: on a one-line row they stand as far from the right edge as from the top.
         space(.rowVertical) / 2 + max(uiFont(.taskTitle).lineHeight - size(.rowIconHeight), 0) / 2
     }
-    /// Where a banner stands: under the navigation bar's round buttons (back, …).
+    /// Where a banner stands: between the navigation bar's round buttons (back, search).
     var bannerPlacement: BannerPlacement {
-        BannerPlacement(bar: bar(.navigationBar), button: bar(.uprightBarButton), sideInset: bar(.barSideInset), gapBelowButtons: bar(.bannerBelowButtons))
+        BannerPlacement(bar: bar(.navigationBar), button: bar(.uprightBarButton), sideInset: bar(.barSideInset))
     }
     /// The side insets of a timeline slot's plate.
     var slotPlateInset: CGFloat { space(.plateInner) / 2 }

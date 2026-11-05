@@ -29,19 +29,10 @@ struct NotificationSettingsSection: View {
                 .accessibilityIdentifier("settings.notifications.snooze")
             }
             PlateRow(icon: .alarm, title: "settings.notifications.alarmSound", info: "info.alarm") {
-                Picker("settings.notifications.alarmSound", selection: Binding(
-                    get: { model.settings.notifications.alarmSound },
-                    set: { value in
-                        model.updateSettings { $0.notifications.alarmSound = value }
-                        Task {
-                            await model.prepareAlarmSound(value)
-                            AlarmSoundPreview.play(model.alarmSounds.first { $0.id == value }?.file)
-                        }
-                    }
-                )) {
-                    ForEach(model.alarmSounds, id: \.id) { Text(verbatim: L10n.string($0.title)).tag($0.id) }
+                AlarmSoundMenu(selected: model.settings.notifications.alarmSound, defaultChoice: model.config.defaultSettings.values.notifications.alarmSound,
+                               shown: model.alarmSoundTitle(model.settings.notifications.alarmSound)) { value in
+                    if let value { model.updateSettings { $0.notifications.alarmSound = value } }
                 }
-                .labelsHidden()
                 .accessibilityIdentifier("settings.notifications.alarmSound")
             }
             CustomAlarmSoundRows()

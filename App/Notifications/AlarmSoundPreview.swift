@@ -2,14 +2,25 @@ import AVFoundation
 import AudioToolbox
 import UIKit
 
-/// Plays a sound while it is being chosen, by the media volume: until another is chosen, its page is left or the app goes
-/// to the background.
+/// Plays a sound while it is being chosen, by the media volume: until it is tapped again, another is chosen, its page is
+/// left or the app goes to the background.
 @MainActor
 enum AlarmSoundPreview {
     /// The system's alarm sound cannot be read: a system sound of its kind stands in for it.
     private static let systemAlarm: SystemSoundID = 1005
     private static var player: AVAudioPlayer?
     private static var observer: NSObjectProtocol?
+
+    /// The file is sounding now: a second tap on it stops it.
+    static func isPlaying(_ file: String?) -> Bool {
+        player?.isPlaying == true && player?.url?.lastPathComponent == file && file != nil
+    }
+
+    /// What a sound that rings silently feels like.
+    static func vibrate() {
+        stop()
+        AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+    }
 
     static func play(_ file: String?) {
         stop()

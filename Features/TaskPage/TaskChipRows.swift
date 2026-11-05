@@ -9,6 +9,7 @@ struct TaskChipRows: View {
     @Environment(\.tokens) private var tokens
     let editor: TaskEditor
     @State private var isPickingDate = false
+    @State private var isAlarmRefused = false
 
     var body: some View {
         let spacing = tokens.space(.chipGap)
@@ -32,9 +33,14 @@ struct TaskChipRows: View {
         }
         .frame(maxWidth: .infinity)
         .sheet(isPresented: $isPickingDate) {
-            DuePickerSheet(pick: DuePick(task: editor.task, today: model.context().today), choosesZone: true) { pick in
+            DuePickerSheet(pick: DuePick(task: editor.task, today: model.context().today), choosesZone: true, offersAlarmOff: editor.task.recurrence != nil) { pick in
                 editor.edit { task in pick?.edits(from: task) ?? [.due(nil)] }
             }
+        }
+        .alert("alarm.refused.title", isPresented: $isAlarmRefused) {
+            Button("common.done") {}
+        } message: {
+            Text("alarm.refused.message")
         }
     }
 
@@ -63,11 +69,24 @@ struct TaskChipRows: View {
         let shown = DateChip.shown(of: editor.task, context: model.context())
         let values = [shown.day.map { DateText.format($0, .dateTime.month(.abbreviated).day(), calendar: model.calendar) },
                       shown.time?.string].compactMap { $0 }
-        return ToggleChip(icon: dateChipIcon, values: values, tint: .task, isOn: !values.isEmpty) {
+        return ToggleChip(icon: dateChipIcon, values: values, tint: .task, isOn: !values.isEmpty, onLongPress: ringAtDefault) {
             Haptics.play(.select)
             isPickingDate = true
         }
         .accessibilityIdentifier("taskPage.chip.date")
+    }
+
+    /// A long press on the chip: a time already set rings, with the settings' sound. Without a time it does nothing.
+    private func ringAtDefault() {
+        guard editor.task.due?.time != nil, editor.task.alarm(at: nil) == nil else { return }
+        Task {
+            guard await model.requestAlarmAccess() else {
+                isAlarmRefused = true
+                return
+            }
+            Haptics.play(.select)
+            editor.apply([.alarms([TimeAlarm()])])
+        }
     }
 
     /// What it stands for: a day (or nothing yet), a time, a time that rings.

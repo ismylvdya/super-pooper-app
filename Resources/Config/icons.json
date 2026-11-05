@@ -36,6 +36,7 @@
   "alarmOn": "alarm.fill",
   "stopAlarm": "stop.fill",
   "chosen": "checkmark",
+  "menuChevrons": "chevron.up.chevron.down",
   "dayBoundary": "moon.zzz",
   "energyHour": "bolt.circle",
   "timelineLayout": "rectangle.split.2x1",

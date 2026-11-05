@@ -4,7 +4,7 @@ import UIKit
 
 /// The arrows around the shown day's name ("Today", "Yesterday", "26 Oct · Wed"; lying sideways "Mon", "Tod"); on another day, tapping the
 /// name goes back to today. The name's frame is as wide as the widest of them, so the
-/// arrows stay put and stand `spacing.dayArrowGap` from it; it shrinks if the room is short. Sideways it is a column in physical order whose arrows point the same physical way as upright.
+/// arrows stay put and stand `spacing.dayArrowGap` from it; it shrinks if the room is short. Sideways it is a column in physical order; the name stands turned, the arrows point left and right along the screen.
 /// An arrow takes taps far beyond its glyph while everything stays where it was: the whole height of the bar
 /// (`size.dayArrowTarget`), the room the bar's button style used to leave around the glyph and the gap to the name.
 struct DayNavigation: View {
@@ -54,9 +54,8 @@ struct DayNavigation: View {
     private func arrow(_ icon: Icon, step: Int, label: LocalizedStringKey, id: String, towardName edge: Edge) -> some View {
         let upright = bottom == nil
         return Button { onStep(step) } label: {
-            // Lying sideways it is turned with the name: on the physical screen all stands as it does upright.
+            // Lying sideways only the name is turned: an arrow still points along the screen, to the left or the right.
             Image(systemName: icons[icon])
-                .quarterTurned(bottom)
                 .padding(Edge.Set(edge.opposite), upright ? tokens.bar(.barButtonPadding) : 0)
                 .padding(Edge.Set(edge), upright ? tokens.space(.dayArrowGap) : tokens.space(.chipGap))
                 // Sideways as wide as the bar buttons of the column, and as long as the bar is high upright.

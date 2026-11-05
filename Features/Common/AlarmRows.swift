@@ -5,6 +5,8 @@ import SwiftUI
 struct AlarmRows: View {
     @Environment(AppModel.self) private var model
     @Binding var alarm: TimeAlarm?
+    /// A repeatable task's sound menu also turns the alarm off.
+    var offersOff = false
     @State private var isRefused = false
 
     var body: some View {
@@ -16,14 +18,10 @@ struct AlarmRows: View {
                 Text("alarm.refused.message")
             }
         if let alarm {
-            Picker("alarm.sound", selection: Binding(get: { alarm.sound }, set: choose)) {
-                Text("alarm.sound.default").tag(String?.none)
-                ForEach(model.alarmSounds, id: \.id) { sound in
-                    Text(verbatim: L10n.string(sound.title)).tag(String?.some(sound.id))
-                }
+            LabeledContent("alarm.sound") {
+                AlarmSoundMenu(selected: alarm.sound, onOff: offersOff ? { self.alarm = nil } : nil, shown: alarm.sound.map(model.alarmSoundTitle) ?? L10n.string("alarm.sound.default")) { self.alarm?.sound = $0 }
+                    .accessibilityIdentifier("duePicker.alarmSound")
             }
-            .accessibilityIdentifier("duePicker.alarmSound")
-            .onDisappear { AlarmSoundPreview.stop() }
         }
     }
 
@@ -37,11 +35,4 @@ struct AlarmRows: View {
         }
     }
 
-    private func choose(_ sound: String?) {
-        alarm?.sound = sound
-        Task {
-            await model.prepareAlarmSound(sound)
-            AlarmSoundPreview.play(model.alarmSounds.first { $0.id == (sound ?? model.settings.notifications.alarmSound) }?.file)
-        }
-    }
 }

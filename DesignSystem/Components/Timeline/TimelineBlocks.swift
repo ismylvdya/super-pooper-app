@@ -26,7 +26,7 @@ struct TimelineEventBlock: View {
                 .widgetAccentable()
             TopAlignedContent {
                 VStack(alignment: .leading, spacing: 0) {
-                    FadingText(text: event.title, font: font.weight(.semibold), lineHeight: lineHeight, lines: 2,
+                    FadingText(text: event.title, font: font, lineHeight: lineHeight, lines: 2,
                                reserve: TitleFade.trailing(corner: reserve, plateInset: tokens.space(.timelineItemPadding),
                                                            gap: tokens.space(.fadeGap)))
                         .foregroundStyle(slot.isPast ? tokens.color(.secondaryText) : tokens.eventTitle(own, in: colorScheme))
@@ -34,7 +34,7 @@ struct TimelineEventBlock: View {
                         IconGlyph(.time, font: .caption)
                         Text(TimeRangeText.format(event.start, event.end, calendar: calendar)).lineLimit(1)
                     }
-                    .font(tokens.font(.caption).weight(.medium))
+                    .font(tokens.font(.caption))
                     .foregroundStyle(slot.isPast ? tokens.color(.secondaryText) : tokens.eventSecondary(own, in: colorScheme))
                 }
             }

@@ -59,8 +59,11 @@ final class ListLiftDelegates: NSObject, UICollectionViewDragDelegate, UICollect
     private weak var drop: UICollectionViewDropDelegate?
     private(set) var shape: PlateShape
     private(set) var ghostOpacity: CGFloat
-    /// The cells shown faintly in the gap of the drag going on.
-    private let ghosts = NSHashTable<UICollectionViewCell>.weakObjects()
+    /// The faint copy of the row being dragged, standing in the gap.
+    private var ghostCopy: UIView?
+    /// Keeps the copy on its cell every frame, while the rows part and also while the finger rests.
+    private var ghostLink: CADisplayLink?
+    private weak var ghostList: UICollectionView?
 
     private init(drag: UICollectionViewDragDelegate?, drop: UICollectionViewDropDelegate?, shape: PlateShape, ghostOpacity: CGFloat) {
         self.drag = drag
@@ -110,59 +113,64 @@ final class ListLiftDelegates: NSObject, UICollectionViewDragDelegate, UICollect
         drag?.collectionView(collectionView, itemsForBeginning: session, at: indexPath) ?? []
     }
 
-    /// While a row is dragged, UIKit keeps its own cell in the gap the rows part around at the landing place, hidden. It
-    /// is shown there instead as a faint copy of the row (`ghostOpacity`): how the row will stand once dropped.
+    /// While a row is dragged, UIKit keeps its own cell in the gap the rows part around at the landing place, hidden, and
+    /// hides it again at every layout, so the cell itself cannot be shown there. A faint copy of the row
+    /// (`ghostOpacity`) stands in the cell's place instead: how the row will stand once dropped.
     func collectionView(_ collectionView: UICollectionView, dropSessionDidUpdate session: UIDropSession,
                         withDestinationIndexPath destination: IndexPath?) -> UICollectionViewDropProposal {
         let proposal = drop?.collectionView?(collectionView, dropSessionDidUpdate: session, withDestinationIndexPath: destination)
             ?? UICollectionViewDropProposal(operation: .forbidden)
-        for cell in collectionView.visibleCells where Self.isGap(cell, session: session) {
-            Self.showGhost(of: cell, opacity: ghostOpacity)
-            ghosts.add(cell)
+        if session.localDragSession != nil, ghostLink == nil {
+            ghostList = collectionView
+            let link = CADisplayLink(target: self, selector: #selector(followGap))
+            link.add(to: .main, forMode: .common)
+            ghostLink = link
         }
         return proposal
     }
 
     func collectionView(_ collectionView: UICollectionView, dropSessionDidEnd session: UIDropSession) {
         drop?.collectionView?(collectionView, dropSessionDidEnd: session)
-        restoreGhosts()
+        removeGhost()
     }
 
     func collectionView(_ collectionView: UICollectionView, dragSessionDidEnd session: UIDragSession) {
         drag?.collectionView?(collectionView, dragSessionDidEnd: session)
-        restoreGhosts()
+        removeGhost()
     }
 
-    /// The dragged row's own cell in the gap: in the dragging state, or the one cell UIKit keeps out of sight while the
-    /// session is a reorder of this list (on some systems it is hidden without the state). Not for a drag from elsewhere.
+    /// The dragged row's own cell in the gap, as UIKit keeps it out of sight while the session is a reorder of this list.
+    /// Not for a drag from elsewhere, and not at the lift, while the cell still stands in its place.
     static func isGap(_ cell: UICollectionViewCell, session: UIDropSession?) -> Bool {
         if let session, session.localDragSession == nil { return false }
-        return cell.configurationState.cellDragState == .dragging || cell.isHidden || cell.alpha == 0
+        return cell.isHidden || cell.alpha == 0
     }
 
-    /// The cell in the gap shown faintly.
-    static func showGhost(of cell: UIView, opacity: CGFloat) {
-        cell.isHidden = false
-        cell.alpha = opacity
-    }
-
-    /// The cell as UIKit hid it, for its drop animation to land on.
-    static func hideGhost(_ cell: UIView) {
-        cell.alpha = 1
-        cell.isHidden = true
-    }
-
-    /// After the drag every cell is a row again.
-    private func restoreGhosts() {
-        for case let cell as UIView in ghosts.allObjects {
-            cell.alpha = 1
-            cell.isHidden = false
+    /// The picture is taken while the dragged cell still stands in its place, half seen, with its content back from the menu's
+    /// preview; from then on the copy stands where the hidden cell is on screen, mid-animation too.
+    @objc private func followGap() {
+        guard let list = ghostList else { return }
+        if ghostCopy == nil, let lifted = list.visibleCells.first(where: { $0.configurationState.cellDragState == .dragging && !$0.isHidden }) {
+            ghostCopy = lifted.snapshotView(afterScreenUpdates: false)
+            ghostCopy?.isUserInteractionEnabled = false
         }
-        ghosts.removeAllObjects()
+        guard let copy = ghostCopy, let gap = list.visibleCells.first(where: { Self.isGap($0, session: nil) }) else { return }
+        copy.frame = gap.layer.presentation()?.frame ?? gap.frame
+        guard copy.superview == nil else { return }
+        copy.alpha = ghostOpacity
+        list.addSubview(copy)
+    }
+
+    /// The drop lands on the cell itself.
+    private func removeGhost() {
+        ghostLink?.invalidate()
+        ghostLink = nil
+        ghostCopy?.removeFromSuperview()
+        ghostCopy = nil
     }
 
     func collectionView(_ collectionView: UICollectionView, performDropWith coordinator: UICollectionViewDropCoordinator) {
-        for case let cell as UIView in ghosts.allObjects { Self.hideGhost(cell) }
+        removeGhost()
         drop?.collectionView(collectionView, performDropWith: coordinator)
     }
 

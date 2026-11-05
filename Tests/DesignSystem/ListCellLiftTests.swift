@@ -10,20 +10,7 @@ import Testing
 struct ListCellLiftTests {
     private let tall: CGFloat = 100
 
-    /// UIKit keeps a dragged row's own cell, hidden, in the gap at its landing place; it is shown there faintly instead
-    /// (.3), hidden again for the drop animation to land on, and a row again after the drag.
-    @Test func theDraggedRowsCellInTheGapIsAFaintCopy() {
-        let cell = UICollectionViewCell()
-        cell.isHidden = true
-        ListLiftDelegates.showGhost(of: cell, opacity: TestConfig.tokens.opacity(.dropGhost))
-        #expect(!cell.isHidden)
-        #expect(abs(cell.alpha - TestConfig.tokens.opacity(.dropGhost)) < 0.001)
-        #expect(cell.alpha > 0 && cell.alpha < 0.5, "super faint")
-        ListLiftDelegates.hideGhost(cell)
-        #expect(cell.isHidden && cell.alpha == 1)
-    }
-
-    /// The cell in the gap is found by its drag state or, where the system only hides it, by being out of sight.
+    /// UIKit keeps a dragged row's own cell in the gap at its landing place, out of sight: the faint copy stands where it is.
     @Test func theGapIsTheCellUIKitKeepsOutOfSight() {
         let shown = UICollectionViewCell()
         #expect(!ListLiftDelegates.isGap(shown, session: nil))

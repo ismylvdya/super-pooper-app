@@ -15,21 +15,12 @@ struct AlarmControl: View {
     @State private var isRefused = false
 
     var body: some View {
-        Menu {
-            Button("alarm.off") { onChange(nil) }
-            Section {
-                choice(nil, title: L10n.string("alarm.sound.default"))
-                ForEach(model.alarmSounds, id: \.id) { sound in
-                    choice(sound.id, title: L10n.string(sound.title))
-                }
-            }
-        } label: {
+        AlarmSoundMenu(selected: alarm?.sound, isOn: alarm != nil, onOff: { onChange(nil) }, onChoose: choose) {
             Image(systemName: icons[alarm == nil ? .alarm : .alarmOn])
                 .foregroundStyle(tokens.color(alarm == nil ? .secondaryText : .accent))
         }
         .accessibilityLabel(Text("alarm.title"))
         .accessibilityIdentifier("alarm.control")
-        .onDisappear { AlarmSoundPreview.stop() }
         .alert("alarm.refused.title", isPresented: $isRefused) {
             Button("common.done") {}
         } message: {
@@ -37,19 +28,9 @@ struct AlarmControl: View {
         }
     }
 
-    private func choice(_ sound: String?, title: String) -> some View {
-        Button {
-            Task {
-                if await model.requestAlarmAccess() {
-                    await model.prepareAlarmSound(sound)
-                    onChange(TimeAlarm(time: time, sound: sound))
-                    AlarmSoundPreview.play(model.alarmSounds.first { $0.id == (sound ?? model.settings.notifications.alarmSound) }?.file)
-                } else {
-                    isRefused = true
-                }
-            }
-        } label: {
-            if alarm != nil, alarm?.sound == sound { Label(title, systemImage: icons[.chosen]) } else { Text(verbatim: title) }
+    private func choose(_ sound: String?) {
+        Task {
+            if await model.requestAlarmAccess() { onChange(TimeAlarm(time: time, sound: sound)) } else { isRefused = true }
         }
     }
 }

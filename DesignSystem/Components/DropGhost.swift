@@ -3,8 +3,8 @@ import UniformTypeIdentifiers
 
 extension View {
     /// The faint copy of a dragged plate where it would land (`opacity.dropGhost`): seen, but not touched or read out. The
-    /// pool's gap and the timeline's landing spot draw it; grouped lists show their own cell in the gap the same way
-    /// (`ListLiftDelegates.showGhost`).
+    /// pool's gap and the timeline's landing spot draw it; grouped lists show a copy of their cell in the gap the same way
+    /// (`ListLiftDelegates`).
     func dropGhost(_ isGhost: Bool = true) -> some View {
         modifier(DropGhost(isGhost: isGhost))
     }

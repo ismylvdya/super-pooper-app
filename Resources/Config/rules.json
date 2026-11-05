@@ -42,6 +42,7 @@
     "systemSoundFolders": ["/Library/Ringtones"],
     "systemSoundPrefix": "sys-",
     "systemSoundSeconds": 30,
+    "vibrateSound": "vibrate",
     "sounds": [
       { "id": "vibrate", "title": "alarm.sound.vibrate", "file": "alarm-silent.wav" },
       { "id": "system", "title": "alarm.sound.system" },

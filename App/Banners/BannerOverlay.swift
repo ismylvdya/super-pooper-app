@@ -1,7 +1,7 @@
 import SwiftUI
 
 extension View {
-    /// Shows the banner under the navigation bar's buttons of this view, which holds the bar (a sheet's navigation stack; the
+    /// Shows the banner between the navigation bar's buttons of this view, which holds the bar (a sheet's navigation stack; the
     /// tabs' one host is the root view's; `BannerPlacement`). The same banner
     /// dismisses once. Pages of a tab show it only while their tab is selected (all tabs stay alive in the tab view).
     func bannerHost(tab: AppTab? = nil) -> some View {
