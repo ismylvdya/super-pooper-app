@@ -16,12 +16,13 @@ enum NewItemPlacement: Hashable, Sendable {
         .timeline(day: LocalDate(moment, in: calendar), time: LocalTime(moment, in: calendar))
     }
 
-    /// What the placement presets on the new item: a task's date and time, a habit's reminder time.
+    /// What the placement presets on the new item: a task's date (and a timeline's time), a habit's reminder time.
     func presets(_ kind: NewItemSeed.Kind) -> [TaskEdit] {
-        guard case .timeline(let day, let time) = self else { return [] }
-        switch kind {
-        case .task: return [.due(TaskDue(day: day, time: time))]
-        case .habit: return [.reminderTimes([time])]
+        switch (self, kind) {
+        case (.timeline(let day, let time), .task): [.due(TaskDue(day: day, time: time))]
+        case (.timeline(_, let time), .habit): [.reminderTimes([time])]
+        case (.pool(_, _, let day), .task): [.due(TaskDue(day: day))]
+        case (.pool, .habit): []
         }
     }
 

@@ -4,7 +4,7 @@ import UniformTypeIdentifiers
 /// The task being dragged on Tasks, shared by the pool, the timeline, the backlog pages and the page edges: where it
 /// came from, where it would land on the timeline, the pool order and section while it is over the pool and the backlog
 /// page it is over. A pool section dragged by its header is a drag without a task, which only the pool takes. The tab
-/// bar's "+" (`newItem`) follows the finger by a gesture of its own, not a system drag: the pool (today) and the timeline
+/// bar's "+" (`newItem`) follows the finger by a gesture of its own, not a system drag: the pool and the timeline
 /// watch its point and say what letting it go there would do (`setNewItemLanding`).
 @MainActor
 @Observable

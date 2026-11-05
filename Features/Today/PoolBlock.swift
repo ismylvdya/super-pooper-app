@@ -6,8 +6,8 @@ import SwiftUI
 /// day only), onto the timeline to give a task a time (a habit sent here today gets its time back for today); a timed
 /// task dragged here from the timeline loses its time, a habit's block leaves today's timeline. A task from a backlog
 /// page comes into the pool of any day shown. A section is dragged whole by its header, within the pool only. The tab
-/// bar's "+" dragged over today's pool makes a row's room; let go, it opens the new task's page, and the task takes that
-/// spot once made.
+/// bar's "+" dragged over any day's pool makes a row's room; let go, it opens the new task's page for that day, and today
+/// the task takes that spot once made (another day has no order of its own: the pool's sort places it).
 struct PoolBlock: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
@@ -102,13 +102,13 @@ struct PoolBlock: View {
         }
     }
 
-    /// The dragged "+" over today's pool: rows make room under it and letting go opens the new task's page for the spot.
+    /// The dragged "+" over a pool: rows make room under it and letting go opens the new task's page for the spot.
     private func newItemMoved(to point: CGPoint?) {
         guard let drag, let point else {
             dragLayout = nil
             return
         }
-        guard plan.isToday, screenFrame.contains(point) else {
+        guard screenFrame.contains(point) else {
             if drag.poolOrder != nil { withAnimation(tokens.animation) { drag.leavePool() } }
             drag.clearNewItemLanding(Self.dropSpace)
             return
@@ -117,7 +117,8 @@ struct PoolBlock: View {
         let layout = dropLayout()
         let spot = PoolDropOrder.drop(rows: layout.rows, headers: layout.headers, dragged: TaskDragState.newItemGap,
                                       at: Double(point.y - screenFrame.minY))
-        let moved = withAnimation(tokens.animation) { drag.hover(poolOrder: spot.order, section: spot.section) }
+        // Another day's pool has no headers, so no spot names a section: the room opens in its one list.
+        let moved = withAnimation(tokens.animation) { drag.hover(poolOrder: spot.order, section: spot.section ?? plan.sections.first?.id) }
         if moved { Haptics.play(.dragStep) }
         drag.setNewItemLanding(Self.dropSpace) { newItemDropped(order: spot.order, section: spot.section) }
     }

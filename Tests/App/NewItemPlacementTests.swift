@@ -42,6 +42,22 @@ struct NewItemPlacementTests {
         #expect(model.sections(on: today).membership["New"] == "day")
     }
 
+    /// Another day's pool has no order or sections of its own: the task just gets that day, with no time.
+    @Test func aPoolPlacementOnAnotherDayMakesATaskOfThatDayWithNoTime() async throws {
+        let model = try makeModel()
+        let tomorrow = model.context().today.adding(days: 1)
+        let placement = NewItemPlacement.pool(order: ["A", NewItemPlacement.gap, "B"], section: nil, day: tomorrow)
+        var page = model.newItemPage(NewItemSeed(kind: .task, placement: placement))
+        #expect(page.draft.note.due == TaskDue(day: tomorrow))
+        #expect(page.creation(unnamed: "Unnamed", rules: model.nameProblem(in:)) == nil, "left untouched, the drop makes nothing")
+        page.name = "Tomorrow's"
+
+        #expect(await model.create(from: page, unnamed: "Unnamed"))
+
+        #expect(model.task(named: "Tomorrow's")?.due == TaskDue(day: tomorrow))
+        #expect(!model.plan(at: model.clock.now).poolNames.contains("Tomorrow's"))
+    }
+
     /// Leaving the page with Back puts the note there as well, in the section it was let go in.
     @Test func leavingThePagePutsItInTheSectionItWasLetGoIn() async throws {
         let model = try makeModel()
