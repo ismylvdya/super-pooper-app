@@ -39,7 +39,6 @@ struct TimelineSettingsSection: View {
                 halfRow("settings.timeline.firstHalf", \.firstHalf)
                 halfRow("settings.timeline.secondHalf", \.secondHalf)
             }
-            slider(.fontSize, "settings.timeline.eventFont", "info.settings.timeline.eventFont", \.eventFontSize, limits.fontSize)
             slider(.fontSize, "settings.timeline.taskFont", "info.settings.timeline.taskFont", \.taskFontSize, limits.fontSize)
             slider(.bell, "settings.timeline.bellSize", "info.settings.timeline.bell", \.bellSize, limits.bellSize)
             VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {

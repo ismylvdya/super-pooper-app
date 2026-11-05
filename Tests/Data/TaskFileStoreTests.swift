@@ -345,6 +345,21 @@ struct TaskFileStoreTests {
         #expect(try text().components(separatedBy: "\n")[line].hasPrefix("- [ ] Run"))
     }
 
+    /// Skip today: the day's look has no line for the habit, so its one line takes the rule's next day and goes to Soon.
+    @Test func aSkippedHabitsLineMovesToSoonOnItsNextDay() async throws {
+        let store = store()
+        let rule = RecurrenceDraft(start: today).rule
+        let habit = try await store.create(NoteDraft(status: .habit, changes: [.recurrence(rule)]), named: "Run")
+        await store.mirror(DayMirror(sections: [.init(title: "Morning", names: ["Run"])], timed: [:], keptOut: []))
+        #expect(try text().contains("### Morning\n- [ ] Run 📅 \(today.isoString)"))
+        await store.mirror(DayMirror(sections: [], timed: [:], keptOut: []))
+        let lines = try text().components(separatedBy: "\n")
+        let soon = try #require(lines.firstIndex(of: "## Soon"))
+        let line = try #require(lines.firstIndex { $0.hasPrefix("- [ ] Run") && $0.contains(habit.id.value) })
+        #expect(line > soon)
+        #expect(lines[line].contains("📅 \(today.adding(days: 1).isoString)"))
+    }
+
     @Test func anOldOpenMarkIsNoPartOfTheNameAndGoesWithTheNextWrite() async throws {
         try write("## Today\n- [ ] One ^open\n- [ ] Two\n")
         let store = store()

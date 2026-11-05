@@ -6,15 +6,15 @@ import Testing
 struct TimelineFontsTests {
     private let tokens = TestConfig.tokens
 
-    /// The sizes picked in the settings; the all-day bars a little smaller than the event titles.
+    /// One size picked in the settings: tasks, events and all-day bars all stand in it.
     @Test func theAppsFontsFollowTheSettings() {
         var settings = TestConfig.defaults.timeline
-        settings.eventFontSize = 20
         settings.taskFontSize = 14
         let fonts = TimelineFonts.app(settings, tokens: tokens)
-        #expect(fonts.eventLineHeight == tokens.uiFont(.timelineEvent, size: 20).lineHeight)
-        #expect(fonts.taskLineHeight == tokens.uiFont(.timelineText, size: 14).lineHeight)
-        #expect(fonts.allDayLineHeight == tokens.uiFont(.timelineText, size: 20 - Double(tokens.size(.allDayFontDelta))).lineHeight)
+        let lineHeight = tokens.uiFont(.timelineText, size: 14).lineHeight
+        #expect(fonts.taskLineHeight == lineHeight)
+        #expect(fonts.eventLineHeight == lineHeight)
+        #expect(fonts.allDayLineHeight == lineHeight)
         #expect(TimelineStyle.make(settings, tokens: tokens).fonts.taskLineHeight == fonts.taskLineHeight)
     }
 

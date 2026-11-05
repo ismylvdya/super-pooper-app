@@ -28,7 +28,7 @@ enum SettingsSearchIndex {
         Section(title: "settings.timeline", route: .taskSettings,
                 rows: ["settings.timeline.layout", "settings.timeline.range", "settings.timeline.hoursBefore",
                        "settings.timeline.hoursAfter", "settings.timeline.firstHalf", "settings.timeline.secondHalf",
-                       "settings.timeline.eventFont", "settings.timeline.taskFont", "settings.timeline.bellSize",
+                       "settings.timeline.taskFont", "settings.timeline.bellSize",
                        "settings.timeline.bellOpacity", "settings.timeline.showEvents", "settings.timeline.showReminders",
                        "settings.timeline.showTasks", "settings.timeline.showHabits"]),
         Section(title: "settings.pool", route: .taskSettings, rows: ["settings.pool.selectionOutline", "settings.pool.visible", "settings.pool.highPriority"]),

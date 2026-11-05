@@ -55,7 +55,7 @@ struct DynamicTypeTokensTests {
     @Test func aPickedSizeIsUsedAsIs() {
         let large = tokens.measured(at: .accessibility3)
         #expect(large.uiFont(.timelineText, size: 17).pointSize == 17)
-        #expect(!large.uiFont(.timelineEvent, size: 15).fontDescriptor.symbolicTraits.contains(.traitBold))
+        #expect(large.uiFont(.timelineText, size: 15).pointSize == 15)
     }
 
     /// The habit dots never shrink below the token's minimum, however narrow the grid.

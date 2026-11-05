@@ -89,7 +89,6 @@ struct AppSettings: Codable, Equatable, Sendable {
         var hoursAfter: Int
         var firstHalf: TimeRange
         var secondHalf: TimeRange
-        var eventFontSize: Double
         var taskFontSize: Double
         /// The bell of blocks that will alert: size in points and opacity.
         var bellSize: Double

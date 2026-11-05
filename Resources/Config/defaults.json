@@ -44,7 +44,6 @@
       "start": "14:00",
       "end": "22:00"
     },
-    "eventFontSize": 15,
     "taskFontSize": 17,
     "bellSize": 11,
     "bellOpacity": 0.45,

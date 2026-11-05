@@ -11,16 +11,13 @@ struct TimelineFonts {
     var allDay: Font
     var allDayLineHeight: CGFloat
 
-    /// The app's timeline and its settings preview, at the sizes picked in the settings; the all-day bars a little
-    /// smaller than the event titles.
+    /// The app's timeline and its settings preview: tasks, events and all-day bars in one size, picked in the settings.
     static func app(_ settings: AppSettings.Timeline, tokens: DesignTokens) -> TimelineFonts {
-        let allDaySize = settings.eventFontSize - Double(tokens.size(.allDayFontDelta))
-        return TimelineFonts(event: tokens.font(.timelineEvent, size: settings.eventFontSize),
-                             eventLineHeight: tokens.uiFont(.timelineEvent, size: settings.eventFontSize).lineHeight,
-                             task: tokens.font(.timelineText, size: settings.taskFontSize),
-                             taskLineHeight: tokens.uiFont(.timelineText, size: settings.taskFontSize).lineHeight,
-                             allDay: tokens.font(.timelineText, size: allDaySize),
-                             allDayLineHeight: tokens.uiFont(.timelineText, size: allDaySize).lineHeight)
+        let size = settings.taskFontSize
+        let font = tokens.font(.timelineText, size: size)
+        let lineHeight = tokens.uiFont(.timelineText, size: size).lineHeight
+        return TimelineFonts(event: font, eventLineHeight: lineHeight, task: font, taskLineHeight: lineHeight,
+                             allDay: font, allDayLineHeight: lineHeight)
     }
 
     /// The Today widget's timeline: its small type for everything.

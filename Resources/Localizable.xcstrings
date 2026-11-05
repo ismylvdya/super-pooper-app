@@ -2767,17 +2767,6 @@
         }
       }
     },
-    "info.settings.timeline.eventFont": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Text size of events and reminders on the timeline."
-          }
-        }
-      }
-    },
     "info.settings.timeline.halves": {
       "extractionState": "manual",
       "localizations": {
@@ -2850,7 +2839,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Text size of tasks on the timeline."
+            "value": "Text size of tasks and events on the timeline."
           }
         }
       }
@@ -5421,17 +5410,6 @@
         }
       }
     },
-    "settings.timeline.eventFont": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Event text"
-          }
-        }
-      }
-    },
     "settings.timeline.firstHalf": {
       "extractionState": "manual",
       "localizations": {
@@ -5581,7 +5559,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Task text"
+            "value": "Text"
           }
         }
       }

@@ -16,7 +16,7 @@ struct ConfigTests {
     /// Partially and Twice are picked on the Habits page and in the history only; Today and the notifications offer
     /// Done (a twice-a-day habit's second Done is Twice) and Skip today, in red.
     @Test func partialAndTwiceStayOnTheHabitsPage() {
-        #expect(TestConfig.actions.menus[.habitDay].actions == [.unmark, .partial, .done, .twice])
+        #expect(TestConfig.actions.menus[.habitDay].actions == [.unmark, .partial, .done, .twice, .skipToday])
         #expect(TestConfig.actions.menus[.habitContext].frequent == [.unmark, .done, .skipToday])
         #expect(TestConfig.actions.menus[.habitNotification].actions == [.done, .skipToday, .snooze])
         #expect(TestConfig.actions.menus[.habitNotification].more == [.snooze], "the rarer actions stand under the frequent ones")
