@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Where "Open in Obsidian" points: the vault name and the TaskNotes folder's path inside it. A folder in
+/// Where "Open Obsidian" points: the vault name and the TaskNotes folder's path inside it. A folder in
 /// Obsidian's iCloud folder tells both by its path, so the rows are only there for a folder elsewhere (or
 /// when one was filled in before). Empty fields use the chosen folder's parent and the folder's own name.
 struct ObsidianLinkRows: View {
