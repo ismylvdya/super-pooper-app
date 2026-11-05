@@ -7627,7 +7627,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Type the name of an SF Symbol, such as sun.max.fill. Empty keeps the app’s own."
+            "value": "Type the name of an SF Symbol, such as sun.max.fill, or add an SVG file: the bar tints it in one color. Empty keeps the app’s own."
           }
         }
       }
