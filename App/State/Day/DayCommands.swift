@@ -116,6 +116,10 @@ final class DayCommands {
     /// A note made from a "+" dropped in the pool of `day`: it takes the gap's place there and the section of the spot.
     /// A timeline's drop is already the note's date and time.
     func place(_ name: String, at placement: NewItemPlacement) {
+        if case .newSection(let title, let day) = placement {
+            _ = newSection(titled: title, with: [name], after: nil, on: day)
+            return
+        }
         guard case .pool(_, let section, let day) = placement, let order = placement.poolOrder(named: name) else { return }
         if section != nil {
             moveTasks([name], toSection: section, poolOrder: order, on: day)

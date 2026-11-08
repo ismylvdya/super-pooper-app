@@ -8006,6 +8006,17 @@
           }
         }
       }
+    },
+    "today.newItem.subtask": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subtask"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

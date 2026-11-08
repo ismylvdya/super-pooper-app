@@ -125,6 +125,8 @@ struct PoolBlock: View {
         let nesting = NewItemNesting.spot(order: spot.order, gap: TaskDragState.newItemGap, pool: plan.pool, asSubtask: asSubtask)
         // Another day's pool has no headers, so no spot names a section: the room opens in its one list.
         let moved = withAnimation(tokens.animation) { drag.hover(poolOrder: spot.order, section: spot.section ?? plan.sections.first?.id) }
+        let above = spot.order.firstIndex(of: TaskDragState.newItemGap).flatMap { $0 > 0 ? spot.order[$0 - 1] : nil }
+        drag.newItemAbove = plan.pool.first { $0.id == above && !$0.isHabit }?.id
         let nested = nesting != drag.newItemSpot
         if nested { withAnimation(tokens.animation) { drag.newItemSpot = nesting } }
         if moved || nested { Haptics.play(.dragStep) }

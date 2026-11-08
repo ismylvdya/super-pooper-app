@@ -73,6 +73,8 @@ final class TaskDragState {
     var newItemHome: CGRect = .zero
     /// Where the "+" over the pool would put the new task: beside the row above its gap or under it (`NewItemNesting`).
     var newItemSpot = NewItemNesting.Spot.top
+    /// The task the "+" was last under in the pool: the Subtask button of Today's bar makes a subtask of it.
+    var newItemAbove: String?
     /// What letting the "+" go now does, and which target said so.
     private var newItemLanding: (owner: String, land: () -> Void)?
     /// The block the "+" is staying over, and the wait before Tasks turns to it.
@@ -247,6 +249,7 @@ final class TaskDragState {
         backlogTarget = nil
         newItemPoint = nil
         newItemLanding = nil
+        newItemAbove = nil
         dwellPage = nil
         dwell?.cancel()
         leavePool()

@@ -70,4 +70,26 @@ struct NewItemPlacementTests {
         #expect(sections.first { $0.id == "evening" }?.items.map(\.id) == ["Later"])
         #expect(sections.first { $0.id == "day" }?.items.map(\.id).contains("Later") == false)
     }
+
+    /// The "+" over the right third of the pool, or on the bar's Subtask: a subtask of that task, with no date of its own.
+    @Test func aSubtaskPlacementMakesASubtaskOfItsParent() async throws {
+        let model = try makeModel()
+        let today = model.context().today
+        var page = model.newItemPage(NewItemSeed(kind: .task, placement: .subtask(of: "A", index: 0, day: today)))
+        #expect(page.draft.note.projects == ["A"] && page.draft.note.due == nil)
+        page.name = "Under A"
+        #expect(await model.create(from: page, unnamed: "Unnamed"))
+        #expect(model.task(named: "Under A")?.projects == ["A"])
+    }
+
+    /// The "+" on the bar's New section: the new task is the first of a section of that title.
+    @Test func aNewSectionPlacementMakesTheSectionWithTheTask() async throws {
+        let model = try makeModel()
+        let today = model.context().today
+        var page = model.newItemPage(NewItemSeed(kind: .task, placement: .newSection(title: "Errands", day: today)))
+        page.name = "Post office"
+        #expect(await model.create(from: page, unnamed: "Unnamed"))
+        let section = model.plan(at: model.clock.now).sections.first { $0.items.map(\.id) == ["Post office"] }
+        #expect(section?.title == "Errands")
+    }
 }

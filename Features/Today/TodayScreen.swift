@@ -29,6 +29,8 @@ struct TodayScreen: View {
     @State private var isNamingSection = false
     @State private var sectionTitle = ""
     @State private var isNamingList = false
+    @State private var isNamingItemSection = false
+    @State private var itemSectionTitle = ""
     /// Where the bar's buttons stand upright (`DayBarRoom`).
     @State private var barButtons: [TodayButtons.Item: CGRect] = [:]
     @State private var isKeyboardShown = false
@@ -53,7 +55,7 @@ struct TodayScreen: View {
         .toolbar {
             if !isLandscape {
                 ToolbarItemGroup(placement: .topBarLeading) {
-                    if selection.isOn { selectionBar(.leading) } else { TodayButtons(placement: .leading, onFrame: barButtonMoved) }
+                    if selection.isOn { selectionBar(.leading) } else { TodayButtons(placement: .leading, onFrame: barButtonMoved, onNewItem: newItemOnBar, offersNewSection: isShowingToday) }
                 }
                 // As wide as the bar leaves between its button groups: the name shrinks into that room rather than the
                 // arrows reaching under the buttons beside them.
@@ -61,7 +63,7 @@ struct TodayScreen: View {
                     if selection.isOn { selectionTitle } else if let room = dayBarRoom { title.frame(width: room) } else { title }
                 }
                 ToolbarItemGroup(placement: .topBarTrailing) {
-                    if selection.isOn { selectionBar(.trailing) } else { TodayButtons(placement: .trailing, onFrame: barButtonMoved) }
+                    if selection.isOn { selectionBar(.trailing) } else { TodayButtons(placement: .trailing, onFrame: barButtonMoved, onNewItem: newItemOnBar, offersNewSection: isShowingToday) }
                 }
             }
         }
@@ -77,6 +79,14 @@ struct TodayScreen: View {
             Button("common.cancel", role: .cancel) {}
         }
         .newListAlert(isPresented: $isNamingList) { moveSelected(to: .custom($0)) }
+        .alert("section.new.title", isPresented: $isNamingItemSection) {
+            TextField("section.new.placeholder", text: $itemSectionTitle)
+            Button("section.new.create") {
+                router.openNewItem(NewItemSeed(kind: .task, placement: .newSection(title: itemSectionTitle, day: shownDay)))
+            }
+            .disabled(itemSectionTitle.trimmingCharacters(in: .whitespaces).isEmpty)
+            Button("common.cancel", role: .cancel) {}
+        }
         // Another day or another tab leaves Select mode.
         .onChange(of: pager.dayOffset) { selection.end() }
         // A drag asks for a page; the pages shown now turn to it.
@@ -152,6 +162,19 @@ struct TodayScreen: View {
 
     /// The day the pool shows.
     private var shownDay: LocalDate { model.context().today.adding(days: pager.dayOffset) }
+    private var isShowingToday: Bool { pager.dayOffset == 0 }
+
+    /// The "+" let go on the bar: New section asks for the section's title first, Subtask opens the new task under its parent.
+    private func newItemOnBar(_ target: NewItemBarTarget) {
+        Haptics.play(.drop)
+        switch target {
+        case .newSection:
+            itemSectionTitle = ""
+            isNamingItemSection = true
+        case .subtask(let parent):
+            router.openNewItem(NewItemSeed(kind: .task, placement: .subtask(of: parent, index: nil, day: shownDay)))
+        }
+    }
 
     private var selectionTitle: some View {
         Text(verbatim: L10n.format("select.count", selection.names.count))
@@ -281,7 +304,8 @@ struct TodayScreen: View {
             if selection.isOn {
                 selectionBar(placement, bottom: bottom)
             } else {
-                TodayButtons(placement: slot == .leading ? .leading : .trailing, bottom: bottom)
+                TodayButtons(placement: slot == .leading ? .leading : .trailing, bottom: bottom, onNewItem: newItemOnBar,
+                             offersNewSection: isShowingToday)
             }
         }
     }
