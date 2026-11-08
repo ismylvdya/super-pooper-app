@@ -231,9 +231,15 @@ struct PoolBlock: View {
         } else {
             PoolRow(item: item, isToday: plan.isToday, isCompact: fillsHeight, plate: plate, handler: handler,
                     dragSource: selectionSource ?? source, poolDay: plan.today,
-                    stackTop: selection.flatMap { selection in plan.pool.first { selection.isSelected($0.id) } })
+                    stackTop: selection.flatMap { selection in plan.pool.first { selection.isSelected($0.id) } },
+                    guide: guides[item.id])
                 .dropGap(drag?.isGap(item.id) == true)
         }
+    }
+
+    /// The lines from parents to their subtasks, while no task is dragged over the pool (the rows part then).
+    private var guides: [String: SubtaskGuide] {
+        drag?.poolOrder == nil ? SubtaskGuides.guides(of: plan.pool) : [:]
     }
 
     /// In Select mode a drag carries all the picked tasks, in the pool's order.

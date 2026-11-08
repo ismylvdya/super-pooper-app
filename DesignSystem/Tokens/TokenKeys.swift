@@ -35,6 +35,8 @@ enum SizeToken: String, CaseIterable, Sendable {
     case dayArrowTarget
     case habitDotMinimum, cornerInsetMinimum, sourceDot, fadeHeight, poolCounter, poolWidth
     case habitHistoryMaxHeight, habitStatsBar, habitMonthBar, habitMonthBarMin, titleFade, allDayIconScale, dragBadge, alarmMark, feelPicker, reminderRing, reminderRingStroke, rowIconHeight, reviewChevron, wrapMinWidth, liftOverhang, pagePeek, dropMarkerHeight, bannerShadowRadius, bannerShadowY, hexFieldWidth, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, previewHeight, previewRow, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewHalvesInset, subtaskDropLine
+    /// The lines from a parent to its subtasks: how thick, and how round where one turns into a subtask's plate.
+    case subtaskLine, subtaskLineTurn
     /// The problems badge on Today's Lists button: its smallest width and its height.
     case problemBadge
     /// Room added above and below a date found in a new task's name, so a tap on it lands easily.
@@ -104,6 +106,8 @@ enum ColorToken: String, ConfigName {
     case detectedDate
     /// The title of a section (settings groups, the pool's sections).
     case sectionHeader
+    /// The thin lines from a parent to its subtasks in the pool.
+    case subtaskLine
 }
 
 /// The settings sections where the user picks colors (`editableColors`: which colors each offers, in order).

@@ -15,6 +15,8 @@ struct PoolRow: View {
     /// The row stands in that day's pool (Select).
     var poolDay: LocalDate?
     var stackTop: DayItem?
+    /// The lines from its parent, for a subtask (`SubtaskGuides`).
+    var guide: SubtaskGuide?
 
     var body: some View {
         let lines = item.hasSubtasks ? 0 : rules.pool.extraLines(forEstimate: rules.day.estimate(of: item.task))
@@ -22,7 +24,12 @@ struct PoolRow: View {
                        titleLineLimit: item.hasSubtasks ? 1 : nil, plate: plate,
                        minimumHeight: CGFloat(lines) * tokens.uiFont(.taskTitle).lineHeight, handler: handler,
                        dragSource: dragSource, poolDay: poolDay, stackTop: stackTop)
-            // A subtask sits under its parent, shifted right.
+            // A subtask sits under its parent, shifted right, joined to it by a thin line.
             .padding(.leading, CGFloat(item.depth) * tokens.space(.subtaskIndent))
+            .background(alignment: .topLeading) {
+                if let guide {
+                    SubtaskGuideLines(guide: guide, turnY: (tokens.space(.rowVertical) + tokens.uiFont(.taskTitle).lineHeight) / 2)
+                }
+            }
     }
 }
