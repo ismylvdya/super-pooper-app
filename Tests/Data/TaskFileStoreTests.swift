@@ -666,7 +666,7 @@ struct TaskFileStoreTests {
     }
 }
 
-private final class Counter: @unchecked Sendable {
+final class Counter: @unchecked Sendable {
     private let lock = NSLock()
     private var value = 0
     func next() -> String {

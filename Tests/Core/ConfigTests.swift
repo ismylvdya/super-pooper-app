@@ -38,7 +38,7 @@ struct ConfigTests {
     @Test func theSelectionMenuNamesKnownActions() {
         let selection = TestConfig.actions.menus[.selection]
         #expect(selection.frequent == [.done, .notToday, .skipToday])
-        #expect(selection.more == [.start, .notStarted, .highPriority, .worm, .unworm, .newSection, .delete])
+        #expect(selection.more == [.start, .notStarted, .highPriority, .worm, .unworm, .moveToList, .newSection, .delete])
         for menu in [ActionMenu.taskContext, .habitContext] {
             #expect(TestConfig.actions.menus[menu].more.contains(.select), "\(menu)")
             #expect(TestConfig.actions.menus[menu].more.contains(.unworm), "\(menu)")

@@ -8,6 +8,8 @@ struct ListsScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
+    @State private var isNamingList = false
+    @State private var deleting: String?
 
     var body: some View {
         PageScaffold(title: L10n.string("lists.title"), isNested: true) {
@@ -29,6 +31,7 @@ struct ListsScreen: View {
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("lists.morningReview")
             }
+            customLists
             ForEach(model.config.lists.groups) { group in
                 PlateSection(header: LocalizedStringKey(group.title)) {
                     ForEach(group.lists) { list in
@@ -43,6 +46,8 @@ struct ListsScreen: View {
                 }
             }
         }
+        .newListAlert(isPresented: $isNamingList) { title in Task { await model.createList(title) } }
+        .customListDeletion(deleting, isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }))
         // The Done list counts the filed tasks too.
         .task { await model.loadFiledTasks() }
         .syncsOnPull { await model.loadFiledTasks() }
@@ -53,6 +58,30 @@ struct ListsScreen: View {
                     .accessibilityLabel(Text("search.title"))
                     .accessibilityIdentifier("lists.search")
             }
+        }
+    }
+
+    /// The user's own lists, each with its count and, held, Complete all and Delete list; New List at the end.
+    private var customLists: some View {
+        PlateSection(header: "lists.group.custom") {
+            ForEach(model.customLists, id: \.self) { title in
+                NavigationLink(value: Route.customList(title)) {
+                    PlateRow(icon: .listCustom, title: Text(verbatim: title)) {
+                        DisclosureAccessory(value: "\(model.customListContents(title, query: "").count)")
+                    }
+                }
+                .buttonStyle(.plain)
+                .contextMenu {
+                    CustomListMenuItems(title: title, isConfirmingDelete: Binding(get: { deleting == title },
+                                                                                 set: { deleting = $0 ? title : nil }))
+                }
+                .accessibilityIdentifier("lists.custom.\(title)")
+            }
+            Button { isNamingList = true } label: {
+                PlateRow(icon: .newList, title: "lists.new")
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("lists.new")
         }
     }
 }

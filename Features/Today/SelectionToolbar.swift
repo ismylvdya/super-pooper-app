@@ -26,6 +26,8 @@ struct SelectionToolbar: View {
     let day: LocalDate
     var bottom: HorizontalEdge?
     let perform: (ActionDefinition) -> Void
+    /// Move to list: a planning level or a list of the user's own; nil: a new list, its title asked for.
+    let moveToList: (TaskStatus?) -> Void
 
     var body: some View {
         switch placement {
@@ -87,13 +89,25 @@ struct SelectionToolbar: View {
     private func more(_ actions: [ActionDefinition]) -> some View {
         Menu {
             ForEach(actions, id: \.id) { action in
-                Button(role: action.destructive ? .destructive : nil) {
-                    Haptics.play(action.haptic)
-                    perform(action)
-                } label: {
-                    ActionLabel(action: action)
+                if action.picksList == true {
+                    Menu {
+                        ListChoiceMenu(levels: TaskStatus.open, onPick: { status in
+                            Haptics.play(action.haptic)
+                            moveToList(status)
+                        }, onNew: { moveToList(nil) })
+                    } label: {
+                        ActionLabel(action: action)
+                    }
+                    .accessibilityIdentifier("action.\(action.id.rawValue)")
+                } else {
+                    Button(role: action.destructive ? .destructive : nil) {
+                        Haptics.play(action.haptic)
+                        perform(action)
+                    } label: {
+                        ActionLabel(action: action)
+                    }
+                    .accessibilityIdentifier("action.\(action.id.rawValue)")
                 }
-                .accessibilityIdentifier("action.\(action.id.rawValue)")
             }
         } label: {
             Image(systemName: icons[.more])

@@ -2,22 +2,27 @@ import SwiftUI
 
 /// One list of the Lists page: the matching tasks by planning level, searchable from the search button in the bar
 /// (as on Today), not by pulling the list down. A row opens the task page
-/// (every property can be changed there); "+" on a task of a later level brings it to this week.
+/// (every property can be changed there); "+" on a task of a later level brings it to this week. A list of the user's own
+/// (`custom`) has a "…" menu: Complete all and Delete list.
 struct TaskListScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
     @Environment(\.openURL) private var openURL
+    @Environment(\.dismiss) private var dismiss
     let listID: String
+    /// A list of the user's own, by its title, in place of a list of `lists.json`.
+    var custom: String?
     @State private var query = ""
+    @State private var isConfirmingDelete = false
     @State private var isSearching = false
     @State private var pendingAction: PendingAction?
     @State private var frames = ListGroupFrames()
 
     var body: some View {
         let list = model.config.lists.list(listID)
-        let contents = model.listContents(listID, query: query)
+        let contents = custom.map { model.customListContents($0, query: query) } ?? model.listContents(listID, query: query)
         List {
             ForEach(contents.groups, id: \.status) { group in
                 if contents.namesLevels { ListGroupHeader(title: Text(verbatim: StatusText.title(group.status))) } else { ListGroupGap() }
@@ -39,13 +44,15 @@ struct TaskListScreen: View {
         .appList()
         .overlay { if contents.isEmpty { Text("lists.empty").foregroundStyle(tokens.color(.secondaryText)) } }
         .pageSearch(query: $query, isSearching: $isSearching, prompt: "search.prompt.tasks")
-        .navigationTitle(Text(LocalizedStringKey(list?.title ?? "lists.title")))
+        .navigationTitle(custom.map { Text(verbatim: $0) } ?? Text(LocalizedStringKey(list?.title ?? "lists.title")))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 SearchBarButton(isSearching: $isSearching, accessibilityID: "list.search")
+                if let custom { CustomListMenu(title: custom, isConfirmingDelete: $isConfirmingDelete) }
             }
         }
+        .customListDeletion(custom, isPresented: $isConfirmingDelete) { dismiss() }
         .task { await model.openList(listID) }
         .syncsOnPull { await model.openList(listID) }
         .actionConfirmation($pendingAction) { handler.run($0) }

@@ -46,7 +46,7 @@ struct BatchAvailabilityTests {
     @Test func theSelectionMenuSplitsIntoButtonsAndMore() {
         let entries = batch().entries(TestConfig.actions.menus[.selection], for: [item("Milk")])
         #expect(entries.frequent == [.done, .notToday])
-        #expect(entries.more == [.start, .highPriority, .newSection, .delete], "one task is no worm")
+        #expect(entries.more == [.start, .highPriority, .moveToList, .newSection, .delete], "one task is no worm")
     }
 
     /// With a habit picked Skip today stands in for Not today; Delete is for tasks alone, habits never go with it.

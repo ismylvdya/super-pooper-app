@@ -43,6 +43,8 @@ enum ActionID: String, Codable, CaseIterable, Sendable {
     case unworm
     /// A section of the shown day's pool, named by the user, takes the selected tasks.
     case newSection
+    /// The selected tasks go to a planning level or a list of the user's own, a new one too (its menu: `picksList`).
+    case moveToList
 }
 
 extension ActionID {

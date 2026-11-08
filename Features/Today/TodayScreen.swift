@@ -28,6 +28,7 @@ struct TodayScreen: View {
     @State private var selection = PoolSelection()
     @State private var isNamingSection = false
     @State private var sectionTitle = ""
+    @State private var isNamingList = false
     /// Where the bar's buttons stand upright (`DayBarRoom`).
     @State private var barButtons: [TodayButtons.Item: CGRect] = [:]
     @State private var isKeyboardShown = false
@@ -75,6 +76,7 @@ struct TodayScreen: View {
             }
             Button("common.cancel", role: .cancel) {}
         }
+        .newListAlert(isPresented: $isNamingList) { moveSelected(to: .custom($0)) }
         // Another day or another tab leaves Select mode.
         .onChange(of: pager.dayOffset) { selection.end() }
         // A drag asks for a page; the pages shown now turn to it.
@@ -160,7 +162,8 @@ struct TodayScreen: View {
     }
 
     private func selectionBar(_ placement: SelectionToolbar.Placement, bottom: HorizontalEdge? = nil) -> SelectionToolbar {
-        SelectionToolbar(placement: placement, selection: selection, day: shownDay, bottom: bottom, perform: performOnSelection)
+        SelectionToolbar(placement: placement, selection: selection, day: shownDay, bottom: bottom, perform: performOnSelection,
+                         moveToList: moveSelected)
     }
 
     /// An action of the selection bar: New section asks for its title first; the others act on the picked tasks at once.
@@ -174,6 +177,18 @@ struct TodayScreen: View {
         let day = shownDay
         selection.end()
         Task { await model.perform(action, onSelected: names, on: day) }
+    }
+
+    /// Move to list: the picked tasks go there at once; a new list asks for its title first.
+    private func moveSelected(to status: TaskStatus?) {
+        guard let status else {
+            isNamingList = true
+            return
+        }
+        let names = selection.names
+        let day = shownDay
+        selection.end()
+        Task { await model.moveSelected(names, on: day, to: status) }
     }
 
     private func turn(to newPage: Int) {

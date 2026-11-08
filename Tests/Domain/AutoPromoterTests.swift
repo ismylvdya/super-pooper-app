@@ -31,7 +31,7 @@ struct AutoPromoterTests {
         #expect(promoter.candidates(in: [task], context: TestCalendar.context()).isEmpty)
     }
 
-    @Test(arguments: [TaskStatus.thisWeek, .done, .archived, .other("custom")])
+    @Test(arguments: [TaskStatus.thisWeek, .done, .archived, .custom("custom")])
     func otherStatusesAreNeverTouched(status: TaskStatus) {
         let task = makeTask("Task", status: status) { $0.due = TaskDue("2026-10-22") }
         #expect(promoter.candidates(in: [task], context: TestCalendar.context()).isEmpty)

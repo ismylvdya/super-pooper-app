@@ -76,7 +76,7 @@ extension TaskDocument {
     /// The id of the newest line with that name in a section: the one just put there on top.
     func newest(named name: String, in kind: TaskSection) -> String? {
         var found: String?
-        walk { entry, section, _, _ in if found == nil, section == kind, entry.name == name { found = entry.id } }
+        walk { entry, section, _, _, _ in if found == nil, section == kind, entry.name == name { found = entry.id } }
         return found
     }
 }

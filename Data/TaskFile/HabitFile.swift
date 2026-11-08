@@ -89,7 +89,7 @@ extension TaskDocument {
     /// The marks a habit's lines in Done make: `[x]` done, two of them on one day Twice, `[/]` partial.
     func marks(of id: String) -> [LocalDate: HabitMark] {
         var counts: [LocalDate: (done: Int, partial: Int)] = [:]
-        walk { entry, section, _, _ in
+        walk { entry, section, _, _, _ in
             guard section == .done, entry.id == id, let day = entry.completed else { return }
             switch entry.box {
             case .done: counts[day, default: (0, 0)].done += 1

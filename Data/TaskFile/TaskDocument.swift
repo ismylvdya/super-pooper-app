@@ -93,8 +93,13 @@ struct TaskDocument: Equatable, Sendable {
         }
         while prelude.last?.isEmpty == true { prelude.removeLast() }
         mergeLegacySections(format: format)
+        // A section the file has not got yet goes after the one before it in a new file's order (Lists after Someday);
+        // Done, which has a file of its own, at the end.
         for section in TaskSection.allCases where !sections.contains(where: { $0.kind == section }) {
-            sections.append(Section(kind: section, title: format.title(of: section)))
+            let before = TaskSection.allCases.prefix { $0 != section }
+            let after = section == .done ? nil : sections.lastIndex { $0.kind.map(before.contains) ?? false }
+            let spot = after.map { $0 + 1 } ?? sections.count
+            sections.insert(Section(kind: section, title: format.title(of: section)), at: spot)
         }
     }
 
@@ -192,31 +197,32 @@ struct TaskDocument: Equatable, Sendable {
 }
 
 extension TaskDocument {
-    /// Every entry of a section with its parent, depth first. The parent comes with the date it stands on (`following`).
-    func walk(_ visit: (TaskEntry, _ section: TaskSection, _ parent: TaskEntry?, _ index: Int) -> Void) {
-        func descend(_ entries: [TaskEntry], _ section: TaskSection, _ parent: TaskEntry?) {
+    /// Every entry of a section with its parent, depth first. The parent comes with the date it stands on (`following`);
+    /// `list`: in Lists, the heading of the list it stands in.
+    func walk(_ visit: (TaskEntry, _ section: TaskSection, _ parent: TaskEntry?, _ index: Int, _ list: String?) -> Void) {
+        func descend(_ entries: [TaskEntry], _ section: TaskSection, _ parent: TaskEntry?, _ list: String?) {
             for (index, entry) in entries.enumerated() {
-                visit(entry, section, parent, index)
-                descend(entry.children, section, entry.following(parent))
+                visit(entry, section, parent, index, list)
+                descend(entry.children, section, entry.following(parent), list)
             }
         }
         for section in sections {
             guard let kind = section.kind else { continue }
-            for group in section.groups { descend(group.entries, kind, nil) }
+            for group in section.groups { descend(group.entries, kind, nil, kind == .lists ? group.title : nil) }
         }
     }
 
     /// The entry with that id.
     func entry(id: String) -> TaskEntry? {
         var found: TaskEntry?
-        walk { entry, _, _, _ in if found == nil, entry.id == id { found = entry } }
+        walk { entry, _, _, _, _ in if found == nil, entry.id == id { found = entry } }
         return found
     }
 
     /// The line of the item with that id that is not a day in Done.
     func openLine(of id: String) -> TaskEntry? {
         var found: TaskEntry?
-        walk { entry, section, _, _ in if found == nil, entry.id == id, section != .done, entry.completed == nil { found = entry } }
+        walk { entry, section, _, _, _ in if found == nil, entry.id == id, section != .done, entry.completed == nil { found = entry } }
         return found
     }
 
@@ -257,14 +263,43 @@ extension TaskDocument {
         return false
     }
 
-    /// Puts an entry in a section, in its first group: at the top (Done, newest first) or at the end.
-    mutating func insert(_ entry: TaskEntry, into section: TaskSection, atTop: Bool = false) {
+    /// Puts an entry in a section, in its first group: at the top (Done, newest first) or at the end. In Lists, `list`
+    /// names the heading it goes under, made at the end when there is none yet.
+    mutating func insert(_ entry: TaskEntry, into section: TaskSection, list: String? = nil, atTop: Bool = false) {
         guard let index = sections.firstIndex(where: { $0.kind == section }) else { return }
+        var group = 0
+        if section == .lists, let list { group = listGroup(list, in: index) }
         if atTop {
-            sections[index].groups[0].entries.insert(entry, at: 0)
+            sections[index].groups[group].entries.insert(entry, at: 0)
         } else {
-            sections[index].groups[0].entries.append(entry)
+            sections[index].groups[group].entries.append(entry)
         }
+    }
+
+    /// The titles of the user's own lists, in the file's order, empty ones too.
+    var listTitles: [String] {
+        sections.filter { $0.kind == .lists }.flatMap { $0.groups.compactMap(\.title) }
+    }
+
+    /// A new empty list at the end of Lists; nothing when one has that title.
+    mutating func addList(_ title: String) {
+        guard let index = sections.firstIndex(where: { $0.kind == .lists }) else { return }
+        _ = listGroup(title, in: index)
+    }
+
+    /// Takes a list's heading out of the file; what still stands under it goes to Someday.
+    mutating func removeList(_ title: String) {
+        guard let index = sections.firstIndex(where: { $0.kind == .lists }),
+              let group = sections[index].groups.firstIndex(where: { $0.title == title }) else { return }
+        let left = sections[index].groups.remove(at: group).entries
+        for entry in left { insert(entry, into: .someday) }
+    }
+
+    /// The group of a list in the Lists section at `index`, made at the end when there is none.
+    private mutating func listGroup(_ title: String, in index: Int) -> Int {
+        if let found = sections[index].groups.firstIndex(where: { $0.title == title }) { return found }
+        sections[index].groups.append(Group(title: title))
+        return sections[index].groups.count - 1
     }
 
     /// Puts an entry under the one with the id `parent`; false when there is none.

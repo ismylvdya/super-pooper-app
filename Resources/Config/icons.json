@@ -2,6 +2,8 @@
   "settings": "gearshape",
   "resetSort": "arrow.trianglehead.2.counterclockwise",
   "morningReview": "sunrise",
+  "listCustom": "list.bullet.rectangle",
+  "newList": "plus",
   "more": "ellipsis.circle",
   "info": "info.circle",
   "problem": "exclamationmark.triangle.fill",

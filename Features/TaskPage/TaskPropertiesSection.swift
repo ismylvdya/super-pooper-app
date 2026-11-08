@@ -6,6 +6,7 @@ struct TaskPropertiesSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.rules) private var rules
     let editor: TaskEditor
+    @State private var isNamingList = false
 
     private var task: TaskItem { editor.task }
 
@@ -27,17 +28,15 @@ struct TaskPropertiesSection: View {
     private var listRow: some View {
         PlateRow(icon: .status, title: "taskPage.list", info: "info.taskPage.status") {
             Menu {
-                ForEach(TaskStatus.known, id: \.self) { status in
-                    Toggle(isOn: Binding(get: { task.status == status },
-                                         set: { _ in editor.setStatus(status, today: model.context().today) })) {
-                        ListLabel(status: status)
-                    }
-                }
+                ListChoiceMenu(levels: TaskStatus.known, current: task.status,
+                               onPick: { editor.setStatus($0, today: model.context().today) },
+                               onNew: { isNamingList = true })
             } label: {
                 AlarmSoundValue(shown: StatusText.title(task.status))
             }
             .accessibilityIdentifier("taskPage.list")
         }
+        .newListAlert(isPresented: $isNamingList) { editor.setStatus(.custom($0), today: model.context().today) }
     }
 
     private var estimateBinding: Binding<Int> {
@@ -47,20 +46,3 @@ struct TaskPropertiesSection: View {
 }
 
 /// A list in the picker, with its icon (`TaskListIcons`).
-private struct ListLabel: View {
-    @Environment(AppModel.self) private var model
-    @Environment(\.tokens) private var tokens
-    @Environment(\.icons) private var icons
-    @Environment(\.displayScale) private var displayScale
-    let status: TaskStatus
-
-    var body: some View {
-        Label {
-            Text(StatusText.title(status))
-        } icon: {
-            let list = TaskListIcons(icons: icons, typed: model.settings.lists.symbols)
-            TabIconImage.image(list.symbol(of: status), font: .preferredFont(forTextStyle: .body), others: list.symbols(besides: status),
-                               fit: tokens.bar(.tabGlyphFit), scale: displayScale)
-        }
-    }
-}

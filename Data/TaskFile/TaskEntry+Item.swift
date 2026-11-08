@@ -3,8 +3,10 @@ import Foundation
 extension TaskEntry {
     /// The task as the app knows it. `section`: where the line stands, which with its checkbox gives the status.
     /// `follows`: the parent's day, for a subtask with no date of its own.
-    func item(in section: TaskSection, parentName: String?, order: Int?, follows: LocalDate? = nil, format: TaskFileFormat) -> TaskItem {
-        var item = TaskItem(id: TaskID(id ?? ""), name: name, status: status(in: section))
+    /// `list`: the heading it stands under in Lists.
+    func item(in section: TaskSection, list: String? = nil, parentName: String?, order: Int?, follows: LocalDate? = nil,
+              format: TaskFileFormat) -> TaskItem {
+        var item = TaskItem(id: TaskID(id ?? ""), name: name, status: status(in: section, list: list))
         item.isHighPriority = isHigh
         item.due = date.map { TaskDue(day: $0, time: time) } ?? follows.map { TaskDue(day: $0) }
         item.timeEstimate = estimate
@@ -29,12 +31,14 @@ extension TaskEntry {
         return line
     }
 
-    private func status(in section: TaskSection) -> TaskStatus {
+    /// A line in Lists outside every list's heading waits in Someday.
+    private func status(in section: TaskSection, list: String?) -> TaskStatus {
         if box == .done || section == .done { return .done }
         switch section {
         case .now, .soon: return .thisWeek
         case .halfYear: return .halfYear
         case .someday: return .someday
+        case .lists: return list.map(TaskStatus.custom) ?? .someday
         case .archive: return .archived
         case .done, .trash: return .done
         }
@@ -65,10 +69,11 @@ extension TaskSection {
             return day > today ? .soon : .now
         case .halfYear: return .halfYear
         case .someday: return .someday
+        case .custom: return .lists
         case .archived: return .archive
         // A done task stays where it is until it is put away, and then it is in Done already.
         case .done: return current
-        case .habit, .other: return .now
+        case .habit: return .now
         }
     }
 }

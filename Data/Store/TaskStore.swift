@@ -12,6 +12,8 @@ struct VaultScanResult: Sendable {
     var fileProblems: [FileProblem]
     /// Items with conflicting versions waiting for the user to pick one (names).
     var conflicted: [String]
+    /// The titles of the user's own lists, in the store's order, empty ones too (`TaskStatus.custom`).
+    var customLists: [String] = []
 }
 
 struct TaskWriteResult: Sendable {
@@ -106,6 +108,14 @@ struct DayMirror: Equatable, Sendable {
     let timed: [String: LocalTime]
     /// Habits taken out of today: their lines go to the next day (`waitingHabitLines`).
     var skipped: [String] = []
+}
+
+/// A store with lists of the user's own: a list exists while it has a title in the store, with or without tasks.
+protocol CustomListKeeping: Sendable {
+    /// A new empty list; nothing when one has that title.
+    func addList(_ title: String) async throws
+    /// The list's title leaves the store; what still stands in it goes to Someday.
+    func removeList(_ title: String) async throws
 }
 
 /// A store whose lines have an order a person sets.

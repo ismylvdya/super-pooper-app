@@ -10,7 +10,7 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
     }
 
     struct Sections: Codable, Hashable, Sendable {
-        let now, soon, halfYear, someday, done, archive, trash: String
+        let now, soon, halfYear, someday, lists, done, archive, trash: String
     }
 
     struct Boxes: Codable, Hashable, Sendable {
@@ -61,6 +61,7 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
         case .soon: sections.soon
         case .halfYear: sections.halfYear
         case .someday: sections.someday
+        case .lists: sections.lists
         case .done: sections.done
         case .archive: sections.archive
         case .trash: sections.trash
@@ -68,7 +69,8 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
     }
 }
 
-/// The sections of the tasks file, in the order a new file has them.
+/// The sections of the tasks file, in the order a new file has them. `lists` holds the user's own lists, each under a
+/// third-level heading of its title.
 enum TaskSection: String, CaseIterable, Hashable, Codable, Sendable {
-    case now, soon, halfYear, someday, archive, trash, done
+    case now, soon, halfYear, someday, lists, archive, trash, done
 }

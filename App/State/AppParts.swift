@@ -56,7 +56,7 @@ struct AppParts {
                              placements: dayCommands)
         sourceCommands = SourceCommands(sources: sources, services: services, day: day, derived: derived, appEvents: appEvents,
                                         delay: delay, quietSeconds: rules.timeline.externalChangeDelaySeconds)
-        lists = TaskLists(tasks: tasks, store: store, config: config)
+        lists = TaskLists(tasks: tasks, store: store, config: config, appEvents: appEvents)
         trash = TrashController(trash: services.trash, tasks: tasks, store: store, derived: derived, appEvents: appEvents)
         conflicts = ConflictResolver(versions: services.versions, tasks: tasks, store: store, backups: backups, derived: derived,
                                      appEvents: appEvents)

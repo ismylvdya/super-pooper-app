@@ -19,6 +19,8 @@ final class TaskState {
     private(set) var fileProblems: [FileProblem] = []
     /// Notes with conflicting versions the user has not resolved yet.
     private(set) var conflictedNotes: [String] = []
+    /// The titles of the user's own lists as the store has them, empty ones too.
+    private(set) var storedLists: [String] = []
     /// What the chosen folder is (the tasks' folder or a whole vault) and where it is in Obsidian, where the store says.
     private(set) var chosenFolder = ChosenFolder()
     private(set) var vaultState: VaultState = .notSelected
@@ -75,7 +77,13 @@ final class TaskState {
         } + newer
         fileProblems = result.fileProblems
         conflictedNotes = result.conflicted
+        storedLists = result.customLists
         vaultState = .ready
+    }
+
+    /// A list made or removed: shown at once, before the store is read again.
+    func setStoredLists(_ titles: [String]) {
+        storedLists = titles
     }
 
     /// Whatever a change did, the files are the truth: they are read again (a failed read keeps what is shown).

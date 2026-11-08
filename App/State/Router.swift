@@ -46,6 +46,8 @@ enum Route: Hashable {
     case lists
     /// A list of the Lists page, by its id in `lists.json`.
     case list(String)
+    /// A list of the user's own, by its title.
+    case customList(String)
     /// Morning review as a page of the Lists page, for coming back to it later in the morning.
     case morningReview
     #if DEBUG

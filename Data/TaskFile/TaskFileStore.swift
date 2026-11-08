@@ -15,7 +15,7 @@ actor TaskFileStore: TaskStore {
         /// name is free for a new task.
         mutating func indexNames() {
             names = habits.mapValues(\.name)
-            document.walk { entry, section, _, _ in
+            document.walk { entry, section, _, _, _ in
                 if let id = entry.id, habits[id] == nil, section != .done, section != .trash { names[id] = entry.name }
             }
         }
@@ -171,7 +171,7 @@ actor TaskFileStore: TaskStore {
             // Also when nothing changed but how the file says it (an older title, a field no longer kept).
             try write(snapshot.document, root: root)
             snapshot.indexNames()
-            return VaultScanResult(tasks: items(of: snapshot), fileProblems: [], conflicted: [])
+            return VaultScanResult(tasks: items(of: snapshot), fileProblems: [], conflicted: [], customLists: snapshot.document.listTitles)
         }
     }
 
@@ -179,18 +179,18 @@ actor TaskFileStore: TaskStore {
     /// habit has in today's sections (only a look of the day).
     func items(of snapshot: Snapshot) -> [TaskItem] {
         var tasks: [TaskItem] = []
-        snapshot.document.walk { entry, section, parent, index in
+        snapshot.document.walk { entry, section, parent, index, list in
             guard section != .done, section != .trash, let id = entry.id, snapshot.habits[id] == nil else { return }
-            var task = item(entry, in: section, parent: parent, index: index, snapshot: snapshot)
+            var task = item(entry, in: section, list: list, parent: parent, index: index, snapshot: snapshot)
             task.storeOrder = tasks.count
             tasks.append(task)
         }
         return tasks + snapshot.habits.values.map { habit(of: $0, snapshot: snapshot) }
     }
 
-    func item(_ entry: TaskEntry, in section: TaskSection, parent: TaskEntry?, index: Int, snapshot: Snapshot) -> TaskItem {
+    func item(_ entry: TaskEntry, in section: TaskSection, list: String? = nil, parent: TaskEntry?, index: Int, snapshot: Snapshot) -> TaskItem {
         let parentName = parent?.name ?? entry.parent.flatMap { snapshot.names[$0] }
-        return entry.item(in: section, parentName: parentName, order: parent == nil ? nil : index, follows: parent.flatMap(logicalDay(of:)), format: format)
+        return entry.item(in: section, list: list, parentName: parentName, order: parent == nil ? nil : index, follows: parent.flatMap(logicalDay(of:)), format: format)
     }
 
     func habit(of file: HabitFile, snapshot: Snapshot) -> TaskItem {
@@ -210,7 +210,7 @@ actor TaskFileStore: TaskStore {
         dateNextActions(&snapshot.document, to: day, habits: Set(snapshot.habits.keys))
         // Ticked habit lines and Soon's lines whose day has come leave their sections.
         var moves: [(id: String, habit: Bool)] = []
-        snapshot.document.walk { entry, section, parent, _ in
+        snapshot.document.walk { entry, section, parent, _, _ in
             guard section == .now || section == .soon, let id = entry.id else { return }
             if snapshot.habits[id] != nil {
                 if entry.box != .open { moves.append((id, true)) }

@@ -206,6 +206,15 @@
       "icon": "rectangle.stack.badge.plus",
       "destructive": false,
       "haptic": "light"
+    },
+    {
+      "id": "moveToList",
+      "title": "action.moveToList",
+      "icon": "tray.and.arrow.down",
+      "destructive": false,
+      "haptic": "light",
+      "undo": "edits",
+      "picksList": true
     }
   ],
   "menus": {
@@ -342,6 +351,7 @@
         "highPriority",
         "worm",
         "unworm",
+        "moveToList",
         "newSection",
         "delete"
       ]
