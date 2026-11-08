@@ -179,6 +179,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let dragEndSettleSeconds: Double
         /// The dragged "+" turns Tasks to a neighbouring block only after staying over its edge this long.
         let newItemTurnDwellSeconds: Double
+        /// The right part of the pool, as a share of its width, where a dragged "+" makes a subtask of the row above it.
+        let subtaskShare: Double
         /// How long a dragged task stays at a page's edge or over a neighbour before Tasks turns to it.
         let pageEdgeDwellSeconds: Double
         /// A drag is sideways when it moves this many times more across than up or down.

@@ -7,6 +7,8 @@ enum NewItemPlacement: Hashable, Sendable {
     case timeline(day: LocalDate, time: LocalTime)
     /// `order`: the pool with `gap` where it landed; `section`: the section of the spot (nil: a pool without sections).
     case pool(order: [String], section: String?, day: LocalDate)
+    /// Under `parent` in the pool of `day`, at `index` among its subtasks: it stands on the parent's day and in its list.
+    case subtask(of: String, index: Int?, day: LocalDate)
 
     /// The pool's id for the room the item takes until it is made; no note can be called so (a note's name is a file's, never with `/`).
     static let gap = "/new-item"
@@ -22,7 +24,8 @@ enum NewItemPlacement: Hashable, Sendable {
         case (.timeline(let day, let time), .task): [.due(TaskDue(day: day, time: time))]
         case (.timeline(_, let time), .habit): [.reminderTimes([time])]
         case (.pool(_, _, let day), .task): [.due(TaskDue(day: day))]
-        case (.pool, .habit): []
+        case (.subtask(let parent, let index, _), .task): [.addProject(parent)] + (index.map { [.subtaskOrder($0)] } ?? [])
+        case (.pool, .habit), (.subtask, .habit): []
         }
     }
 

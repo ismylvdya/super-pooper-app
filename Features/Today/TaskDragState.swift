@@ -71,6 +71,8 @@ final class TaskDragState {
     var newItemSize: CGSize = .zero
     /// Where the bubble stands on the screen: let go about there, the "+" was just put back.
     var newItemHome: CGRect = .zero
+    /// Where the "+" over the pool would put the new task: beside the row above its gap or under it (`NewItemNesting`).
+    var newItemSpot = NewItemNesting.Spot.top
     /// What letting the "+" go now does, and which target said so.
     private var newItemLanding: (owner: String, land: () -> Void)?
     /// The block the "+" is staying over, and the wait before Tasks turns to it.
@@ -158,6 +160,7 @@ final class TaskDragState {
     func leavePool() {
         poolOrder = nil
         poolSection = nil
+        newItemSpot = .top
         sectionOrder = nil
     }
 

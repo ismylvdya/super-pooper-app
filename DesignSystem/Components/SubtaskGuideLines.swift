@@ -27,6 +27,8 @@ struct SubtaskGuideShape: Shape {
     let turnY: CGFloat
     let turnRadius: CGFloat
     let height: CGFloat
+    /// How far right the turn goes; nil: to the row's plate.
+    var reach: CGFloat?
 
     func path(in rect: CGRect) -> Path {
         var path = Path()
@@ -36,8 +38,8 @@ struct SubtaskGuideShape: Shape {
             path.addLine(to: CGPoint(x: x, y: height))
         }
         let x = CGFloat(guide.depth - 1) * indent + indent / 2
-        let end = CGFloat(guide.depth) * indent
-        let radius = min(turnRadius, end - x, turnY + gap)
+        let end = reach ?? CGFloat(guide.depth) * indent
+        let radius = min(turnRadius, CGFloat(guide.depth) * indent - x, turnY + gap)
         path.move(to: CGPoint(x: x, y: -gap))
         path.addLine(to: CGPoint(x: x, y: turnY - radius))
         path.addQuadCurve(to: CGPoint(x: x + radius, y: turnY), control: CGPoint(x: x, y: turnY))

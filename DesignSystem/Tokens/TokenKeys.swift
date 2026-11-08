@@ -57,6 +57,8 @@ enum RatioToken: String, CaseIterable, Sendable {
     case swipeGlyphFit
     /// How much narrower each banner under the top one of the stack is.
     case bannerStackShrink
+    /// The line into the room a "+" makes for a subtask fades out this many indents right of where it comes down.
+    case subtaskLineFade
     /// How much narrower each plate under the top one of a dragged stack is.
 }
 

@@ -59,8 +59,10 @@ struct PoolBlock: View {
 
     /// The room a dragged "+" takes among the rows: a row of its own, with nothing drawn in it.
     private var newItemGap: DayItem? {
-        guard drag?.source == .newItem else { return nil }
-        return DayItem(listed: TaskItem(id: .unsaved, name: TaskDragState.newItemGap, status: .thisWeek))
+        guard let drag, drag.source == .newItem else { return nil }
+        var gap = DayItem(listed: TaskItem(id: .unsaved, name: TaskDragState.newItemGap, status: .thisWeek))
+        gap.depth = drag.newItemSpot.depth
+        return gap
     }
 
     private func dropLayout() -> PoolDropLayout {
@@ -117,15 +119,23 @@ struct PoolBlock: View {
         let layout = dropLayout()
         let spot = PoolDropOrder.drop(rows: layout.rows, headers: layout.headers, dragged: TaskDragState.newItemGap,
                                       at: Double(point.y - screenFrame.minY))
+        // Over the right part of the pool the new task is the row above's subtask; crossing over is a step to feel.
+        let asSubtask = NewItemNesting.isSubtaskSide(x: Double(point.x), poolMinX: Double(screenFrame.minX), poolWidth: Double(screenFrame.width),
+                                                     share: rules.gestures.subtaskShare)
+        let nesting = NewItemNesting.spot(order: spot.order, gap: TaskDragState.newItemGap, pool: plan.pool, asSubtask: asSubtask)
         // Another day's pool has no headers, so no spot names a section: the room opens in its one list.
         let moved = withAnimation(tokens.animation) { drag.hover(poolOrder: spot.order, section: spot.section ?? plan.sections.first?.id) }
-        if moved { Haptics.play(.dragStep) }
-        drag.setNewItemLanding(Self.dropSpace) { newItemDropped(order: spot.order, section: spot.section) }
+        let nested = nesting != drag.newItemSpot
+        if nested { withAnimation(tokens.animation) { drag.newItemSpot = nesting } }
+        if moved || nested { Haptics.play(.dragStep) }
+        drag.setNewItemLanding(Self.dropSpace) { newItemDropped(order: spot.order, section: spot.section, nesting: nesting) }
     }
 
-    private func newItemDropped(order: [String], section: String?) {
+    private func newItemDropped(order: [String], section: String?, nesting: NewItemNesting.Spot) {
         Haptics.play(.drop)
-        router.openNewItem(NewItemSeed(kind: .task, placement: .pool(order: order, section: section, day: plan.today)))
+        let placement: NewItemPlacement = nesting.parent.map { .subtask(of: $0, index: nesting.index, day: plan.today) }
+            ?? .pool(order: order, section: section, day: plan.today)
+        router.openNewItem(NewItemSeed(kind: .task, placement: placement))
     }
 
     private func sectionDropped(_ id: String, order: [String]) {
@@ -227,7 +237,7 @@ struct PoolBlock: View {
     /// The row of a task dragged over the pool keeps an empty gap the others part around (`TaskDragState.isGap`).
     @ViewBuilder private func row(_ item: DayItem, plate: PoolRowContent.PlateKind, source: TaskDragState.Source) -> some View {
         if item.id == TaskDragState.newItemGap {
-            NewItemGapPlate()
+            NewItemGapPlate(depth: item.depth)
         } else {
             PoolRow(item: item, isToday: plan.isToday, isCompact: fillsHeight, plate: plate, handler: handler,
                     dragSource: selectionSource ?? source, poolDay: plan.today,

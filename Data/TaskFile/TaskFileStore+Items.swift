@@ -102,7 +102,8 @@ extension TaskFileStore {
             if let parent {
                 var nested = entry
                 nested.leaveDate(to: day)
-                if place(of: parent, in: snapshot.document)?.section == target, snapshot.document.insert(nested, under: parent) {
+                if place(of: parent, in: snapshot.document)?.section == target,
+                   snapshot.document.insert(nested, under: parent, at: note.subtaskOrder) {
                     try write(snapshot.document, root: root)
                     snapshot.indexNames()
                     return try current(id: id, name: final, snapshot: snapshot)
