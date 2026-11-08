@@ -9,7 +9,7 @@ extension View {
     }
 }
 
-/// Renders the current banner from the banner center.
+/// Renders the banner center's stack: the newest on top, a few under it peeking out below.
 struct BannerOverlay: View {
     @Environment(BannerCenter.self) private var banners
     @Environment(Router.self) private var router
@@ -22,20 +22,33 @@ struct BannerOverlay: View {
     @Environment(\.tokens) private var tokens
 
     var body: some View {
-        ZStack {
-            if let banner = banners.current, tab == nil || tab == router.tab, !(yieldsToSheets && router.presentsBannerSheet) {
-                BannerView(text: banner.text, icon: icon(banner.style), tint: tint(banner.style), counts: banner.counts,
-                           items: banner.items,
-                           hidesAfter: banner.undo == nil ? rules.banners.autoHideSeconds : rules.banners.undoSeconds,
-                           onDismiss: {
-                    withAnimation(.easeInOut(duration: tokens.duration(.bannerAnimation))) { banners.dismiss(banner.id) }
-                }, onTap: banner.opens.map { target in { router.show(target.tab, target.routes) } },
-                           onUndo: banner.undo.map { id in { Task { await model.undo(id) } } })
-                .id(banner.id)
-                .transition(.move(edge: .top).combined(with: .opacity))
+        let shown = tab == nil || tab == router.tab
+        ZStack(alignment: .top) {
+            if shown, !(yieldsToSheets && router.presentsBannerSheet) {
+                let visible = Array(banners.stack.suffix(tokens.count(.bannerStack)))
+                ForEach(Array(visible.enumerated()), id: \.element.id) { index, banner in
+                    let depth = visible.count - 1 - index
+                    view(of: banner)
+                        .scaleEffect(1 - tokens.ratio(.bannerStackShrink) * Double(depth), anchor: .bottom)
+                        .offset(y: tokens.space(.bannerStackPeek) * Double(depth))
+                        .allowsHitTesting(depth == 0)
+                        .zIndex(Double(index))
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                }
             }
         }
-        .animation(.easeInOut(duration: tokens.duration(.bannerAnimation)), value: banners.current?.id)
+        .animation(.easeInOut(duration: tokens.duration(.bannerAnimation)), value: banners.stack.map(\.id))
+    }
+
+    /// One banner of the stack; each hides after its own time, under the top one too.
+    private func view(of banner: BannerCenter.Banner) -> some View {
+        BannerView(text: banner.text, icon: icon(banner.style), tint: tint(banner.style), counts: banner.counts,
+                   items: banner.items,
+                   hidesAfter: banner.undo == nil ? rules.banners.autoHideSeconds : rules.banners.undoSeconds,
+                   onDismiss: {
+            withAnimation(.easeInOut(duration: tokens.duration(.bannerAnimation))) { banners.dismiss(banner.id) }
+        }, onTap: banner.opens.map { target in { router.show(target.tab, target.routes) } },
+                   onUndo: banner.undo.map { id in { Task { await model.undo(id) } } })
     }
 
     private func icon(_ style: BannerCenter.Banner.Style) -> Icon {

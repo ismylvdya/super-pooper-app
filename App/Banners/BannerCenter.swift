@@ -29,16 +29,19 @@ final class BannerCenter {
         var undo: UUID?
     }
 
-    private(set) var current: Banner?
-    private var queue: [Banner] = []
+    /// The banners shown, oldest first: a new one comes on top at once, each leaves after its own time, and what is
+    /// under the one that left shows again.
+    private(set) var stack: [Banner] = []
+
+    /// The banner on top.
+    var current: Banner? { stack.last }
 
     func show(_ banner: Banner) {
-        if current == nil { current = banner } else { queue.append(banner) }
+        stack.append(banner)
     }
 
     func dismiss(_ id: UUID) {
-        guard current?.id == id else { return }
-        current = queue.isEmpty ? nil : queue.removeFirst()
+        stack.removeAll { $0.id == id }
     }
 }
 

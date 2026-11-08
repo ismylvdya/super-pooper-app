@@ -20,6 +20,8 @@ enum SpacingToken: String, CaseIterable, Sendable {
     /// A section header starts this far right of the plates' left edge; a pool section's header stands this far below
     /// the section above.
     case sectionHeaderInset, poolSectionGap
+    /// How far below the banner on top each banner under it peeks out.
+    case bannerStackPeek
 }
 
 enum RadiusToken: String, CaseIterable, Sendable {
@@ -51,12 +53,16 @@ enum RatioToken: String, CaseIterable, Sendable {
     case timelineTitleRoom
     /// How much of a row's height a swipe button's symbol and title take together at most.
     case swipeGlyphFit
+    /// How much narrower each banner under the top one of the stack is.
+    case bannerStackShrink
     /// How much narrower each plate under the top one of a dragged stack is.
 }
 
 /// How many of something a drawing has (lines of a wrapped title).
 enum CountToken: String, CaseIterable, Sendable {
     case widgetTitleLines
+    /// Banners of the stack drawn at once, the top one with those under it.
+    case bannerStack
 }
 
 enum OpacityToken: String, CaseIterable, Sendable {
