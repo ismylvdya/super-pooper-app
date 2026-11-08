@@ -14,10 +14,30 @@ struct PlainTaskSettingsScreen: View {
                 }
             }
             PlateSection(header: "settings.plainTasks.started") {
-                startedFill
+                lookPicker
+                if model.settings.pool.startedLook == .fill {
+                    startedFill
+                    SwitchToggle("settings.pool.startedTitleAfterFill", isOn: Binding(
+                        get: { model.settings.pool.startedTitleAfterFill },
+                        set: { value in model.updateSettings { $0.pool.startedTitleAfterFill = value } }))
+                        .accessibilityIdentifier("settings.pool.startedTitleAfterFill")
+                }
                 PlateRow(icon: nil, title: "settings.pool.startedColor") { ThemeColorField(token: .started) }
             }
         }
+    }
+
+    /// The fill over the plate, or a circle before the name.
+    private var lookPicker: some View {
+        Picker("settings.pool.startedLook", selection: Binding(
+            get: { model.settings.pool.startedLook },
+            set: { look in model.updateSettings { $0.pool.startedLook = look } })) {
+            ForEach(AppSettings.StartedLook.allCases, id: \.self) { look in
+                Text(LocalizedStringKey(String("settings.pool.startedLook.") + look.rawValue)).tag(look)
+            }
+        }
+        .pickerStyle(.segmented)
+        .accessibilityIdentifier("settings.pool.startedLook")
     }
 
     /// How far a started task's fill reaches, with a sample of it, as it stands in the pool: on a row's whole plate.

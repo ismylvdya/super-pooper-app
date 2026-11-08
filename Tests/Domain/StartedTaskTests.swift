@@ -36,3 +36,30 @@ struct StartedTaskTests {
     }
 
 }
+
+/// Where a started task's mark stands and how far its name moves (`StartedLayout`).
+@Suite("Started look")
+struct StartedLayoutTests {
+    private let size = CGSize(width: 300, height: 40)
+
+    @Test func theCircleIsConcentricWithThePlatesCorner() throws {
+        let layout = StartedLayout(look: .circle, fillLength: 0.33, titleAfterFill: false)
+        // A plate 40 tall is never rounder than 20: the circle stands 5 inside it all along the arc.
+        let circle = try #require(layout.circle(plateHeight: 40, cornerRadius: 26, inset: 5))
+        #expect(circle == CGRect(x: 5, y: 5, width: 30, height: 30))
+        #expect(layout.titleShift(plateSize: size, cornerRadius: 26, inset: 5, gap: 6) == 36)
+    }
+
+    @Test func theFillMovesTheNameOnlyWhenItGoesAfterIt() {
+        let over = StartedLayout(look: .fill, fillLength: 0.5, titleAfterFill: false)
+        #expect(over.titleShift(plateSize: size, cornerRadius: 26, inset: 5, gap: 6) == 0)
+        #expect(over.circle(plateHeight: 40, cornerRadius: 26, inset: 5) == nil)
+        let after = StartedLayout(look: .fill, fillLength: 0.5, titleAfterFill: true)
+        #expect(after.titleShift(plateSize: size, cornerRadius: 26, inset: 5, gap: 6) == 145)
+    }
+
+    @Test func byDefaultTheFillLiesUnderTheName() {
+        #expect(TestConfig.defaults.pool.startedLook == .fill)
+        #expect(!TestConfig.defaults.pool.startedTitleAfterFill)
+    }
+}

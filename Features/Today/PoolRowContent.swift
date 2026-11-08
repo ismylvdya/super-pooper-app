@@ -11,7 +11,7 @@ struct PoolRowContent: View {
     @Environment(\.actions) private var actions
     @Environment(\.tokens) private var tokens
     @Environment(\.highPriorityLook) private var highPriorityLook
-    @Environment(\.startedFillLength) private var startedFillLength
+    @Environment(\.startedLayout) private var startedLayout
     @Environment(TaskDragState.self) private var drag: TaskDragState?
     @Environment(PoolSelection.self) private var selection: PoolSelection?
     let item: DayItem
@@ -32,6 +32,8 @@ struct PoolRowContent: View {
     var poolDay: LocalDate?
     /// Select mode: the row a drag of the picked ones lifts, the first of them.
     var stackTop: DayItem?
+    /// The pool plate's size, for the started mark and how far the name moves for it.
+    @State private var plateSize: CGSize = .zero
 
     var body: some View {
         if let selection, selection.isOn, poolDay != nil {
@@ -95,7 +97,10 @@ struct PoolRowContent: View {
                     row
                     Spacer(minLength: minimumHeight)
                 }
+                .padding(.leading, startedShift)
                 .poolRowPlate(plate, isDone: item.isFinished, tint: tint)
+                .overlay(alignment: .topLeading) { startedCircle }
+                .onGeometryChange(for: CGSize.self) { $0.size } action: { plateSize = $0 }
             case .slot(let isPast, let isCompact):
                 row.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading).slotPlate(isPast: isPast, isCompact: isCompact, tint: tint)
             }
@@ -103,9 +108,34 @@ struct PoolRowContent: View {
         .environment(\.plateGradient, startedFill)
     }
 
-    /// A started task, not done yet, has the started fill over its plate, under its text (`PlateFill`).
-    private var startedFill: AnyView? {
-        guard let startedFillLength, item.task.isStarted, !item.isDone else { return nil }
-        return AnyView(StartedFill(length: startedFillLength))
+    /// A started task, not done yet, in its started look (`StartedLayout`); nil for any other.
+    private var started: StartedLayout? {
+        guard let startedLayout, item.task.isStarted, !item.isDone else { return nil }
+        return startedLayout
     }
+
+    /// The started fill over the plate, under the text (`PlateFill`): in the fill look, and on the timeline whatever the look.
+    private var startedFill: AnyView? {
+        guard let started else { return nil }
+        if case .pool = plate, started.look != .fill { return nil }
+        return AnyView(StartedFill(length: started.fillLength))
+    }
+
+    /// The circle before the name in the circle look (pool only).
+    @ViewBuilder private var startedCircle: some View {
+        if case .pool = plate, let started,
+           let frame = started.circle(plateHeight: plateSize.height, cornerRadius: tokens.plateRadius(.row), inset: rowInset) {
+            StartedCircle().frame(width: frame.width, height: frame.height).offset(x: frame.minX, y: frame.minY)
+        }
+    }
+
+    /// How far right the name moves for the started look (pool only).
+    private var startedShift: CGFloat {
+        guard case .pool = plate, let started else { return 0 }
+        return started.titleShift(plateSize: plateSize, cornerRadius: tokens.plateRadius(.row), inset: rowInset,
+                                  gap: tokens.space(.iconTextGap))
+    }
+
+    /// The row's leading inset on its plate (`rowPlatePadding`).
+    private var rowInset: CGFloat { tokens.space(.plateInner) / 2 }
 }

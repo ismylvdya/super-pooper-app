@@ -26,6 +26,8 @@
     "chipOrder": ["problem", "blocked", "feel", "habit"],
     "highPriorityLook": "leadingIcon",
     "startedFillLength": 0.33,
+    "startedLook": "fill",
+    "startedTitleAfterFill": false,
     "selectionOutlineOpacity": 0.6
   },
   "timeline": {

@@ -37,6 +37,18 @@ struct AppSettings: Codable, Equatable, Sendable {
         var highPriorityLook: HighPriorityLook
         /// How far a started task's fill reaches across its plate, as a share of its width.
         var startedFillLength: Double
+        /// How a started task stands out in the pool: the fill over its plate, or a half-filled circle before its name.
+        var startedLook: StartedLook
+        /// With the fill: the name starts where the fill ends instead of over it.
+        var startedTitleAfterFill: Bool
+    }
+
+    /// How a started task stands out in the pool.
+    enum StartedLook: String, Codable, CaseIterable, Sendable {
+        /// The started color over the plate from its left edge, fading out `startedFillLength` across.
+        case fill
+        /// A round mark before the name, filled with the same fade, concentric with the plate's corner.
+        case circle
     }
 
     /// How a high-priority task stands out: the priority icon before its name, or its whole plate in a soft red.

@@ -21,14 +21,26 @@ struct StartedFill: View {
     }
 }
 
-private struct StartedFillLengthKey: EnvironmentKey {
-    static let defaultValue: Double? = nil
+/// The circle before a started task's name (`StartedLook.circle`): the fill's fade across a circle, without an outline.
+struct StartedCircle: View {
+    @Environment(\.tokens) private var tokens
+
+    var body: some View {
+        Circle()
+            .fill(LinearGradient(stops: StartedFill.stops(color: tokens.color(.started)), startPoint: .leading, endPoint: .trailing))
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+    }
+}
+
+private struct StartedLayoutKey: EnvironmentKey {
+    static let defaultValue: StartedLayout? = nil
 }
 
 extension EnvironmentValues {
-    /// How far a started task's fill reaches (from the settings); nil draws none (widgets, previews).
-    var startedFillLength: Double? {
-        get { self[StartedFillLengthKey.self] }
-        set { self[StartedFillLengthKey.self] = newValue }
+    /// How a started task looks in the pool (from the settings); nil draws nothing (widgets, previews).
+    var startedLayout: StartedLayout? {
+        get { self[StartedLayoutKey.self] }
+        set { self[StartedLayoutKey.self] = newValue }
     }
 }

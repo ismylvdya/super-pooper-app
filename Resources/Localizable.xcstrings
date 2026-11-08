@@ -7807,6 +7807,50 @@
           }
         }
       }
+    },
+    "settings.pool.startedLook": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Look"
+          }
+        }
+      }
+    },
+    "settings.pool.startedLook.fill": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fill"
+          }
+        }
+      }
+    },
+    "settings.pool.startedLook.circle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Circle"
+          }
+        }
+      }
+    },
+    "settings.pool.startedTitleAfterFill": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name after the fill"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
