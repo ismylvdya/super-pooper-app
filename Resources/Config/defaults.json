@@ -65,7 +65,8 @@
     "signingMessage": "",
     "snoozeMinutes": 30,
     "alarmSound": "system",
-    "alarmSnoozeText": ""
+    "alarmSnoozeText": "",
+    "alarmSnoozeIcon": ""
   },
   "onboarding": {
     "completed": false

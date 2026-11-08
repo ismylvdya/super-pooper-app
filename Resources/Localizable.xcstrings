@@ -7851,6 +7851,17 @@
           }
         }
       }
+    },
+    "settings.alarm.snoozeIcon": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snooze icon"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

@@ -89,12 +89,16 @@ final class AppContainer {
                                              let typed = settingsStore.load().notifications.alarmSnoozeText
                                              return typed.isEmpty ? L10n.string("alarm.snooze") : typed
                                          },
-                                         snoozeIcon: config.icons[.snooze], stopIcon: config.icons[.stopAlarm],
+                                         snoozeIcon: { [config] in
+                                             let picked = settingsStore.load().notifications.alarmSnoozeIcon
+                                             return picked.isEmpty ? config.icons[.snooze] : picked
+                                         },
+                                         stopIcon: config.icons[.stopAlarm],
                                          tint: { [config] in config.tokens.applying(settingsStore.load(), limits: config.rules.limits).color(.alarmButton) },
                                          buttonText: { [config] in config.tokens.applying(settingsStore.load(), limits: config.rules.limits).color(.alarmButtonText) },
                                          styleKey: {
                                              let settings = settingsStore.load()
-                                             return [settings.notifications.alarmSnoozeText, settings.colors["alarmButton"] ?? "", settings.colors["alarmButtonText"] ?? ""].joined(separator: "|")
+                                             return [settings.notifications.alarmSnoozeText, settings.notifications.alarmSnoozeIcon, settings.colors["alarmButton"] ?? "", settings.colors["alarmButtonText"] ?? ""].joined(separator: "|")
                                          }))
 
         let banners = BannerCenter()

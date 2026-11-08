@@ -31,3 +31,16 @@ struct AccentSettingsTests {
         #expect(!TestConfig.defaults.accent.tabBar)
     }
 }
+
+/// The alarm's Snooze button keeps the bundled symbol until another is picked.
+@Suite("Snooze icon")
+struct SnoozeIconTests {
+    @Test func byDefaultTheBundledSymbol() {
+        #expect(TestConfig.defaults.notifications.alarmSnoozeIcon.isEmpty)
+    }
+
+    @Test func theOfferedSymbolsAreNotTheBundledOne() {
+        #expect(!TestConfig.rules.notifications.snoozeIcons.isEmpty)
+        #expect(!TestConfig.rules.notifications.snoozeIcons.contains("zzz"))
+    }
+}

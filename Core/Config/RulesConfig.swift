@@ -29,6 +29,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let fireTimeToleranceSeconds: Double
         /// What the settings offer for how long a snooze lasts, in minutes.
         let snoozeChoices: [Int]
+        /// The SF Symbols offered for an alarm's Snooze button, after the bundled one.
+        let snoozeIcons: [String]
     }
 
     struct Alarms: Codable, Hashable, Sendable {

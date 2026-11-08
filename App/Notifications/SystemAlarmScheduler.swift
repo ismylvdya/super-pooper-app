@@ -12,7 +12,7 @@ struct SystemAlarmScheduler: AlarmScheduling {
     /// The stop slider's word where iOS still lets an app name it (26.0; from 26.1 it is the system's own).
     let stopTitle: @Sendable () -> String
     let snoozeTitle: @Sendable () -> String
-    let snoozeIcon: String
+    let snoozeIcon: @Sendable () -> String
     let stopIcon: String
     /// The fill of the alarm's button, and its words on it: the alarm's screen is always dark.
     let tint: @Sendable () -> Color
@@ -56,7 +56,7 @@ struct SystemAlarmScheduler: AlarmScheduling {
     /// The task's name as its title; the slider leaves its notification (`AlarmStopIntent`), the button Snooze (`AlarmSnoozeIntent`).
     private func alert(of alarm: PlannedAlarm) -> AlarmPresentation.Alert {
         let title = LocalizedStringResource(stringLiteral: alarm.title)
-        let snooze = AlarmButton(text: LocalizedStringResource(stringLiteral: snoozeTitle()), textColor: buttonText(), systemImageName: snoozeIcon)
+        let snooze = AlarmButton(text: LocalizedStringResource(stringLiteral: snoozeTitle()), textColor: buttonText(), systemImageName: snoozeIcon())
         if #available(iOS 26.1, *) {
             return AlarmPresentation.Alert(title: title, secondaryButton: snooze, secondaryButtonBehavior: .custom)
         }

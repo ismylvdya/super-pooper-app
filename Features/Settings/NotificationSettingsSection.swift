@@ -42,6 +42,7 @@ struct NotificationSettingsSection: View {
                     .multilineTextAlignment(.trailing)
                     .accessibilityIdentifier("settings.alarm.snoozeText")
             }
+            PlateRow(icon: nil, title: "settings.alarm.snoozeIcon") { SnoozeIconMenu() }
             PlateRow(icon: nil, title: "settings.alarm.snoozeFill") { ColorField(token: .alarmButton) }
             PlateRow(icon: nil, title: "settings.alarm.snoozeWords") { ColorField(token: .alarmButtonText) }
             PlateRow(icon: .signing, title: "settings.notifications.signing", info: "info.settings.notifications.signing") {}

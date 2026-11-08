@@ -37,7 +37,8 @@
     "imageMaxPixels": 400,
     "restoreDelaySeconds": 1,
     "fireTimeToleranceSeconds": 30,
-    "snoozeChoices": [5, 10, 15, 30, 45, 60, 90, 120]
+    "snoozeChoices": [5, 10, 15, 30, 45, 60, 90, 120],
+    "snoozeIcons": ["moon.zzz.fill", "bed.double.fill", "powersleep", "clock.arrow.circlepath", "timer", "hourglass", "bell.slash.fill", "arrow.clockwise"]
   },
   "alarms": {
     "systemSoundFolders": ["/Library/Ringtones"],

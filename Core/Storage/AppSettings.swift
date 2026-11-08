@@ -121,6 +121,8 @@ struct AppSettings: Codable, Equatable, Sendable {
         var alarmSound: String
         /// The word on an alarm's Snooze button; empty = the bundled one.
         var alarmSnoozeText: String
+        /// The SF Symbol before the word on an alarm's Snooze button; empty = the bundled one (`icons.json` → `snooze`).
+        var alarmSnoozeIcon: String
     }
 
     /// The tab bar's symbols the user typed: SF Symbol names by `TabBarSymbols.key`; none = `icons.json`.
