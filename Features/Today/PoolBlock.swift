@@ -137,7 +137,7 @@ struct PoolBlock: View {
         Haptics.play(.drop)
         let placement: NewItemPlacement = nesting.parent.map { .subtask(of: $0, index: nesting.index, day: plan.today) }
             ?? .pool(order: order, section: section, day: plan.today)
-        router.openNewItem(NewItemSeed(kind: .task, placement: placement))
+        router.openNewItem(NewItemSeed(kind: .task, placement: placement, estimate: drag?.releasedEstimate))
     }
 
     private func sectionDropped(_ id: String, order: [String]) {
@@ -239,7 +239,7 @@ struct PoolBlock: View {
     /// The row of a task dragged over the pool keeps an empty gap the others part around (`TaskDragState.isGap`).
     @ViewBuilder private func row(_ item: DayItem, plate: PoolRowContent.PlateKind, source: TaskDragState.Source) -> some View {
         if item.id == TaskDragState.newItemGap {
-            NewItemGapPlate(depth: item.depth)
+            NewItemGapPlate(depth: item.depth, extraLines: drag?.newItemEstimate.map(rules.pool.extraLines(forEstimate:)) ?? 0)
         } else {
             PoolRow(item: item, isToday: plan.isToday, isCompact: fillsHeight, plate: plate, handler: handler,
                     dragSource: selectionSource ?? source, poolDay: plan.today,

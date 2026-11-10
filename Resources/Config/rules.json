@@ -245,6 +245,7 @@
     "dragEndSettleSeconds": 0.5,
     "newItemTurnDwellSeconds": 0.4,
     "subtaskShare": 0.3333,
+    "estimateStepShare": 0.0833,
     "pageEdgeDwellSeconds": 0.5,
     "daySwipeAxisRatio": 1.5,
     "daySwipeShare": 0.25,

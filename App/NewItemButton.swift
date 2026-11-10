@@ -8,6 +8,7 @@ import SwiftUI
 struct NewItemButton: View {
     @Environment(Router.self) private var router
     @Environment(TaskDragState.self) private var drag: TaskDragState?
+    @Environment(\.rules) private var rules
     /// False over the system's own bubble.
     var drawsBubble = true
 
@@ -31,12 +32,37 @@ struct NewItemButton: View {
                 NewItemTouchArea(canDrag: target != nil) {
                     TabBarItem.selection(.newItem, router: router)
                 } onMove: { target?.moveNewItem(to: $0) } onEnd: { target?.releaseNewItem() } onCancel: { target?.cancelNewItem() }
+                onSecondFinger: { rise in pickEstimate(rise, on: target) }
             }
             .accessibilityElement(children: .ignore)
             .accessibilityAddTraits(.isButton)
             .accessibilityAction { TabBarItem.selection(.newItem, router: router) }
             .accessibilityLabel(Text("newItem.title"))
             .accessibilityIdentifier("tabBar.newItem")
+    }
+
+    /// A second finger up or down picks the new task's estimate, a step to feel at each one; lifted, the pick stays.
+    private func pickEstimate(_ rise: CGFloat?, on drag: TaskDragState?) {
+        guard let drag, let rise else { return }
+        let picked = NewItemEstimate.minutes(options: rules.timeEstimates.map(\.minutes), default: rules.day.defaultEstimateMinutes,
+                                             rise: Double(rise), step: rules.gestures.estimateStepShare)
+        guard picked != drag.newItemEstimate else { return }
+        drag.newItemEstimate = picked
+        Haptics.play(.dragStep)
+    }
+}
+
+extension NewItemDragOverlay {
+    @ViewBuilder fileprivate var estimate: some View {
+        if let minutes = drag.newItemEstimate {
+            let label = rules.timeEstimates.first { $0.minutes == minutes }?.label
+            Text(verbatim: label.map(L10n.string) ?? L10n.format("estimate.minutes", minutes))
+                .font(tokens.font(.chip))
+                .foregroundStyle(tokens.color(.primaryText))
+                .chipInsets()
+                .systemLook(.floatingCapsule)
+                .fixedSize()
+        }
     }
 }
 
@@ -56,9 +82,12 @@ private struct NewItemBubble: View {
     }
 }
 
-/// The "+" under the finger, over everything on the screen, while it is dragged.
+/// The "+" under the finger, over everything on the screen, while it is dragged; under it the estimate a second
+/// finger picked.
 struct NewItemDragOverlay: View {
     @Environment(TaskDragState.self) private var drag
+    @Environment(\.rules) private var rules
+    @Environment(\.tokens) private var tokens
 
     var body: some View {
         if let point = drag.newItemPoint {
@@ -66,6 +95,7 @@ struct NewItemDragOverlay: View {
                 let origin = geometry.frame(in: .global).origin
                 NewItemBubble()
                     .frame(width: drag.newItemSize.width, height: drag.newItemSize.height)
+                    .overlay(alignment: .bottom) { estimate.alignmentGuide(.bottom) { $0[.top] } }
                     .position(x: point.x - origin.x, y: point.y - origin.y)
             }
             .ignoresSafeArea()

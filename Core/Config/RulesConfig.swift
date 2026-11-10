@@ -181,6 +181,9 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let newItemTurnDwellSeconds: Double
         /// The right part of the pool, as a share of its width, where a dragged "+" makes a subtask of the row above it.
         let subtaskShare: Double
+        /// While the "+" is dragged, a second finger moved this share of the screen's height up or down picks the next
+        /// longer or shorter estimate.
+        let estimateStepShare: Double
         /// How long a dragged task stays at a page's edge or over a neighbour before Tasks turns to it.
         let pageEdgeDwellSeconds: Double
         /// A drag is sideways when it moves this many times more across than up or down.

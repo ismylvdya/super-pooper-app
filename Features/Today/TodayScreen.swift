@@ -31,6 +31,8 @@ struct TodayScreen: View {
     @State private var isNamingList = false
     @State private var isNamingItemSection = false
     @State private var itemSectionTitle = ""
+    /// The estimate the "+" brought to the bar's New section, kept while its title is asked for.
+    @State private var sectionItemEstimate: Int?
     /// Where the bar's buttons stand upright (`DayBarRoom`).
     @State private var barButtons: [TodayButtons.Item: CGRect] = [:]
     @State private var isKeyboardShown = false
@@ -82,7 +84,8 @@ struct TodayScreen: View {
         .alert("section.new.title", isPresented: $isNamingItemSection) {
             TextField("section.new.placeholder", text: $itemSectionTitle)
             Button("section.new.create") {
-                router.openNewItem(NewItemSeed(kind: .task, placement: .newSection(title: itemSectionTitle, day: shownDay)))
+                router.openNewItem(NewItemSeed(kind: .task, placement: .newSection(title: itemSectionTitle, day: shownDay),
+                                               estimate: sectionItemEstimate))
             }
             .disabled(itemSectionTitle.trimmingCharacters(in: .whitespaces).isEmpty)
             Button("common.cancel", role: .cancel) {}
@@ -169,10 +172,12 @@ struct TodayScreen: View {
         Haptics.play(.drop)
         switch target {
         case .newSection:
+            sectionItemEstimate = taskDrag.releasedEstimate
             itemSectionTitle = ""
             isNamingItemSection = true
         case .subtask(let parent):
-            router.openNewItem(NewItemSeed(kind: .task, placement: .subtask(of: parent, index: nil, day: shownDay)))
+            router.openNewItem(NewItemSeed(kind: .task, placement: .subtask(of: parent, index: nil, day: shownDay),
+                                           estimate: taskDrag.releasedEstimate))
         }
     }
 

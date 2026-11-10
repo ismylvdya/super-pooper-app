@@ -6,4 +6,6 @@ struct NewItemSeed: Hashable, Sendable {
 
     var kind: Kind
     var placement: NewItemPlacement?
+    /// The estimate picked with a second finger while the "+" was dragged.
+    var estimate: Int?
 }

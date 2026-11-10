@@ -75,6 +75,10 @@ final class TaskDragState {
     var newItemSpot = NewItemNesting.Spot.top
     /// The task the "+" was last under in the pool: the Subtask button of Today's bar makes a subtask of it.
     var newItemAbove: String?
+    /// The estimate a second finger picked for the new task while the "+" is dragged (`NewItemEstimate`); nil: none picked.
+    var newItemEstimate: Int?
+    /// The estimate the "+" was let go with, for the page it opens; kept until the next drag.
+    private(set) var releasedEstimate: Int?
     /// What letting the "+" go now does, and which target said so.
     private var newItemLanding: (owner: String, land: () -> Void)?
     /// The block the "+" is staying over, and the wait before Tasks turns to it.
@@ -92,6 +96,7 @@ final class TaskDragState {
     func moveNewItem(to point: CGPoint) {
         if source != .newItem {
             reset()
+            releasedEstimate = nil
             source = .newItem
         }
         newItemPoint = point
@@ -112,6 +117,7 @@ final class TaskDragState {
         let home = newItemHome.insetBy(dx: -newItemHome.width / 2, dy: -newItemHome.height / 2)
         let isBack = newItemPoint.map(home.contains) ?? false
         let land = isBack ? nil : newItemLanding?.land
+        releasedEstimate = newItemEstimate
         reset()
         land?()
     }
@@ -250,6 +256,7 @@ final class TaskDragState {
         newItemPoint = nil
         newItemLanding = nil
         newItemAbove = nil
+        newItemEstimate = nil
         dwellPage = nil
         dwell?.cancel()
         leavePool()

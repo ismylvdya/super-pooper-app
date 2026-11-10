@@ -6,10 +6,14 @@ import SwiftUI
 struct NewItemGapPlate: View {
     @Environment(\.tokens) private var tokens
     var depth = 0
+    /// Extra lines for the estimate a second finger picked, as a task of that estimate stands in the pool.
+    var extraLines = 0
 
     var body: some View {
-        Text(verbatim: " ")
-            .font(tokens.font(.taskTitle))
+        VStack(spacing: 0) {
+            Text(verbatim: " ").font(tokens.font(.taskTitle))
+            Spacer(minLength: CGFloat(extraLines) * tokens.uiFont(.taskTitle).lineHeight)
+        }
             .frame(maxWidth: .infinity, alignment: .leading)
             .poolRowPlate(.own, isDone: false)
             .dropGap()

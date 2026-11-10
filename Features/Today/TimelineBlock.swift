@@ -172,9 +172,18 @@ struct TimelineBlock: View {
 
     private static let newItemTarget = "timeline"
 
+    /// The dragged "+" with an estimate picked by a second finger: its block shows where it would stand, that long.
+    private var newItemGhost: DayItem? {
+        guard let drag, drag.source == .newItem, let minutes = drag.newItemEstimate else { return nil }
+        // A name of no letters: the block shows only how long it would be.
+        var task = TaskItem(id: .unsaved, name: " ", status: .thisWeek)
+        task.timeEstimate = minutes
+        return DayItem(listed: task)
+    }
+
     private func openNewItem(at placement: NewItemPlacement) {
         Haptics.play(.drop)
-        router.openNewItem(NewItemSeed(kind: .task, placement: placement))
+        router.openNewItem(NewItemSeed(kind: .task, placement: placement, estimate: drag?.releasedEstimate))
     }
 
     /// Half a group gap above the timeline's content and half below: a group gap in all, which the heights leave free.
@@ -225,7 +234,7 @@ struct TimelineBlock: View {
         style.showsNow = plan.isToday
         style.nowLineOverhang = nowLineOverhang
         style.dropMarker = drag?.hoverMoment
-        if let item = drag?.item, let moment = drag?.hoverMoment {
+        if let item = drag?.item ?? newItemGhost, let moment = drag?.hoverMoment {
             style.dropGhost = TimelineSlot.landing(item, at: moment, rules: model.config.rules.day)
         }
         style.onReminderToggle = { reminder in

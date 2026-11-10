@@ -21,6 +21,7 @@ struct NewItemPage: Equatable {
             taskDraft.apply(placement.presets(.task))
             habitDraft.apply(placement.presets(.habit))
         }
+        if let estimate = seed.estimate { taskDraft.apply([.timeEstimate(estimate)]) }
         kind = seed.kind
         placement = seed.placement
         self.taskDraft = taskDraft
