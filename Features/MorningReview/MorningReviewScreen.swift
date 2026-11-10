@@ -115,14 +115,12 @@ struct MorningReviewList: View {
 extension MorningReviewList {
     /// The pool's actions; opening the task stays where the review is.
     private func perform(_ action: ActionDefinition, on name: String) {
-        if action.id == .open {
-            openTask(name)
-        } else {
-            handler.handle(action, taskName: name)
-        }
+        handler.handle(action, taskName: name)
     }
 
     private var handler: TaskActionHandler {
-        TaskActionHandler(model: model, router: router, openURL: openURL) { pendingAction = $0 }
+        var handler = TaskActionHandler(model: model, router: router, openURL: openURL) { pendingAction = $0 }
+        handler.openTask = openTask
+        return handler
     }
 }

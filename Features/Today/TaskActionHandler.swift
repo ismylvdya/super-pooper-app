@@ -14,6 +14,8 @@ struct TaskActionHandler {
     var shownDay: LocalDate?
     /// Select from a row's menu starts the pool's Select mode with that row picked.
     var startSelection: ((String) -> Void)?
+    /// Where Open puts the task's page (a sheet's own stack); nil: the tab's stack.
+    var openTask: ((String) -> Void)?
 
     func handle(_ action: ActionDefinition, taskName: String) {
         if model.needsConfirmation(action) {
@@ -45,7 +47,7 @@ struct TaskActionHandler {
     func run(_ action: ActionDefinition, taskName: String) {
         switch action.id {
         case .open:
-            router.open(.task(taskName))
+            if let openTask { openTask(taskName) } else { router.open(.task(taskName)) }
         case .openInObsidian:
             Task {
                 if let url = await model.externalURL(for: taskName) { openURL(url) }
