@@ -7,7 +7,9 @@ enum BacklogContents {
     static func tasks(at level: TaskStatus, in tasks: [TaskItem], plan: DayPlan, rules: DayRules) -> [TaskItem] {
         let shown = plan.pool.map(\.id) + plan.timeline.compactMap(\.taskItem).map(\.id)
         let filter = TaskListFilter(statuses: [level])
-        let held = tasks.filter { filter.matches($0, rules: rules) && !shown.containsNoteName($0.name) && (!level.isThisWeek || $0.due == nil) }
+        let waiting = TaskSteps.waiting(in: tasks)
+        let held = tasks.filter { filter.matches($0, rules: rules) && !shown.containsNoteName($0.name) && (!level.isThisWeek || $0.due == nil)
+            && !waiting.contains($0.name) }
         return NameOrder.sorted(held).inStoreOrder
     }
 }

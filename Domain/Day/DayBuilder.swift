@@ -17,6 +17,8 @@ struct DayBuilder: Sendable {
 
         var items: [DayItem] = []
         var problems: [PlanProblem] = []
+        // A later step of a project done step by step waits for the steps before it (`TaskSteps`).
+        let waiting = TaskSteps.waiting(in: inputs.tasks)
         for task in inputs.tasks {
             let inDay = inputs.isOtherDay
                 ? membership.isOnOtherDay(task)
@@ -27,7 +29,7 @@ struct DayBuilder: Sendable {
                 problems += taskProblems.map { PlanProblem(taskName: task.name, problem: $0) }
             }
 
-            guard inDay else { continue }
+            guard inDay, !waiting.contains(task.name) else { continue }
             items.append(DayItem(task: task, state: membership.state(of: task), problems: taskProblems))
         }
 

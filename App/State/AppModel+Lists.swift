@@ -3,6 +3,9 @@ import Foundation
 /// The user's own lists (`TaskStatus.custom`): made from a task's page, from Select mode or on the Lists page; tasks moved
 /// into one together, a list done or deleted whole. Each change of tasks offers Undo in the banner.
 extension AppModel {
+    /// The later steps of projects done step by step: they wait for the steps before them (`TaskSteps`).
+    var waitingSteps: Set<String> { TaskSteps.waiting(in: tasks) }
+
     /// Every list of the user's own, in the store's order, empty ones too.
     var customLists: [String] { parts.lists.custom }
 

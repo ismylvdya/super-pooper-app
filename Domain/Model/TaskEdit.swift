@@ -12,6 +12,7 @@ enum TaskEdit: Hashable, Sendable {
     /// A done task is open again, in this week.
     case reopen
     case highPriority(Bool)
+    case stepsOneByOne(Bool)
     case due(TaskDue?)
     case timeEstimate(Int?)
     /// Makes the item a subtask of another one.

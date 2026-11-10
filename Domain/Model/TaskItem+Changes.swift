@@ -18,6 +18,7 @@ extension TaskItem {
                 task.status = .thisWeek
                 task.completedDate = nil
             case .highPriority(let value): task.isHighPriority = value
+            case .stepsOneByOne(let value): task.stepsOneByOne = value
             case .started(let value): task.isStarted = value
             case .due(let value):
                 task.due = value

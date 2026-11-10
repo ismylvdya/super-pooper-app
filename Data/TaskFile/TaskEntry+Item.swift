@@ -8,6 +8,7 @@ extension TaskEntry {
               format: TaskFileFormat) -> TaskItem {
         var item = TaskItem(id: TaskID(id ?? ""), name: name, status: status(in: section, list: list))
         item.isHighPriority = isHigh
+        item.stepsOneByOne = stepsOneByOne
         item.due = date.map { TaskDue(day: $0, time: time) } ?? follows.map { TaskDue(day: $0) }
         item.timeEstimate = estimate
         item.alarms = alarm.map { [TimeAlarm(sound: $0 == format.alarmDefaultSound ? nil : $0)] } ?? []
@@ -49,6 +50,7 @@ extension TaskEntry {
         name = item.name
         box = item.status == .done ? .done : item.isStarted ? .started : .open
         isHigh = item.isHighPriority
+        stepsOneByOne = item.stepsOneByOne
         date = item.due?.day
         time = item.due?.time
         estimate = item.timeEstimate

@@ -2,7 +2,8 @@ import SwiftUI
 
 /// Subtasks: each is a task of its own that names this one as its parent.
 /// Under the existing ones there is always one empty field to add the next. A subtask picked up (long press)
-/// and dropped on another one takes its place; the pool follows that order.
+/// and dropped on another one takes its place; the pool follows that order. A task with subtasks can be done step by
+/// step (`TaskSteps`): only its first open subtask is up to do, the later ones are marked Later here.
 struct SubtasksSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
@@ -21,9 +22,10 @@ struct SubtasksSection: View {
                 let subtasks = model.subtasks(of: editor.task.name)
                 let names = subtasks.map(\.name)
                 let today = model.context().today
+                let waiting = model.waitingSteps
                 ForEach(subtasks, id: \.name) { subtask in
                     NavigationLink(value: Route.task(subtask.name)) {
-                        SubtaskLabel(name: subtask.name, isDone: subtask.isDone(on: today))
+                        SubtaskLabel(name: subtask.name, isDone: subtask.isDone(on: today), isLater: waiting.contains(subtask.name))
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .buttonStyle(.plain)
@@ -41,6 +43,14 @@ struct SubtasksSection: View {
                         }
                     }
                     .accessibilityIdentifier("subtask:\(subtask.name)")
+                }
+                if !subtasks.isEmpty, !editor.task.isHabit {
+                    PlateRow(icon: .steps, title: "taskPage.steps", info: "info.taskPage.steps") {
+                        SwitchToggle("taskPage.steps", isOn: Binding(get: { editor.task.stepsOneByOne },
+                                                                     set: { editor.apply([.stepsOneByOne($0)]) }))
+                            .labelsHidden()
+                            .accessibilityIdentifier("taskPage.steps")
+                    }
                 }
                 SubtaskField(text: $newName) {
                     let name = newName.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -90,12 +100,13 @@ struct SubtasksSection: View {
     }
 }
 
-/// An existing subtask: its name, struck through when done.
+/// An existing subtask: its name, struck through when done; a step waiting for an earlier one is grey and says Later.
 private struct SubtaskLabel: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
     let name: String
     let isDone: Bool
+    var isLater = false
 
     /// A long name fades out before the chevron instead of pushing it to a line of its own.
     var body: some View {
@@ -106,7 +117,8 @@ private struct SubtaskLabel: View {
                 .frame(width: tokens.size(.iconColumn))
             FadingText(text: name, font: tokens.font(.rowTitle), lineHeight: tokens.uiFont(.rowTitle).lineHeight)
                 .strikethrough(isDone)
-            DisclosureAccessory()
+                .foregroundStyle(isLater ? tokens.color(.secondaryText) : tokens.color(.primaryText))
+            DisclosureAccessory(value: isLater ? L10n.string("taskPage.steps.later") : nil)
         }
         .contentShape(Rectangle())
     }

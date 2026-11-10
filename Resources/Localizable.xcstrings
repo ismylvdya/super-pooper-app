@@ -8028,6 +8028,61 @@
           }
         }
       }
+    },
+    "field.steps": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steps one by one"
+          }
+        }
+      }
+    },
+    "field.started": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Started"
+          }
+        }
+      }
+    },
+    "taskPage.steps": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steps one by one"
+          }
+        }
+      }
+    },
+    "taskPage.steps.later": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Later"
+          }
+        }
+      }
+    },
+    "info.taskPage.steps": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only the first open subtask is up to do: it stands in the day and in Next actions. The next one comes up when it is done."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

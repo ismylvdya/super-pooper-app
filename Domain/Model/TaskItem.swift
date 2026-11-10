@@ -9,6 +9,8 @@ struct TaskItem: Identifiable, Hashable, Codable, Sendable {
     var name: String
     var status: TaskStatus
     var isHighPriority: Bool = false
+    /// A project done step by step: of its open subtasks only the first is up to do, the others wait for it (`TaskSteps`).
+    var stepsOneByOne = false
     var due: TaskDue?
     var timeEstimate: Int?
     /// Names of the items this one is a subtask of.

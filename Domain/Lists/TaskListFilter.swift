@@ -15,8 +15,11 @@ struct TaskListFilter: Hashable, Sendable {
     }
 
     /// The matching tasks whose names contain `query`, in the store's order, grouped by planning level in `statuses` order.
+    /// A later step of a project done step by step waits on its parent's page instead (`TaskSteps`).
     func groups(of tasks: [TaskItem], query: String, rules: DayRules) -> [(status: TaskStatus, tasks: [TaskItem])] {
-        let found = NameOrder.sorted(tasks.filter { matches($0, rules: rules) && SearchMatcher.matches($0.name, query) }).inStoreOrder
+        let waiting = TaskSteps.waiting(in: tasks)
+        let found = NameOrder.sorted(tasks.filter { matches($0, rules: rules) && SearchMatcher.matches($0.name, query) && !waiting.contains($0.name) })
+            .inStoreOrder
         return statuses.compactMap { status in
             let members = found.filter { $0.status == status }
             return members.isEmpty ? nil : (status, members)
