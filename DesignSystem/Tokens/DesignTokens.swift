@@ -10,6 +10,7 @@ struct DesignTokens: Decodable, Sendable {
     private(set) var opacity: TokenTable<OpacityToken, Double>
     let duration: TokenTable<DurationToken, Double>
     let font: TokenTable<FontToken, FontSpec>
+    let glyph: TokenTable<GlyphToken, String>
     let systemBar: SystemBarTokens
     private(set) var color: TokenTable<ColorToken, ColorSpec>
     /// The colors each settings section lets the user pick.
@@ -17,7 +18,7 @@ struct DesignTokens: Decodable, Sendable {
     /// The reader's text size where the tokens are used (`designTokens(_:)`); nil: the phone's own.
     private(set) var dynamicTypeSize: DynamicTypeSize?
 
-    private enum CodingKeys: String, CodingKey { case spacing, radius, size, ratio, count, opacity, duration, font, systemBar, color, editableColors }
+    private enum CodingKeys: String, CodingKey { case spacing, radius, size, ratio, count, opacity, duration, font, glyph, systemBar, color, editableColors }
 
     func space(_ token: SpacingToken) -> CGFloat { CGFloat(spacing[token]) }
     func radius(_ token: RadiusToken) -> CGFloat { CGFloat(radius[token]) }
@@ -58,6 +59,15 @@ struct DesignTokens: Decodable, Sendable {
     /// The corner of a task's plate, concentric with its chips: their corner (half their height) plus the distance the
     /// plate keeps from them on the top, bottom and right (half the row's vertical padding).
     var rowPlateRadius: CGFloat { chipHeight / 2 + space(.rowVertical) / 2 }
+    /// Where the line from a parent to its subtasks comes down, from the parent's plate's left edge: under the middle of
+    /// the first letter of its name (`glyph.subtaskLine`), the name starting the row's leading inset in.
+    var subtaskLineX: CGFloat {
+        let letter = (glyph[.subtaskLine] as NSString).size(withAttributes: [.font: uiFont(.taskTitle)]).width
+        return space(.plateInner) / 2 + letter / 2
+    }
+    /// How far right a subtask stands of its parent: its plate starts as far right of the line as the parent's is left
+    /// of it, so the line stands halfway between them, at every level.
+    var subtaskIndent: CGFloat { subtaskLineX * 2 }
     /// The right inset of a row's own plate (pool, widgets).
     var rowPlateTrailingInset: CGFloat {
         // The icons are smaller than the title's line: on a one-line row they stand as far from the right edge as from the top.

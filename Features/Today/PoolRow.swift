@@ -25,7 +25,7 @@ struct PoolRow: View {
                        minimumHeight: CGFloat(lines) * tokens.uiFont(.taskTitle).lineHeight, handler: handler,
                        dragSource: dragSource, poolDay: poolDay, stackTop: stackTop)
             // A subtask sits under its parent, shifted right, joined to it by a thin line.
-            .padding(.leading, CGFloat(item.depth) * tokens.space(.subtaskIndent))
+            .padding(.leading, CGFloat(item.depth) * tokens.subtaskIndent)
             .background(alignment: .topLeading) {
                 if let guide {
                     SubtaskGuideLines(guide: guide, turnY: (tokens.space(.rowVertical) + tokens.uiFont(.taskTitle).lineHeight) / 2)

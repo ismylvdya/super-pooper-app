@@ -10,9 +10,9 @@ struct SubtaskGuideLines: View {
 
     var body: some View {
         GeometryReader { proxy in
-            SubtaskGuideShape(guide: guide, indent: tokens.space(.subtaskIndent), gap: tokens.space(.poolRowGap), turnY: turnY,
+            SubtaskGuideShape(guide: guide, indent: tokens.subtaskIndent, gap: tokens.space(.poolRowGap), turnY: turnY,
                               turnRadius: tokens.size(.subtaskLineTurn), height: proxy.size.height)
-                .stroke(tokens.color(.subtaskLine), style: StrokeStyle(lineWidth: tokens.size(.subtaskLine), lineCap: .round))
+                .stroke(tokens.color(.subtaskLine), style: StrokeStyle(lineWidth: tokens.size(.subtaskLine), lineCap: .butt))
         }
         .allowsHitTesting(false)
         .accessibilityHidden(true)

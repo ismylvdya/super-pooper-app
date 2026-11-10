@@ -6,7 +6,7 @@ enum SpacingToken: String, CaseIterable, Sendable {
     case screenHorizontal, screenBottom, groupGap, plateInner, plateRowGap, headerToPlate, hintToPlate
     case iconTextGap, chipHorizontal, chipVertical, chipGap, dayArrowGap, pagesGap, backlogPeek, infoPadding, nestedTitleInset, nestedTitleLift
     case childIndent, rowVertical, poolRowGap, blockGap, timelineLabelWidth, allDayTitleGap, timelineItemGap, timelineItemPadding
-    case bannerPadding, widgetMargin, habitCellGap, hourLabelGap, bellInset, liftShadow, toggleChipHorizontal, toggleChipVertical, titleInfoGap, chipIconGap, dotTextGap, valueChevronGap, reminderRingGap, menuValueInset, menuValueVertical, reviewRowVertical, markPadding, badgeGap, progressGap, timelineTitleExtra, previewRowGap, titleDetailGap, footerLineGap, subtaskIndent
+    case bannerPadding, widgetMargin, habitCellGap, hourLabelGap, bellInset, liftShadow, toggleChipHorizontal, toggleChipVertical, titleInfoGap, chipIconGap, dotTextGap, valueChevronGap, reminderRingGap, menuValueInset, menuValueVertical, reviewRowVertical, markPadding, badgeGap, progressGap, timelineTitleExtra, previewRowGap, titleDetailGap, footerLineGap
     case widgetGap, previewInset, cornerMarkGap, compactPlateVertical, emptyStateInset, widgetGridGap
     /// How much further right a timeline block lying over an earlier one starts, per step.
     case timelineCascadeIndent
@@ -115,4 +115,10 @@ enum ColorToken: String, ConfigName {
 /// The settings sections where the user picks colors (`editableColors`: which colors each offers, in order).
 enum ColorSettingsGroup: String, CaseIterable, Sendable {
     case general, tasks, habits, widgets
+}
+
+/// Letters a drawing is measured by.
+enum GlyphToken: String, CaseIterable, Sendable {
+    /// The line from a parent to its subtasks stands under the middle of this letter at the start of the parent's name.
+    case subtaskLine
 }

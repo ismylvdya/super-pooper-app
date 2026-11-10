@@ -13,14 +13,14 @@ struct NewItemGapPlate: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .poolRowPlate(.own, isDone: false)
             .dropGap()
-            .padding(.leading, CGFloat(depth) * tokens.space(.subtaskIndent))
+            .padding(.leading, CGFloat(depth) * tokens.subtaskIndent)
             .background(alignment: .topLeading) {
                 if depth > 0 { line }
             }
     }
 
     private var line: some View {
-        let indent = tokens.space(.subtaskIndent)
+        let indent = tokens.subtaskIndent
         let start = CGFloat(depth - 1) * indent + indent / 2
         let reach = start + indent * tokens.ratio(.subtaskLineFade)
         return GeometryReader { proxy in
@@ -32,7 +32,7 @@ struct NewItemGapPlate: View {
                                                .init(color: tokens.color(.subtaskLine), location: (start + indent / 2) / proxy.size.width),
                                                .init(color: tokens.color(.subtaskLine).opacity(0), location: reach / proxy.size.width)],
                                        startPoint: .leading, endPoint: .trailing),
-                        style: StrokeStyle(lineWidth: tokens.size(.subtaskLine), lineCap: .round))
+                        style: StrokeStyle(lineWidth: tokens.size(.subtaskLine), lineCap: .butt))
         }
         .allowsHitTesting(false)
         .accessibilityHidden(true)

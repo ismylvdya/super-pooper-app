@@ -75,11 +75,11 @@ struct MorningReviewList: View {
                             let position = ReviewGroups.position(of: index, in: rows)
                             ReviewRow(item: item, today: plan.today) { openTask(item.id) }
                                 // A subtask sits under its parent, shifted right, as in the pool.
-                                .padding(.leading, CGFloat(item.depth) * tokens.space(.subtaskIndent))
+                                .padding(.leading, CGFloat(item.depth) * tokens.subtaskIndent)
                                 // The row keeps its top and bottom inset inside, where a tap opens the task.
                                 .listGroupRow(group: ReviewGroups.group(of: index, in: rows)?.rawValue ?? "", id: name,
                                               index: position.index, count: position.count, frames: frames, vertical: 0,
-                                              separatorIndent: CGFloat(item.depth) * tokens.space(.subtaskIndent)) {
+                                              separatorIndent: CGFloat(item.depth) * tokens.subtaskIndent) {
                                     ActionMenuContent(menu: .context(of: item.task), item: item) {
                                         perform($0, on: item.id)
                                     }

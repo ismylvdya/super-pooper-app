@@ -16,7 +16,7 @@ struct WidgetPoolBlock: View {
                                 isCompact: true, titleLineHeight: tokens.uiFont(.widgetTitle).lineHeight)
                         .poolRowPlate(plate, isDone: item.isDone)
                         // A subtask sits under its parent, shifted right, as in the app's pool.
-                        .padding(.leading, CGFloat(item.depth) * tokens.space(.subtaskIndent))
+                        .padding(.leading, CGFloat(item.depth) * tokens.subtaskIndent)
                 }
             }
             if let visibleCount, plan.pool.count > visibleCount {
