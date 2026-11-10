@@ -9,16 +9,9 @@ struct PoolSettingsSection: View {
         PlateSection(header: "settings.pool", hint: isActive ? "settings.pool.hint" : "settings.pool.hint.sideBySide") {
             SettingsLink(route: .poolOrder, icon: .resetOrder, title: "sort.title")
             SettingsLink(route: .chipOrder, icon: .chipOrder, title: "chipOrder.title")
-            PlateRow(icon: .high, title: "settings.pool.highPriority", info: "info.settings.pool.highPriority") {}
-            Picker("settings.pool.highPriority", selection: Binding(
-                get: { model.settings.pool.highPriorityLook },
-                set: { look in model.updateSettings { $0.pool.highPriorityLook = look } })) {
-                ForEach(model.config.rules.pool.highPriorityLooks, id: \.self) { look in
-                    Text(LocalizedStringKey(String("settings.pool.highPriority.") + look.rawValue)).tag(look)
-                }
-            }
-            .pickerStyle(.segmented)
-            .accessibilityIdentifier("settings.pool.highPriority")
+            SettingChoice(icon: .high, title: "settings.pool.highPriority", info: "info.settings.pool.highPriority",
+                          value: \.pool.highPriorityLook, options: model.config.rules.pool.highPriorityLooks,
+                          prefix: "settings.pool.highPriority.", accessibilityID: "settings.pool.highPriority")
             PlateRow(icon: nil, title: "settings.pool.highColor") { ThemeColorField(token: .high) }
             selectionOutline
             PlateRow(icon: .poolCount, title: "settings.pool.visible", info: "info.settings.pool.visible") {

@@ -163,7 +163,7 @@ struct TodayScreen: View {
 
     /// An action of the selection bar: New section asks for its title first; the others act on the picked tasks at once.
     private func performOnSelection(_ action: ActionDefinition) {
-        guard action.id != .newSection else {
+        guard action.asksName != true else {
             isNamingSection = true
             return
         }

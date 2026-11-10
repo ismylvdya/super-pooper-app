@@ -31,15 +31,8 @@ struct PlainTaskSettingsScreen: View {
 
     /// The fill over the plate, or a circle before the name.
     private var lookPicker: some View {
-        Picker("settings.pool.startedLook", selection: Binding(
-            get: { model.settings.pool.startedLook },
-            set: { look in model.updateSettings { $0.pool.startedLook = look } })) {
-            ForEach(AppSettings.StartedLook.allCases, id: \.self) { look in
-                Text(LocalizedStringKey(String("settings.pool.startedLook.") + look.rawValue)).tag(look)
-            }
-        }
-        .pickerStyle(.segmented)
-        .accessibilityIdentifier("settings.pool.startedLook")
+        SettingChoice(icon: nil, title: "settings.pool.startedLook", value: \.pool.startedLook, options: AppSettings.StartedLook.allCases,
+                      prefix: "settings.pool.startedLook.", accessibilityID: "settings.pool.startedLook")
     }
 
     /// How far a started task's fill reaches, with a sample of it, as it stands in the pool: on a row's whole plate.

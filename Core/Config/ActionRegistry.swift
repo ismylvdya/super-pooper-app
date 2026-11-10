@@ -153,6 +153,8 @@ struct ActionDefinition: Codable, Hashable, Sendable {
     var undo: UndoKind?
     /// The action's entry in a menu is a menu of the lists a task can go to (`ListChoiceMenu`), not a button.
     var picksList: Bool?
+    /// The action asks for a name first (`namePrompt`): New section.
+    var asksName: Bool?
 
     var needsConfirmation: Bool { confirmTitle != nil }
 

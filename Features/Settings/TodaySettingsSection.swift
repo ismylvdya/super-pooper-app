@@ -61,27 +61,9 @@ struct TodaySettingsSection: View {
         let current = model.settings.today[keyPath: keyPath]
         return PlateSection(header: surface.header, hint: surface.hint) {
             ArrangementPreview(arrangement: current, landscape: surface.isLandscape)
-            PlateRow(icon: .timelineLayout, title: "settings.today.arrangement", info: surface.info) {}
-            Picker("settings.today.arrangement", selection: Binding(
-                get: { current },
-                set: { value in
-                    Haptics.play(.select)
-                    model.updateSettings { $0.today[keyPath: keyPath] = value }
-                }
-            )) {
-                ForEach(surface.options, id: \.self) { option in
-                    Text(Self.title(option)).tag(option)
-                }
-            }
-            .pickerStyle(.segmented)
-        }
-    }
-
-    private static func title(_ arrangement: AppSettings.TodayArrangement) -> LocalizedStringKey {
-        switch arrangement {
-        case .stacked: "settings.today.stacked"
-        case .sideBySide: "settings.today.sideBySide"
-        case .paged: "settings.today.paged"
+            SettingChoice(icon: .timelineLayout, title: "settings.today.arrangement", info: surface.info,
+                          value: (\AppSettings.today).appending(path: keyPath), options: surface.options, prefix: "settings.today.",
+                          accessibilityID: "settings.today.arrangement.\(surface)")
         }
     }
 }

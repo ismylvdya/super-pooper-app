@@ -205,7 +205,8 @@
       "title": "action.newSection",
       "icon": "rectangle.stack.badge.plus",
       "destructive": false,
-      "haptic": "light"
+      "haptic": "light",
+      "asksName": true
     },
     {
       "id": "moveToList",

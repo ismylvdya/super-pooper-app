@@ -14,19 +14,13 @@ struct TimelineSettingsSection: View {
             TimelinePreview(settings: model.settings)
             switch model.settings.today.arrangement {
             case .stacked:
-                PlateRow(icon: .timelineLayout, title: "settings.timeline.layout", info: "info.settings.timeline.layout") {}
-                Picker("settings.timeline.layout", selection: binding(\.layout)) {
-                    Text("settings.timeline.oneColumn").tag(AppSettings.TimelineLayout.oneColumn)
-                    Text("settings.timeline.twoColumns").tag(AppSettings.TimelineLayout.twoColumns)
-                }
-                .pickerStyle(.segmented)
+                SettingChoice(icon: .timelineLayout, title: "settings.timeline.layout", info: "info.settings.timeline.layout",
+                              value: \.timeline.layout, options: AppSettings.TimelineLayout.allCases, prefix: "settings.timeline.",
+                              accessibilityID: "settings.timeline.layout")
             case .sideBySide, .paged:
-                PlateRow(icon: .timelineLayout, title: "settings.timeline.range", info: "info.settings.timeline.range") {}
-                Picker("settings.timeline.range", selection: binding(\.range)) {
-                    Text("settings.timeline.aroundNow").tag(AppSettings.TimelineRange.aroundNow)
-                    Text("settings.timeline.wholeDay").tag(AppSettings.TimelineRange.wholeDay)
-                }
-                .pickerStyle(.segmented)
+                SettingChoice(icon: .timelineLayout, title: "settings.timeline.range", info: "info.settings.timeline.range",
+                              value: \.timeline.range, options: AppSettings.TimelineRange.allCases, prefix: "settings.timeline.",
+                              accessibilityID: "settings.timeline.range")
             }
             switch model.settings.timelineMode {
             case .aroundNow:
