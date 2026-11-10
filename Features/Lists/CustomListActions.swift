@@ -3,21 +3,11 @@ import SwiftUI
 /// The "…" of a list of the user's own (its page, its row on the Lists page): every task done at once, or the list
 /// deleted.
 struct CustomListMenu: View {
-    @Environment(AppModel.self) private var model
-    @Environment(\.icons) private var icons
-    @Environment(\.tokens) private var tokens
     let title: String
     @Binding var isConfirmingDelete: Bool
 
     var body: some View {
-        Menu {
-            CustomListMenuItems(title: title, isConfirmingDelete: $isConfirmingDelete)
-        } label: {
-            Image(systemName: icons[.more])
-        }
-        .tint(tokens.color(.accent))
-        .accessibilityLabel(Text("select.more"))
-        .accessibilityIdentifier("customList.more")
+        MoreMenu(accessibilityID: "customList.more") { CustomListMenuItems(title: title, isConfirmingDelete: $isConfirmingDelete) }
     }
 }
 

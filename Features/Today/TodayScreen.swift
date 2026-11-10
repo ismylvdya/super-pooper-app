@@ -27,10 +27,8 @@ struct TodayScreen: View {
     @Environment(TaskDragState.self) private var taskDrag
     @State private var selection = PoolSelection()
     @State private var isNamingSection = false
-    @State private var sectionTitle = ""
     @State private var isNamingList = false
     @State private var isNamingItemSection = false
-    @State private var itemSectionTitle = ""
     /// The estimate the "+" brought to the bar's New section, kept while its title is asked for.
     @State private var sectionItemEstimate: Int?
     /// Where the bar's buttons stand upright (`DayBarRoom`).
@@ -71,24 +69,13 @@ struct TodayScreen: View {
         }
         .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
         .environment(selection)
-        .alert("section.new.title", isPresented: $isNamingSection) {
-            TextField("section.new.placeholder", text: $sectionTitle)
-                .accessibilityIdentifier("section.new.name")
-            Button("section.new.create") {
-                model.newSection(titled: sectionTitle, withSelected: selection.names, on: shownDay)
-                selection.end()
-            }
-            Button("common.cancel", role: .cancel) {}
+        .namePrompt(.section, isPresented: $isNamingSection) { title in
+            model.newSection(titled: title, withSelected: selection.names, on: shownDay)
+            selection.end()
         }
         .newListAlert(isPresented: $isNamingList) { moveSelected(to: .custom($0)) }
-        .alert("section.new.title", isPresented: $isNamingItemSection) {
-            TextField("section.new.placeholder", text: $itemSectionTitle)
-            Button("section.new.create") {
-                router.openNewItem(NewItemSeed(kind: .task, placement: .newSection(title: itemSectionTitle, day: shownDay),
-                                               estimate: sectionItemEstimate))
-            }
-            .disabled(itemSectionTitle.trimmingCharacters(in: .whitespaces).isEmpty)
-            Button("common.cancel", role: .cancel) {}
+        .namePrompt(.section, isPresented: $isNamingItemSection) { title in
+            router.openNewItem(NewItemSeed(kind: .task, placement: .newSection(title: title, day: shownDay), estimate: sectionItemEstimate))
         }
         // Another day or another tab leaves Select mode.
         .onChange(of: pager.dayOffset) { selection.end() }
@@ -137,30 +124,11 @@ struct TodayScreen: View {
         pager.showPool(poolBlock: poolBlock, forgetsBacklog: forgetsBacklog, animation: tokens.animation)
     }
 
-    /// On a backlog page its list's title, plainly; on the day's pages the day's name with its arrows. Both always stand
-    /// in the same place and change the one way titles change (`titleSwap`), whatever moves the pages.
+    /// On a backlog page its list's title, plainly; on the day's pages the day's name with its arrows (`TodayTitle`).
     private var title: some View {
         let shown = pages.indices.contains(pager.page) ? pages[pager.page] : nil
-        let list = shown?.backlogID.flatMap(model.config.lists.backlogList)
-        let fade = Animation.easeInOut(duration: tokens.duration(.titleSwap))
-        return ZStack {
-            dayNavigation
-                .opacity(list == nil ? 1 : 0)
-                .animation(fade, value: list == nil)
-                .allowsHitTesting(list == nil)
-            Text(LocalizedStringKey(list?.title ?? ""))
-                .font(tokens.font(.navTitle))
-                .lineLimit(1)
-                .minimumScaleFactor(isLandscape ? 1 : tokens.size(.navTitleMin) / tokens.uiFont(.navTitle).pointSize)
-                .quarterTurned(physicalBottom)
-                .accessibilityAddTraits(.isHeader)
-                .accessibilityIdentifier("today.listTitle")
-                .titleSwap(list?.id)
-                .opacity(list == nil ? 0 : 1)
-                .animation(fade, value: list == nil)
-                .allowsHitTesting(false)
-        }
-        .transaction { $0.animation = nil }
+        return TodayTitle(list: shown?.backlogID.flatMap(model.config.lists.backlogList), dayNavigation: dayNavigation,
+                          physicalBottom: physicalBottom)
     }
 
     /// The day the pool shows.
@@ -173,7 +141,6 @@ struct TodayScreen: View {
         switch target {
         case .newSection:
             sectionItemEstimate = taskDrag.releasedEstimate
-            itemSectionTitle = ""
             isNamingItemSection = true
         case .subtask(let parent):
             router.openNewItem(NewItemSeed(kind: .task, placement: .subtask(of: parent, index: nil, day: shownDay),
@@ -197,7 +164,6 @@ struct TodayScreen: View {
     /// An action of the selection bar: New section asks for its title first; the others act on the picked tasks at once.
     private func performOnSelection(_ action: ActionDefinition) {
         guard action.id != .newSection else {
-            sectionTitle = ""
             isNamingSection = true
             return
         }
@@ -305,7 +271,7 @@ struct TodayScreen: View {
 
     private func landscapeButtons(_ slot: LandscapeSlot, bottom: HorizontalEdge) -> some View {
         let placement: SelectionToolbar.Placement = slot == .leading ? .leading : .trailing
-        return bubble(.vertical) {
+        return BarButtonGroup(axis: .vertical) {
             if selection.isOn {
                 selectionBar(placement, bottom: bottom)
             } else {
@@ -313,16 +279,6 @@ struct TodayScreen: View {
                              offersNewSection: isShowingToday)
             }
         }
-    }
-
-    /// A group of bar buttons in the glass capsule the system draws around them upright.
-    private func bubble(_ axis: Axis, @ViewBuilder _ buttons: () -> some View) -> some View {
-        let layout = axis == .horizontal ? AnyLayout(HStackLayout(spacing: tokens.bar(.barButtonGap)))
-            : AnyLayout(VStackLayout(spacing: tokens.bar(.barButtonGap)))
-        return layout { buttons() }
-            .buttonStyle(.plain)
-            .foregroundStyle(tokens.color(.primaryText))
-            .systemLook(.barCapsule)
     }
 
     /// The bar upright, from the physical left to the physical right.
@@ -333,23 +289,5 @@ struct TodayScreen: View {
         handler.shownDay = shownDay
         handler.startSelection = { name in withAnimation(tokens.animation) { selection.start(with: name) } }
         return handler
-    }
-}
-
-/// Maps layout block ids to block views (unknown ids stop the app at config loading).
-struct TodayBlock: View {
-    let id: TodayBlockID
-    let plan: DayPlan
-    let handler: TaskActionHandler
-    let bottomInset: CGFloat
-    /// The edges under the system tab bar: upright, the bottom of a block that reaches the screen's bottom (lying sideways
-    /// the app's own tab bar stands beside the blocks).
-    let barEdges: Edge.Set
-
-    var body: some View {
-        switch id {
-        case .pool: PoolBlock(plan: plan, handler: handler, bottomInset: bottomInset, barEdges: barEdges)
-        case .timeline: TimelineBlock(plan: plan, handler: handler, bottomInset: bottomInset, barEdges: barEdges)
-        }
     }
 }

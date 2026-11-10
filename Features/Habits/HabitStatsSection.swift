@@ -102,7 +102,7 @@ struct BarRow: View {
                         Text(verbatim: "\(bar.value)").font(tokens.font(.caption)).foregroundStyle(tokens.color(.tertiaryText))
                         RoundedRectangle(cornerRadius: tokens.radius(.habitCell), style: .continuous)
                             .fill(color.opacity(bar.value == 0 ? tokens.opacity(.habitEmpty) : 1))
-                            .frame(height: max(tokens.size(.habitStatsBar) * CGFloat(bar.value) / CGFloat(top), 2))
+                            .frame(height: max(tokens.size(.habitStatsBar) * CGFloat(bar.value) / CGFloat(top), tokens.size(.habitStatsBarMin)))
                         Text(verbatim: bar.label).secondaryText()
                     }
                     .frame(maxWidth: .infinity)

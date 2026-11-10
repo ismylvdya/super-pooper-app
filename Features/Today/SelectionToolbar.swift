@@ -87,7 +87,7 @@ struct SelectionToolbar: View {
     }
 
     private func more(_ actions: [ActionDefinition]) -> some View {
-        Menu {
+        MoreMenu(accessibilityID: "select.more") {
             ForEach(actions, id: \.id) { action in
                 if action.picksList == true {
                     Menu {
@@ -109,14 +109,9 @@ struct SelectionToolbar: View {
                     .accessibilityIdentifier("action.\(action.id.rawValue)")
                 }
             }
-        } label: {
-            Image(systemName: icons[.more])
         }
-        .tint(tokens.color(.accent))
         .disabled(actions.isEmpty)
         .modifier(ColumnButton(isInColumn: bottom != nil))
-        .accessibilityLabel(Text("select.more"))
-        .accessibilityIdentifier("select.more")
     }
 }
 

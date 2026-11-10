@@ -34,14 +34,9 @@ struct PoolSettingsSection: View {
     }
 
     /// How solid the outline of a picked task is, over the color of the section titles.
-    @ViewBuilder private var selectionOutline: some View {
-        let opacity = model.settings.pool.selectionOutlineOpacity
-        let limits = model.config.rules.limits.selectionOutlineOpacity
-        PlateRow(icon: .opacity, title: "settings.pool.selectionOutline", info: "info.settings.pool.selectionOutline") {
-            Text(opacity.formatted(.percent.precision(.fractionLength(0)))).monospacedDigit().foregroundStyle(tokens.color(.secondaryText))
-        }
-        Slider(value: Binding(get: { opacity }, set: { value in model.updateSettings { $0.pool.selectionOutlineOpacity = limits.snapped(value) } }),
-               in: limits.closed)
-            .accessibilityIdentifier("settings.pool.selectionOutline")
+    private var selectionOutline: some View {
+        ShareSlider(icon: .opacity, title: "settings.pool.selectionOutline", info: "info.settings.pool.selectionOutline",
+                    value: \.pool.selectionOutlineOpacity, limits: model.config.rules.limits.selectionOutlineOpacity,
+                    accessibilityID: "settings.pool.selectionOutline")
     }
 }

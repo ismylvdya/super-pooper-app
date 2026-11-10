@@ -49,27 +49,16 @@ struct ListLabel: View {
 extension View {
     /// Asks for a new list's title; Create is offered once the title is one a new list may take (`AppModel.newListTitle`).
     func newListAlert(isPresented: Binding<Bool>, onCreate: @escaping (String) -> Void) -> some View {
-        modifier(NewListAlert(isPresented: isPresented, onCreate: onCreate))
+        modifier(NewListPrompt(isPresented: isPresented, onCreate: onCreate))
     }
 }
 
-private struct NewListAlert: ViewModifier {
+private struct NewListPrompt: ViewModifier {
     @Environment(AppModel.self) private var model
     @Binding var isPresented: Bool
     let onCreate: (String) -> Void
-    @State private var typed = ""
 
     func body(content: Content) -> some View {
-        content
-            .alert("lists.new.title", isPresented: $isPresented) {
-                TextField("lists.new.placeholder", text: $typed)
-                    .accessibilityIdentifier("lists.new.name")
-                Button("lists.new.create") {
-                    if let title = model.newListTitle(typed) { onCreate(title) }
-                }
-                .disabled(model.newListTitle(typed) == nil)
-                Button("common.cancel", role: .cancel) {}
-            }
-            .onChange(of: isPresented) { _, shown in if shown { typed = "" } }
+        content.namePrompt(.list, isPresented: $isPresented, accepts: model.newListTitle, onCreate: onCreate)
     }
 }

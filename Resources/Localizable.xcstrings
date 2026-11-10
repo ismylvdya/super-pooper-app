@@ -4352,17 +4352,6 @@
         }
       }
     },
-    "select.more": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "More actions"
-          }
-        }
-      }
-    },
     "settings.access.allow": {
       "extractionState": "manual",
       "localizations": {
@@ -6312,17 +6301,6 @@
         }
       }
     },
-    "taskPage.more": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "More actions"
-          }
-        }
-      }
-    },
     "taskPage.name": {
       "extractionState": "manual",
       "localizations": {
@@ -8080,6 +8058,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Only the first open subtask is up to do: it stands in the day and in Next actions. The next one comes up when it is done."
+          }
+        }
+      }
+    },
+    "common.more": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "More actions"
           }
         }
       }

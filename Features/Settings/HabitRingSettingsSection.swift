@@ -6,16 +6,9 @@ struct HabitRingSettingsSection: View {
     @Environment(\.tokens) private var tokens
 
     var body: some View {
-        let opacity = model.settings.habits.ringOpacity
-        let limits = model.config.rules.limits.ringOpacity
         PlateSection(header: "settings.habits.marks", info: "info.settings.habits.ringOpacity") {
-            PlateRow(icon: .opacity, title: "settings.habits.ringOpacity") {
-                Text(opacity.formatted(.percent.precision(.fractionLength(0)))).monospacedDigit().foregroundStyle(tokens.color(.secondaryText))
-            }
-            Slider(value: Binding(get: { opacity },
-                                  set: { value in model.updateSettings { $0.habits.ringOpacity = limits.snapped(value) } }),
-                   in: limits.closed)
-                .accessibilityIdentifier("settings.habits.ringOpacity")
+            ShareSlider(icon: .opacity, title: "settings.habits.ringOpacity", value: \.habits.ringOpacity,
+                        limits: model.config.rules.limits.ringOpacity, accessibilityID: "settings.habits.ringOpacity")
             preview
         }
     }

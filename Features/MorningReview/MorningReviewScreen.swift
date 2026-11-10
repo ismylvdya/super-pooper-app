@@ -30,16 +30,12 @@ struct MorningReviewScreen: View {
 /// The page of the Lists page: the same review, with Back and Search; a task opens on the tab's own stack.
 struct MorningReviewPage: View {
     @Environment(Router.self) private var router
-    @Environment(\.tokens) private var tokens
 
     var body: some View {
         MorningReviewList(resetPlacement: .topBarTrailing) { router.open(.task($0)) }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button { router.open(.search(.tasks)) } label: { SearchGlyph() }
-                        .tint(tokens.color(.accent))
-                        .accessibilityLabel(Text("search.title"))
-                        .accessibilityIdentifier("review.search")
+                    OpenSearchButton(scope: .tasks, accessibilityID: "review.search")
                 }
             }
     }

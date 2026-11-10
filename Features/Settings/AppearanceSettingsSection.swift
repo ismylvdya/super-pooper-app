@@ -6,16 +6,9 @@ struct AppearanceSettingsSection: View {
     @Environment(\.tokens) private var tokens
 
     var body: some View {
-        let opacity = model.settings.appearance.pastOpacity
-        let limits = model.config.rules.limits.pastOpacity
         PlateSection(header: "settings.appearance", info: "info.settings.pastOpacity") {
-            PlateRow(icon: .opacity, title: "settings.pastOpacity") {
-                Text(opacity.formatted(.percent.precision(.fractionLength(0)))).monospacedDigit().foregroundStyle(tokens.color(.secondaryText))
-            }
-            Slider(value: Binding(get: { opacity },
-                                  set: { value in model.updateSettings { $0.appearance.pastOpacity = limits.snapped(value) } }),
-                   in: limits.closed)
-                .accessibilityIdentifier("settings.pastOpacity")
+            ShareSlider(icon: .opacity, title: "settings.pastOpacity", value: \.appearance.pastOpacity,
+                        limits: model.config.rules.limits.pastOpacity, accessibilityID: "settings.pastOpacity")
             preview
         }
     }

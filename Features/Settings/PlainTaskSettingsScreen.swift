@@ -43,32 +43,20 @@ struct PlainTaskSettingsScreen: View {
     }
 
     /// How far a started task's fill reaches, with a sample of it, as it stands in the pool: on a row's whole plate.
-    @ViewBuilder private var startedFill: some View {
-        let length = model.settings.pool.startedFillLength
-        let limits = model.config.rules.limits.startedFillLength
-        PlateRow(icon: nil, title: "settings.pool.startedFill", info: "info.settings.pool.startedFill") {
-            Text(length.formatted(.percent.precision(.fractionLength(0)))).monospacedDigit().foregroundStyle(tokens.color(.secondaryText))
-        }
-        .rowPlatePadding()
-        .environment(\.plateGradient, AnyView(StartedFill(length: length)))
-        .plate(.row)
-        Slider(value: Binding(get: { length }, set: { value in model.updateSettings { $0.pool.startedFillLength = limits.snapped(value) } }),
-               in: limits.closed)
-            .accessibilityIdentifier("settings.pool.startedFill")
+    private var startedFill: some View {
+        ShareSlider(icon: nil, title: "settings.pool.startedFill", info: "info.settings.pool.startedFill", value: \.pool.startedFillLength,
+                    limits: model.config.rules.limits.startedFillLength, accessibilityID: "settings.pool.startedFill",
+                    samplePlate: AnyView(StartedFill(length: model.settings.pool.startedFillLength))) { PercentText(value: $0) }
     }
 
     /// How big the circle is, with a sample of it at that size: from a small letter of a name to a one-line plate.
-    @ViewBuilder private var circleSize: some View {
-        let size = model.settings.pool.startedCircleSize
-        let limits = model.config.rules.limits.startedCircleSize
+    private var circleSize: some View {
         let sizes = tokens.startedCircleSizes
-        PlateRow(icon: nil, title: "settings.pool.startedCircleSize") {
-            StartedCircle().frame(width: sizes.lowerBound + (sizes.upperBound - sizes.lowerBound) * size,
-                                  height: sizes.lowerBound + (sizes.upperBound - sizes.lowerBound) * size)
-                .frame(width: sizes.upperBound, height: sizes.upperBound)
+        return ShareSlider(icon: nil, title: "settings.pool.startedCircleSize", value: \.pool.startedCircleSize,
+                           limits: model.config.rules.limits.startedCircleSize, accessibilityID: "settings.pool.startedCircleSize",
+                           samplePlate: nil) { size in
+            let diameter = sizes.lowerBound + (sizes.upperBound - sizes.lowerBound) * size
+            StartedCircle().frame(width: diameter, height: diameter).frame(width: sizes.upperBound, height: sizes.upperBound)
         }
-        Slider(value: Binding(get: { size }, set: { value in model.updateSettings { $0.pool.startedCircleSize = limits.snapped(value) } }),
-               in: limits.closed)
-            .accessibilityIdentifier("settings.pool.startedCircleSize")
     }
 }
