@@ -8017,6 +8017,17 @@
           }
         }
       }
+    },
+    "settings.pool.startedCircleSize": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Circle size"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

@@ -124,7 +124,7 @@ struct PoolRowContent: View {
     /// The circle before the name in the circle look (pool only).
     @ViewBuilder private var startedCircle: some View {
         if case .pool = plate, let started,
-           let frame = started.circle(plateHeight: plateSize.height, cornerRadius: tokens.plateRadius(.row), inset: rowInset) {
+           let frame = started.circle(plateHeight: plateSize.height, cornerRadius: tokens.plateRadius(.row), sizes: tokens.startedCircleSizes) {
             StartedCircle().frame(width: frame.width, height: frame.height).offset(x: frame.minX, y: frame.minY)
         }
     }
@@ -132,7 +132,8 @@ struct PoolRowContent: View {
     /// How far right the name moves for the started look (pool only).
     private var startedShift: CGFloat {
         guard case .pool = plate, let started else { return 0 }
-        return started.titleShift(plateSize: plateSize, cornerRadius: tokens.plateRadius(.row), inset: rowInset,
+        return started.titleShift(plateSize: plateSize, cornerRadius: tokens.plateRadius(.row), sizes: tokens.startedCircleSizes,
+                                  inset: rowInset,
                                   gap: tokens.space(.iconTextGap))
     }
 

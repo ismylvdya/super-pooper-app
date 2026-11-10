@@ -21,6 +21,8 @@ struct PlainTaskSettingsScreen: View {
                         get: { model.settings.pool.startedTitleAfterFill },
                         set: { value in model.updateSettings { $0.pool.startedTitleAfterFill = value } }))
                         .accessibilityIdentifier("settings.pool.startedTitleAfterFill")
+                } else {
+                    circleSize
                 }
                 PlateRow(icon: nil, title: "settings.pool.startedColor") { ThemeColorField(token: .started) }
             }
@@ -53,5 +55,20 @@ struct PlainTaskSettingsScreen: View {
         Slider(value: Binding(get: { length }, set: { value in model.updateSettings { $0.pool.startedFillLength = limits.snapped(value) } }),
                in: limits.closed)
             .accessibilityIdentifier("settings.pool.startedFill")
+    }
+
+    /// How big the circle is, with a sample of it at that size: from a small letter of a name to a one-line plate.
+    @ViewBuilder private var circleSize: some View {
+        let size = model.settings.pool.startedCircleSize
+        let limits = model.config.rules.limits.startedCircleSize
+        let sizes = tokens.startedCircleSizes
+        PlateRow(icon: nil, title: "settings.pool.startedCircleSize") {
+            StartedCircle().frame(width: sizes.lowerBound + (sizes.upperBound - sizes.lowerBound) * size,
+                                  height: sizes.lowerBound + (sizes.upperBound - sizes.lowerBound) * size)
+                .frame(width: sizes.upperBound, height: sizes.upperBound)
+        }
+        Slider(value: Binding(get: { size }, set: { value in model.updateSettings { $0.pool.startedCircleSize = limits.snapped(value) } }),
+               in: limits.closed)
+            .accessibilityIdentifier("settings.pool.startedCircleSize")
     }
 }

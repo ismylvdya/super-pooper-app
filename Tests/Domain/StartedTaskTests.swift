@@ -42,20 +42,22 @@ struct StartedTaskTests {
 struct StartedLayoutTests {
     private let size = CGSize(width: 300, height: 40)
 
-    @Test func theCircleIsConcentricWithThePlatesCorner() throws {
-        let layout = StartedLayout(look: .circle, fillLength: 0.33, titleAfterFill: false)
-        // A plate 40 tall is never rounder than 20: the circle stands 5 inside it all along the arc.
-        let circle = try #require(layout.circle(plateHeight: 40, cornerRadius: 26, inset: 5))
-        #expect(circle == CGRect(x: 5, y: 5, width: 30, height: 30))
-        #expect(layout.titleShift(plateSize: size, cornerRadius: 26, inset: 5, gap: 6) == 36)
+    @Test func theCircleIsConcentricWithThePlatesCornerAndAsBigAsSet() throws {
+        let sizes: ClosedRange<CGFloat> = 10...40
+        let largest = StartedLayout(look: .circle, fillLength: 0.33, titleAfterFill: false, circleSize: 1)
+        // A plate 40 tall is never rounder than 20: the largest circle fills its height.
+        #expect(try #require(largest.circle(plateHeight: 40, cornerRadius: 26, sizes: sizes)) == CGRect(x: 0, y: 0, width: 40, height: 40))
+        let half = StartedLayout(look: .circle, fillLength: 0.33, titleAfterFill: false, circleSize: 0.5)
+        #expect(try #require(half.circle(plateHeight: 40, cornerRadius: 26, sizes: sizes)) == CGRect(x: 7.5, y: 7.5, width: 25, height: 25))
+        #expect(half.titleShift(plateSize: size, cornerRadius: 26, sizes: sizes, inset: 5, gap: 6) == 33.5)
     }
 
     @Test func theFillMovesTheNameOnlyWhenItGoesAfterIt() {
         let over = StartedLayout(look: .fill, fillLength: 0.5, titleAfterFill: false)
-        #expect(over.titleShift(plateSize: size, cornerRadius: 26, inset: 5, gap: 6) == 0)
-        #expect(over.circle(plateHeight: 40, cornerRadius: 26, inset: 5) == nil)
+        #expect(over.titleShift(plateSize: size, cornerRadius: 26, sizes: 10...40, inset: 5, gap: 6) == 0)
+        #expect(over.circle(plateHeight: 40, cornerRadius: 26, sizes: 10...40) == nil)
         let after = StartedLayout(look: .fill, fillLength: 0.5, titleAfterFill: true)
-        #expect(after.titleShift(plateSize: size, cornerRadius: 26, inset: 5, gap: 6) == 145)
+        #expect(after.titleShift(plateSize: size, cornerRadius: 26, sizes: 10...40, inset: 5, gap: 6) == 145)
     }
 
     @Test func byDefaultTheFillLiesUnderTheName() {

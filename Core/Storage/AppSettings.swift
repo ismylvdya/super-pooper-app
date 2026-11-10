@@ -41,6 +41,8 @@ struct AppSettings: Codable, Equatable, Sendable {
         var startedLook: StartedLook
         /// With the fill: the name starts where the fill ends instead of over it.
         var startedTitleAfterFill: Bool
+        /// With the circle: how big it is, from a small letter of the name (0) to a one-line plate (1).
+        var startedCircleSize: Double
     }
 
     /// How a started task stands out in the pool.

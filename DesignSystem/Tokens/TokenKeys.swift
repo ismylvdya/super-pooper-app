@@ -59,6 +59,8 @@ enum RatioToken: String, CaseIterable, Sendable {
     case bannerStackShrink
     /// The line into the room a "+" makes for a subtask fades out this many indents right of where it comes down.
     case subtaskLineFade
+    /// How far across a started task's circle its fill is clear already.
+    case startedCircleFade
     /// How much narrower each plate under the top one of a dragged stack is.
 }
 

@@ -15,19 +15,21 @@ struct StartedFill: View {
         .accessibilityHidden(true)
     }
 
-    /// Opaque from the first point, clear at the far end.
-    static func stops(color: Color) -> [Gradient.Stop] {
-        [Gradient.Stop(color: color, location: 0), Gradient.Stop(color: color.opacity(0), location: 1)]
+    /// Opaque from the first point, clear at `end` of the way across (the far end unless given).
+    static func stops(color: Color, end: CGFloat = 1) -> [Gradient.Stop] {
+        [Gradient.Stop(color: color, location: 0), Gradient.Stop(color: color.opacity(0), location: end)]
     }
 }
 
-/// The circle before a started task's name (`StartedLook.circle`): the fill's fade across a circle, without an outline.
+/// The circle before a started task's name (`StartedLook.circle`): the fill's fade across a circle, without an outline,
+/// clear already `ratio.startedCircleFade` of the way across, so it reads as half filled.
 struct StartedCircle: View {
     @Environment(\.tokens) private var tokens
 
     var body: some View {
         Circle()
-            .fill(LinearGradient(stops: StartedFill.stops(color: tokens.color(.started)), startPoint: .leading, endPoint: .trailing))
+            .fill(LinearGradient(stops: StartedFill.stops(color: tokens.color(.started), end: tokens.ratio(.startedCircleFade)),
+                                 startPoint: .leading, endPoint: .trailing))
             .allowsHitTesting(false)
             .accessibilityHidden(true)
     }

@@ -42,7 +42,7 @@ enum SettingsSearchIndex {
         Section(title: "settings.widgetColors", route: .widgetSettings, rows: []),
         Section(title: "settings.notifications", route: .notificationSettings, rows: ["settings.notifications.enabled", "settings.notifications.snooze", "settings.notifications.alarmSound", "settings.alarm.snoozeIcon", "settings.notifications.signing"]),
         Section(title: "routines.title", route: .routines, rows: []),
-        Section(title: "settings.tasks", route: .plainTaskSettings, rows: ["settings.pool.startedLook", "settings.pool.startedFill", "settings.pool.startedTitleAfterFill", "settings.pool.startedColor"]),
+        Section(title: "settings.tasks", route: .plainTaskSettings, rows: ["settings.pool.startedLook", "settings.pool.startedFill", "settings.pool.startedTitleAfterFill", "settings.pool.startedCircleSize", "settings.pool.startedColor"]),
         Section(title: "settings.habits.new", route: .habitSettings, rows: ["habitPage.showInToday", "habitPage.color"]),
         Section(title: "settings.habits.repeatable", route: .habitSettings, rows: ["settings.habits.repeatableHistory"]),
         Section(title: "settings.habits.colors", route: .habitSettings, rows: []),

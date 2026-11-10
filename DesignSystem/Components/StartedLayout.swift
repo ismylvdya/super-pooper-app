@@ -7,22 +7,25 @@ struct StartedLayout: Equatable {
     /// How far the fill reaches, as a share of the plate's width.
     var fillLength: Double
     var titleAfterFill: Bool
+    /// How big the circle is, from the smallest it can be (0) to the largest (1) (`DesignTokens.startedCircleSizes`).
+    var circleSize: Double = 1
 
-    /// The circle: concentric with the plate's top-left corner, `inset` inside it (the row's leading inset), so the
-    /// gap to the plate's edge is the same all along the arc. A plate is never rounder than half its height.
-    func circle(plateHeight: CGFloat, cornerRadius: CGFloat, inset: CGFloat) -> CGRect? {
+    /// The circle: concentric with the plate's top-left corner, so the gap to the plate's edge is the same all along the
+    /// arc; as big as `circleSize` says between `sizes`, never past the plate. A plate is never rounder than half its height.
+    func circle(plateHeight: CGFloat, cornerRadius: CGFloat, sizes: ClosedRange<CGFloat>) -> CGRect? {
         guard look == .circle else { return nil }
         let corner = min(cornerRadius, plateHeight / 2)
-        let radius = max(corner - inset, 0)
+        let share = CGFloat(min(max(circleSize, 0), 1))
+        let radius = min(sizes.lowerBound + (sizes.upperBound - sizes.lowerBound) * share, corner * 2) / 2
         return CGRect(x: corner - radius, y: corner - radius, width: radius * 2, height: radius * 2)
     }
 
     /// How far right of its usual place the name starts: past the circle and `gap`, or past the end of the fill when
     /// the name goes after it.
-    func titleShift(plateSize: CGSize, cornerRadius: CGFloat, inset: CGFloat, gap: CGFloat) -> CGFloat {
+    func titleShift(plateSize: CGSize, cornerRadius: CGFloat, sizes: ClosedRange<CGFloat>, inset: CGFloat, gap: CGFloat) -> CGFloat {
         switch look {
         case .circle:
-            guard let circle = circle(plateHeight: plateSize.height, cornerRadius: cornerRadius, inset: inset) else { return 0 }
+            guard let circle = circle(plateHeight: plateSize.height, cornerRadius: cornerRadius, sizes: sizes) else { return 0 }
             return circle.maxX + gap - inset
         case .fill:
             guard titleAfterFill else { return 0 }

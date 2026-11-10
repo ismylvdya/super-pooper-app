@@ -249,6 +249,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let pastOpacity: Range
         /// The share of a plate a started task's fill reaches.
         let startedFillLength: Range
+        /// How big a started task's circle can be set, as a share between its smallest and largest.
+        let startedCircleSize: Range
         /// The ring of a habit's day not done or done partly.
         let ringOpacity: Range
         /// How solid the outline of a task picked in Select mode is.
