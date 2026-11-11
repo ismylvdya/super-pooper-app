@@ -7,11 +7,10 @@ struct NamePromptText {
     let create: LocalizedStringKey
 
     static let section = NamePromptText(title: "section.new.title", placeholder: "section.new.placeholder", create: "section.new.create")
-    static let list = NamePromptText(title: "lists.new.title", placeholder: "lists.new.placeholder", create: "lists.new.create")
 }
 
 extension View {
-    /// The system alert with a field that asks for a new thing's name (a section, a list). Create is offered once
+    /// The system alert with a field that asks for a new thing's name (a section). Create is offered once
     /// `accepts` gives the name it would take (trimmed, not taken); the field starts empty every time.
     func namePrompt(_ text: NamePromptText, isPresented: Binding<Bool>, accepts: @escaping (String) -> String?,
                     onCreate: @escaping (String) -> Void) -> some View {

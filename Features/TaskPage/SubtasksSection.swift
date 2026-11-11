@@ -16,7 +16,10 @@ struct SubtasksSection: View {
 
     var body: some View {
         PlateSection(header: header, info: "info.taskPage.subtasks") {
-            if !editor.task.isHabit, hasSubtasks { oneAtATime }
+            if !editor.task.isHabit, hasSubtasks {
+                oneAtATime
+                asProject
+            }
             if let draft = editor.draft {
                 draftRows(draft)
             } else {
@@ -71,6 +74,17 @@ struct SubtasksSection: View {
             SwitchToggle("taskPage.steps", isOn: Binding(get: { editor.task.stepsOneByOne }, set: { editor.apply([.stepsOneByOne($0)]) }))
                 .labelsHidden()
                 .accessibilityIdentifier("taskPage.steps")
+        }
+    }
+
+    /// Show as project: the task is shown on the Lists page under Projects and stays out of the pool itself
+    /// (`TaskItem.showsAsProject`).
+    private var asProject: some View {
+        PlateRow(icon: .project, title: "taskPage.showsAsProject", info: "info.taskPage.showsAsProject") {
+            SwitchToggle("taskPage.showsAsProject", isOn: Binding(get: { editor.task.showsAsProject },
+                                                                 set: { editor.apply([.showsAsProject($0)]) }))
+                .labelsHidden()
+                .accessibilityIdentifier("taskPage.showsAsProject")
         }
     }
 

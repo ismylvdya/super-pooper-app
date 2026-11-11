@@ -9,8 +9,6 @@ enum TaskStatus: Hashable, Codable, Sendable {
     case archived
     /// Habits carry a recurrence instead of a planning level; they are always active.
     case habit
-    /// A list of the user's own (a trip, a visit), by its title: open tasks kept apart from the planning levels.
-    case custom(String)
 
     /// The planning levels of open tasks.
     static let open: [TaskStatus] = [.thisWeek, .halfYear, .someday]
@@ -23,11 +21,6 @@ enum TaskStatus: Hashable, Codable, Sendable {
 
     var isThisWeek: Bool { self == .thisWeek }
 
-    /// The title of a list of the user's own; nil for any other status.
-    var customList: String? {
-        if case .custom(let title) = self { return title }
-        return nil
-    }
 
     /// A level as configs name it (`lists.json`, `rules.json`): a name that is not one of these stops the app with a
     /// config error, instead of quietly matching nothing.

@@ -2,25 +2,20 @@ import SwiftUI
 
 /// One list of the Lists page: the matching tasks by planning level, searchable from the bar's "…" or a hold of its
 /// title (`SearchPage`), not by pulling the list down. A row opens the task page
-/// (every property can be changed there); "+" on a task of a later level brings it to this week. A list of the user's own
-/// (`custom`) has a "…" menu: Complete all and Delete list.
+/// (every property can be changed there); "+" on a task of a later level brings it to this week.
 struct TaskListScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
     @Environment(\.openURL) private var openURL
-    @Environment(\.dismiss) private var dismiss
     let listID: String
-    /// A list of the user's own, by its title, in place of a list of `lists.json`.
-    var custom: String?
-    @State private var isConfirmingDelete = false
     @State private var pendingAction: PendingAction?
     @State private var frames = ListGroupFrames()
 
     var body: some View {
         let list = model.config.lists.list(listID)
-        let contents = custom.map { model.customListContents($0, query: "") } ?? model.listContents(listID, query: "")
+        let contents = model.listContents(listID, query: "")
         let shown = Set(contents.groups.flatMap(\.tasks).map(\.name.noteName))
         List {
             ForEach(contents.groups, id: \.status) { group in
@@ -43,24 +38,21 @@ struct TaskListScreen: View {
         .listGroupBacking(frames)
         .appList()
         .overlay { if contents.isEmpty { Text("lists.empty").foregroundStyle(tokens.color(.secondaryText)) } }
-        .navigationTitle(custom.map { Text(verbatim: $0) } ?? Text(LocalizedStringKey(list?.title ?? "lists.title")))
+        .navigationTitle(Text(LocalizedStringKey(list?.title ?? "lists.title")))
         .navigationBarTitleDisplayMode(.inline)
         .searchOnTitleHold { router.open(search) }
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
-                PageMoreMenu(search: { router.open(search) }, accessibilityID: "list.more") {
-                    if let custom { CustomListMenuItems(title: custom, isConfirmingDelete: $isConfirmingDelete) }
-                }
+                PageMoreMenu(search: { router.open(search) }, accessibilityID: "list.more")
             }
         }
-        .customListDeletion(custom, isPresented: $isConfirmingDelete) { dismiss() }
         .task { await model.openList(listID) }
         .syncsOnPull { await model.openList(listID) }
         .actionConfirmation($pendingAction) { handler.run($0) }
     }
 
     /// The search of this list: its own tasks.
-    private var search: Route { .search(custom.map(SearchScope.customList) ?? .list(listID)) }
+    private var search: Route { .search(.list(listID)) }
 
     /// The filed tasks, newest first. Return (the menu, a swipe to the right) brings one back to Soon; the actions go by
     /// the filed task, not its name (a new task may have the same name).

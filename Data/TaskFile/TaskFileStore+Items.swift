@@ -35,7 +35,7 @@ extension TaskFileStore {
         let day = parent.flatMap { followedDay(of: $0, in: snapshot.document) }
         // A date taken off a subtask of a dated parent takes it out from under it: there it would just follow again.
         let goesOut = updated.due == nil && day != nil
-        if target == place.section, updated.status.customList == place.list, parent == place.parent ?? place.tag, order == nil, !(goesOut && place.parent != nil) {
+        if target == place.section, parent == place.parent ?? place.tag, order == nil, !(goesOut && place.parent != nil) {
             snapshot.document.update(id: id) { line in
                 line.update(from: updated, format: format)
                 if place.parent != nil { line.leaveDate(to: day) }
@@ -52,19 +52,19 @@ extension TaskFileStore {
                snapshot.document.insert(nested, under: parent, at: order.flatMap { $0 }) { return }
             taken.parent = parent
         }
-        snapshot.document.insert(taken, into: target, list: updated.status.customList)
+        snapshot.document.insert(taken, into: target)
     }
 
     private func current(id: String, name: String, snapshot: Snapshot) throws -> TaskItem {
         guard let place = place(of: id, in: snapshot.document) else { throw TaskStoreError.fileMissing(name) }
-        return item(place.entry, in: place.section, list: place.list, parent: place.parentEntry, index: place.index, snapshot: snapshot)
+        return item(place.entry, in: place.section, parent: place.parentEntry, index: place.index, snapshot: snapshot)
     }
 
     func place(of id: String, in document: TaskDocument)
-        -> (entry: TaskEntry, section: TaskSection, parentEntry: TaskEntry?, parent: String?, tag: String?, index: Int, list: String?)? {
-        var found: (TaskEntry, TaskSection, TaskEntry?, String?, String?, Int, String?)?
-        document.walk { entry, section, parent, index, list in
-            if found == nil, entry.id == id { found = (entry, section, parent, parent?.id, entry.parent, index, list) }
+        -> (entry: TaskEntry, section: TaskSection, parentEntry: TaskEntry?, parent: String?, tag: String?, index: Int)? {
+        var found: (TaskEntry, TaskSection, TaskEntry?, String?, String?, Int)?
+        document.walk { entry, section, parent, index in
+            if found == nil, entry.id == id { found = (entry, section, parent, parent?.id, entry.parent, index) }
         }
         return found
     }
@@ -110,7 +110,7 @@ extension TaskFileStore {
                 }
                 entry.parent = parent
             }
-            snapshot.document.insert(entry, into: target, list: note.status.customList)
+            snapshot.document.insert(entry, into: target)
             try write(snapshot.document, root: root)
             snapshot.indexNames()
             return try current(id: id, name: final, snapshot: snapshot)
@@ -205,7 +205,7 @@ extension TaskFileStore {
             var snapshot = try await read(root: root)
             snapshot.indexNames()
             var tasks: [TaskItem] = []
-            snapshot.document.walk { entry, section, parent, index, _ in
+            snapshot.document.walk { entry, section, parent, index in
                 guard section == .done, let id = entry.id, snapshot.habits[id] == nil else { return }
                 tasks.append(item(entry, in: section, parent: parent, index: index, snapshot: snapshot))
             }

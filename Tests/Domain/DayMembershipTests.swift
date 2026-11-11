@@ -13,7 +13,7 @@ struct DayMembershipTests {
     }
 
 
-    @Test(arguments: [TaskStatus.halfYear, .someday, .archived, .custom("in_progress")])
+    @Test(arguments: [TaskStatus.halfYear, .someday, .archived])
     func otherStatusesStayOutOfTheDay(status: TaskStatus) {
         let task = makeTask("Backlog", status: status) { $0.due = TaskDue("2026-10-21") }
         #expect(DayScenario(tasks: [task]).build().dayNames.isEmpty)

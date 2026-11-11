@@ -10,7 +10,6 @@ enum StatusText {
         case .done: L10n.string("status.done")
         case .archived: L10n.string("status.archived")
         case .habit: L10n.string("status.habit")
-        case .custom(let title): title
         }
     }
 }

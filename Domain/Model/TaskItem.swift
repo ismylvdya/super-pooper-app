@@ -11,6 +11,9 @@ struct TaskItem: Identifiable, Hashable, Codable, Sendable {
     var isHighPriority: Bool = false
     /// A project done step by step: of its open subtasks only the first is up to do, the others wait for it (`TaskSteps`).
     var stepsOneByOne = false
+    /// Shown on the Lists page under Projects (`ProjectList`): a parent that holds tasks, not a task to do itself — it
+    /// does not come into the pool and is not checked off.
+    var showsAsProject = false
     var due: TaskDue?
     var timeEstimate: Int?
     /// Names of the items this one is a subtask of.

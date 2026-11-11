@@ -29,7 +29,8 @@ struct DayBuilder: Sendable {
                 problems += taskProblems.map { PlanProblem(taskName: task.name, problem: $0) }
             }
 
-            guard inDay, !steps.waiting.contains(task.name), !steps.projects.contains(task.name) else { continue }
+            // A task shown as a project holds tasks; it is not one to do itself.
+            guard inDay, !task.showsAsProject, !steps.waiting.contains(task.name), !steps.projects.contains(task.name) else { continue }
             var item = DayItem(task: task, state: membership.state(of: task), problems: taskProblems)
             item.project = steps.projectOf[task.name]
             items.append(item)

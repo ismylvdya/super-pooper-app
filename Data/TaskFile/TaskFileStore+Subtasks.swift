@@ -14,22 +14,22 @@ extension TaskFileStore {
     func subtasks(under id: String, snapshot: Snapshot) -> [TaskItem] {
         var owners: Set<String> = [id]
         var found: [TaskItem] = []
-        snapshot.document.walk { entry, section, parent, index, list in
+        snapshot.document.walk { entry, section, parent, index in
             guard let owner = parent?.id, owners.contains(owner), let own = entry.id, snapshot.habits[own] == nil else { return }
             owners.insert(own)
-            found.append(item(entry, in: section, list: list, parent: parent, index: index, snapshot: snapshot))
+            found.append(item(entry, in: section, parent: parent, index: index, snapshot: snapshot))
         }
         return found
     }
 
-    /// What a day's turn or a hand in Obsidian leaves: a `🔼` line in its parent's list on its parent's day goes under it,
+    /// What a day's turn or a hand in Obsidian leaves: a `🔼` line in its parent's section on its parent's day goes under it,
     /// and a line under a parent stops repeating the parent's day.
     func gatherSubtasks(_ document: inout TaskDocument, habits: Set<String>) {
         var strays: [(id: String, parent: String)] = []
-        document.walk { entry, section, parent, _, list in
+        document.walk { entry, section, parent, _ in
             guard parent == nil, section != .done, section != .trash, entry.box != .done, entry.time == nil,
                   let id = entry.id, !habits.contains(id), let owner = entry.parent, owner != id, !habits.contains(owner),
-                  let home = place(of: owner, in: document), home.section == section, home.list == list, home.entry.box != .done,
+                  let home = place(of: owner, in: document), home.section == section, home.entry.box != .done,
                   logicalDay(of: entry) == logicalDay(of: home.entry.following(home.parentEntry)) else { return }
             strays.append((id, owner))
         }

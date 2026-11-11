@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// The Lists page (Today's top left button): the groups of task lists from `lists.json` (by feel: pleasant, needs energy, quick; all statuses:
-/// a list per planning level), each list with the number of tasks in it; the search button finds any task. With
+/// a list per planning level), each list with the number of tasks in it, and the projects (`ProjectList`); the "…" finds any task. With
 /// problems (the badge on Today's Lists button) a Problems row comes first and opens them; then Morning review, a page of
 /// its own for coming back to it later in the morning.
 struct ListsScreen: View {
@@ -9,8 +9,6 @@ struct ListsScreen: View {
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
-    @State private var isNamingList = false
-    @State private var deleting: String?
 
     var body: some View {
         PageScaffold(title: L10n.string("lists.title"), isNested: false) {
@@ -32,7 +30,7 @@ struct ListsScreen: View {
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("lists.morningReview")
             }
-            customLists
+            projects
             ForEach(model.config.lists.groups) { group in
                 PlateSection(header: LocalizedStringKey(group.title)) {
                     ForEach(group.lists) { list in
@@ -47,43 +45,33 @@ struct ListsScreen: View {
                 }
             }
         }
-        .newListAlert(isPresented: $isNamingList) { title in Task { await model.createList(title) } }
-        .customListDeletion(deleting, isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }))
         // The Done list counts the filed tasks too.
         .task { await model.loadFiledTasks() }
         .syncsOnPull { await model.loadFiledTasks() }
         .searchOnTitleHold { router.open(.search(.tasks)) }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                PageMoreMenu(search: { router.open(.search(.tasks)) }, accessibilityID: "lists.more") {
-                    Button { isNamingList = true } label: { Label("lists.new", systemImage: icons[.newList]) }
-                        .accessibilityIdentifier("lists.more.newList")
-                }
+                PageMoreMenu(search: { router.open(.search(.tasks)) }, accessibilityID: "lists.more")
             }
         }
     }
 
-    /// The user's own lists, each with its count and, held, Complete all and Delete list; New List at the end.
-    private var customLists: some View {
-        PlateSection(header: "lists.group.custom") {
-            ForEach(model.customLists, id: \.self) { title in
-                NavigationLink(value: Route.customList(title)) {
-                    PlateRow(icon: .listCustom, title: Text(verbatim: title)) {
-                        DisclosureAccessory(value: "\(model.customListContents(title, query: "").count)")
+    /// The parents shown as projects (`ProjectList`), each with how many open tasks it holds; a row opens the project's
+    /// page, where its tasks are. No group while there are none.
+    @ViewBuilder private var projects: some View {
+        let projects = model.projects
+        if !projects.isEmpty {
+            PlateSection(header: "lists.group.projects") {
+                ForEach(projects, id: \.name) { project in
+                    NavigationLink(value: Route.task(project.name)) {
+                        PlateRow(icon: .project, title: Text(verbatim: project.name)) {
+                            DisclosureAccessory(value: "\(model.openTaskCount(of: project))")
+                        }
                     }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("lists.project.\(project.name)")
                 }
-                .buttonStyle(.plain)
-                .contextMenu {
-                    CustomListMenuItems(title: title, isConfirmingDelete: Binding(get: { deleting == title },
-                                                                                 set: { deleting = $0 ? title : nil }))
-                }
-                .accessibilityIdentifier("lists.custom.\(title)")
             }
-            Button { isNamingList = true } label: {
-                PlateRow(icon: .newList, title: "lists.new")
-            }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier("lists.new")
         }
     }
 }

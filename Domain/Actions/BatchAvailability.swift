@@ -15,7 +15,6 @@ struct BatchAvailability: Sendable {
         case .unworm: return items.contains { single.worm(of: $0.id) != nil }
         case .newSection: return true
         case .delete: return items.contains { !$0.isHabit }
-        case .moveToList: return items.contains { !$0.isHabit }
         case .notToday: return !items.contains(where: \.isHabit) && items.contains { single.isAvailable(.notToday, for: $0) }
         case .select: return false
         default: return items.contains { single.isAvailable(action, for: $0) }

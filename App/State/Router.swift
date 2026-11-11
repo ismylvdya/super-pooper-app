@@ -22,8 +22,6 @@ enum SearchScope: Hashable {
     case tasksAndEvents, tasks, habits, settings, archive, trash
     /// A list of `lists.json` by its id.
     case list(String)
-    /// A list of the user's own by its title.
-    case customList(String)
 }
 
 /// Pushed pages of the tabs' navigation stacks.
@@ -52,7 +50,6 @@ enum Route: Hashable {
     /// A list of the Lists page, by its id in `lists.json`.
     case list(String)
     /// A list of the user's own, by its title.
-    case customList(String)
     /// Morning review as a page of the Lists page, for coming back to it later in the morning.
     case morningReview
     #if DEBUG

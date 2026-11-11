@@ -152,8 +152,6 @@ struct ActionDefinition: Codable, Hashable, Sendable {
     /// How the action can be taken back from the banner; none = it cannot. An action that can be taken back happens at
     /// once, without its confirmation.
     var undo: UndoKind?
-    /// The action's entry in a menu is a menu of the lists a task can go to (`ListChoiceMenu`), not a button.
-    var picksList: Bool?
     /// The action asks for a name first (`namePrompt`): New section.
     var asksName: Bool?
 

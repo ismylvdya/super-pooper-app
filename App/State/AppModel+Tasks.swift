@@ -50,8 +50,7 @@ extension AppModel {
 
     /// The bar's Undo and Redo ("…"): the latest action that can be taken back, and the one just taken back.
     var canUndo: Bool { parts.undo.last != nil }
-    /// An action that asks for more (the list to move to) is not run again blind.
-    var canRedo: Bool { parts.undo.undone.map { config.actions.definition($0.action).picksList != true } ?? false }
+    var canRedo: Bool { parts.undo.undone != nil }
 
     func undoLast() async {
         guard let step = parts.undo.last else { return }
@@ -88,7 +87,7 @@ extension AppModel {
         case .unworm: unworm([name], on: day)
         // Select mode is the screen's; Worm, New section and Move to list take the selected tasks (`worm`, `newSection`,
         // `moveSelected`).
-        case .select, .worm, .newSection, .moveToList: break
+        case .select, .worm, .newSection: break
         }
         return []
     }

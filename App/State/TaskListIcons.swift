@@ -16,7 +16,6 @@ struct TaskListIcons {
         case .thisWeek: valid(.thisWeek) ?? icons[.listsGun]
         case .halfYear: valid(.halfYear) ?? icons[.listHalfYear]
         case .someday: valid(.someday) ?? icons[.listSomeday]
-        case .custom: icons[.listCustom]
         default: icons[.markDone]
         }
     }

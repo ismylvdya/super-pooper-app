@@ -6,13 +6,12 @@ struct TaskPropertiesSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.rules) private var rules
     let editor: TaskEditor
-    @State private var isNamingList = false
 
     private var task: TaskItem { editor.task }
 
     var body: some View {
         PlateSection(header: "taskPage.properties", info: "info.taskPage.properties") {
-            listRow
+            statusRow
             FeelPicker(editor: editor)
             PlateRow(icon: .estimate, title: "taskPage.estimate", info: "info.taskPage.estimate") {
                 Picker("taskPage.estimate", selection: estimateBinding) {
@@ -23,20 +22,18 @@ struct TaskPropertiesSection: View {
         }
     }
 
-    /// The row shows the list's name alone, the menu each with its icon. An archived task's status has its own action in the "…"
+    /// The row shows the status's name alone, the menu each with its icon. An archived task's status has its own action in the "…"
     /// menu, and no place here.
-    private var listRow: some View {
-        PlateRow(icon: .status, title: "taskPage.list", info: "info.taskPage.status") {
+    private var statusRow: some View {
+        PlateRow(icon: .status, title: "taskPage.status", info: "info.taskPage.status") {
             Menu {
-                ListChoiceMenu(levels: TaskStatus.known, current: task.status,
-                               onPick: { editor.setStatus($0, today: model.context().today) },
-                               onNew: { isNamingList = true })
+                StatusChoiceMenu(levels: TaskStatus.known, current: task.status,
+                                 onPick: { editor.setStatus($0, today: model.context().today) })
             } label: {
                 AlarmSoundValue(shown: StatusText.title(task.status))
             }
-            .accessibilityIdentifier("taskPage.list")
+            .accessibilityIdentifier("taskPage.status")
         }
-        .newListAlert(isPresented: $isNamingList) { editor.setStatus(.custom($0), today: model.context().today) }
     }
 
     private var estimateBinding: Binding<Int> {

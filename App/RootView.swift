@@ -238,7 +238,6 @@ struct RootView: View {
         case .conflict(let name): ConflictVersionsScreen(noteName: name)
         case .list(let id): TaskListScreen(listID: id)
         case .morningReview: MorningReviewPage()
-        case .customList(let title): TaskListScreen(listID: "", custom: title)
         #if DEBUG
         case .debugNotifications: NotificationsDebugScreen()
         case .debugWidgets: WidgetGalleryScreen()

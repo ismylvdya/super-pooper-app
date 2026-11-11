@@ -41,27 +41,4 @@ final class TaskLists {
     func filter(_ listID: String) -> TaskListFilter {
         config.lists.list(listID)?.filter ?? TaskListFilter()
     }
-
-    // MARK: - The user's own lists
-
-    /// Every list of the user's own, empty ones too.
-    var custom: [String] { CustomLists.titles(stored: tasks.storedLists, tasks: tasks.tasks) }
-
-    func contents(ofCustom title: String, query: String) -> TaskListContents {
-        contents(TaskListFilter(statuses: [.custom(title)]), query: query)
-    }
-
-    /// A new empty list in the store; nothing when the store keeps no lists of its own.
-    func add(_ title: String) async {
-        guard let keeper = store as? CustomListKeeping else { return }
-        tasks.setStoredLists(tasks.storedLists + [title])
-        do { try await keeper.addList(title) } catch { appEvents.send(.failure(AppFailure(error))) }
-    }
-
-    /// The list's title leaves the store (its tasks are gone from it already).
-    func remove(_ title: String) async {
-        guard let keeper = store as? CustomListKeeping else { return }
-        tasks.setStoredLists(tasks.storedLists.filter { $0 != title })
-        do { try await keeper.removeList(title) } catch { appEvents.send(.failure(AppFailure(error))) }
-    }
 }

@@ -57,8 +57,6 @@ struct SearchPage: View {
         case .habits: NoteSearchResults(sections: SearchSections.habits(model.habits, matching: text))
         case .archive: NoteSearchResults(sections: SearchSections.archive(model.archivedTasks + model.archivedHabits, matching: text))
         case .list(let id): NoteSearchResults(sections: SearchSections.list(model.listContents(id, query: text), levelTitle: StatusText.title))
-        case .customList(let title):
-            NoteSearchResults(sections: SearchSections.list(model.customListContents(title, query: text), levelTitle: StatusText.title))
         case .settings: SettingsScreen(searchQuery: text)
         case .trash: TrashScreen(searchQuery: text)
         }
@@ -73,7 +71,7 @@ struct SearchPage: View {
         case .settings: "search.hint.settings"
         case .archive: "search.hint.archive"
         case .trash: "search.hint.trash"
-        case .list, .customList: "search.hint.list"
+        case .list: "search.hint.list"
         }
     }
 
@@ -93,7 +91,6 @@ struct SearchPage: View {
         case .archive: L10n.string("search.prompt.archive")
         case .trash: L10n.string("search.prompt.trash")
         case .list(let id): L10n.format("search.prompt.list", L10n.string(model.config.lists.list(id)?.title ?? "lists.title"))
-        case .customList(let title): L10n.format("search.prompt.list", title)
         }
     }
 }

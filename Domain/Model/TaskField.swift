@@ -3,7 +3,7 @@ import Foundation
 /// A field of a task or habit by the domain's name: what a value that cannot be read, or a change made both here and
 /// elsewhere, is about. The store knows where it keeps each one; screens put it in words.
 enum TaskField: String, CaseIterable, Hashable, Codable, Sendable {
-    case status, started, priority, steps, due, timeEstimate, projects, subtaskOrder, feel
+    case status, started, priority, steps, showsAsProject, due, timeEstimate, projects, subtaskOrder, feel
     case recurrence, marks, completedDate, created, modified, reminderTimes, alarms, timeZone
     case habitColor, harmful, repeatable, showInToday, timeOfDay, twiceADay, twiceCountsDouble, weeklyGoal, allowedSkips
 }
@@ -15,6 +15,7 @@ extension TaskEdit {
         case .status, .complete, .reopen: .status
         case .highPriority: .priority
         case .stepsOneByOne: .steps
+        case .showsAsProject: .showsAsProject
         case .started: .started
         case .due: .due
         case .timeEstimate: .timeEstimate
@@ -55,6 +56,7 @@ extension TaskItem {
         case .started: isStarted
         case .priority: isHighPriority
         case .steps: stepsOneByOne
+        case .showsAsProject: showsAsProject
         case .due: due
         case .timeEstimate: timeEstimate
         case .projects: projects

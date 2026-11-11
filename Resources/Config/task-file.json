@@ -11,7 +11,6 @@
     "soon": "Next actions",
     "halfYear": "Soon",
     "someday": "Someday",
-    "lists": "Lists",
     "archive": "Archive",
     "trash": "Trash",
     "done": "Done"
@@ -20,7 +19,8 @@
     "Now": "now",
     "Inbox": "soon",
     "Waiting": "soon",
-    "Half year": "halfYear"
+    "Half year": "halfYear",
+    "Lists": "someday"
   },
   "boxes": {
     "open": " ",
@@ -47,6 +47,7 @@
     "routine": "🌅",
     "parent": "🔼",
     "steps": "🪜",
+    "project": "🗂️",
     "repeats": "🔁",
     "overdue": "🕰️",
     "completed": "✅",

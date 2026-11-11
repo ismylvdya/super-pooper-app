@@ -17,6 +17,8 @@ struct TaskEntry: Equatable, Sendable {
     var isHigh = false
     /// Its subtasks come up one at a time (`TaskItem.stepsOneByOne`).
     var stepsOneByOne = false
+    /// Shown under Projects (`TaskItem.showsAsProject`).
+    var showsAsProject = false
     var feel: TaskFeel = .neutral
     var routine: String?
     /// The parent's id, when the line does not stand under its parent (they are in different sections).
@@ -51,7 +53,7 @@ extension TaskEntry {
         // the middle of a name stays part of it.
         let markers = format.markers
         while let last = tokens.last {
-            if format.legacyWords.contains(last) {} else if last == markers.high || format.legacyHighMarkers.contains(last) { isHigh = true } else if last == markers.pleasant { feel = .pleasant } else if last == markers.energy { feel = .needEnergy } else if last == markers.overdue { isOverdue = true } else if last == markers.steps { stepsOneByOne = true } else if last == format.legacyStartedMarker { box = .started } else if tokens.count >= 2, read(last, marker: tokens[tokens.count - 2], format, alarmClockRings: alarmClockRings) {
+            if format.legacyWords.contains(last) {} else if last == markers.high || format.legacyHighMarkers.contains(last) { isHigh = true } else if last == markers.pleasant { feel = .pleasant } else if last == markers.energy { feel = .needEnergy } else if last == markers.overdue { isOverdue = true } else if last == markers.steps { stepsOneByOne = true } else if last == markers.project { showsAsProject = true } else if last == format.legacyStartedMarker { box = .started } else if tokens.count >= 2, read(last, marker: tokens[tokens.count - 2], format, alarmClockRings: alarmClockRings) {
                 tokens.removeLast()
             } else if last.isEmpty {
                 // A double space or a trailing one.
@@ -122,6 +124,7 @@ extension TaskEntry {
         add(markers.routine, routine)
         add(markers.parent, parent.map(TaskLineIDs.written))
         if stepsOneByOne { parts.append(markers.steps) }
+        if showsAsProject { parts.append(markers.project) }
         add(markers.repeats, repeats)
         if isOverdue { parts.append(markers.overdue) }
         add(markers.completed, completed?.isoString)
