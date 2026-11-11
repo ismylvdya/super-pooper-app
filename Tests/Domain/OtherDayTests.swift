@@ -74,4 +74,17 @@ struct OtherDayTests {
         #expect(Set(plan.sections.flatMap(\.items).map(\.id)) == ["Water", "Planned"])
     }
 
+    /// A habit left undone is overdue on today; the next day of its rule shows it on that day, as one coming up there.
+    /// One still due today is not on its later days: only its nearest one counts.
+    @Test func anOverdueHabitStandsOnTheNextDayOfItsRule() {
+        let wednesday = LocalDate(TestCalendar.wednesday)
+        let overdue = makeHabit("Laundry", rule: "DTSTART:20261019;FREQ=DAILY;INTERVAL=3", status: .habit) {
+            $0.isOverdue = true
+            $0.nextLine = TaskDue(day: wednesday)
+        }
+        let dueToday = makeHabit("Plants", rule: "DTSTART:20261019;FREQ=DAILY;INTERVAL=3", status: .habit) {
+            $0.nextLine = TaskDue(day: wednesday)
+        }
+        #expect(tomorrow([overdue, dueToday]).dayNames == ["Laundry"] as Set)
+    }
 }

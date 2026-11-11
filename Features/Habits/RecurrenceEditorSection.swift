@@ -21,7 +21,7 @@ struct RecurrenceEditorSection: View {
     }
 
     private func readOnly(_ rule: RecurrenceRule) -> some View {
-        PlateSection(header: "recurrenceEditor.header", info: "info.recurrenceEditor", hint: Text("recurrenceEditor.readOnly")) {
+        PlateSection(header: "recurrenceEditor.header", info: "info.recurrenceEditor", hint: withNext(Text("recurrenceEditor.readOnly"))) {
             PlateRow(icon: .recurrence, title: "recurrenceEditor.rule") {
                 Text(verbatim: RecurrenceText.describe(rule, calendar: model.calendar))
                     .foregroundStyle(tokens.color(.secondaryText))
@@ -32,7 +32,7 @@ struct RecurrenceEditorSection: View {
 
     private func editingRows(_ draft: RecurrenceDraft) -> some View {
         PlateSection(header: "recurrenceEditor.header", info: "info.recurrenceEditor",
-                     hint: Text(verbatim: RecurrenceText.describe(draft, calendar: model.calendar))) {
+                     hint: withNext(Text(verbatim: RecurrenceText.describe(draft, calendar: model.calendar)))) {
             PlateRow(icon: .recurrence, title: "recurrenceEditor.frequency") {
                 Picker("recurrenceEditor.frequency", selection: edit(\.frequency)) {
                     ForEach(RecurrenceFrequency.allCases, id: \.self) { Text(LocalizedStringKey($0.titleKey)).tag($0) }
@@ -116,6 +116,15 @@ struct RecurrenceEditorSection: View {
                 .labelsHidden()
             }
         }
+    }
+
+    /// The section's grey text and, under it, the day it comes up next: the day of its line in the file, an overdue
+    /// one's past day too (`NextRepeat`).
+    private func withNext(_ hint: Text) -> Text {
+        let context = model.context()
+        guard let day = NextRepeat.day(of: task, today: context.today, occurrence: TaskOccurrence(days: context.days)) else { return hint }
+        let date = DateText.format(day, Date.FormatStyle().weekday(.abbreviated).day().month(.abbreviated), calendar: model.calendar)
+        return hint + Text(verbatim: "\n") + Text(L10n.format("recurrenceEditor.next", date))
     }
 
     // MARK: - Editing

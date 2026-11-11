@@ -19,7 +19,8 @@ struct DayMembership: Sendable {
     }
 
     /// Another day mirrors the file: what has a line dated that day. This week's tasks dated it, and the habits shown in
-    /// Today whose nearest day it is: one still open today stands on today, not on the days after.
+    /// Today whose nearest day it is: one still open today stands on today, not on the days after; one overdue today
+    /// stands on the next day of its rule too.
     func isOnOtherDay(_ task: TaskItem) -> Bool {
         if task.isHabit { return task.isInTodayHabits && hasLineOnDay(task) }
         guard task.status.isThisWeek, let due = task.due else { return false }
@@ -44,7 +45,13 @@ struct DayMembership: Sendable {
     /// A repeatable subtask has no line of its own: it goes by its parent's.
     private func hasLineOnDay(_ task: TaskItem, depth: Int = 0) -> Bool {
         guard let parent = parent(of: task, depth: depth) else {
-            return task.nextLine.map { context.logicalDay(of: $0) == context.today } ?? false
+            guard let line = task.nextLine else { return false }
+            let lineDay = context.logicalDay(of: line)
+            if lineDay == context.today { return true }
+            // An overdue line stands on the real today; the habit comes up again on the next day of its rule.
+            guard task.isOverdue, lineDay < context.today else { return false }
+            let next = occurrence.schedule(of: task).recurrence?.firstDay(onOrAfter: lineDay.adding(days: 1)) ?? lineDay.adding(days: 1)
+            return next == context.today
         }
         return parent.isInTodayHabits && hasLineOnDay(parent, depth: depth + 1)
     }

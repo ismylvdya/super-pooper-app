@@ -8270,6 +8270,17 @@
           }
         }
       }
+    },
+    "recurrenceEditor.next": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next repeat: %@"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
