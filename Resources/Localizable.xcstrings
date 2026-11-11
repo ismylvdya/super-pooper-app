@@ -8013,7 +8013,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Steps one by one"
+            "value": "Show one at a time"
           }
         }
       }
@@ -8035,7 +8035,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Steps one by one"
+            "value": "Show one at a time"
           }
         }
       }
@@ -8057,7 +8057,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Only the first open subtask is up to do: it stands in the day and in Next actions. The next one comes up when it is done."
+            "value": "On: the pool shows only the next action, the first open subtask all the way down, with this task's name over it; this task and its other subtasks wait. When a step is done, the next one comes up tomorrow, in the morning review. Off: every subtask shows under this task."
           }
         }
       }

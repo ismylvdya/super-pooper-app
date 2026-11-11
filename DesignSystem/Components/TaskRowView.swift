@@ -73,7 +73,23 @@ struct TaskRowView: View {
         }
     }
 
+    /// A next action of a task shown one at a time has that task's name in small letters over its own.
     @ViewBuilder private var title: some View {
+        if let project = item.project {
+            VStack(alignment: .leading, spacing: tokens.space(.projectCaptionGap)) {
+                Text(project)
+                    .font(tokens.font(.projectCaption))
+                    .foregroundStyle(tokens.color(.secondaryText))
+                    .lineLimit(1)
+                    .accessibilityIdentifier("project:\(item.task.name)")
+                ownTitle
+            }
+        } else {
+            ownTitle
+        }
+    }
+
+    @ViewBuilder private var ownTitle: some View {
         let text = titleText
             .foregroundStyle(isDone ? tokens.color(.secondaryText) : tokens.color(.primaryText))
         if let onOpen {

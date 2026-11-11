@@ -2,8 +2,8 @@ import SwiftUI
 
 /// Subtasks: each is a task of its own that names this one as its parent.
 /// Under the existing ones there is always one empty field to add the next. A subtask picked up (long press)
-/// and dropped on another one takes its place; the pool follows that order. A task with subtasks can be done step by
-/// step (`TaskSteps`): only its first open subtask is up to do, the later ones are marked Later here.
+/// and dropped on another one takes its place; the pool follows that order. Show one at a time (`TaskSteps`): the pool
+/// shows only the next action, under this task's name; the other subtasks are marked Later here.
 struct SubtasksSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
@@ -15,6 +15,7 @@ struct SubtasksSection: View {
 
     var body: some View {
         PlateSection(header: header, info: "info.taskPage.subtasks") {
+            if !editor.task.isHabit { oneAtATime }
             if let draft = editor.draft {
                 draftRows(draft)
             } else {
@@ -44,14 +45,6 @@ struct SubtasksSection: View {
                     }
                     .accessibilityIdentifier("subtask:\(subtask.name)")
                 }
-                if !subtasks.isEmpty, !editor.task.isHabit {
-                    PlateRow(icon: .steps, title: "taskPage.steps", info: "info.taskPage.steps") {
-                        SwitchToggle("taskPage.steps", isOn: Binding(get: { editor.task.stepsOneByOne },
-                                                                     set: { editor.apply([.stepsOneByOne($0)]) }))
-                            .labelsHidden()
-                            .accessibilityIdentifier("taskPage.steps")
-                    }
-                }
                 SubtaskField(text: $newName) {
                     let name = newName.trimmingCharacters(in: .whitespacesAndNewlines)
                     newName = ""
@@ -59,6 +52,16 @@ struct SubtasksSection: View {
                     Task { await model.addSubtask(name, to: editor.task.name) }
                 }
             }
+        }
+    }
+
+    /// Show one at a time: the pool shows only the next action, under this task's name (`TaskSteps`); set when the task
+    /// is made too.
+    private var oneAtATime: some View {
+        PlateRow(icon: .steps, title: "taskPage.steps", info: "info.taskPage.steps") {
+            SwitchToggle("taskPage.steps", isOn: Binding(get: { editor.task.stepsOneByOne }, set: { editor.apply([.stepsOneByOne($0)]) }))
+                .labelsHidden()
+                .accessibilityIdentifier("taskPage.steps")
         }
     }
 

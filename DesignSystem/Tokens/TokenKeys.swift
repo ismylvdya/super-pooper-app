@@ -20,6 +20,8 @@ enum SpacingToken: String, CaseIterable, Sendable {
     /// A section header starts this far right of the plates' left edge; a pool section's header stands this far below
     /// the section above.
     case sectionHeaderInset, poolSectionGap
+    /// Between the name of a task shown one at a time and its next action's name under it.
+    case projectCaptionGap
     /// How far below the banner on top each banner under it peeks out.
     case bannerStackPeek
 }
@@ -94,6 +96,8 @@ enum FontToken: String, CaseIterable, Sendable {
     case timelineText
     /// A swipe button's symbol and the title under it, drawn inside the button.
     case swipeIcon, swipeTitle
+    /// The name of a task shown one at a time, over its next action's in the pool.
+    case projectCaption
 }
 
 enum ColorToken: String, ConfigName {

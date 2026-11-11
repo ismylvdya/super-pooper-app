@@ -17,8 +17,8 @@ struct DayBuilder: Sendable {
 
         var items: [DayItem] = []
         var problems: [PlanProblem] = []
-        // A later step of a project done step by step waits for the steps before it (`TaskSteps`).
-        let waiting = TaskSteps.waiting(in: inputs.tasks)
+        // A task shown one at a time is in the day only through its next action, which carries the task's name (`TaskSteps`).
+        let steps = TaskSteps.plan(in: inputs.tasks)
         for task in inputs.tasks {
             let inDay = inputs.isOtherDay
                 ? membership.isOnOtherDay(task)
@@ -29,8 +29,10 @@ struct DayBuilder: Sendable {
                 problems += taskProblems.map { PlanProblem(taskName: task.name, problem: $0) }
             }
 
-            guard inDay, !waiting.contains(task.name) else { continue }
-            items.append(DayItem(task: task, state: membership.state(of: task), problems: taskProblems))
+            guard inDay, !steps.waiting.contains(task.name), !steps.projects.contains(task.name) else { continue }
+            var item = DayItem(task: task, state: membership.state(of: task), problems: taskProblems)
+            item.project = steps.projectOf[task.name]
+            items.append(item)
         }
 
         let timed = items.filter { inputs.timelineFilter.shows($0) && !times.times(of: $0.task).isEmpty }
