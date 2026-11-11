@@ -18,7 +18,9 @@ struct ReviewRow: View {
         VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
             HStack(spacing: tokens.space(.chipGap)) {
                 if item.isHabit { Image(systemName: icons[ChipLook.habit.icon]).foregroundStyle(tokens.color(of: .habit)) }
-                Text(task.name).font(tokens.font(.taskTitle)).foregroundStyle(item.isDone ? tokens.color(.secondaryText) : tokens.color(.primaryText))
+                ParentCaption(parent: item.project) {
+                    Text(task.name).font(tokens.font(.taskTitle)).foregroundStyle(item.isDone ? tokens.color(.secondaryText) : tokens.color(.primaryText))
+                }
             }
             ChipFlow(spacing: tokens.space(.chipGap)) {
                 toggleChip(.high, isOn: task.isHighPriority) { [.highPriority(!$0.isHighPriority)] }

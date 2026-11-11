@@ -2,7 +2,8 @@ import Foundation
 
 /// Subtasks in the pool: each right under its parent (after the parent's earlier subtasks), one level deeper,
 /// whatever the sort does to the other tasks; siblings in the order set on the parent's page, the others after
-/// them in pool order. A subtask whose parent is not in the list stays where it was.
+/// them in pool order. A subtask whose parent is not in the list stays where it was, with the parent's name over its own
+/// (`DayItem.project`), so it is clear what it belongs to.
 enum SubtaskNesting {
     static func nested(_ items: [DayItem]) -> [DayItem] {
         let byName = Dictionary(items.map { ($0.id.noteName, $0.id) }, uniquingKeysWith: { first, _ in first })
@@ -10,7 +11,13 @@ enum SubtaskNesting {
         var roots: [DayItem] = []
         for item in items {
             let parent = item.task.projects.lazy.compactMap { byName[$0.noteName] }.first { $0 != item.id }
-            if let parent { children[parent, default: []].append(item) } else { roots.append(item) }
+            if let parent {
+                children[parent, default: []].append(item)
+            } else {
+                var alone = item
+                if alone.project == nil { alone.project = item.task.projects.first { !$0.isSameNoteName(as: item.id) } }
+                roots.append(alone)
+            }
         }
         var result: [DayItem] = []
         var placed: Set<String> = []

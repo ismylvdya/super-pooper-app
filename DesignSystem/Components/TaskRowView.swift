@@ -73,20 +73,9 @@ struct TaskRowView: View {
         }
     }
 
-    /// A next action of a task shown one at a time has that task's name in small letters over its own.
-    @ViewBuilder private var title: some View {
-        if let project = item.project {
-            VStack(alignment: .leading, spacing: tokens.space(.projectCaptionGap)) {
-                Text(project)
-                    .font(tokens.font(.projectCaption))
-                    .foregroundStyle(tokens.color(.secondaryText))
-                    .lineLimit(1)
-                    .accessibilityIdentifier("project:\(item.task.name)")
-                ownTitle
-            }
-        } else {
-            ownTitle
-        }
+    /// The task it belongs to in small letters over its own name, when it has one to show (`DayItem.project`).
+    private var title: some View {
+        ParentCaption(parent: item.project) { ownTitle }
     }
 
     @ViewBuilder private var ownTitle: some View {

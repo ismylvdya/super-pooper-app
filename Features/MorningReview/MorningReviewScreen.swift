@@ -61,6 +61,7 @@ struct MorningReviewList: View {
             Group {
                 let rows = ReviewGroups.rows(plan.pool)
                 let items = Dictionary(plan.pool.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+                let guides = ReviewGroups.guides(rows, items: items)
                 ForEach(Array(rows.enumerated()), id: \.element) { index, row in
                     switch row {
                     case .header(let group):
@@ -73,6 +74,12 @@ struct MorningReviewList: View {
                             ReviewRow(item: item, today: plan.today) { openTask(item.id) }
                                 // A subtask sits under its parent, shifted right, as in the pool.
                                 .padding(.leading, CGFloat(item.depth) * tokens.subtaskIndent)
+                                .background(alignment: .topLeading) {
+                                    if let guide = guides[name] {
+                                        SubtaskGuideLines(guide: guide, turnY: tokens.space(.reviewRowVertical) + tokens.uiFont(.taskTitle).lineHeight / 2,
+                                                          gap: 0)
+                                    }
+                                }
                                 // The row keeps its top and bottom inset inside, where a tap opens the task.
                                 .listGroupRow(group: ReviewGroups.group(of: index, in: rows)?.rawValue ?? "", id: name,
                                               index: position.index, count: position.count, frames: frames, vertical: 0,

@@ -24,11 +24,13 @@ struct TaskListScreen: View {
         let list = model.config.lists.list(listID)
         let query = searchQuery ?? ""
         let contents = custom.map { model.customListContents($0, query: query) } ?? model.listContents(listID, query: query)
+        let shown = Set(contents.groups.flatMap(\.tasks).map(\.name.noteName))
         List {
             ForEach(contents.groups, id: \.status) { group in
                 if contents.namesLevels { ListGroupHeader(title: Text(verbatim: StatusText.title(group.status))) } else { ListGroupGap() }
                 ForEach(Array(group.tasks.enumerated()), id: \.element.name) { index, task in
-                    row(task, group: StatusText.title(group.status), index: index, count: group.tasks.count)
+                    row(task, parent: ShownParent.parent(of: task, shown: shown), group: StatusText.title(group.status), index: index,
+                        count: group.tasks.count)
                 }
                 // Dragged like every list; while a search filters it the rows cannot move.
                 .onMove(perform: query.isEmpty ? { source, destination in
@@ -92,10 +94,10 @@ struct TaskListScreen: View {
         TaskActionHandler(model: model, router: router, openURL: openURL) { pendingAction = $0 }
     }
 
-    private func row(_ task: TaskItem, group: String, index: Int, count: Int) -> some View {
+    private func row(_ task: TaskItem, parent: String?, group: String, index: Int, count: Int) -> some View {
         HStack(spacing: tokens.space(.iconTextGap)) {
             NavigationLink(value: Route.task(task.name)) {
-                TaggedTaskName(name: task.name)
+                TaggedTaskName(name: task.name, parent: parent)
             }
             if task.canPromote {
                 Button {

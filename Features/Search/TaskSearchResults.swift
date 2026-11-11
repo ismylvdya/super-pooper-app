@@ -16,6 +16,7 @@ struct TaskSearchResults: View {
     var body: some View {
         let text = query.trimmingCharacters(in: .whitespacesAndNewlines)
         let tasks = SearchMatcher.tasks(model.tasks, matching: text)
+        let shown = Set(tasks.map(\.name.noteName))
         let events = !withEvents ? [] : SearchMatcher.events(model.events, matching: text)
         List {
             if text.isEmpty {
@@ -28,7 +29,7 @@ struct TaskSearchResults: View {
                     ForEach(tasks) { task in
                         Button { router.open(.task(task.name)) } label: {
                             HStack(spacing: tokens.space(.iconTextGap)) {
-                                TaggedTaskName(name: task.name)
+                                TaggedTaskName(name: task.name, parent: ShownParent.parent(of: task, shown: shown))
                                 Spacer()
                                 Text(StatusText.title(task.status)).secondaryText()
                             }

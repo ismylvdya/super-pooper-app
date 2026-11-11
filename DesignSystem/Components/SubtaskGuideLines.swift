@@ -8,10 +8,13 @@ struct SubtaskGuideLines: View {
     let guide: SubtaskGuide
     /// Where the line turns into the row's plate, from the row's top (the middle of its first line).
     let turnY: CGFloat
+    /// The room between this row and the one above, which the line crosses: the pool's gap between plates by default;
+    /// rows on one plate (the morning review) have none.
+    var gap: CGFloat?
 
     var body: some View {
         GeometryReader { proxy in
-            SubtaskGuideShape(guide: guide, indent: tokens.subtaskIndent, gap: tokens.space(.poolRowGap), turnY: turnY,
+            SubtaskGuideShape(guide: guide, indent: tokens.subtaskIndent, gap: gap ?? tokens.space(.poolRowGap), turnY: turnY,
                               turnRadius: look.corner, roundsMiddle: look.roundsMiddle, height: proxy.size.height)
                 .stroke(tokens.color(.subtaskLine), style: StrokeStyle(lineWidth: tokens.size(.subtaskLine), lineCap: .butt))
         }

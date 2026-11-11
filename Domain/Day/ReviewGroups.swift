@@ -97,4 +97,21 @@ enum ReviewGroups {
         }
         return Move(order: order, regrouped: regrouped)
     }
+
+    /// The lines from a parent to its subtasks within each group, as in the pool (`SubtaskGuides`): a group's rows are a
+    /// family of their own.
+    static func guides(_ rows: [Row], items: [String: DayItem]) -> [String: SubtaskGuide] {
+        var guides: [String: SubtaskGuide] = [:]
+        var run: [DayItem] = []
+        for row in rows + [.header(.day)] {
+            switch row {
+            case .header:
+                guides.merge(SubtaskGuides.guides(of: run)) { first, _ in first }
+                run = []
+            case .item(let name):
+                if let item = items[name] { run.append(item) }
+            }
+        }
+        return guides
+    }
 }

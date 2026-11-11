@@ -7,6 +7,8 @@ struct TaggedTaskName: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
     let name: String
+    /// The task it belongs to, over its name, where its parent is not shown with it.
+    var parent: String?
 
     var body: some View {
         HStack(spacing: tokens.space(.iconTextGap)) {
@@ -15,7 +17,7 @@ struct TaggedTaskName: View {
             } else if let emoji = model.taskMark {
                 Text(verbatim: emoji).font(tokens.font(.caption))
             }
-            Text(verbatim: name).foregroundStyle(tokens.color(.primaryText))
+            ParentCaption(parent: parent) { Text(verbatim: name).foregroundStyle(tokens.color(.primaryText)) }
         }
     }
 }

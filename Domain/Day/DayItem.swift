@@ -9,7 +9,8 @@ struct DayItem: Identifiable, Hashable, Sendable {
     var depth = 0
     /// Its subtasks sit under it in the pool.
     var hasSubtasks = false
-    /// The next action of a task shown one at a time: that task's name, over its own (`TaskSteps`).
+    /// The name over its own: for the next action of a task shown one at a time, that task's (`TaskSteps`); for a subtask
+    /// shown without its parent, the parent's (`SubtaskNesting`).
     var project: String?
 
     var id: String { task.name }
