@@ -3,23 +3,30 @@ import UIKit
 
 /// The one search of the app, a page of its own opened from a page's "…" or a hold of its title: Back on the left, the
 /// field in the middle saying what it looks through (`SearchScope`), on the right an X that empties the field — dim
-/// while there is nothing in it. Under it the page's own rows that match: Today's and the Lists page's every task (and
-/// Today's events), a tab's, a list's, the archive's and the trash's own.
+/// while there is nothing in it. Empty, the page says what to type; typed, what matches, in titled groups — the same rows
+/// for every search of notes (`NoteSearchResults`, `SearchSections`): Today's and the Lists page's every task (and
+/// Today's events), the habits, the archive, a list. Settings and the trash, which hold no notes, show their own rows.
 struct SearchPage: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
     let scope: SearchScope
     @State private var query = ""
-    @State private var width: CGFloat = 0
+    /// The page's width, kept from the last search, so the field stands at its width from the first frame.
+    @State private var width = SearchPage.lastWidth
+    @MainActor private static var lastWidth: CGFloat = 0
 
     var body: some View {
-        results
-            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
+        content
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { new in
+                width = new
+                SearchPage.lastWidth = new
+            }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    SearchBarField(text: $query, prompt: prompt).frame(width: fieldWidth, height: tokens.bar(.searchField))
+                    SearchBarField(text: $query, prompt: prompt).frame(width: fieldWidth, height: tokens.bar(.uprightBarButton))
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { query = "" } label: { Image(systemName: icons[.close]) }
@@ -31,16 +38,42 @@ struct SearchPage: View {
             }
     }
 
-    @ViewBuilder private var results: some View {
+    @ViewBuilder private var content: some View {
+        let text = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        if text.isEmpty {
+            List { Text(LocalizedStringKey(hint)).foregroundStyle(tokens.color(.secondaryText)).listRowBackground(Color.clear) }
+                .appList()
+        } else {
+            results(text)
+        }
+    }
+
+    @ViewBuilder private func results(_ text: String) -> some View {
         switch scope {
-        case .tasksAndEvents: TaskSearchResults(withEvents: true, query: query)
-        case .tasks: TaskSearchResults(withEvents: false, query: query)
-        case .habits: HabitsScreen(searchQuery: query)
-        case .settings: SettingsScreen(searchQuery: query)
-        case .archive: ArchiveScreen(searchQuery: query)
-        case .trash: TrashScreen(searchQuery: query)
-        case .list(let id): TaskListScreen(listID: id, searchQuery: query)
-        case .customList(let title): TaskListScreen(listID: "", custom: title, searchQuery: query)
+        case .tasksAndEvents:
+            NoteSearchResults(sections: SearchSections.notes(model.tasks, matching: text),
+                              events: SearchMatcher.events(model.events, matching: text))
+        case .tasks: NoteSearchResults(sections: SearchSections.notes(model.tasks, matching: text))
+        case .habits: NoteSearchResults(sections: SearchSections.habits(model.habits, matching: text))
+        case .archive: NoteSearchResults(sections: SearchSections.archive(model.archivedTasks + model.archivedHabits, matching: text))
+        case .list(let id): NoteSearchResults(sections: SearchSections.list(model.listContents(id, query: text), levelTitle: StatusText.title))
+        case .customList(let title):
+            NoteSearchResults(sections: SearchSections.list(model.customListContents(title, query: text), levelTitle: StatusText.title))
+        case .settings: SettingsScreen(searchQuery: text)
+        case .trash: TrashScreen(searchQuery: text)
+        }
+    }
+
+    /// What the empty page says to type.
+    private var hint: String {
+        switch scope {
+        case .tasksAndEvents: "search.hint"
+        case .tasks: "search.hint.tasks"
+        case .habits: "search.hint.habits"
+        case .settings: "search.hint.settings"
+        case .archive: "search.hint.archive"
+        case .trash: "search.hint.trash"
+        case .list, .customList: "search.hint.list"
         }
     }
 
@@ -65,9 +98,9 @@ struct SearchPage: View {
     }
 }
 
-/// The search page's field in the bar: the magnifier, the text, what it looks through while empty. The keyboard comes up
-/// with the page: the field takes the focus itself once it is in the window, which a SwiftUI focus set during the push
-/// does not reach.
+/// The search page's field in the bar: glass as tall as the bar's buttons, the magnifier, the text, what it looks through
+/// while empty. The keyboard comes up as the page has come in: the field takes the focus itself, which a SwiftUI focus
+/// set during the push does not reach.
 private struct SearchBarField: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
@@ -83,7 +116,8 @@ private struct SearchBarField: View {
         }
         .padding(.horizontal, tokens.space(.searchFieldInset))
         .frame(maxHeight: .infinity)
-        .background(tokens.color(.plateBackground), in: Capsule())
+        // Glass, as the bar's buttons beside it and the banners.
+        .systemLook(.floatingCapsule)
     }
 }
 
@@ -116,11 +150,30 @@ private struct FocusingTextField: UIViewRepresentable {
 
     func makeCoordinator() -> Coordinator { Coordinator(text: $text) }
 
+    /// Takes the focus once the page's push is over: the keyboard rising during the push makes both stutter.
     final class Field: UITextField {
         override func didMoveToWindow() {
             super.didMoveToWindow()
             guard window != nil else { return }
-            DispatchQueue.main.async { [weak self] in self?.becomeFirstResponder() }
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                if let push = self.stack?.transitionCoordinator {
+                    push.animate(alongsideTransition: nil) { [weak self] context in
+                        if !context.isCancelled { self?.becomeFirstResponder() }
+                    }
+                } else {
+                    self.becomeFirstResponder()
+                }
+            }
+        }
+
+        private var stack: UINavigationController? {
+            var responder: UIResponder? = self
+            while let next = responder?.next {
+                if let controller = next as? UIViewController, let stack = controller.navigationController { return stack }
+                responder = next
+            }
+            return nil
         }
     }
 

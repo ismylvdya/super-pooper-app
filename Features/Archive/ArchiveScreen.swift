@@ -9,19 +9,15 @@ struct ArchiveScreen: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.tokens) private var tokens
     @State private var pendingAction: PendingAction?
-    /// Shown as the search's results (`SearchPage`): the archived notes matching it, without the title and bar items.
-    var searchQuery: String?
     @State private var titleHeight: CGFloat = 0
     @State private var frames = ListGroupFrames()
 
     var body: some View {
-        let tasks = model.archivedTasks.filter { SearchMatcher.matches($0.name, query) }
-        let habits = model.archivedHabits.filter { SearchMatcher.matches($0.name, query) }
+        let tasks = model.archivedTasks
+        let habits = model.archivedHabits
         List {
-            if searchQuery == nil {
-                LargePageTitle(height: $titleHeight) { Text("archive.title") }
-                    .listGroupSpacer()
-            }
+            LargePageTitle(height: $titleHeight) { Text("archive.title") }
+                .listGroupSpacer()
             group(tasks, id: "tasks", header: "archive.tasks", menu: .archiveRow, swipes: .archivedTask) { _ in
                 tokens.color(.primaryText)
             }
@@ -34,23 +30,18 @@ struct ArchiveScreen: View {
         .appList()
         // The title starts where the other pages' titles start, not under the list's own top margin.
         .contentMargins(.top, 0, for: .scrollContent)
-        .applying(if: searchQuery == nil) { page in
-            page
-                .titleScrollsIntoBar(L10n.string("archive.title"), titleHeight: titleHeight)
-                .searchOnTitleHold { router.open(.search(.archive)) }
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        PageMoreMenu(search: { router.open(.search(.archive)) }, accessibilityID: "archive.more")
-                    }
-                }
+        .titleScrollsIntoBar(L10n.string("archive.title"), titleHeight: titleHeight)
+        .searchOnTitleHold { router.open(.search(.archive)) }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                PageMoreMenu(search: { router.open(.search(.archive)) }, accessibilityID: "archive.more")
+            }
         }
         .onChange(of: model.archivedNotesCount == 0) { _, isEmpty in
             if isEmpty { router.popToRoot() }
         }
         .actionConfirmation($pendingAction) { handler.run($0) }
     }
-
-    private var query: String { searchQuery ?? "" }
 
     @ViewBuilder
     private func group(_ notes: [TaskItem], id: String, header: LocalizedStringKey, menu: ActionMenu, swipes: ActionSwipes,

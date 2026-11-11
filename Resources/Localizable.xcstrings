@@ -4225,7 +4225,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "All tasks and events"
+            "value": "All tasks & events"
           }
         }
       }
@@ -8211,7 +8211,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Habits"
+            "value": "Habits & Repeatable tasks"
           }
         }
       }
@@ -8278,6 +8278,83 @@
           "stringUnit": {
             "state": "translated",
             "value": "Next repeat: %@"
+          }
+        }
+      }
+    },
+    "search.habits": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habits"
+          }
+        }
+      }
+    },
+    "search.repeatable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeatable tasks"
+          }
+        }
+      }
+    },
+    "search.hint.habits": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type a name to find a habit or a repeatable task."
+          }
+        }
+      }
+    },
+    "search.hint.settings": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type to find a setting."
+          }
+        }
+      }
+    },
+    "search.hint.archive": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type a name to find an archived task or habit."
+          }
+        }
+      }
+    },
+    "search.hint.trash": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type a name to find a note in the trash."
+          }
+        }
+      }
+    },
+    "search.hint.list": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type a name to find a task in this list."
           }
         }
       }

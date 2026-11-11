@@ -1,32 +1,26 @@
 import SwiftUI
 
-/// What a search across all task notes (by name) finds and, from Today, the calendar events the app has loaded.
-/// A task opens its page (a swipe to the right is Done, to the left Delete, as in its list); an event opens Calendar on
-/// its day.
-struct TaskSearchResults: View {
+/// What a search of notes found (`SearchSections`) and, from Today, the calendar events the app has loaded: the same rows
+/// under their groups' titles wherever notes are searched. A note opens its page (a swipe to the right is Done, to the
+/// left Delete, as in its list); an event opens Calendar on its day.
+struct NoteSearchResults: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     @Environment(\.openURL) private var openURL
-    /// With events, or task notes only.
-    let withEvents: Bool
-    let query: String
+    let sections: [SearchSection]
+    var events: [CalendarEvent] = []
     @State private var pendingAction: PendingAction?
 
     var body: some View {
-        let text = query.trimmingCharacters(in: .whitespacesAndNewlines)
-        let tasks = SearchMatcher.tasks(model.tasks, matching: text)
-        let shown = Set(tasks.map(\.name.noteName))
-        let events = !withEvents ? [] : SearchMatcher.events(model.events, matching: text)
+        let shown = Set(sections.flatMap(\.notes).map(\.name.noteName))
         List {
-            if text.isEmpty {
-                Text(withEvents ? "search.hint" : "search.hint.tasks").foregroundStyle(tokens.color(.secondaryText)).listRowBackground(Color.clear)
-            } else if tasks.isEmpty, events.isEmpty {
+            if sections.isEmpty, events.isEmpty {
                 Text("search.empty").foregroundStyle(tokens.color(.secondaryText)).listRowBackground(Color.clear)
             }
-            if !tasks.isEmpty {
-                Section("search.tasks") {
-                    ForEach(tasks) { task in
+            ForEach(Array(sections.enumerated()), id: \.offset) { _, section in
+                Section {
+                    ForEach(section.notes) { task in
                         Button { router.open(.task(task.name)) } label: {
                             HStack(spacing: tokens.space(.iconTextGap)) {
                                 TaggedTaskName(name: task.name, parent: ShownParent.parent(of: task, shown: shown))
@@ -37,6 +31,8 @@ struct TaskSearchResults: View {
                         .listRowBackground(tokens.color(.plateBackground))
                         .actionSwipes(.row(of: task), item: item(task), isToday: false) { handler.handle($0, taskName: task.name) }
                     }
+                } header: {
+                    title(section.title)
                 }
             }
             if !events.isEmpty {
@@ -68,6 +64,13 @@ struct TaskSearchResults: View {
     /// A habit is judged by today's mark, a task by its status.
     private func item(_ task: TaskItem) -> DayItem {
         task.isHabit ? DayItem(habit: task, on: model.context().today) : DayItem(listed: task)
+    }
+
+    private func title(_ title: SearchSection.Title) -> Text {
+        switch title {
+        case .key(let key): Text(LocalizedStringKey(key))
+        case .text(let text): Text(verbatim: text)
+        }
     }
 
     private func open(_ event: CalendarEvent) {

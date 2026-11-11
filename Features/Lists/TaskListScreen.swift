@@ -14,16 +14,13 @@ struct TaskListScreen: View {
     let listID: String
     /// A list of the user's own, by its title, in place of a list of `lists.json`.
     var custom: String?
-    /// Shown as the search's results (`SearchPage`): the list's tasks matching it, without the list's bar items.
-    var searchQuery: String?
     @State private var isConfirmingDelete = false
     @State private var pendingAction: PendingAction?
     @State private var frames = ListGroupFrames()
 
     var body: some View {
         let list = model.config.lists.list(listID)
-        let query = searchQuery ?? ""
-        let contents = custom.map { model.customListContents($0, query: query) } ?? model.listContents(listID, query: query)
+        let contents = custom.map { model.customListContents($0, query: "") } ?? model.listContents(listID, query: "")
         let shown = Set(contents.groups.flatMap(\.tasks).map(\.name.noteName))
         List {
             ForEach(contents.groups, id: \.status) { group in
@@ -32,13 +29,13 @@ struct TaskListScreen: View {
                     row(task, parent: ShownParent.parent(of: task, shown: shown), group: StatusText.title(group.status), index: index,
                         count: group.tasks.count)
                 }
-                // Dragged like every list; while a search filters it the rows cannot move.
-                .onMove(perform: query.isEmpty ? { source, destination in
+                // Dragged like every list.
+                .onMove { source, destination in
                     Haptics.play(.reorder)
                     var order = group.tasks.map(\.name)
                     order.move(fromOffsets: source, toOffset: destination)
                     Task { await model.reorderTasks(order) }
-                } : nil)
+                }
             }
             filedGroup(contents.filed)
         }
@@ -46,18 +43,15 @@ struct TaskListScreen: View {
         .listGroupBacking(frames)
         .appList()
         .overlay { if contents.isEmpty { Text("lists.empty").foregroundStyle(tokens.color(.secondaryText)) } }
-        .applying(if: searchQuery == nil) { page in
-            page
-                .navigationTitle(custom.map { Text(verbatim: $0) } ?? Text(LocalizedStringKey(list?.title ?? "lists.title")))
-                .navigationBarTitleDisplayMode(.inline)
-                .searchOnTitleHold { router.open(search) }
-                .toolbar {
-                    ToolbarItemGroup(placement: .topBarTrailing) {
-                        PageMoreMenu(search: { router.open(search) }, accessibilityID: "list.more") {
-                            if let custom { CustomListMenuItems(title: custom, isConfirmingDelete: $isConfirmingDelete) }
-                        }
-                    }
+        .navigationTitle(custom.map { Text(verbatim: $0) } ?? Text(LocalizedStringKey(list?.title ?? "lists.title")))
+        .navigationBarTitleDisplayMode(.inline)
+        .searchOnTitleHold { router.open(search) }
+        .toolbar {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                PageMoreMenu(search: { router.open(search) }, accessibilityID: "list.more") {
+                    if let custom { CustomListMenuItems(title: custom, isConfirmingDelete: $isConfirmingDelete) }
                 }
+            }
         }
         .customListDeletion(custom, isPresented: $isConfirmingDelete) { dismiss() }
         .task { await model.openList(listID) }

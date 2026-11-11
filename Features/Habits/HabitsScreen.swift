@@ -11,18 +11,14 @@ struct HabitsScreen: View {
     @Environment(\.openURL) private var openURL
     @State private var titleHeight: CGFloat = 0
     @State private var pendingAction: PendingAction?
-    /// Shown as the search's results (`SearchPage`): the habits matching it, without the page's title and bar items.
-    var searchQuery: String?
     @State private var frames = ListGroupFrames()
 
     var body: some View {
         let today = model.context().today
-        let groups = HabitGroups(model.habits.filter { SearchMatcher.matches($0.name, query) }, active: model.habits)
+        let groups = HabitGroups(model.habits, active: model.habits)
         List {
-            if searchQuery == nil {
-                LargePageTitle(isNested: false, height: $titleHeight) { Text("tab.habits") }
-                    .listGroupSpacer()
-            }
+            LargePageTitle(isNested: false, height: $titleHeight) { Text("tab.habits") }
+                .listGroupSpacer()
             if model.habits.isEmpty {
                 Text("habits.empty").secondaryText(.hint)
                     .listGroupSpacer()
@@ -37,19 +33,14 @@ struct HabitsScreen: View {
         .contentMargins(.top, 0, for: .scrollContent)
         .syncsOnPull()
         .actionConfirmation($pendingAction) { handler.run($0) }
-        .applying(if: searchQuery == nil) { page in
-            page
-                .titleScrollsIntoBar(L10n.string("tab.habits"), titleHeight: titleHeight)
-                .searchOnTitleHold { router.open(.search(.habits)) }
-                .toolbar {
-                    ToolbarItemGroup(placement: .topBarTrailing) {
-                        PageMoreMenu(search: { router.open(.search(.habits)) }, accessibilityID: "habits.more")
-                    }
-                }
+        .titleScrollsIntoBar(L10n.string("tab.habits"), titleHeight: titleHeight)
+        .searchOnTitleHold { router.open(.search(.habits)) }
+        .toolbar {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                PageMoreMenu(search: { router.open(.search(.habits)) }, accessibilityID: "habits.more")
+            }
         }
     }
-
-    private var query: String { searchQuery ?? "" }
 
     private var handler: TaskActionHandler {
         TaskActionHandler(model: model, router: router, openURL: openURL) { pendingAction = $0 }
@@ -76,10 +67,10 @@ struct HabitsScreen: View {
                     .actionSwipes(.habit, item: DayItem(habit: habit, on: today)) { handler.handle($0, taskName: habit.name) }
             }
             // While a search filters the list the rows cannot move: the order is the order of every habit.
-            .onMove(perform: query.isEmpty ? { source, destination in
+            .onMove { source, destination in
                 Haptics.play(.reorder)
                 model.moveHabits(groups.order(moving: source, to: destination, inRepeatable: isRepeatable))
-            } : nil)
+            }
         }
     }
 }
