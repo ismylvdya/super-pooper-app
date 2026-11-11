@@ -34,6 +34,18 @@ final class DayCommands {
         await derived.publish()
     }
 
+    /// Return to today (`SetAsideToday`): a habit skipped today is no longer skipped; a task put off today comes back
+    /// into today's pool, as from a backlog page.
+    func returnToToday(_ name: String) async {
+        guard let task = tasks.task(named: name) else { return }
+        if task.isHabit {
+            day.unskip(name)
+            await derived.publish()
+        } else {
+            await bringFromBacklog(name, to: day.context().today, poolOrder: nil)
+        }
+    }
+
     /// Not today for a task (`NotToday`).
     func notToday(_ name: String, on day: LocalDate?) async {
         guard isToday(day), let task = tasks.task(named: name) else { return }

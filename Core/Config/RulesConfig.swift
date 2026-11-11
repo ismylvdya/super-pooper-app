@@ -184,6 +184,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         /// While the "+" is dragged, a second finger moved this share of the screen's height up or down picks the next
         /// longer or shorter estimate.
         let estimateStepShare: Double
+        /// The second finger moved down picks a longer estimate (up, a shorter one); false the other way round.
+        let estimateLongerDown: Bool
         /// How long a dragged task stays at a page's edge or over a neighbour before Tasks turns to it.
         let pageEdgeDwellSeconds: Double
         /// A drag is sideways when it moves this many times more across than up or down.

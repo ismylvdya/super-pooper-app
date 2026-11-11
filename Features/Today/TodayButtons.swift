@@ -3,8 +3,7 @@ import SwiftUI
 /// The Today buttons: leading = Lists (the icon picked in the settings) with the problems badge, trailing = "…" (Search,
 /// Select, Undo, Redo; a hold of the bar's title searches too).
 /// Lying sideways (`bottom` set) they stand top to bottom in their physical left-to-right order. Today puts each group in
-/// a glass bubble. While the "+" is dragged they give their place to its targets (`NewItemBarButton`): New section and
-/// Subtask.
+/// a glass bubble. They stay while the "+" is dragged.
 struct TodayButtons: View {
     enum Placement {
         case leading, trailing
@@ -30,10 +29,6 @@ struct TodayButtons: View {
     var bottom: HorizontalEdge?
     /// Upright: where each button stands on screen (nil when it is gone), for the room left between the groups.
     var onFrame: ((Item, CGRect?) -> Void)?
-    /// The "+" let go on one of its targets in the bar; nil: the bar keeps its buttons while it is dragged.
-    var onNewItem: ((NewItemBarTarget) -> Void)?
-    /// New section is offered on the day that has sections (today).
-    var offersNewSection = true
 
     /// The number on the Lists button: the problems, only when there are some and the badge is on.
     static func badgeCount(problemCount: Int, flagOn: Bool) -> Int? {
@@ -57,14 +52,7 @@ struct TodayButtons: View {
     }
 
     @ViewBuilder private func button(_ item: Item) -> some View {
-        if let onNewItem, drag?.source == .newItem {
-            switch item {
-            case .lists: NewItemBarButton(target: offersNewSection ? .newSection : nil, symbolKind: .newSection, onLand: onNewItem)
-            case .more: NewItemBarButton(target: drag?.newItemAbove.map { .subtask(of: $0) }, symbolKind: .subtask, onLand: onNewItem)
-            }
-        } else {
-            plainButton(item)
-        }
+        plainButton(item)
     }
 
     @ViewBuilder private func plainButton(_ item: Item) -> some View {

@@ -41,11 +41,13 @@ struct NewItemButton: View {
             .accessibilityIdentifier("tabBar.newItem")
     }
 
-    /// A second finger up or down picks the new task's estimate, a step to feel at each one; lifted, the pick stays.
+    /// A second finger down or up picks the new task's estimate (`gestures.estimateLongerDown`), a step to feel at each one;
+    /// lifted, the pick stays.
     private func pickEstimate(_ rise: CGFloat?, on drag: TaskDragState?) {
         guard let drag, let rise else { return }
         let picked = NewItemEstimate.minutes(options: rules.timeEstimates.map(\.minutes), default: rules.day.defaultEstimateMinutes,
-                                             rise: Double(rise), step: rules.gestures.estimateStepShare)
+                                             rise: Double(rise), step: rules.gestures.estimateStepShare,
+                                             longerDown: rules.gestures.estimateLongerDown)
         guard picked != drag.newItemEstimate else { return }
         drag.newItemEstimate = picked
         Haptics.play(.dragStep)
@@ -82,7 +84,7 @@ private struct NewItemBubble: View {
     }
 }
 
-/// The "+" under the finger, over everything on the screen, while it is dragged; under it the estimate a second
+/// The "+" under the finger, over everything on the screen, while it is dragged; left of it the estimate a second
 /// finger picked.
 struct NewItemDragOverlay: View {
     @Environment(TaskDragState.self) private var drag
@@ -95,7 +97,10 @@ struct NewItemDragOverlay: View {
                 let origin = geometry.frame(in: .global).origin
                 NewItemBubble()
                     .frame(width: drag.newItemSize.width, height: drag.newItemSize.height)
-                    .overlay(alignment: .bottom) { estimate.alignmentGuide(.bottom) { $0[.top] } }
+                    // Left of the "+", where the hand dragging it does not cover it.
+                    .overlay(alignment: .leading) {
+                        estimate.alignmentGuide(.leading) { $0[.trailing] + tokens.space(.chipGap) }
+                    }
                     .position(x: point.x - origin.x, y: point.y - origin.y)
             }
             .ignoresSafeArea()

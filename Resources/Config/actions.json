@@ -85,6 +85,14 @@
       "haptic": "none"
     },
     {
+      "id": "returnToToday",
+      "title": "action.returnToToday",
+      "icon": "arrow.uturn.backward.circle",
+      "destructive": false,
+      "haptic": "light",
+      "swipeTint": "success"
+    },
+    {
       "id": "restoreThisWeek",
       "title": "action.restoreThisWeek",
       "icon": "arrow.uturn.up.circle",
@@ -383,6 +391,12 @@
         "notToday",
         "skipToday"
       ]
+    },
+    "setAside": {
+      "leading": [
+        "returnToToday"
+      ],
+      "trailing": []
     },
     "archivedTask": {
       "leading": [],

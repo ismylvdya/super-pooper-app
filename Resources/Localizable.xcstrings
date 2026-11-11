@@ -8358,6 +8358,28 @@
           }
         }
       }
+    },
+    "action.returnToToday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Return to today"
+          }
+        }
+      }
+    },
+    "review.group.setAside": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not today"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

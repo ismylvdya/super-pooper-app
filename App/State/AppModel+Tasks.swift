@@ -73,6 +73,7 @@ extension AppModel {
         case .notToday: await parts.dayCommands.notToday(name, on: day)
         case .archive: return await parts.notes.archive(name, announcing: announcing) ? [] : nil
         case .restoreThisWeek: await parts.notes.setStatus(.thisWeek, of: name)
+        case .returnToToday: await parts.dayCommands.returnToToday(name)
         case .notStarted: await edit(name) { _ in [.started(false)] }
         case .start: await edit(name) { _ in [.started(true)] }
         case .restoreHalfYear: await parts.notes.setStatus(.halfYear, of: name)

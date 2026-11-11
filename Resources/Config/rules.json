@@ -266,6 +266,7 @@
     "newItemTurnDwellSeconds": 0.4,
     "subtaskShare": 0.3333,
     "estimateStepShare": 0.0833,
+    "estimateLongerDown": true,
     "pageEdgeDwellSeconds": 0.5,
     "daySwipeAxisRatio": 1.5,
     "daySwipeShare": 0.25,

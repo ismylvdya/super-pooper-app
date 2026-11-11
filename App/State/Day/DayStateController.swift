@@ -80,6 +80,11 @@ final class DayStateController {
         update { if !$0.skipped.containsNoteName(name) { $0.skipped.append(name) } }
     }
 
+    /// A habit skipped today back in today.
+    func unskip(_ name: String) {
+        update { $0.skipped.removeAll { $0.isSameNoteName(as: name) } }
+    }
+
     /// The pool's order for today; nil goes back to the automatic sort.
     func setManualOrder(_ names: [String]?) {
         update { $0.manualOrder = names }

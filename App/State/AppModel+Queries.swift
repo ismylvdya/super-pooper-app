@@ -38,6 +38,9 @@ extension AppModel {
     func listContents(_ filter: TaskListFilter, query: String) -> TaskListContents { parts.lists.contents(filter, query: query) }
     func listCount(_ listID: String) -> Int { parts.lists.count(of: listID) }
 
+    /// Taken out of today and able to come back: put off with Not today, or skipped (`SetAsideToday`).
+    var setAsideToday: [TaskItem] { SetAsideToday.notes(in: tasks, skipped: parts.day.skippedNames) }
+
     // MARK: - Backlog pages
 
     /// The pages left of the pool on Tasks, nearest to the pool first.

@@ -13,7 +13,7 @@ struct ListsScreen: View {
     @State private var deleting: String?
 
     var body: some View {
-        PageScaffold(title: L10n.string("lists.title"), isNested: true) {
+        PageScaffold(title: L10n.string("lists.title"), isNested: false) {
             if let problems = TodayButtons.badgeCount(problemCount: model.problemCount, flagOn: model.config.flags.problemBadge) {
                 Plate {
                     Button { router.isProblemsPresented = true } label: {
