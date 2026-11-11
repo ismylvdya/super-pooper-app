@@ -202,19 +202,21 @@ actor TaskFileStore: TaskStore {
     }
 
     /// What a day's turn or a hand in Obsidian leaves to tidy: a task dated before today
-    /// comes up to today without its time, so it waits in the pool; a task whose day has come moves from Soon to Now; a habit's line ticked in today's
+    /// comes up to today without its time, so it waits in the pool; a task whose day has come moves to Now from Next actions,
+    /// Soon or Someday alike (a date is kept whatever the task's level); a habit's line ticked in today's
     /// sections is its mark. True when something changed.
     func normalize(_ snapshot: inout Snapshot) -> Bool {
         let before = snapshot.document
         let day = today()
         dateNextActions(&snapshot.document, to: day, habits: Set(snapshot.habits.keys))
-        // Ticked habit lines and Soon's lines whose day has come leave their sections.
+        // Ticked habit lines, and lines whose day has come from Next actions, Soon and Someday, leave their sections.
         var moves: [(id: String, habit: Bool)] = []
         snapshot.document.walk { entry, section, parent, _, _ in
-            guard section == .now || section == .soon, let id = entry.id else { return }
+            guard let id = entry.id else { return }
             if snapshot.habits[id] != nil {
-                if entry.box != .open { moves.append((id, true)) }
-            } else if section == .soon, parent == nil, entry.box != .done, logicalDay(of: entry).map({ $0 <= day }) == true {
+                if section == .now || section == .soon, entry.box != .open { moves.append((id, true)) }
+            } else if section == .soon || section == .halfYear || section == .someday, parent == nil, entry.box != .done,
+                      logicalDay(of: entry).map({ $0 <= day }) == true {
                 moves.append((id, false))
             }
         }
