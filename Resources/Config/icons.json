@@ -96,6 +96,7 @@
   "tomorrow": "sunrise",
   "subtask": "arrow.turn.down.right",
   "addSubtask": "plus.circle",
+  "parentTask": "arrow.turn.left.up",
   "selected": "checkmark",
   "themeLight": "sun.max",
   "themeDark": "moon",

@@ -8149,6 +8149,28 @@
           }
         }
       }
+    },
+    "taskPage.parent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parent task"
+          }
+        }
+      }
+    },
+    "info.taskPage.parent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The task this one stands under. Tap it to open it."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

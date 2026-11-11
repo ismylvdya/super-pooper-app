@@ -10,6 +10,7 @@ struct HabitSections: View {
     var body: some View {
         let showsHistory = !editor.isDraft && model.settings.habits.showsHistory(of: editor.task)
         if showsHistory { HabitHistorySection(habit: editor.task) }
+        ParentTaskSection(editor: editor)
         // Repeatable subtasks: they come up on the habit's days and are marked for each day.
         SubtasksSection(editor: editor, header: editor.task.habit.repeatable ? "habitPage.subtasks.repeatable" : "habitPage.subhabits")
         if let draft = editor.draft {

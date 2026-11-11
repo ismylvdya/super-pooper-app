@@ -2,8 +2,9 @@ import SwiftUI
 
 /// Subtasks: each is a task of its own that names this one as its parent.
 /// Under the existing ones there is always one empty field to add the next. A subtask picked up (long press)
-/// and dropped on another one takes its place; the pool follows that order. Show one at a time (`TaskSteps`): the pool
-/// shows only the next action, under this task's name; the other subtasks are marked Later here.
+/// and dropped on another one takes its place; the pool follows that order. Show one at a time (`TaskSteps`), over the
+/// subtasks once there is one: the pool shows only the next action, under this task's name; the other subtasks are marked
+/// Later here.
 struct SubtasksSection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
@@ -15,7 +16,7 @@ struct SubtasksSection: View {
 
     var body: some View {
         PlateSection(header: header, info: "info.taskPage.subtasks") {
-            if !editor.task.isHabit { oneAtATime }
+            if !editor.task.isHabit, hasSubtasks { oneAtATime }
             if let draft = editor.draft {
                 draftRows(draft)
             } else {
@@ -53,6 +54,14 @@ struct SubtasksSection: View {
                 }
             }
         }
+    }
+
+    /// The switch only matters once there is a subtask: it comes with the first one.
+    private var hasSubtasks: Bool {
+        if let draft = editor.draft {
+            return draft.wrappedValue.subtasks.contains { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        }
+        return !model.subtasks(of: editor.task.name).isEmpty
     }
 
     /// Show one at a time: the pool shows only the next action, under this task's name (`TaskSteps`); set when the task

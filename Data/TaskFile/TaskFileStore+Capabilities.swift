@@ -134,8 +134,9 @@ extension TaskFileStore: TaskTrash, DayMirroring, ExternalLinking, TaskBackups, 
                     document.sections[index].groups[group].entries.removeAll { $0.id.map(habitIDs.contains) ?? false }
                 }
             }
+            // A subtask shown in the pool stays under its parent: taken out, it would lose the parent and the day it follows.
             let take = { (name: String) -> TaskEntry? in
-                document.remove(where: { $0.name.isSameNoteName(as: name) && $0.completed == nil && $0.deleted == nil })?.entry
+                document.remove(nested: false, where: { $0.name.isSameNoteName(as: name) && $0.completed == nil && $0.deleted == nil })?.entry
             }
             var groups: [TaskDocument.Group] = []
             for section in day.sections {

@@ -22,7 +22,7 @@ enum Icon: String, CaseIterable, Codable, Sendable {
     /// The same marks as SF Symbols, for a notification's buttons.
     case habitMarkOpenSymbol, habitMarkDoneSymbol, habitMarkPartialSymbol, habitMarkTwiceSymbol
     case today, harmful, timeOfDay, goal, trash, restore, links, opacity, obsidian, habitSettings, taskSettings, clockSettings
-    case tomorrow, subtask, addSubtask, selected, previousDay, nextDay
+    case tomorrow, subtask, addSubtask, parentTask, selected, previousDay, nextDay
     /// A pool row in Select mode, picked or not, and the mode's Cancel lying sideways.
     case themeLight, themeDark, selectCancel
     case syncAdded, syncChanged, syncRemoved, signing, snooze
