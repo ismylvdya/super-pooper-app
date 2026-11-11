@@ -33,9 +33,10 @@ struct MorningReviewPage: View {
 
     var body: some View {
         MorningReviewList(resetPlacement: .topBarTrailing) { router.open(.task($0)) }
+            .searchOnTitleHold { router.open(.search(.tasks)) }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    OpenSearchButton(scope: .tasks, accessibilityID: "review.search")
+                    PageMoreMenu(search: { router.open(.search(.tasks)) }, accessibilityID: "review.more")
                 }
             }
     }

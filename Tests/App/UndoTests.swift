@@ -47,6 +47,24 @@ struct UndoTests {
         #expect(try await model.parts.services.trash?.notes().isEmpty == true)
     }
 
+    /// The bar's "…": Undo takes the latest action back, Redo does it again on the same tasks, and a new action forgets
+    /// what Redo would do.
+    @Test func theBarsUndoAndRedo() async throws {
+        let (model, _) = try makeModel([makeTask("Report"), makeTask("Call")])
+        #expect(!model.canUndo && !model.canRedo)
+        await model.performOfferingUndo(action(model, .highPriority), on: "Report")
+        #expect(model.task(named: "Report")?.isHighPriority == true && model.canUndo)
+        await model.undoLast()
+        #expect(model.task(named: "Report")?.isHighPriority == false)
+        #expect(!model.canUndo && model.canRedo)
+        await model.redoLast()
+        #expect(model.task(named: "Report")?.isHighPriority == true)
+        #expect(model.canUndo && !model.canRedo)
+        await model.undoLast()
+        await model.performOfferingUndo(action(model, .highPriority), on: "Call")
+        #expect(!model.canRedo, "a new action forgets the step taken back")
+    }
+
     /// The Done list: Delete asks nothing, the banner offers Undo, and Undo puts the task back into the done folder as it was.
     @Test func deletingAFiledTaskOffersUndoBackIntoTheDoneFolder() async throws {
         let (model, events) = try makeModel([makeTask("Report")])

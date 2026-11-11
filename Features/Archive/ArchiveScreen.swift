@@ -34,7 +34,8 @@ struct ArchiveScreen: View {
         // The title starts where the other pages' titles start, not under the list's own top margin.
         .contentMargins(.top, 0, for: .scrollContent)
         .pageSearch(query: $query, isSearching: $isSearching, prompt: "search.prompt.tasks")
-        .toolbar { ToolbarItem(placement: .topBarTrailing) { SearchBarButton(isSearching: $isSearching, accessibilityID: "archive.search") } }
+        .searchOnTitleHold { isSearching = true }
+        .toolbar { ToolbarItem(placement: .topBarTrailing) { PageMoreMenu(search: { isSearching = true }, accessibilityID: "archive.more") } }
         .onChange(of: model.archivedNotesCount == 0) { _, isEmpty in
             if isEmpty { router.popToRoot() }
         }

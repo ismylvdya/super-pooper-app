@@ -67,6 +67,7 @@ struct TodayScreen: View {
                 }
             }
         }
+        .searchOnTitleHold { router.open(.search(.tasksAndEvents)) }
         .actionConfirmation($pendingAction) { handler.run($0.action, taskName: $0.taskName) }
         .environment(selection)
         .namePrompt(.section, isPresented: $isNamingSection) { title in

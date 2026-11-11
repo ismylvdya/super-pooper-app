@@ -1,11 +1,11 @@
 import Testing
 @testable import SuperPooperApp
 
-/// Today's top: Lists on the left carries the problems badge, search on the right.
+/// Today's top: Lists on the left carries the problems badge, "…" on the right.
 struct TodayButtonsTests {
     @Test func listsStandsLeftAndSearchRight() {
         #expect(TodayButtons.Placement.leading.items == [.lists])
-        #expect(TodayButtons.Placement.trailing.items == [.search])
+        #expect(TodayButtons.Placement.trailing.items == [.more])
     }
 
     @Test func theBadgeShowsOnlyProblemsWhenTheFlagIsOn() {

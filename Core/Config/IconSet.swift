@@ -4,7 +4,7 @@ import Foundation
 /// asset catalog (the Lists glyphs, the frog of Need energy, the habit marks).
 enum Icon: String, CaseIterable, Codable, Sendable {
     case menuChevrons, feelNeutral, close
-    case settings, more, info, problem, sync
+    case settings, more, undo, redo, info, problem, sync
     case tabBarSettings, plainTaskSettings, general, widgets, overdue, energy, pleasant, feel, chipOrder, timeZone, high, due, datePick, time, estimate
     case previousTasks, nextTasks, previousEvent, nextEvent, event, reminder, habit
     case vault, calendars, reminderLists, notifications, allDayEvent, alarm, alarmOn, stopAlarm, chosen

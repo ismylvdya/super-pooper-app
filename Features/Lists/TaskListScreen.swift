@@ -46,10 +46,12 @@ struct TaskListScreen: View {
         .pageSearch(query: $query, isSearching: $isSearching, prompt: "search.prompt.tasks")
         .navigationTitle(custom.map { Text(verbatim: $0) } ?? Text(LocalizedStringKey(list?.title ?? "lists.title")))
         .navigationBarTitleDisplayMode(.inline)
+        .searchOnTitleHold { isSearching = true }
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
-                SearchBarButton(isSearching: $isSearching, accessibilityID: "list.search")
-                if let custom { CustomListMenu(title: custom, isConfirmingDelete: $isConfirmingDelete) }
+                PageMoreMenu(search: { isSearching = true }, accessibilityID: "list.more") {
+                    if let custom { CustomListMenuItems(title: custom, isConfirmingDelete: $isConfirmingDelete) }
+                }
             }
         }
         .customListDeletion(custom, isPresented: $isConfirmingDelete) { dismiss() }

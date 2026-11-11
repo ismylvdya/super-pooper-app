@@ -36,7 +36,8 @@ struct TrashScreen: View {
         // The title starts where the other pages' titles start, not under the list's own top margin.
         .contentMargins(.top, 0, for: .scrollContent)
         .pageSearch(query: $query, isSearching: $isSearching, prompt: "search.prompt.tasks")
-        .toolbar { ToolbarItem(placement: .topBarTrailing) { SearchBarButton(isSearching: $isSearching, accessibilityID: "trash.search") } }
+        .searchOnTitleHold { isSearching = true }
+        .toolbar { ToolbarItem(placement: .topBarTrailing) { PageMoreMenu(search: { isSearching = true }, accessibilityID: "trash.more") } }
         .task { await model.refreshTrash() }
         .refreshable { await model.refreshTrash() }
         .alert("trash.delete.title", isPresented: Binding(presenting: $toDelete),

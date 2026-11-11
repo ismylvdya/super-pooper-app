@@ -4,11 +4,21 @@ import SwiftUI
 /// lower; a pushed page keeps it clear of the bar buttons. It reports its height for `titleScrollsIntoBar`.
 struct LargePageTitle<Title: View>: View {
     @Environment(\.tokens) private var tokens
+    @Environment(\.titleHold) private var titleHold
     var isNested = true
     @Binding var height: CGFloat
     @ViewBuilder let title: Title
 
     var body: some View {
+        if let titleHold {
+            // Held, as the bar's title: the page's search (`searchOnTitleHold`).
+            styled.onLongPressGesture { titleHold.run() }
+        } else {
+            styled
+        }
+    }
+
+    private var styled: some View {
         title
             .font(tokens.font(.pageTitle))
             .multilineTextAlignment(.center)

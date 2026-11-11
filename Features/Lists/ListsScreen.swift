@@ -8,6 +8,7 @@ struct ListsScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
+    @Environment(\.icons) private var icons
     @State private var isNamingList = false
     @State private var deleting: String?
 
@@ -51,9 +52,13 @@ struct ListsScreen: View {
         // The Done list counts the filed tasks too.
         .task { await model.loadFiledTasks() }
         .syncsOnPull { await model.loadFiledTasks() }
+        .searchOnTitleHold { router.open(.search(.tasks)) }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                OpenSearchButton(scope: .tasks, accessibilityID: "lists.search")
+                PageMoreMenu(search: { router.open(.search(.tasks)) }, accessibilityID: "lists.more") {
+                    Button { isNamingList = true } label: { Label("lists.new", systemImage: icons[.newList]) }
+                        .accessibilityIdentifier("lists.more.newList")
+                }
             }
         }
     }

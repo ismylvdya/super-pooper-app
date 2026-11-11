@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// The Today buttons: leading = Lists (the icon picked in the settings) with the problems badge, trailing = search.
+/// The Today buttons: leading = Lists (the icon picked in the settings) with the problems badge, trailing = "…" (Search,
+/// Select, Undo, Redo; a hold of the bar's title searches too).
 /// Lying sideways (`bottom` set) they stand top to bottom in their physical left-to-right order. Today puts each group in
 /// a glass bubble. While the "+" is dragged they give their place to its targets (`NewItemBarButton`): New section and
 /// Subtask.
@@ -11,12 +12,12 @@ struct TodayButtons: View {
         var items: [Item] {
             switch self {
             case .leading: [.lists]
-            case .trailing: [.search]
+            case .trailing: [.more]
             }
         }
     }
 
-    enum Item { case lists, search }
+    enum Item { case lists, more }
 
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
@@ -24,6 +25,7 @@ struct TodayButtons: View {
     @Environment(\.icons) private var icons
     @Environment(\.displayScale) private var displayScale
     @Environment(TaskDragState.self) private var drag: TaskDragState?
+    @Environment(PoolSelection.self) private var selection: PoolSelection?
     let placement: Placement
     var bottom: HorizontalEdge?
     /// Upright: where each button stands on screen (nil when it is gone), for the room left between the groups.
@@ -58,7 +60,7 @@ struct TodayButtons: View {
         if let onNewItem, drag?.source == .newItem {
             switch item {
             case .lists: NewItemBarButton(target: offersNewSection ? .newSection : nil, symbolKind: .newSection, onLand: onNewItem)
-            case .search: NewItemBarButton(target: drag?.newItemAbove.map { .subtask(of: $0) }, symbolKind: .subtask, onLand: onNewItem)
+            case .more: NewItemBarButton(target: drag?.newItemAbove.map { .subtask(of: $0) }, symbolKind: .subtask, onLand: onNewItem)
             }
         } else {
             plainButton(item)
@@ -80,8 +82,15 @@ struct TodayButtons: View {
             .accessibilityLabel(Text("lists.title"))
             .accessibilityValue(badge.map { Text("problems.badge \($0)") } ?? Text(verbatim: ""))
             .accessibilityIdentifier("today.lists")
-        case .search:
-            OpenSearchButton(scope: .tasksAndEvents, accessibilityID: "today.search")
+        case .more:
+            PageMoreMenu(search: { router.open(.search(.tasksAndEvents)) }, accessibilityID: "today.more") {
+                if let selection {
+                    Button { withAnimation(tokens.animation) { selection.start() } } label: {
+                        Label("action.select", systemImage: model.config.actions.definition(.select).icon)
+                    }
+                    .accessibilityIdentifier("today.select")
+                }
+            }
         }
     }
 }

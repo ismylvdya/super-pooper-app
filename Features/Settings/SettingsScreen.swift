@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// The Settings tab, searchable by the titles of its sections and rows (`SettingsSearchIndex`, the bar's magnifier as on
-/// the other tabs). The Task Manager (what all items share, then what only tasks and only habits have), the archive and the trash, the clock, notes. How
+/// The Settings tab, searchable by the titles of its sections and rows (`SettingsSearchIndex`: the bar's "…" or a hold of
+/// the title, as on the other tabs). The Task Manager (what all items share, then what only tasks and only habits have), the archive and the trash, the clock, notes. How
 /// long the app's signature has left stands at the very end while it is green, at the very top once it turns yellow or red.
 struct SettingsScreen: View {
     @Environment(AppModel.self) private var model
@@ -18,9 +18,10 @@ struct SettingsScreen: View {
             }
         }
         .pageSearch(query: $query, isSearching: $isSearching, prompt: "settings.search.prompt")
+        .searchOnTitleHold { isSearching = true }
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
-                SearchBarButton(isSearching: $isSearching, accessibilityID: "settings.search")
+                PageMoreMenu(search: { isSearching = true }, accessibilityID: "settings.more")
             }
         }
         .task { await model.refreshAccess() }

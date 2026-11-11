@@ -48,6 +48,23 @@ extension AppModel {
     /// The banner's Undo: what the latest action offering it changed goes back.
     func undo(_ id: UUID) async { await parts.undo.undo(id) }
 
+    /// The bar's Undo and Redo ("…"): the latest action that can be taken back, and the one just taken back.
+    var canUndo: Bool { parts.undo.last != nil }
+    /// An action that asks for more (the list to move to) is not run again blind.
+    var canRedo: Bool { parts.undo.undone.map { config.actions.definition($0.action).picksList != true } ?? false }
+
+    func undoLast() async {
+        guard let step = parts.undo.last else { return }
+        await parts.undo.undo(step.id)
+    }
+
+    func redoLast() async {
+        guard canRedo, let step = parts.undo.takeRedo() else { return }
+        let names = step.names.filter { task(named: $0) != nil }
+        guard !names.isEmpty else { return }
+        await performOfferingUndo(config.actions.definition(step.action), on: names, day: nil)
+    }
+
     /// Runs the action; returns where deleted notes lie in the trash (none for other actions), nil when it failed.
     private func run(_ action: ActionID, on name: String, day: LocalDate?, announcing: Bool) async -> [TrashedNote]? {
         switch action {

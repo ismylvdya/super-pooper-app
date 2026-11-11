@@ -37,9 +37,10 @@ struct HabitsScreen: View {
         .pageSearch(query: $query, isSearching: $isSearching, prompt: "search.prompt.tasks")
         .syncsOnPull()
         .actionConfirmation($pendingAction) { handler.run($0) }
+        .searchOnTitleHold { isSearching = true }
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
-                SearchBarButton(isSearching: $isSearching, accessibilityID: "habits.search")
+                PageMoreMenu(search: { isSearching = true }, accessibilityID: "habits.more")
             }
         }
     }

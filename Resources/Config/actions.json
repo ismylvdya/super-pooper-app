@@ -227,7 +227,6 @@
         "skipToday"
       ],
       "more": [
-        "select",
         "unworm"
       ]
     },
@@ -241,7 +240,6 @@
       "more": [
         "start",
         "notStarted",
-        "select",
         "unworm"
       ]
     },

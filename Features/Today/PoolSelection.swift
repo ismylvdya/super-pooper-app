@@ -8,6 +8,12 @@ final class PoolSelection {
     private(set) var isOn = false
     private(set) var names: Set<String> = []
 
+    /// From the bar's "…": nothing picked yet.
+    func start() {
+        isOn = true
+        names = []
+    }
+
     func start(with name: String) {
         isOn = true
         names = [name]

@@ -1,16 +1,5 @@
 import SwiftUI
 
-/// The "…" of a list of the user's own (its page, its row on the Lists page): every task done at once, or the list
-/// deleted.
-struct CustomListMenu: View {
-    let title: String
-    @Binding var isConfirmingDelete: Bool
-
-    var body: some View {
-        MoreMenu(accessibilityID: "customList.more") { CustomListMenuItems(title: title, isConfirmingDelete: $isConfirmingDelete) }
-    }
-}
-
 /// Complete all and Delete list, for a menu or a row's context menu.
 struct CustomListMenuItems: View {
     @Environment(AppModel.self) private var model

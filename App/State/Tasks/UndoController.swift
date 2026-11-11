@@ -4,8 +4,10 @@ import Foundation
 /// for a few seconds instead of asking first. A step remembers, as they were, the notes the action may change — the note,
 /// the subtasks that go along with it — and what was
 /// decided about today. Taking it back puts all of that back: notes out of the trash or the done folder, their fields,
-/// today's decisions. Only the latest step can be taken back.
+/// today's decisions. Only the latest step can be taken back, from the banner or the bar's "…"; a step taken back can
+/// be done again from the "…" (Redo), which runs its action on the same notes anew.
 @MainActor
+@Observable
 final class UndoController {
     struct Step: Equatable {
         let id = UUID()
@@ -34,6 +36,8 @@ final class UndoController {
     private let derived: DerivedStatePublisher
     private let appEvents: AppEventSink
     private(set) var last: Step?
+    /// The step taken back last, for Redo; a new step forgets it.
+    private(set) var undone: Step?
 
     init(tasks: TaskState, writer: NoteWriter, store: TaskStore, trash: TaskTrash?, day: DayStateController,
          sections: DaySectionsController, derived: DerivedStatePublisher, appEvents: AppEventSink) {
@@ -85,6 +89,7 @@ final class UndoController {
         guard trashed.count > 0 || day.dayState != step.day || step.notes.contains(where: { tasks.task(named: $0.name) != $0 })
         else { return }
         last = step
+        undone = nil
         appEvents.send(.undoable(UndoOffer(id: step.id, action: step.action, names: step.names, along: step.along)))
     }
 
@@ -92,6 +97,7 @@ final class UndoController {
     func undo(_ id: UUID) async {
         guard let step = last, step.id == id else { return }
         last = nil
+        undone = step
         do {
             try await bringBack(step)
         } catch {
@@ -104,6 +110,12 @@ final class UndoController {
         day.restore(step.day)
         sections.restore(step.sections)
         await derived.publish()
+    }
+
+    /// The step to do again, forgotten as it is taken: running it makes a new step.
+    func takeRedo() -> Step? {
+        defer { undone = nil }
+        return undone
     }
 
     private static func unique(_ notes: [TaskItem]) -> [TaskItem] {

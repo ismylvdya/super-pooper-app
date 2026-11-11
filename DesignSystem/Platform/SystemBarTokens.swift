@@ -44,7 +44,7 @@ enum SystemBarMetric: String, CaseIterable, Sendable {
     case navigationBar
     /// A system bar button upright (a banner is as tall and as round), and how far under a sheet's top its bar's buttons
     /// start.
-    case uprightBarButton, sheetBarTop, searchGlyphLift
+    case uprightBarButton, sheetBarTop
 }
 
 /// `systemBar.font`: a tab's symbol lying sideways (`tabIcon`) and upright in the system tab bar (`systemTabIcon`, only
