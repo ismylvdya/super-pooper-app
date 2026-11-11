@@ -4225,7 +4225,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tasks and events"
+            "value": "All tasks and events"
           }
         }
       }
@@ -4236,7 +4236,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tasks"
+            "value": "All tasks"
           }
         }
       }
@@ -8201,6 +8201,72 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hold the title to search."
+          }
+        }
+      }
+    },
+    "search.prompt.habits": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habits"
+          }
+        }
+      }
+    },
+    "search.prompt.settings": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
+          }
+        }
+      }
+    },
+    "search.prompt.archive": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archive"
+          }
+        }
+      }
+    },
+    "search.prompt.trash": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trash"
+          }
+        }
+      }
+    },
+    "search.prompt.list": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tasks in “%@”"
+          }
+        }
+      }
+    },
+    "search.clear": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear"
           }
         }
       }

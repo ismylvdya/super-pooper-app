@@ -220,7 +220,7 @@ struct RootView: View {
         case .task(let name): TaskPageScreen(taskName: name)
         case .newItem(let seed): NewItemScreen(seed: seed, tab: tab)
         case .lists: ListsScreen()
-        case .search(let scope): SearchScreen(scope: scope)
+        case .search(let scope): SearchPage(scope: scope)
         case .taskSettings: TaskSettingsScreen()
         case .clockSettings: ClockSettingsScreen()
         case .tabBarSettings: TabBarSettingsScreen()

@@ -16,9 +16,14 @@ extension NewItemSeed {
     }
 }
 
-/// What a search looks through: Today's finds events too, the Lists page's only task notes.
+/// What a search looks through, one per page that has a search (`SearchPage`): Today's finds events too, the Lists page's
+/// and the morning review's every task note; a tab, a list, the archive and the trash search their own rows.
 enum SearchScope: Hashable {
-    case tasksAndEvents, tasks
+    case tasksAndEvents, tasks, habits, settings, archive, trash
+    /// A list of `lists.json` by its id.
+    case list(String)
+    /// A list of the user's own by its title.
+    case customList(String)
 }
 
 /// Pushed pages of the tabs' navigation stacks.

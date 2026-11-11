@@ -11,16 +11,18 @@ struct HabitsScreen: View {
     @Environment(\.openURL) private var openURL
     @State private var titleHeight: CGFloat = 0
     @State private var pendingAction: PendingAction?
-    @State private var query = ""
-    @State private var isSearching = false
+    /// Shown as the search's results (`SearchPage`): the habits matching it, without the page's title and bar items.
+    var searchQuery: String?
     @State private var frames = ListGroupFrames()
 
     var body: some View {
         let today = model.context().today
         let groups = HabitGroups(model.habits.filter { SearchMatcher.matches($0.name, query) }, active: model.habits)
         List {
-            LargePageTitle(isNested: false, height: $titleHeight) { Text("tab.habits") }
-                .listGroupSpacer()
+            if searchQuery == nil {
+                LargePageTitle(isNested: false, height: $titleHeight) { Text("tab.habits") }
+                    .listGroupSpacer()
+            }
             if model.habits.isEmpty {
                 Text("habits.empty").secondaryText(.hint)
                     .listGroupSpacer()
@@ -30,20 +32,24 @@ struct HabitsScreen: View {
         }
         .listGroupStyle()
         .listGroupBacking(frames)
-        .titleScrollsIntoBar(L10n.string("tab.habits"), titleHeight: titleHeight)
         .appList()
         // The title starts where the other tabs' page titles start, not under the list's own top margin.
         .contentMargins(.top, 0, for: .scrollContent)
-        .pageSearch(query: $query, isSearching: $isSearching, prompt: "search.prompt.tasks")
         .syncsOnPull()
         .actionConfirmation($pendingAction) { handler.run($0) }
-        .searchOnTitleHold { isSearching = true }
-        .toolbar {
-            ToolbarItemGroup(placement: .topBarTrailing) {
-                PageMoreMenu(search: { isSearching = true }, accessibilityID: "habits.more")
-            }
+        .applying(if: searchQuery == nil) { page in
+            page
+                .titleScrollsIntoBar(L10n.string("tab.habits"), titleHeight: titleHeight)
+                .searchOnTitleHold { router.open(.search(.habits)) }
+                .toolbar {
+                    ToolbarItemGroup(placement: .topBarTrailing) {
+                        PageMoreMenu(search: { router.open(.search(.habits)) }, accessibilityID: "habits.more")
+                    }
+                }
         }
     }
+
+    private var query: String { searchQuery ?? "" }
 
     private var handler: TaskActionHandler {
         TaskActionHandler(model: model, router: router, openURL: openURL) { pendingAction = $0 }

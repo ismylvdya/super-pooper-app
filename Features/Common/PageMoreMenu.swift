@@ -6,6 +6,7 @@ import SwiftUI
 struct PageMoreMenu<Extra: View>: View {
     @Environment(AppModel.self) private var model
     @Environment(\.icons) private var icons
+    @Environment(\.tokens) private var tokens
     let search: () -> Void
     var accessibilityID = "page.more"
     @ViewBuilder let extra: () -> Extra
@@ -16,14 +17,31 @@ struct PageMoreMenu<Extra: View>: View {
                 .accessibilityIdentifier("\(accessibilityID).search")
             extra()
             Section {
-                Button { Task { await model.undoLast() } } label: { Label("common.undo", systemImage: icons[.undo]) }
-                    .disabled(!model.canUndo)
-                    .accessibilityIdentifier("\(accessibilityID).undo")
-                Button { Task { await model.redoLast() } } label: { Label("common.redo", systemImage: icons[.redo]) }
-                    .disabled(!model.canRedo)
-                    .accessibilityIdentifier("\(accessibilityID).redo")
+                step("common.undo", icon: .undo, isOn: model.canUndo, id: "undo") { await model.undoLast() }
+                step("common.redo", icon: .redo, isOn: model.canRedo, id: "redo") { await model.redoLast() }
             }
         }
+    }
+}
+
+extension PageMoreMenu {
+    /// Undo or Redo; when there is nothing to take back or do again, its icon is as dim as its title (a menu keeps a
+    /// template icon bright on a disabled row).
+    fileprivate func step(_ title: LocalizedStringKey, icon: Icon, isOn: Bool, id: String,
+                          run: @escaping () async -> Void) -> some View {
+        Button { Task { await run() } } label: {
+            Label {
+                Text(title)
+            } icon: {
+                if isOn {
+                    Image(systemName: icons[icon])
+                } else if let dim = UIImage(systemName: icons[icon])?.withTintColor(tokens.uiColor(.tertiaryText), renderingMode: .alwaysOriginal) {
+                    Image(uiImage: dim)
+                }
+            }
+        }
+        .disabled(!isOn)
+        .accessibilityIdentifier("\(accessibilityID).\(id)")
     }
 }
 

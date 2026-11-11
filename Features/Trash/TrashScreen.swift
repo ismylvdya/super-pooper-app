@@ -5,17 +5,20 @@ import SwiftUI
 struct TrashScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
+    @Environment(Router.self) private var router
+    /// Shown as the search's results (`SearchPage`): the notes matching it, without the title and bar items.
+    var searchQuery: String?
     @State private var toDelete: TrashedNote?
-    @State private var query = ""
-    @State private var isSearching = false
     @State private var titleHeight: CGFloat = 0
     @State private var frames = ListGroupFrames()
 
     var body: some View {
-        let notes = model.trashedNotes.filter { SearchMatcher.matches($0.name, query) }
+        let notes = model.trashedNotes.filter { SearchMatcher.matches($0.name, searchQuery ?? "") }
         List {
-            LargePageTitle(height: $titleHeight) { Text("trash.title") }
-                .listGroupSpacer()
+            if searchQuery == nil {
+                LargePageTitle(height: $titleHeight) { Text("trash.title") }
+                    .listGroupSpacer()
+            }
             if model.trashedNotes.isEmpty {
                 Text("trash.empty").secondaryText(.hint)
                     .listGroupSpacer()
@@ -31,13 +34,19 @@ struct TrashScreen: View {
         }
         .listGroupStyle()
         .listGroupBacking(frames)
-        .titleScrollsIntoBar(L10n.string("trash.title"), titleHeight: titleHeight)
         .appList()
         // The title starts where the other pages' titles start, not under the list's own top margin.
         .contentMargins(.top, 0, for: .scrollContent)
-        .pageSearch(query: $query, isSearching: $isSearching, prompt: "search.prompt.tasks")
-        .searchOnTitleHold { isSearching = true }
-        .toolbar { ToolbarItem(placement: .topBarTrailing) { PageMoreMenu(search: { isSearching = true }, accessibilityID: "trash.more") } }
+        .applying(if: searchQuery == nil) { page in
+            page
+                .titleScrollsIntoBar(L10n.string("trash.title"), titleHeight: titleHeight)
+                .searchOnTitleHold { router.open(.search(.trash)) }
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        PageMoreMenu(search: { router.open(.search(.trash)) }, accessibilityID: "trash.more")
+                    }
+                }
+        }
         .task { await model.refreshTrash() }
         .refreshable { await model.refreshTrash() }
         .alert("trash.delete.title", isPresented: Binding(presenting: $toDelete),

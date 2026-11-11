@@ -1,27 +1,25 @@
 import SwiftUI
 
-/// Search across all TaskNotes (by name) and, from Today, the calendar events the app has loaded.
+/// What a search across all task notes (by name) finds and, from Today, the calendar events the app has loaded.
 /// A task opens its page (a swipe to the right is Done, to the left Delete, as in its list); an event opens Calendar on
 /// its day.
-struct SearchScreen: View {
+struct TaskSearchResults: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     @Environment(\.openURL) private var openURL
-    let scope: SearchScope
-    @State private var query = ""
+    /// With events, or task notes only.
+    let withEvents: Bool
+    let query: String
     @State private var pendingAction: PendingAction?
-    @FocusState private var isFocused: Bool
-    /// The field's X closes the search: back to the page it was opened from.
-    @State private var isPresented = true
 
     var body: some View {
         let text = query.trimmingCharacters(in: .whitespacesAndNewlines)
         let tasks = SearchMatcher.tasks(model.tasks, matching: text)
-        let events = scope == .tasks ? [] : SearchMatcher.events(model.events, matching: text)
+        let events = !withEvents ? [] : SearchMatcher.events(model.events, matching: text)
         List {
             if text.isEmpty {
-                Text(scope == .tasks ? "search.hint.tasks" : "search.hint").foregroundStyle(tokens.color(.secondaryText)).listRowBackground(Color.clear)
+                Text(withEvents ? "search.hint" : "search.hint.tasks").foregroundStyle(tokens.color(.secondaryText)).listRowBackground(Color.clear)
             } else if tasks.isEmpty, events.isEmpty {
                 Text("search.empty").foregroundStyle(tokens.color(.secondaryText)).listRowBackground(Color.clear)
             }
@@ -59,14 +57,6 @@ struct SearchScreen: View {
             }
         }
         .appList()
-        .navigationTitle(Text("search.title"))
-        .navigationBarTitleDisplayMode(.inline)
-        .searchable(text: $query, isPresented: $isPresented, placement: .navigationBarDrawer(displayMode: .always), prompt: Text(scope == .tasks ? "search.prompt.tasks" : "search.prompt"))
-        .searchFocused($isFocused)
-        .onAppear { isFocused = true }
-        .onChange(of: isPresented) { _, isOn in
-            if !isOn, case .search = router.path.last { router.path.removeLast() }
-        }
         .actionConfirmation($pendingAction) { handler.run($0) }
     }
 

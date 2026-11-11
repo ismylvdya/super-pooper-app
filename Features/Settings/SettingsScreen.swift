@@ -5,29 +5,42 @@ import SwiftUI
 /// long the app's signature has left stands at the very end while it is green, at the very top once it turns yellow or red.
 struct SettingsScreen: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.tokens) private var tokens
     @Environment(\.scenePhase) private var scenePhase
-    @State private var query = ""
-    @State private var isSearching = false
+    @Environment(Router.self) private var router
+    /// Shown as the search's results (`SearchPage`): the sections and rows matching it; a row on Settings itself goes back
+    /// there to show it.
+    var searchQuery: String?
 
     var body: some View {
-        PageScaffold(title: L10n.string("settings.title"), isNested: false) {
-            if query.trimmingCharacters(in: .whitespaces).isEmpty {
-                pages
-            } else {
-                SettingsSearchResults(results: SettingsSearchIndex.results(query)) { query = "" }
+        if let searchQuery {
+            ScrollView {
+                VStack(alignment: .leading, spacing: tokens.space(.groupGap)) {
+                    if !searchQuery.trimmingCharacters(in: .whitespaces).isEmpty {
+                        SettingsSearchResults(results: SettingsSearchIndex.results(searchQuery)) { router.path.removeLast() }
+                    }
+                }
+                .padding(.horizontal, tokens.space(.screenHorizontal))
+                .padding(.bottom, tokens.space(.screenBottom))
             }
+            .screenBackground()
+        } else {
+            page
         }
-        .pageSearch(query: $query, isSearching: $isSearching, prompt: "settings.search.prompt")
-        .searchOnTitleHold { isSearching = true }
-        .toolbar {
-            ToolbarItemGroup(placement: .topBarTrailing) {
-                PageMoreMenu(search: { isSearching = true }, accessibilityID: "settings.more")
+    }
+
+    private var page: some View {
+        PageScaffold(title: L10n.string("settings.title"), isNested: false) { pages }
+            .searchOnTitleHold { router.open(.search(.settings)) }
+            .toolbar {
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    PageMoreMenu(search: { router.open(.search(.settings)) }, accessibilityID: "settings.more")
+                }
             }
-        }
-        .task { await model.refreshAccess() }
-        .onAppear { model.refreshSigning() }
-        .onChange(of: scenePhase) { _, phase in if phase == .active { model.refreshSigning() } }
-        .task { await model.refreshTrash() }
+            .task { await model.refreshAccess() }
+            .onAppear { model.refreshSigning() }
+            .onChange(of: scenePhase) { _, phase in if phase == .active { model.refreshSigning() } }
+            .task { await model.refreshTrash() }
     }
 
     /// The settings as they stand when nothing is searched.
