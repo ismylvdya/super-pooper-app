@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// A setting that is a share within its limits (`rules.json` → `limits`): a row with its title and, on the right, the
-/// share in percent (or a sample of what it sets), and under it the slider, snapped to the limits' step. Every share in
-/// the settings is set this way.
-struct ShareSlider<Trailing: View>: View {
+/// A setting that is a number within its limits (`rules.json` → `limits`): a row with its title and, on the right, its
+/// value (a share in percent by default, or points, or a sample of what it sets), and under it the slider, snapped to
+/// the limits' step. Every such number in the settings is set this way.
+struct SettingSlider<Trailing: View>: View {
     @Environment(AppModel.self) private var model
     let icon: Icon?
     let title: LocalizedStringKey
@@ -32,7 +32,7 @@ struct ShareSlider<Trailing: View>: View {
     }
 }
 
-extension ShareSlider where Trailing == PercentText {
+extension SettingSlider where Trailing == PercentText {
     /// The share in percent on the right.
     init(icon: Icon?, title: LocalizedStringKey, info: LocalizedStringKey? = nil, value: WritableKeyPath<AppSettings, Double>,
          limits: RulesConfig.Limits.Range, accessibilityID: String) {
@@ -49,5 +49,15 @@ struct PercentText: View {
 
     var body: some View {
         Text(value.formatted(.percent.precision(.fractionLength(0)))).monospacedDigit().foregroundStyle(tokens.color(.secondaryText))
+    }
+}
+
+/// Points as a row's value, in the secondary color.
+struct PointsText: View {
+    @Environment(\.tokens) private var tokens
+    let value: Double
+
+    var body: some View {
+        Text(L10n.format("settings.points", Int(value.rounded()))).monospacedDigit().foregroundStyle(tokens.color(.secondaryText))
     }
 }

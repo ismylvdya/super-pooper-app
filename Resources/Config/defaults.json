@@ -29,6 +29,11 @@
     "startedLook": "fill",
     "startedTitleAfterFill": false,
     "startedCircleSize": 0.75,
+    "startedFadeMiddle": 0.5,
+    "startedFadeWidth": 0.5,
+    "startedTitleGap": 12,
+    "subtaskLineCorner": 6,
+    "subtaskLineRoundsMiddle": true,
     "selectionOutlineOpacity": 0.6
   },
   "timeline": {

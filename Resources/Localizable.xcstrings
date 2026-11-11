@@ -8072,6 +8072,83 @@
           }
         }
       }
+    },
+    "settings.pool.subtaskLineCorner": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subtask line corner"
+          }
+        }
+      }
+    },
+    "settings.pool.subtaskLineRoundsMiddle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Round middle turns"
+          }
+        }
+      }
+    },
+    "info.settings.pool.subtaskLineRoundsMiddle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Where the line goes on down to a later subtask, the turn into a subtask is round too. Off, it leaves the line at a right angle; the last turn is always round."
+          }
+        }
+      }
+    },
+    "settings.pool.startedFadeMiddle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fade middle"
+          }
+        }
+      }
+    },
+    "settings.pool.startedFadeWidth": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fade width"
+          }
+        }
+      }
+    },
+    "settings.pool.startedTitleGap": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name gap"
+          }
+        }
+      }
+    },
+    "info.settings.pool.startedTitleGap": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How far the name stands from the circle. At the far left the name stands where it does on a task not started, over the circle."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

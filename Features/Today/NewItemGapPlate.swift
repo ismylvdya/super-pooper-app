@@ -5,6 +5,7 @@ import SwiftUI
 /// fading out to the right over the empty room.
 struct NewItemGapPlate: View {
     @Environment(\.tokens) private var tokens
+    @Environment(\.subtaskLineLook) private var lineLook
     var depth = 0
     /// Extra lines for the estimate a second finger picked, as a task of that estimate stands in the pool.
     var extraLines = 0
@@ -31,7 +32,7 @@ struct NewItemGapPlate: View {
             SubtaskGuideShape(guide: SubtaskGuide(depth: depth, isLast: true, passes: Array(repeating: false, count: depth - 1)),
                               indent: indent, gap: tokens.space(.poolRowGap),
                               turnY: (tokens.space(.rowVertical) + tokens.uiFont(.taskTitle).lineHeight) / 2,
-                              turnRadius: tokens.size(.subtaskLineTurn), height: proxy.size.height, reach: reach)
+                              turnRadius: lineLook.corner, height: proxy.size.height, reach: reach)
                 .stroke(LinearGradient(stops: [.init(color: tokens.color(.subtaskLine), location: 0),
                                                .init(color: tokens.color(.subtaskLine), location: (start + indent / 2) / proxy.size.width),
                                                .init(color: tokens.color(.subtaskLine).opacity(0), location: reach / proxy.size.width)],

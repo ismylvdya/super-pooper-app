@@ -7,7 +7,7 @@ struct AppearanceSettingsSection: View {
 
     var body: some View {
         PlateSection(header: "settings.appearance", info: "info.settings.pastOpacity") {
-            ShareSlider(icon: .opacity, title: "settings.pastOpacity", value: \.appearance.pastOpacity,
+            SettingSlider(icon: .opacity, title: "settings.pastOpacity", value: \.appearance.pastOpacity,
                         limits: model.config.rules.limits.pastOpacity, accessibilityID: "settings.pastOpacity")
             preview
         }

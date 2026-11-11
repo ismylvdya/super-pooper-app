@@ -7,7 +7,7 @@ struct HabitRingSettingsSection: View {
 
     var body: some View {
         PlateSection(header: "settings.habits.marks", info: "info.settings.habits.ringOpacity") {
-            ShareSlider(icon: .opacity, title: "settings.habits.ringOpacity", value: \.habits.ringOpacity,
+            SettingSlider(icon: .opacity, title: "settings.habits.ringOpacity", value: \.habits.ringOpacity,
                         limits: model.config.rules.limits.ringOpacity, accessibilityID: "settings.habits.ringOpacity")
             preview
         }

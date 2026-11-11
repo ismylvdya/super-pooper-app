@@ -133,8 +133,7 @@ struct PoolRowContent: View {
     private var startedShift: CGFloat {
         guard case .pool = plate, let started else { return 0 }
         return started.titleShift(plateSize: plateSize, cornerRadius: tokens.plateRadius(.row), sizes: tokens.startedCircleSizes,
-                                  inset: rowInset,
-                                  gap: tokens.space(.iconTextGap))
+                                  inset: rowInset)
     }
 
     /// The row's leading inset on its plate (`rowPlatePadding`).

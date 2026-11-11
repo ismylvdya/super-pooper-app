@@ -110,9 +110,14 @@ struct RootView: View {
         .environment(\.timelineBell, model.settings.timeline.bellStyle)
         .environment(\.chipOrder, RowChipKind.ordered(model.settings.pool.chipOrder))
         .environment(\.highPriorityLook, model.settings.pool.highPriorityLook)
+        .environment(\.subtaskLineLook, SubtaskLineLook(corner: model.settings.pool.subtaskLineCorner,
+                                                       roundsMiddle: model.settings.pool.subtaskLineRoundsMiddle))
         .environment(\.startedLayout, StartedLayout(look: model.settings.pool.startedLook, fillLength: model.settings.pool.startedFillLength,
                                                     titleAfterFill: model.settings.pool.startedTitleAfterFill,
-                                                    circleSize: model.settings.pool.startedCircleSize))
+                                                    circleSize: model.settings.pool.startedCircleSize,
+                                                    fadeMiddle: model.settings.pool.startedFadeMiddle,
+                                                    fadeWidth: model.settings.pool.startedFadeWidth,
+                                                    titleGap: model.settings.pool.startedTitleGap))
         .appCalendar(model.calendar)
         // The user's colors and opacity sit closest to the views, over the bundled tokens of `appConfig`.
         .designTokens(tokens)

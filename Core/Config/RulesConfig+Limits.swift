@@ -32,6 +32,12 @@ extension RulesConfig {
         let startedFillLength: Range
         /// How big a started task's circle can be set, as a share between its smallest and largest.
         let startedCircleSize: Range
+        /// A started task's circle: its fade's middle and width (shares), and the points from it to the name.
+        let startedFadeMiddle: Range
+        let startedFadeWidth: Range
+        let startedTitleGap: Range
+        /// Points: how round the turn of a line into a subtask's plate can be set.
+        let subtaskLineCorner: Range
         /// The ring of a habit's day not done or done partly.
         let ringOpacity: Range
         /// How solid the outline of a task picked in Select mode is.

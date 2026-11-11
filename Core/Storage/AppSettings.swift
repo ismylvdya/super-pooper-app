@@ -43,6 +43,15 @@ struct AppSettings: Codable, Equatable, Sendable {
         var startedTitleAfterFill: Bool
         /// With the circle: how big it is, from a small letter of the name (0) to a one-line plate (1).
         var startedCircleSize: Double
+        /// With the circle: where its fade's middle stands across it and how wide the fade is (shares of the circle).
+        var startedFadeMiddle: Double
+        var startedFadeWidth: Double
+        /// With the circle: points from it to the name; below zero the name moves back over it.
+        var startedTitleGap: Double
+        /// Points: how round a line from a parent turns into its subtask's plate.
+        var subtaskLineCorner: Double
+        /// A turn where the line goes on down to a later subtask is round too; off: it leaves the line at a right angle.
+        var subtaskLineRoundsMiddle: Bool
     }
 
     /// How a started task stands out in the pool.

@@ -35,8 +35,8 @@ enum SizeToken: String, CaseIterable, Sendable {
     case dayArrowTarget
     case habitDotMinimum, cornerInsetMinimum, sourceDot, fadeHeight, poolCounter, poolWidth
     case habitHistoryMaxHeight, habitStatsBar, habitStatsBarMin, habitMonthBar, habitMonthBarMin, titleFade, allDayIconScale, dragBadge, alarmMark, feelPicker, reminderRing, reminderRingStroke, rowIconHeight, reviewChevron, wrapMinWidth, liftOverhang, pagePeek, dropMarkerHeight, bannerShadowRadius, bannerShadowY, hexFieldWidth, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, previewHeight, previewRow, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewHalvesInset, subtaskDropLine
-    /// The lines from a parent to its subtasks: how thick, and how round where one turns into a subtask's plate.
-    case subtaskLine, subtaskLineTurn
+    /// How thick the lines from a parent to its subtasks are.
+    case subtaskLine
     /// The problems badge on Today's Lists button: its smallest width and its height.
     case problemBadge
     /// Room added above and below a date found in a new task's name, so a tap on it lands easily.
@@ -59,8 +59,6 @@ enum RatioToken: String, CaseIterable, Sendable {
     case bannerStackShrink
     /// The line into the room a "+" makes for a subtask fades out this many indents right of where it comes down.
     case subtaskLineFade
-    /// How far across a started task's circle its fill is clear already.
-    case startedCircleFade
     /// How much narrower each plate under the top one of a dragged stack is.
 }
 

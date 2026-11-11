@@ -210,6 +210,26 @@
       "max": 1,
       "step": 0.05
     },
+    "startedFadeMiddle": {
+      "min": 0,
+      "max": 1,
+      "step": 0.05
+    },
+    "startedFadeWidth": {
+      "min": 0,
+      "max": 1,
+      "step": 0.05
+    },
+    "startedTitleGap": {
+      "min": -48,
+      "max": 24,
+      "step": 1
+    },
+    "subtaskLineCorner": {
+      "min": 0,
+      "max": 16,
+      "step": 1
+    },
     "selectionOutlineOpacity": {
       "min": 0.05,
       "max": 1,
