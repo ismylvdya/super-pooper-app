@@ -48,8 +48,9 @@ struct DayBuilder: Sendable {
         let sorted = SubtaskNesting.nested(inputs.manualOrder.map { sorter.applyingManualOrder($0, to: poolItems, context: context) }
             ?? sorter.sorted(poolItems, context: context))
         let daySections = inputs.sections ?? .defaults(on: context.today, definitions: sections)
-        // Sections are headings of Today in the file: another day's pool is one plain list.
-        let arranged = inputs.isOtherDay ? PoolSectionContent.plain(sorted) : PoolArrangement.arrange(sorted, sections: daySections, definitions: sections)
+        // Every day's pool stands in the day's sections: Morning and Evening by a task's routine (`time_of_day`), the rest in
+        // Day, and on that day's own sections what was moved into them.
+        let arranged = PoolArrangement.arrange(sorted, sections: daySections, definitions: sections)
         let pool = arranged.isEmpty ? sorted : arranged.flatMap(\.items)
 
         var timeline = FixedSlots(rules: rules, times: times, overdue: overdue)

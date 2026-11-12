@@ -67,11 +67,20 @@ struct PoolBlock: View {
 
     private func dropLayout() -> PoolDropLayout {
         if let dragLayout { return dragLayout }
+        // Only what is on screen says where it stands: a row or header scrolled away keeps a place it has left.
+        let onScreen = { (mid: CGFloat) in mid >= 0 && mid <= screenFrame.height }
         let layout = PoolDropLayout(
             rows: plan.sections.flatMap { section in
-                section.items.compactMap { item in rowMids[item.id].map { PoolDropOrder.Row(id: item.id, midY: Double($0), section: section.id) } }
+                section.items.compactMap { item in
+                    rowMids[item.id].flatMap { visibleRows.contains(item.id) && onScreen($0) ? $0 : nil }
+                        .map { PoolDropOrder.Row(id: item.id, midY: Double($0), section: section.id) }
+                }
             },
-            headers: plan.sections.compactMap { section in headerMids[section.id].map { SectionDropOrder.Header(id: section.id, midY: Double($0)) } })
+            headers: plan.sections.compactMap { section in
+                headerMids[section.id].flatMap { onScreen($0) ? $0 : nil }.map { SectionDropOrder.Header(id: section.id, midY: Double($0)) }
+            },
+            all: plan.sections.flatMap { $0.items.map(\.id) },
+            inSections: plan.sections.contains(where: \.hasHeader))
         dragLayout = layout
         return layout
     }
@@ -117,7 +126,8 @@ struct PoolBlock: View {
         }
         drag.turnAfterDwell(.block(.pool), seconds: rules.gestures.newItemTurnDwellSeconds)
         let layout = dropLayout()
-        let spot = PoolDropOrder.drop(rows: layout.rows, headers: layout.headers, dragged: TaskDragState.newItemGap,
+        let spot = PoolDropOrder.drop(rows: layout.rows, all: layout.all, headers: layout.headers, inSections: layout.inSections,
+                                      dragged: TaskDragState.newItemGap,
                                       at: Double(point.y - screenFrame.minY))
         // Over the right part of the pool the new task is the row above's subtask; crossing over is a step to feel.
         let asSubtask = NewItemNesting.isSubtaskSide(x: Double(point.x), poolMinX: Double(screenFrame.minX), poolWidth: Double(screenFrame.width),

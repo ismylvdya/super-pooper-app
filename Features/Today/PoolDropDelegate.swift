@@ -33,7 +33,7 @@ struct PoolDropDelegate: DropDelegate {
             let order = SectionDropOrder.order(headers: layout.headers, dragged: section, at: info.location.y)
             moved = withAnimation(animation) { drag.hover(sectionOrder: order) }
         } else if let dragged = drag.draggedID {
-            let drop = PoolDropOrder.drop(rows: layout.rows, headers: layout.headers, dragged: dragged, at: info.location.y)
+            let drop = PoolDropOrder.drop(rows: layout.rows, all: layout.all, headers: layout.headers, inSections: layout.inSections, dragged: dragged, at: info.location.y)
             moved = withAnimation(animation) { drag.hover(poolOrder: drop.order, section: drop.section) }
         } else {
             return DropProposal(operation: .move)
@@ -62,7 +62,7 @@ struct PoolDropDelegate: DropDelegate {
             return true
         }
         let dragged = item.id
-        let fresh = PoolDropOrder.drop(rows: layout.rows, headers: layout.headers, dragged: dragged, at: info.location.y)
+        let fresh = PoolDropOrder.drop(rows: layout.rows, all: layout.all, headers: layout.headers, inSections: layout.inSections, dragged: dragged, at: info.location.y)
         let order = drag.poolOrder ?? fresh.order
         let section = drag.poolOrder != nil ? drag.poolSection : fresh.section
         let source = drag.source
@@ -74,6 +74,11 @@ struct PoolDropDelegate: DropDelegate {
 
 /// The pool's rows and section headers as they stood when the drag reached it.
 struct PoolDropLayout {
+    /// The rows and headers on screen, where they stand.
     var rows: [PoolDropOrder.Row] = []
     var headers: [SectionDropOrder.Header] = []
+    /// Every row in the pool's order, those scrolled away too.
+    var all: [String]?
+    /// The pool has section headers, on screen or not.
+    var inSections = false
 }

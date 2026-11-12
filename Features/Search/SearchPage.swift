@@ -24,6 +24,7 @@ struct SearchPage: View {
                 SearchPage.lastWidth = new
             }
             .navigationBarTitleDisplayMode(.inline)
+            .background { KeyboardLeavesWithPage().frame(width: 0, height: 0) }
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     SearchBarField(text: $query, prompt: prompt).frame(width: fieldWidth, height: tokens.bar(.uprightBarButton))
@@ -186,3 +187,19 @@ private struct FocusingTextField: UIViewRepresentable {
         }
     }
 }
+
+/// The keyboard goes as the page starts to leave (Back, a swipe back), sliding down with the page's own animation. Left to
+/// itself, the field keeps the keyboard until the page is out of the window, after the animation: the keyboard loses
+/// its page halfway, jumps, and only then goes.
+private struct KeyboardLeavesWithPage: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> Watcher { Watcher() }
+    func updateUIViewController(_ controller: Watcher, context: Context) {}
+
+    final class Watcher: UIViewController {
+        override func viewWillDisappear(_ animated: Bool) {
+            super.viewWillDisappear(animated)
+            view.window?.endEditing(true)
+        }
+    }
+}
+

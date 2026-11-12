@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// What the chips and the date sheet do not set: a task's list, how it feels and its estimate. A habit's stand in
+/// What the chips and the date sheet do not set: a task's status, how it feels, its estimate and, last, Show as project. A habit's stand in
 /// `HabitDaySection`.
 struct TaskPropertiesSection: View {
     @Environment(AppModel.self) private var model
@@ -19,6 +19,7 @@ struct TaskPropertiesSection: View {
                 }
                 .labelsHidden()
             }
+            ShowAsProjectRow(editor: editor)
         }
     }
 

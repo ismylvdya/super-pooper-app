@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Subtasks: each is a task of its own that names this one as its parent.
 /// Under the existing ones there is always one empty field to add the next. A subtask picked up (long press)
-/// and dropped on another one takes its place; the pool follows that order. Show one at a time (`TaskSteps`), over the
+/// and dropped on another one takes its place; the pool follows that order. Show one at a time (`TaskSteps`), under the
 /// subtasks once there is one: the pool shows only the next action, under this task's name; the other subtasks are marked
 /// Later here.
 struct SubtasksSection: View {
@@ -16,10 +16,6 @@ struct SubtasksSection: View {
 
     var body: some View {
         PlateSection(header: header, info: "info.taskPage.subtasks") {
-            if !editor.task.isHabit, hasSubtasks {
-                oneAtATime
-                asProject
-            }
             if let draft = editor.draft {
                 draftRows(draft)
             } else {
@@ -56,16 +52,11 @@ struct SubtasksSection: View {
                     Task { await model.addSubtask(name, to: editor.task.name) }
                 }
             }
+            // Under the subtasks, once there is one.
+            if !editor.task.isHabit, editor.hasSubtasks(in: model) { oneAtATime }
         }
     }
 
-    /// The switch only matters once there is a subtask: it comes with the first one.
-    private var hasSubtasks: Bool {
-        if let draft = editor.draft {
-            return draft.wrappedValue.subtasks.contains { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-        }
-        return !model.subtasks(of: editor.task.name).isEmpty
-    }
 
     /// Show one at a time: the pool shows only the next action, under this task's name (`TaskSteps`); set when the task
     /// is made too.
@@ -77,16 +68,6 @@ struct SubtasksSection: View {
         }
     }
 
-    /// Show as project: the task is shown on the Lists page under Projects and stays out of the pool itself
-    /// (`TaskItem.showsAsProject`).
-    private var asProject: some View {
-        PlateRow(icon: .project, title: "taskPage.showsAsProject", info: "info.taskPage.showsAsProject") {
-            SwitchToggle("taskPage.showsAsProject", isOn: Binding(get: { editor.task.showsAsProject },
-                                                                 set: { editor.apply([.showsAsProject($0)]) }))
-                .labelsHidden()
-                .accessibilityIdentifier("taskPage.showsAsProject")
-        }
-    }
 
     private func targetBinding(_ name: String) -> Binding<Bool> {
         Binding(get: { target == name }, set: { isOver in

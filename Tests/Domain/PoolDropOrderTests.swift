@@ -37,4 +37,16 @@ struct PoolDropOrderTests {
         let reordered = PoolArrangement.reordered(sections, by: ["evening", "day"])
         #expect(reordered.map(\.id) == ["evening", "day"])
     }
+
+    /// Scrolled down a long pool: rows scrolled away are not measured (or keep where they last were); the drop goes by
+    /// the rows on screen and keeps the others in their places, in the section of the row it lands by.
+    @Test func aScrolledPoolKeepsTheRowsAboveTheScreen() {
+        let all = ["A", "B", "C", "D", "E"]
+        let onScreen = [PoolDropOrder.Row(id: "D", midY: 40, section: "evening"), PoolDropOrder.Row(id: "E", midY: 100, section: "evening")]
+        let drop = PoolDropOrder.drop(rows: onScreen, all: all, headers: [], inSections: true, dragged: "+", at: 70)
+        #expect(drop.order == ["A", "B", "C", "D", "+", "E"])
+        #expect(drop.section == "evening")
+        #expect(PoolDropOrder.drop(rows: onScreen, all: all, headers: [], dragged: "+", at: 200).order == ["A", "B", "C", "D", "E", "+"])
+        #expect(PoolDropOrder.drop(rows: onScreen, all: all, headers: [], dragged: "+", at: 10).order == ["A", "B", "C", "+", "D", "E"])
+    }
 }

@@ -62,16 +62,16 @@ struct OtherDayTests {
         #expect(plan.timeline.count == 1)
     }
 
-    /// Sections are headings of Today: another day's pool is one list under no heading, whatever that day had stored.
-    @Test func anotherDayHasNoSections() throws {
+    /// Another day's pool stands in sections too: Morning and Evening by a task's routine, the rest in Day.
+    @Test func anotherDayHasTheSectionsByRoutine() throws {
         let morning = makeHabit("Water", status: .habit) {
             $0.habit.timeOfDay = .morning
             $0.nextLine = TaskDue(day: LocalDate("2026-10-22"))
         }
         let planned = makeTask("Planned") { $0.due = TaskDue("2026-10-22") }
         let plan = tomorrow([morning, planned])
-        #expect(plan.sections.count == 1 && plan.sections.first?.hasHeader == false)
-        #expect(Set(plan.sections.flatMap(\.items).map(\.id)) == ["Water", "Planned"])
+        #expect(plan.sections.map(\.id) == ["morning", "day"])
+        #expect(plan.sections.map { $0.items.map(\.id) } == [["Water"], ["Planned"]])
     }
 
     /// A habit left undone is overdue on today; the next day of its rule shows it on that day, as one coming up there.
