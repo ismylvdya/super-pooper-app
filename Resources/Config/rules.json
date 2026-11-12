@@ -279,6 +279,7 @@
   },
   "banners": {
     "autoHideSeconds": 10,
+    "goodNewsSeconds": 1,
     "undoSeconds": 5
   },
   "settingsPreview": {

@@ -207,6 +207,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
     struct Banners: Codable, Hashable, Sendable {
         /// A banner hides itself this long after it appears.
         let autoHideSeconds: Double
+        /// Good news (green) with nothing to undo hides this soon.
+        let goodNewsSeconds: Double
         /// A banner offering Undo hides itself this long after it appears; then the action stays.
         let undoSeconds: Double
     }

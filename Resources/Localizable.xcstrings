@@ -2030,39 +2030,6 @@
         }
       }
     },
-    "habitPage.kind": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kind"
-          }
-        }
-      }
-    },
-    "habitPage.kind.habit": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Habit"
-          }
-        }
-      }
-    },
-    "habitPage.kind.repeatable": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Repeatable task"
-          }
-        }
-      }
-    },
     "habitPage.name.placeholder": {
       "extractionState": "manual",
       "localizations": {
@@ -8255,6 +8222,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "The task is shown on the Lists page under Projects, with its subtasks. It holds tasks and does not come into the pool itself."
+          }
+        }
+      }
+    },
+    "newItem.kind.repeatable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeatable"
           }
         }
       }

@@ -15,6 +15,20 @@ final class BannerCenter {
             /// Something needs attention but nothing failed (e.g. a note changed in two places).
             case warning
             case problem
+
+            /// Good or neutral news (green): nothing to do about it.
+            var isGood: Bool {
+                switch self {
+                case .info, .synced, .success: true
+                case .warning, .problem: false
+                }
+            }
+        }
+
+        /// How long it stays (`rules.json` → `banners`): good news without Undo only a moment, the rest longer.
+        func seconds(_ rules: RulesConfig.Banners) -> Double {
+            if undo != nil { return rules.undoSeconds }
+            return style.isGood ? rules.goodNewsSeconds : rules.autoHideSeconds
         }
 
         let id = UUID()

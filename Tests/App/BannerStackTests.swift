@@ -37,4 +37,14 @@ struct BannerStackTests {
         center.dismiss(first.id)
         #expect(center.stack.map(\.id) == [second.id])
     }
+
+    /// Good news with nothing to undo goes after a moment; a warning, a problem or an offer of Undo stays longer.
+    @Test func goodNewsGoesFirst() {
+        let rules = TestConfig.rules.banners
+        #expect(BannerCenter.Banner(text: "Done", style: .success).seconds(rules) == rules.goodNewsSeconds)
+        #expect(BannerCenter.Banner(text: "Changed twice", style: .warning).seconds(rules) == rules.autoHideSeconds)
+        var undoable = BannerCenter.Banner(text: "Deleted", style: .success)
+        undoable.undo = UUID()
+        #expect(undoable.seconds(rules) == rules.undoSeconds)
+    }
 }

@@ -135,4 +135,16 @@ struct NewItemDateSuggestionTests {
         habit.kind = .habit
         #expect(habit.suggestion(detector.detect(in: habit.name, context: wednesday)) == nil)
     }
+
+    /// One slider: Task, Repeatable task, Habit; the last two are the habit's draft, told apart by `repeatable`.
+    @Test func theSliderSaysTaskRepeatableOrHabit() {
+        var page = NewItemPage(kind: .task, taskDraft: NoteDraft(status: .thisWeek), habitDraft: NoteDraft.newHabit(startingOn: LocalDate("2026-10-21"), showInToday: true, color: "#FF0000"))
+        #expect(page.noteKind == .task)
+        page.noteKind = .repeatable
+        #expect(page.kind == .habit && page.draft.note.habit.repeatable)
+        page.noteKind = .habit
+        #expect(page.kind == .habit && !page.draft.note.habit.repeatable)
+        page.noteKind = .task
+        #expect(page.kind == .task)
+    }
 }

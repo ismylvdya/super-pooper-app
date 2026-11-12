@@ -44,7 +44,7 @@ struct BannerOverlay: View {
     private func view(of banner: BannerCenter.Banner) -> some View {
         BannerView(text: banner.text, icon: icon(banner.style), tint: tint(banner.style), counts: banner.counts,
                    items: banner.items,
-                   hidesAfter: banner.undo == nil ? rules.banners.autoHideSeconds : rules.banners.undoSeconds,
+                   hidesAfter: banner.seconds(rules.banners),
                    onDismiss: {
             withAnimation(.easeInOut(duration: tokens.duration(.bannerAnimation))) { banners.dismiss(banner.id) }
         }, onTap: banner.opens.map { target in { router.show(target.tab, target.routes) } },
@@ -61,10 +61,7 @@ struct BannerOverlay: View {
 
     /// Good and neutral news is green, warnings yellow, errors red; never the accent color.
     private func tint(_ style: BannerCenter.Banner.Style) -> Color {
-        switch style {
-        case .info, .synced, .success: tokens.color(.success)
-        case .warning: tokens.color(.warning)
-        case .problem: tokens.color(.error)
-        }
+        if style.isGood { return tokens.color(.success) }
+        return style == .warning ? tokens.color(.warning) : tokens.color(.error)
     }
 }

@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// What a "+" opens: one page for a new task or a new habit, with a Task / Habit slider under the name. The usual page
+/// What a "+" opens: one page for a new task, repeatable task or habit, with a Task / Repeatable task / Habit slider under
+/// the name (`NoteKind`). The usual page
 /// of the shown kind follows, with an empty name and the cursor already in it; switching the kind keeps the typed name
 /// and what was set for each kind (`NewItemPage`). Nothing is written while it is open; Return in the name and Back do the same:
 /// the page closes and the note of the shown kind is created with everything set here, with its banner. Another tab only hides
@@ -26,12 +27,8 @@ struct NewItemScreen: View {
                                                                 suggestion: current.suggestion(model.detectDate(in: current.name)),
                                                                 onAccept: { found in Haptics.play(.select); page?.accept(found) },
                                                                 onReturn: saveOnReturn))) {
-            Picker("newItem.kind", selection: Binding(get: { page?.kind ?? current.kind }, set: { page?.kind = $0 })) {
-                Text("newItem.kind.task").tag(NewItemSeed.Kind.task)
-                Text("newItem.kind.habit").tag(NewItemSeed.Kind.habit)
-            }
-            .pickerStyle(.segmented)
-            .accessibilityIdentifier("newItem.kind")
+            NoteKindPicker(kinds: NoteKindPicker.order,
+                           selection: Binding(get: { page?.noteKind ?? current.noteKind }, set: { page?.noteKind = $0 }))
             switch current.kind {
             case .task: TaskSections(editor: editor)
             case .habit: HabitSections(editor: editor)

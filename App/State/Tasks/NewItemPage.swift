@@ -45,6 +45,18 @@ struct NewItemPage: Equatable {
         }
     }
 
+    /// The kind as the page's one switch says it: a task, a repeatable task or a habit. The last two are both a habit's
+    /// draft, told apart by `repeatable`.
+    var noteKind: NoteKind {
+        get { kind == .task ? .task : (habitDraft.note.habit.repeatable ? .repeatable : .habit) }
+        set {
+            kind = newValue == .task ? .task : .habit
+            if newValue != .task, habitDraft.note.habit.repeatable != (newValue == .repeatable) {
+                habitDraft.apply([.repeatable(newValue == .repeatable)])
+            }
+        }
+    }
+
     /// The date found in the name, offered in blue while it is a task's and not already its date.
     func suggestion(_ detected: DetectedDate?) -> DetectedDate? {
         guard kind == .task, let detected, draft.note.due != detected.due else { return nil }
