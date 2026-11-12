@@ -13,7 +13,8 @@ struct NewItemButton: View {
     var drawsBubble = true
 
     var body: some View {
-        let target = router.tab == .today ? drag : nil
+        // Dragged only on Tasks' own page, over its pool and timeline; elsewhere (Lists, a task's page) it is tapped.
+        let target = router.tab == .today && router.path.isEmpty ? drag : nil
         let isLifted = target?.newItemPoint != nil
         Group {
             if drawsBubble {
