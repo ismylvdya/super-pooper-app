@@ -141,12 +141,17 @@ final class NoteCommands {
     /// The new-item page is left: its note is created (none for a page left untouched), or the user is told why
     /// its name cannot be used. `unnamed`: the name of a note whose name was left empty. True once the page is done with.
     func create(from page: NewItemPage, unnamed: String) async -> Bool {
+        await createNote(from: page, unnamed: unnamed) != nil
+    }
+
+    /// The note the page makes, by its final name; nil for a page left untouched or a name a note cannot take.
+    func createNote(from page: NewItemPage, unnamed: String) async -> String? {
         if let problem = page.nameProblem(nameProblem(in:)) {
             appEvents.send(.nameRejected(problem, name: page.name))
-            return false
+            return nil
         }
-        guard let creation = page.creation(unnamed: unnamed, rules: nameProblem(in:)) else { return false }
-        return await create(creation.draft, named: creation.name, at: page.placement) != nil
+        guard let creation = page.creation(unnamed: unnamed, rules: nameProblem(in:)) else { return nil }
+        return await create(creation.draft, named: creation.name, at: page.placement)
     }
 
     /// Creates the note of a draft (a task or a habit) with all its fields, its text and its subtasks (each a note of its

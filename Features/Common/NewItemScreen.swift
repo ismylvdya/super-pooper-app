@@ -12,6 +12,7 @@ struct NewItemScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase
     let seed: NewItemSeed
     /// The tab whose stack shows the page.
     var tab: AppTab?
@@ -42,6 +43,7 @@ struct NewItemScreen: View {
         .navigationBarBackButtonHidden(current.nameProblem(model.nameProblem(in:)) != nil)
         .onAppear { if page == nil { page = current } }
         .onDisappear(perform: leave)
+        .onChange(of: scenePhase) { _, phase in if phase == .background { keep() } }
     }
 
     private static func titleKey(_ kind: NewItemSeed.Kind) -> String {
@@ -55,6 +57,22 @@ struct NewItemScreen: View {
     private func saveOnReturn() {
         guard let page, page.savedOnReturn(rules: model.nameProblem(in:)) != nil else { return }
         dismiss()
+    }
+
+    /// The app left the screen (another app, the phone locked): the note is made now, and the page becomes its page, to
+    /// go on with it. The system may close an app it does not show, and a draft only in memory would be gone.
+    private func keep() {
+        guard let page else { return }
+        // Leaving the page later has nothing left to make twice.
+        self.page = nil
+        let stack = tab ?? router.tab
+        Task {
+            if let name = await model.keepNewItem(page, unnamed: L10n.string("note.unnamed")) {
+                router.replace(.newItem(seed), with: .task(name), on: stack)
+            } else {
+                self.page = page
+            }
+        }
     }
 
     /// Another tab was chosen: the page is still in its stack, only hidden. Otherwise the page is left for good, and the

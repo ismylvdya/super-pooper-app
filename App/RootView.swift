@@ -140,7 +140,12 @@ struct RootView: View {
                 }
             case .background:
                 BackgroundRefresh.schedule()
-                Task { await model.flushSettings() }
+                Task {
+                    await BackgroundTime.finish("leave") {
+                        await model.flushTexts()
+                        await model.flushSettings()
+                    }
+                }
             default:
                 break
             }

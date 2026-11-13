@@ -98,6 +98,12 @@ final class Router {
     }
     func popToRoot() { path.removeAll() }
 
+    /// A page of `tab`'s stack becomes another where it stands (a new note's page becomes the note's own).
+    func replace(_ route: Route, with new: Route, on tab: AppTab) {
+        guard let index = paths[tab]?.lastIndex(of: route) else { return }
+        paths[tab]?[index] = new
+    }
+
     func show(_ tab: AppTab, _ routes: [Route] = []) {
         self.tab = tab
         paths[tab] = routes

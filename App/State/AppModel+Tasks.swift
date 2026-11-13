@@ -153,6 +153,15 @@ extension AppModel {
 
     /// The new-item page is left; true once the page is done with (see `NoteCommands.create(from:unnamed:)`).
     func create(from page: NewItemPage, unnamed: String) async -> Bool { await parts.notes.create(from: page, unnamed: unnamed) }
+
+    /// The app leaves the screen with a new note's page open: what was set there becomes the note at once, so nothing
+    /// typed is lost if the system closes the app; the page goes on as the note's own. Nil when there was nothing to keep.
+    func keepNewItem(_ page: NewItemPage, unnamed: String) async -> String? {
+        await BackgroundTime.finish("newItem") { await self.parts.notes.createNote(from: page, unnamed: unnamed) }
+    }
+
+    /// The app leaves the screen: every text typed and not written yet is written now, not after the usual pause.
+    func flushTexts() async { await parts.texts.flushAll() }
     func create(_ draft: NoteDraft, named name: String) async -> String? { await parts.notes.create(draft, named: name) }
 
     @discardableResult

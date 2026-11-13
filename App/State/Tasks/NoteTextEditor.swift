@@ -65,6 +65,11 @@ final class NoteTextEditor {
         await saves[name]?.value
     }
 
+    /// Every text typed and not written yet, written now (the app leaves the screen).
+    func flushAll() async {
+        for name in Array(debounce.keys) { await flush(name) }
+    }
+
     /// Returns when the text typed into the note so far is written (after the pause).
     func waitForTyping(in name: String) async {
         await debounce[name]?.value
