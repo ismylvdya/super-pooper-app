@@ -29,7 +29,7 @@
       "id": "skipToday",
       "title": "action.skipToday",
       "icon": "forward.end",
-      "destructive": true,
+      "destructive": false,
       "haptic": "light",
       "swipeTint": "swipeNeutral",
       "undo": "edits"

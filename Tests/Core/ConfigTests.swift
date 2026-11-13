@@ -20,7 +20,9 @@ struct ConfigTests {
         #expect(TestConfig.actions.menus[.habitContext].frequent == [.unmark, .done, .skipToday])
         #expect(TestConfig.actions.menus[.habitNotification].actions == [.done, .skipToday, .snooze])
         #expect(TestConfig.actions.menus[.habitNotification].more == [.snooze], "the rarer actions stand under the frequent ones")
-        #expect(TestConfig.actions.definition(.skipToday).destructive)
+        // A habit's Not today looks as a task's does: not red.
+        #expect(!TestConfig.actions.definition(.skipToday).destructive)
+        #expect(TestConfig.actions.definition(.skipToday).icon == TestConfig.actions.definition(.notToday).icon)
         #expect(TestConfig.actions.menus[.eventContext].actions == [.deleteEvent])
     }
 
