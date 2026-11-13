@@ -19,8 +19,7 @@ struct TaskNoteSection: View {
                     .accessibilityIdentifier("taskPage.note.unavailable")
             } else {
                 // One line when empty, growing with the text.
-                TextField(placeholder, text: text, axis: .vertical)
-                    .font(tokens.font(.rowTitle))
+                NoteTextField(placeholder: placeholder, text: text)
                     .disabled(model.noteBody(taskName)?.state != .editing)
                     .accessibilityIdentifier("taskPage.note")
             }
@@ -43,8 +42,7 @@ struct DraftNoteSection: View {
 
     var body: some View {
         PlateSection(header: header, info: "info.taskPage.note") {
-            TextField("taskPage.note.placeholder", text: $draft.body, axis: .vertical)
-                .font(tokens.font(.rowTitle))
+            NoteTextField(placeholder: "taskPage.note.placeholder", text: $draft.body)
                 .accessibilityIdentifier("taskPage.note")
         }
     }

@@ -257,6 +257,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let nextReminderGapMinutes: Int
         /// The note text is saved this long after typing stops.
         let noteSaveDelaySeconds: Double
+        /// A line of a note's text starting with one of these is a list item: Return starts the next one with it.
+        let listMarkers: [String]
         /// A settings change is written and followed (notifications, widgets) this long after the last one: a slider
         /// sends one per step.
         let settingsSaveDelaySeconds: Double

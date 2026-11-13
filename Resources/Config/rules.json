@@ -259,6 +259,7 @@
     "defaultTime": "09:00",
     "nextReminderGapMinutes": 240,
     "noteSaveDelaySeconds": 1.2,
+    "listMarkers": ["- ", "• ", "* "],
     "settingsSaveDelaySeconds": 0.5
   },
   "gestures": {
