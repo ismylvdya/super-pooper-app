@@ -103,13 +103,22 @@ struct UserNotificationScheduler: NotificationScheduling {
         })
         let delivered = await center.deliveredRequests().filter { $0.identifier.hasPrefix(NotificationPayload.prefix) }
         let shownAgain = Set(delivered.map(\.identifier).filter { !NotificationIdentifier.isRestored($0) })
+        // An overdue item's notification that came again takes the place of the one before it.
+        let latest = Dictionary(delivered.map { (key(of: $0), NotificationIdentifier.round($0.identifier)) }, uniquingKeysWith: max)
         let isStale = { (request: UNNotificationRequest) -> Bool in
             let day = request.content.userInfo[NotificationPayload.dayKey] as? String ?? ""
             let shown = NotificationIdentifier.shown(request.identifier)
             return !valid.contains(shown + "#" + day) || (shown != request.identifier && shownAgain.contains(shown))
+                || NotificationIdentifier.round(request.identifier) < (latest[key(of: request)] ?? 0)
         }
         center.removeDeliveredNotifications(withIdentifiers: delivered.filter(isStale).map(\.identifier))
         center.removePendingRequests(withIdentifiers: restoring.filter(isStale).map(\.identifier))
+    }
+
+    /// What a request is about, with its day: the notifications of one item on one day.
+    private func key(of request: UNNotificationRequest) -> String {
+        let info = request.content.userInfo
+        return "\(info[NotificationPayload.keyKey] as? String ?? "")#\(info[NotificationPayload.dayKey] as? String ?? "")"
     }
 
     /// The moment a pending request was asked for, worked out from its trigger (not from the wall clock).

@@ -28,6 +28,13 @@ struct NotificationSettingsSection: View {
                 .labelsHidden()
                 .accessibilityIdentifier("settings.notifications.snooze")
             }
+            PlateRow(icon: nil, title: "settings.notifications.repeatsOverdue", info: "info.settings.notifications.repeatsOverdue") {
+                SwitchToggle("settings.notifications.repeatsOverdue", isOn: Binding(
+                    get: { model.settings.notifications.repeatsOverdue },
+                    set: { value in model.updateSettings { $0.notifications.repeatsOverdue = value } }))
+                    .labelsHidden()
+                    .accessibilityIdentifier("settings.notifications.repeatsOverdue")
+            }
             PlateRow(icon: .alarm, title: "settings.notifications.alarmSound", info: "info.alarm") {
                 AlarmSoundMenu(selected: model.settings.notifications.alarmSound, defaultChoice: model.config.defaultSettings.values.notifications.alarmSound,
                                shown: model.alarmSoundTitle(model.settings.notifications.alarmSound)) { value in

@@ -27,6 +27,9 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let restoreDelaySeconds: Double
         /// A pending notification whose fire time is at most this far from the planned one is kept.
         let fireTimeToleranceSeconds: Double
+        /// While an item stays overdue (the setting on), its notification comes again this often, so many planned ahead.
+        let overdueRepeatMinutes: Int
+        let overdueRepeatCount: Int
         /// What the settings offer for how long a snooze lasts, in minutes.
         let snoozeChoices: [Int]
         /// The SF Symbols offered for an alarm's Snooze button, after the bundled one.

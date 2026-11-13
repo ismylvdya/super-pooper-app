@@ -8258,6 +8258,28 @@
           }
         }
       }
+    },
+    "settings.notifications.repeatsOverdue": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remind again while overdue"
+          }
+        }
+      }
+    },
+    "info.settings.notifications.repeatsOverdue": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A habit or a timed task left undone past its time is notified again every 10 minutes, the new notification in place of the old one, until it is done or the day ends."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

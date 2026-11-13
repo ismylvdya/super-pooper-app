@@ -72,7 +72,8 @@
     "snoozeMinutes": 30,
     "alarmSound": "system",
     "alarmSnoozeText": "",
-    "alarmSnoozeIcon": ""
+    "alarmSnoozeIcon": "",
+    "repeatsOverdue": false
   },
   "onboarding": {
     "completed": false

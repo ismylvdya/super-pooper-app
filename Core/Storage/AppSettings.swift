@@ -134,6 +134,8 @@ struct AppSettings: Codable, Equatable, Sendable {
         var alarmSnoozeText: String
         /// The SF Symbol before the word on an alarm's Snooze button; empty = the bundled one (`icons.json` → `snooze`).
         var alarmSnoozeIcon: String
+        /// A habit or timed task left open past its time is notified again every `rules.json` → `overdueRepeatMinutes`.
+        var repeatsOverdue: Bool
     }
 
     /// The tab bar's symbols the user typed: SF Symbol names by `TabBarSymbols.key`; none = `icons.json`.

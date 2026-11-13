@@ -204,8 +204,13 @@ final class DerivedStatePublisher {
             known: Array(Set(all.map(\.key)))))
         // A snooze may be an alarm's own, stopped with its slider: its item has no notification of its own otherwise.
         let snoozed = NotificationSnoozing.notifications(currentSnoozes(today: context.today), valid: stillValid, context: context)
-        await notifications.sync(planned: planned + snoozed.filter { $0.fireDate > context.now }, stillValid: valid + late + snoozed,
-                                 now: late)
+        // What stays overdue comes again, each time in place of the one before (the setting on).
+        let again = settings.notifications.repeatsOverdue
+            ? OverdueRepeats.notifications(valid, minutes: config.rules.notifications.overdueRepeatMinutes,
+                                           count: config.rules.notifications.overdueRepeatCount, context: context)
+            : []
+        await notifications.sync(planned: planned + snoozed.filter { $0.fireDate > context.now } + again,
+                                 stillValid: valid + late + snoozed + again, now: late)
     }
 
     /// What the notifications are planned from now.
