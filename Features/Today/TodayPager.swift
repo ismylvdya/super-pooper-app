@@ -15,6 +15,8 @@ final class TodayPager {
     private(set) var openedBacklog = 0
     /// How many of them a swipe can reach, nearest first: the next one opens only by a pull past the last reached.
     private(set) var reachedBacklog = 0
+    /// How many lists are open from the start, with no pull (`AppSettings.Lists.needsPull` off: all of them).
+    private(set) var freeLists = 0
     /// How far the first page is pulled right to open the next backlog page (the finger's way, resisted).
     private(set) var sidePull: CGFloat = 0
     private var arming = PullArming()
@@ -45,12 +47,23 @@ final class TodayPager {
         closeBacklog()
     }
 
+    /// The lists open with no pull: all `count` of them, or none (each opens with a pull). What is shown stays shown.
+    func setFreeLists(_ count: Int) {
+        guard count != freeLists else { return }
+        freeLists = count
+        let opened = max(openedBacklog, count)
+        page += opened - openedBacklog
+        openedBacklog = opened
+        reachedBacklog = max(count, count == 0 ? 0 : reachedBacklog)
+        if count == 0 { closeBacklog(poolBlock: max(page - openedBacklog, 0)) }
+    }
+
     /// The backlog pages are forgotten (another tab was opened): Tasks shows the pool's page, `poolBlock` of the day's
-    /// pages.
+    /// pages; lists open with no pull stay open.
     func closeBacklog(poolBlock: Int = 0) {
-        openedBacklog = 0
-        reachedBacklog = 0
-        page = poolBlock
+        openedBacklog = freeLists
+        reachedBacklog = freeLists
+        page = freeLists + poolBlock
         pageDrag = 0
         sidePull = 0
         arming = PullArming()
@@ -160,8 +173,8 @@ final class TodayPager {
     /// The day's name: today, on the pool's page (`poolBlock` of the day's pages, after the backlog pages open).
     /// The Tasks tab also forgets the backlog pages (`forgetsBacklog`).
     func showPool(poolBlock: Int = 0, forgetsBacklog: Bool = false, animation: Animation) {
-        let opened = forgetsBacklog ? 0 : openedBacklog
-        let reached = forgetsBacklog ? 0 : reachedBacklog
+        let opened = forgetsBacklog ? freeLists : openedBacklog
+        let reached = forgetsBacklog ? freeLists : reachedBacklog
         let home = opened + poolBlock
         guard dayOffset != 0 || page != home || pageDrag != 0 || opened != openedBacklog else { return }
         withAnimation(animation) {

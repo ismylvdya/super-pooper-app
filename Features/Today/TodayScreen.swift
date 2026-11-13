@@ -127,6 +127,8 @@ struct TodayScreen: View {
     /// The day the pool shows.
     private var shownDay: LocalDate { model.context().today.adding(days: pager.dayOffset) }
     private var isShowingToday: Bool { pager.dayOffset == 0 }
+    /// The lists left of the pool that open with no pull (`AppSettings.Lists.needsPull`).
+    private var freeLists: Int { model.settings.lists.needsPull ? 0 : model.backlogLists.count }
 
     private var selectionTitle: some View {
         Text(verbatim: L10n.format("select.count", selection.names.count))
@@ -184,6 +186,7 @@ struct TodayScreen: View {
             .simultaneousGesture(daySwipe(width: geometry.size.width))
             .onChange(of: isDaySwiping) { _, swiping in if !swiping { pager.endSwipe() } }
             .onChange(of: arrangement) { pager.resetPage() }
+            .onChange(of: freeLists, initial: true) { _, count in pager.setFreeLists(count) }
         }
         .ignoresSafeArea(.container, edges: physicalBottom == .leading ? .leading : physicalBottom == .trailing ? .trailing : [])
     }

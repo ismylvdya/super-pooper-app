@@ -101,6 +101,7 @@
   },
   "lists": {
     "icon": "gun",
-    "symbols": {}
+    "symbols": {},
+    "needsPull": true
   }
 }

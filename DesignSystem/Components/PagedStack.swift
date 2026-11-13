@@ -38,6 +38,9 @@ struct PagedStack<Page: Hashable, Content: View>: View {
                 ForEach(Array(pages.enumerated()), id: \.element) { index, item in
                     content(item)
                         .frame(width: strip.width(of: index), height: geometry.size.height)
+                        // A list not opened yet is not drawn, though a pull moves the pages: only the pull's icon shows,
+                        // and the list comes in as it opens.
+                        .opacity(index < hiddenLists ? 0 : 1)
                         .offset(x: strip.origin(of: index) + offset)
                         .zIndex(LiftLayer.block(at: index, of: pages.count))
                 }

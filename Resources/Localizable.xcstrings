@@ -8236,6 +8236,28 @@
           }
         }
       }
+    },
+    "settings.lists.needsPull": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pull to open lists"
+          }
+        }
+      }
+    },
+    "info.settings.lists.needsPull": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On: the lists left of the pool open one by one, with a firm pull past the last one opened. Off: they are all open from the start and turn with a plain swipe."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

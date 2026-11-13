@@ -194,6 +194,9 @@ struct AppSettings: Codable, Equatable, Sendable {
         var icon: String
         /// The SF Symbols the user typed for the lists, by `TaskStatus.Name`; none = `icons.json`.
         var symbols: [String: String]
+        /// The lists left of the pool open one by one, each with a firm pull past the last one opened; off, they are all
+        /// open from the start and turn with a plain swipe.
+        var needsPull: Bool
     }
 
     /// Whether the tab bar takes the accent color (`tabBarPick`). Nothing else in the app does.

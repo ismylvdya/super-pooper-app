@@ -24,6 +24,12 @@ struct ListsSettingsSection: View {
             ForEach(TaskListIcons.editable, id: \.name) { list in
                 ListSymbolRow(title: LocalizedStringKey(list.title), key: list.name.rawValue)
             }
+            PlateRow(icon: nil, title: "settings.lists.needsPull", info: "info.settings.lists.needsPull") {
+                SwitchToggle("settings.lists.needsPull", isOn: Binding(get: { model.settings.lists.needsPull },
+                                                                       set: { value in model.updateSettings { $0.lists.needsPull = value } }))
+                    .labelsHidden()
+                    .accessibilityIdentifier("settings.lists.needsPull")
+            }
         }
     }
 }

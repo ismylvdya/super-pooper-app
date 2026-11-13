@@ -215,4 +215,16 @@ struct TodayPagerTests {
         pager.showPool(forgetsBacklog: true, animation: .default)
         #expect(pager.openedBacklog == 0 && pager.reachedBacklog == 0 && pager.page == 0)
     }
+
+    /// Lists with no pull (`needsPull` off): all of them stand open left of the pool from the start, the pool stays in
+    /// sight, and another tab keeps them open.
+    @Test func listsWithNoPullAreAllOpen() {
+        let pager = TodayPager()
+        pager.setFreeLists(3)
+        #expect(pager.openedBacklog == 3 && pager.reachedBacklog == 3 && pager.page == 3)
+        pager.closeBacklog(poolBlock: 0)
+        #expect(pager.openedBacklog == 3 && pager.page == 3)
+        pager.setFreeLists(0)
+        #expect(pager.openedBacklog == 0 && pager.page == 0)
+    }
 }
