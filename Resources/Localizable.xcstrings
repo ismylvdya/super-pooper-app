@@ -2300,7 +2300,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The habit is created when you go back; another tab keeps it here until you return. Without a name it is called “Unnamed”; if nothing was set, nothing is created."
+            "value": "The habit is created when you go back, or at once when you leave the app (the page then goes on as the habit's); another tab keeps it here until you return. Without a name it is called “Unnamed”; if nothing was set, nothing is created."
           }
         }
       }
@@ -6131,7 +6131,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The task is created when you go back; another tab keeps it here until you return. Without a name it is called “Unnamed”; if nothing was set, nothing is created."
+            "value": "The task is created when you go back, or at once when you leave the app (the page then goes on as the task's); another tab keeps it here until you return. Without a name it is called “Unnamed”; if nothing was set, nothing is created."
           }
         }
       }
