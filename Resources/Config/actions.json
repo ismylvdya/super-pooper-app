@@ -38,7 +38,7 @@
       "id": "notToday",
       "title": "action.notToday",
       "icon": "forward.end",
-      "destructive": false,
+      "destructive": true,
       "haptic": "light",
       "swipeTint": "swipeNeutral",
       "undo": "edits"
@@ -233,13 +233,13 @@
       "actions": [
         "done",
         "unmark",
-        "notToday",
-        "delete"
+        "notToday"
       ],
       "more": [
         "start",
         "notStarted",
-        "unworm"
+        "unworm",
+        "delete"
       ]
     },
     "taskPage": {

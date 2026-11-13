@@ -20,8 +20,8 @@ struct ConfigTests {
         #expect(TestConfig.actions.menus[.habitContext].frequent == [.unmark, .done, .skipToday])
         #expect(TestConfig.actions.menus[.habitNotification].actions == [.done, .skipToday, .snooze])
         #expect(TestConfig.actions.menus[.habitNotification].more == [.snooze], "the rarer actions stand under the frequent ones")
-        // Not today: red for a habit or repeatable task, plain for a task; one icon and one title for both.
-        #expect(TestConfig.actions.definition(.skipToday).destructive && !TestConfig.actions.definition(.notToday).destructive)
+        // Not today: red for a habit, a repeatable task and a task alike; one icon and one title for all.
+        #expect(TestConfig.actions.definition(.skipToday).destructive && TestConfig.actions.definition(.notToday).destructive)
         #expect(TestConfig.actions.definition(.skipToday).icon == TestConfig.actions.definition(.notToday).icon)
         #expect(TestConfig.actions.menus[.eventContext].actions == [.deleteEvent])
     }
@@ -53,6 +53,7 @@ struct ConfigTests {
     @Test func thePoolMenuOfATaskOffersNotToday() {
         #expect(TestConfig.actions.menus[.taskContext].actions.contains(.notToday))
         #expect(!TestConfig.actions.menus[.taskContext].actions.contains(.archive))
+        #expect(TestConfig.actions.menus[.taskContext].more.last == .delete, "Delete stands at the very bottom, under Start")
     }
 
     /// A tap on an event alert opens Calendar on its day, on a reminder its list, on a habit or a task its page.
@@ -243,8 +244,8 @@ struct ConfigTests {
             let broken = Data(try json.replacingOnce(fragment, with: replacement).utf8)
             #expect(throws: ConfigError.self) { try ConfigLoader.decode(ActionRegistry.self, from: broken, file: "actions.json") }
         }
-        let tinted = Data(try json.replacingOnce("\"forward.end\",\n      \"destructive\": false,\n      \"haptic\": \"light\",\n      \"swipeTint\": \"swipeNeutral\"",
-                                                 with: "\"forward.end\",\n      \"destructive\": false,\n      \"haptic\": \"light\",\n      \"swipeTint\": \"swipeNeutrl\"").utf8)
+        let tinted = Data(try json.replacingOnce("\"forward.end\",\n      \"destructive\": true,\n      \"haptic\": \"light\",\n      \"swipeTint\": \"swipeNeutral\"",
+                                                 with: "\"forward.end\",\n      \"destructive\": true,\n      \"haptic\": \"light\",\n      \"swipeTint\": \"swipeNeutrl\"").utf8)
         let registry = try ConfigLoader.decode(ActionRegistry.self, from: tinted, file: "actions.json")
         #expect(throws: ConfigError.self) { try registry.validate(file: "actions.json") }
     }

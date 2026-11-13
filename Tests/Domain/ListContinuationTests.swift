@@ -26,4 +26,13 @@ struct ListContinuationTests {
         #expect(ListContinuation.edit(from: "- milk", to: "- milk\nbread", markers: markers) == nil)
         #expect(ListContinuation.edit(from: "- milk", to: "- milks", markers: markers) == nil)
     }
+
+    /// The text view asks before a keystroke lands, in UTF-16: the marker comes with the Return itself.
+    @Test func aKeystrokeIsTakenBeforeItLands() {
+        let edit = ListContinuation.edit(in: "- 🍎 one", replacing: NSRange(location: 8, length: 0), with: "\n", markers: markers)
+        #expect(edit == .init(text: "- 🍎 one\n- ", cursor: 10))
+        #expect(edit?.utf16Cursor == 11, "the apple takes two UTF-16 units")
+        #expect(ListContinuation.edit(in: "- one", replacing: NSRange(location: 5, length: 0), with: "x", markers: markers) == nil)
+        #expect(ListContinuation.edit(in: "- one", replacing: NSRange(location: 5, length: 0), with: "\n\n", markers: markers) == nil)
+    }
 }

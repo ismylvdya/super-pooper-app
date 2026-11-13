@@ -8,6 +8,19 @@ enum ListContinuation {
         let text: String
         /// Where the cursor goes, as a count of characters from the start.
         let cursor: Int
+
+        /// The cursor as a UTF-16 offset, the way a text view counts.
+        var utf16Cursor: Int {
+            let index = text.index(text.startIndex, offsetBy: min(cursor, text.count))
+            return text.utf16.distance(from: text.utf16.startIndex, to: index.samePosition(in: text.utf16) ?? text.utf16.endIndex)
+        }
+    }
+
+    /// The edit a keystroke asks for before it lands: `typed` put in place of `range` (UTF-16, as a text view tells it)
+    /// of `text`. Nil when the keystroke is left as it is.
+    static func edit(in text: String, replacing range: NSRange, with typed: String, markers: [String]) -> Edit? {
+        guard typed == "\n", let swapped = Range(range, in: text) else { return nil }
+        return edit(from: text, to: text.replacingCharacters(in: swapped, with: typed), markers: markers)
     }
 
     static func edit(from old: String, to new: String, markers: [String]) -> Edit? {

@@ -41,7 +41,7 @@ struct TasksStrip: View {
             if pager.sidePull > 0, lists.indices.contains(pager.reachedBacklog) {
                 let list = lists[pager.reachedBacklog]
                 PullIndicator(icon: list.icon, pull: pager.sidePull, threshold: rules.gestures.sidePullThreshold,
-                              isArmed: pager.isPullArmed, axis: .horizontal)
+                              isArmed: pager.isPullArmed, axis: .horizontal, margin: edgeInset)
                     // Midway between the bar's buttons and the tab bar: the strip reaches under the tab bar.
                     .padding(.bottom, bottomInset)
             }
