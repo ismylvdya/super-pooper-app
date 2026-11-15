@@ -14,13 +14,16 @@ enum BacklogMoves {
         guard level.isThisWeek else {
             return Outcome(edits: TaskMarking(today: context.today).changes(setting: level, on: task))
         }
-        return Outcome(edits: thisWeek(task, context: context) + (task.due == nil ? [] : [.due(nil)]))
+        return Outcome(edits: thisWeek(task, context: context) + (task.due == nil ? [] : [.due(nil)]) + [.inTodayPool(false)])
     }
 
-    /// From a backlog page into the pool of `day`: this week's, dated that day without a time. A task already on that day
-    /// keeps its date.
+    /// From a backlog page into the pool of `day`: this week's. Today's pool takes it by its mark and its date stays (a
+    /// date is a deadline); another day's by a date that day, without a time. A task already on that day keeps its date.
     static func intoPool(_ task: TaskItem, day: LocalDate, context: DayContext) -> Outcome {
         var edits = thisWeek(task, context: context)
+        if day == context.today {
+            return Outcome(edits: edits + [.inTodayPool(true)])
+        }
         if task.due.map({ context.logicalDay(of: $0) != day }) ?? true { edits.append(.due(TaskDue(day: day))) }
         return Outcome(edits: edits)
     }

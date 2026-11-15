@@ -1,7 +1,7 @@
 import Foundation
 
-/// A habit's one open line: in Today on a day it comes up and is not closed, otherwise in Soon with the nearest day its
-/// rule has. The settings stay in its JSON file; the line says what stands for the nearest day (`docs/BACKEND.md`).
+/// A habit's one open line, in Next actions: on today on a day it comes up and is not closed, otherwise on the nearest
+/// day its rule has. The settings stay in its JSON file; the line says what stands for the nearest day (`docs/BACKEND.md`).
 extension TaskFileStore {
     /// The habit's rule as a schedule; nil for what has no line: archived, a subtask, or a rule the app cannot read.
     func schedule(of file: HabitFile, snapshot: Snapshot) -> (item: TaskItem, schedule: TaskSchedule)? {
@@ -26,7 +26,7 @@ extension TaskFileStore {
             carried.zone = nil
             carried.alarm = nil
             carried.isOverdue = true
-            snapshot.document.insert(carried, into: .now)
+            snapshot.document.insert(carried, into: .soon)
         }
     }
 

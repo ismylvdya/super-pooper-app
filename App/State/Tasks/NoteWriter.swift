@@ -60,7 +60,6 @@ final class NoteWriter {
         guard let written = await apply(changes, to: task) else { return false }
         if cascades, task.status != .done, written.status == .done, !written.isHabit {
             await completeSubtasks(of: written)
-            await bringUpNextStep(after: written)
         }
         if changes.contains(where: \.isRecurrence) { await passRuleOn(from: written) }
         await derived.publish()
@@ -89,14 +88,6 @@ final class NoteWriter {
         for subtask in SubtaskCascade.subtasks(of: parent, in: tasks.tasks, change: .completion) {
             await apply(marking.changes(marking: subtask, as: .done), to: subtask)
         }
-    }
-
-    /// A step of a task shown one at a time done: the next one is up from tomorrow (`TaskSteps.afterDone`).
-    private func bringUpNextStep(after done: TaskItem) async {
-        let tomorrow = day.context().today.adding(days: 1)
-        guard let (name, edits) = TaskSteps.afterDone(done, in: tasks.tasks, tomorrow: tomorrow),
-              let next = tasks.task(named: name) else { return }
-        await apply(edits, to: next)
     }
 
     /// The parent's rule is written to its repeatable subtasks, and from them to theirs (`RepeatableSubtasks.followingRule`).

@@ -1,5 +1,5 @@
 {
-  "autoPromote": true,
+  "autoPromote": false,
   "fileDoneTasks": true,
   "morningReviewAutoOpen": true,
   "notifications": true,

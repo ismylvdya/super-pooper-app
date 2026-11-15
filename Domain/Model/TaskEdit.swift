@@ -27,6 +27,10 @@ enum TaskEdit: Hashable, Sendable {
     case reminderTimes([LocalTime])
     case alarms([TimeAlarm])
     case started(Bool)
+    /// In today's pool or out of it (`TodayPool`).
+    case inTodayPool(Bool)
+    /// The pool's section it stands in (`PoolSectionTag`); nil = by its routine.
+    case poolSection(String?)
     /// The zone of the item's times; nil = wall-clock times.
     case timeZone(String?)
     case habitColor(String?)

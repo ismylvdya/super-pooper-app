@@ -48,12 +48,13 @@ struct TaskStepsTests {
         #expect(plan.pool.first?.project == "Trip")
     }
 
-    @Test func aDoneStepBringsTheNextOneUpTomorrow() throws {
+    /// A waiting step gets no pool mark from the day's turn; once the step before it is done, the next turn brings it up.
+    @Test func aDoneStepBringsTheNextOneUpWithTheNextDay() {
+        let tomorrow = LocalDate("2026-10-22")
+        #expect(!TodayPool.dayTurn(tasks, today: tomorrow, boundary: .midnight).contains("Charger"))
         var all = tasks
         all[2].status = .done
-        let tomorrow = LocalDate("2026-10-22")
-        let next = try #require(TaskSteps.afterDone(all[2], in: all, tomorrow: tomorrow))
-        #expect(next.name == "Charger" && next.edits == [.due(TaskDue(day: tomorrow))])
+        #expect(TodayPool.dayTurn(all, today: tomorrow, boundary: .midnight).contains("Charger"))
     }
 
     @Test func theSwitchIsInTheLine() {

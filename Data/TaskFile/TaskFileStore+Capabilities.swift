@@ -84,7 +84,7 @@ extension TaskFileStore: TaskTrash, DayMirroring, ExternalLinking, TaskBackups, 
             taken.name = UniqueName.free(taken.name) { snapshot.isTaken($0) }
             taken.deleted = nil
             taken.id = TaskLineIDs.open(taken.name)
-            snapshot.document.insert(taken, into: .now)
+            snapshot.document.insert(taken, into: .soon)
             try write(snapshot.document, root: root)
             return taken.name
         }
@@ -105,10 +105,11 @@ extension TaskFileStore: TaskTrash, DayMirroring, ExternalLinking, TaskBackups, 
 
     // MARK: - The day's look
 
-    /// Now as the day stands: first what has no section (timed, or not in the plan), then the pool's sections under their
-    /// titles, a habit's line for each habit shown; what was kept out of today goes to Soon. Sections with nothing left
-    /// are gone. A look changed elsewhere and not taken in yet is not written over: the next sync brings it in.
-    /// Says where each habit's line stands now; nil when nothing was written.
+    /// The habits' lines as the day stands, at the top of Next actions: a line on today for each habit shown today, in
+    /// the pool's order and then the timeline's, at the time it stands at today; the other habits (closed today, kept
+    /// out of today, or not theirs today) on their next day (`waitingHabitLines`). A task's line says itself where it
+    /// stands, so it is left as it is. A look changed elsewhere and not taken in yet is not written over: the next sync
+    /// brings it in. Says where each habit's line stands now; nil when nothing was written.
     func mirror(_ day: DayMirror) async -> [TaskID: TaskDue]? {
         try? await location.withRoot { root -> [TaskID: TaskDue]? in
             var snapshot = try await read(root: root)
@@ -121,36 +122,23 @@ extension TaskFileStore: TaskTrash, DayMirroring, ExternalLinking, TaskBackups, 
             let line = { (name: String) -> TaskEntry? in
                 guard let id = snapshot.id(ofName: name), let file = snapshot.habits[id] else { return nil }
                 let item = self.habit(of: file, snapshot: snapshot)
-                // A closed day's habit has its next line in Soon; its copy is in Done.
+                // A closed day's habit has its next line; its copy is in Done.
                 if self.isClosed(item, on: dayOfFile) { return nil }
                 return self.habitLine(file, item: item, date: dayOfFile, time: day.timed[name], isOverdue: wasOverdue.contains(id))
             }
-            // Today's lines of habits are made anew.
             let habitIDs = Set(snapshot.habits.keys)
-            let isToday = { (section: TaskDocument.Section) in section.kind == .now || section.kind == .soon }
             var document = snapshot.document
-            for index in document.sections.indices where isToday(document.sections[index]) {
-                for group in document.sections[index].groups.indices {
-                    document.sections[index].groups[group].entries.removeAll { $0.id.map(habitIDs.contains) ?? false }
-                }
+            guard let list = document.sections.firstIndex(where: { $0.kind == .soon }) else { return nil }
+            for group in document.sections[list].groups.indices {
+                document.sections[list].groups[group].entries.removeAll { $0.id.map(habitIDs.contains) ?? false }
             }
-            // A subtask shown in the pool stays under its parent: taken out, it would lose the parent and the day it follows.
-            let take = { (name: String) -> TaskEntry? in
-                document.remove(nested: false, where: { $0.name.isSameNoteName(as: name) && $0.completed == nil && $0.deleted == nil })?.entry
-            }
-            var groups: [TaskDocument.Group] = []
-            for section in day.sections {
-                let entries = section.names.compactMap { name in line(name) ?? take(name) }
-                if !entries.isEmpty { groups.append(TaskDocument.Group(title: section.title, entries: entries)) }
-            }
-            let inSections = Set(day.sections.flatMap(\.names).map(\.noteName))
-            let timedHabits = day.timed.keys.sorted().filter { !inSections.contains($0.noteName) }.compactMap(line)
-            guard let now = document.sections.firstIndex(where: { $0.kind == .now }) else { return nil }
-            let loose = document.sections[now].groups.flatMap(\.entries)
-            document.sections[now].groups = [TaskDocument.Group(title: nil, entries: loose + timedHabits)] + groups
-            let placed = Set((groups.flatMap(\.entries) + timedHabits).compactMap(\.id))
-            for entry in waitingHabitLines(except: placed, skipped: day.skipped, snapshot: snapshot, today: dayOfFile) { document.insert(entry, into: .soon) }
-            setDayMarker(in: &document)
+            let pooled = day.sections.flatMap(\.names)
+            let timed = day.timed.keys.sorted().filter { !pooled.containsNoteName($0) }
+            var seen: Set<String> = []
+            let todays = (pooled + timed).compactMap(line).filter { seen.insert($0.id ?? $0.name).inserted }
+            let placed = Set(todays.compactMap(\.id))
+            let waiting = waitingHabitLines(except: placed, skipped: day.skipped, snapshot: snapshot, today: dayOfFile)
+            document.sections[list].groups[0].entries.insert(contentsOf: todays + waiting, at: 0)
             try write(document, root: root)
             snapshot.document = document
             lookMemory.save(look(of: snapshot))
@@ -189,37 +177,31 @@ extension TaskFileStore: TaskTrash, DayMirroring, ExternalLinking, TaskBackups, 
         return lookMemory.load().map { look.differs(from: $0) } ?? true ? look : nil
     }
 
-    /// Now's titled groups, and the habits taken out of today.
+    /// The habits' lines of today in Next actions (their times), and the habits taken out of today.
     private func look(of snapshot: Snapshot) -> DayLook {
-        let document = snapshot.document
         let habits = snapshot.habits
+        let day = today()
         var look = DayLook()
-        for section in document.sections {
-            if section.kind == .now {
-                look.sections = section.groups.compactMap { group in
-                    group.title.map { DayLook.Section(title: $0, names: group.entries.map(\.name)) }
-                }
-                var times: [String: LocalTime] = [:]
-                for entry in section.groups.flatMap(\.entries) where entry.id.map({ habits[$0] != nil }) ?? false {
+        var times: [String: LocalTime] = [:]
+        for section in snapshot.document.sections where section.kind == .soon {
+            for entry in section.groups.flatMap(\.entries) {
+                guard let id = entry.id, let file = habits[id], let date = entry.date else { continue }
+                if date == day {
                     if let time = entry.time { times[entry.name] = time } else { look.untimed.append(entry.name) }
-                }
-                look.times = times
-            } else if section.kind == .soon {
-                // A habit whose day is today, waiting for a later one: it was taken out of today.
-                look.skipped = section.groups.flatMap(\.entries).compactMap { entry in
-                    guard let id = entry.id, let file = habits[id], let date = entry.date, date > today(),
-                          let (item, schedule) = schedule(of: file, snapshot: snapshot), schedule.occurs(on: today()),
-                          !isClosed(item, on: today()) else { return nil }
-                    return entry.name
+                } else if date > day, let (item, schedule) = schedule(of: file, snapshot: snapshot), schedule.occurs(on: day),
+                          !isClosed(item, on: day) {
+                    // A habit whose day is today, waiting for a later one: it was taken out of today.
+                    look.skipped.append(entry.name)
                 }
             }
         }
+        look.times = times
         return look
     }
 
     var dayMarker: String { format.dayMarkerPrefix + today().isoString + format.dayMarkerSuffix }
 
-    private func setDayMarker(in document: inout TaskDocument) {
+    func setDayMarker(in document: inout TaskDocument) {
         document.prelude.removeAll { $0.hasPrefix(format.dayMarkerPrefix) && $0.hasSuffix(format.dayMarkerSuffix) }
         document.prelude.insert(dayMarker, at: 0)
     }

@@ -1,8 +1,7 @@
 import Foundation
 
 /// A subtask goes with its parent: a line under a parent without a date of its own stands on the parent's day and in its
-/// list, wherever the parent moves. A subtask with its own date, time or list is on its own; undated with `🔼` beside a
-/// dated parent, it was taken out of the day (Not today) and waits in Next actions.
+/// list, wherever the parent moves. A subtask with its own date, time or list is on its own.
 extension TaskFileStore {
     /// The day the subtasks without a date of the open line `id` stand on: none while it has no date itself.
     func followedDay(of id: String, in document: TaskDocument) -> LocalDate? {
@@ -22,15 +21,15 @@ extension TaskFileStore {
         return found
     }
 
-    /// What a day's turn or a hand in Obsidian leaves: a `🔼` line in its parent's section on its parent's day goes under it,
-    /// and a line under a parent stops repeating the parent's day.
+    /// What a day's turn or a hand in Obsidian leaves: a `🔼` line in its parent's section, undated or on its parent's day,
+    /// goes under it, and a line under a parent stops repeating the parent's day.
     func gatherSubtasks(_ document: inout TaskDocument, habits: Set<String>) {
         var strays: [(id: String, parent: String)] = []
         document.walk { entry, section, parent, _ in
             guard parent == nil, section != .done, section != .trash, entry.box != .done, entry.time == nil,
                   let id = entry.id, !habits.contains(id), let owner = entry.parent, owner != id, !habits.contains(owner),
                   let home = place(of: owner, in: document), home.section == section, home.entry.box != .done,
-                  logicalDay(of: entry) == logicalDay(of: home.entry.following(home.parentEntry)) else { return }
+                  entry.date == nil || logicalDay(of: entry) == logicalDay(of: home.entry.following(home.parentEntry)) else { return }
             strays.append((id, owner))
         }
         for stray in strays {

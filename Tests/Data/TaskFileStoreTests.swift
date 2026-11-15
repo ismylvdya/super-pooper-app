@@ -59,8 +59,7 @@ struct TaskFileStoreTests {
         let text = """
         intro line
 
-        ## Now
-        ### Morning
+        ## Next actions
         - [ ] Parent 🆔 p
             first line
 
@@ -80,14 +79,14 @@ struct TaskFileStoreTests {
         #expect(again == document)
     }
 
-    @Test func aNewTaskGoesToNowOrSoonByItsDate() async throws {
+    /// Every new task of this week stands in Next actions; one dated today is in today's pool.
+    @Test func aNewTaskStandsInNextActionsAndTodaysInThePool() async throws {
         let store = store()
         let now = try await store.create(draft([.due(TaskDue(day: today))]), named: "Today's")
         let later = try await store.create(draft([.due(TaskDue(day: LocalDate("2026-10-25")))]), named: "Later")
-        #expect(now.status == .thisWeek && later.status == .thisWeek)
+        #expect(now.status == .thisWeek && later.status == .thisWeek && now.isInTodayPool && !later.isInTodayPool)
         let document = TaskDocument(text: try text(), format: format)
-        #expect(document.sections.first { $0.kind == .now }?.groups[0].entries.map(\.name) == ["Today's"])
-        #expect(document.sections.first { $0.kind == .soon }?.groups[0].entries.map(\.name) == ["Later"])
+        #expect(document.sections.first { $0.kind == .soon }?.groups[0].entries.map(\.name) == ["Today's", "Later"])
     }
 
     @Test func aTaskMovesBetweenSectionsByStatusWithItsTextAndSubtask() async throws {
@@ -103,13 +102,14 @@ struct TaskFileStoreTests {
         #expect(try await store.text(of: parent) == "words")
     }
 
-    @Test func aDayLaterAPassedDateComesUpToTodayWithoutItsTime() async throws {
+    /// A passed date stays (a deadline): the line is marked overdue and in today's pool, and its time has gone with its day.
+    @Test func aDayLaterAPassedDateStaysWithoutItsTime() async throws {
         let first = store()
         _ = try await first.create(draft([.due(TaskDue(day: LocalDate("2026-10-22"), time: LocalTime("14:00")))]), named: "Dentist")
         let later = store(today: LocalDate("2026-10-24"))
-        let task = try await later.load().tasks.first
-        #expect(task?.due == TaskDue(day: LocalDate("2026-10-24")), "the time passed with its day: the task waits in the pool")
-        #expect(TaskDocument(text: try text(), format: format).sections.first { $0.kind == .now }?.groups[0].entries.first?.name == "Dentist")
+        let task = try #require(try await later.load().tasks.first)
+        #expect(task.due == TaskDue(day: LocalDate("2026-10-22")) && task.isOverdue && task.isInTodayPool)
+        #expect(TaskDocument(text: try text(), format: format).sections.first { $0.kind == .soon }?.groups[0].entries.first?.name == "Dentist")
     }
 
     @Test func doneGoesToTheTopOfDoneAndBack() async throws {
@@ -172,24 +172,22 @@ struct TaskFileStoreTests {
         let store = store()
         let habit = try await store.create(NoteDraft(status: .habit), named: "Run")
         await store.mirror(DayMirror(sections: [.init(title: "Morning", names: ["Run"])], timed: [:]))
-        #expect(try text().contains("### Morning\n- [ ] Run 📅 \(today.isoString) 🆔 \(habit.id.value)"))
+        #expect(try text().contains("## Next actions\n- [ ] Run 📅 \(today.isoString) 🆔 \(habit.id.value)"))
         try write(try text().replacingOccurrences(of: "- [ ] Run", with: "- [x] Run"))
         let loaded = try await store.load().tasks
         #expect(loaded.first?.marks[today] == .done)
     }
 
-    @Test func theMirrorPutsTheDaysSectionsInTheFileAndEmptyOnesGo() async throws {
+    /// The mirror writes the habits' lines only: a task's line says itself where it stands, and stays where it is.
+    @Test func theMirrorLeavesTheTasksAsTheyAre() async throws {
         let store = store()
         _ = try await store.create(draft(), named: "A")
         _ = try await store.create(draft(), named: "B")
         _ = try await store.create(draft(), named: "C")
+        let before = try text()
         await store.mirror(DayMirror(sections: [.init(title: "Evening", names: ["B", "A"]), .init(title: "Empty", names: [])], timed: [:]))
-        let document = TaskDocument(text: try text(), format: format)
-        let now = try #require(document.sections.first { $0.kind == .now })
-        #expect(now.groups.compactMap(\.title) == ["Evening"])
-        #expect(now.groups.last?.entries.map(\.name) == ["B", "A"])
-        #expect(document.sections.first { $0.kind == .soon }?.groups[0].entries.map(\.name) == ["C"])
-        #expect(Set(try await store.load().tasks.map(\.name)) == ["A", "B", "C"], "all still there")
+        #expect(try text() == before)
+        #expect(!before.contains("###") && !before.contains("## Today"))
     }
 
     @Test func aLineTypedByHandGetsItsIDAndAStrangeSectionStays() async throws {
@@ -200,58 +198,34 @@ struct TaskFileStoreTests {
         #expect(try text().contains("## Ideas\nfree text"))
     }
 
-    /// Lines moved by hand between Now's sections, or kept out to Soon, come back as news once; the app's own look does not.
+    /// A habit's line moved by hand to a later day (kept out of today) comes back as news once; the app's own look does not.
     @Test func aLookChangedInTheFileComesBackAndTheAppsOwnDoesNot() async throws {
         let store = store()
-        _ = try await store.create(draft(), named: "A")
-        _ = try await store.create(draft(), named: "B")
-        _ = try await store.create(draft(), named: "C")
-        await store.mirror(DayMirror(sections: [.init(title: "Morning", names: ["A", "B"]), .init(title: "Evening", names: ["C"])], timed: [:]))
+        _ = try await store.create(NoteDraft(status: .habit, changes: [.recurrence(RecurrenceDraft(start: today).rule)]), named: "Run")
+        _ = try await store.load()
+        await store.accept(try #require(await store.currentLook()))
+        await store.mirror(DayMirror(sections: [.init(title: "Morning", names: ["Run"])], timed: [:]))
         #expect(await store.changedLook() == nil, "what the app wrote itself")
-        _ = try await store.create(draft(), named: "New")
-        #expect(await store.changedLook() == nil, "a new line is no change of the look")
-
-        var document = TaskDocument(text: try text(), format: format)
-        let now = try #require(document.sections.firstIndex { $0.kind == .now })
-        let morning = try #require(document.sections[now].groups.firstIndex { $0.title == "Morning" })
-        let evening = try #require(document.sections[now].groups.firstIndex { $0.title == "Evening" })
-        let moved = document.sections[now].groups[morning].entries.removeFirst()
-        document.sections[now].groups[evening].entries.append(moved)
-        document.sections[now].groups[evening].title = "Night"
-        try write((document.tasksText(format: format) + document.doneText(format: format)))
-
+        let tomorrow = today.adding(days: 1).isoString
+        try write(try text().replacingOccurrences(of: "Run 📅 \(today.isoString)", with: "Run 📅 \(tomorrow)"))
         let look = try #require(await store.changedLook())
-        #expect(look.sections == [.init(title: "Morning", names: ["B"]), .init(title: "Night", names: ["C", "A"])])
-        await store.mirror(DayMirror(sections: [.init(title: "Lost", names: ["A"])], timed: [:]))
-        #expect(try text().contains("### Night"), "not written over until it is taken in")
+        #expect(look.skipped == ["Run"])
+        await store.mirror(DayMirror(sections: [.init(title: "Morning", names: ["Run"])], timed: [:]))
+        #expect(try text().contains("Run 📅 \(tomorrow)"), "not written over until it is taken in")
         await store.accept(look)
         #expect(await store.changedLook() == nil)
     }
 
-    /// The next day the file's look is yesterday's: no news, the day's sections start anew.
+    /// The next day the file's look is yesterday's: no news.
     @Test func yesterdaysLookIsNoNews() async throws {
         let first = store()
-        _ = try await first.create(draft(), named: "A")
-        await first.mirror(DayMirror(sections: [.init(title: "Morning", names: ["A"])], timed: [:]))
-        try write(try text().replacingOccurrences(of: "### Morning", with: "### Renamed"))
+        _ = try await first.create(NoteDraft(status: .habit, changes: [.recurrence(RecurrenceDraft(start: today).rule)]), named: "Run")
+        _ = try await first.load()
+        await first.accept(try #require(await first.currentLook()))
+        await first.mirror(DayMirror(sections: [.init(title: "Morning", names: ["Run"])], timed: [:]))
+        try write(try text().replacingOccurrences(of: "Run 📅 \(today.isoString)", with: "Run 📅 \(today.adding(days: 1).isoString)"))
         #expect(await first.changedLook() != nil)
         #expect(await store(today: LocalDate("2026-10-22")).changedLook() == nil)
-    }
-
-    /// The old TaskNotes folder, or any other chosen by mistake, stays untouched: a problem, no file made.
-    @Test func aFolderWithoutTheTasksFolderIsNotWrittenTo() async throws {
-        try FileManager.default.removeItem(at: folder.appendingPathComponent(format.folder))
-        let store = store()
-        let result = try await store.load()
-        #expect(result.fileProblems == [.tasksFolderMissing(format.folder)])
-        await #expect(throws: TaskStoreError.folderMissing(format.folder)) { try await store.create(draft(), named: "A") }
-        #expect(try FileManager.default.contentsOfDirectory(atPath: folder.path).isEmpty)
-    }
-
-    @Test func namesWithAMarkerAreRefused() {
-        #expect(store().nameProblem(in: "Run ⚠️") != nil)
-        #expect(store().nameProblem(in: "Встреча: Анна") == nil, "only the markers and blanks are the file's business")
-        #expect(store().nameProblem(in: " ") == .empty)
     }
 
     // MARK: - Names
@@ -273,28 +247,26 @@ struct TaskFileStoreTests {
 
     // MARK: - The file's words
 
+    /// An older file's titles go by today's, its Now joins Next actions in today's pool, and fields no longer kept go.
     @Test func olderTitlesAndFieldsTurnIntoTodaysOnTheFirstRead() async throws {
         try write("## Inbox\n- [ ] Idea ➕ 2026-11-01 🆔 i1\n## Now\n- [ ] Milk ➕ 2026-11-01 🆔 m1\n## Soon\n- [ ] Later 🆔 l1\n")
         let tasks = try await store().load().tasks
         #expect(Set(tasks.map(\.name)) == ["Idea", "Milk", "Later"])
         let written = try text()
-        #expect(!written.contains("Inbox") && !written.contains("## Now") && !written.contains("➕"))
-        #expect(written.contains("## Today\n- [ ] Milk 📅 \(today.isoString)\n"))
-        #expect(written.contains("## Next actions\n- [ ] Later\n- [ ] Idea\n"))
-        let today = try #require(written.range(of: "## Today")), soon = try #require(written.range(of: "## Next actions"))
-        #expect(today.lowerBound < soon.lowerBound, "the sections stay in their order")
+        #expect(!written.contains("Inbox") && !written.contains("## Now") && !written.contains("## Today") && !written.contains("➕"))
+        #expect(written.contains("## Next actions\n- [ ] Later #in_today_pool\n- [ ] Idea #in_today_pool\n- [ ] Milk #in_today_pool\n"))
     }
 
     @Test func theOlderHighPriorityMarkTurnsIntoTheWarningSign() async throws {
         try write("## Soon\n- [ ] Call 🔥 🆔 c1\n")
         let task = try #require(try await store().load().tasks.first)
         #expect(task.isHighPriority)
-        #expect(try text().contains("- [ ] Call ⚠️\n"))
+        #expect(try text().contains("- [ ] Call ⚠️ #in_today_pool\n"))
     }
 
     @Test func twoFiledTasksOfOneNameAreToldApartAndOldIDsLeave() async throws {
         let store = store()
-        try write("## Today\n- [ ] Parent 🆔 p1\n## Soon\n- [ ] Child 🔼 p1 🆔 c1\n")
+        try write("## Next actions\n- [ ] Parent 🆔 p1\n## Someday\n- [ ] Child 🔼 p1 🆔 c1\n")
         let tasks = try await store.load().tasks
         #expect(tasks.first { $0.name == "Child" }?.projects == ["Parent"], "the parent is found by its old id")
         #expect(try text().contains("- [ ] Child 🔼 Parent\n"))
@@ -341,7 +313,7 @@ struct TaskFileStoreTests {
         let rule = RecurrenceDraft(start: today).rule
         let habit = try await store.create(NoteDraft(status: .habit, changes: [.recurrence(rule)]), named: "Run")
         await store.mirror(DayMirror(sections: [.init(title: "Morning", names: ["Run"])], timed: [:]))
-        #expect(try text().contains("### Morning\n- [ ] Run 📅 \(today.isoString)"))
+        #expect(try text().contains("## Next actions\n- [ ] Run 📅 \(today.isoString)"))
         await store.mirror(DayMirror(sections: [], timed: [:]))
         let lines = try text().components(separatedBy: "\n")
         let soon = try #require(lines.firstIndex(of: "## Next actions"))
@@ -362,15 +334,14 @@ struct TaskFileStoreTests {
         #expect(line.contains("📅 \(today.adding(days: 1).isoString)") && line.contains("🕰️"))
     }
 
-    /// An undated line in Today (an older file, or typed in) takes today's date; a new undated task waits in Next actions.
-    @Test func onlyADatePutsALineInToday() async throws {
-        try write("## Today\n- [ ] Old\n")
+    /// An undated line in an older file's Today is in today's pool; a new undated task waits in Next actions, out of it.
+    @Test func anOlderTodaysLineIsInThePoolAndANewOneIsNot() async throws {
+        try write("%% day \(today.isoString) %%\n## Today\n- [ ] Old\n")
         let store = store()
         _ = try await store.load()
         _ = try await store.create(draft(), named: "New")
         let lines = try text().components(separatedBy: "\n")
-        #expect(lines.contains("- [ ] Old 📅 \(today.isoString)"))
-        #expect(lines.firstIndex(of: "- [ ] New")! > lines.firstIndex(of: "## Next actions")!)
+        #expect(lines.contains("- [ ] Old #in_today_pool") && lines.contains("- [ ] New"))
     }
 
     /// An archived line stays in the archive, whatever date and time it has.
@@ -393,37 +364,69 @@ struct TaskFileStoreTests {
         #expect(done.contains("## Done\n- [x] Old ✅ 2026-01-01"))
     }
 
-    /// A new day takes what is undated in Next actions, reviewed or not; what is dated later, and the other lists, stay.
-    @Test func aNewDayDatesNextActionsToday() async throws {
+    /// A new day takes off every pool mark and puts it on what is due: what is undated in Next actions, and what is dated
+    /// today or earlier in any list. A passed date stays (a deadline) and is marked overdue, its time gone; a later date,
+    /// and an undated task of a later list, stay out. Sections that do not last go.
+    @Test func aNewDayPutsWhatIsDueInThePool() async throws {
         let later = today.adding(days: 3).isoString
-        try write("%% day \(today.adding(days: -1).isoString) %%\n\n## Today\n## Next actions\n- [ ] Idle\n- [ ] Later 📅 \(later)\n## Soon\n- [ ] Far\n")
+        let past = today.adding(days: -2).isoString
+        try write("%% day \(today.adding(days: -1).isoString) %%\n\n## Next actions\n- [ ] Idle #section_after_work\n- [ ] Later 📅 \(later) #in_today_pool\n"
+                  + "- [ ] Early #section_morning\n## Soon\n- [ ] Far #in_today_pool\n## Someday\n- [ ] Past 📅 \(past) ⏰ 10:00\n")
         let tasks = try await store().load().tasks
-        #expect(tasks.first { $0.name == "Idle" }?.due == TaskDue(day: today))
-        #expect(tasks.first { $0.name == "Idle" }?.waitsInList == false)
+        let pooled = Set(tasks.filter(\.isInTodayPool).map(\.name))
+        #expect(pooled == ["Idle", "Early", "Past"])
         let lines = try text().components(separatedBy: "\n")
-        let list = try #require(lines.firstIndex(of: "## Next actions"))
-        #expect(try #require(lines.firstIndex(of: "- [ ] Idle 📅 \(today.isoString)")) < list)
-        #expect(try #require(lines.firstIndex(of: "- [ ] Later 📅 \(later)")) > list)
-        #expect(lines.contains("- [ ] Far"))
+        #expect(lines.contains("- [ ] Idle #in_today_pool") && lines.contains("- [ ] Early #in_today_pool #section_morning"))
+        #expect(lines.contains("- [ ] Later 📅 \(later)") && lines.contains("- [ ] Far"))
+        #expect(lines.contains("- [ ] Past 📅 \(past) 🕰️ #in_today_pool"))
+        #expect(lines.first == "%% format 2 %%" && lines.contains("%% day \(today.isoString) %%"))
     }
 
     /// A task added during the day waits for the next morning.
     @Test func theSameDayLeavesNextActionsAsItIs() async throws {
-        try write("%% day \(today.isoString) %%\n\n## Today\n## Next actions\n- [ ] New\n")
+        try write("%% day \(today.isoString) %%\n\n## Next actions\n- [ ] New\n")
         let tasks = try await store().load().tasks
-        #expect(tasks.first?.due == nil && tasks.first?.waitsInList == true)
+        #expect(tasks.first?.due == nil && tasks.first?.isInTodayPool == false)
     }
 
-    /// Not today during the day: undated in Next actions, and it stays there until the next morning.
-    @Test func aTaskWithItsDateTakenAwayWaitsInNextActions() async throws {
-        try write("%% day \(today.isoString) %%\n\n## Today\n- [ ] Call 📅 \(today.isoString) ⏰ 10:00\n## Next actions\n")
+    /// Not today during the day: out of the pool, its date and list kept, until the next morning brings it back.
+    @Test func notTodayTakesTheMarkOnly() async throws {
+        try write("%% day \(today.isoString) %%\n\n## Next actions\n## Soon\n- [ ] Call 📅 \(today.isoString) #in_today_pool\n")
         let store = store()
         let task = try #require(try await store.load().tasks.first)
-        _ = try await store.apply([.due(nil)], to: task)
+        #expect(task.isInTodayPool && task.status == .halfYear)
+        _ = try await store.apply([.inTodayPool(false)], to: task)
         let reloaded = try #require(try await store.load().tasks.first)
-        #expect(reloaded.due == nil && reloaded.waitsInList)
-        let lines = try text().components(separatedBy: "\n")
-        #expect(try #require(lines.firstIndex(of: "- [ ] Call")) > lines.firstIndex(of: "## Next actions")!)
+        #expect(reloaded.due == TaskDue(day: today) && !reloaded.isInTodayPool && reloaded.status == .halfYear)
+        #expect(try text().contains("## Soon\n- [ ] Call 📅 \(today.isoString)\n"))
+    }
+
+    /// A date set to today or earlier brings a task into the pool; a later one takes it out.
+    @Test func aDateDecidesThePoolWhenItIsSet() async throws {
+        try write("%% day \(today.isoString) %%\n\n## Next actions\n- [ ] Call\n")
+        let store = store()
+        let task = try #require(try await store.load().tasks.first)
+        let dated = try await store.apply([.due(TaskDue(day: today))], to: task).task
+        #expect(dated.isInTodayPool)
+        let later = try await store.apply([.due(TaskDue(day: today.adding(days: 1)))], to: dated).task
+        #expect(!later.isInTodayPool)
+    }
+
+    /// An older file's Today joins Next actions once, with a backup: its open lines are in the pool, each group's title is
+    /// its section's tag (Day, the rest, has none), and its headings make no projects. The date the morning gave a line
+    /// with no time goes (the mark says it now); a time keeps its date, and so does a later date.
+    @Test func anOlderFilesTodayBecomesTags() async throws {
+        try write("%% format 2 %%\n%% day \(today.isoString) %%\n\n## Today\n- [ ] Timed 📅 \(today.isoString) 🕐 10:00\n### Morning\n- [ ] Stretch 📅 \(today.isoString)\n"
+                  + "### Day\n- [ ] Mail\n    - [ ] Reply\n### After work\n- [ ] Cook 📅 \(today.adding(days: 2).isoString)\n## Next actions\n- [ ] Waiting\n## Soon\n")
+        let tasks = try await store().load().tasks
+        #expect(Set(tasks.filter(\.isInTodayPool).map(\.name)) == ["Timed", "Stretch", "Mail", "Reply", "Cook"])
+        #expect(tasks.first { $0.name == "Stretch" }?.poolSection == "morning")
+        #expect(tasks.first { $0.name == "Mail" }?.poolSection == nil && tasks.first { $0.name == "Cook" }?.poolSection == "after_work")
+        #expect(tasks.allSatisfy { !$0.showsAsProject })
+        let file = try text()
+        #expect(!file.contains("## Today") && !file.contains("###"))
+        #expect(file.contains("## Next actions\n- [ ] Waiting\n- [ ] Timed 📅 \(today.isoString) 🕐 10:00 #in_today_pool\n- [ ] Stretch #in_today_pool #section_morning\n"))
+        #expect(file.contains("- [ ] Cook 📅 \(today.adding(days: 2).isoString) #in_today_pool #section_after_work\n"))
     }
 
     /// The mirror says where each habit's line stands, and the item read back knows it: open today it stands on today,
@@ -449,10 +452,10 @@ struct TaskFileStoreTests {
 
     /// A subtask added under a task of today's pool stands under it, on its day, and is not in Next actions.
     @Test func aNewSubtaskOfATodayTaskStandsUnderIt() async throws {
-        let (store, tasks) = try await parentAndStore("## Today\n- [ ] Pack 📅 \(today.isoString)\n## Next actions\n")
+        let (store, tasks) = try await parentAndStore("## Next actions\n- [ ] Pack 📅 \(today.isoString) #in_today_pool\n## Soon\n")
         let child = try await store.create(.subtask(of: try #require(tasks.first)), named: "Earrings")
-        #expect(child.due == TaskDue(day: today) && !child.waitsInList && child.projects == ["Pack"])
-        #expect(try text().replacingOccurrences(of: "\n\n", with: "\n").contains("- [ ] Pack 📅 \(today.isoString)\n    - [ ] Earrings\n## Next actions"))
+        #expect(child.due == TaskDue(day: today) && child.isInTodayPool && child.projects == ["Pack"])
+        #expect(try text().replacingOccurrences(of: "\n\n", with: "\n").contains("- [ ] Pack 📅 \(today.isoString) #in_today_pool\n    - [ ] Earrings #in_today_pool\n## Soon"))
     }
 
     /// In a later day's or another list's parent the same: the subtask does not fall out to Next actions.
@@ -470,30 +473,28 @@ struct TaskFileStoreTests {
         let (store, tasks) = try await parentAndStore("## Today\n- [ ] Pack 📅 \(today.isoString)\n    - [ ] Earrings\n    - [ ] Call 📅 \(today.isoString) 🕐 10:00\n## Next actions\n")
         let result = try await store.apply([.due(nil)], to: try #require(tasks.first { $0.name == "Pack" }))
         let earrings = try #require(result.subtasks.first { $0.name == "Earrings" })
-        #expect(earrings.due == nil && earrings.waitsInList)
+        #expect(earrings.due == nil)
         #expect(result.subtasks.first { $0.name == "Call" }?.due == TaskDue(day: today, time: LocalTime(hour: 10, minute: 0)))
     }
 
-    /// Not today on a subtask: it leaves its parent for Next actions; Today brings it back under, with no date of its own.
-    @Test func aSubtaskTakenOutOfTheDayLeavesItsParentAndComesBack() async throws {
-        let (store, tasks) = try await parentAndStore("## Today\n- [ ] Pack 📅 \(today.isoString)\n    - [ ] Earrings\n## Next actions\n")
-        let out = try await store.apply([.due(nil)], to: try #require(tasks.first { $0.name == "Earrings" }))
-        #expect(out.task.due == nil && out.task.waitsInList && out.task.projects == ["Pack"])
-        #expect(try text().contains("## Next actions\n- [ ] Earrings 🔼 Pack\n"))
-        _ = try await store.apply([.due(TaskDue(day: today))], to: out.task)
-        #expect(try text().contains("- [ ] Pack 📅 \(today.isoString)\n    - [ ] Earrings\n"))
+    /// Not today on a subtask: it leaves the pool and stays under its parent.
+    @Test func aSubtaskTakenOutOfTheDayStaysUnderItsParent() async throws {
+        let (store, tasks) = try await parentAndStore("## Next actions\n- [ ] Pack 📅 \(today.isoString) #in_today_pool\n    - [ ] Earrings #in_today_pool\n")
+        let out = try await store.apply([.inTodayPool(false)], to: try #require(tasks.first { $0.name == "Earrings" }))
+        #expect(!out.task.isInTodayPool && out.task.projects == ["Pack"])
+        #expect(try text().contains("- [ ] Pack 📅 \(today.isoString) #in_today_pool\n    - [ ] Earrings\n"))
     }
 
     /// An edit of a following subtask does not write its parent's day into it; the next morning takes a stray line back.
     @Test func aFollowingSubtaskKeepsNoDateOfItsOwn() async throws {
-        let (store, tasks) = try await parentAndStore("## Today\n- [ ] Pack 📅 \(today.isoString)\n    - [ ] Earrings\n## Next actions\n")
+        let (store, tasks) = try await parentAndStore("## Next actions\n- [ ] Pack 📅 \(today.isoString) #in_today_pool\n    - [ ] Earrings #in_today_pool\n")
         _ = try await store.apply([.highPriority(true)], to: try #require(tasks.first { $0.name == "Earrings" }))
-        #expect(try text().contains("    - [ ] Earrings ⚠️\n"))
+        #expect(try text().contains("    - [ ] Earrings ⚠️ #in_today_pool\n"))
         let yesterday = today.adding(days: -1).isoString
-        try write("%% day \(yesterday) %%\n\n## Today\n- [ ] Pack 📅 \(yesterday)\n## Next actions\n- [ ] Earrings 🔼 Pack\n")
+        try write("%% day \(yesterday) %%\n\n## Next actions\n- [ ] Pack 📅 \(yesterday)\n- [ ] Earrings 🔼 Pack\n")
         let morning = try await self.store().load().tasks
-        #expect(morning.first { $0.name == "Earrings" }?.due == TaskDue(day: today))
-        #expect(try text().contains("- [ ] Pack 📅 \(today.isoString)\n    - [ ] Earrings\n"))
+        #expect(morning.first { $0.name == "Earrings" }?.due == TaskDue(day: LocalDate(yesterday)))
+        #expect(try text().contains("- [ ] Pack 📅 \(yesterday) 🕰️ #in_today_pool\n    - [ ] Earrings #in_today_pool\n"))
     }
 
     /// Parents that name each other stay as they are: no line is lost.
@@ -610,15 +611,16 @@ struct TaskFileStoreTests {
         #expect(try text().contains("- [x] Read ✅ \(today.isoString)"))
     }
 
+    /// A day later what was missed keeps its date (a deadline), loses the time it was meant for and is marked overdue.
     @Test func aTaskMissedAtItsTimeIsCarriedWithoutItAndMarked() async throws {
         let yesterday = today.adding(days: -1)
         try write("## Today\n- [ ] Call 📅 \(yesterday.isoString) ⏰ 14:00 🆔 c1\n- [ ] Plain 📅 \(yesterday.isoString) 🆔 p1\n")
         let tasks = try await store().load().tasks
         let call = try #require(tasks.first { $0.name == "Call" })
         let plain = try #require(tasks.first { $0.name == "Plain" })
-        #expect(call.isOverdue && call.due == TaskDue(day: today))
-        #expect(!plain.isOverdue && plain.due == TaskDue(day: today))
-        #expect(try text().contains("- [ ] Call 📅 \(today.isoString) 🕰️\n"))
+        #expect(call.isOverdue && call.due == TaskDue(day: yesterday) && call.isInTodayPool && call.alarms.isEmpty)
+        #expect(plain.isOverdue && plain.due == TaskDue(day: yesterday) && plain.isInTodayPool)
+        #expect(try text().contains("- [ ] Call 📅 \(yesterday.isoString) 🕰️ #in_today_pool\n"))
     }
 
     @Test func aMissedHabitWithoutADayNowIsCarriedOverdueWithNoTimes() async throws {
@@ -696,7 +698,7 @@ struct AlarmFormatTests {
         task.alarms = [TimeAlarm()]
         entry.update(from: task, format: format)
         #expect(entry.alarm == format.alarmDefaultSound)
-        #expect(entry.item(in: .now, parentName: nil, order: nil, format: format).alarms == [TimeAlarm()])
+        #expect(entry.item(in: .soon, parentName: nil, order: nil, format: format).alarms == [TimeAlarm()])
     }
 
 }

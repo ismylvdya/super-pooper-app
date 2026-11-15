@@ -36,7 +36,10 @@ struct WidgetDataSource: Sendable {
     func plan(at date: Date) -> DayPlan {
         let context = context(at: date)
         guard let snapshot else { return .empty(today: context.today, now: date) }
-        return DayPlanning.plan(config: config, settings: settings, tasks: snapshot.tasks, events: snapshot.events, reminders: snapshot.reminders,
+        // A snapshot of an earlier day: its pool turns with the day, as the file will when the app reads it (`TodayPool`).
+        let tasks = context.logicalDay(of: snapshot.generatedAt) < context.today
+            ? TodayPool.turning(snapshot.tasks, today: context.today, boundary: context.boundary) : snapshot.tasks
+        return DayPlanning.plan(config: config, settings: settings, tasks: tasks, events: snapshot.events, reminders: snapshot.reminders,
                                 dayState: snapshot.dayState, sections: sections.first { $0.day == context.today }, context: context,
                                 eventsKnown: snapshot.eventsKnown ?? false)
     }

@@ -14,11 +14,12 @@ struct NewItemPage: Equatable {
     private let untouchedTask: NoteDraft
     private let untouchedHabit: NoteDraft
 
-    init(seed: NewItemSeed, taskDraft: NoteDraft, habitDraft: NoteDraft) {
+    /// `today`: a "+" dropped in today's pool puts the task in it rather than dating it.
+    init(seed: NewItemSeed, taskDraft: NoteDraft, habitDraft: NoteDraft, today: LocalDate? = nil) {
         var taskDraft = taskDraft
         var habitDraft = habitDraft
         if let placement = seed.placement {
-            taskDraft.apply(placement.presets(.task))
+            taskDraft.apply(placement.presets(.task, today: today))
             habitDraft.apply(placement.presets(.habit))
         }
         if let estimate = seed.estimate { taskDraft.apply([.timeEstimate(estimate)]) }

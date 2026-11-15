@@ -10,7 +10,19 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
     }
 
     struct Sections: Codable, Hashable, Sendable {
-        let now, soon, halfYear, someday, done, archive, trash: String
+        let soon, halfYear, someday, done, archive, trash: String
+    }
+
+    /// How a line says it is in today's pool and in which of its sections (`TodayPool`, `PoolSectionTag`).
+    struct Pool: Codable, Hashable, Sendable {
+        /// The tag of a task in today's pool.
+        let tag: String
+        /// A section's tag is this and the section's word.
+        let sectionPrefix: String
+        /// The sections a task stays in from day to day; the tags of the others go with the day's turn.
+        let lastingSections: [String]
+        /// The section of the rest: a line in it names none.
+        let restSection: String
     }
 
     struct Boxes: Codable, Hashable, Sendable {
@@ -36,6 +48,10 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
     let sections: Sections
     /// Titles older files have: read as that section and written under its title now.
     let legacySections: [String: TaskSection]
+    /// Titles of the section of today older files have (format 2): its lines join Next actions in today's pool, each
+    /// group under it becoming the tag of its section.
+    let legacyTodaySections: [String]
+    let pool: Pool
     let boxes: Boxes
     let markers: Markers
     /// Fields older lines have and the app no longer keeps: read so they are no part of the name, and gone with the next write.
@@ -57,7 +73,6 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
 
     func title(of section: TaskSection) -> String {
         switch section {
-        case .now: sections.now
         case .soon: sections.soon
         case .halfYear: sections.halfYear
         case .someday: sections.someday
@@ -70,5 +85,5 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
 
 /// The sections of the tasks file, in the order a new file has them.
 enum TaskSection: String, CaseIterable, Hashable, Codable, Sendable {
-    case now, soon, halfYear, someday, archive, trash, done
+    case soon, halfYear, someday, archive, trash, done
 }

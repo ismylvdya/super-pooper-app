@@ -1744,6 +1744,17 @@
         }
       }
     },
+    "field.poolSection": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pool section"
+          }
+        }
+      }
+    },
     "field.priority": {
       "extractionState": "manual",
       "localizations": {
@@ -1861,6 +1872,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Time zone"
+          }
+        }
+      }
+    },
+    "field.todayPool": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today's pool"
           }
         }
       }

@@ -13,9 +13,16 @@ struct DayMembershipTests {
     }
 
 
-    @Test(arguments: [TaskStatus.halfYear, .someday, .archived])
-    func otherStatusesStayOutOfTheDay(status: TaskStatus) {
+    /// A task of Soon or Someday dated today comes into the pool on its day and stays in its list; an archived one does not.
+    @Test(arguments: [TaskStatus.halfYear, .someday])
+    func aLaterLevelsTaskComesOnItsDay(status: TaskStatus) {
         let task = makeTask("Backlog", status: status) { $0.due = TaskDue("2026-10-21") }
+        #expect(DayScenario(tasks: [task]).build().poolNames == ["Backlog"])
+        #expect(DayScenario(tasks: [makeTask("Undated", status: status)]).build().dayNames.isEmpty)
+    }
+
+    @Test func anArchivedTaskStaysOutOfTheDay() {
+        let task = makeTask("Backlog", status: .archived) { $0.due = TaskDue("2026-10-21") }
         #expect(DayScenario(tasks: [task]).build().dayNames.isEmpty)
     }
 
@@ -91,18 +98,32 @@ struct DayMembershipTests {
     // MARK: - Problems
 
 
-    /// Not today: the date goes, with its time, and the task waits in Next actions.
-    @Test func notTodayTakesTheDateAway() {
-        let timed = makeTask("Timed") { $0.due = TaskDue(day: TestCalendar.context().today, time: LocalTime(string: "16:30")) }
-        let moved = timed.applying(NotToday.changes())
-        #expect(moved.due == nil && moved.waitsInList)
+    /// Not today: the task leaves the pool and keeps its date (a deadline) and its list.
+    @Test func notTodayTakesTheMarkAndKeepsTheDate() {
+        let context = TestCalendar.context()
+        let dated = makeTask("Dated", status: .someday) { $0.due = TaskDue(day: context.today.adding(days: -2)) }
+        #expect(dated.isInTodayPool, "the day's turn brought it in")
+        let moved = dated.applying(NotToday.changes(for: dated, context: context))
+        #expect(moved.due == dated.due && moved.status == .someday && !moved.isInTodayPool)
+        #expect(DayScenario(tasks: [moved]).build().item(named: "Dated") == nil)
+    }
+
+    /// Not today on a task with a time today: the same time tomorrow.
+    @Test func notTodayMovesATimedTaskToTomorrow() {
+        let context = TestCalendar.context()
+        let timed = makeTask("Timed") { $0.due = TaskDue(day: context.today, time: LocalTime(string: "16:30")) }
+        let moved = timed.applying(NotToday.changes(for: timed, context: context))
+        #expect(moved.due == TaskDue(day: context.today.adding(days: 1), time: LocalTime(string: "16:30")))
         #expect(DayScenario(tasks: [moved]).build().item(named: "Timed") == nil)
     }
 
-    /// Undated in Next actions a task is not among today's.
-    @Test func anUndatedTaskInItsListIsNotInToday() {
-        var waiting = makeTask("Waits")
-        waiting.waitsInList = true
-        #expect(DayScenario(tasks: [waiting, makeTask("Stays")]).build().item(named: "Waits") == nil)
+    /// Only the mark brings a task into today's pool: one put off (no mark) is not among today's, whatever its date.
+    @Test func onlyTheMarkBringsATaskIntoThePool() {
+        let today = TestCalendar.context().today
+        let waiting = makeTask("Waits", inPool: false)
+        let putOff = makeTask("Put off", inPool: false) { $0.due = TaskDue(day: today) }
+        let soon = makeTask("From Soon", status: .halfYear) { $0.due = TaskDue(day: today) }
+        let names = DayScenario(tasks: [waiting, putOff, soon, makeTask("Stays")]).build().poolNames
+        #expect(Set(names) == ["From Soon", "Stays"])
     }
 }

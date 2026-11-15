@@ -11,7 +11,7 @@ struct BacklogMovesTests {
     @Test func fromAnotherDayIntoSoonTheDateGoes() {
         let task = makeTask("Pay") { $0.due = TaskDue(day: friday) }
         let outcome = BacklogMoves.onto(.thisWeek, task: task, fromShownDay: true, shown: friday, context: context)
-        #expect(outcome == BacklogMoves.Outcome(edits: [.due(nil)]))
+        #expect(outcome == BacklogMoves.Outcome(edits: [.due(nil), .inTodayPool(false)]))
     }
 
     @Test func intoAnotherDaysPoolDatedThatDay() {
@@ -20,11 +20,12 @@ struct BacklogMovesTests {
     }
 
 
-    /// Into Next actions the date goes, so the task waits there; into a pool it takes that pool's day.
-    @Test func onlyADatePutsATaskInADay() {
+    /// Into Next actions the date goes and the task waits there, out of the pool; into today's pool it takes the mark and
+    /// keeps its date (a deadline), into another day's that day's date.
+    @Test func theMarkPutsATaskInTodaysPool() {
         let dated = makeTask("Report") { $0.due = TaskDue(day: context.today) }
-        #expect(BacklogMoves.onto(.thisWeek, task: dated, fromShownDay: true, shown: context.today, context: context).edits == [.due(nil)])
-        let someday = makeTask("Trip", status: .someday)
-        #expect(BacklogMoves.intoPool(someday, day: context.today, context: context).edits == [.status(.thisWeek), .due(TaskDue(day: context.today))])
+        #expect(BacklogMoves.onto(.thisWeek, task: dated, fromShownDay: true, shown: context.today, context: context).edits == [.due(nil), .inTodayPool(false)])
+        let someday = makeTask("Trip", status: .someday) { $0.due = TaskDue(day: friday) }
+        #expect(BacklogMoves.intoPool(someday, day: context.today, context: context).edits == [.status(.thisWeek), .inTodayPool(true)])
     }
 }

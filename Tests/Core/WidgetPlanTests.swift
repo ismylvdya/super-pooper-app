@@ -49,4 +49,17 @@ struct WidgetPlanTests {
         await model.parts.derived.publish()
         #expect(model.parts.services.snapshotStore.load()?.eventsKnown == true)
     }
+
+    /// A snapshot left from yesterday: the widget's pool turns with the day, as the file will — what was put off comes
+    /// back, and a task dated today comes in.
+    @Test func yesterdaysSnapshotTurnsWithTheDay() {
+        let yesterday = TestCalendar.context("2026-10-20", "21:00")
+        let putOff = makeTask("Put off", inPool: false)
+        let dated = makeTask("Dated", inPool: false) { $0.due = TaskDue("2026-10-21") }
+        let snapshot = WidgetSnapshot(generatedAt: yesterday.now, tasks: [putOff, dated], events: [], reminders: [],
+                                      dayState: DayState(day: LocalDate("2026-10-20")), eventsKnown: true)
+        let source = WidgetDataSource(config: config, settings: TestConfig.defaults, snapshot: snapshot, calendar: TestCalendar.calendar)
+        #expect(Set(source.plan(at: TestCalendar.context().now).poolNames) == ["Put off", "Dated"])
+        #expect(source.plan(at: yesterday.now).poolNames.isEmpty, "the same day keeps the snapshot's pool")
+    }
 }

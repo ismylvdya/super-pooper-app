@@ -21,9 +21,20 @@ actor InMemoryTaskStore: TaskStore, TaskTrash, VersionConflictResolving, Externa
     /// The names a note can take, as the TaskNotes store has them.
     private let names: ObsidianNoteNames
 
-    init(tasks: [TaskItem], names: ObsidianNoteNames) {
+    /// Today, logically, and the day's boundary: an edit's date decides the pool, as in the file (`TodayPool.settled`).
+    private let today: @Sendable () -> LocalDate?
+    private let boundary: LocalTime
+
+    init(tasks: [TaskItem], names: ObsidianNoteNames, today: @escaping @Sendable () -> LocalDate? = { nil }, boundary: LocalTime = .midnight) {
         self.tasks = tasks
         self.names = names
+        self.today = today
+        self.boundary = boundary
+    }
+
+    private func settled(_ task: TaskItem, was: TaskItem?, changes: [TaskEdit]) -> TaskItem {
+        guard let day = today() else { return task }
+        return TodayPool.settled(task, was: was, changes: changes, today: day, boundary: boundary)
     }
 
     func failScans(with error: Error?) { scanError = error }
@@ -42,7 +53,7 @@ actor InMemoryTaskStore: TaskStore, TaskTrash, VersionConflictResolving, Externa
     }
 
     func apply(_ changes: [TaskEdit], to task: TaskItem) async throws -> TaskWriteResult {
-        let updated = task.applying(changes)
+        let updated = settled(task.applying(changes), was: task, changes: changes)
         tasks = tasks.map { $0.name == task.name ? updated : $0 }
         return TaskWriteResult(task: updated, hadConflict: false)
     }
@@ -108,7 +119,7 @@ actor InMemoryTaskStore: TaskStore, TaskTrash, VersionConflictResolving, Externa
     func backup(_ tasks: [TaskItem], reason: String) async throws {}
 
     func create(_ draft: NoteDraft, named name: String) async throws -> TaskItem {
-        var task = draft.note
+        var task = settled(draft.note, was: nil, changes: [])
         task.name = name
         task.id = TaskID("TaskNotes/Tasks/\(name).md")
         tasks.append(task)

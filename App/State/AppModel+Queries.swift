@@ -39,7 +39,10 @@ extension AppModel {
     func listCount(_ listID: String) -> Int { parts.lists.count(of: listID) }
 
     /// Taken out of today and able to come back: put off with Not today, or skipped (`SetAsideToday`).
-    var setAsideToday: [TaskItem] { SetAsideToday.notes(in: tasks, skipped: parts.day.skippedNames) }
+    var setAsideToday: [TaskItem] {
+        let context = parts.day.context()
+        return SetAsideToday.notes(in: tasks, skipped: parts.day.skippedNames, today: context.today, boundary: context.boundary)
+    }
 
     // MARK: - Backlog pages
 

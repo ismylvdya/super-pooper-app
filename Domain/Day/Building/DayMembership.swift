@@ -7,14 +7,15 @@ struct DayMembership: Sendable {
     /// The parent of each repeatable subtask, by the subtask's name (`RepeatableSubtasks.parents`).
     var parents: [NoteName: TaskItem] = [:]
 
-    /// Today: habits of the day shown in Today (not skipped, or already marked), this week's tasks not dated later and
-    /// what was completed today. A repeatable subtask is in when its parent is, skipped or not, unless skipped itself.
+    /// Today: habits of the day shown in Today (not skipped, or already marked), the tasks in today's pool
+    /// (`TodayPool`), the tasks with a time today (on the timeline) and what was completed today. A repeatable subtask is in when its parent is, skipped or not, unless skipped itself.
     func isInDay(_ task: TaskItem, skipped: Set<String>) -> Bool {
         if task.isHabit {
             guard task.isInTodayHabits, !skipped.containsNoteName(task.name) else { return false }
             return comesUpToday(task) || task.mark(on: context.today) != nil
         }
-        return (task.status.isThisWeek && !isDatedLater(task) && !task.waitsInList)
+        let isOpen = TaskStatus.open.contains(task.status)
+        return (isOpen && (task.isInTodayPool || isTimedToday(task)))
             || (task.status == .done && task.completedDate == context.today)
     }
 
@@ -23,7 +24,7 @@ struct DayMembership: Sendable {
     /// stands on the next day of its rule too.
     func isOnOtherDay(_ task: TaskItem) -> Bool {
         if task.isHabit { return task.isInTodayHabits && hasLineOnDay(task) }
-        guard task.status.isThisWeek, let due = task.due else { return false }
+        guard TaskStatus.open.contains(task.status), let due = task.due else { return false }
         return context.logicalDay(of: due) == context.today
     }
 
@@ -61,10 +62,9 @@ struct DayMembership: Sendable {
         depth <= parents.count ? parents[task.name.noteName] : nil
     }
 
-    /// A task dated after today (Tomorrow, a day of next week) waits for its day, even this week.
-    /// An overdue one stays in today.
-    private func isDatedLater(_ task: TaskItem) -> Bool {
-        guard let due = task.due else { return false }
-        return context.logicalDay(of: due) > context.today
+    /// A task with a time today stands on today's timeline by that time.
+    private func isTimedToday(_ task: TaskItem) -> Bool {
+        guard let due = task.due, due.time != nil else { return false }
+        return context.logicalDay(of: due) == context.today
     }
 }

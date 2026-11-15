@@ -5,11 +5,11 @@ import Foundation
 /// moved among a day's sections, tasks joined in a worm. The widgets and notifications follow.
 @MainActor
 final class DayCommands {
-    private let day: DayStateController
-    private let sections: DaySectionsController
-    private let tasks: TaskState
-    private let writer: NoteWriter
-    private let derived: DerivedStatePublisher
+    let day: DayStateController
+    let sections: DaySectionsController
+    let tasks: TaskState
+    let writer: NoteWriter
+    let derived: DerivedStatePublisher
     private let appEvents: AppEventSink
 
     init(day: DayStateController, sections: DaySectionsController, tasks: TaskState, writer: NoteWriter, derived: DerivedStatePublisher,
@@ -48,8 +48,16 @@ final class DayCommands {
 
     /// Not today for a task (`NotToday`).
     func notToday(_ name: String, on day: LocalDate?) async {
-        guard isToday(day), let task = tasks.task(named: name) else { return }
-        await write(task, NotToday.changes())
+        guard isToday(day), let task = tasks.task(named: name), let local = localTask(named: name) else { return }
+        await write(task, NotToday.changes(for: local, context: self.day.context()))
+        await carrySubtasks(of: task, into: false)
+    }
+
+    /// The open subtasks of a task taken out of today's pool or brought into it go along (`TodayPool.following`).
+    private func carrySubtasks(of task: TaskItem, into inPool: Bool) async {
+        for name in TodayPool.following(task, into: inPool, in: tasks.tasks) {
+            await writer.edit(name) { _ in [.inTodayPool(inPool)] }
+        }
     }
 
     func setManualOrder(_ names: [String]) {
@@ -112,8 +120,8 @@ final class DayCommands {
 
     // MARK: - Sections
 
-    /// Dropped under a section's header in the pool of `date`: it stands in that section that day only (its routine and
-    /// note stay as they are); the pool's order is today's only.
+    /// Dropped under a section's header in the pool of `date`: it stands in that section (a task's line says so, until the
+    /// day's turn takes a section that does not last away; its routine stays as it is); the pool's order is today's only.
     func moveTask(_ name: String, toSection id: String, poolOrder: [String], on date: LocalDate) {
         moveTasks([name], toSection: id, poolOrder: poolOrder, on: date)
     }
@@ -168,59 +176,40 @@ final class DayCommands {
         let id = UUID().uuidString
         guard let added = sections.snapshot(on: date).addingSection(id: id, titled: title, with: names, after: after) else { return nil }
         sections.update(on: date) { $0 = added }
+        if isToday(date) {
+            let tag = added.order.first { $0.id == id }.flatMap { PoolSectionTag.tag(of: $0, definitions: sections.definitions) }
+            for name in added.membership.filter({ $0.value == id }).map(\.key) { writeSection(tag, of: name) }
+        }
         Task { await derived.publish() }
         return id
     }
 
-    /// A section's header edited in place: its title on `date` only; the next day starts from its own sections.
+    /// A section's header edited in place: its title on `date` only; the next day starts from its own sections. The lines
+    /// of an own section's tasks take its new tag.
     func renameSection(_ id: String, to title: String, on date: LocalDate) {
+        let before = sections.snapshot(on: date)
         sections.update(on: date) { $0 = $0.renamingSection(id, to: title) }
+        let definitions = sections.definitions
+        if isToday(date), let old = before.order.first(where: { $0.id == id }),
+           let new = sections.snapshot(on: date).order.first(where: { $0.id == id }),
+           let oldTag = PoolSectionTag.tag(of: old, definitions: definitions) {
+            let newTag = PoolSectionTag.tag(of: new, definitions: definitions)
+            if newTag != oldTag {
+                for task in tasks.tasks where task.poolSection == oldTag && !task.isHabit { writeSection(newTag, of: task.name) }
+            }
+        }
         Task { await derived.publish() }
     }
 
-    /// Today's look as it was changed elsewhere (by hand in the file, on another device): its sections, each line's
-    /// section and order, and what is kept out of today become the app's.
-    func applyLook(_ look: DayLook) {
-        let today = day.context().today
-        let definitions = sections.definitions
-        sections.update(on: today) { current in
-            current = current.applying(look, title: { section in
-                section.title ?? definitions.first { $0.id == section.id }.map { L10n.string($0.title) } ?? section.id
-            }, makeID: { UUID().uuidString })
-        }
-        for name in look.skipped { day.skip(name) }
-        day.setManualOrder(look.poolOrder)
-    }
-
-    /// A habit's line got another time in the file: its first block stands there today, its settings stay.
-    /// What the habits' lines say about today: a habit's first block stands at its line's time, or in the pool for a line with
-    /// no time. The file wins over what this device remembers; a second block of a day has no line of its own.
-    func takeTimes(of look: DayLook) {
-        for (name, time) in look.times ?? [:] {
-            guard let habit = tasks.task(named: name), habit.isHabit else { continue }
-            if TodayTimes(day.dayState.timeMoves).blocks(of: habit).first?.time != time { moveHabit(named: name, to: time) }
-        }
-        for name in look.untimed {
-            guard let habit = tasks.task(named: name), habit.isHabit else { continue }
-            let today = TodayTimes(day.dayState.timeMoves)
-            if let block = today.blocks(of: habit).first { day.setTimeMoves(today.pooling(habit, slot: block.written)) }
-        }
-    }
-
-    private func moveHabit(named name: String, to time: LocalTime) {
-        guard let habit = tasks.task(named: name), habit.isHabit else { return }
-        let today = TodayTimes(day.dayState.timeMoves)
-        let blocks = today.blocks(of: habit)
-        let moves = blocks.first.map { today.moving(habit, slot: $0.written, to: time) } ?? today.placing(habit, at: time)
-        day.setTimeMoves(moves)
-    }
-
+    /// Shown in the section at once; a task's line takes the section's tag on today (`PoolSectionTag`).
     private func placeInSection(_ name: String, _ id: String?, on date: LocalDate) {
         guard let id else { return }
         sections.update(on: date) { sections in
             sections.membership = sections.membership.filter { !$0.key.isSameNoteName(as: name) }
             sections.membership[name] = id
         }
+        guard isToday(date), let section = sections.snapshot(on: date).order.first(where: { $0.id == id }) else { return }
+        writeSection(PoolSectionTag.tag(of: section, definitions: sections.definitions), of: name)
     }
 
     // MARK: - Backlog pages
@@ -237,6 +226,7 @@ final class DayCommands {
     func bringFromBacklog(_ name: String, to day: LocalDate, poolOrder: [String]?) async {
         guard let local = localTask(named: name) else { return }
         await apply(BacklogMoves.intoPool(local, day: day, context: self.day.context()), to: name)
+        if isToday(day), let task = tasks.task(named: name) { await carrySubtasks(of: task, into: true) }
         if let poolOrder, isToday(day) { setManualOrder(poolOrder) }
     }
 

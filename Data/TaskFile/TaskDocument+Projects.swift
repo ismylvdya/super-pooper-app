@@ -2,13 +2,13 @@ import Foundation
 
 /// An older file's own lists — `### Title` headings under Lists, read now as Someday's (`legacySections`) — become
 /// projects once: a parent line of the title marked as a project (`TaskEntry.showsAsProject`), its lines under it as its
-/// subtasks. Only Today's headings are the day's sections; a heading anywhere else is such a list.
+/// subtasks. An older file's Today has its headings made tags before (`TaskDocument+Today`), so every heading left is such a list.
 extension TaskDocument {
     /// True when a heading was made a project.
     @discardableResult
     mutating func makeHeadingsProjects(isTaken: (String) -> Bool) -> Bool {
         var changed = false
-        for index in sections.indices where sections[index].kind.map({ $0 != .now }) == true {
+        for index in sections.indices where sections[index].kind != nil {
             var made = false
             var loose: [TaskEntry] = []
             for group in sections[index].groups {

@@ -26,10 +26,12 @@ struct OtherDayTests {
         #expect(!slot.isPast)
     }
 
-    @Test func onlyThisWeeksTasksAreShown() {
+    /// What is dated that day in any open list, Someday too; an undated or archived task is not.
+    @Test func whatIsDatedThatDayIsShown() {
         let waiting = makeTask("Waiting", status: .someday) { $0.due = TaskDue("2026-10-22") }
         let planned = makeTask("Planned") { $0.due = TaskDue("2026-10-22") }
-        #expect(tomorrow([waiting, planned]).dayNames == ["Planned"] as Set)
+        let archived = makeTask("Old", status: .archived) { $0.due = TaskDue("2026-10-22") }
+        #expect(tomorrow([waiting, planned, archived, makeTask("Undated")]).dayNames == ["Planned", "Waiting"] as Set)
     }
 
     /// A habit stands on the day its line in the file does: one open today is not on tomorrow, though its rule has that

@@ -7,7 +7,6 @@
   "dayMarkerPrefix": "%% day ",
   "dayMarkerSuffix": " %%",
   "sections": {
-    "now": "Today",
     "soon": "Next actions",
     "halfYear": "Soon",
     "someday": "Someday",
@@ -15,8 +14,14 @@
     "trash": "Trash",
     "done": "Done"
   },
+  "legacyTodaySections": ["Today", "Now"],
+  "pool": {
+    "tag": "#in_today_pool",
+    "sectionPrefix": "#section_",
+    "lastingSections": ["morning", "evening"],
+    "restSection": "day"
+  },
   "legacySections": {
-    "Now": "now",
     "Inbox": "soon",
     "Waiting": "soon",
     "Half year": "halfYear",

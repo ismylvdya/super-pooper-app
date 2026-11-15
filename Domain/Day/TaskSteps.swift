@@ -35,18 +35,6 @@ enum TaskSteps {
         nextStep(of: project, index: Index(tasks))
     }
 
-    /// A step just done: the next one of its task on top is up from tomorrow, not today — it comes in the next morning's
-    /// review. Nil when there is no next one, or it stands on a later day already.
-    static func afterDone(_ done: TaskItem, in tasks: [TaskItem], tomorrow: LocalDate) -> (name: String, edits: [TaskEdit])? {
-        let index = Index(tasks)
-        guard let project = ([done] + index.ancestors(of: done)).last(where: isProject), project.name != done.name,
-              let next = nextStep(of: project, index: index) else { return nil }
-        if let day = next.due?.day, day >= tomorrow { return nil }
-        var edits: [TaskEdit] = next.status.isThisWeek ? [] : [.status(.thisWeek)]
-        edits.append(.due(TaskDue(day: tomorrow)))
-        return (next.name, edits)
-    }
-
     private static func isProject(_ task: TaskItem) -> Bool {
         task.stepsOneByOne && !task.isHabit && !task.status.isCompleted
     }

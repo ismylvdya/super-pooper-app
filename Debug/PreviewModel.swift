@@ -15,10 +15,15 @@ enum PreviewModel {
                      signature: AppSignatureReading = FixedSignature(date: nil),
                      appEvents: AppEventSink? = nil) -> (model: AppModel, router: Router, config: AppConfig, banners: BannerCenter)? {
         guard let config = try? AppConfig.load(), let obsidian = try? ObsidianConventions.load() else { return nil }
+        // As the store's file has them after the day's turn this morning (`TodayPool`).
+        let context = DayContext(now: clock.now, calendar: calendar.current, boundary: config.defaultSettings.values.day.boundary,
+                                 energyHour: config.defaultSettings.values.day.energyHour)
+        let tasks = TodayPool.turning(tasks, today: context.today, boundary: context.boundary)
         let store = JSONFileStore(directory: FileManager.default.temporaryDirectory
             .appendingPathComponent("SuperPooperPreview-\(UUID().uuidString)"))
         let settingsStore = SettingsStore(store: store, defaults: config.defaultSettings)
-        let memory = InMemoryTaskStore(tasks: tasks, names: ObsidianNoteNames(rules: obsidian.noteNames))
+        let memory = InMemoryTaskStore(tasks: tasks, names: ObsidianNoteNames(rules: obsidian.noteNames),
+                                       today: { context.today }, boundary: context.boundary)
         let services = AppServices(
             vault: FixedVaultLocation(url: store.directory), tasks: memory,
             trash: memory,

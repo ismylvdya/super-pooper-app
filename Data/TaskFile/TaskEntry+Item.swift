@@ -19,7 +19,8 @@ extension TaskEntry {
         item.completedDate = completed
         item.isOverdue = isOverdue
         item.isStarted = box == .started
-        item.waitsInList = section == .soon && item.due == nil
+        item.isInTodayPool = inTodayPool
+        item.poolSection = poolSection
         return item
     }
 
@@ -35,7 +36,7 @@ extension TaskEntry {
     private func status(in section: TaskSection) -> TaskStatus {
         if box == .done || section == .done { return .done }
         switch section {
-        case .now, .soon: return .thisWeek
+        case .soon: return .thisWeek
         case .halfYear: return .halfYear
         case .someday: return .someday
         case .archive: return .archived
@@ -58,22 +59,22 @@ extension TaskEntry {
         zone = item.timeZone
         completed = item.completedDate
         isOverdue = item.isOverdue
+        inTodayPool = item.isInTodayPool
+        poolSection = item.poolSection
     }
 }
 
 extension TaskSection {
-    /// Where a task of that status stands. This week's: Today from its day on, otherwise Next actions, undated too.
-    static func of(_ item: TaskItem, current: TaskSection, today: LocalDate, boundary: LocalTime = .midnight) -> TaskSection {
+    /// Where a task of that status stands: a section is a planning level, whatever the date (a deadline).
+    static func of(_ item: TaskItem, current: TaskSection) -> TaskSection {
         switch item.status {
-        case .thisWeek:
-            guard let day = item.due?.logicalDay(boundary: boundary) else { return .soon }
-            return day > today ? .soon : .now
+        case .thisWeek: return .soon
         case .halfYear: return .halfYear
         case .someday: return .someday
         case .archived: return .archive
         // A done task stays where it is until it is put away, and then it is in Done already.
         case .done: return current
-        case .habit: return .now
+        case .habit: return .soon
         }
     }
 }

@@ -135,7 +135,7 @@ final class NoteCommands {
 
     /// The new-item page a "+" opens (`seed`), with a fresh task draft and a fresh habit draft behind its slider.
     func newItemPage(_ seed: NewItemSeed) -> NewItemPage {
-        NewItemPage(seed: seed, taskDraft: .newTask, habitDraft: newHabitDraft())
+        NewItemPage(seed: seed, taskDraft: .newTask, habitDraft: newHabitDraft(), today: day.context().today)
     }
 
     /// The new-item page is left: its note is created (none for a page left untouched), or the user is told why

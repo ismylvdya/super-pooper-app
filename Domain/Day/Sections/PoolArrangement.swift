@@ -19,7 +19,8 @@ struct PoolSectionContent: Identifiable, Hashable, Sendable {
 /// The pool split into the day's sections.
 enum PoolArrangement {
     /// Sections in their order; each holds its tasks in the pool's sort and manual order. A task moved into a section
-    /// that day stands there; the others go by their routine (`time_of_day`) or to the section that catches the rest. A
+    /// that day stands there, then one whose line names a section (`PoolSectionTag`); the others go by their routine
+    /// (`time_of_day`) or to the section that catches the rest. A
     /// subtask stays with its parent. A worm's members stand together, with their subtasks, after the first of them in the
     /// shown order and in its section. A section without tasks is left out, whether a default or the user's own.
     static func arrange(_ pool: [DayItem], sections: DaySections, definitions: [PoolSectionDefinition]) -> [PoolSectionContent] {
@@ -31,7 +32,8 @@ enum PoolArrangement {
         var rootSection = rest
         for item in pool {
             if item.depth == 0 {
-                rootSection = shown(sections.section(of: item.id)) ?? shown(definitions.id(for: item.task.habit.timeOfDay)) ?? rest
+                let tagged = item.task.poolSection.flatMap { PoolSectionTag.section(named: $0, in: sections, definitions: definitions)?.id }
+                rootSection = shown(sections.section(of: item.id)) ?? tagged ?? shown(definitions.id(for: item.task.habit.timeOfDay)) ?? rest
             }
             items[rootSection, default: []].append(item)
         }

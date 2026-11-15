@@ -20,9 +20,11 @@ enum NewItemPlacement: Hashable, Sendable {
         .timeline(day: LocalDate(moment, in: calendar), time: LocalTime(moment, in: calendar))
     }
 
-    /// What the placement presets on the new item: a task's date (and a timeline's time), a habit's reminder time.
-    func presets(_ kind: NewItemSeed.Kind) -> [TaskEdit] {
+    /// What the placement presets on the new item: a task's date (and a timeline's time), a habit's reminder time. In
+    /// today's pool a task takes its mark (`TodayPool`), not a date: a date is a deadline.
+    func presets(_ kind: NewItemSeed.Kind, today: LocalDate? = nil) -> [TaskEdit] {
         switch (self, kind) {
+        case (.pool(_, _, let day), .task) where day == today, (.newSection(_, let day), .task) where day == today: [.inTodayPool(true)]
         case (.timeline(let day, let time), .task): [.due(TaskDue(day: day, time: time))]
         case (.timeline(_, let time), .habit): [.reminderTimes([time])]
         case (.pool(_, _, let day), .task), (.newSection(_, let day), .task): [.due(TaskDue(day: day))]

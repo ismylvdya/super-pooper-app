@@ -1,7 +1,7 @@
 import Foundation
 
-/// The tasks file: second-level headings are the sections, third-level ones the groups inside (the pool's sections in
-/// Now), lines with a checkbox the tasks. Whatever else the file holds — a section of the user's own, a line that is no
+/// The tasks file: second-level headings are the sections (the planning levels), lines with a checkbox the tasks. A
+/// third-level heading is a group of an older file (its own list, or a section of its Today), made anew once. Whatever else the file holds — a section of the user's own, a line that is no
 /// task — stays where it is, word for word.
 struct TaskDocument: Equatable, Sendable {
     struct Group: Equatable, Sendable {
@@ -22,6 +22,8 @@ struct TaskDocument: Equatable, Sendable {
 
     var prelude: [String] = []
     var sections: [Section] = []
+    /// It was read from an older file with a section of today (`legacyTodaySections`), whose lines now stand in Next actions.
+    var hadTodaySection = false
 
     /// A new file: every section, empty.
     init(format: TaskFileFormat) {
@@ -31,6 +33,7 @@ struct TaskDocument: Equatable, Sendable {
     init(text: String, format: TaskFileFormat) {
         var kinds = Dictionary(TaskSection.allCases.map { (format.title(of: $0), $0) }, uniquingKeysWith: { first, _ in first })
             .merging(format.legacySections) { current, _ in current }
+            .merging(format.legacyTodaySections.map { ($0, TaskSection.soon) }) { current, _ in current }
         // A file with no Next actions is an older one, where its title today meant what Next actions is.
         if !text.components(separatedBy: "\n").contains(Self.sectionPrefix + format.sections.soon) {
             kinds[format.sections.halfYear] = .soon
@@ -92,6 +95,7 @@ struct TaskDocument: Equatable, Sendable {
             while sections[index].other.first?.isEmpty == true { sections[index].other.removeFirst() }
         }
         while prelude.last?.isEmpty == true { prelude.removeLast() }
+        hadTodaySection = takeTodaySections(format: format)
         mergeLegacySections(format: format)
         // A section the file has not got yet goes after the one before it in a new file's order;
         // Done, which has a file of its own, at the end.
@@ -113,7 +117,8 @@ struct TaskDocument: Equatable, Sendable {
                 continue
             }
             let same = sections.filter { $0.kind == kind }
-            let host = same.first { format.legacySections[$0.title] == nil } ?? same[0]
+            let isOlder = { (title: String) in format.legacySections[title] != nil || format.legacyTodaySections.contains(title) }
+            let host = same.first { !isOlder($0.title) } ?? same[0]
             guard section.title == host.title else { continue }
             var joined = section
             joined.title = format.title(of: kind)

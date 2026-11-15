@@ -3,8 +3,9 @@ import Foundation
 /// The tasks' one file, as a person would keep them by hand: `Task Manager/Tasks.md` in the chosen folder, a line per task
 /// under the section of its planning level (`TaskDocument`), and a JSON file per habit (`HabitFile`), whose days are its
 /// lines in Done. Every write reads the file as it is now, changes only the item's own lines and writes it atomically, so
-/// what was edited elsewhere stays. What a line cannot say (today's order, sections and worms) the app keeps; its look
-/// of today comes back to the file through `mirror`. The rest of what the store does is in `TaskFileStore+Items`.
+/// what was edited elsewhere stays. A line says whether it is in today's pool and in which section (`TodayPool`); what a
+/// line cannot say (today's order and worms) the app keeps, and the habits' lines of today come to the file through
+/// `mirror`. The rest of what the store does is in `TaskFileStore+Items`.
 actor TaskFileStore: TaskStore {
     struct Snapshot {
         var document: TaskDocument
@@ -98,6 +99,11 @@ actor TaskFileStore: TaskStore {
         let done = doneURL(root: root)
         try await ensureDownloaded(done)
         if fileSystem.fileExists(done) { document.takeDone(of: TaskDocument(text: try fileSystem.read(done).text, format: format)) }
+        // An older file's Today joins Next actions once, with a backup of the file as it was (`takeTodaySections`).
+        if document.hadTodaySection {
+            _ = try? backups.backup([url, done].filter(fileSystem.fileExists), reason: "format3")
+            document.hadTodaySection = false
+        }
         var snapshot = Snapshot(document: document, habits: try await readHabits(root: root))
         TaskLineIDs.assign(to: &snapshot.document, habits: Set(snapshot.habits.keys))
         snapshot.indexNames()
@@ -212,36 +218,32 @@ actor TaskFileStore: TaskStore {
         return item
     }
 
-    /// What a day's turn or a hand in Obsidian leaves to tidy: a task dated before today
-    /// comes up to today without its time, so it waits in the pool; a task whose day has come moves to Now from Next actions,
-    /// Soon or Someday alike (a date is kept whatever the task's level); a habit's line ticked in today's
-    /// sections is its mark. True when something changed.
+    /// What a day's turn or a hand in Obsidian leaves to tidy: a habit's line ticked in Next actions is its mark, a habit's
+    /// line carries no tag of the pool, and a file about another day has its day turned (`turnDay`). True when something
+    /// changed.
     func normalize(_ snapshot: inout Snapshot) -> Bool {
         let before = snapshot.document
         let day = today()
-        dateNextActions(&snapshot.document, to: day, habits: Set(snapshot.habits.keys))
-        // Ticked habit lines, and lines whose day has come from Next actions, Soon and Someday, leave their sections.
-        var moves: [(id: String, habit: Bool)] = []
-        snapshot.document.walk { entry, section, parent, _ in
-            guard let id = entry.id else { return }
-            if snapshot.habits[id] != nil {
-                if section == .now || section == .soon, entry.box != .open { moves.append((id, true)) }
-            } else if section == .soon || section == .halfYear || section == .someday, parent == nil, entry.box != .done,
-                      logicalDay(of: entry).map({ $0 <= day }) == true {
-                moves.append((id, false))
+        let habits = Set(snapshot.habits.keys)
+        var ticked: [String] = []
+        snapshot.document.walk { entry, section, _, _ in
+            if let id = entry.id, habits.contains(id), section == .soon, entry.box != .open, entry.completed == nil { ticked.append(id) }
+        }
+        for id in ticked {
+            guard let taken = snapshot.document.remove(where: { $0.id == id && $0.completed == nil }), let name = snapshot.habits[id]?.name else { continue }
+            snapshot.document.setMark(taken.entry.box == .done ? .done : .partial, on: day, habit: id, name: name)
+        }
+        snapshot.document.forEachOpenLine { entry, _ in
+            if entry.id.map(habits.contains) ?? false {
+                entry.inTodayPool = false
+                entry.poolSection = nil
             }
         }
-        for move in moves {
-            guard let taken = snapshot.document.remove(where: { $0.id == move.id && $0.completed == nil }) else { continue }
-            if move.habit, let name = snapshot.habits[move.id]?.name {
-                snapshot.document.setMark(taken.entry.box == .done ? .done : .partial, on: day, habit: move.id, name: name)
-            } else {
-                snapshot.document.insert(taken.entry, into: .now)
-            }
+        if !snapshot.document.prelude.contains(dayMarker) {
+            turnDay(&snapshot, to: day)
+            setDayMarker(in: &snapshot.document)
         }
-        rollOver(&snapshot.document, to: day, habits: Set(snapshot.habits.keys))
-        dateLooseLines(&snapshot.document, to: day, habits: Set(snapshot.habits.keys))
-        gatherSubtasks(&snapshot.document, habits: Set(snapshot.habits.keys))
+        gatherSubtasks(&snapshot.document, habits: habits)
         carryMissedHabits(&snapshot, to: day)
         return snapshot.document != before
     }
@@ -251,54 +253,28 @@ actor TaskFileStore: TaskStore {
         entry.date.map { TaskDue(day: $0, time: entry.time).logicalDay(boundary: boundary()) }
     }
 
-    /// A new day takes every undated task of Next actions: it stands in today's pool and morning review, whether the review is
-    /// gone through or not. Tomorrow in the review moves it on. Told by the file's day marker, which the day's first mirror
-    /// renews, so a task added during the day waits for the next morning. A file with no marker says nothing about a day.
-    private func dateNextActions(_ document: inout TaskDocument, to day: LocalDate, habits: Set<String>) {
-        let hasMarker = document.prelude.contains { $0.hasPrefix(format.dayMarkerPrefix) && $0.hasSuffix(format.dayMarkerSuffix) }
-        guard hasMarker, !document.prelude.contains(dayMarker), let list = document.sections.firstIndex(where: { $0.kind == .soon }) else { return }
-        for group in document.sections[list].groups.indices {
-            for index in document.sections[list].groups[group].entries.indices {
-                let entry = document.sections[list].groups[group].entries[index]
-                if entry.date == nil, entry.box != .done, !(entry.id.map(habits.contains) ?? false) {
-                    document.sections[list].groups[group].entries[index].date = day
-                }
-            }
+    /// A new day (the file's day marker names another one, or none): every task leaves today's pool and the sections
+    /// that do not last (`format.pool.lastingSections`), and the day's turn puts back in the pool what is due
+    /// (`TodayPool.dayTurn`). A date that has passed stays — it is a deadline — and its line is marked overdue; the
+    /// time it was meant for has passed with its day, so it goes (with its zone and its notification).
+    private func turnDay(_ snapshot: inout Snapshot, to day: LocalDate) {
+        let habits = Set(snapshot.habits.keys)
+        let lasting = Set(format.pool.lastingSections)
+        snapshot.document.forEachOpenLine { entry, section in
+            guard !(entry.id.map(habits.contains) ?? false), section != .archive else { return }
+            entry.inTodayPool = false
+            if let word = entry.poolSection, !lasting.contains(word) { entry.poolSection = nil }
+            guard entry.box != .done, let date = logicalDay(of: entry), date < day else { return }
+            entry.isOverdue = true
+            entry.time = nil
+            entry.zone = nil
+            entry.alarm = nil
         }
-    }
-
-    /// Only a date puts a task in Today: an undated line there (from an older file, or typed in) is today's.
-    private func dateLooseLines(_ document: inout TaskDocument, to day: LocalDate, habits: Set<String>) {
-        guard let now = document.sections.firstIndex(where: { $0.kind == .now }) else { return }
-        for group in document.sections[now].groups.indices {
-            for index in document.sections[now].groups[group].entries.indices {
-                let entry = document.sections[now].groups[group].entries[index]
-                if entry.date == nil, entry.box != .done, !(entry.id.map(habits.contains) ?? false) {
-                    document.sections[now].groups[group].entries[index].date = day
-                }
-            }
-        }
-    }
-
-    /// An open task's date that has passed becomes today's. The time it was meant for has passed with its day, so it goes
-    /// (with its zone and its notification), and the task stands in the pool.
-    private func rollOver(_ document: inout TaskDocument, to day: LocalDate, habits: Set<String>) {
-        func roll(_ entries: inout [TaskEntry]) {
-            for index in entries.indices {
-                // A habit's line has its own way (`carryMissedHabits`).
-                if entries[index].box != .done, let date = entries[index].date, logicalDay(of: entries[index]) ?? date < day, !(entries[index].id.map(habits.contains) ?? false) {
-                    // Only what had a time was missed; a line without one just waits on.
-                    if entries[index].time != nil { entries[index].isOverdue = true }
-                    entries[index].date = day
-                    entries[index].time = nil
-                    entries[index].zone = nil
-                    entries[index].alarm = nil
-                }
-                roll(&entries[index].children)
-            }
-        }
-        for section in document.sections.indices where document.sections[section].kind == .now || document.sections[section].kind == .soon {
-            for group in document.sections[section].groups.indices { roll(&document.sections[section].groups[group].entries) }
+        snapshot.indexNames()
+        let items = items(of: snapshot)
+        let due = TodayPool.dayTurn(items, today: day, boundary: boundary())
+        for item in items where due.contains(item.name) {
+            snapshot.document.update(id: item.id.value) { $0.inTodayPool = true }
         }
     }
 

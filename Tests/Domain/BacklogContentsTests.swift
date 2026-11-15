@@ -7,20 +7,20 @@ import Testing
 struct BacklogContentsTests {
     private let rules = TestConfig.rules.day
 
-    /// Only what has no date waits in Next actions: one taken out of today (Not today). One dated Friday stands in Friday's
-    /// pool; a timed one on the timeline is not there either.
+    /// Next actions holds this week's tasks the day does not show: one taken out of today (Not today), one dated Friday (a
+    /// deadline); not what is in the pool, nor a timed one on the timeline.
     @Test func soonHoldsThisWeeksTasksTheDayDoesNotShow() {
         let tasks = [
             makeTask("Pay the internet"),
             makeTask("Fix the shelf") { $0.due = TaskDue("2026-10-23") },
             makeTask("Call the bank") { $0.due = TaskDue("2026-10-21T15:00") },
-            makeTask("Wash the car") { $0.waitsInList = true },
+            makeTask("Wash the car", inPool: false),
             makeTask("Paint the door", status: .halfYear),
             makeHabit("Water", status: .thisWeek),
         ]
         let plan = DayScenario(tasks: tasks).build()
         let soon = BacklogContents.tasks(at: .thisWeek, in: tasks, plan: plan, rules: rules)
-        #expect(soon.map(\.name) == ["Wash the car"])
+        #expect(soon.map(\.name) == ["Fix the shelf", "Wash the car"])
     }
 
     @Test func halfYearAndSomedayHoldTheirLevel() {

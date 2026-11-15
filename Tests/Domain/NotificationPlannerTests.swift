@@ -77,11 +77,12 @@ struct NotificationPlannerTests {
         #expect(plan([parcel, friday], at: "13:25", skipped: ["Pick up parcel", "Friday call"]).map(\.id) == ["task|Friday call"])
     }
 
-    /// Only tasks of this week notify; backlog tasks get here through auto-promotion first.
-    @Test func timedTasksOutsideThisWeekAreNotPlanned() {
+    /// A timed task of any open list notifies: a date in Soon or Someday stays there (a deadline); an archived one does not.
+    @Test func timedTasksOfEveryOpenListArePlanned() {
         let backlog = makeTask("Backlog", status: .halfYear) { $0.due = TaskDue("2026-10-23T10:00") }
         let waiting = makeTask("Waiting", status: .someday) { $0.due = TaskDue("2026-10-22T10:00") }
-        #expect(plan([backlog, waiting], at: "08:00").isEmpty)
+        let archived = makeTask("Old", status: .archived) { $0.due = TaskDue("2026-10-22T11:00") }
+        #expect(Set(plan([backlog, waiting, archived], at: "08:00").map(\.id)) == ["task|Backlog", "task|Waiting"])
     }
 
     @Test func pastAndCompletedTasksAreNotPlanned() {

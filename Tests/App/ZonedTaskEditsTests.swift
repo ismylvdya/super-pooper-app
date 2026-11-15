@@ -34,11 +34,12 @@ struct ZonedTaskEditsTests {
         #expect(model.task(named: "Standup")?.due == TaskDue("2026-10-21"))
     }
 
-    /// Not today takes the date away, whatever zone it is kept in.
-    @Test func notTodayTakesAZonedTasksDateAway() async throws {
+    /// Not today on a task with a time today moves it to the same time tomorrow, written in its own zone.
+    @Test func notTodayMovesAZonedTaskToTomorrow() async throws {
         let model = try makeModel([jakartaTask("Call", due: "2026-10-22T01:00")])
         await model.perform(.notToday, on: "Call")
-        #expect(model.task(named: "Call")?.due == nil)
+        #expect(model.task(named: "Call")?.due == TaskDue("2026-10-23T01:00"))
+        #expect(model.task(named: "Call")?.isInTodayPool == false)
     }
 
     @Test func aDatePickedInThisWeekIsWrittenInJakartaTime() async throws {
@@ -47,11 +48,11 @@ struct ZonedTaskEditsTests {
         #expect(model.task(named: "Call")?.due == TaskDue("2026-10-22T14:00"))
     }
 
-    /// 05:00 on Monday in Jakarta is 23:00 on Sunday in Belgrade: this week on the phone, so it joins this week.
-    @Test func autoPromotionJudgesTheDayOnThePhonesClock() async throws {
+    /// A dated task of Soon stays in its list (a date is a deadline): auto-promotion is off.
+    @Test func aDatedSoonTaskStaysInItsList() async throws {
         let model = try makeModel([jakartaTask("Visa", due: "2026-10-26T05:00", status: .halfYear)])
         await model.sync(announce: false)
-        #expect(model.task(named: "Visa")?.status == .thisWeek)
+        #expect(model.task(named: "Visa")?.status == .halfYear)
     }
 
     /// A zone added on the date sheet leaves the time as it is: 15:00 stays 15:00, now in that zone, in the note and on the chip.

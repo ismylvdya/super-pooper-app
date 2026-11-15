@@ -32,7 +32,7 @@ struct BacklogMoveTests {
         let model = try model()
         await model.bringFromBacklog("Read a novel", to: context.today, poolOrder: ["Pay the internet", "Read a novel"])
         let note = try #require(model.task(named: "Read a novel"))
-        #expect(note.status == .thisWeek && note.due == TaskDue(day: context.today))
+        #expect(note.status == .thisWeek && note.due == nil && note.isInTodayPool)
         #expect(model.dayState.manualOrder?.firstIndex(of: "Read a novel") == 1)
         #expect(model.plan(at: model.clock.now).pool.contains { $0.id == "Read a novel" })
     }

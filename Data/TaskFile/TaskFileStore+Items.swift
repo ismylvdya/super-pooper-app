@@ -27,9 +27,9 @@ extension TaskFileStore {
     /// The task on its line: in place while it stays in its section under its parent, otherwise moved with its subtasks.
     private func update(id: String, name: String, changes: [TaskEdit], in snapshot: inout Snapshot) throws {
         let was = try current(id: id, name: name, snapshot: snapshot)
-        let updated = was.applying(changes)
+        let updated = TodayPool.settled(was.applying(changes), was: was, changes: changes, today: today(), boundary: boundary())
         guard let place = place(of: id, in: snapshot.document) else { throw TaskStoreError.fileMissing(name) }
-        let target = TaskSection.of(updated, current: place.section, today: today(), boundary: boundary())
+        let target = TaskSection.of(updated, current: place.section)
         let parent = updated.projects.first.flatMap(snapshot.id(ofName:))
         let order = changes.compactMap { change -> Int?? in if case .subtaskOrder(let value) = change { value } else { nil } }.last
         let day = parent.flatMap { followedDay(of: $0, in: snapshot.document) }
@@ -77,7 +77,7 @@ extension TaskFileStore {
             let final = UniqueName.free(name) { snapshot.isTaken($0) }
             // Only what repeats keeps an id in the file; a plain task goes by its line.
             let id = draft.note.isHabit ? makeID() : TaskLineIDs.open(final)
-            var note = draft.note
+            var note = TodayPool.settled(draft.note, was: nil, changes: [], today: today(), boundary: boundary())
             note.name = final
             note.id = TaskID(id)
             let parent = note.projects.first.flatMap(snapshot.id(ofName:))
@@ -91,14 +91,15 @@ extension TaskFileStore {
                 snapshot.indexNames()
                 return habit(of: file, snapshot: snapshot)
             }
-            // A subtask without a date stands on its parent's day, so it goes where the parent is.
+            // A subtask without a date stands on its parent's day, so it goes where the parent is, in today's pool too.
             if note.due == nil, let day { note.due = TaskDue(day: day) }
+            if let parent, place(of: parent, in: snapshot.document)?.entry.inTodayPool == true { note.isInTodayPool = true }
             var entry = TaskEntry(name: final)
             entry.id = id
             entry.writesID = false
             entry.update(from: note, format: format)
             entry.note = Self.lines(of: draft.body)
-            let target = TaskSection.of(note, current: .now, today: today(), boundary: boundary())
+            let target = TaskSection.of(note, current: .soon)
             if let parent {
                 var nested = entry
                 nested.leaveDate(to: day)
@@ -213,7 +214,7 @@ extension TaskFileStore {
         }
     }
 
-    /// Back into Now, open; a name taken meanwhile gets a number.
+    /// Back into Next actions, open; a name taken meanwhile gets a number.
     func unfile(_ task: TaskItem) async throws -> TaskItem {
         try await location.withRoot { root in
             var snapshot = try await read(root: root)
@@ -223,7 +224,7 @@ extension TaskFileStore {
             taken.box = .open
             taken.completed = nil
             taken.id = TaskLineIDs.open(taken.name)
-            snapshot.document.insert(taken, into: .now)
+            snapshot.document.insert(taken, into: .soon)
             try write(snapshot.document, root: root)
             snapshot.indexNames()
             return try current(id: TaskLineIDs.open(taken.name), name: taken.name, snapshot: snapshot)
