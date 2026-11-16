@@ -122,14 +122,37 @@ private extension TimelineReminderBlock {
 
 /// A task on the timeline looks exactly like a pool row; done ones turn grey like past events.
 struct TimelineTaskBlock<Content: View>: View {
+    let item: DayItem
     let isPast: Bool
     var isCompact = false
     @ViewBuilder let content: Content
 
     var body: some View {
+        content.taskSlotPlate(item, isPast: isPast, isCompact: isCompact)
+    }
+}
+
+/// A task's block on a timeline plate with the pool's looks: the high priority tint and, whatever the started look, a
+/// started task's fill.
+private struct TaskSlotPlate: ViewModifier {
+    @Environment(\.tokens) private var tokens
+    @Environment(\.highPriorityLook) private var highPriorityLook
+    @Environment(\.startedLayout) private var startedLayout
+    let item: DayItem
+    let isPast: Bool
+    let isCompact: Bool
+
+    func body(content: Content) -> some View {
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .slotPlate(isPast: isPast, isCompact: isCompact)
+            .slotPlate(isPast: isPast, isCompact: isCompact, tint: tokens.plateTint(HighPriorityMark(look: highPriorityLook, task: item.task)))
+            .environment(\.plateGradient, startedLayout?.shown(for: item).map { AnyView(StartedFill(length: $0.fillLength)) })
+    }
+}
+
+extension View {
+    func taskSlotPlate(_ item: DayItem, isPast: Bool, isCompact: Bool) -> some View {
+        modifier(TaskSlotPlate(item: item, isPast: isPast, isCompact: isCompact))
     }
 }
 

@@ -65,7 +65,7 @@ struct PoolSectionHeader: View {
     }
 
     private var header: some View {
-        SectionHeader(title: section.isCustom ? Text(verbatim: section.title) : Text(LocalizedStringKey(section.title)))
+        SectionHeader(title: section.titleText)
             .accessibilityAddTraits(.isHeader)
     }
 }

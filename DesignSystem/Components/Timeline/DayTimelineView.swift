@@ -132,7 +132,7 @@ struct DayTimelineView<TaskContent: View>: View {
             if style.rowsHaveOwnPlates {
                 taskContent(item, slot)
             } else {
-                TimelineTaskBlock(isPast: slot.isPast, isCompact: style.compactPlates) { taskContent(item, slot) }
+                TimelineTaskBlock(item: item, isPast: slot.isPast, isCompact: style.compactPlates) { taskContent(item, slot) }
             }
         }
     }
