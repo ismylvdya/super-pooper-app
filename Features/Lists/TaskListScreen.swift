@@ -13,6 +13,7 @@ struct TaskListScreen: View {
     @Environment(\.icons) private var icons
     @Environment(\.openURL) private var openURL
     @Environment(\.rules) private var rules
+    @Environment(\.highPriorityLook) private var highPriorityLook
     @Environment(TaskDragState.self) private var drag: TaskDragState?
     let listID: String
     @State private var pendingAction: PendingAction?
@@ -91,7 +92,7 @@ struct TaskListScreen: View {
             ListGroupHeader(title: Text("lists.filed"))
             ForEach(Array(filed.enumerated()), id: \.element.id) { index, task in
                 HStack(spacing: tokens.space(.iconTextGap)) {
-                    TaggedTaskName(name: task.name)
+                    Text(verbatim: task.name).foregroundStyle(tokens.color(.primaryText))
                     Spacer(minLength: 0)
                     if let day = task.completedDate {
                         Text(DateText.format(day, Date.FormatStyle(date: .abbreviated, time: .omitted), calendar: model.calendar))
@@ -113,11 +114,10 @@ struct TaskListScreen: View {
     private func row(_ task: TaskItem, parent: String?, depth: Int, group: String, groupID: String, index: Int, count: Int,
                      rows: [DayItem]) -> some View {
         HStack(spacing: tokens.space(.iconTextGap)) {
-            NavigationLink(value: Route.task(task.name)) {
-                TaggedTaskName(name: task.name, parent: parent)
-                    // A subtask sits under its parent, shifted right, as in the pool.
-                    .padding(.leading, CGFloat(depth) * tokens.subtaskIndent)
-            }
+            // As the pool's row: the name with the chips (no mark before it, no chevron after it); a tap opens the task.
+            TaskRowView(item: listed(task, parent: parent), showsDoneState: false) { router.open(.task(task.name)) }
+                // A subtask sits under its parent, shifted right, as in the pool.
+                .padding(.leading, CGFloat(depth) * tokens.subtaskIndent)
             if task.canPromote {
                 Button {
                     Haptics.play(.move)
@@ -133,7 +133,8 @@ struct TaskListScreen: View {
         .moveDisabled(depth > 0)
         // The pool's menu for the task (Not today has no place outside Today); one tab right or left to the right (D-182),
         // Delete to the left.
-        .listGroupRow(group: group, id: task.name, index: index, count: count, frames: frames) {
+        .listGroupRow(group: group, id: task.name, index: index, count: count, frames: frames,
+                      tint: tokens.plateTint(HighPriorityMark(look: highPriorityLook, task: task))) {
             ActionMenuContent(menu: .context(of: task), item: DayItem(listed: task), isToday: false) {
                 handler.handle($0, taskName: task.name)
             }
@@ -154,6 +155,13 @@ struct TaskListScreen: View {
             rowHeights[id] = frame.height
             if id != TaskDragState.newItemGap { dropLayout?.add(row: id, midY: frame.midY, section: groupID, lift: liftByGap(of: id)) }
         }
+    }
+
+    /// The task as the pool's row shows it, its parent's name over it where the parent is not in the list.
+    private func listed(_ task: TaskItem, parent: String?) -> DayItem {
+        var item = DayItem(listed: task)
+        item.project = parent
+        return item
     }
 
     // MARK: - Dragging

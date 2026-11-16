@@ -22,12 +22,13 @@ extension View {
                                          separatorIndent: separatorIndent, menu: nil))
     }
 
-    /// A row of a group with a long-press menu: the menu lifts the row's plate, and so does a drag from it.
+    /// A row of a group with a long-press menu: the menu lifts the row's plate, and so does a drag from it. `tint` lies over
+    /// the row's plate (a high-priority task's soft red, as in the pool).
     func listGroupRow<Menu: View>(group: String, id: String, index: Int, count: Int, frames: ListGroupFrames,
-                                  vertical: CGFloat? = nil, separatorIndent: CGFloat = 0,
+                                  vertical: CGFloat? = nil, separatorIndent: CGFloat = 0, tint: Color? = nil,
                                   @ViewBuilder menu: () -> Menu) -> some View {
         modifier(ListGroupRow(group: group, id: id, index: index, count: count, frames: frames, vertical: vertical,
-                              separatorIndent: separatorIndent, menu: menu()))
+                              separatorIndent: separatorIndent, tint: tint, menu: menu()))
     }
 
     /// The backing plates of the list's groups, drawn behind it; they follow the list's scrolling, not a drag.
@@ -70,6 +71,7 @@ private struct ListGroupRow<Menu: View>: ViewModifier {
     let frames: ListGroupFrames
     let vertical: CGFloat?
     let separatorIndent: CGFloat
+    var tint: Color? = nil
     let menu: Menu?
 
     func body(content: Content) -> some View {
@@ -78,7 +80,7 @@ private struct ListGroupRow<Menu: View>: ViewModifier {
             .padding(.horizontal, inset)
             .padding(.vertical, vertical ?? tokens.space(.listRowVertical))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .plate(.group)
+            .plate(.group, tint: tint)
             .overlay(alignment: .bottom) {
                 if index < count - 1 {
                     Rectangle().fill(tokens.color(.listSeparator)).frame(height: 1 / displayScale).padding(.leading, inset + separatorIndent)
