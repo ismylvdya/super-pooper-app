@@ -30,8 +30,7 @@ struct TaskRowView: View {
             .padding(.trailing, hasTrailing ? 0 : TitleFade.trailing(corner: reserve, plateInset: plateInset, gap: tokens.space(.fadeGap)))
             if showsDetails, !chips.isEmpty {
                 // Bare icons, level with the title's first line.
-                HStack(spacing: tokens.space(.chipGap)) { chipViews }
-                    .fixedSize()
+                RowChipIcons(chips: chips, onFill: item.task.isHighPriority)
                     .frame(height: titleLineHeight ?? tokens.uiFont(.taskTitle).lineHeight)
             }
             if isDone { MarkGlyph(state: item.state, color: tokens.color(.past), size: tokens.size(.doneMark)) }
@@ -39,14 +38,6 @@ struct TaskRowView: View {
         .contentShape(Rectangle())
         // Anywhere on the row opens the task (chips included).
         .onTapGesture { onOpen?() }
-    }
-
-    private var chipViews: some View {
-        ForEach(chips) { chip in
-            IconGlyph(chip.look.icon, font: .chip)
-                .font(tokens.font(.chip))
-                .foregroundStyle(tokens.color(of: chip.look, onFill: item.task.isHighPriority))
-        }
     }
 
     /// Limited titles fade out instead of ending with "…".

@@ -17,11 +17,21 @@ struct RowChipTests {
     }
 
 
-    /// High priority is no chip at the end of the row: the look chosen in the settings marks it (.25226).
+    /// High priority is no chip at the end of the row: the red fill marks it (.25226, D-184).
     @Test func highPriorityHasNoChip() {
         let item = DayItem(task: makeTask("Call the bank") { $0.isHighPriority = true }, state: .open, problems: [])
         #expect(chips(item, order: ["high", "feel"]).isEmpty)
         #expect(!TestConfig.defaults.pool.chipOrder.contains("high"))
+    }
+
+    /// The morning review shows right of the name only the chips that cannot be changed there: a habit or a repeatable
+    /// task, overdue, a problem; the feel stays among its chips below (D-185).
+    @Test func theReviewShowsOnlyIndicatorsBesideTheName() {
+        #expect(RowChipKind.allCases.filter(\.isIndicator) == [.problem, .overdue, .habit])
+        let task = makeTask("Stretch") { $0.status = .habit; $0.feel = .pleasant }
+        let item = DayItem(task: task, state: .open, problems: [.recurrenceWithoutStart])
+        let shown = RowChip.chips(for: item, order: RowChipKind.allCases.filter(\.isIndicator)).map(\.kind)
+        #expect(shown == [.problem, .habit])
     }
 
     /// The page peek measures the rows' last chip by its kind's icon: the same icon the row draws; the chip order in

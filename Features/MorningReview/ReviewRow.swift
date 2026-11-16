@@ -7,6 +7,7 @@ struct ReviewRow: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
     @Environment(\.rules) private var rules
+    @Environment(\.chipOrder) private var chipOrder
     let item: DayItem
     let today: LocalDate
     let onOpen: () -> Void
@@ -17,7 +18,15 @@ struct ReviewRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
             ParentCaption(parent: item.project) {
-                Text(task.name).font(tokens.font(.taskTitle)).foregroundStyle(item.isDone ? tokens.color(.secondaryText) : tokens.color(.primaryText))
+                // The chips that only show something (a habit, overdue, a problem) stand right of the name, level with
+                // its first line; the ones to change are below.
+                HStack(alignment: .top, spacing: tokens.space(.fadeGap)) {
+                    Text(task.name).font(tokens.font(.taskTitle)).foregroundStyle(item.isDone ? tokens.color(.secondaryText) : tokens.color(.primaryText))
+                    if !indicators.isEmpty {
+                        RowChipIcons(chips: indicators, onFill: task.isHighPriority)
+                            .frame(height: tokens.uiFont(.taskTitle).lineHeight)
+                    }
+                }
             }
             ChipFlow(spacing: tokens.space(.chipGap)) {
                 toggleChip(.high, isOn: task.isHighPriority) { [.highPriority(!$0.isHighPriority)] }
@@ -35,6 +44,11 @@ struct ReviewRow: View {
         .overlay(alignment: .trailing) { DisclosureAccessory() }
         .contentShape(Rectangle())
         .onTapGesture(perform: onOpen)
+    }
+
+    /// The indicator chips in the pool's order (`RowChipKind.isIndicator`).
+    private var indicators: [RowChip] {
+        RowChip.chips(for: item, order: chipOrder.filter(\.isIndicator))
     }
 
     /// The new value is decided from the note as it is when the edit runs (two quick taps go there and back).

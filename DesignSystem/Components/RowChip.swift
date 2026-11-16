@@ -22,6 +22,10 @@ enum RowChipKind: String, CaseIterable, Hashable, Sendable {
 
     /// The icon of its first look: the widest a layout has to leave room for (the page peek).
     var icon: Icon { looks[0].icon }
+
+    /// Only shows something about the task, cannot be changed from a chip (a habit or a repeatable task, overdue, a
+    /// problem); the feel is set by a chip of its own. The morning review shows these right of the name (D-185).
+    var isIndicator: Bool { self != .feel }
 }
 
 /// The property chips shown at the right of a task title.
@@ -48,6 +52,24 @@ struct RowChip: Identifiable {
             case .neutral: return nil
             }
         }
+    }
+}
+
+/// Row chips as bare icons in a row, each in its look's color (on a high-priority fill: the colors for it).
+struct RowChipIcons: View {
+    @Environment(\.tokens) private var tokens
+    let chips: [RowChip]
+    let onFill: Bool
+
+    var body: some View {
+        HStack(spacing: tokens.space(.chipGap)) {
+            ForEach(chips) { chip in
+                IconGlyph(chip.look.icon, font: .chip)
+                    .font(tokens.font(.chip))
+                    .foregroundStyle(tokens.color(of: chip.look, onFill: onFill))
+            }
+        }
+        .fixedSize()
     }
 }
 
