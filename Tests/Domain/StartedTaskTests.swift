@@ -56,6 +56,12 @@ struct StartedLayoutTests {
         #expect(flush.titleShift(plateSize: size, cornerRadius: 26, sizes: sizes, inset: 5) == 0)
     }
 
+    /// On a taller plate the circle's lower half reaches down to the plate's bottom, the same gap from its corner.
+    @Test func onATallPlateTheCircleBecomesABar() throws {
+        let largest = StartedLayout(look: .circle, fillLength: 0.33, titleAfterFill: false, circleSize: 1)
+        #expect(try #require(largest.circle(plateHeight: 80, cornerRadius: 26, sizes: 10...40)) == CGRect(x: 6, y: 6, width: 40, height: 68))
+    }
+
     @Test func theFillMovesTheNameOnlyWhenItGoesAfterIt() {
         let over = StartedLayout(look: .fill, fillLength: 0.5, titleAfterFill: false)
         #expect(over.titleShift(plateSize: size, cornerRadius: 26, sizes: 10...40, inset: 5) == 0)

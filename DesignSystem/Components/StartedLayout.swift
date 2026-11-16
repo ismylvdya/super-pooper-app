@@ -16,14 +16,17 @@ struct StartedLayout: Equatable {
     /// on a task not started.
     var titleGap: Double = 0
 
-    /// The circle: concentric with the plate's top-left corner, so the gap to the plate's edge is the same all along the
-    /// arc; as big as `circleSize` says between `sizes`, never past the plate. A plate is never rounder than half its height.
+    /// The mark: its top concentric with the plate's top-left corner and its bottom with the bottom-left one, so the gap
+    /// to the plate's edge is the same all along both arcs — a circle on a one-line plate, on a taller one a rounded bar
+    /// down the plate's left side. As wide as `circleSize` says between `sizes`, never past the plate. A plate is never
+    /// rounder than half its height.
     func circle(plateHeight: CGFloat, cornerRadius: CGFloat, sizes: ClosedRange<CGFloat>) -> CGRect? {
         guard look == .circle else { return nil }
         let corner = min(cornerRadius, plateHeight / 2)
         let share = CGFloat(min(max(circleSize, 0), 1))
         let radius = min(sizes.lowerBound + (sizes.upperBound - sizes.lowerBound) * share, corner * 2) / 2
-        return CGRect(x: corner - radius, y: corner - radius, width: radius * 2, height: radius * 2)
+        let gap = corner - radius
+        return CGRect(x: gap, y: gap, width: radius * 2, height: max(radius * 2, plateHeight - 2 * gap))
     }
 
     /// How far right of its usual place the name starts: `titleGap` past the circle, never left of its usual place, or
