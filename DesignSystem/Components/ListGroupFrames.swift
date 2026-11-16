@@ -22,9 +22,9 @@ final class ListGroupFrames {
     private(set) var scrollOffset: CGFloat = 0
     /// The list's span on screen.
     private(set) var viewport: ClosedRange<CGFloat> = 0...0
-    /// Where the rows stand across the list: the backings' sides. They come from a row at rest, the widest that lies
-    /// inside the list: a row being swiped or swiped away is narrower or out to the side and leaves them. A list of another
-    /// width (resized or turned) starts them anew.
+    /// Where the rows stand across the list: the backings' sides — the list's sides inside its margins. Not taken from
+    /// the rows: a row being swiped reports frames out to the side or wider than at rest, and a backing taken from one
+    /// of those stayed shifted after the swipe.
     private(set) var columns: ClosedRange<CGFloat>?
     /// Each group's backing from the last moment the rows of every group stood in their order, in the list's content:
     /// kept while a row is lifted, dragged or moving aside — in its own group or another one (a row dragged into another
@@ -32,28 +32,19 @@ final class ListGroupFrames {
     private(set) var heldSpans: [String: ListGroupGeometry.Span] = [:]
     /// How many views each row has on screen now.
     private var appearances: [String: Int] = [:]
-    /// The list's sides on screen.
-    private var listSides: ClosedRange<CGFloat>?
 
     func set(_ row: Row?, group: String, id: String) {
         guard rows[group]?[id] != row else { return }
-        if let frame = row?.frame { takeColumns(from: frame) }
         rows[group, default: [:]][id] = row
         holdSpans()
     }
 
-    private func takeColumns(from frame: CGRect) {
-        if let listSides, frame.minX < listSides.lowerBound || frame.maxX > listSides.upperBound { return }
-        guard frame.width > columns.map({ $0.upperBound - $0.lowerBound }) ?? 0 else { return }
-        columns = frame.minX...frame.maxX
-    }
-
-    /// The list's sides moved (resized or turned): the rows set the backings' sides anew.
-    func setSides(_ sides: ClosedRange<CGFloat>) {
-        guard listSides != sides else { return }
-        listSides = sides
-        columns = nil
-        for row in rows.values.flatMap(\.values) { takeColumns(from: row.frame) }
+    /// The list's sides on screen and its margin on each side (`listGroupStyle`): the rows stand between.
+    func setSides(_ sides: ClosedRange<CGFloat>, margin: CGFloat) {
+        let inner = sides.lowerBound + margin
+        let outer = max(sides.upperBound - margin, inner)
+        guard columns != inner...outer else { return }
+        columns = inner...outer
     }
 
     /// A row's view came or went. A list that gets a new identity (search closed) has the new row appear before the old

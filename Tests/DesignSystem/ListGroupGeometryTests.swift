@@ -20,17 +20,18 @@ struct ListGroupGeometryTests {
         return frames
     }
 
-    /// A row swiped away goes out to the side at its full width: the backing stays where the rows stand.
-    @MainActor @Test func aRowSwipedAwayLeavesTheBackingsSides() {
+    /// The backing's sides are the list's inside its margins, whatever a swiped row reports: out to the side, narrower
+    /// or wider than at rest (a backing taken from such a row stayed shifted after the swipe).
+    @MainActor @Test func aSwipedRowLeavesTheBackingsSides() {
         let frames = ListGroupFrames()
-        frames.setSides(0...375)
+        frames.setSides(0...375, margin: 16)
         let row = { (x: CGFloat, width: CGFloat) in ListGroupFrames.Row(frame: CGRect(x: x, y: 100, width: width, height: 40), index: 0, count: 1) }
         frames.set(row(16, 343), group: "g", id: "a")
         frames.set(row(120, 239), group: "g", id: "a")
+        frames.set(row(-5, 380), group: "g", id: "a")
         frames.set(row(375, 343), group: "g", id: "a")
         #expect(frames.columns == 16...359)
-        frames.setSides(0...812)
-        frames.set(row(16, 780), group: "g", id: "a")
+        frames.setSides(0...812, margin: 16)
         #expect(frames.columns == 16...796, "turned sideways")
     }
 
@@ -42,8 +43,10 @@ struct ListGroupGeometryTests {
     /// A swipe moves the first row sideways at its width (Delete, Done): the backing stays where the rows stood.
     @Test func aSwipedFirstRowLeavesTheBackingInPlace() {
         let frames = frames(["a": row(100, 0, of: 2), "b": row(144, 1, of: 2)])
+        frames.setSides(0...332, margin: 16)
         frames.set(.init(frame: CGRect(x: -120, y: 100, width: 300, height: 44), index: 0, count: 2), group: "g", id: "a")
         #expect(frames.plate(of: "g", overhang: 52) == CGRect(x: 16, y: 100, width: 300, height: 88))
+        frames.setSides(24...556, margin: 16)
         frames.set(.init(frame: CGRect(x: 40, y: 100, width: 500, height: 44), index: 0, count: 2), group: "g", id: "a")
         frames.set(.init(frame: CGRect(x: 40, y: 144, width: 500, height: 44), index: 1, count: 2), group: "g", id: "b")
         #expect(frames.plate(of: "g", overhang: 52) == CGRect(x: 40, y: 100, width: 500, height: 88), "a list turned sideways")

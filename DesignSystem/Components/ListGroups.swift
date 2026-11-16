@@ -34,18 +34,7 @@ extension View {
 
     /// The backing plates of the list's groups, drawn behind it; they follow the list's scrolling, not a drag.
     func listGroupBacking(_ frames: ListGroupFrames) -> some View {
-        background { ListGroupBacking(frames: frames) }
-            .onGeometryChange(for: ClosedRange<CGFloat>.self) { proxy in
-                let frame = proxy.frame(in: .global)
-                return frame.minY...frame.maxY
-            } action: { frames.setViewport($0) }
-            .onGeometryChange(for: ClosedRange<CGFloat>.self) { proxy in
-                let frame = proxy.frame(in: .global)
-                return frame.minX...frame.maxX
-            } action: { frames.setSides($0) }
-            .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y } action: { _, offset in
-                frames.setScrollOffset(offset)
-            }
+        modifier(ListGroupBackingPlacing(frames: frames))
     }
 
     /// A row of a grouped list that is not a group's row (a header, a gap, a hint): no insets, background or
@@ -124,6 +113,28 @@ private struct ListGroupRowMenu<Menu: View>: ViewModifier {
         } else {
             content
         }
+    }
+}
+
+/// The backing behind the list, and where the list stands for it: its span, its sides inside the margins, its scroll.
+private struct ListGroupBackingPlacing: ViewModifier {
+    @Environment(\.tokens) private var tokens
+    let frames: ListGroupFrames
+
+    func body(content: Content) -> some View {
+        content
+            .background { ListGroupBacking(frames: frames) }
+            .onGeometryChange(for: ClosedRange<CGFloat>.self) { proxy in
+                let frame = proxy.frame(in: .global)
+                return frame.minY...frame.maxY
+            } action: { frames.setViewport($0) }
+            .onGeometryChange(for: ClosedRange<CGFloat>.self) { proxy in
+                let frame = proxy.frame(in: .global)
+                return frame.minX...frame.maxX
+            } action: { frames.setSides($0, margin: tokens.space(.screenHorizontal)) }
+            .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y } action: { _, offset in
+                frames.setScrollOffset(offset)
+            }
     }
 }
 

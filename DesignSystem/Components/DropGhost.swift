@@ -9,6 +9,11 @@ extension View {
     }
 }
 
+private extension View {
+    /// How far past its frame an open row may draw.
+    static var unclipped: CGFloat { 10_000 }
+}
+
 extension View {
     /// The room a dragged row keeps where it would land: empty, with nothing drawn in it (the row itself is under the finger).
     func dropGap(_ isGap: Bool = true) -> some View {
@@ -18,11 +23,12 @@ extension View {
     }
 
     /// A row that left its place: no room at all, the rows below rise. Stays in the hierarchy, so the system's drag keeps
-    /// its source. `gap`: the list's spacing, closed with it.
+    /// its source. `gap`: the list's spacing, closed with it. Only a closed row is cut to its frame: an open one keeps
+    /// what it draws past it (a subtask's line from its parent, up across the gap).
     func closedUp(_ isClosed: Bool, gap: CGFloat) -> some View {
         frame(height: isClosed ? 0 : nil)
             .opacity(isClosed ? 0 : 1)
-            .clipped()
+            .clipShape(Rectangle().inset(by: isClosed ? 0 : -Self.unclipped))
             .padding(.bottom, isClosed ? -gap : 0)
             .allowsHitTesting(!isClosed)
             .accessibilityHidden(isClosed)

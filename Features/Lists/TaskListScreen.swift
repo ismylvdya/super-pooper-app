@@ -120,8 +120,10 @@ struct TaskListScreen: View {
                 .padding(.leading, CGFloat(depth) * tokens.listSubtaskIndent)
                 .background(alignment: .topLeading) {
                     if let guide {
-                        SubtaskGuideLines(guide: guide, turnY: tokens.space(.listRowVertical) + tokens.uiFont(.taskTitle).lineHeight / 2,
-                                          gap: 0, inList: true)
+                        // The row's own insets lie outside: the line turns at the name's first line and crosses
+                        // the insets of this row and the one above.
+                        SubtaskGuideLines(guide: guide, turnY: tokens.uiFont(.taskTitle).lineHeight / 2,
+                                          gap: tokens.space(.listRowVertical) * 2, inList: true)
                     }
                 }
             if task.canPromote {
