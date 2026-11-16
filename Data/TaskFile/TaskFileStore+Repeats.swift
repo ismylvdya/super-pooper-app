@@ -19,8 +19,14 @@ extension TaskFileStore {
         for file in snapshot.habits.values {
             guard let line = snapshot.document.openLine(of: file.id), let date = logicalDay(of: line), date < day else { continue }
             guard let (item, schedule) = schedule(of: file, snapshot: snapshot) else { continue }
-            guard var carried = snapshot.document.remove(where: { $0.id == file.id && $0.completed == nil })?.entry else { continue }
-            guard item.habit.showInToday, !isClosed(item, on: date), !schedule.occurs(on: day) else { continue }
+            guard let kept = snapshot.document.remove(where: { $0.id == file.id && $0.completed == nil })?.entry else { continue }
+            var carried = kept
+            guard item.habit.showInToday, !isClosed(item, on: date), !schedule.occurs(on: day) else {
+                // No line until the mirror writes one: its subtasks wait beside, naming it.
+                var none: [TaskEntry] = []
+                give([file.id: kept.children], to: &none, document: &snapshot.document)
+                continue
+            }
             carried.date = day
             carried.time = nil
             carried.zone = nil

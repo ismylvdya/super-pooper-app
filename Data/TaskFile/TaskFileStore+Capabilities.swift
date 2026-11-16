@@ -13,7 +13,7 @@ extension TaskFileStore: TaskTrash, DayMirroring, ExternalLinking, TaskBackups, 
             if snapshot.habits[id] != nil {
                 let source = habitsFolder(root: root).appendingPathComponent(id + ".json")
                 try fileSystem.move(source, to: habitsTrash(root: root).appendingPathComponent(id + ".json"))
-                while snapshot.document.remove(where: { $0.id == id && $0.completed == nil }) != nil {}
+                while removeHabitLine(id, from: &snapshot.document) != nil {}
                 try write(snapshot.document, root: root)
                 return TrashedNote(id: Self.habitPrefix + id, name: task.name, trashedAt: fileSystem.modificationDate(of: source))
             }
@@ -126,19 +126,18 @@ extension TaskFileStore: TaskTrash, DayMirroring, ExternalLinking, TaskBackups, 
                 if self.isClosed(item, on: dayOfFile) { return nil }
                 return self.habitLine(file, item: item, date: dayOfFile, time: day.timed[name], isOverdue: wasOverdue.contains(id))
             }
-            let habitIDs = Set(snapshot.habits.keys)
             var document = snapshot.document
             guard let list = document.sections.firstIndex(where: { $0.kind == .soon }) else { return nil }
-            for group in document.sections[list].groups.indices {
-                document.sections[list].groups[group].entries.removeAll { $0.id.map(habitIDs.contains) ?? false }
-            }
+            // The habits' lines are made anew; their subtasks go under the new ones.
+            let children = takeHabitLines(&document, habits: Set(snapshot.habits.keys))
             let pooled = day.sections.flatMap(\.names)
             let timed = day.timed.keys.sorted().filter { !pooled.containsNoteName($0) }
             var seen: Set<String> = []
             let todays = (pooled + timed).compactMap(line).filter { seen.insert($0.id ?? $0.name).inserted }
             let placed = Set(todays.compactMap(\.id))
-            let waiting = waitingHabitLines(except: placed, skipped: day.skipped, snapshot: snapshot, today: dayOfFile)
-            document.sections[list].groups[0].entries.insert(contentsOf: todays + waiting, at: 0)
+            var habitLines = todays + waitingHabitLines(except: placed, skipped: day.skipped, snapshot: snapshot, today: dayOfFile)
+            give(children, to: &habitLines, document: &document)
+            document.sections[list].groups[0].entries.insert(contentsOf: habitLines, at: 0)
             try write(document, root: root)
             snapshot.document = document
             lookMemory.save(look(of: snapshot))

@@ -2283,6 +2283,17 @@
         }
       }
     },
+    "habitPage.subtasks": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subtasks"
+          }
+        }
+      }
+    },
     "habits.empty": {
       "extractionState": "manual",
       "localizations": {
@@ -7353,28 +7364,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Alarm"
-          }
-        }
-      }
-    },
-    "habitPage.subtasks.repeatable": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Subtasks (repeatable)"
-          }
-        }
-      }
-    },
-    "habitPage.subhabits": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Subhabits"
           }
         }
       }

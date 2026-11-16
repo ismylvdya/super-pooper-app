@@ -174,6 +174,7 @@ actor TaskFileStore: TaskStore {
                 return VaultScanResult(tasks: [], fileProblems: [.tasksFolderMissing(folder)], conflicted: [])
             }
             makeListsProjects(&snapshot, root: root)
+            makeSubhabitsTasks(&snapshot, root: root)
             _ = normalize(&snapshot)
             // Also when nothing changed but how the file says it (an older title, a field no longer kept).
             try write(snapshot.document, root: root)
@@ -230,8 +231,8 @@ actor TaskFileStore: TaskStore {
             if let id = entry.id, habits.contains(id), section == .soon, entry.box != .open, entry.completed == nil { ticked.append(id) }
         }
         for id in ticked {
-            guard let taken = snapshot.document.remove(where: { $0.id == id && $0.completed == nil }), let name = snapshot.habits[id]?.name else { continue }
-            snapshot.document.setMark(taken.entry.box == .done ? .done : .partial, on: day, habit: id, name: name)
+            guard let taken = removeHabitLine(id, from: &snapshot.document), let name = snapshot.habits[id]?.name else { continue }
+            snapshot.document.setMark(taken.box == .done ? .done : .partial, on: day, habit: id, name: name)
         }
         snapshot.document.forEachOpenLine { entry, _ in
             if entry.id.map(habits.contains) ?? false {

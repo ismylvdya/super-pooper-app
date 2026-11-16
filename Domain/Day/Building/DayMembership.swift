@@ -4,11 +4,9 @@ import Foundation
 struct DayMembership: Sendable {
     let occurrence: TaskOccurrence
     let context: DayContext
-    /// The parent of each repeatable subtask, by the subtask's name (`RepeatableSubtasks.parents`).
-    var parents: [NoteName: TaskItem] = [:]
 
     /// Today: habits of the day shown in Today (not skipped, or already marked), the tasks in today's pool
-    /// (`TodayPool`), the tasks with a time today (on the timeline) and what was completed today. A repeatable subtask is in when its parent is, skipped or not, unless skipped itself.
+    /// (`TodayPool`), the tasks with a time today (on the timeline) and what was completed today.
     func isInDay(_ task: TaskItem, skipped: Set<String>) -> Bool {
         if task.isHabit {
             guard task.isInTodayHabits, !skipped.containsNoteName(task.name) else { return false }
@@ -35,31 +33,20 @@ struct DayMembership: Sendable {
         return task.status == .done ? .marked(.done) : .open
     }
 
-    /// A habit by its own rule or marked today; a repeatable subtask whenever its parent comes up.
-    private func comesUpToday(_ task: TaskItem, depth: Int = 0) -> Bool {
-        guard let parent = parent(of: task, depth: depth) else {
-            return occurrence.occurs(task, on: context.today) || task.isOverdue || (depth > 0 && task.mark(on: context.today) != nil)
-        }
-        return parent.isInTodayHabits && comesUpToday(parent, depth: depth + 1)
+    /// A habit by its own rule, carried over overdue, or marked today.
+    private func comesUpToday(_ task: TaskItem) -> Bool {
+        occurrence.occurs(task, on: context.today) || task.isOverdue
     }
 
-    /// A repeatable subtask has no line of its own: it goes by its parent's.
-    private func hasLineOnDay(_ task: TaskItem, depth: Int = 0) -> Bool {
-        guard let parent = parent(of: task, depth: depth) else {
-            guard let line = task.nextLine else { return false }
-            let lineDay = context.logicalDay(of: line)
-            if lineDay == context.today { return true }
-            // An overdue line stands on the real today; the habit comes up again on the next day of its rule.
-            guard task.isOverdue, lineDay < context.today else { return false }
-            let next = occurrence.schedule(of: task).recurrence?.firstDay(onOrAfter: lineDay.adding(days: 1)) ?? lineDay.adding(days: 1)
-            return next == context.today
-        }
-        return parent.isInTodayHabits && hasLineOnDay(parent, depth: depth + 1)
-    }
-
-    /// Parents of parents are followed up to the number of subtasks there are, so a loop of parents ends.
-    private func parent(of task: TaskItem, depth: Int) -> TaskItem? {
-        depth <= parents.count ? parents[task.name.noteName] : nil
+    /// Its open line stands on the day; an overdue line stands on the real today, and the habit comes up again on the
+    /// next day of its rule.
+    private func hasLineOnDay(_ task: TaskItem) -> Bool {
+        guard let line = task.nextLine else { return false }
+        let lineDay = context.logicalDay(of: line)
+        if lineDay == context.today { return true }
+        guard task.isOverdue, lineDay < context.today else { return false }
+        let next = occurrence.schedule(of: task).recurrence?.firstDay(onOrAfter: lineDay.adding(days: 1)) ?? lineDay.adding(days: 1)
+        return next == context.today
     }
 
     /// A task with a time today stands on today's timeline by that time.

@@ -19,7 +19,6 @@ extension AppModel {
     func subtasks(of parent: String) -> [TaskItem] { parts.tasks.subtasks(of: parent) }
 
     /// A habit's or a repeatable task's subtask: it comes up on its parent's days and has no rule of its own to edit.
-    func isRepeatableSubtask(_ task: TaskItem) -> Bool { RepeatableSubtasks.isRepeatableSubtask(task, in: tasks) }
 
     /// How many subtasks an action on the note takes along (Delete, Done; the delete confirmation says so).
     func subtasksGoingAlong(with name: String, action: ActionID) -> Int {

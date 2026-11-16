@@ -26,9 +26,10 @@ struct NewItemNestingTests {
         #expect(under == NewItemNesting.Spot(parent: "Pack", depth: 2, index: 0))
     }
 
-    @Test func aHabitAndTheTopOfThePoolTakeNoSubtask() {
+    /// The top of the pool takes no subtask; a habit does (its subtasks are tasks).
+    @Test func theTopOfThePoolTakesNoSubtaskAndAHabitDoes() {
         #expect(NewItemNesting.spot(order: [gap, "Trip"], gap: gap, pool: pool, asSubtask: true) == .top)
-        #expect(NewItemNesting.spot(order: ["Run", gap], gap: gap, pool: pool, asSubtask: true) == .top)
+        #expect(NewItemNesting.spot(order: ["Run", gap], gap: gap, pool: pool, asSubtask: true) == NewItemNesting.Spot(parent: "Run", depth: 1, index: 0))
     }
 
     @Test func theRightThirdOfThePool() {

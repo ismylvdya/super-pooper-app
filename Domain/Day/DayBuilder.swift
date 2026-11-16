@@ -10,8 +10,7 @@ struct DayBuilder: Sendable {
     func build(_ inputs: DayInputs, context: DayContext) -> DayPlan {
         let occurrence = TaskOccurrence(days: context.days)
         let sorter = PoolSorter(criteria: sortCriteria, rules: rules, routines: inputs.routines)
-        let membership = DayMembership(occurrence: occurrence, context: context,
-                                       parents: RepeatableSubtasks.parents(in: inputs.tasks))
+        let membership = DayMembership(occurrence: occurrence, context: context)
         let dayProblems = DayProblems(occurrence: occurrence)
         let times = DayTimes(context: context, todayTimes: TodayTimes(inputs.timeMoves), followsLines: inputs.isOtherDay)
 

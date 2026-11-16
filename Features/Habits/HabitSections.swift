@@ -17,16 +17,15 @@ struct HabitSections: View {
         }
         if showsHistory { HabitHistorySection(habit: editor.task) }
         ParentTaskSection(editor: editor)
-        // Repeatable subtasks: they come up on the habit's days and are marked for each day.
-        SubtasksSection(editor: editor, header: editor.task.habit.repeatable ? "habitPage.subtasks.repeatable" : "habitPage.subhabits")
+        // Its subtasks are tasks: they stand under its line and go along to its next day.
+        SubtasksSection(editor: editor, header: "habitPage.subtasks")
         if let draft = editor.draft {
             DraftNoteSection(draft: draft, header: "habitPage.description")
         } else {
             TaskNoteSection(taskName: editor.task.name, header: "habitPage.description", placeholder: "habitPage.description.placeholder")
         }
         HabitRemindersSection(editor: editor)
-        // A repeatable subtask comes up on its parent's days: the parent's rule is written to it.
-        if !model.isRepeatableSubtask(editor.task) { RecurrenceEditorSection(editor: editor) }
+        RecurrenceEditorSection(editor: editor)
         HabitDaySection(editor: editor)
         HabitOptionsSection(editor: editor)
         if showsHistory { HabitStatsSection(habit: editor.task) }
