@@ -26,6 +26,10 @@ enum SearchScope: Hashable {
 
 /// Pushed pages of the tabs' navigation stacks.
 extension Router {
+    /// Tasks itself is in sight (no page pushed over it, no review's sheet): its pool, timeline and backlog pages take a
+    /// dragged "+".
+    var takesNewItemOnTasks: Bool { path.isEmpty && !isReviewPresented }
+
     /// The open page of Tasks takes a dragged "+": Tasks itself, or a list of the Lists page or the review page on top.
     var acceptsNewItemDrag: Bool {
         switch path.last {

@@ -158,7 +158,7 @@ struct TimelineBlock: View {
     private func newItemMoved(to point: CGPoint?, over frame: CGRect, windowStart: Date, hourHeight: CGFloat) {
         guard let drag, let point else { return }
         // Under a page pushed over Tasks, the timeline takes no "+".
-        guard router.path.isEmpty, frame.contains(point) else {
+        guard router.takesNewItemOnTasks, frame.contains(point) else {
             drag.hoverMoment = nil
             drag.clearNewItemLanding(Self.newItemTarget)
             return

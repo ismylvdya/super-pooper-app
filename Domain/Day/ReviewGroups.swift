@@ -51,6 +51,18 @@ enum ReviewGroups {
         }
     }
 
+    /// The rows with the room of a dragged "+" (`gap`) in `group`: after the row that comes before it in `order`, when that
+    /// row is in the group, otherwise first in the group.
+    static func rows(_ rows: [Row], gap: String, order: [String], in group: Group) -> [Row] {
+        var result = rows.filter { $0 != .item(gap) }
+        let before = order.firstIndex(of: gap).flatMap { $0 > 0 ? order[$0 - 1] : nil }
+        let header = result.firstIndex(of: .header(group)) ?? 0
+        let end = result[(header + 1)...].firstIndex { if case .header = $0 { true } else { false } } ?? result.count
+        let spot = before.flatMap { name in result[(header + 1)..<end].firstIndex(of: .item(name)) }.map { $0 + 1 } ?? header + 1
+        result.insert(.item(gap), at: spot)
+        return result
+    }
+
     /// Where an item row stands in its group: `index` of `count` items; the first one opens the group's plate, the last
     /// one closes it.
     struct Position: Equatable, Sendable {

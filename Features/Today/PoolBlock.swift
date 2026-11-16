@@ -119,8 +119,8 @@ struct PoolBlock: View {
 
     /// The dragged "+" over a pool: rows make room under it and letting go opens the new task's page for the spot.
     private func newItemMoved(to point: CGPoint?) {
-        // Under a page pushed over Tasks, the pool takes no "+".
-        guard let drag, let point, router.path.isEmpty else {
+        // Under a page pushed over Tasks or under the review's sheet, the pool takes no "+".
+        guard let drag, let point, router.takesNewItemOnTasks else {
             dragLayout = nil
             return
         }

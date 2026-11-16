@@ -70,6 +70,36 @@ extension NewItemDragOverlay {
     }
 }
 
+/// A "+" of a page of its own, where the tab bar's is out of reach (the morning review's sheet): the same bubble at the
+/// same place, tapped or dragged the same way, with its own drawing under the finger (`NewItemDragOverlay`).
+struct FloatingNewItemButton: View {
+    @Environment(TaskDragState.self) private var drag: TaskDragState?
+    @Environment(\.tokens) private var tokens
+    let onTap: () -> Void
+
+    var body: some View {
+        let isLifted = drag?.newItemPoint != nil
+        let side = tokens.bar(.newItemBubble)
+        NewItemBubble()
+            .frame(width: side, height: side)
+            .opacity(isLifted ? 0 : 1)
+            .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { frame in
+                drag?.newItemSize = frame.size
+                drag?.newItemHome = frame
+            }
+            .overlay {
+                NewItemTouchArea(canDrag: drag != nil, onTap: onTap) { drag?.moveNewItem(to: $0) } onEnd: { drag?.releaseNewItem() }
+                    onCancel: { drag?.cancelNewItem() }
+            }
+            .padding([.trailing, .bottom], tokens.bar(.newItemBubbleInset))
+            .accessibilityElement(children: .ignore)
+            .accessibilityAddTraits(.isButton)
+            .accessibilityAction { onTap() }
+            .accessibilityLabel(Text("newItem.title"))
+            .accessibilityIdentifier("review.newItem")
+    }
+}
+
 /// The "+" in its round glass.
 private struct NewItemBubble: View {
     @Environment(\.tokens) private var tokens

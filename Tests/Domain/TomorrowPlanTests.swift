@@ -43,3 +43,14 @@ struct TomorrowReviewOfferTests {
         #expect(!rules.offersTomorrowReview(at: LocalTime("09:00"), boundary: boundary))
     }
 }
+
+/// The room of a dragged "+" among the review's rows.
+struct ReviewGapRowsTests {
+    @Test func theRoomStandsAfterTheRowBeforeItInItsGroup() {
+        let rows: [ReviewGroups.Row] = [.header(.morning), .item("A"), .header(.day), .item("B"), .item("C"), .header(.evening)]
+        #expect(ReviewGroups.rows(rows, gap: "+", order: ["A", "B", "+", "C"], in: .day)
+                == [.header(.morning), .item("A"), .header(.day), .item("B"), .item("+"), .item("C"), .header(.evening)])
+        #expect(ReviewGroups.rows(rows, gap: "+", order: ["A", "+", "B", "C"], in: .evening)
+                == [.header(.morning), .item("A"), .header(.day), .item("B"), .item("C"), .header(.evening), .item("+")])
+    }
+}

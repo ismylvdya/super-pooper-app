@@ -12,19 +12,29 @@ import SwiftUI
 /// Its Tomorrow (the switch at the top) plans the next day the evening before: what tomorrow's turn will bring, kept out
 /// of it with Not tomorrow, in an order of its own; reviewed so, it does not open by itself that morning.
 struct MorningReviewScreen: View {
+    @Environment(\.tokens) private var tokens
     @State private var path: [Route] = []
 
     var body: some View {
         NavigationStack(path: $path) {
-            MorningReviewList(openSearch: { path.append(.search(.tasks)) }) { path.append(.task($0)) }
+            MorningReviewList(openSearch: { path.append(.search(.tasks)) }, openNewItem: { path.append(.newItem($0)) },
+                              takesNewItem: { path.isEmpty }, bubbleRoom: tokens.bar(.newItemBubble) + tokens.bar(.newItemBubbleInset)) {
+                path.append(.task($0))
+            }
                 .navigationDestination(for: Route.self) { route in
                     switch route {
                     case .task(let name): TaskPageScreen(taskName: name)
                     case .search(let scope): SearchPage(scope: scope)
+                    case .newItem(let seed): NewItemScreen(seed: seed)
                     default: EmptyView()
                     }
                 }
         }
+        // The tab bar's "+" is under the sheet: the review has its own, tapped or dragged into it.
+        .overlay(alignment: .bottomTrailing) {
+            if path.isEmpty { FloatingNewItemButton { path.append(.newItem(.opening(on: .today))) } }
+        }
+        .overlay { NewItemDragOverlay() }
         // Over the sheet's bar, on every page pushed in it.
         .bannerHost()
     }
@@ -35,7 +45,8 @@ struct MorningReviewPage: View {
     @Environment(Router.self) private var router
 
     var body: some View {
-        MorningReviewList(openSearch: { router.open(.search(.tasks)) }) { router.open(.task($0)) }
+        MorningReviewList(openSearch: { router.open(.search(.tasks)) }, openNewItem: { router.openNewItem($0) },
+                          takesNewItem: { router.path.last == .morningReview }, bubbleRoom: 0) { router.open(.task($0)) }
     }
 }
 
@@ -44,35 +55,64 @@ struct MorningReviewPage: View {
 struct MorningReviewList: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
-    @Environment(\.tokens) private var tokens
+    @Environment(\.tokens) var tokens
     @Environment(\.icons) private var icons
     @Environment(\.openURL) private var openURL
     @State private var pendingAction: PendingAction?
     @State private var frames = ListGroupFrames()
     /// Today's review, or tomorrow's planned today.
     @State private var isTomorrow = false
+    @Environment(\.rules) var rules
+    @Environment(TaskDragState.self) var drag: TaskDragState?
+    /// Where the rows and headers stand on the screen, for a dragged "+".
+    @State var rowMids: [String: CGFloat] = [:]
+    @State var rowHeights: [String: CGFloat] = [:]
+    @State var headerMids: [String: CGFloat] = [:]
+    @State var dropLayout: PoolDropLayout?
+    @State var screenFrame: CGRect = .zero
+    @State var bottomBar: CGFloat = 0
     let openSearch: () -> Void
+    /// Opens the new task's page where the review's host keeps pages.
+    let openNewItem: (NewItemSeed) -> Void
+    /// The review is the page in sight: a dragged "+" is its.
+    let takesNewItem: () -> Bool
+    /// Room at the bottom the review's own "+" takes: the list does not scroll by itself under it.
+    let bubbleRoom: CGFloat
     let openTask: (String) -> Void
 
     var body: some View {
         let plan = isTomorrow ? model.tomorrowPlan() : model.plan(at: model.clock.now)
         List {
             Group {
-                let rows = ReviewGroups.rows(plan.pool)
+                let rows = shownRows(plan)
                 let items = Dictionary(plan.pool.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
                 let guides = ReviewGroups.guides(rows, items: items)
                 ForEach(Array(rows.enumerated()), id: \.element) { index, row in
                     switch row {
                     case .header(let group):
-                        ListGroupHeader(title: Text(LocalizedStringKey("review.group." + group.rawValue)))
+                        ListGroupHeader(title: Text(LocalizedStringKey("review.group." + group.rawValue))) { headerMids[group.rawValue] = $0 }
                             .moveDisabled(true)
                             .accessibilityIdentifier("review.group.\(group.rawValue)")
+                    case .item(let name) where name == TaskDragState.newItemGap:
+                        let position = ReviewGroups.position(of: index, in: rows)
+                        TaggedTaskName(name: " ", parent: drag?.newItemSpot.parent)
+                            .opacity(drag?.newItemSpot.parent == nil ? 0 : 1)
+                            .modifier(RowTracking { frame in rowHeights[name] = frame.height })
+                            .listGroupRow(group: ReviewGroups.group(of: index, in: rows)?.rawValue ?? "", id: name,
+                                          index: position.index, count: position.count, frames: frames)
+                            .moveDisabled(true)
                     case .item(let name):
                         if let item = items[name] {
                             let position = ReviewGroups.position(of: index, in: rows)
                             ReviewRow(item: item, today: plan.today) { openTask(item.id) }
                                 // A subtask sits under its parent, shifted right, as in the pool.
                                 .padding(.leading, CGFloat(item.depth) * tokens.subtaskIndent)
+                                .modifier(RowTracking { frame in
+                                    rowMids[name] = frame.midY
+                                    rowHeights[name] = frame.height
+                                    let group = ReviewGroups.Group(item.task.habit.timeOfDay).rawValue
+                                    dropLayout?.add(row: name, midY: frame.midY, section: group, lift: liftByGap(of: name))
+                                })
                                 .background(alignment: .topLeading) {
                                     if let guide = guides[name] {
                                         SubtaskGuideLines(guide: guide, turnY: tokens.space(.reviewRowVertical) + tokens.uiFont(.taskTitle).lineHeight / 2,
@@ -122,6 +162,14 @@ struct MorningReviewList: View {
         }
         .onChange(of: model.offersTomorrowReview) { _, offered in if !offered { isTomorrow = false } }
         .onChange(of: isTomorrow) { _, tomorrow in if tomorrow { model.markTomorrowReviewed() } }
+        .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { screenFrame = $0 }
+        .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.bottom } action: { bottomBar = $0 }
+        .edgeAutoScroll(drag?.newItemPoint, bottomInset: bottomBar + bubbleRoom) { delta in
+            dropLayout = dropLayout?.shifted(by: -delta)
+            newItemMoved(to: drag?.newItemPoint, plan: plan)
+        }
+        .onChange(of: drag?.newItemPoint) { _, point in newItemMoved(to: point, plan: plan) }
+        .onChange(of: drag?.newItemPoint == nil) { _, ended in if ended { dropLayout = nil } }
         .actionConfirmation($pendingAction) { handler.run($0) }
         .navigationTitle(Text("review.title"))
         .navigationBarTitleDisplayMode(.inline)
