@@ -24,7 +24,6 @@
     "estimateMinutes": [2, 15, 60, 240],
     "criteria": [],
     "chipOrder": ["problem", "blocked", "feel", "habit"],
-    "highPriorityLook": "leadingIcon",
     "startedFillLength": 0.33,
     "startedLook": "fill",
     "startedTitleAfterFill": false,

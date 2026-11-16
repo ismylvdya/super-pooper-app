@@ -63,7 +63,6 @@ struct MorningReviewList: View {
     /// Today's review, or tomorrow's planned today.
     @State private var isTomorrow = false
     @Environment(\.rules) var rules
-    @Environment(\.highPriorityLook) private var highPriorityLook
     @Environment(TaskDragState.self) var drag: TaskDragState?
     /// Where the rows and headers stand on the screen, for a dragged "+".
     @State var rowMids: [String: CGFloat] = [:]
@@ -125,7 +124,7 @@ struct MorningReviewList: View {
                                 .listGroupRow(group: ReviewGroups.group(of: index, in: rows)?.rawValue ?? "", id: name,
                                               index: position.index, count: position.count, frames: frames, vertical: 0,
                                               separatorIndent: CGFloat(item.depth) * tokens.subtaskIndent,
-                                              tint: tokens.plateTint(HighPriorityMark(look: highPriorityLook, task: item.task))) {
+                                              tint: tokens.plateTint(for: item.task)) {
                                     ActionMenuContent(menu: .context(of: item.task), item: item, isToday: !isTomorrow) {
                                         perform($0, on: item.id)
                                     }

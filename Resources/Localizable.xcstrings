@@ -2723,17 +2723,6 @@
         }
       }
     },
-    "info.settings.pool.highPriority": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "How a high-priority task stands out in the pool and on the timeline: the priority icon before its name, or its whole plate in a soft red."
-          }
-        }
-      }
-    },
     "info.settings.pool.startedFill": {
       "extractionState": "manual",
       "localizations": {
@@ -5173,39 +5162,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pool"
-          }
-        }
-      }
-    },
-    "settings.pool.highPriority": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "High priority"
-          }
-        }
-      }
-    },
-    "settings.pool.highPriority.fill": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Red plate"
-          }
-        }
-      }
-    },
-    "settings.pool.highPriority.leadingIcon": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Icon before the name"
           }
         }
       }

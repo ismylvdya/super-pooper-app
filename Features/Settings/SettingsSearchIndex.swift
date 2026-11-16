@@ -31,7 +31,7 @@ enum SettingsSearchIndex {
                        "settings.timeline.taskFont", "settings.timeline.bellSize",
                        "settings.timeline.bellOpacity", "settings.timeline.showEvents", "settings.timeline.showReminders",
                        "settings.timeline.showTasks", "settings.timeline.showHabits"]),
-        Section(title: "settings.pool", route: .taskSettings, rows: ["settings.pool.selectionOutline", "settings.pool.subtaskLineCorner", "settings.pool.subtaskLineRoundsMiddle", "settings.pool.visible", "settings.pool.highPriority"]),
+        Section(title: "settings.pool", route: .taskSettings, rows: ["settings.pool.selectionOutline", "settings.pool.subtaskLineCorner", "settings.pool.subtaskLineRoundsMiddle", "settings.pool.visible", "settings.pool.highColor"]),
         Section(title: "settings.lists", route: .generalSettings, rows: ["settings.listsIcon", "status.thisWeek", "status.halfYear", "status.someday"]),
         Section(title: "settings.estimates", route: .taskSettings, rows: ["settings.estimates.shortest", "settings.estimates.normal", "settings.estimates.long", "estimate.dohuya"]),
         Section(title: "settings.appearance", route: .taskSettings, rows: ["settings.pastOpacity"]),

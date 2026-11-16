@@ -13,7 +13,6 @@ struct TaskListScreen: View {
     @Environment(\.icons) private var icons
     @Environment(\.openURL) private var openURL
     @Environment(\.rules) private var rules
-    @Environment(\.highPriorityLook) private var highPriorityLook
     @Environment(TaskDragState.self) private var drag: TaskDragState?
     let listID: String
     @State private var pendingAction: PendingAction?
@@ -134,7 +133,7 @@ struct TaskListScreen: View {
         // The pool's menu for the task (Not today has no place outside Today); one tab right or left to the right (D-182),
         // Delete to the left.
         .listGroupRow(group: group, id: task.name, index: index, count: count, frames: frames,
-                      tint: tokens.plateTint(HighPriorityMark(look: highPriorityLook, task: task))) {
+                      tint: tokens.plateTint(for: task)) {
             ActionMenuContent(menu: .context(of: task), item: DayItem(listed: task), isToday: false) {
                 handler.handle($0, taskName: task.name)
             }

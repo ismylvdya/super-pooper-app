@@ -15,8 +15,6 @@ enum SpacingToken: String, CaseIterable, Sendable {
     case eventStripeInset, eventStripeGap
     /// Between a swipe button's symbol and its title.
     case swipeIconTitleGap
-    /// Between the priority icon before a high-priority task's name and the name.
-    case priorityIconGap
     /// A section header starts this far right of the plates' left edge; a pool section's header stands this far below
     /// the section above.
     case sectionHeaderInset, poolSectionGap

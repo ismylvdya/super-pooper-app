@@ -152,10 +152,6 @@
       }
     ],
     "rowVisibleShare": 0.5,
-    "highPriorityLooks": [
-      "leadingIcon",
-      "fill"
-    ],
     "defaultSections": [
       {
         "id": "morning",

@@ -1,10 +1,9 @@
 import SwiftUI
 
 /// A pool row on its plate in the looks the settings give it, in the app and in the widget alike: the high priority
-/// tint (`HighPriorityMark`) and a started task's fill or circle (`StartedLayout`), the name moved right for the circle.
+/// tint (`DesignTokens.plateTint(for:)`) and a started task's fill or circle (`StartedLayout`), the name moved right for the circle.
 struct PlatedPoolRow<Row: View>: View {
     @Environment(\.tokens) private var tokens
-    @Environment(\.highPriorityLook) private var highPriorityLook
     @Environment(\.startedLayout) private var startedLayout
     let item: DayItem
     let plate: PoolRowPlate
@@ -21,7 +20,7 @@ struct PlatedPoolRow<Row: View>: View {
             if minimumHeight > 0 { Spacer(minLength: minimumHeight) }
         }
         .padding(.leading, startedShift)
-        .poolRowPlate(plate, isDone: item.isFinished, tint: tokens.plateTint(HighPriorityMark(look: highPriorityLook, task: item.task)))
+        .poolRowPlate(plate, isDone: item.isFinished, tint: tokens.plateTint(for: item.task))
         .overlay(alignment: .topLeading) { circle }
         .onGeometryChange(for: CGSize.self) { $0.size } action: { plateSize = $0 }
         .environment(\.plateGradient, started.flatMap { $0.look == .fill ? AnyView(StartedFill(length: $0.fillLength)) : nil })
@@ -61,10 +60,9 @@ extension StartedLayout {
 }
 
 extension View {
-    /// The pool's looks from the settings: high priority, subtask lines and started tasks.
+    /// The pool's looks from the settings: subtask lines and started tasks.
     func poolLooks(_ pool: AppSettings.Pool) -> some View {
-        environment(\.highPriorityLook, pool.highPriorityLook)
-            .environment(\.subtaskLineLook, SubtaskLineLook(corner: pool.subtaskLineCorner, roundsMiddle: pool.subtaskLineRoundsMiddle))
+        environment(\.subtaskLineLook, SubtaskLineLook(corner: pool.subtaskLineCorner, roundsMiddle: pool.subtaskLineRoundsMiddle))
             .environment(\.startedLayout, StartedLayout(pool))
     }
 }

@@ -33,8 +33,6 @@ struct AppSettings: Codable, Equatable, Sendable {
         var selectionOutlineOpacity: Double
         /// The order of the chips in task rows (raw names of `RowChipKind`).
         var chipOrder: [String]
-        /// How a high-priority task stands out in the pool and on the timeline.
-        var highPriorityLook: HighPriorityLook
         /// How far a started task's fill reaches across its plate, as a share of its width.
         var startedFillLength: Double
         /// How a started task stands out in the pool: the fill over its plate, or a half-filled circle before its name.
@@ -60,12 +58,6 @@ struct AppSettings: Codable, Equatable, Sendable {
         case fill
         /// A round mark before the name, filled with the same fade, concentric with the plate's corner.
         case circle
-    }
-
-    /// How a high-priority task stands out: the priority icon before its name, or its whole plate in a soft red.
-    enum HighPriorityLook: String, Codable, CaseIterable, Sendable {
-        case leadingIcon
-        case fill
     }
 
     /// Where the pool and the timeline sit on Today.

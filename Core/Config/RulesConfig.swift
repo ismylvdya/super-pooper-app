@@ -150,8 +150,6 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let extraLines: [ExtraLines]
         /// A row counts as shown (for the rows left to scroll to) when this share of it is on screen.
         let rowVisibleShare: Double
-        /// The ways of showing a high-priority task the settings offer, in their order.
-        let highPriorityLooks: [AppSettings.HighPriorityLook]
         /// The sections every day's pool starts with, in their order.
         let defaultSections: [PoolSectionDefinition]
 
