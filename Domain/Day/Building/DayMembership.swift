@@ -5,7 +5,7 @@ struct DayMembership: Sendable {
     let occurrence: TaskOccurrence
     let context: DayContext
 
-    /// Today: habits of the day shown in Today (not skipped, or already marked), the tasks in today's pool
+    /// Today: habits of the day shown in Today (not skipped, or already marked), the tasks of Next actions in today's pool
     /// (`TodayPool`), the tasks with a time today (on the timeline) and what was completed today.
     func isInDay(_ task: TaskItem, skipped: Set<String>) -> Bool {
         if task.isHabit {
@@ -13,7 +13,7 @@ struct DayMembership: Sendable {
             return comesUpToday(task) || task.mark(on: context.today) != nil
         }
         let isOpen = TaskStatus.open.contains(task.status)
-        return (isOpen && (task.isInTodayPool || isTimedToday(task)))
+        return (task.status.isThisWeek && task.isInTodayPool) || (isOpen && isTimedToday(task))
             || (task.status == .done && task.completedDate == context.today)
     }
 

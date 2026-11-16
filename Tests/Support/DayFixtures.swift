@@ -88,7 +88,8 @@ extension TaskDue {
 }
 
 /// A regular task in `TaskNotes/Tasks`; `configure` sets the fields a test cares about.
-/// `inPool`: in today's pool or not; nil = as the turn of Wednesday's day left it (`TodayPool.isDue`).
+/// `inPool`: in today's pool or not; nil = as the turn of Wednesday's day left it (`TodayPool.isDue`: in the pool, and in
+/// Next actions).
 func makeTask(_ name: String, status: TaskStatus = .thisWeek, created: String = "2026-10-10", inPool: Bool? = nil,
               _ configure: (inout TaskItem) -> Void = { _ in }) -> TaskItem {
     var task = TaskItem(id: TaskID("TaskNotes/Tasks/\(name).md"), name: name, status: status)
@@ -96,6 +97,7 @@ func makeTask(_ name: String, status: TaskStatus = .thisWeek, created: String = 
     task.created = TaskDue("\(created)T09:00")
     configure(&task)
     task.isInTodayPool = inPool ?? TodayPool.isDue(task, today: LocalDate(isoString: TestCalendar.wednesday)!, boundary: .midnight)
+    if inPool == nil, task.isInTodayPool { task.status = .thisWeek }
     return task
 }
 

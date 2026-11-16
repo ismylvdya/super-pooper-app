@@ -14,8 +14,8 @@ struct AutoPromoterTests {
 
     @Test(arguments: ["2026-10-21", "2026-10-22T09:00", "2026-10-23", "2026-10-25", "2026-10-25T23:30"])
     func backlogTasksDueFromTodayThroughSundayArePromoted(due: String) {
-        let halfYear = makeTask("Half year", status: .halfYear) { $0.due = TaskDue(due) }
-        let someday = makeTask("Someday", status: .someday) { $0.due = TaskDue(due) }
+        let halfYear = makeTask("Half year", status: .halfYear, inPool: false) { $0.due = TaskDue(due) }
+        let someday = makeTask("Someday", status: .someday, inPool: false) { $0.due = TaskDue(due) }
         #expect(names(promoter.candidates(in: [halfYear, someday], context: TestCalendar.context())) == ["Half year", "Someday"])
     }
 

@@ -13,7 +13,7 @@ struct DayMembershipTests {
     }
 
 
-    /// A task of Soon or Someday dated today comes into the pool on its day and stays in its list; an archived one does not.
+    /// A task of Soon or Someday dated today comes into the pool on its day, moved to Next actions; an archived one does not.
     @Test(arguments: [TaskStatus.halfYear, .someday])
     func aLaterLevelsTaskComesOnItsDay(status: TaskStatus) {
         let task = makeTask("Backlog", status: status) { $0.due = TaskDue("2026-10-21") }
@@ -98,13 +98,14 @@ struct DayMembershipTests {
     // MARK: - Problems
 
 
-    /// Not today: the task leaves the pool and keeps its date (a deadline) and its list.
+    /// Not today: the task leaves the pool and keeps its date (a deadline) and its list (Next actions, where the day's turn
+    /// brought it from Someday).
     @Test func notTodayTakesTheMarkAndKeepsTheDate() {
         let context = TestCalendar.context()
         let dated = makeTask("Dated", status: .someday) { $0.due = TaskDue(day: context.today.adding(days: -2)) }
         #expect(dated.isInTodayPool, "the day's turn brought it in")
         let moved = dated.applying(NotToday.changes(for: dated, context: context))
-        #expect(moved.due == dated.due && moved.status == .someday && !moved.isInTodayPool)
+        #expect(moved.due == dated.due && moved.status == .thisWeek && !moved.isInTodayPool)
         #expect(DayScenario(tasks: [moved]).build().item(named: "Dated") == nil)
     }
 

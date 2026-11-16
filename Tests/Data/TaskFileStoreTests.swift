@@ -382,6 +382,18 @@ struct TaskFileStoreTests {
         #expect(lines.first == "%% format 2 %%" && lines.contains("%% day \(today.isoString) %%"))
     }
 
+    /// The pool is Next actions': a task of Soon or Someday dated today moves there with the day's turn, a subtask naming
+    /// its parent.
+    @Test func aDueTaskOfALaterListMovesToNextActions() async throws {
+        try write("%% day \(today.adding(days: -1).isoString) %%\n\n## Next actions\n## Soon\n- [ ] Trip\n    - [ ] Visa 📅 \(today.isoString)\n"
+                  + "## Someday\n- [ ] Paint 📅 \(today.isoString)\n")
+        let tasks = try await store().load().tasks
+        #expect(tasks.filter(\.isInTodayPool).allSatisfy { $0.status == .thisWeek })
+        #expect(Set(tasks.filter(\.isInTodayPool).map(\.name)) == ["Visa", "Paint"])
+        let file = try text()
+        #expect(file.contains("## Next actions\n- [ ] Visa 📅 \(today.isoString) 🔼 Trip #in_today_pool\n- [ ] Paint 📅 \(today.isoString) #in_today_pool\n"))
+    }
+
     /// Kept out of tomorrow in yesterday's review: the day's turn leaves it out of the pool and takes the mark away.
     @Test func aTaskKeptOutOfTomorrowStaysOut() async throws {
         try write("%% day \(today.adding(days: -1).isoString) %%\n\n## Next actions\n- [ ] Idle #not_tomorrow\n- [ ] Other\n")

@@ -1,6 +1,7 @@
 import Foundation
 
-/// Today's pool is what carries `#in_today_pool` (`TaskItem.isInTodayPool`). The day's turn puts it on what is due to
+/// Today's pool is what carries `#in_today_pool` (`TaskItem.isInTodayPool`), all of it in Next actions: what comes into
+/// the pool from Soon or Someday moves to Next actions with it. The day's turn puts it on what is due to
 /// come up (`isDue`), Not today takes it off, and a date set to today or earlier puts it on (`settled`). A task with a
 /// time today stands on the timeline by that time, with or without it; a habit comes up by its rule and never has it.
 enum TodayPool {
@@ -33,6 +34,7 @@ enum TodayPool {
         return tasks.map { task in
             var task = task
             task.isInTodayPool = due.contains(task.name)
+            if task.isInTodayPool { task.status = .thisWeek }
             return task
         }
     }
@@ -52,6 +54,8 @@ enum TodayPool {
         if task.due != was?.due, let due = task.due {
             let day = due.logicalDay(boundary: boundary)
             task.isInTodayPool = day < today || (day == today && due.time == nil)
+            // The pool is Next actions': a task of Soon or Someday that comes into it moves there.
+            if task.isInTodayPool, TaskStatus.open.contains(task.status) { task.status = .thisWeek }
         } else if task.status != was?.status, !task.status.isThisWeek, !task.status.isCompleted,
                   !isDue(task, today: today, boundary: boundary) {
             task.isInTodayPool = false

@@ -276,6 +276,11 @@ actor TaskFileStore: TaskStore {
         let due = TodayPool.dayTurn(items, today: day, boundary: boundary())
         for item in items where due.contains(item.name) {
             snapshot.document.update(id: item.id.value) { $0.inTodayPool = true }
+            // The pool is Next actions': a task of Soon or Someday due today moves there, naming its parent if it had one.
+            guard !item.status.isThisWeek, let place = place(of: item.id.value, in: snapshot.document),
+                  var taken = snapshot.document.remove(where: { $0.id == item.id.value })?.entry else { continue }
+            taken.parent = place.parent ?? place.tag
+            snapshot.document.insert(taken, into: .soon)
         }
         // What the review planned yesterday kept out of today has stayed out: its mark goes.
         snapshot.document.forEachOpenLine { entry, _ in entry.notTomorrow = false }
