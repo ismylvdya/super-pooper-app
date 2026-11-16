@@ -33,6 +33,8 @@ struct BacklogPage: View {
 
     var body: some View {
         let items = rows
+        // The lines from a parent to its subtasks, as in the pool; none while a drag moves the rows about.
+        let guides = drag?.isDragging == true ? [:] : SubtaskGuides.guides(of: items)
         ScrollView {
             LazyVStack(alignment: .leading, spacing: tokens.space(.poolRowGap)) {
                 ForEach(items) { item in
@@ -41,7 +43,8 @@ struct BacklogPage: View {
                             || (drag?.isBacklogLanding(item.id, on: list.id) == true && drag?.newItemSpot.parent != nil) {
                             NewItemGapPlate(depth: item.depth, extraLines: drag?.newItemEstimate.map(rules.pool.extraLines(forEstimate:)) ?? 0)
                         } else {
-                            PoolRow(item: item, isToday: false, isCompact: true, handler: handler, dragSource: .backlog(list.id))
+                            PoolRow(item: item, isToday: false, isCompact: true, handler: handler, dragSource: .backlog(list.id),
+                                    guide: guides[item.id])
                                 .dropGap(drag?.isBacklogLanding(item.id, on: list.id) == true)
                                 .closedUp(drag?.isBacklogGap(item.id, on: list.id) == true, gap: tokens.space(.poolRowGap))
                         }

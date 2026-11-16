@@ -68,6 +68,9 @@ struct DesignTokens: Decodable, Sendable {
     /// How far right a subtask stands of its parent: its plate starts as far right of the line as the parent's is left
     /// of it, so the line stands halfway between them, at every level.
     var subtaskIndent: CGFloat { subtaskLineX * 2 }
+    /// How far right a subtask stands of its parent in a list (the Lists page, the morning review): the line stays where
+    /// the pool has it, the name moves a little further from it.
+    var listSubtaskIndent: CGFloat { subtaskIndent + space(.listSubtaskExtra) }
     /// How big a started task's circle can be: from a small letter of the name to a one-line plate.
     var startedCircleSizes: ClosedRange<CGFloat> {
         let title = uiFont(.taskTitle)

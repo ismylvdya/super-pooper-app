@@ -22,6 +22,9 @@ enum SpacingToken: String, CaseIterable, Sendable {
     case projectCaptionGap
     /// How far below the banner on top each banner under it peeks out.
     case bannerStackPeek
+    /// In a list (not the pool) a subtask stands this much further right than the pool's indent: more room between the
+    /// line from its parent and its name.
+    case listSubtaskExtra
 }
 
 enum RadiusToken: String, CaseIterable, Sendable {

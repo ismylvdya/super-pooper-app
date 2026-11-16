@@ -2,7 +2,7 @@ import SwiftUI
 
 /// One list of the Lists page: the matching tasks by planning level, searchable from the bar's "…" or a hold of its
 /// title (`SearchPage`), not by pulling the list down. A row opens the task page
-/// (every property can be changed there); "+" on a task of a later level brings it to this week. Rows are dragged within
+/// (every property can be changed there); the Next actions button (a calendar) on a task of a later level brings it there. Rows are dragged within
 /// their group like every list. The tab bar's "+" dragged over the list makes a row's room there (over the right part, a
 /// subtask's of the row above) and opens the new task's page for that spot; held at the top or bottom edge, it scrolls
 /// the list.
@@ -38,12 +38,13 @@ struct TaskListScreen: View {
                 } else {
                     ListGroupGap()
                 }
+                let guides = SubtaskGuides.guides(of: group.items)
                 ForEach(Array(group.items.enumerated()), id: \.element.id) { index, item in
                     if item.id == TaskDragState.newItemGap {
                         gapRow(group: StatusText.title(level), groupID: group.id, id: item.id, index: index, count: group.items.count)
                     } else {
                         row(item.task, parent: ShownParent.parent(of: item.task, shown: shown), depth: item.depth, group: StatusText.title(level),
-                            groupID: group.id, index: index, count: group.items.count, rows: group.items)
+                            groupID: group.id, index: index, count: group.items.count, rows: group.items, guide: guides[item.id])
                     }
                 }
                 // Dragged like every list.
@@ -111,17 +112,23 @@ struct TaskListScreen: View {
     }
 
     private func row(_ task: TaskItem, parent: String?, depth: Int, group: String, groupID: String, index: Int, count: Int,
-                     rows: [DayItem]) -> some View {
+                     rows: [DayItem], guide: SubtaskGuide?) -> some View {
         HStack(spacing: tokens.space(.iconTextGap)) {
             // As the pool's row: the name with the chips (no mark before it, no chevron after it); a tap opens the task.
             TaskRowView(item: listed(task, parent: parent), showsDoneState: false) { router.open(.task(task.name)) }
-                // A subtask sits under its parent, shifted right, as in the pool.
-                .padding(.leading, CGFloat(depth) * tokens.subtaskIndent)
+                // A subtask sits under its parent, shifted right and joined to it by a line, as in the pool.
+                .padding(.leading, CGFloat(depth) * tokens.listSubtaskIndent)
+                .background(alignment: .topLeading) {
+                    if let guide {
+                        SubtaskGuideLines(guide: guide, turnY: tokens.space(.listRowVertical) + tokens.uiFont(.taskTitle).lineHeight / 2,
+                                          gap: 0, inList: true)
+                    }
+                }
             if task.canPromote {
                 Button {
                     Haptics.play(.move)
                     Task { await model.moveToThisWeek(task.name) }
-                } label: { Image(systemName: icons[.add]) }
+                } label: { Image(systemName: icons[.listThisWeek]) }
                     .buttonStyle(.borderless)
                     .accessibilityLabel(Text("lists.toThisWeek"))
                     .accessibilityIdentifier("lists.toThisWeek.\(task.name)")
@@ -133,7 +140,7 @@ struct TaskListScreen: View {
         // The pool's menu for the task (Not today has no place outside Today); one tab right or left to the right (D-182),
         // Delete to the left.
         .listGroupRow(group: group, id: task.name, index: index, count: count, frames: frames,
-                      tint: tokens.plateTint(for: task)) {
+                      separatorIndent: CGFloat(depth) * tokens.listSubtaskIndent, tint: tokens.plateTint(for: task)) {
             ActionMenuContent(menu: .context(of: task), item: DayItem(listed: task), isToday: false) {
                 handler.handle($0, taskName: task.name)
             }

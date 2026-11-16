@@ -22,8 +22,9 @@ extension View {
                                          separatorIndent: separatorIndent, menu: nil))
     }
 
-    /// A row of a group with a long-press menu: the menu lifts the row's plate, and so does a drag from it. `tint` lies over
-    /// the row's plate (a high-priority task's soft red, as in the pool).
+    /// A row of a group with a long-press menu: the menu lifts the row's plate, and so does a drag from it. `tint` (a
+    /// high-priority task's soft red, as in the pool) fills the row's whole cell at rest, square but at the group's ends,
+    /// as one with the group; lifted, the row is cut to its plate's outline, so it is round on all four corners then.
     func listGroupRow<Menu: View>(group: String, id: String, index: Int, count: Int, frames: ListGroupFrames,
                                   vertical: CGFloat? = nil, separatorIndent: CGFloat = 0, tint: Color? = nil,
                                   @ViewBuilder menu: () -> Menu) -> some View {
@@ -80,7 +81,8 @@ private struct ListGroupRow<Menu: View>: ViewModifier {
             .padding(.horizontal, inset)
             .padding(.vertical, vertical ?? tokens.space(.listRowVertical))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .plate(.group, tint: tint)
+            .background(tint ?? .clear, in: cellShape)
+            .plate(.group)
             .overlay(alignment: .bottom) {
                 if index < count - 1 {
                     Rectangle().fill(tokens.color(.listSeparator)).frame(height: 1 / displayScale).padding(.leading, inset + separatorIndent)
@@ -102,6 +104,14 @@ private struct ListGroupRow<Menu: View>: ViewModifier {
             .onAppear { frames.setVisible(true, group: group, id: id) }
             .onDisappear { frames.setVisible(false, group: group, id: id) }
             .listGroupSpacer()
+    }
+
+    /// The row's cell as a piece of its group's plate: rounded only where it starts or ends the group.
+    private var cellShape: UnevenRoundedRectangle {
+        let radius = tokens.plateRadius(.group)
+        return UnevenRoundedRectangle(topLeadingRadius: index == 0 ? radius : 0, bottomLeadingRadius: index == count - 1 ? radius : 0,
+                                      bottomTrailingRadius: index == count - 1 ? radius : 0, topTrailingRadius: index == 0 ? radius : 0,
+                                      style: .circular)
     }
 }
 

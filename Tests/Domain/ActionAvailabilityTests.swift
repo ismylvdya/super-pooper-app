@@ -74,6 +74,16 @@ struct ActionAvailabilityTests {
         return (availability.swipe(definition.leading, for: item), availability.swipe(definition.trailing, for: item))
     }
 
+    /// What was set aside at the bottom of the morning review comes back with a swipe to the left, in the grey of Not
+    /// today; to the right it has nothing (D-186).
+    @Test func aSetAsideNoteComesBackWithAGreySwipeToTheLeft() {
+        for (kind, action) in [(ActionSwipes.setAside, ActionID.returnToToday), (.setAsideTomorrow, .returnTomorrow)] {
+            #expect(TestConfig.actions.swipes[kind].leading.isEmpty)
+            #expect(TestConfig.actions.swipes[kind].trailing == [action])
+            #expect(TestConfig.actions.definition(action).swipeTint == TestConfig.actions.definition(.notToday).swipeTint)
+        }
+    }
+
     /// In a list a swipe to the right is Done, to the left Delete; a done task offers Return instead of Done.
     @Test func aTaskSwipesRightToDoneAndLeftToDelete() {
         #expect(swipes(.task, item(makeTask("Report"))).leading == [.done])

@@ -57,7 +57,7 @@
       "icon": "arrow.uturn.backward.circle",
       "destructive": false,
       "haptic": "light",
-      "swipeTint": "success"
+      "swipeTint": "swipeNeutral"
     },
     {
       "id": "indent",
@@ -122,7 +122,7 @@
       "icon": "arrow.uturn.backward.circle",
       "destructive": false,
       "haptic": "light",
-      "swipeTint": "success"
+      "swipeTint": "swipeNeutral"
     },
     {
       "id": "restoreThisWeek",
@@ -425,10 +425,10 @@
       ]
     },
     "setAside": {
-      "leading": [
+      "leading": [],
+      "trailing": [
         "returnToToday"
-      ],
-      "trailing": []
+      ]
     },
     "reviewTomorrow": {
       "leading": [
@@ -441,10 +441,10 @@
       ]
     },
     "setAsideTomorrow": {
-      "leading": [
+      "leading": [],
+      "trailing": [
         "returnTomorrow"
-      ],
-      "trailing": []
+      ]
     },
     "archivedTask": {
       "leading": [],

@@ -11,11 +11,15 @@ struct SubtaskGuideLines: View {
     /// The room between this row and the one above, which the line crosses: the pool's gap between plates by default;
     /// rows on one plate (the morning review) have none.
     var gap: CGFloat?
+    /// A list's rows (`DesignTokens.listSubtaskIndent`): the line where the pool has it, the name further right of it.
+    var inList = false
 
     var body: some View {
         GeometryReader { proxy in
-            SubtaskGuideShape(guide: guide, indent: tokens.subtaskIndent, gap: gap ?? tokens.space(.poolRowGap), turnY: turnY,
-                              turnRadius: look.corner, roundsMiddle: look.roundsMiddle, height: proxy.size.height)
+            SubtaskGuideShape(guide: guide, indent: inList ? tokens.listSubtaskIndent : tokens.subtaskIndent,
+                              gap: gap ?? tokens.space(.poolRowGap), turnY: turnY,
+                              turnRadius: look.corner, roundsMiddle: look.roundsMiddle, height: proxy.size.height,
+                              lineX: tokens.subtaskLineX)
                 .stroke(tokens.color(.subtaskLine), style: StrokeStyle(lineWidth: tokens.size(.subtaskLine), lineCap: .butt))
         }
         .allowsHitTesting(false)
@@ -35,15 +39,17 @@ struct SubtaskGuideShape: Shape {
     let height: CGFloat
     /// How far right the turn goes; nil: to the row's plate.
     var reach: CGFloat?
+    /// Where each level's line comes down, from that level's left edge; nil: the middle of its indent.
+    var lineX: CGFloat?
 
     func path(in rect: CGRect) -> Path {
         var path = Path()
         for (level, passes) in guide.passes.enumerated() where passes {
-            let x = CGFloat(level) * indent + indent / 2
+            let x = CGFloat(level) * indent + (lineX ?? indent / 2)
             path.move(to: CGPoint(x: x, y: -gap))
             path.addLine(to: CGPoint(x: x, y: height))
         }
-        let x = CGFloat(guide.depth - 1) * indent + indent / 2
+        let x = CGFloat(guide.depth - 1) * indent + (lineX ?? indent / 2)
         let end = reach ?? CGFloat(guide.depth) * indent
         guard guide.isLast || roundsMiddle else {
             path.move(to: CGPoint(x: x, y: -gap))

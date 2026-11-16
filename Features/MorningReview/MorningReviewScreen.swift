@@ -7,7 +7,7 @@ import SwiftUI
 /// Tapping a row (outside its chips) opens the task page.
 /// A long press opens the same menu as the row in the pool (and moving the finger then drags the row).
 /// Swiping a row right is Done; swiping it left has one button: a task's Not today, a habit's Skip today. What was taken
-/// out of today waits in the Not today group at the bottom (`SetAsideToday`); swiped there to the right it comes back.
+/// out of today waits in the Not today group at the bottom (`SetAsideToday`); swiped there to the left it comes back.
 /// The sheet: opened by itself in the morning (or from Today); a task opens on a page pushed in the sheet.
 /// Its Tomorrow (the switch at the top) plans the next day the evening before: what tomorrow's turn will bring, kept out
 /// of it with Not tomorrow, in an order of its own; reviewed so, it does not open by itself that morning.
@@ -83,6 +83,18 @@ struct MorningReviewList: View {
     var body: some View {
         let plan = isTomorrow ? model.tomorrowPlan() : model.plan(at: model.clock.now)
         List {
+            // Only in the evening: planning tomorrow is a thing of the day's end (`DayRules.tomorrowReviewFrom`). It
+            // scrolls with the rows, not with the bar.
+            if model.offersTomorrowReview {
+                Picker(selection: $isTomorrow) {
+                    Text("review.mode.today").tag(false)
+                    Text("review.mode.tomorrow").tag(true)
+                } label: { EmptyView() }
+                    .pickerStyle(.segmented)
+                    .accessibilityIdentifier("review.mode")
+                    .listGroupSpacer()
+                    .moveDisabled(true)
+            }
             Group {
                 let rows = shownRows(plan)
                 let items = Dictionary(plan.pool.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
@@ -106,7 +118,7 @@ struct MorningReviewList: View {
                             let position = ReviewGroups.position(of: index, in: rows)
                             ReviewRow(item: item, today: plan.today) { openTask(item.id) }
                                 // A subtask sits under its parent, shifted right, as in the pool.
-                                .padding(.leading, CGFloat(item.depth) * tokens.subtaskIndent)
+                                .padding(.leading, CGFloat(item.depth) * tokens.listSubtaskIndent)
                                 .modifier(RowTracking { frame in
                                     rowMids[name] = frame.midY
                                     rowHeights[name] = frame.height
@@ -116,14 +128,14 @@ struct MorningReviewList: View {
                                 .background(alignment: .topLeading) {
                                     if let guide = guides[name] {
                                         SubtaskGuideLines(guide: guide, turnY: tokens.space(.reviewRowVertical) + tokens.uiFont(.taskTitle).lineHeight / 2,
-                                                          gap: 0)
+                                                          gap: 0, inList: true)
                                     }
                                 }
                                 // The row keeps its top and bottom inset inside, where a tap opens the task.
                                 // A high-priority task's soft red over its row, as in the pool.
                                 .listGroupRow(group: ReviewGroups.group(of: index, in: rows)?.rawValue ?? "", id: name,
                                               index: position.index, count: position.count, frames: frames, vertical: 0,
-                                              separatorIndent: CGFloat(item.depth) * tokens.subtaskIndent,
+                                              separatorIndent: CGFloat(item.depth) * tokens.listSubtaskIndent,
                                               tint: tokens.plateTint(for: item.task)) {
                                     ActionMenuContent(menu: .context(of: item.task), item: item, isToday: !isTomorrow) {
                                         perform($0, on: item.id)
@@ -162,18 +174,6 @@ struct MorningReviewList: View {
         .appList()
         // The first group starts closer to the bar than a list's own top gap.
         .contentMargins(.top, tokens.space(.reviewTop), for: .scrollContent)
-        .safeAreaInset(edge: .top) {
-            // Only in the evening: planning tomorrow is a thing of the day's end (`DayRules.tomorrowReviewFrom`).
-            if model.offersTomorrowReview {
-                Picker(selection: $isTomorrow) {
-                    Text("review.mode.today").tag(false)
-                    Text("review.mode.tomorrow").tag(true)
-                } label: { EmptyView() }
-                    .pickerStyle(.segmented)
-                    .padding(.horizontal, tokens.space(.screenHorizontal))
-                    .accessibilityIdentifier("review.mode")
-            }
-        }
         .onChange(of: model.offersTomorrowReview) { _, offered in if !offered { isTomorrow = false } }
         .onChange(of: isTomorrow) { _, tomorrow in if tomorrow { model.markTomorrowReviewed() } }
         .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { screenFrame = $0 }
@@ -200,7 +200,7 @@ struct MorningReviewList: View {
         }
     }
 
-    /// What was taken out of the day, at the bottom: swiped to the right it comes back (`SetAsideToday`; on Tomorrow, what is
+    /// What was taken out of the day, at the bottom: swiped to the left it comes back (`SetAsideToday`; on Tomorrow, what is
     /// kept out of tomorrow).
     @ViewBuilder private func setAside(today: LocalDate) -> some View {
         let notes = isTomorrow ? model.setAsideTomorrow : model.setAsideToday
