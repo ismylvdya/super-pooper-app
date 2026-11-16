@@ -130,6 +130,7 @@ struct DayScenario {
     var events: [CalendarEvent] = []
     var reminders: [ReminderItem] = []
     var skipped: Set<String> = []
+    /// The order of the store's lines, by name (`TaskItem.storeOrder`); what it does not name has no line of its own.
     var manualOrder: [String]?
     var routines = HabitRoutines()
     var eventsKnown = true
@@ -137,8 +138,12 @@ struct DayScenario {
     var sections: DaySections?
 
     func build(at context: DayContext = TestCalendar.context()) -> DayPlan {
-        var inputs = DayInputs(tasks: tasks, events: events, reminders: reminders, skipped: skipped, manualOrder: manualOrder,
-                               routines: routines)
+        let lined = tasks.map { task in
+            var task = task
+            if let manualOrder { task.storeOrder = manualOrder.firstIndex { $0.isSameNoteName(as: task.name) } }
+            return task
+        }
+        var inputs = DayInputs(tasks: lined, events: events, reminders: reminders, skipped: skipped, routines: routines)
         inputs.eventsKnown = eventsKnown
         inputs.timeMoves = timeMoves
         inputs.sections = sections

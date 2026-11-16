@@ -9,7 +9,7 @@ enum DayPlanning {
                      eventsKnown: Bool) -> DayPlan {
         let state = dayState.day == context.today ? dayState : DayState(day: context.today)
         let inputs = DayInputs(tasks: usable(tasks, config: config, context: context), events: events, reminders: reminders,
-                               skipped: Set(state.skipped), manualOrder: state.manualOrder,
+                               skipped: Set(state.skipped),
                                routines: settings.habits.routines,
                                timelineFilter: settings.timeline.shown, eventsKnown: eventsKnown,
                                timeMoves: state.timeMoves, sections: sections)
@@ -31,7 +31,7 @@ enum DayPlanning {
         let dayContext = context.focused(on: context.moment(config.rules.timeline.otherDayAnchor, onLogicalDay: day))
         let moves = dayState.day == context.today ? dayState.moves(on: day) : []
         let inputs = DayInputs(tasks: usable(tasks, config: config, context: context), events: events, reminders: reminders,
-                               skipped: [], manualOrder: nil, timelineFilter: settings.timeline.shown, isOtherDay: true,
+                               skipped: [], timelineFilter: settings.timeline.shown, isOtherDay: true,
                                eventsKnown: eventsKnown, timeMoves: moves)
         var result = builder(config: config, settings: settings).build(inputs, context: dayContext)
         result.isToday = false
@@ -47,7 +47,6 @@ enum DayPlanning {
         let dayContext = context.focused(on: context.moment(config.rules.timeline.otherDayAnchor, onLogicalDay: day))
         var state = DayState(day: day)
         state.skipped = ahead.skipped
-        state.manualOrder = ahead.manualOrder
         var result = plan(config: config, settings: settings, tasks: TodayPool.turning(tasks, today: day, boundary: context.boundary),
                           events: events, reminders: reminders, dayState: state, sections: sections, context: dayContext,
                           eventsKnown: eventsKnown)

@@ -58,7 +58,7 @@ enum PreviewSamples {
     }
 
     static var plan: DayPlan {
-        let inputs = DayInputs(tasks: tasks, events: events, reminders: reminders, skipped: [], manualOrder: nil)
+        let inputs = DayInputs(tasks: tasks, events: events, reminders: reminders, skipped: [])
         return DayBuilder(rules: BundledConfig.rules.day, sortCriteria: PoolSortCriterion.allCases,
                           sections: BundledConfig.rules.pool.defaultSections).build(inputs, context: context)
     }

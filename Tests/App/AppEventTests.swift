@@ -42,10 +42,10 @@ struct AppEventTests {
         #expect(events.sent.isEmpty)
     }
 
-    @Test func resettingTheOrderIsReported() throws {
+    @Test func resettingTheOrderIsReported() async throws {
         let model = try makeModel()
-        model.setManualOrder(["Сдать отчёт"])
-        model.resetOrder()
+        await model.setPoolOrder(["Сдать отчёт"])
+        await model.resetOrder()
         #expect(events.sent == [.orderReset])
     }
 

@@ -136,11 +136,11 @@ struct MorningReviewList: View {
                 .onMove { source, destination in
                     Haptics.play(.reorder)
                     let move = ReviewGroups.move(rows, from: source, to: destination, pool: plan.pool)
-                    if isTomorrow { model.applyTomorrowMove(move) } else { model.applyReviewMove(move) }
+                    Task { await model.applyReviewMove(move) }
                 }
             }
             setAside(today: plan.today)
-            ListGroupFooter(text: Text(hasManualOrder ? "review.footer.manual" : "review.footer.auto"))
+            ListGroupFooter(text: Text("review.footer.lines"))
                 .accessibilityIdentifier("review.footer")
         }
         .listGroupStyle()
@@ -177,17 +177,14 @@ struct MorningReviewList: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 PageMoreMenu(search: openSearch, accessibilityID: "review.more") {
-                    Button { if isTomorrow { model.resetTomorrowOrder() } else { model.resetOrder() } } label: {
+                    Button { Task { await model.resetOrder(tomorrow: isTomorrow) } } label: {
                         Label("review.reset", systemImage: icons[.resetSort])
                     }
-                        .disabled(!hasManualOrder)
                         .accessibilityIdentifier("review.reset")
                 }
             }
         }
     }
-
-    private var hasManualOrder: Bool { isTomorrow ? model.tomorrowHasManualOrder : model.dayState.manualOrder != nil }
 
     /// What was taken out of the day, at the bottom: swiped to the right it comes back (`SetAsideToday`; on Tomorrow, what is
     /// kept out of tomorrow).

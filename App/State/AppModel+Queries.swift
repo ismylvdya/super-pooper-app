@@ -63,11 +63,6 @@ extension AppModel {
         return NameOrder.sorted(TodayPool.keptOutTomorrow(tasks, tomorrow: tomorrow, boundary: context.boundary) + habits)
     }
 
-    /// Tomorrow's order was set by hand in the review.
-    var tomorrowHasManualOrder: Bool { parts.day.tomorrow.manualOrder != nil }
-
-    func applyTomorrowMove(_ move: ReviewGroups.Move) { parts.dayCommands.applyTomorrowMove(move) }
-    func resetTomorrowOrder() { parts.dayCommands.resetTomorrowOrder() }
     func markTomorrowReviewed() { parts.dayCommands.markTomorrowReviewed() }
 
     // MARK: - Backlog pages

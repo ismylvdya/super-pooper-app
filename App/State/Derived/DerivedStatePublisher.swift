@@ -55,6 +55,24 @@ final class DerivedStatePublisher {
         return plan
     }
 
+    /// The pool by the pool's rules alone, as if its lines had no order (Reset sorting): today's, or tomorrow's.
+    func sortedPool(tomorrow: Bool) -> [String] {
+        let date = day.clock.now
+        let context = day.context(at: date)
+        let unordered = tasks.tasks.map { task in
+            var task = task
+            task.storeOrder = nil
+            return task
+        }
+        let plan = tomorrow
+            ? DayPlanning.tomorrow(config: config, settings: settings.settings, tasks: unordered, events: sources.events, reminders: sources.reminders,
+                                   ahead: day.tomorrow, sections: sections.snapshot(on: context.today.adding(days: 1)), context: context,
+                                   eventsKnown: sources.eventsKnown)
+            : DayPlanning.plan(config: config, settings: settings.settings, tasks: unordered, events: sources.events, reminders: sources.reminders,
+                               dayState: day.dayState, sections: sections.snapshot(on: context.today), context: context, eventsKnown: sources.eventsKnown)
+        return plan.pool.map(\.id)
+    }
+
     /// Tomorrow as the morning review plans it today (`DayPlanning.tomorrow`).
     func tomorrowPlan(at date: Date) -> DayPlan {
         let context = day.context(at: date)

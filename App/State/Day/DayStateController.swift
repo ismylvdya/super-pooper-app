@@ -85,11 +85,6 @@ final class DayStateController {
         update { $0.skipped.removeAll { $0.isSameNoteName(as: name) } }
     }
 
-    /// The pool's order for today; nil goes back to the automatic sort.
-    func setManualOrder(_ names: [String]?) {
-        update { $0.manualOrder = names }
-    }
-
     func markReviewShown() {
         update { $0.reviewShown = true }
     }
@@ -122,7 +117,6 @@ final class DayStateController {
         guard before.day == dayState.day else { return }
         update {
             $0.skipped = before.skipped
-            $0.manualOrder = before.manualOrder
             $0.timeMoves = before.timeMoves
         }
     }
@@ -132,7 +126,6 @@ final class DayStateController {
         let rename = { (names: [String]) in NameReferences.renaming(names, from: old, to: new) }
         update {
             $0.skipped = rename($0.skipped)
-            $0.manualOrder = $0.manualOrder.map(rename)
             $0.timeMoves = TodayTimes($0.timeMoves).renaming(from: old, to: new)
         }
     }

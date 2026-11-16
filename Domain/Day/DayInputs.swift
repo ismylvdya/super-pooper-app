@@ -9,8 +9,6 @@ struct DayInputs: Sendable {
     var reminders: [ReminderItem]
     /// Recurring tasks hidden with "Skip today".
     var skipped: Set<String>
-    /// The user's pool order for today, if they dragged something.
-    var manualOrder: [String]?
     var routines = HabitRoutines()
     /// Which kinds of entries the timeline shows; hidden timed tasks and habits stay in the pool.
     var timelineFilter = TimelineFilter()

@@ -97,8 +97,9 @@ struct AppModelTests {
     @Test func aReviewDragIntoAnotherGroupSetsThePartOfTheDay() async throws {
         let model = try makeModel()
         let order = ["Сдать отчёт", "Позвонить в банк"]
-        model.applyReviewMove(ReviewGroups.Move(order: order, regrouped: ["Сдать отчёт": .evening]))
-        #expect(model.dayState.manualOrder == order)
+        await model.applyReviewMove(ReviewGroups.Move(order: order, regrouped: ["Сдать отчёт": .evening]))
+        let places = order.compactMap { model.task(named: $0)?.storeOrder }
+        #expect(places.count == 2 && places[0] < places[1], "the order of the lines")
         await model.parts.writer.waitForEdits(of: "Сдать отчёт")
         #expect(model.task(named: "Сдать отчёт")?.habit.timeOfDay == .evening)
         #expect(model.task(named: "Позвонить в банк")?.habit.timeOfDay == nil)
@@ -224,14 +225,15 @@ struct AppModelTests {
         #expect(model.task(named: "Сдать отчёт") == nil)
     }
 
-    @Test func manualOrderIsKeptAndReset() throws {
+    /// The pool's order is the order of its lines: a new one is kept, and Reset sorting sorts the lines by the rules.
+    @Test func thePoolsOrderIsTheLinesAndResetSortsThem() async throws {
         let model = try makeModel()
         let auto = model.plan(at: model.clock.now).pool.map(\.id)
         let manual = Array(auto.reversed())
-        model.setManualOrder(manual)
+        await model.setPoolOrder(manual)
         let ordered = model.plan(at: model.clock.now).pool.map(\.id)
         #expect(ordered != auto)
-        model.resetOrder()
+        await model.resetOrder()
         #expect(model.plan(at: model.clock.now).pool.map(\.id) == auto)
     }
 

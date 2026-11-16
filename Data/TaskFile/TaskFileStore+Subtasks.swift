@@ -16,7 +16,9 @@ extension TaskFileStore {
         snapshot.document.walk { entry, section, parent, index in
             guard let owner = parent?.id, owners.contains(owner), let own = entry.id, snapshot.habits[own] == nil else { return }
             owners.insert(own)
-            found.append(item(entry, in: section, parent: parent, index: index, snapshot: snapshot))
+            var task = item(entry, in: section, parent: parent, index: index, snapshot: snapshot)
+            task.storeOrder = storeOrder(of: own, in: snapshot)
+            found.append(task)
         }
         return found
     }

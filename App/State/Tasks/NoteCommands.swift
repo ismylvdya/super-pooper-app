@@ -175,7 +175,7 @@ final class NoteCommands {
                 }
                 await reorderTasks(order)
             } else if let placement {
-                placements.place(created.name, at: placement)
+                await placements.place(created.name, at: placement)
             }
             await derived.publish()
             appEvents.send(.created(created.name))
@@ -199,15 +199,7 @@ final class NoteCommands {
 
     /// A list's rows dragged into a new order: shown at once, and their lines in the store take it.
     func reorderTasks(_ names: [String]) async {
-        let items = names.compactMap(tasks.task(named:))
-        let places = items.compactMap(\.storeOrder).sorted()
-        for (item, place) in zip(items, places) {
-            var moved = item
-            moved.storeOrder = place
-            tasks.replace(moved)
-        }
-        try? await (store as? TaskOrdering)?.reorder(items.map(\.id))
-        await derived.publish()
+        await writer.reorder(names)
     }
 
     /// A subtask dragged onto another one on the parent's page takes its place; the list (and the pool) shows the new

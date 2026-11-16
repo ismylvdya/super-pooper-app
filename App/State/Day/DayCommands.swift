@@ -60,21 +60,21 @@ final class DayCommands {
         }
     }
 
-    func setManualOrder(_ names: [String]) {
-        day.setManualOrder(names)
-        Task { await derived.publish() }
+    /// The pool in a new order: its lines take that order in the store (D-180).
+    func setPoolOrder(_ names: [String]) async {
+        await writer.reorder(names)
     }
 
-    func resetOrder() {
-        day.setManualOrder(nil)
+    /// The pool's lines sorted by the pool's rules (`PoolSorter`), today's or, from the review's Tomorrow, tomorrow's.
+    func resetOrder(tomorrow: Bool = false) async {
+        await setPoolOrder(derived.sortedPool(tomorrow: tomorrow))
         appEvents.send(.orderReset)
-        Task { await derived.publish() }
     }
 
     /// A drag in Soon across the Morning / Day / Evening groups: the new order, and a new part of the day for the
     /// tasks that changed group.
-    func applyReviewMove(_ move: ReviewGroups.Move) {
-        setManualOrder(move.order)
+    func applyReviewMove(_ move: ReviewGroups.Move) async {
+        await setPoolOrder(move.order)
         for (name, group) in move.regrouped {
             writer.enqueueEdit(name) { _ in [.timeOfDay(group.timeOfDay)] }
         }
@@ -110,7 +110,7 @@ final class DayCommands {
         } else {
             await write(task, TaskScheduling.changes(unscheduling: local, context: day.context()))
         }
-        if isToday(shown) { setManualOrder(poolOrder) }
+        if isToday(shown) { await setPoolOrder(poolOrder) }
     }
 
     /// A block dragged from the timeline can land in the pool (`TaskScheduling.canSendToPool`).
@@ -129,23 +129,21 @@ final class DayCommands {
     /// A worm dropped whole: every member goes into the section (nil: stays where it stands).
     func moveTasks(_ names: [String], toSection id: String?, poolOrder: [String], on date: LocalDate) {
         for name in names { placeInSection(name, id, on: date) }
-        if isToday(date) { day.setManualOrder(poolOrder) }
+        if isToday(date) { Task { await setPoolOrder(poolOrder) } }
         Task { await derived.publish() }
     }
 
     /// A note made from a "+" dropped in the pool of `day`: it takes the gap's place there and the section of the spot.
     /// A timeline's drop is already the note's date and time.
-    func place(_ name: String, at placement: NewItemPlacement) {
+    func place(_ name: String, at placement: NewItemPlacement) async {
         if case .newSection(let title, let day) = placement {
             _ = newSection(titled: title, with: [name], after: nil, on: day)
             return
         }
         guard case .pool(_, let section, let day) = placement, let order = placement.poolOrder(named: name) else { return }
-        if section != nil {
-            moveTasks([name], toSection: section, poolOrder: order, on: day)
-        } else if isToday(day) {
-            setManualOrder(order)
-        }
+        placeInSection(name, section, on: day)
+        if isToday(day) { await setPoolOrder(order) }
+        await derived.publish()
     }
 
     /// A whole section dragged by its header: the day's sections in the new order (`order`: their ids).
@@ -243,7 +241,7 @@ final class DayCommands {
         guard let local = localTask(named: name) else { return }
         await apply(BacklogMoves.intoPool(local, day: day, context: self.day.context()), to: name)
         if isToday(day), let task = tasks.task(named: name) { await carrySubtasks(of: task, into: true) }
-        if let poolOrder, isToday(day) { setManualOrder(poolOrder) }
+        if let poolOrder, isToday(day) { await setPoolOrder(poolOrder) }
     }
 
     /// From a backlog page onto the timeline of any day, at the dropped moment.

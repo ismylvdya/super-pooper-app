@@ -128,16 +128,15 @@ extension TaskFileStore: TaskTrash, DayMirroring, ExternalLinking, TaskBackups, 
             }
             var document = snapshot.document
             guard let list = document.sections.firstIndex(where: { $0.kind == .soon }) else { return nil }
-            // The habits' lines are made anew; their subtasks go under the new ones.
-            let children = takeHabitLines(&document, habits: Set(snapshot.habits.keys))
+
             let pooled = day.sections.flatMap(\.names)
             let timed = day.timed.keys.sorted().filter { !pooled.containsNoteName($0) }
             var seen: Set<String> = []
             let todays = (pooled + timed).compactMap(line).filter { seen.insert($0.id ?? $0.name).inserted }
             let placed = Set(todays.compactMap(\.id))
-            var habitLines = todays + waitingHabitLines(except: placed, skipped: day.skipped, snapshot: snapshot, today: dayOfFile)
-            give(children, to: &habitLines, document: &document)
-            document.sections[list].groups[0].entries.insert(contentsOf: habitLines, at: 0)
+            // The habits' lines are made anew in their places, their subtasks staying under them.
+            let habitLines = todays + waitingHabitLines(except: placed, skipped: day.skipped, snapshot: snapshot, today: dayOfFile)
+            placeHabitLines(habitLines, in: &document, habits: Set(snapshot.habits.keys))
             try write(document, root: root)
             snapshot.document = document
             lookMemory.save(look(of: snapshot))

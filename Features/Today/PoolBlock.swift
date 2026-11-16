@@ -107,7 +107,7 @@ struct PoolBlock: View {
         if let section, isToday, source.wormMembers.isEmpty { model.moveTask(item.id, toSection: section, poolOrder: order, on: day) }
         switch source {
         // The pool's own order is today's only.
-        case .pool: if isToday && section == nil { model.setManualOrder(order) }
+        case .pool: if isToday && section == nil { Task { await model.setPoolOrder(order) } }
         case .timeline(let slot): Task { await model.unschedule(item.id, slot: slot, poolOrder: order, on: day) }
         case .backlog: Task { await model.bringFromBacklog(item.id, to: day, poolOrder: isToday ? order : nil) }
         case .worm(_, let members):

@@ -16,27 +16,39 @@ extension TaskFileStore {
         return taken
     }
 
-    /// The subtasks of the habits in `habits`, by habit, taken out of Next actions: those under the habits' lines and
-    /// those beside them naming a habit. The habits' lines go too.
-    func takeHabitLines(_ document: inout TaskDocument, habits: Set<String>) -> [String: [TaskEntry]] {
-        var children: [String: [TaskEntry]] = [:]
-        guard let list = document.sections.firstIndex(where: { $0.kind == .soon }) else { return [:] }
+    /// The habits' lines of today and their next days (`lines`) take the places the habits' lines have in Next actions — the
+    /// pool's order is the order of the lines (D-180) — keeping the subtasks under them; a new one goes on top. A habit
+    /// with no line now leaves its subtasks beside, naming it; a line beside naming a habit goes under its line.
+    func placeHabitLines(_ lines: [TaskEntry], in document: inout TaskDocument, habits: Set<String>) {
+        guard let list = document.sections.firstIndex(where: { $0.kind == .soon }) else { return }
+        var new = Dictionary(lines.compactMap { line in line.id.map { ($0, line) } }, uniquingKeysWith: { first, _ in first })
+        var strays: [String: [TaskEntry]] = [:]
         for group in document.sections[list].groups.indices {
             var kept: [TaskEntry] = []
             for entry in document.sections[list].groups[group].entries {
                 if let id = entry.id, habits.contains(id) {
-                    children[id, default: []] += entry.children
+                    guard var line = new.removeValue(forKey: id) else {
+                        strays[id, default: []] += entry.children
+                        continue
+                    }
+                    line.children = entry.children
+                    kept.append(line)
                 } else if let owner = entry.parent, habits.contains(owner), !(entry.id.map(habits.contains) ?? false) {
                     var child = entry
                     child.parent = nil
-                    children[owner, default: []].append(child)
+                    strays[owner, default: []].append(child)
                 } else {
                     kept.append(entry)
                 }
             }
             document.sections[list].groups[group].entries = kept
         }
-        return children
+        let fresh = lines.filter { $0.id.map { new[$0] != nil } ?? false }
+        document.sections[list].groups[0].entries.insert(contentsOf: fresh, at: 0)
+        var none: [TaskEntry] = []
+        for (id, children) in strays where !children.isEmpty {
+            if document.update(id: id, { $0.children += children }) == false { give([id: children], to: &none, document: &document) }
+        }
     }
 
     /// The subtasks go under their habit's new line; those of a habit with no line stay beside, naming it.

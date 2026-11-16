@@ -44,8 +44,11 @@ struct DayBuilder: Sendable {
         // today brings the habit there, even if another of its blocks stays on the timeline.
         let poolItems = items.filter { !$0.isFinished && (!timedNames.contains($0.id) || times.isPooledToday($0)) }
 
-        let sorted = SubtaskNesting.nested(inputs.manualOrder.map { sorter.applyingManualOrder($0, to: poolItems, context: context) }
-            ?? sorter.sorted(poolItems, context: context))
+        // The pool's order is the order of the store's lines (D-180); what has no line of its own takes the pool's sort
+        // around them.
+        let lines = poolItems.compactMap { item in item.task.storeOrder.map { (item.id, $0) } }.sorted { $0.1 < $1.1 }.map(\.0)
+        let sorted = SubtaskNesting.nested(lines.isEmpty ? sorter.sorted(poolItems, context: context)
+            : sorter.applyingManualOrder(lines, to: poolItems, context: context))
         let daySections = inputs.sections ?? .defaults(on: context.today, definitions: sections)
         // Every day's pool stands in the day's sections: Morning and Evening by a task's routine (`time_of_day`), the rest in
         // Day, and on that day's own sections what was moved into them.

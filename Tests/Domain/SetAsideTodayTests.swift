@@ -37,11 +37,10 @@ struct DayStateAheadTests {
         var state = DayState(day: LocalDate("2026-10-21"))
         var ahead = state.plan(of: LocalDate("2026-10-22"))
         ahead.skipped = ["Run"]
-        ahead.manualOrder = ["B", "A"]
         ahead.reviewed = true
         state.ahead = ahead
         let next = state.rolled(to: LocalDate("2026-10-22"))
-        #expect(next.skipped == ["Run"] && next.manualOrder == ["B", "A"] && next.reviewShown)
+        #expect(next.skipped == ["Run"] && next.reviewShown)
         #expect(state.rolled(to: LocalDate("2026-10-23")).skipped.isEmpty, "a plan of another day says nothing")
     }
 }

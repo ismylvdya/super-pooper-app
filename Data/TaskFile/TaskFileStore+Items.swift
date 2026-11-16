@@ -14,7 +14,9 @@ extension TaskFileStore {
                 try write(file, root: root)
                 try write(snapshot.document, root: root)
                 snapshot.habits[id] = file
-                return TaskWriteResult(task: habit(of: file, snapshot: snapshot), hadConflict: false)
+                var written = habit(of: file, snapshot: snapshot)
+                written.storeOrder = storeOrder(of: id, in: snapshot)
+                return TaskWriteResult(task: written, hadConflict: false)
             }
             try update(id: id, name: task.name, changes: changes, in: &snapshot)
             try write(snapshot.document, root: root)
@@ -55,9 +57,12 @@ extension TaskFileStore {
         snapshot.document.insert(taken, into: target)
     }
 
+    /// The item as its line has it now, with its place among the lines (the pool's order).
     private func current(id: String, name: String, snapshot: Snapshot) throws -> TaskItem {
         guard let place = place(of: id, in: snapshot.document) else { throw TaskStoreError.fileMissing(name) }
-        return item(place.entry, in: place.section, parent: place.parentEntry, index: place.index, snapshot: snapshot)
+        var task = item(place.entry, in: place.section, parent: place.parentEntry, index: place.index, snapshot: snapshot)
+        task.storeOrder = storeOrder(of: id, in: snapshot)
+        return task
     }
 
     func place(of id: String, in document: TaskDocument)

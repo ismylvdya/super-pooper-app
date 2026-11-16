@@ -48,9 +48,9 @@ final class AppModel {
 
     var problemCount: Int { parts.derived.problemCount }
 
-    func setManualOrder(_ names: [String]) { parts.dayCommands.setManualOrder(names) }
-    func resetOrder() { parts.dayCommands.resetOrder() }
-    func applyReviewMove(_ move: ReviewGroups.Move) { parts.dayCommands.applyReviewMove(move) }
+    func setPoolOrder(_ names: [String]) async { await parts.dayCommands.setPoolOrder(names) }
+    func resetOrder(tomorrow: Bool = false) async { await parts.dayCommands.resetOrder(tomorrow: tomorrow) }
+    func applyReviewMove(_ move: ReviewGroups.Move) async { await parts.dayCommands.applyReviewMove(move) }
     /// A drag between the pool and the timeline of any day; `slot`: a habit block's time as its note has it, when it comes
     /// from the timeline (a habit moves for that day only).
     func schedule(_ name: String, slot: LocalTime? = nil, at moment: Date) async {

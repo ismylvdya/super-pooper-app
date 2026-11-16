@@ -193,17 +193,40 @@ actor TaskFileStore: TaskStore {
         snapshot.document = document
     }
 
-    /// Tasks and habits as the app knows them: what is put away in Done or the trash is left out, and so are the lines a
-    /// habit has in today's sections (only a look of the day).
+    /// Tasks and habits as the app knows them: what is put away in Done or the trash is left out. Each takes the place of
+    /// its line among the file's lines (`storeOrder`), a habit that of its open line: the pool's order (D-180).
     func items(of snapshot: Snapshot) -> [TaskItem] {
         var tasks: [TaskItem] = []
+        var habitLines: [String: Int] = [:]
+        var place = 0
         snapshot.document.walk { entry, section, parent, index in
-            guard section != .done, section != .trash, let id = entry.id, snapshot.habits[id] == nil else { return }
+            guard section != .done, section != .trash, let id = entry.id else { return }
+            place += 1
+            guard snapshot.habits[id] == nil else {
+                if entry.completed == nil, habitLines[id] == nil { habitLines[id] = place }
+                return
+            }
             var task = item(entry, in: section, parent: parent, index: index, snapshot: snapshot)
-            task.storeOrder = tasks.count
+            task.storeOrder = place
             tasks.append(task)
         }
-        return tasks + snapshot.habits.values.map { habit(of: $0, snapshot: snapshot) }
+        return tasks + snapshot.habits.values.map { file in
+            var habit = habit(of: file, snapshot: snapshot)
+            habit.storeOrder = habitLines[file.id]
+            return habit
+        }
+    }
+
+    /// The place of the open line of `id` among the file's lines, as `items` counts them.
+    func storeOrder(of id: String, in snapshot: Snapshot) -> Int? {
+        var place = 0
+        var found: Int?
+        snapshot.document.walk { entry, section, _, _ in
+            guard found == nil, section != .done, section != .trash, let own = entry.id else { return }
+            place += 1
+            if own == id, entry.completed == nil { found = place }
+        }
+        return found
     }
 
     func item(_ entry: TaskEntry, in section: TaskSection, parent: TaskEntry?, index: Int, snapshot: Snapshot) -> TaskItem {

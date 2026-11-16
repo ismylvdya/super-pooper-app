@@ -89,6 +89,22 @@ final class NoteWriter {
         }
     }
 
+    /// Lines in a new order (a list's rows dragged, the pool's order, D-180): shown at once, and the store's lines take the
+    /// places they have between them. Items with no place of their own yet (a store without lines) take one in that order.
+    func reorder(_ names: [String]) async {
+        let items = names.compactMap(tasks.task(named:))
+        guard !items.isEmpty else { return }
+        let known = items.compactMap(\.storeOrder).sorted()
+        let places = known.count == items.count ? known : Array(1...items.count)
+        for (item, place) in zip(items, places) {
+            var moved = item
+            moved.storeOrder = place
+            tasks.replace(moved)
+        }
+        try? await (store as? TaskOrdering)?.reorder(items.map(\.id))
+        await derived.publish()
+    }
+
     /// Changes decided on the day's view of `task` (`DayStateController.local`) go back into the note's own zone.
     @discardableResult
     func writeLocal(_ task: TaskItem, _ changes: [TaskEdit]) async -> Bool {

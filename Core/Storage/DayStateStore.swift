@@ -1,11 +1,10 @@
 import Foundation
 
-/// App-only state that lives for one day: Skip today, the manual pool order, whether the morning review was shown and
-/// the habit blocks dragged today. Losing it is harmless.
+/// App-only state that lives for one day: Skip today, whether the morning review was shown and the habit blocks dragged
+/// today. Losing it is harmless. The pool's order is the store's lines' (D-180).
 struct DayState: Codable, Equatable, Sendable {
     var day: LocalDate
     var skipped: [String] = []
-    var manualOrder: [String]?
     var reviewShown = false
     /// How many data problems the banner already told about today.
     var announcedProblems = 0
@@ -21,7 +20,6 @@ struct DayState: Codable, Equatable, Sendable {
         var day: LocalDate
         /// Habits kept out of that day.
         var skipped: [String] = []
-        var manualOrder: [String]?
         /// The review of that day was done the day before: it does not open by itself that morning.
         var reviewed = false
     }
@@ -33,7 +31,6 @@ struct DayState: Codable, Equatable, Sendable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         day = try container.decode(LocalDate.self, forKey: .day)
         skipped = try container.decodeIfPresent([String].self, forKey: .skipped) ?? []
-        manualOrder = try container.decodeIfPresent([String].self, forKey: .manualOrder)
         reviewShown = try container.decodeIfPresent(Bool.self, forKey: .reviewShown) ?? false
         announcedProblems = try container.decodeIfPresent(Int.self, forKey: .announcedProblems) ?? 0
         timeMoves = try container.decodeIfPresent([TimeMove].self, forKey: .timeMoves) ?? []
@@ -63,7 +60,6 @@ struct DayState: Codable, Equatable, Sendable {
         state.otherDays = otherDays.filter { $0.day > day }
         if let ahead, ahead.day == day {
             state.skipped = ahead.skipped
-            state.manualOrder = ahead.manualOrder
             state.reviewShown = ahead.reviewed
         }
         return state

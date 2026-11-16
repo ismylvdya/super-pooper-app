@@ -4054,24 +4054,13 @@
         }
       }
     },
-    "review.footer.auto": {
+    "review.footer.lines": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Automatic order. Drag a row to fix your own order for today."
-          }
-        }
-      }
-    },
-    "review.footer.manual": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Your order for today. New tasks join by the automatic sort."
+            "value": "The order of the lines in the tasks file. Drag a row to move its line; Reset sorting in \u2026 sorts them by the pool's rules."
           }
         }
       }

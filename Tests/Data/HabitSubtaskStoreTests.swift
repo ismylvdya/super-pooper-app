@@ -84,4 +84,24 @@ struct HabitSubtaskStoreTests {
         _ = try await store.delete(shoes)
         #expect(Set(try await store.notes().map(\.name)) == ["Run", "Shoes"])
     }
+
+    /// The pool's order is the order of the lines (D-180): the mirror writes a habit's line anew in its place, and every
+    /// item knows its line's place.
+    @Test func aHabitsLineKeepsItsPlaceAmongTheLines() async throws {
+        let store = store()
+        let run = try await habit(store, named: "Run")
+        _ = try await store.load()
+        await store.accept(try #require(await store.currentLook()))
+        _ = await store.mirror(DayMirror(sections: [.init(title: "Day", names: ["Run"])], timed: [:]))
+        let text = try self.text().replacingOccurrences(of: "## Next actions\n", with: "## Next actions\n- [ ] First #in_today_pool\n")
+        try text.write(to: folder.appendingPathComponent(format.folder).appendingPathComponent(format.file), atomically: true, encoding: .utf8)
+        _ = await store.mirror(DayMirror(sections: [.init(title: "Day", names: ["Run"])], timed: [:]))
+        let lines = try self.text().components(separatedBy: "\n")
+        let first = try #require(lines.firstIndex(of: "- [ ] First #in_today_pool"))
+        let habit = try #require(lines.firstIndex { $0.contains("🆔 \(run.id.value)") })
+        #expect(first < habit, "the habit's line stays after the line put before it")
+        let tasks = try await store.load().tasks
+        let order = { (name: String) in tasks.first { $0.name == name }?.storeOrder ?? -1 }
+        #expect(order("First") < order("Run"))
+    }
 }

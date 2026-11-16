@@ -33,7 +33,7 @@ struct BacklogMoveTests {
         await model.bringFromBacklog("Read a novel", to: context.today, poolOrder: ["Pay the internet", "Read a novel"])
         let note = try #require(model.task(named: "Read a novel"))
         #expect(note.status == .thisWeek && note.due == nil && note.isInTodayPool)
-        #expect(model.dayState.manualOrder?.firstIndex(of: "Read a novel") == 1)
+        #expect(model.plan(at: model.clock.now).pool.map(\.id).firstIndex(of: "Read a novel") == 1)
         #expect(model.plan(at: model.clock.now).pool.contains { $0.id == "Read a novel" })
     }
 
@@ -43,7 +43,6 @@ struct BacklogMoveTests {
         await model.bringFromBacklog("Paint the door", to: friday, poolOrder: nil)
         let note = try #require(model.task(named: "Paint the door"))
         #expect(note.status == .thisWeek && note.due == TaskDue(day: friday))
-        #expect(model.dayState.manualOrder == nil, "another day's pool has no order of its own")
         #expect(model.plan(at: model.clock.now, dayOffset: 2).pool.contains { $0.id == "Paint the door" })
     }
 
