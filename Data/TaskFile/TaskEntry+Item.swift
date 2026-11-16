@@ -20,6 +20,7 @@ extension TaskEntry {
         item.isOverdue = isOverdue
         item.isStarted = box == .started
         item.isInTodayPool = inTodayPool
+        item.isNotTomorrow = notTomorrow
         item.poolSection = poolSection
         return item
     }
@@ -60,6 +61,7 @@ extension TaskEntry {
         completed = item.completedDate
         isOverdue = item.isOverdue
         inTodayPool = item.isInTodayPool
+        notTomorrow = item.isNotTomorrow
         poolSection = item.poolSection
     }
 }

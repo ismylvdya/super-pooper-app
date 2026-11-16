@@ -43,6 +43,27 @@ extension AppModel {
         return SetAsideToday.notes(in: tasks, skipped: parts.day.skippedNames, today: context.today, boundary: context.boundary)
     }
 
+    // MARK: - The review's Tomorrow
+
+    /// Tomorrow as the morning review plans it today.
+    func tomorrowPlan() -> DayPlan { parts.derived.tomorrowPlan(at: clock.now) }
+
+    /// Kept out of tomorrow: the tasks marked so that tomorrow's turn would bring, and the habits skipped in tomorrow's plan.
+    var setAsideTomorrow: [TaskItem] {
+        let context = parts.day.context()
+        let tomorrow = context.today.adding(days: 1)
+        let skipped = parts.day.tomorrow.skipped
+        let habits = tasks.filter { $0.isInTodayHabits && skipped.containsNoteName($0.name) }
+        return NameOrder.sorted(TodayPool.keptOutTomorrow(tasks, tomorrow: tomorrow, boundary: context.boundary) + habits)
+    }
+
+    /// Tomorrow's order was set by hand in the review.
+    var tomorrowHasManualOrder: Bool { parts.day.tomorrow.manualOrder != nil }
+
+    func applyTomorrowMove(_ move: ReviewGroups.Move) { parts.dayCommands.applyTomorrowMove(move) }
+    func resetTomorrowOrder() { parts.dayCommands.resetTomorrowOrder() }
+    func markTomorrowReviewed() { parts.dayCommands.markTomorrowReviewed() }
+
     // MARK: - Backlog pages
 
     /// The pages left of the pool on Tasks, nearest to the pool first.

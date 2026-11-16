@@ -73,6 +73,10 @@ enum ActionSwipes: String, Codable, CaseIterable, Sendable {
     case review
     /// A task put off today or a habit skipped today, at the bottom of the morning review.
     case setAside
+    /// A task or a habit in the morning review's Tomorrow.
+    case reviewTomorrow
+    /// Kept out of tomorrow, at the bottom of the review's Tomorrow.
+    case setAsideTomorrow
     case archivedTask
     case archivedHabit
     /// A note in the trash.

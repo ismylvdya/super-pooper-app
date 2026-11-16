@@ -277,6 +277,8 @@ actor TaskFileStore: TaskStore {
         for item in items where due.contains(item.name) {
             snapshot.document.update(id: item.id.value) { $0.inTodayPool = true }
         }
+        // What the review planned yesterday kept out of today has stayed out: its mark goes.
+        snapshot.document.forEachOpenLine { entry, _ in entry.notTomorrow = false }
     }
 
     nonisolated func nameProblem(in name: String) -> NoteNameProblem? {

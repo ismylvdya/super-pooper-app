@@ -31,6 +31,8 @@ enum TaskEdit: Hashable, Sendable {
     case started(Bool)
     /// In today's pool or out of it (`TodayPool`).
     case inTodayPool(Bool)
+    /// Out of tomorrow's pool or back in it (the morning review's Tomorrow).
+    case notTomorrow(Bool)
     /// The pool's section it stands in (`PoolSectionTag`); nil = by its routine.
     case poolSection(String?)
     /// The zone of the item's times; nil = wall-clock times.

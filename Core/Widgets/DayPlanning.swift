@@ -38,6 +38,23 @@ enum DayPlanning {
         return result
     }
 
+    /// Tomorrow as its morning will hold it, planned today (the morning review's Tomorrow): the tasks as tomorrow's turn will
+    /// leave them (`TodayPool.turning`, what is kept out of tomorrow left out), tomorrow's habits, and the order and the
+    /// habits kept out that today's review planned for it (`DayState.Ahead`).
+    static func tomorrow(config: AppConfig, settings: AppSettings, tasks: [TaskItem], events: [CalendarEvent], reminders: [ReminderItem],
+                         ahead: DayState.Ahead, sections: DaySections?, context: DayContext, eventsKnown: Bool) -> DayPlan {
+        let day = context.today.adding(days: 1)
+        let dayContext = context.focused(on: context.moment(config.rules.timeline.otherDayAnchor, onLogicalDay: day))
+        var state = DayState(day: day)
+        state.skipped = ahead.skipped
+        state.manualOrder = ahead.manualOrder
+        var result = plan(config: config, settings: settings, tasks: TodayPool.turning(tasks, today: day, boundary: context.boundary),
+                          events: events, reminders: reminders, dayState: state, sections: sections, context: dayContext,
+                          eventsKnown: eventsKnown)
+        result.isToday = false
+        return result
+    }
+
     /// Times kept in a zone of their own moved to the phone's.
     private static func usable(_ tasks: [TaskItem], config: AppConfig, context: DayContext) -> [TaskItem] {
         ZonedTimes.local(tasks, calendar: context.calendar, today: context.today)

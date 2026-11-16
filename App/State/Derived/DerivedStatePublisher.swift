@@ -55,6 +55,14 @@ final class DerivedStatePublisher {
         return plan
     }
 
+    /// Tomorrow as the morning review plans it today (`DayPlanning.tomorrow`).
+    func tomorrowPlan(at date: Date) -> DayPlan {
+        let context = day.context(at: date)
+        return DayPlanning.tomorrow(config: config, settings: settings.settings, tasks: tasks.tasks, events: sources.events,
+                                    reminders: sources.reminders, ahead: day.tomorrow, sections: sections.snapshot(on: context.today.adding(days: 1)),
+                                    context: context, eventsKnown: sources.eventsKnown)
+    }
+
     var problemCount: Int { tasks.fileProblems.count + plan(at: day.clock.now).problems.count }
 
     /// The widget snapshot and reload, and the notification schedule. The notification center can be slow to answer

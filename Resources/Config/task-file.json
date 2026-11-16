@@ -17,6 +17,7 @@
   "legacyTodaySections": ["Today", "Now"],
   "pool": {
     "tag": "#in_today_pool",
+    "notTomorrowTag": "#not_tomorrow",
     "sectionPrefix": "#section_",
     "lastingSections": ["morning", "evening"],
     "restSection": "day"

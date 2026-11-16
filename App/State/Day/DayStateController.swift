@@ -94,6 +94,20 @@ final class DayStateController {
         update { $0.reviewShown = true }
     }
 
+    /// Tomorrow as the morning review plans it today (`DayState.Ahead`).
+    var tomorrow: DayState.Ahead {
+        dayState.plan(of: context().today.adding(days: 1))
+    }
+
+    func planTomorrow(_ change: (inout DayState.Ahead) -> Void) {
+        let tomorrow = context().today.adding(days: 1)
+        update { state in
+            var ahead = state.plan(of: tomorrow)
+            change(&ahead)
+            state.ahead = ahead
+        }
+    }
+
     /// Records how many problems the day has; true when there are more than the user was last told about.
     func announceProblems(_ count: Int) -> Bool {
         let isNew = count > dayState.announcedProblems

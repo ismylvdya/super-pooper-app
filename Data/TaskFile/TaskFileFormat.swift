@@ -17,6 +17,8 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
     struct Pool: Codable, Hashable, Sendable {
         /// The tag of a task in today's pool.
         let tag: String
+        /// The tag of a task kept out of tomorrow's pool in the morning review planned the day before.
+        let notTomorrowTag: String
         /// A section's tag is this and the section's word.
         let sectionPrefix: String
         /// The sections a task stays in from day to day; the tags of the others go with the day's turn.

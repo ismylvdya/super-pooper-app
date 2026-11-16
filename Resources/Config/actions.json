@@ -44,6 +44,22 @@
       "undo": "edits"
     },
     {
+      "id": "notTomorrow",
+      "title": "action.notTomorrow",
+      "icon": "forward.end",
+      "destructive": true,
+      "haptic": "light",
+      "swipeTint": "swipeNeutral"
+    },
+    {
+      "id": "returnTomorrow",
+      "title": "action.returnTomorrow",
+      "icon": "arrow.uturn.backward.circle",
+      "destructive": false,
+      "haptic": "light",
+      "swipeTint": "success"
+    },
+    {
       "id": "unmark",
       "title": "action.unmark",
       "icon": "arrow.uturn.backward.circle",
@@ -385,6 +401,21 @@
     "setAside": {
       "leading": [
         "returnToToday"
+      ],
+      "trailing": []
+    },
+    "reviewTomorrow": {
+      "leading": [
+        "done",
+        "returnFromDone"
+      ],
+      "trailing": [
+        "notTomorrow"
+      ]
+    },
+    "setAsideTomorrow": {
+      "leading": [
+        "returnTomorrow"
       ],
       "trailing": []
     },

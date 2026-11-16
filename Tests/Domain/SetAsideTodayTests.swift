@@ -30,3 +30,18 @@ struct SetAsideTodayTests {
         #expect(SetAsideToday.notes(in: [trip, first, second], skipped: [], today: today, boundary: .midnight).map(\.name) == ["Pack"])
     }
 }
+
+/// Tomorrow planned in today's review becomes tomorrow's state when it comes.
+struct DayStateAheadTests {
+    @Test func tomorrowsPlanBecomesItsState() {
+        var state = DayState(day: LocalDate("2026-10-21"))
+        var ahead = state.plan(of: LocalDate("2026-10-22"))
+        ahead.skipped = ["Run"]
+        ahead.manualOrder = ["B", "A"]
+        ahead.reviewed = true
+        state.ahead = ahead
+        let next = state.rolled(to: LocalDate("2026-10-22"))
+        #expect(next.skipped == ["Run"] && next.manualOrder == ["B", "A"] && next.reviewShown)
+        #expect(state.rolled(to: LocalDate("2026-10-23")).skipped.isEmpty, "a plan of another day says nothing")
+    }
+}

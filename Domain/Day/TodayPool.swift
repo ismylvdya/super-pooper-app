@@ -14,10 +14,17 @@ enum TodayPool {
         return day < today || (day == today && due.time == nil)
     }
 
-    /// What the day's turn of `today` puts the mark on, by name: `isDue` for each task, the waiting steps left out.
+    /// What the day's turn of `today` puts the mark on, by name: `isDue` for each task, the waiting steps and what the
+    /// review planned the day before kept out (`isNotTomorrow`) left out.
     static func dayTurn(_ tasks: [TaskItem], today: LocalDate, boundary: LocalTime) -> Set<String> {
         let waiting = TaskSteps.waiting(in: tasks)
-        return Set(tasks.filter { isDue($0, today: today, boundary: boundary, waiting: waiting) }.map(\.name))
+        return Set(tasks.filter { !$0.isNotTomorrow && isDue($0, today: today, boundary: boundary, waiting: waiting) }.map(\.name))
+    }
+
+    /// Kept out of tomorrow's pool in the review planned today: what tomorrow's turn would bring that is marked so.
+    static func keptOutTomorrow(_ tasks: [TaskItem], tomorrow: LocalDate, boundary: LocalTime) -> [TaskItem] {
+        let waiting = TaskSteps.waiting(in: tasks)
+        return NameOrder.sorted(tasks.filter { $0.isNotTomorrow && isDue($0, today: tomorrow, boundary: boundary, waiting: waiting) })
     }
 
     /// The tasks as the day's turn of `today` leaves them: in the pool exactly what `dayTurn` brings in.

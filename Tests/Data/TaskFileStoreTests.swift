@@ -382,6 +382,14 @@ struct TaskFileStoreTests {
         #expect(lines.first == "%% format 2 %%" && lines.contains("%% day \(today.isoString) %%"))
     }
 
+    /// Kept out of tomorrow in yesterday's review: the day's turn leaves it out of the pool and takes the mark away.
+    @Test func aTaskKeptOutOfTomorrowStaysOut() async throws {
+        try write("%% day \(today.adding(days: -1).isoString) %%\n\n## Next actions\n- [ ] Idle #not_tomorrow\n- [ ] Other\n")
+        let tasks = try await store().load().tasks
+        #expect(tasks.first { $0.name == "Idle" }?.isInTodayPool == false && tasks.first { $0.name == "Other" }?.isInTodayPool == true)
+        #expect(try text().contains("- [ ] Idle\n- [ ] Other #in_today_pool\n"))
+    }
+
     /// A task added during the day waits for the next morning.
     @Test func theSameDayLeavesNextActionsAsItIs() async throws {
         try write("%% day \(today.isoString) %%\n\n## Next actions\n- [ ] New\n")

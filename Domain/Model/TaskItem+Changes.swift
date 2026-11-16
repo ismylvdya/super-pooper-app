@@ -20,6 +20,7 @@ extension TaskItem {
             case .showsAsProject(let value): task.showsAsProject = value
             case .started(let value): task.isStarted = value
             case .inTodayPool(let value): task.isInTodayPool = value
+            case .notTomorrow(let value): task.isNotTomorrow = value
             case .poolSection(let value): task.poolSection = value
             case .due(let value):
                 task.due = value

@@ -9,6 +9,8 @@ import SwiftUI
 /// Swiping a row right is Done; swiping it left has one button: a task's Not today, a habit's Skip today. What was taken
 /// out of today waits in the Not today group at the bottom (`SetAsideToday`); swiped there to the right it comes back.
 /// The sheet: opened by itself in the morning (or from Today); a task opens on a page pushed in the sheet.
+/// Its Tomorrow (the switch at the top) plans the next day the evening before: what tomorrow's turn will bring, kept out
+/// of it with Not tomorrow, in an order of its own; reviewed so, it does not open by itself that morning.
 struct MorningReviewScreen: View {
     @State private var path: [Route] = []
 
@@ -47,11 +49,13 @@ struct MorningReviewList: View {
     @Environment(\.openURL) private var openURL
     @State private var pendingAction: PendingAction?
     @State private var frames = ListGroupFrames()
+    /// Today's review, or tomorrow's planned today.
+    @State private var isTomorrow = false
     let openSearch: () -> Void
     let openTask: (String) -> Void
 
     var body: some View {
-        let plan = model.plan(at: model.clock.now)
+        let plan = isTomorrow ? model.tomorrowPlan() : model.plan(at: model.clock.now)
         List {
             Group {
                 let rows = ReviewGroups.rows(plan.pool)
@@ -79,23 +83,24 @@ struct MorningReviewList: View {
                                 .listGroupRow(group: ReviewGroups.group(of: index, in: rows)?.rawValue ?? "", id: name,
                                               index: position.index, count: position.count, frames: frames, vertical: 0,
                                               separatorIndent: CGFloat(item.depth) * tokens.subtaskIndent) {
-                                    ActionMenuContent(menu: .context(of: item.task), item: item) {
+                                    ActionMenuContent(menu: .context(of: item.task), item: item, isToday: !isTomorrow) {
                                         perform($0, on: item.id)
                                     }
                                 }
                                 .accessibilityIdentifier("review:\(item.id)")
-                                // Done to the right; to the left Not today or, for a habit, Skip today.
-                                .actionSwipes(.review, item: item) { perform($0, on: item.id) }
+                                // Done to the right; to the left Not today or, for a habit, Skip today (Not tomorrow on Tomorrow).
+                                .actionSwipes(isTomorrow ? .reviewTomorrow : .review, item: item) { perform($0, on: item.id) }
                         }
                     }
                 }
                 .onMove { source, destination in
                     Haptics.play(.reorder)
-                    model.applyReviewMove(ReviewGroups.move(rows, from: source, to: destination, pool: plan.pool))
+                    let move = ReviewGroups.move(rows, from: source, to: destination, pool: plan.pool)
+                    if isTomorrow { model.applyTomorrowMove(move) } else { model.applyReviewMove(move) }
                 }
             }
             setAside(today: plan.today)
-            ListGroupFooter(text: Text(model.dayState.manualOrder == nil ? "review.footer.auto" : "review.footer.manual"))
+            ListGroupFooter(text: Text(hasManualOrder ? "review.footer.manual" : "review.footer.auto"))
                 .accessibilityIdentifier("review.footer")
         }
         .listGroupStyle()
@@ -103,6 +108,16 @@ struct MorningReviewList: View {
         .appList()
         // The first group starts closer to the bar than a list's own top gap.
         .contentMargins(.top, tokens.space(.reviewTop), for: .scrollContent)
+        .safeAreaInset(edge: .top) {
+            Picker(selection: $isTomorrow) {
+                Text("review.mode.today").tag(false)
+                Text("review.mode.tomorrow").tag(true)
+            } label: { EmptyView() }
+                .pickerStyle(.segmented)
+                .padding(.horizontal, tokens.space(.screenHorizontal))
+                .accessibilityIdentifier("review.mode")
+        }
+        .onChange(of: isTomorrow) { _, tomorrow in if tomorrow { model.markTomorrowReviewed() } }
         .actionConfirmation($pendingAction) { handler.run($0) }
         .navigationTitle(Text("review.title"))
         .navigationBarTitleDisplayMode(.inline)
@@ -110,30 +125,35 @@ struct MorningReviewList: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 PageMoreMenu(search: openSearch, accessibilityID: "review.more") {
-                    Button { model.resetOrder() } label: { Label("review.reset", systemImage: icons[.resetSort]) }
-                        .disabled(model.dayState.manualOrder == nil)
+                    Button { if isTomorrow { model.resetTomorrowOrder() } else { model.resetOrder() } } label: {
+                        Label("review.reset", systemImage: icons[.resetSort])
+                    }
+                        .disabled(!hasManualOrder)
                         .accessibilityIdentifier("review.reset")
                 }
             }
         }
     }
 
-    /// What was taken out of today, at the bottom: swiped to the right it comes back (`SetAsideToday`).
+    private var hasManualOrder: Bool { isTomorrow ? model.tomorrowHasManualOrder : model.dayState.manualOrder != nil }
+
+    /// What was taken out of the day, at the bottom: swiped to the right it comes back (`SetAsideToday`; on Tomorrow, what is
+    /// kept out of tomorrow).
     @ViewBuilder private func setAside(today: LocalDate) -> some View {
-        let notes = model.setAsideToday
+        let notes = isTomorrow ? model.setAsideTomorrow : model.setAsideToday
         if !notes.isEmpty {
-            ListGroupHeader(title: Text("review.group.setAside"))
+            ListGroupHeader(title: Text(isTomorrow ? "review.group.setAsideTomorrow" : "review.group.setAside"))
                 .moveDisabled(true)
                 .accessibilityIdentifier("review.group.setAside")
             ForEach(Array(notes.enumerated()), id: \.element.name) { index, note in
                 let item = note.isHabit ? DayItem(habit: note, on: today) : DayItem(listed: note)
                 ReviewRow(item: item, today: today) { openTask(note.name) }
                     .listGroupRow(group: "setAside", id: note.name, index: index, count: notes.count, frames: frames, vertical: 0) {
-                        ActionMenuContent(menu: .context(of: note), item: item) { perform($0, on: note.name) }
+                        ActionMenuContent(menu: .context(of: note), item: item, isToday: !isTomorrow) { perform($0, on: note.name) }
                     }
                     .moveDisabled(true)
                     .accessibilityIdentifier("review.setAside:\(note.name)")
-                    .actionSwipes(.setAside, item: item) { perform($0, on: note.name) }
+                    .actionSwipes(isTomorrow ? .setAsideTomorrow : .setAside, item: item) { perform($0, on: note.name) }
             }
         }
     }

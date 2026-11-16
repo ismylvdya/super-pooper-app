@@ -13,6 +13,18 @@ struct DayState: Codable, Equatable, Sendable {
     var timeMoves: [TimeMove] = []
     /// Blocks dragged on the timeline of another day; a later day's become that day's `timeMoves` once it comes.
     var otherDays: [DayMoves] = []
+    /// Tomorrow as the morning review planned it today: it becomes that day's state once it comes.
+    var ahead: Ahead?
+
+    /// The next day planned the day before (the morning review's Tomorrow).
+    struct Ahead: Codable, Equatable, Sendable {
+        var day: LocalDate
+        /// Habits kept out of that day.
+        var skipped: [String] = []
+        var manualOrder: [String]?
+        /// The review of that day was done the day before: it does not open by itself that morning.
+        var reviewed = false
+    }
 
     init(day: LocalDate) { self.day = day }
 
@@ -26,6 +38,7 @@ struct DayState: Codable, Equatable, Sendable {
         announcedProblems = try container.decodeIfPresent(Int.self, forKey: .announcedProblems) ?? 0
         timeMoves = try container.decodeIfPresent([TimeMove].self, forKey: .timeMoves) ?? []
         otherDays = try container.decodeIfPresent([DayMoves].self, forKey: .otherDays) ?? []
+        ahead = try container.decodeIfPresent(Ahead.self, forKey: .ahead)
     }
 
     /// The blocks moved on `day`: today's own, or those dragged on its timeline from today.
@@ -42,13 +55,23 @@ struct DayState: Codable, Equatable, Sendable {
         if !moves.isEmpty { otherDays.append(DayMoves(day: day, moves: moves)) }
     }
 
-    /// The state a new logical day starts with: empty, but with the blocks dragged on its timeline before it came, and
-    /// those of the days still to come.
+    /// The state a new logical day starts with: empty, but with the blocks dragged on its timeline before it came, those
+    /// of the days still to come, and what the review planned for it the day before.
     func rolled(to day: LocalDate) -> DayState {
         var state = DayState(day: day)
         state.timeMoves = moves(on: day)
         state.otherDays = otherDays.filter { $0.day > day }
+        if let ahead, ahead.day == day {
+            state.skipped = ahead.skipped
+            state.manualOrder = ahead.manualOrder
+            state.reviewShown = ahead.reviewed
+        }
         return state
+    }
+
+    /// The plan of tomorrow, `tomorrow`; a new one when none is kept for it.
+    func plan(of tomorrow: LocalDate) -> Ahead {
+        ahead?.day == tomorrow ? ahead! : Ahead(day: tomorrow)
     }
 }
 

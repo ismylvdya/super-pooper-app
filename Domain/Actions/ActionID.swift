@@ -45,6 +45,10 @@ enum ActionID: String, Codable, CaseIterable, Sendable {
     case newSection
     /// A task put off today (Not today) or a habit skipped today back in today's pool (`SetAsideToday`).
     case returnToToday
+    /// The morning review's Tomorrow: the task or the habit kept out of tomorrow's pool.
+    case notTomorrow
+    /// Kept out of tomorrow's pool, back in it.
+    case returnTomorrow
 }
 
 extension ActionID {

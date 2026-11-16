@@ -122,6 +122,17 @@
         }
       }
     },
+    "action.notTomorrow": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not tomorrow"
+          }
+        }
+      }
+    },
     "action.open": {
       "extractionState": "manual",
       "localizations": {
@@ -217,6 +228,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Return"
+          }
+        }
+      }
+    },
+    "action.returnTomorrow": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Return to tomorrow"
           }
         }
       }
@@ -1740,6 +1762,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Previous tasks"
+          }
+        }
+      }
+    },
+    "field.notTomorrow": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not tomorrow"
           }
         }
       }
@@ -4072,6 +4105,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "Morning"
+          }
+        }
+      }
+    },
+    "review.group.setAsideTomorrow": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not tomorrow"
+          }
+        }
+      }
+    },
+    "review.mode.today": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today"
+          }
+        }
+      }
+    },
+    "review.mode.tomorrow": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tomorrow"
           }
         }
       }
