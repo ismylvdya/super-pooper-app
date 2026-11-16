@@ -45,6 +45,12 @@ extension AppModel {
 
     // MARK: - The review's Tomorrow
 
+    /// The review offers Tomorrow now: in the evening (`DayRules.tomorrowReviewFrom`).
+    var offersTomorrowReview: Bool {
+        let context = parts.day.context()
+        return config.rules.day.offersTomorrowReview(at: LocalTime(context.now, in: context.calendar), boundary: context.boundary)
+    }
+
     /// Tomorrow as the morning review plans it today.
     func tomorrowPlan() -> DayPlan { parts.derived.tomorrowPlan(at: clock.now) }
 

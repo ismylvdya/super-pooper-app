@@ -31,3 +31,15 @@ struct TomorrowPlanTests {
         #expect(names == ["Put off", "Dated", "Run"])
     }
 }
+
+/// Tomorrow is offered in the evening only, and in the night that still belongs to the day.
+struct TomorrowReviewOfferTests {
+    @Test func onlyFromTheEvening() {
+        let rules = TestConfig.rules.day
+        let boundary = LocalTime("04:00")
+        #expect(!rules.offersTomorrowReview(at: LocalTime("17:59"), boundary: boundary))
+        #expect(rules.offersTomorrowReview(at: LocalTime("18:00"), boundary: boundary))
+        #expect(rules.offersTomorrowReview(at: LocalTime("01:30"), boundary: boundary))
+        #expect(!rules.offersTomorrowReview(at: LocalTime("09:00"), boundary: boundary))
+    }
+}

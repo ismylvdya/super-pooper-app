@@ -109,14 +109,18 @@ struct MorningReviewList: View {
         // The first group starts closer to the bar than a list's own top gap.
         .contentMargins(.top, tokens.space(.reviewTop), for: .scrollContent)
         .safeAreaInset(edge: .top) {
-            Picker(selection: $isTomorrow) {
-                Text("review.mode.today").tag(false)
-                Text("review.mode.tomorrow").tag(true)
-            } label: { EmptyView() }
-                .pickerStyle(.segmented)
-                .padding(.horizontal, tokens.space(.screenHorizontal))
-                .accessibilityIdentifier("review.mode")
+            // Only in the evening: planning tomorrow is a thing of the day's end (`DayRules.tomorrowReviewFrom`).
+            if model.offersTomorrowReview {
+                Picker(selection: $isTomorrow) {
+                    Text("review.mode.today").tag(false)
+                    Text("review.mode.tomorrow").tag(true)
+                } label: { EmptyView() }
+                    .pickerStyle(.segmented)
+                    .padding(.horizontal, tokens.space(.screenHorizontal))
+                    .accessibilityIdentifier("review.mode")
+            }
         }
+        .onChange(of: model.offersTomorrowReview) { _, offered in if !offered { isTomorrow = false } }
         .onChange(of: isTomorrow) { _, tomorrow in if tomorrow { model.markTomorrowReviewed() } }
         .actionConfirmation($pendingAction) { handler.run($0) }
         .navigationTitle(Text("review.title"))

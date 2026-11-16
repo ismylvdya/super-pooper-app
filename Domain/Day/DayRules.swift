@@ -10,6 +10,14 @@ struct DayRules: Codable, Hashable, Sendable {
     var autoPromoteFrom: [TaskStatus.Name]
     /// A link found by an event's title matches an event starting at most this far from the start it names.
     var eventLinkToleranceSeconds: Double
+    /// From this time on the phone's clock the morning review offers Tomorrow, until the day's boundary at night.
+    var tomorrowReviewFrom: LocalTime
+
+    /// The morning review offers Tomorrow at `now` (the phone's clock): in the evening, and in the night that still belongs
+    /// to the day (before `boundary`).
+    func offersTomorrowReview(at now: LocalTime, boundary: LocalTime) -> Bool {
+        now >= tomorrowReviewFrom || now < boundary
+    }
 
     func estimate(of task: TaskItem) -> Int {
         guard let minutes = task.timeEstimate, minutes > 0 else { return defaultEstimateMinutes }
