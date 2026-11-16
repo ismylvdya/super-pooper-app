@@ -42,8 +42,8 @@ struct TaskListScreen: View {
                     if item.id == TaskDragState.newItemGap {
                         gapRow(group: StatusText.title(level), groupID: group.id, id: item.id, index: index, count: group.items.count)
                     } else {
-                        row(item.task, parent: ShownParent.parent(of: item.task, shown: shown), group: StatusText.title(level), groupID: group.id,
-                            index: index, count: group.items.count)
+                        row(item.task, parent: ShownParent.parent(of: item.task, shown: shown), depth: item.depth, group: StatusText.title(level),
+                            groupID: group.id, index: index, count: group.items.count)
                     }
                 }
                 // Dragged like every list.
@@ -110,10 +110,12 @@ struct TaskListScreen: View {
         TaskActionHandler(model: model, router: router, openURL: openURL) { pendingAction = $0 }
     }
 
-    private func row(_ task: TaskItem, parent: String?, group: String, groupID: String, index: Int, count: Int) -> some View {
+    private func row(_ task: TaskItem, parent: String?, depth: Int, group: String, groupID: String, index: Int, count: Int) -> some View {
         HStack(spacing: tokens.space(.iconTextGap)) {
             NavigationLink(value: Route.task(task.name)) {
                 TaggedTaskName(name: task.name, parent: parent)
+                    // A subtask sits under its parent, shifted right, as in the pool.
+                    .padding(.leading, CGFloat(depth) * tokens.subtaskIndent)
             }
             if task.canPromote {
                 Button {
@@ -126,6 +128,8 @@ struct TaskListScreen: View {
             }
         }
         .modifier(tracking(task.name, groupID: groupID))
+        // Reordered like every list, a subtask stays under its parent: it is not dragged on its own.
+        .moveDisabled(depth > 0)
         // The pool's menu for the task (Not today has no place outside Today); Done (Return for a done one) to the right,
         // Delete to the left.
         .listGroupRow(group: group, id: task.name, index: index, count: count, frames: frames) {
@@ -150,7 +154,9 @@ struct TaskListScreen: View {
     /// The list's groups as the pool's sections: a group by its level.
     private func baseGroups(_ contents: TaskListContents) -> [PoolSectionContent] {
         contents.groups.map { group in
-            PoolSectionContent(id: Self.key(group.status), title: "", isCustom: false, items: group.tasks.map(DayItem.init(listed:)))
+            // A subtask stands under its parent, as in the pool.
+            PoolSectionContent(id: Self.key(group.status), title: "", isCustom: false,
+                               items: SubtaskNesting.nested(group.tasks.map(DayItem.init(listed:))))
         }
     }
 

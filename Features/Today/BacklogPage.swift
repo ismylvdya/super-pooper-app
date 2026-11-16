@@ -114,7 +114,8 @@ struct BacklogPage: View {
     /// over it, its room at the spot under the finger.
     private var rows: [DayItem] {
         let tasks = model.backlogTasks(list, plan: plan)
-        var items = tasks.map(DayItem.init(listed:))
+        // A subtask stands under its parent, as in the pool.
+        var items = SubtaskNesting.nested(tasks.map(DayItem.init(listed:)))
         if let gap = newItemGap { items.append(gap) }
         if let order = drag?.backlogOrder {
             let place = Dictionary(order.enumerated().map { ($1, $0) }, uniquingKeysWith: { first, _ in first })
@@ -161,7 +162,7 @@ struct BacklogPage: View {
             drag?.clearNewItemLanding(owner)
             return
         }
-        let tasks = model.backlogTasks(list, plan: plan).map(DayItem.init(listed:))
+        let tasks = SubtaskNesting.nested(model.backlogTasks(list, plan: plan).map(DayItem.init(listed:)))
         let layout = newItemLayout ?? tasks.compactMap { item in rowMids[item.id].map { PoolDropOrder.Row(id: item.id, midY: Double($0)) } }
         newItemLayout = layout
         let order = PoolDropOrder.drop(rows: layout, all: tasks.map(\.id), headers: [], dragged: TaskDragState.newItemGap,
