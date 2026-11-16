@@ -21,7 +21,7 @@ extension TaskEdit {
         case .poolSection: .poolSection
         case .due: .due
         case .timeEstimate: .timeEstimate
-        case .addProject: .projects
+        case .addProject, .parent: .projects
         case .subtaskOrder: .subtaskOrder
         case .feel: .feel
         case .mark: .marks

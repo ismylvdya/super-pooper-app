@@ -14,6 +14,9 @@ struct BacklogDropDelegate: DropDelegate {
     /// The page's rows as they stood when the finger came, for a task dragged within the page.
     let rows: () -> [PoolDropOrder.Row]
     let onReorder: ([String]) -> Void
+    /// Over the page's right part a row of its own stands as the subtask of the row above it (`NewItemNesting`).
+    var nesting: (_ order: [String], _ dragged: String, _ x: Double) -> NewItemNesting.Spot = { _, _, _ in .top }
+    var onNest: (DayItem, NewItemNesting.Spot) -> Void = { _, _ in }
 
     /// Only a task from elsewhere lands here: a pool section's header or a worm dragged whole never does.
     func accepts() -> Bool {
@@ -33,8 +36,12 @@ struct BacklogDropDelegate: DropDelegate {
     func dropUpdated(info: DropInfo) -> DropProposal? {
         if drag.source == .backlog(list), let dragged = drag.item?.id {
             let order = PoolDropOrder.drop(rows: rows(), headers: [], dragged: dragged, at: info.location.y).order
-            if order != drag.backlogOrder {
-                withAnimation(animation) { drag.backlogOrder = order }
+            let spot = nesting(order, dragged, Double(info.location.x))
+            if order != drag.backlogOrder || spot != drag.newItemSpot {
+                withAnimation(animation) {
+                    drag.backlogOrder = order
+                    drag.newItemSpot = spot
+                }
                 Haptics.play(.dragStep)
             }
         }
@@ -55,8 +62,9 @@ struct BacklogDropDelegate: DropDelegate {
         let accepted = accepts()
         let isOwnRow = source == .backlog(list)
         let order = drag.backlogOrder
+        let spot = drag.newItemSpot
         drag.end()
-        if isOwnRow, let order { onReorder(order) }
+        if isOwnRow, spot.parent != nil { onNest(item, spot) } else if isOwnRow, let order { onReorder(order) }
         if accepted { onDrop(item, source) } else if !isOwnRow { onRefused(item) }
         return true
     }

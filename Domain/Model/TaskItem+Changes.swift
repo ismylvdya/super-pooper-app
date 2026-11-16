@@ -29,6 +29,7 @@ extension TaskItem {
             case .timeEstimate(let value): task.timeEstimate = value
             case .addProject(let name):
                 if !task.projects.contains(where: { $0.isSameNoteName(as: name) }) { task.projects.append(name) }
+            case .parent(let name): task.projects = name.map { [$0] } ?? []
             case .subtaskOrder(let value): task.subtaskOrder = value
             case .feel(let value): task.feel = value
             case .timeZone(let value): task.timeZone = value

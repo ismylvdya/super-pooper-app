@@ -66,6 +66,10 @@ final class AppModel {
     func moveToBacklog(_ name: String, list: BacklogList, shown: LocalDate, fromShownDay: Bool) async {
         await parts.dayCommands.moveToBacklog(name, level: list.status, shown: shown, fromShownDay: fromShownDay)
     }
+    func nest(_ name: String, under parent: String, index: Int?) async {
+        await parts.dayCommands.nest(name, under: parent, index: index)
+    }
+    func canNest(_ name: String, order: [String]) -> Bool { parts.dayCommands.canNest(name, order: order) }
     func bringFromBacklog(_ name: String, to day: LocalDate, poolOrder: [String]?) async {
         await parts.dayCommands.bringFromBacklog(name, to: day, poolOrder: poolOrder)
     }

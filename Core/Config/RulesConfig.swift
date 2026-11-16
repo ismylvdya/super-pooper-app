@@ -184,6 +184,9 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let newItemTurnDwellSeconds: Double
         /// The right part of the pool, as a share of its width, where a dragged "+" makes a subtask of the row above it.
         let subtaskShare: Double
+        /// A list scrolls by itself at this speed while the dragged "+" stays at its top or bottom edge, in a band as tall
+        /// as a one-line row (`layoutEstimates.poolRowHeight`).
+        let edgeScrollPointsPerSecond: Double
         /// While the "+" is dragged, a second finger moved this share of the screen's height up or down picks the next
         /// longer or shorter estimate.
         let estimateStepShare: Double

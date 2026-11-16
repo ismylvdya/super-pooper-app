@@ -18,6 +18,8 @@ enum TaskEdit: Hashable, Sendable {
     case timeEstimate(Int?)
     /// Makes the item a subtask of another one.
     case addProject(String)
+    /// Makes the item a subtask of `name` alone, or of none (nil): it leaves the parent it had.
+    case parent(String?)
     case subtaskOrder(Int?)
     case feel(TaskFeel)
     /// Exactly one mark (or none) of a recurring task for `day`.

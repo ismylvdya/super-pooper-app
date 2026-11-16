@@ -11,6 +11,8 @@ enum NewItemPlacement: Hashable, Sendable {
     case subtask(of: String, index: Int?, day: LocalDate)
     /// A new section of `day`'s pool, titled `title`, made with the item in it (dropped on Today's New section button).
     case newSection(title: String, day: LocalDate)
+    /// A spot in a list of one planning level (a backlog page): `order`, the list with `gap` where it landed.
+    case list(level: TaskStatus, order: [String])
 
     /// The pool's id for the room the item takes until it is made; no note can be called so (a note's name is a file's, never with `/`).
     static let gap = "/new-item"
@@ -29,13 +31,20 @@ enum NewItemPlacement: Hashable, Sendable {
         case (.timeline(_, let time), .habit): [.reminderTimes([time])]
         case (.pool(_, _, let day), .task), (.newSection(_, let day), .task): [.due(TaskDue(day: day))]
         case (.subtask(let parent, let index, _), .task): [.addProject(parent)] + (index.map { [.subtaskOrder($0)] } ?? [])
-        case (.pool, .habit), (.subtask, .habit), (.newSection, .habit): []
+        case (.list(let level, _), .task): level.isThisWeek ? [] : [.status(level)]
+        case (.pool, .habit), (.subtask, .habit), (.newSection, .habit), (.list, .habit): []
         }
     }
 
     /// The pool's order once the item is made as `name`: the gap becomes it.
     func poolOrder(named name: String) -> [String]? {
         guard case .pool(let order, _, _) = self else { return nil }
+        return order.map { $0 == Self.gap ? name : $0 }
+    }
+
+    /// A list's order once the item is made as `name`: the gap becomes it.
+    func listOrder(named name: String) -> [String]? {
+        guard case .list(_, let order) = self else { return nil }
         return order.map { $0 == Self.gap ? name : $0 }
     }
 }

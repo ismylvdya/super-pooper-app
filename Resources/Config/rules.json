@@ -268,6 +268,7 @@
     "dragEndSettleSeconds": 0.5,
     "newItemTurnDwellSeconds": 0.4,
     "subtaskShare": 0.3333,
+    "edgeScrollPointsPerSecond": 420,
     "estimateStepShare": 0.0833,
     "estimateLongerDown": true,
     "pageEdgeDwellSeconds": 0.5,

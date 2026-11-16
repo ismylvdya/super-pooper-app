@@ -212,6 +212,22 @@ final class DayCommands {
         writeSection(PoolSectionTag.tag(of: section, definitions: sections.definitions), of: name)
     }
 
+    // MARK: - Subtasks
+
+    /// A task let go over a list's right part: the subtask of the row above it (`SubtaskMove`).
+    func nest(_ name: String, under parent: String, index: Int?) async {
+        guard let task = tasks.task(named: name), let owner = tasks.task(named: parent),
+              let edits = SubtaskMove.changes(moving: task, under: owner, index: index, in: tasks.tasks) else { return }
+        await writer.write(task, edits)
+    }
+
+    /// The row above the dragged task's spot in `order` can take it as a subtask.
+    func canNest(_ name: String, order: [String]) -> Bool {
+        guard let at = order.firstIndex(of: name), at > 0, let task = tasks.task(named: name),
+              let owner = tasks.task(named: order[at - 1]) else { return false }
+        return SubtaskMove.changes(moving: task, under: owner, index: 0, in: tasks.tasks) != nil
+    }
+
     // MARK: - Backlog pages
 
     /// Dropped on the backlog page of `level` while `shown` is shown (`BacklogMoves.onto`); `fromShownDay`: from that day's

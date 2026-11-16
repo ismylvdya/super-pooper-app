@@ -41,7 +41,9 @@ struct PoolBlock: View {
             .coordinateSpace(.named(Self.dropSpace))
             .modifier(PoolDropTarget(drag: drag, animation: tokens.animation, layout: dropLayout, canDrop: canDrop,
                                      onDrop: dropped, onSectionDrop: sectionDropped,
-                                     onRefused: { model.refuseDrop($0.id, onto: .pool) }))
+                                     onRefused: { model.refuseDrop($0.id, onto: .pool) },
+                                     nesting: { order, dragged, x in nesting(order: order, dragged: dragged, x: x) },
+                                     onNest: nested))
             .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { screenFrame = $0 }
             .onChange(of: drag?.newItemPoint) { _, point in newItemMoved(to: point) }
             .onChange(of: drag?.draggedID ?? drag?.section) { _, dragged in if dragged == nil { dragLayout = nil } }
@@ -50,7 +52,9 @@ struct PoolBlock: View {
     /// While something is dragged over the pool, the sections as the drop would make them.
     private var sections: [PoolSectionContent] {
         if let order = drag?.sectionOrder { return PoolArrangement.reordered(plan.sections, by: order) }
-        guard let order = drag?.poolOrder, let item = drag?.item ?? newItemGap else { return plan.sections }
+        guard let order = drag?.poolOrder, var item = drag?.item ?? newItemGap else { return plan.sections }
+        // Over the pool's right part a task stands as the subtask of the row above it.
+        if drag?.item != nil, let spot = drag?.newItemSpot, spot.parent != nil { item.depth = spot.depth }
         let along = drag?.source.wormMembers.filter { $0 != item.id } ?? []
         let members = along.compactMap { name in plan.pool.first { $0.id == name } }
         return PoolArrangement.hovering(plan.sections, order: PoolDropOrder.keepingTogether(order, dragged: item.id, along: along),
@@ -143,6 +147,19 @@ struct PoolBlock: View {
         drag.setNewItemLanding(Self.dropSpace) { newItemDropped(order: spot.order, section: spot.section, nesting: nesting) }
     }
 
+    /// A task over the pool's right part, today: the subtask of the row above it, when it can be one (`SubtaskMove`).
+    private func nesting(order: [String], dragged: String, x: Double) -> NewItemNesting.Spot {
+        guard plan.isToday, NewItemNesting.isSubtaskSide(x: x, poolMinX: 0, poolWidth: Double(screenFrame.width), share: rules.gestures.subtaskShare),
+              model.canNest(dragged, order: order) else { return .top }
+        return NewItemNesting.spot(order: order, gap: dragged, pool: plan.pool, asSubtask: true)
+    }
+
+    private func nested(_ item: DayItem, at spot: NewItemNesting.Spot) {
+        guard let parent = spot.parent else { return }
+        Haptics.play(.drop)
+        Task { await model.nest(item.id, under: parent, index: spot.index) }
+    }
+
     private func newItemDropped(order: [String], section: String?, nesting: NewItemNesting.Spot) {
         Haptics.play(.drop)
         let placement: NewItemPlacement = nesting.parent.map { .subtask(of: $0, index: nesting.index, day: plan.today) }
@@ -193,6 +210,8 @@ struct PoolBlock: View {
                             .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(Self.dropSpace)) } action: { frame in
                                 headerMids[section.id] = frame.midY
                                 headerHeights[section.id] = frame.height
+                                let first = section.items.first.map { liftByGap(of: $0.id) } ?? 0
+                                dragLayout?.add(header: section.id, midY: frame.midY, lift: first)
                             }
                     }
                     // One plate for a whole routine or worm; each row keeps its own tap and long press. A worm's member drags
@@ -211,8 +230,20 @@ struct PoolBlock: View {
         .scrollBounceBehavior(.always)
         .scrollIndicators(.hidden)
         .syncsOnPull()
+        // The dragged "+" at the top or bottom edge scrolls the rows; the room it makes follows.
+        .edgeAutoScroll(drag?.newItemPoint, bottomInset: bottomInset) { delta in
+            dragLayout = dragLayout?.shifted(by: -delta)
+            newItemMoved(to: drag?.newItemPoint)
+        }
         .edgeFades(bottomExtension: bottomInset, barEdges: barEdges)
         .liftRoom()
+    }
+
+    /// How far the room of the dragged item pushed `id` down: its height and a gap, for what stands after it.
+    private func liftByGap(of id: String) -> CGFloat {
+        guard let order = drag?.poolOrder, let gap = drag?.draggedID, let at = order.firstIndex(of: gap),
+              let spot = order.firstIndex(of: id), spot > at else { return 0 }
+        return (rowHeights[gap] ?? CGFloat(rules.layoutEstimates.poolRowHeight)) + tokens.space(.poolRowGap)
     }
 
     /// Rows after the last visible one.
@@ -248,7 +279,8 @@ struct PoolBlock: View {
 
     /// The row of a task dragged over the pool keeps an empty gap the others part around (`TaskDragState.isGap`).
     @ViewBuilder private func row(_ item: DayItem, plate: PoolRowContent.PlateKind, source: TaskDragState.Source) -> some View {
-        if item.id == TaskDragState.newItemGap {
+        // A task over the right part shows its room as a subtask's, the line from its new parent coming down into it.
+        if item.id == TaskDragState.newItemGap || (drag?.item?.id == item.id && drag?.isGap(item.id) == true && drag?.newItemSpot.parent != nil) {
             NewItemGapPlate(depth: item.depth, extraLines: drag?.newItemEstimate.map(rules.pool.extraLines(forEstimate:)) ?? 0)
         } else {
             PoolRow(item: item, isToday: plan.isToday, isCompact: fillsHeight, plate: plate, handler: handler,
@@ -278,7 +310,14 @@ struct PoolBlock: View {
     private func tracked(_ view: some View, _ item: DayItem) -> some View {
         view
             .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { rowHeights[item.id] = $0 }
-            .onGeometryChange(for: CGFloat.self) { $0.frame(in: .named(Self.dropSpace)).midY } action: { rowMids[item.id] = $0 }
+            .onGeometryChange(for: CGFloat.self) { $0.frame(in: .named(Self.dropSpace)).midY } action: { mid in
+                rowMids[item.id] = mid
+                // Scrolled into sight while the "+" scrolls the list: it joins the layout the room is read against.
+                if item.id != TaskDragState.newItemGap {
+                    dragLayout?.add(row: item.id, midY: mid, section: plan.sections.first { $0.items.contains { $0.id == item.id } }?.id,
+                                    lift: liftByGap(of: item.id))
+                }
+            }
             .onScrollVisibilityChange(threshold: rules.pool.rowVisibleShare) { visible in
                 if visible { visibleRows.insert(item.id) } else { visibleRows.remove(item.id) }
             }

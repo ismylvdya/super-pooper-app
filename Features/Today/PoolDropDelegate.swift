@@ -14,6 +14,10 @@ struct PoolDropDelegate: DropDelegate {
     let onDrop: (DayItem, TaskDragState.Source, [String], String?) -> Void
     let onSectionDrop: (String, [String]) -> Void
     let onRefused: (DayItem) -> Void
+    /// Where a task let go over the pool's right part would stand as a subtask of the row above it (`NewItemNesting`);
+    /// `.top` keeps its parent as it is.
+    var nesting: (_ order: [String], _ dragged: String, _ x: Double) -> NewItemNesting.Spot = { _, _, _ in .top }
+    var onNest: (DayItem, NewItemNesting.Spot) -> Void = { _, _ in }
 
     /// A section's header, or a task when `canDrop` says so.
     func accepts() -> Bool {
@@ -34,7 +38,12 @@ struct PoolDropDelegate: DropDelegate {
             moved = withAnimation(animation) { drag.hover(sectionOrder: order) }
         } else if let dragged = drag.draggedID {
             let drop = PoolDropOrder.drop(rows: layout.rows, all: layout.all, headers: layout.headers, inSections: layout.inSections, dragged: dragged, at: info.location.y)
-            moved = withAnimation(animation) { drag.hover(poolOrder: drop.order, section: drop.section) }
+            let spot = drag.source == .pool || drag.source.isBacklog ? nesting(drop.order, dragged, Double(info.location.x)) : .top
+            let nested = spot != drag.newItemSpot
+            moved = withAnimation(animation) {
+                if nested { drag.newItemSpot = spot }
+                return drag.hover(poolOrder: drop.order, section: drop.section) || nested
+            }
         } else {
             return DropProposal(operation: .move)
         }
@@ -66,8 +75,9 @@ struct PoolDropDelegate: DropDelegate {
         let order = drag.poolOrder ?? fresh.order
         let section = drag.poolOrder != nil ? drag.poolSection : fresh.section
         let source = drag.source
+        let spot = drag.newItemSpot
         drag.end()
-        onDrop(item, source, order, section)
+        if spot.parent != nil { onNest(item, spot) } else { onDrop(item, source, order, section) }
         return true
     }
 }
@@ -81,4 +91,26 @@ struct PoolDropLayout {
     var all: [String]?
     /// The pool has section headers, on screen or not.
     var inSections = false
+}
+
+extension PoolDropLayout {
+    /// The same layout after the list scrolled: everything stands `delta` further down the screen.
+    func shifted(by delta: CGFloat) -> PoolDropLayout {
+        var layout = self
+        layout.rows = rows.map { PoolDropOrder.Row(id: $0.id, midY: $0.midY + Double(delta), section: $0.section) }
+        layout.headers = headers.map { SectionDropOrder.Header(id: $0.id, midY: $0.midY + Double(delta)) }
+        return layout
+    }
+
+    /// A row scrolled into sight during the drag joins the layout where it would stand without the gap: `lift` is how
+    /// far the gap pushed it down (nothing above the gap).
+    mutating func add(row id: String, midY: CGFloat, section: String?, lift: CGFloat) {
+        guard !rows.contains(where: { $0.id == id }) else { return }
+        rows.append(PoolDropOrder.Row(id: id, midY: Double(midY - lift), section: section))
+    }
+
+    mutating func add(header id: String, midY: CGFloat, lift: CGFloat) {
+        guard !headers.contains(where: { $0.id == id }) else { return }
+        headers.append(SectionDropOrder.Header(id: id, midY: Double(midY - lift)))
+    }
 }

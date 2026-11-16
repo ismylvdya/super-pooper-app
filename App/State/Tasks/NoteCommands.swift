@@ -155,13 +155,28 @@ final class NoteCommands {
     /// Creates the note of a draft (a task or a habit) with all its fields, its text and its subtasks (each a note of its
     /// own linked to its parent), at the pool's spot a dragged "+" left (`placement`). Returns the final name.
     func create(_ draft: NoteDraft, named name: String, at placement: NewItemPlacement? = nil) async -> String? {
+        var draft = draft
+        // A subtask made in a list stands in its parent's list.
+        if case .subtask(let parent, _, _) = placement, let level = tasks.task(named: parent)?.status, TaskStatus.open.contains(level),
+           draft.note.status != level, !draft.note.isHabit {
+            draft.apply([.status(level)])
+        }
         do {
             let created = try await store.create(draft, named: name)
             tasks.written(created)
             for subtask in draft.subtasks.map({ $0.trimmingCharacters(in: .whitespacesAndNewlines) }) where !subtask.isEmpty {
                 try await createSubtask(subtask, of: created)
             }
-            if let placement { placements.place(created.name, at: placement) }
+            if let order = placement?.listOrder(named: created.name) {
+                // A new line stands last in its list: from there it takes the spot it was dropped at.
+                if var made = tasks.task(named: created.name) {
+                    made.storeOrder = (order.compactMap { tasks.task(named: $0)?.storeOrder }.max() ?? 0) + 1
+                    tasks.replace(made)
+                }
+                await reorderTasks(order)
+            } else if let placement {
+                placements.place(created.name, at: placement)
+            }
             await derived.publish()
             appEvents.send(.created(created.name))
             return created.name

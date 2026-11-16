@@ -22,6 +22,8 @@ struct PoolDropTarget: ViewModifier {
     let onDrop: (DayItem, TaskDragState.Source, [String], String?) -> Void
     let onSectionDrop: (String, [String]) -> Void
     let onRefused: (DayItem) -> Void
+    var nesting: (_ order: [String], _ dragged: String, _ x: Double) -> NewItemNesting.Spot = { _, _, _ in .top }
+    var onNest: (DayItem, NewItemNesting.Spot) -> Void = { _, _ in }
 
     func body(content: Content) -> some View {
         if let drag {
@@ -30,7 +32,7 @@ struct PoolDropTarget: ViewModifier {
                 .onDrop(of: TaskDragState.types, delegate: PoolDropDelegate(drag: drag, animation: animation, layout: layout,
                                                                             canDrop: canDrop, onDrop: onDrop,
                                                                             onSectionDrop: onSectionDrop,
-                                                                            onRefused: onRefused))
+                                                                            onRefused: onRefused, nesting: nesting, onNest: onNest))
         } else {
             content
         }
