@@ -219,33 +219,6 @@ final class NewTaskUITests: XCTestCase {
         XCTAssertFalse(second.waitForExistence(timeout: 3), "Back creates no second note")
     }
 
-    /// A date typed into a new task's name is blue; a tap on it sets the date (the Tomorrow chip lights up) and takes the
-    /// words out of the name. Back then creates the task on that day (`scripts/check-vault-after-ui-tests.sh`).
-    func testTappingTheBlueDateSetsItAndCleansTheName() {
-        launch("superpooper://today")
-        let plus = app.buttons["tabBar.newItem"]
-        XCTAssertTrue(plus.waitForExistence(timeout: 10))
-        app.dismissBanners()
-        plus.tap()
-        let name = app.textViews["taskPage.name"]
-        XCTAssertTrue(name.waitForExistence(timeout: 5))
-        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
-        app.typeText("Dentist tomorrow")
-        let suggestion = app.buttons["newItem.detectedDate"].firstMatch
-        XCTAssertTrue(suggestion.waitForExistence(timeout: 5), "the date is offered")
-        XCTAssertEqual(suggestion.label, "tomorrow")
-        let tomorrow = app.buttons["taskPage.chip.tomorrow"]
-        XCTAssertFalse(tomorrow.isSelected, "not set until tapped")
-        suggestion.tap()
-        let cleaned = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == 'Dentist'"), object: name)
-        XCTAssertEqual(XCTWaiter().wait(for: [cleaned], timeout: 5), .completed)
-        let selected = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isSelected == true"), object: tomorrow)
-        XCTAssertEqual(XCTWaiter().wait(for: [selected], timeout: 5), .completed)
-        XCTAssertFalse(app.buttons["newItem.detectedDate"].exists, "nothing left to offer")
-        app.navigationBars.buttons.element(boundBy: 0).tap()
-        expectCreatedBanner("Dentist")
-    }
-
     /// A name a note cannot take is pointed out in the title while it is typed.
     func testANameANoteCannotTakeIsShownInTheTitle() {
         launch("superpooper://today")

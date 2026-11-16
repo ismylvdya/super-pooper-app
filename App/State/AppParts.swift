@@ -12,8 +12,6 @@ struct AppParts {
     let day: DayStateController
     let sections: DaySectionsController
     let tasks: TaskState
-    /// Finds dates typed into names (`date-grammar.json`).
-    let dates: DateDetector
     let sources: SourcesController
     let derived: DerivedStatePublisher
     let writer: NoteWriter
@@ -39,7 +37,6 @@ struct AppParts {
         day = DayStateController(clock: clock, calendar: calendar, store: services.dayStateStore, settings: settings)
         sections = DaySectionsController(store: services.daySectionStore, day: day, definitions: rules.pool.defaultSections)
         tasks = TaskState()
-        dates = DateDetector(grammar: config.dateGrammar)
         sources = SourcesController(calendars: services.calendars, reminders: services.reminders,
                                     notifications: services.notifications, config: config, settings: settings, day: day)
         derived = DerivedStatePublisher(config: config, tasks: tasks, day: day, sections: sections, sources: sources,
@@ -52,7 +49,7 @@ struct AppParts {
                               derived: derived, appEvents: appEvents)
         dayCommands = DayCommands(day: day, sections: sections, tasks: tasks, writer: writer, derived: derived, appEvents: appEvents)
         notes = NoteCommands(tasks: tasks, writer: writer, texts: texts, store: store, links: services.links, backups: backups,
-                             settings: settings, day: day, sections: sections, derived: derived, appEvents: appEvents, dates: dates,
+                             settings: settings, day: day, sections: sections, derived: derived, appEvents: appEvents,
                              placements: dayCommands)
         sourceCommands = SourceCommands(sources: sources, services: services, day: day, derived: derived, appEvents: appEvents,
                                         delay: delay, quietSeconds: rules.timeline.externalChangeDelaySeconds)

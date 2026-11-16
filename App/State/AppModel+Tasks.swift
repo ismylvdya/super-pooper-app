@@ -149,7 +149,6 @@ extension AppModel {
     func newItemPage(_ seed: NewItemSeed) -> NewItemPage { parts.notes.newItemPage(seed) }
     func newItemPage(kind: NewItemSeed.Kind) -> NewItemPage { newItemPage(NewItemSeed(kind: kind)) }
     /// A date typed into a name ("tomorrow 18:20"), by now's logical day.
-    func detectDate(in name: String) -> DetectedDate? { parts.dates.detect(in: name, context: context()) }
 
     /// The new-item page is left; true once the page is done with (see `NoteCommands.create(from:unnamed:)`).
     func create(from page: NewItemPage, unnamed: String) async -> Bool { await parts.notes.create(from: page, unnamed: unnamed) }

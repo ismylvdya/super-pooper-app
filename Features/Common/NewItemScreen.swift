@@ -25,8 +25,6 @@ struct NewItemScreen: View {
                             titleView: AnyView(NewNoteNameField(placeholder: LocalizedStringKey(Self.titleKey(current.kind)),
                                                                 name: Binding(get: { page?.name ?? "" }, set: { page?.name = $0 }),
                                                                 problem: current.nameProblem(model.nameProblem(in:)),
-                                                                suggestion: current.suggestion(model.detectDate(in: current.name)),
-                                                                onAccept: { found in Haptics.play(.select); page?.accept(found) },
                                                                 onReturn: saveOnReturn))) {
             // A "+" dropped in the pool or on the timeline makes a task: only a tapped "+" offers the kinds.
             if seed.placement == nil {

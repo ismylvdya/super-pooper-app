@@ -58,26 +58,6 @@ struct NewItemPage: Equatable {
         }
     }
 
-    /// The date found in the name, offered in blue while it is a task's and not already its date.
-    func suggestion(_ detected: DetectedDate?) -> DetectedDate? {
-        guard kind == .task, let detected, draft.note.due != detected.due else { return nil }
-        return detected
-    }
-
-    /// The blue date was tapped: it becomes the task's date and its words leave the name, unless they are the whole
-    /// name (a task is not left without one).
-    mutating func accept(_ detected: DetectedDate) {
-        draft.apply([.due(detected.due)])
-        let rest = DateDetector.removing(detected, from: name)
-        if !rest.isEmpty { name = rest }
-    }
-
-    /// A task named outside the app's pages (the New Task intent) has no blue suggestion: a date in its name is taken
-    /// at once; without one it is just this week's.
-    mutating func takeNamedDate(_ detected: DetectedDate?) {
-        if let detected { accept(detected) }
-    }
-
     /// What is wrong with the typed name by the store's `rules`; an empty name is fine (the note is called "Unnamed").
     func nameProblem(_ rules: (String) -> NoteNameProblem?) -> NoteNameProblem? {
         trimmedName.isEmpty ? nil : rules(trimmedName)

@@ -16,12 +16,11 @@ final class NoteCommands {
     private let sections: DaySectionsController
     private let derived: DerivedStatePublisher
     private let appEvents: AppEventSink
-    private let dates: DateDetector
     private let placements: DayCommands
 
     init(tasks: TaskState, writer: NoteWriter, texts: NoteTextEditor, store: TaskStore, links: ExternalLinking?,
          backups: BackupPolicy, settings: SettingsController, day: DayStateController, sections: DaySectionsController,
-         derived: DerivedStatePublisher, appEvents: AppEventSink, dates: DateDetector, placements: DayCommands) {
+         derived: DerivedStatePublisher, appEvents: AppEventSink, placements: DayCommands) {
         self.tasks = tasks
         self.writer = writer
         self.texts = texts
@@ -33,7 +32,6 @@ final class NoteCommands {
         self.sections = sections
         self.derived = derived
         self.appEvents = appEvents
-        self.dates = dates
         self.placements = placements
     }
 

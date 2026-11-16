@@ -16,7 +16,6 @@ struct AppConfig: Sendable {
         static let rules = "rules.json"
         static let defaults = "defaults.json"
         static let lists = "lists.json"
-        static let dateGrammar = "date-grammar.json"
     }
 
     let tokens: DesignTokens
@@ -35,8 +34,6 @@ struct AppConfig: Sendable {
     let lists: TaskListsConfig
     /// `defaults.json`; user settings are merged over it.
     let defaultSettings: DefaultSettings
-    /// Words and formats of inline date detection.
-    let dateGrammar: DateGrammar
 
     static func load(bundle: Bundle = .main) throws -> AppConfig {
         let loader = ConfigLoader(bundle: bundle)
@@ -49,8 +46,6 @@ struct AppConfig: Sendable {
         try lists.validate(defaultIcon: defaults.values.lists.icon, file: File.lists)
         let rules = try loader.load(RulesConfig.self, from: File.rules)
         try rules.pool.validate(file: File.rules)
-        let dateGrammar = try loader.load(DateGrammar.self, from: File.dateGrammar)
-        try dateGrammar.validate(file: File.dateGrammar)
         func layout(_ file: String) throws -> ScreenLayout {
             let layout = try loader.load(ScreenLayout.self, from: file)
             try layout.validate(file: file)
@@ -68,8 +63,7 @@ struct AppConfig: Sendable {
             flags: try loader.load(FeatureFlags.self, from: File.flags),
             rules: rules,
             lists: lists,
-            defaultSettings: defaults,
-            dateGrammar: dateGrammar
+            defaultSettings: defaults
         )
     }
 

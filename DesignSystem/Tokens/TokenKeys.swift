@@ -41,8 +41,6 @@ enum SizeToken: String, CaseIterable, Sendable {
     case subtaskLine
     /// The problems badge on Today's Lists button: its smallest width and its height.
     case problemBadge
-    /// Room added above and below a date found in a new task's name, so a tap on it lands easily.
-    case detectedDateTapRoom
 }
 
 /// Shares and scale factors: a part of another size, not a size of its own.
@@ -108,8 +106,6 @@ enum ColorToken: String, ConfigName {
     case bannerBackground, infoText, destructive, timelineGrid
     case success, warning, error, shadow, widgetPlate, widgetTop, widgetBottom, listSeparator
     case signingAhead, signingSoon, signingUrgent
-    /// A date found in a new task's name.
-    case detectedDate
     /// The title of a section (settings groups, the pool's sections).
     case sectionHeader
     /// The thin lines from a parent to its subtasks in the pool.
