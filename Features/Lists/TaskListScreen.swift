@@ -43,7 +43,7 @@ struct TaskListScreen: View {
                         gapRow(group: StatusText.title(level), groupID: group.id, id: item.id, index: index, count: group.items.count)
                     } else {
                         row(item.task, parent: ShownParent.parent(of: item.task, shown: shown), depth: item.depth, group: StatusText.title(level),
-                            groupID: group.id, index: index, count: group.items.count)
+                            groupID: group.id, index: index, count: group.items.count, rows: group.items)
                     }
                 }
                 // Dragged like every list.
@@ -110,7 +110,8 @@ struct TaskListScreen: View {
         TaskActionHandler(model: model, router: router, openURL: openURL) { pendingAction = $0 }
     }
 
-    private func row(_ task: TaskItem, parent: String?, depth: Int, group: String, groupID: String, index: Int, count: Int) -> some View {
+    private func row(_ task: TaskItem, parent: String?, depth: Int, group: String, groupID: String, index: Int, count: Int,
+                     rows: [DayItem]) -> some View {
         HStack(spacing: tokens.space(.iconTextGap)) {
             NavigationLink(value: Route.task(task.name)) {
                 TaggedTaskName(name: task.name, parent: parent)
@@ -130,14 +131,20 @@ struct TaskListScreen: View {
         .modifier(tracking(task.name, groupID: groupID))
         // Reordered like every list, a subtask stays under its parent: it is not dragged on its own.
         .moveDisabled(depth > 0)
-        // The pool's menu for the task (Not today has no place outside Today); Done (Return for a done one) to the right,
+        // The pool's menu for the task (Not today has no place outside Today); one tab right or left to the right (D-182),
         // Delete to the left.
         .listGroupRow(group: group, id: task.name, index: index, count: count, frames: frames) {
             ActionMenuContent(menu: .context(of: task), item: DayItem(listed: task), isToday: false) {
                 handler.handle($0, taskName: task.name)
             }
         }
-        .actionSwipes(.task, item: DayItem(listed: task), isToday: false) { handler.handle($0, taskName: task.name) }
+        .actionSwipes(.listTask, item: DayItem(listed: task), isToday: false) { action in
+            if action.id == .indent {
+                Task { await model.indent(task.name, rows: rows.filter { $0.id != TaskDragState.newItemGap }) }
+            } else {
+                handler.handle(action, taskName: task.name)
+            }
+        }
     }
 
     /// Where a row stands, for a drag over the list; one scrolled into sight during a drag joins its layout.

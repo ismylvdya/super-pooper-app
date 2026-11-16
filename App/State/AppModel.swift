@@ -66,6 +66,8 @@ final class AppModel {
     func moveToBacklog(_ name: String, list: BacklogList, shown: LocalDate, fromShownDay: Bool) async {
         await parts.dayCommands.moveToBacklog(name, level: list.status, shown: shown, fromShownDay: fromShownDay)
     }
+    /// One tab right under the row above in `rows`, the list as shown (the swipe to the right).
+    func indent(_ name: String, rows: [DayItem]) async { await parts.dayCommands.indent(name, rows: rows) }
     func nest(_ name: String, under parent: String, index: Int?) async {
         await parts.dayCommands.nest(name, under: parent, index: index)
     }

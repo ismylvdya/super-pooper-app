@@ -65,8 +65,10 @@ enum ActionMenu: String, Codable, CaseIterable, Sendable {
 
 /// The swipe buttons of a kind of list row (`actions.json` → `swipes`).
 enum ActionSwipes: String, Codable, CaseIterable, Sendable {
-    /// A task in a list (the Lists tab, the Done list, the search).
+    /// A task in a list (the Done list, the search).
     case task
+    /// A task in a list of the Lists tab: to the right one tab, not Done (D-182).
+    case listTask
     /// A habit or a repeatable task in a list (Habits, Routines, the search).
     case habit
     /// A task or a habit in Soon.

@@ -43,6 +43,8 @@ struct ActionAvailability: Sendable {
         case .returnFromDone: return !item.isHabit && item.isDone
         case .start: return !item.isHabit && !item.isDone && !item.task.status.isCompleted && !item.task.isStarted
         case .notStarted: return !item.isHabit && item.task.isStarted
+        case .indent: return !item.isHabit && !item.isDone && item.task.projects.isEmpty
+        case .outdent: return !item.isHabit && !item.task.projects.isEmpty
         case .archive: return !item.task.isArchived
         case .restoreFromArchive: return item.task.isArchived
         case .select: return canSelect

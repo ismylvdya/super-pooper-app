@@ -74,6 +74,9 @@ extension AppModel {
         case .restoreThisWeek: await parts.notes.setStatus(.thisWeek, of: name)
         case .returnToToday: await parts.dayCommands.returnToToday(name)
         case .notTomorrow: await parts.dayCommands.notTomorrow(name)
+        case .outdent: await parts.dayCommands.outdent(name)
+        // One tab right needs the list's rows: the list runs it (`indent(_:rows:)`).
+        case .indent: break
         case .returnTomorrow: await parts.dayCommands.returnTomorrow(name)
         case .notStarted: await edit(name) { _ in [.started(false)] }
         case .start: await edit(name) { _ in [.started(true)] }

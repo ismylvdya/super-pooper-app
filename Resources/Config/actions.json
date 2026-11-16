@@ -60,6 +60,22 @@
       "swipeTint": "success"
     },
     {
+      "id": "indent",
+      "title": "action.indent",
+      "icon": "arrow.right",
+      "destructive": false,
+      "haptic": "light",
+      "swipeTint": "swipeNeutral"
+    },
+    {
+      "id": "outdent",
+      "title": "action.outdent",
+      "icon": "arrow.left",
+      "destructive": false,
+      "haptic": "light",
+      "swipeTint": "swipeNeutral"
+    },
+    {
       "id": "unmark",
       "title": "action.unmark",
       "icon": "arrow.uturn.backward.circle",
@@ -380,6 +396,15 @@
         "delete"
       ]
     },
+    "listTask": {
+      "leading": [
+        "indent",
+        "outdent"
+      ],
+      "trailing": [
+        "delete"
+      ]
+    },
     "habit": {
       "leading": [
         "done"
@@ -390,7 +415,8 @@
     },
     "review": {
       "leading": [
-        "done",
+        "indent",
+        "outdent",
         "returnFromDone"
       ],
       "trailing": [
@@ -406,7 +432,8 @@
     },
     "reviewTomorrow": {
       "leading": [
-        "done",
+        "indent",
+        "outdent",
         "returnFromDone"
       ],
       "trailing": [

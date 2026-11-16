@@ -97,7 +97,12 @@ struct ActionAvailabilityTests {
         #expect(swipes(.review, item(makeHabit("Bins") { $0.habit.repeatable = true })).trailing == [.skipToday])
         #expect(TestConfig.actions.definition(.notToday).swipeTint == ColorToken.swipeNeutral.rawValue)
         #expect(TestConfig.actions.definition(.skipToday).swipeTint == ColorToken.swipeNeutral.rawValue)
-        #expect(swipes(.review, item(makeTask("Report"))).leading == [.done])
+        // To the right one tab (D-182): right for a task of the top level, left for a subtask, gray; none for a habit.
+        #expect(swipes(.review, item(makeTask("Report"))).leading == [.indent])
+        #expect(swipes(.review, item(makeTask("Pack") { $0.projects = ["Trip"] })).leading == [.outdent])
+        #expect(swipes(.listTask, item(makeTask("Report"))) == ([.indent], [.delete]))
+        #expect(swipes(.review, item(makeHabit("Walk"))).leading.isEmpty)
+        #expect(TestConfig.actions.definition(.indent).swipeTint == ColorToken.swipeNeutral.rawValue)
     }
 
     /// The archive and the trash put a note back with a swipe to the left; nothing to swipe to the right.

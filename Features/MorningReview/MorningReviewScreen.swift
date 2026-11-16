@@ -128,8 +128,20 @@ struct MorningReviewList: View {
                                     }
                                 }
                                 .accessibilityIdentifier("review:\(item.id)")
-                                // Done to the right; to the left Not today or, for a habit, Skip today (Not tomorrow on Tomorrow).
-                                .actionSwipes(isTomorrow ? .reviewTomorrow : .review, item: item) { perform($0, on: item.id) }
+                                // To the right one tab right or left (D-182); to the left Not today or, for a habit, Skip today.
+                                .actionSwipes(isTomorrow ? .reviewTomorrow : .review, item: item) { action in
+                                    if action.id == .indent {
+                                        // The rows of its own group: a group's first row has nothing above it.
+                                        let group = ReviewGroups.group(of: index, in: rows)
+                                        let shown = rows.indices.compactMap { at -> DayItem? in
+                                            guard case .item(let name) = rows[at], ReviewGroups.group(of: at, in: rows) == group else { return nil }
+                                            return items[name]
+                                        }
+                                        Task { await model.indent(item.id, rows: shown) }
+                                    } else {
+                                        perform(action, on: item.id)
+                                    }
+                                }
                         }
                     }
                 }

@@ -89,6 +89,17 @@
         }
       }
     },
+    "action.indent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indent"
+          }
+        }
+      }
+    },
     "action.newSection": {
       "extractionState": "manual",
       "localizations": {
@@ -151,6 +162,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Open in Obsidian"
+          }
+        }
+      }
+    },
+    "action.outdent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Outdent"
           }
         }
       }

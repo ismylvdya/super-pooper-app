@@ -49,6 +49,10 @@ enum ActionID: String, Codable, CaseIterable, Sendable {
     case notTomorrow
     /// Kept out of tomorrow's pool, back in it.
     case returnTomorrow
+    /// A task of a list one tab right, under the row above (`SubtaskIndent`); the list knows its rows.
+    case indent
+    /// A subtask one level up (`SubtaskIndent`).
+    case outdent
 }
 
 extension ActionID {
