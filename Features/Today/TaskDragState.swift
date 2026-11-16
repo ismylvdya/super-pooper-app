@@ -63,6 +63,8 @@ final class TaskDragState {
     var backlogTarget: String?
     /// The rows of the page a task of its own is dragged within, in the order the finger makes.
     var backlogOrder: [String]?
+    /// In a list of groups (the Lists page, the review), the group of the spot under the finger.
+    var listSection: String?
     /// Counts the drags begun: a lifted finger ends only the drag it was dragging.
     private var session = 0
     /// Where the finger holds the dragged "+", on the screen; nil while it stands in its place.
@@ -249,6 +251,7 @@ final class TaskDragState {
     private func reset() {
         item = nil
         backlogOrder = nil
+        listSection = nil
         section = nil
         source = .pool
         hoverMoment = nil

@@ -25,6 +25,16 @@ enum SearchScope: Hashable {
 }
 
 /// Pushed pages of the tabs' navigation stacks.
+extension Router {
+    /// The open page of Tasks takes a dragged "+": Tasks itself, or a list of the Lists page or the review page on top.
+    var acceptsNewItemDrag: Bool {
+        switch path.last {
+        case nil, .list, .morningReview: true
+        default: false
+        }
+    }
+}
+
 enum Route: Hashable {
     case task(String)
     /// The new-item page a "+" opens.

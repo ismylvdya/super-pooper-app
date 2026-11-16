@@ -150,7 +150,7 @@ struct BacklogPage: View {
     /// The dragged "+" over the page: rows make room under it, and letting go opens the new task's page for the spot.
     private func newItemMoved(to point: CGPoint?) {
         let owner = "backlog.\(list.id)"
-        guard let drag, drag.source == .newItem, let point, screenFrame.contains(point) else {
+        guard let drag, drag.source == .newItem, let point, router.path.isEmpty, screenFrame.contains(point) else {
             newItemLayout = nil
             if let drag, drag.backlogTarget == list.id, drag.source == .newItem {
                 withAnimation(tokens.animation) {

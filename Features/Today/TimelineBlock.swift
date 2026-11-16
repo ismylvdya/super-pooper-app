@@ -157,7 +157,8 @@ struct TimelineBlock: View {
     /// The dragged "+" over the timeline: the spot shows next to the hours, and letting go opens a new task's page there.
     private func newItemMoved(to point: CGPoint?, over frame: CGRect, windowStart: Date, hourHeight: CGFloat) {
         guard let drag, let point else { return }
-        guard frame.contains(point) else {
+        // Under a page pushed over Tasks, the timeline takes no "+".
+        guard router.path.isEmpty, frame.contains(point) else {
             drag.hoverMoment = nil
             drag.clearNewItemLanding(Self.newItemTarget)
             return
