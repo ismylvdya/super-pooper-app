@@ -16,13 +16,13 @@ struct StartedLayout: Equatable {
     /// on a task not started.
     var titleGap: Double = 0
 
-    /// The mark: its top concentric with the plate's top-left corner and its bottom with the bottom-left one, so the gap
-    /// to the plate's edge is the same all along both arcs — a circle on a one-line plate, on a taller one a rounded bar
-    /// down the plate's left side. As wide as `circleSize` says between `sizes`, never past the plate. A plate is never
-    /// rounder than half its height.
-    func circle(plateHeight: CGFloat, cornerRadius: CGFloat, sizes: ClosedRange<CGFloat>) -> CGRect? {
+    /// The mark: a circle on a one-line plate, concentric with its top-left corner so the gap to the plate's edge is the
+    /// same all along the arc; on a taller plate the same circle's lower half reaches down to the bottom as a rounded bar,
+    /// with the same gaps as on a one-line plate (`oneLineHeight`). As wide as `circleSize` says between `sizes`, never
+    /// past the plate. A plate is never rounder than half its height.
+    func circle(plateHeight: CGFloat, cornerRadius: CGFloat, sizes: ClosedRange<CGFloat>, oneLineHeight: CGFloat? = nil) -> CGRect? {
         guard look == .circle else { return nil }
-        let corner = min(cornerRadius, plateHeight / 2)
+        let corner = min(cornerRadius, plateHeight / 2, (oneLineHeight ?? plateHeight) / 2)
         let share = CGFloat(min(max(circleSize, 0), 1))
         let radius = min(sizes.lowerBound + (sizes.upperBound - sizes.lowerBound) * share, corner * 2) / 2
         let gap = corner - radius
@@ -31,10 +31,10 @@ struct StartedLayout: Equatable {
 
     /// How far right of its usual place the name starts: `titleGap` past the circle, never left of its usual place, or
     /// past the end of the fill when the name goes after it.
-    func titleShift(plateSize: CGSize, cornerRadius: CGFloat, sizes: ClosedRange<CGFloat>, inset: CGFloat) -> CGFloat {
+    func titleShift(plateSize: CGSize, cornerRadius: CGFloat, sizes: ClosedRange<CGFloat>, inset: CGFloat, oneLineHeight: CGFloat? = nil) -> CGFloat {
         switch look {
         case .circle:
-            guard let circle = circle(plateHeight: plateSize.height, cornerRadius: cornerRadius, sizes: sizes) else { return 0 }
+            guard let circle = circle(plateHeight: plateSize.height, cornerRadius: cornerRadius, sizes: sizes, oneLineHeight: oneLineHeight) else { return 0 }
             return max(circle.maxX + CGFloat(titleGap) - inset, 0)
         case .fill:
             guard titleAfterFill else { return 0 }

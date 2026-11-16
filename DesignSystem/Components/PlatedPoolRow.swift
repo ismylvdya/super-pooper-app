@@ -30,15 +30,19 @@ struct PlatedPoolRow<Row: View>: View {
     private var started: StartedLayout? { startedLayout?.shown(for: item) }
 
     @ViewBuilder private var circle: some View {
-        if let started, let frame = started.circle(plateHeight: plateSize.height, cornerRadius: tokens.plateRadius(.row), sizes: tokens.startedCircleSizes) {
+        if let started, let frame = started.circle(plateHeight: plateSize.height, cornerRadius: tokens.plateRadius(.row), sizes: tokens.startedCircleSizes,
+                                                   oneLineHeight: oneLineHeight) {
             StartedCircle().frame(width: frame.width, height: frame.height).offset(x: frame.minX, y: frame.minY)
         }
     }
 
+    /// A one-line plate's height, which the largest circle fills edge to edge.
+    private var oneLineHeight: CGFloat { tokens.startedCircleSizes.upperBound }
+
     private var startedShift: CGFloat {
         guard let started else { return 0 }
         return started.titleShift(plateSize: plateSize, cornerRadius: tokens.plateRadius(.row), sizes: tokens.startedCircleSizes,
-                                  inset: tokens.space(.plateInner) / 2)
+                                  inset: tokens.space(.plateInner) / 2, oneLineHeight: oneLineHeight)
     }
 }
 
