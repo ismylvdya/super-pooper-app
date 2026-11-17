@@ -27,11 +27,11 @@ struct TaskEntry: Equatable, Sendable {
     var repeats: String?
     /// Its day passed and it was not done: it stands in the pool with a mark.
     var isOverdue = false
-    /// In today's pool (`format.pool.tag`, 🏊).
+    /// In today's pool (`🏊 in_today_pool`).
     var inTodayPool = false
-    /// Kept out of tomorrow's pool (`format.pool.notTomorrowTag`, 🚫🏊): the day's turn leaves it out and takes the mark away.
+    /// Kept out of tomorrow's pool (`🏊 not_tomorrow_pool`): the day's turn leaves it out and takes the mark away.
     var notTomorrow = false
-    /// The pool's section it stands in: the word after `format.pool.sectionPrefix` (🏊:).
+    /// The pool's section it stands in (`🏊 section_morning`): the word after `format.pool.sectionPrefix`.
     var poolSection: String?
     var completed: LocalDate?
     var deleted: LocalDate?
@@ -59,8 +59,11 @@ extension TaskEntry {
         // the middle of a name stays part of it.
         let markers = format.markers
         while let last = tokens.last {
-            if format.legacyWords.contains(last) {} else if format.isPoolMark(last) { inTodayPool = true } else if format.isNotTomorrowMark(last) { notTomorrow = true } else if let section = format.poolSection(in: last) {
-                poolSection = poolSection ?? section
+            if format.legacyWords.contains(last) {} else if tokens.count >= 2, tokens[tokens.count - 2] == format.pool.marker, let word = format.poolWord(last) {
+                take(word)
+                tokens.removeLast()
+            } else if let word = format.legacyPoolWord(last) {
+                take(word)
             } else if last == markers.high || format.legacyHighMarkers.contains(last) { isHigh = true } else if last == markers.pleasant { feel = .pleasant } else if last == markers.energy { feel = .needEnergy } else if last == markers.overdue { isOverdue = true } else if last == markers.steps { stepsOneByOne = true } else if last == markers.project { showsAsProject = true } else if last == format.legacyStartedMarker { box = .started } else if tokens.count >= 2, read(last, marker: tokens[tokens.count - 2], format, alarmClockRings: alarmClockRings) {
                 tokens.removeLast()
             } else if last.isEmpty {
@@ -71,6 +74,15 @@ extension TaskEntry {
             tokens.removeLast()
         }
         name = tokens.joined(separator: " ")
+    }
+
+    /// What a pool word says (`TaskFileFormat.PoolWord`).
+    private mutating func take(_ word: TaskFileFormat.PoolWord) {
+        switch word {
+        case .inPool: inTodayPool = true
+        case .notTomorrow: notTomorrow = true
+        case .section(let section): poolSection = poolSection ?? section
+        }
     }
 
     /// Takes `value` as the field of `marker`; false when it is no such pair.
@@ -135,9 +147,9 @@ extension TaskEntry {
         if showsAsProject { parts.append(markers.project) }
         add(markers.repeats, repeats)
         if isOverdue { parts.append(markers.overdue) }
-        if inTodayPool { parts.append(format.pool.tag) }
-        if notTomorrow { parts.append(format.pool.notTomorrowTag) }
-        if let poolSection { parts.append(format.pool.sectionPrefix + poolSection) }
+        if inTodayPool { add(format.pool.marker, format.pool.tag) }
+        if notTomorrow { add(format.pool.marker, format.pool.notTomorrowTag) }
+        if let poolSection { add(format.pool.marker, format.pool.sectionPrefix + poolSection) }
         add(markers.completed, completed?.isoString)
         add(markers.deleted, deleted?.isoString)
         if writesID { add(markers.id, id) }

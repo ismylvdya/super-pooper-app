@@ -68,7 +68,7 @@ struct HabitSubtaskStoreTests {
         await store.accept(try #require(await store.currentLook()))
         _ = await store.mirror(DayMirror(sections: [.init(title: "Day", names: ["Run"])], timed: [:]))
         let written = try text()
-        #expect(written.contains("🆔 \(run.id.value)\n    - [ ] Stretch ⏳ 10 🏊\n        slowly\n"), Comment(rawValue: written))
+        #expect(written.contains("🆔 \(run.id.value)\n    - [ ] Stretch ⏳ 10 🏊 in_today_pool\n        slowly\n"), Comment(rawValue: written))
     }
 
     /// Deleted with its habit, a subtask goes to the trash too, not lost with the habit's line.
@@ -93,11 +93,11 @@ struct HabitSubtaskStoreTests {
         _ = try await store.load()
         await store.accept(try #require(await store.currentLook()))
         _ = await store.mirror(DayMirror(sections: [.init(title: "Day", names: ["Run"])], timed: [:]))
-        let text = try self.text().replacingOccurrences(of: "## Next actions\n", with: "## Next actions\n- [ ] First 🏊\n")
+        let text = try self.text().replacingOccurrences(of: "## Next actions\n", with: "## Next actions\n- [ ] First 🏊 in_today_pool\n")
         try text.write(to: folder.appendingPathComponent(format.folder).appendingPathComponent(format.file), atomically: true, encoding: .utf8)
         _ = await store.mirror(DayMirror(sections: [.init(title: "Day", names: ["Run"])], timed: [:]))
         let lines = try self.text().components(separatedBy: "\n")
-        let first = try #require(lines.firstIndex(of: "- [ ] First 🏊"))
+        let first = try #require(lines.firstIndex(of: "- [ ] First 🏊 in_today_pool"))
         let habit = try #require(lines.firstIndex { $0.contains("🆔 \(run.id.value)") })
         #expect(first < habit, "the habit's line stays after the line put before it")
         let tasks = try await store.load().tasks

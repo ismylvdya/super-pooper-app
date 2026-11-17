@@ -13,14 +13,16 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
         let soon, halfYear, someday, done, archive, trash: String
     }
 
-    /// How a line says it is in today's pool and in which of its sections (`TodayPool`, `PoolSectionTag`): marks with the
-    /// swimmer, no hashtags (D-187).
+    /// How a line says it is in today's pool and in which of its sections (`TodayPool`, `PoolSectionTag`): the swimmer and
+    /// a word after it, as every field (`🏊 in_today_pool`, `🏊 not_tomorrow_pool`, `🏊 section_morning`), no hashtags (D-187).
     struct Pool: Codable, Hashable, Sendable {
-        /// The mark of a task in today's pool.
+        /// The field's marker, before each of the words below.
+        let marker: String
+        /// The word of a task in today's pool.
         let tag: String
-        /// The mark of a task kept out of tomorrow's pool in the morning review planned the day before.
+        /// The word of a task kept out of tomorrow's pool in the morning review planned the day before.
         let notTomorrowTag: String
-        /// A section's mark is this and the section's word.
+        /// A section's word is this and the section's own word.
         let sectionPrefix: String
         /// The sections a task stays in from day to day; the tags of the others go with the day's turn.
         let lastingSections: [String]
@@ -83,17 +85,23 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
     /// Words older lines end with and the app no longer keeps: read so they are no part of the name, and gone with the next write.
     let legacyWords: [String]
 
-    /// The word of a line that says it is in today's pool, in the marks of now or of an older file.
-    func isPoolMark(_ word: String) -> Bool { word == pool.tag || word == legacyPool.tag }
+    /// What a word after the pool's marker (or an older file's hashtag) says about the line; nil for any other word.
+    enum PoolWord: Equatable {
+        case inPool, notTomorrow, section(String)
+    }
 
-    /// The word of a line that says it is kept out of tomorrow, now or in an older file.
-    func isNotTomorrowMark(_ word: String) -> Bool { word == pool.notTomorrowTag || word == legacyPool.notTomorrowTag }
+    /// The word after `pool.marker`.
+    func poolWord(_ word: String) -> PoolWord? { poolWord(word, tag: pool.tag, notTomorrow: pool.notTomorrowTag, section: pool.sectionPrefix) }
 
-    /// The pool section a word names, now or in an older file; nil for any other word.
-    func poolSection(in word: String) -> String? {
-        for prefix in [pool.sectionPrefix, legacyPool.sectionPrefix] where word.hasPrefix(prefix) && word.count > prefix.count {
-            return String(word.dropFirst(prefix.count))
-        }
+    /// An older file's hashtag, a word of its own.
+    func legacyPoolWord(_ word: String) -> PoolWord? {
+        poolWord(word, tag: legacyPool.tag, notTomorrow: legacyPool.notTomorrowTag, section: legacyPool.sectionPrefix)
+    }
+
+    private func poolWord(_ word: String, tag: String, notTomorrow: String, section: String) -> PoolWord? {
+        if word == tag { return .inPool }
+        if word == notTomorrow { return .notTomorrow }
+        if word.hasPrefix(section), word.count > section.count { return .section(String(word.dropFirst(section.count))) }
         return nil
     }
 

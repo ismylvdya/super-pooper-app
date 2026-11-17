@@ -316,7 +316,7 @@ actor TaskFileStore: TaskStore {
     nonisolated func nameProblem(in name: String) -> NoteNameProblem? {
         if name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return .empty }
         if name != name.trimmingCharacters(in: .whitespacesAndNewlines) { return .spacesAround }
-        if let marker = format.markers.all.first(where: name.contains), let symbol = marker.first { return .forbidden(symbol) }
+        if let marker = (format.markers.all + [format.pool.marker]).first(where: name.contains), let symbol = marker.first { return .forbidden(symbol) }
         return name.first(where: \.isNewline).map(NoteNameProblem.forbidden)
     }
 }

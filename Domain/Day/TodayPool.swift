@@ -1,6 +1,6 @@
 import Foundation
 
-/// Today's pool is what carries 🏊 (`TaskItem.isInTodayPool`), all of it in Next actions: what comes into
+/// Today's pool is what carries `🏊 in_today_pool` (`TaskItem.isInTodayPool`), all of it in Next actions: what comes into
 /// the pool from Soon or Someday moves to Next actions with it. The day's turn puts it on what is due to
 /// come up (`isDue`), Not today takes it off, and a date set to today or earlier puts it on (`settled`). A task with a
 /// time today stands on the timeline by that time, with or without it; a habit comes up by its rule and never has it.

@@ -16,9 +16,10 @@
   },
   "legacyTodaySections": ["Today", "Now"],
   "pool": {
-    "tag": "🏊",
-    "notTomorrowTag": "🚫🏊",
-    "sectionPrefix": "🏊:",
+    "marker": "🏊",
+    "tag": "in_today_pool",
+    "notTomorrowTag": "not_tomorrow_pool",
+    "sectionPrefix": "section_",
     "lastingSections": ["morning", "evening"],
     "restSection": "day"
   },

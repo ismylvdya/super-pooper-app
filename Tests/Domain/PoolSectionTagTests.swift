@@ -1,7 +1,7 @@
 import Testing
 @testable import SuperPooperApp
 
-/// A task's line names the pool's section it stands in (`🏊:…`): a default section by its id, an own one by its title.
+/// A task's line names the pool's section it stands in (`🏊 section_…`): a default section by its id, an own one by its title.
 struct PoolSectionTagTests {
     private let day = LocalDate("2026-10-21")
     private let definitions = [PoolSectionDefinition(id: "morning", title: "Morning", routine: .morning),

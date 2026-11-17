@@ -1,7 +1,7 @@
 import Foundation
 
 /// The morning review's Tomorrow: what today's review plans for the next day. A task is kept out of tomorrow's pool by its
-/// line (🚫🏊, the day's turn reads it); a habit and having reviewed it by tomorrow's plan
+/// line (`🏊 not_tomorrow_pool`, the day's turn reads it); a habit and having reviewed it by tomorrow's plan
 /// (`DayState.Ahead`), which becomes tomorrow's state once it comes. Its order is the order of the lines, as today's is.
 extension DayCommands {
     func notTomorrow(_ name: String) async {
