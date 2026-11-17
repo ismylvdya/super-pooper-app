@@ -2,7 +2,8 @@ import Foundation
 import Testing
 @testable import SuperPooperApp
 
-/// An alarm's slider stops the ringing: its notification comes right after, and the task stays open and in its place.
+/// An alarm's slider (or the cross on its banner) stops the ringing: its notification is shown right away, and the task
+/// stays open and in its place. A moment seconds ahead would not do: a trigger keeps only minutes.
 @MainActor
 struct AlarmStopTests {
     @Test func theSliderLeavesANotificationAndTheTaskOpen() async throws {
@@ -18,8 +19,12 @@ struct AlarmStopTests {
         await model.ensureLoaded()
         await model.alarmStopped(key: "task|Call", day: LocalDate(TestCalendar.wednesday))
         await model.waitForNotifications()
-        let planned = await recorder.lastPlanned
-        #expect(planned.contains { $0.key == "task|Call" && $0.fireDate > model.clock.now }, "\(planned.map(\.key))")
+        // Shown once, right away; the plans after it do not show it again.
+        await model.sync(announce: false)
+        await model.waitForNotifications()
+        let log = await recorder.log
+        #expect(log.filter { $0.hasSuffix(" now task|Call") }.count == 1, "\(log)")
+        #expect(log.last == "sync", "\(log)")
         #expect(model.task(named: "Call")?.status == .thisWeek)
         #expect(model.task(named: "Call")?.due == TaskDue("2026-10-21T13:00"))
     }

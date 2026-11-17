@@ -6,6 +6,7 @@ import Foundation
 /// gate the test opens (a slow notification center).
 actor RecordingNotifications: NotificationScheduling {
     private(set) var lastPlanned: [PlannedNotification] = []
+    private(set) var lastImmediate: [PlannedNotification] = []
     private(set) var calls = 0
     /// "sync", or "restore" and the identifier ("cancelled restore" when the restore's task was cancelled).
     private(set) var log: [String] = []
@@ -24,7 +25,8 @@ actor RecordingNotifications: NotificationScheduling {
         // The real center does not stop when the task is cancelled: the gate ignores cancellation too.
         if calls == 1, let firstSync { await firstSync.pass() }
         lastPlanned = planned
-        log.append("sync")
+        lastImmediate = immediate
+        log.append("sync" + immediate.map { " now " + $0.key }.joined())
     }
 
     func removeAll() async { lastPlanned = [] }

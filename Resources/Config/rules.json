@@ -28,7 +28,6 @@
     }
   ],
   "notifications": {
-    "afterAlarmSeconds": 1,
     "limit": 38,
     "horizonDays": 7,
     "imageFile": "notification-image.png",

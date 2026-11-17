@@ -82,17 +82,18 @@ struct UserNotificationScheduler: NotificationScheduling {
             return fireDate(of: request).map { abs($0.timeIntervalSince(want.fireDate)) > rules.fireTimeToleranceSeconds } ?? true
         }
         center.removePendingRequests(withIdentifiers: Array(outdated.keys))
+        // What comes right away first: a newer plan does not bring it again.
+        for notification in immediate {
+            let content = self.content(for: notification)
+            try? await center.add(UNNotificationRequest(identifier: NotificationIdentifier.late(identifier(for: notification)),
+                                                        content: content, trigger: nil))
+        }
         for notification in planned {
             // A newer plan is waiting: it will add what is still missing.
             if Task.isCancelled { return }
             let id = identifier(for: notification)
             guard current[id] == nil || outdated[id] != nil else { continue }
             try? await center.add(request(for: notification))
-        }
-        for notification in immediate {
-            let content = self.content(for: notification)
-            try? await center.add(UNNotificationRequest(identifier: NotificationIdentifier.late(identifier(for: notification)),
-                                                        content: content, trigger: nil))
         }
 
         // Shown ones stay only while their item is still open for their day (identifier + day); one put back gives way to

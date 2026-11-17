@@ -20,6 +20,8 @@ final class DerivedStatePublisher {
     private let alarms: AlarmScheduling
     private let mirroring: DayMirroring?
     private let queue = NotificationQueue()
+    /// Alarms stopped with their slider whose notification is still to be shown (key and day), right away by the next plan.
+    private var stoppedAlarms: [NotificationSnooze] = []
     /// The last plan of each day asked for (0 = today), with what it was worked out from.
     private var plans: [Int: CachedPlan] = [:]
 
@@ -172,14 +174,15 @@ final class DerivedStatePublisher {
         await replanNotifications()
     }
 
-    /// An alarm stopped with its slider: its notification comes right after, under the snooze's own identifier, and stays in
-    /// Notification Center while its item is open. The item is not touched.
+    /// An alarm stopped with its slider (or the cross on its banner): its notification is shown right away, not at a
+    /// moment ahead (a trigger keeps only minutes, so a moment seconds ahead is already past), under the snooze's own
+    /// identifier, and stays in Notification Center while its item is open. The item is not touched.
     func alarmStopped(key: String, day: LocalDate) async {
         let context = self.day.context()
         guard !StaleNotifications.isOver(day, today: context.today) else { return }
-        let until = context.now.addingTimeInterval(config.rules.notifications.afterAlarmSeconds)
-        let snooze = NotificationSnooze(key: key, day: day, until: until)
+        let snooze = NotificationSnooze(key: key, day: day, until: context.now)
         try? snoozeStore.save(NotificationSnoozing.adding(snooze, to: snoozeStore.load(), today: context.today))
+        stoppedAlarms.append(snooze)
         await replanNotifications()
     }
 
@@ -235,8 +238,11 @@ final class DerivedStatePublisher {
             ? OverdueRepeats.notifications(valid, minutes: config.rules.notifications.overdueRepeatMinutes,
                                            count: config.rules.notifications.overdueRepeatCount, context: context)
             : []
+        // A stopped alarm's notification is shown now, once; the snooze keeps it in Notification Center after that.
+        let stopped = snoozed.filter { notification in stoppedAlarms.contains { $0.key == notification.key && $0.day == notification.day } }
+        stoppedAlarms = []
         await notifications.sync(planned: planned + snoozed.filter { $0.fireDate > context.now } + again,
-                                 stillValid: valid + late + snoozed + again, now: late)
+                                 stillValid: valid + late + snoozed + again, now: late + stopped)
     }
 
     /// What the notifications are planned from now.
