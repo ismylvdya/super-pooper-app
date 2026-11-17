@@ -23,7 +23,7 @@ struct PlatedPoolRow<Row: View>: View {
         .poolRowPlate(plate, isDone: item.isFinished, tint: tokens.plateTint(for: item.task))
         .overlay(alignment: .topLeading) { circle }
         .onGeometryChange(for: CGSize.self) { $0.size } action: { plateSize = $0 }
-        .environment(\.plateGradient, started.flatMap { $0.look == .fill ? AnyView(StartedFill(length: $0.fillLength)) : nil })
+        .environment(\.plateGradient, started.flatMap { $0.look == .fill ? AnyView(StartedFill($0)) : nil })
     }
 
     private var started: StartedLayout? { startedLayout?.shown(for: item) }
@@ -48,7 +48,7 @@ struct PlatedPoolRow<Row: View>: View {
 extension StartedLayout {
     /// The look the settings give a started task (`AppSettings.Pool`).
     init(_ pool: AppSettings.Pool) {
-        self.init(look: pool.startedLook, fillLength: pool.startedFillLength, titleAfterFill: pool.startedTitleAfterFill,
+        self.init(look: pool.startedLook, fillMiddle: pool.startedFillMiddle, fillWidth: pool.startedFillWidth, titleAfterFill: pool.startedTitleAfterFill,
                   circleSize: pool.startedCircleSize, fadeMiddle: pool.startedFadeMiddle, fadeWidth: pool.startedFadeWidth,
                   titleGap: pool.startedTitleGap)
     }

@@ -1,23 +1,26 @@
 import SwiftUI
 
-/// The fill of a started task's plate (`TaskItem.isStarted`): the started color at full strength at the plate's very
-/// left edge, fading evenly to nothing `length` of the plate's width across (`AppSettings.Pool.startedFillLength`).
+/// The fill of a started task's plate (`TaskItem.isStarted`): across the whole plate, the started color whole up to the
+/// transition, fading evenly to nothing over it, nothing past it (`StartedLayout.fillMiddle`, `fillWidth`; D-192).
 struct StartedFill: View {
     @Environment(\.tokens) private var tokens
-    let length: Double
+    let start: Double
+    let end: Double
 
-    var body: some View {
-        GeometryReader { proxy in
-            LinearGradient(stops: Self.stops(color: tokens.color(.started)), startPoint: .leading, endPoint: .trailing)
-                .frame(width: proxy.size.width * CGFloat(min(max(length, 0), 1)))
-        }
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
+    init(_ layout: StartedLayout) {
+        start = layout.fillStart
+        end = layout.fillEnd
     }
 
-    /// Opaque from the first point, clear at the far end.
-    static func stops(color: Color) -> [Gradient.Stop] {
-        [Gradient.Stop(color: color, location: 0), Gradient.Stop(color: color.opacity(0), location: 1)]
+    var body: some View {
+        LinearGradient(stops: Self.stops(color: tokens.color(.started), start: start, end: end), startPoint: .leading, endPoint: .trailing)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+    }
+
+    /// Whole up to `start`, nothing from `end` on (a sharp edge when they meet).
+    static func stops(color: Color, start: Double, end: Double) -> [Gradient.Stop] {
+        [Gradient.Stop(color: color, location: CGFloat(start)), Gradient.Stop(color: color.opacity(0), location: CGFloat(max(end, start)))]
     }
 }
 

@@ -4,8 +4,14 @@ import CoreGraphics
 /// (`AppSettings.Pool.StartedLook`).
 struct StartedLayout: Equatable {
     var look: AppSettings.StartedLook
-    /// How far the fill reaches, as a share of the plate's width.
-    var fillLength: Double
+    /// The fill's transition from the started color to nothing: its middle from the plate's left edge and its width, as
+    /// shares of the plate's width; left of it the color is whole.
+    var fillMiddle: Double
+    var fillWidth: Double
+
+    /// Where the fill's transition starts and ends, as shares of the plate's width (within the plate).
+    var fillStart: Double { min(max(fillMiddle - fillWidth / 2, 0), 1) }
+    var fillEnd: Double { min(max(fillMiddle + fillWidth / 2, 0), 1) }
     var titleAfterFill: Bool
     /// How big the circle is, from the smallest it can be (0) to the largest (1) (`DesignTokens.startedCircleSizes`).
     var circleSize: Double = 1
@@ -30,7 +36,7 @@ struct StartedLayout: Equatable {
     }
 
     /// How far right of its usual place the name starts: `titleGap` past the circle, never left of its usual place, or
-    /// past the end of the fill when the name goes after it.
+    /// past the end of the fill's transition when the name goes after it.
     func titleShift(plateSize: CGSize, cornerRadius: CGFloat, sizes: ClosedRange<CGFloat>, inset: CGFloat, oneLineHeight: CGFloat? = nil) -> CGFloat {
         switch look {
         case .circle:
@@ -38,7 +44,7 @@ struct StartedLayout: Equatable {
             return max(circle.maxX + CGFloat(titleGap) - inset, 0)
         case .fill:
             guard titleAfterFill else { return 0 }
-            return max(plateSize.width * CGFloat(min(max(fillLength, 0), 1)) - inset, 0)
+            return max(plateSize.width * CGFloat(fillEnd) - inset, 0)
         }
     }
 }

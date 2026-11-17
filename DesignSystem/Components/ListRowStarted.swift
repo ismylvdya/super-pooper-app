@@ -28,7 +28,7 @@ struct ListRowStarted: ViewModifier {
 
     @ViewBuilder private var fill: some View {
         if let started, started.look == .fill {
-            StartedFill(length: started.fillLength).clipShape(cellShape)
+            StartedFill(started).clipShape(cellShape)
         }
     }
 

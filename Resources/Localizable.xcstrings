@@ -2723,13 +2723,24 @@
         }
       }
     },
-    "info.settings.pool.startedFill": {
+    "info.settings.pool.startedFillMiddle": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "How far a started task's blue fill reaches across its plate."
+            "value": "Where across the plate the fill turns from the started color to nothing: the middle of the transition, from the plate's left edge. Left of the transition the color is whole."
+          }
+        }
+      }
+    },
+    "info.settings.pool.startedFillWidth": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How wide the transition from the started color to nothing is, half of it on each side of its middle. None: a sharp edge."
           }
         }
       }
@@ -5199,13 +5210,24 @@
         }
       }
     },
-    "settings.pool.startedFill": {
+    "settings.pool.startedFillMiddle": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Started fill"
+            "value": "Transition middle"
+          }
+        }
+      }
+    },
+    "settings.pool.startedFillWidth": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transition width"
           }
         }
       }

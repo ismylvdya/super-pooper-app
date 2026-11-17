@@ -16,7 +16,8 @@ struct PlainTaskSettingsScreen: View {
             PlateSection(header: "settings.plainTasks.started") {
                 lookPicker
                 if model.settings.pool.startedLook == .fill {
-                    startedFill
+                    fillMiddle
+                    fillWidth
                     SwitchToggle("settings.pool.startedTitleAfterFill", isOn: Binding(
                         get: { model.settings.pool.startedTitleAfterFill },
                         set: { value in model.updateSettings { $0.pool.startedTitleAfterFill = value } }))
@@ -42,12 +43,21 @@ struct PlainTaskSettingsScreen: View {
                       prefix: "settings.pool.startedLook.", accessibilityID: "settings.pool.startedLook")
     }
 
-    /// How far a started task's fill reaches, with a sample of it, as it stands in the pool: on a row's whole plate.
-    private var startedFill: some View {
-        SettingSlider(icon: nil, title: "settings.pool.startedFill", info: "info.settings.pool.startedFill", value: \.pool.startedFillLength,
-                    limits: model.config.rules.limits.startedFillLength, accessibilityID: "settings.pool.startedFill",
-                    samplePlate: AnyView(StartedFill(length: model.settings.pool.startedFillLength))) { PercentText(value: $0) }
+    /// Where the fill's transition stands and how wide it is, each with a sample of the fill as it stands in the pool: on a
+    /// row's whole plate (D-192).
+    private var fillMiddle: some View {
+        SettingSlider(icon: nil, title: "settings.pool.startedFillMiddle", info: "info.settings.pool.startedFillMiddle",
+                      value: \.pool.startedFillMiddle, limits: model.config.rules.limits.startedFillMiddle,
+                      accessibilityID: "settings.pool.startedFillMiddle", samplePlate: sampleFill) { PercentText(value: $0) }
     }
+
+    private var fillWidth: some View {
+        SettingSlider(icon: nil, title: "settings.pool.startedFillWidth", info: "info.settings.pool.startedFillWidth",
+                      value: \.pool.startedFillWidth, limits: model.config.rules.limits.startedFillWidth,
+                      accessibilityID: "settings.pool.startedFillWidth", samplePlate: sampleFill) { PercentText(value: $0) }
+    }
+
+    private var sampleFill: AnyView { AnyView(StartedFill(StartedLayout(model.settings.pool))) }
 
     /// How big the circle is, with a sample of it at that size: from a small letter of a name to a one-line plate.
     private var circleSize: some View {

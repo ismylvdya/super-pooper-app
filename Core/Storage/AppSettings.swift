@@ -33,8 +33,10 @@ struct AppSettings: Codable, Equatable, Sendable {
         var selectionOutlineOpacity: Double
         /// The order of the chips in task rows (raw names of `RowChipKind`).
         var chipOrder: [String]
-        /// How far a started task's fill reaches across its plate, as a share of its width.
-        var startedFillLength: Double
+        /// A started task's fill across its whole plate: the started color up to the transition, nothing past it. Where the
+        /// transition's middle stands from the plate's left edge and how wide it is, as shares of the plate's width (D-192).
+        var startedFillMiddle: Double
+        var startedFillWidth: Double
         /// How a started task stands out in the pool: the fill over its plate, or a half-filled circle before its name.
         var startedLook: StartedLook
         /// With the fill: the name starts where the fill ends instead of over it.
@@ -54,7 +56,7 @@ struct AppSettings: Codable, Equatable, Sendable {
 
     /// How a started task stands out in the pool.
     enum StartedLook: String, Codable, CaseIterable, Sendable {
-        /// The started color over the plate from its left edge, fading out `startedFillLength` across.
+        /// The started color over the plate, fading out around `startedFillMiddle` over `startedFillWidth`.
         case fill
         /// A round mark before the name, filled with the same fade, concentric with the plate's corner.
         case circle

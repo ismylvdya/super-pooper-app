@@ -145,7 +145,7 @@ private struct TaskSlotPlate: ViewModifier {
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .slotPlate(isPast: isPast, isCompact: isCompact, tint: tokens.plateTint(for: item.task))
-            .environment(\.plateGradient, startedLayout?.shown(for: item).map { AnyView(StartedFill(length: $0.fillLength)) })
+            .environment(\.plateGradient, startedLayout?.shown(for: item).map { AnyView(StartedFill($0)) })
     }
 }
 

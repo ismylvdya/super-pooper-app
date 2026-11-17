@@ -30,8 +30,9 @@ extension RulesConfig {
         let pastOpacity: Range
         /// The share of the screen's width a page keeps in sight beside the one shown (`AppSettings.Today.timelinePeek`).
         let pagePeek: Range
-        /// The share of a plate a started task's fill reaches.
-        let startedFillLength: Range
+        /// A started task's fill: where its transition's middle stands and how wide it is (shares of the plate).
+        let startedFillMiddle: Range
+        let startedFillWidth: Range
         /// How big a started task's circle can be set, as a share between its smallest and largest.
         let startedCircleSize: Range
         /// A started task's circle: its fade's middle and width (shares), and the points from it to the name.
