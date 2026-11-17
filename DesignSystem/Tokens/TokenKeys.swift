@@ -39,7 +39,7 @@ enum SizeToken: String, CaseIterable, Sendable {
     case iconColumn, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, notificationIcon
     case dayArrowTarget
     case habitDotMinimum, cornerInsetMinimum, sourceDot, fadeHeight, poolCounter, poolWidth
-    case habitHistoryMaxHeight, habitStatsBar, habitStatsBarMin, habitMonthBar, habitMonthBarMin, titleFade, allDayIconScale, dragBadge, alarmMark, feelPicker, reminderRing, reminderRingStroke, rowIconHeight, reviewChevron, wrapMinWidth, liftOverhang, pagePeek, dropMarkerHeight, bannerShadowRadius, bannerShadowY, hexFieldWidth, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, previewHeight, previewRow, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewHalvesInset, subtaskDropLine
+    case habitHistoryMaxHeight, habitStatsBar, habitStatsBarMin, habitMonthBar, habitMonthBarMin, titleFade, allDayIconScale, dragBadge, alarmMark, feelPicker, reminderRing, reminderRingStroke, rowIconHeight, wrapMinWidth, liftOverhang, pagePeek, dropMarkerHeight, bannerShadowRadius, bannerShadowY, hexFieldWidth, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, previewHeight, previewRow, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewHalvesInset, subtaskDropLine
     /// How thick the lines from a parent to its subtasks are.
     case subtaskLine
     /// The problems badge on Today's Lists button: its smallest width and its height.

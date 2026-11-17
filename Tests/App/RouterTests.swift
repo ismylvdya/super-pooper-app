@@ -23,11 +23,11 @@ struct RouterTests {
     }
 
     @Test func reviewAndNewTaskLinks() throws {
+        // Spreader is a page of Tasks, under Lists: Back leads to Lists and the pool (D-188).
         let review = try routed("superpooper://review")
-        #expect(review.tab == .today && review.isReviewPresented)
+        #expect(review.tab == .today && review.path == [.lists, .morningReview])
         let router = try routed("superpooper://review")
         router.handle(try #require(URL(string: "superpooper://new-task")))
-        #expect(!router.isReviewPresented)
         #expect(router.tab == .today && router.path == [.newItem(NewItemSeed(kind: .task))])
     }
 

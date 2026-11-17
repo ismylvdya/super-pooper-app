@@ -14,6 +14,7 @@ struct TaskListScreen: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.rules) private var rules
     @Environment(TaskDragState.self) private var drag: TaskDragState?
+    @Environment(\.startedLayout) private var startedLayout
     let listID: String
     @State private var pendingAction: PendingAction?
     @State private var frames = ListGroupFrames()
@@ -142,7 +143,8 @@ struct TaskListScreen: View {
         // The pool's menu for the task (Not today has no place outside Today); one tab right or left to the right (D-182),
         // Delete to the left.
         .listGroupRow(group: group, id: task.name, index: index, count: count, frames: frames,
-                      separatorIndent: CGFloat(depth) * tokens.listSubtaskIndent, tint: tokens.plateTint(for: task)) {
+                      separatorIndent: CGFloat(depth) * tokens.listSubtaskIndent, tint: tokens.plateTint(for: task),
+                      started: startedLayout?.shown(for: DayItem(listed: task))) {
             ActionMenuContent(menu: .context(of: task), item: DayItem(listed: task), isToday: false) {
                 handler.handle($0, taskName: task.name)
             }

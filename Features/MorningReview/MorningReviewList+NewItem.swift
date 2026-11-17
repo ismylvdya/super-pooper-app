@@ -37,7 +37,7 @@ extension MorningReviewList {
 
     func newItemMoved(to point: CGPoint?, plan: DayPlan) {
         guard let drag, drag.source == .newItem, let point, takesNewItem(), screenFrame.contains(point),
-              point.y < screenFrame.maxY - bottomBar - bubbleRoom else {
+              point.y < screenFrame.maxY - bottomBar else {
             if let drag, drag.backlogTarget == Self.newItemOwner {
                 withAnimation(tokens.animation) {
                     drag.backlogTarget = nil

@@ -28,7 +28,7 @@ enum SearchScope: Hashable {
 extension Router {
     /// Tasks itself is in sight (no page pushed over it, no review's sheet): its pool, timeline and backlog pages take a
     /// dragged "+".
-    var takesNewItemOnTasks: Bool { path.isEmpty && !isReviewPresented }
+    var takesNewItemOnTasks: Bool { path.isEmpty }
 
     /// The open page of Tasks takes a dragged "+": Tasks itself, or a list of the Lists page or the review page on top.
     var acceptsNewItemDrag: Bool {
@@ -79,10 +79,9 @@ enum Route: Hashable {
 final class Router {
     var tab: AppTab = .today
     var paths: [AppTab: [Route]] = [:]
-    var isReviewPresented = false
     var isProblemsPresented = false
     /// A sheet that shows the banner on its own bar is up: the tabs' banner, under the sheet, steps aside.
-    var presentsBannerSheet: Bool { isReviewPresented || isProblemsPresented }
+    var presentsBannerSheet: Bool { isProblemsPresented }
     /// Grows on every tap on the Tasks tab: Today goes back to today's pool.
     private(set) var tasksTaps = 0
 
@@ -123,6 +122,11 @@ final class Router {
         paths[tab] = routes
     }
 
+    /// Spreader where it lives: Tasks, its Lists page, then Spreader; Back goes to Lists and on to the pool.
+    func showSpreader() {
+        show(.today, [.lists, .morningReview])
+    }
+
     /// `superpooper://task/<name>`, `superpooper://habit/<name>`, `superpooper://habits`, `superpooper://lists[/<id>]`
     /// (the Lists page on Tasks), `superpooper://settings`,
     /// `superpooper://review`, `superpooper://archive`, `superpooper://trash`, `superpooper://clock`,
@@ -138,8 +142,8 @@ final class Router {
         case "settings", "clock": show(.settings)
         case "archive": show(.settings, [.archive])
         case "trash": show(.settings, [.trash])
-        case "review": show(.today); isReviewPresented = true
-        case "new-task": isReviewPresented = false; show(.today, [.newItem(.opening(on: .today))])
+        case "review": showSpreader()
+        case "new-task": show(.today, [.newItem(.opening(on: .today))])
         #if DEBUG
         case "debug-notifications": show(.settings, [.debugNotifications])
         case "debug-widgets": show(.settings, [.debugWidgets])

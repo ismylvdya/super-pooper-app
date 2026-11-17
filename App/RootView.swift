@@ -92,9 +92,6 @@ struct RootView: View {
                 // The banner sits over the navigation bar, its corners on the bar buttons, on every tab.
                 .overlay(alignment: .top) { BannerOverlay(yieldsToSheets: true) }
                 .overlay { NewItemDragOverlay() }
-                .sheet(isPresented: $router.isReviewPresented) {
-                    MorningReviewScreen().tint(tokens.color(.accent)).presentationDragIndicator(.visible)
-                }
                 .sheet(isPresented: $router.isProblemsPresented) { ProblemsSheet().tint(tokens.color(.accent)) }
             } else {
                 OnboardingFlow()
@@ -242,10 +239,11 @@ struct RootView: View {
         }
     }
 
-    /// The morning review opens by itself on the first launch of the day.
+    /// Spreader opens by itself on the first launch of the day, as the page it is on Tasks: Lists, then Spreader, Back
+    /// leading to the pool (D-188).
     private func openReviewIfNeeded() {
         if container.model.claimMorningReview(openedForSomethingElse: container.launch.openURL != nil) {
-            container.router.isReviewPresented = true
+            container.router.showSpreader()
         }
     }
 }

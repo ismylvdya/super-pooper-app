@@ -115,7 +115,7 @@ private struct SubtaskLabel: View {
     let isDone: Bool
     var isLater = false
 
-    /// A long name fades out before the chevron instead of pushing it to a line of its own.
+    /// A long name fades out at the row's end instead of pushing it to a line of its own; no chevron, as no task row has one.
     var body: some View {
         HStack(spacing: tokens.space(.iconTextGap)) {
             Image(icon: .subtask, icons: icons)
@@ -125,7 +125,7 @@ private struct SubtaskLabel: View {
             FadingText(text: name, font: tokens.font(.rowTitle), lineHeight: tokens.uiFont(.rowTitle).lineHeight)
                 .strikethrough(isDone)
                 .foregroundStyle(isLater ? tokens.color(.secondaryText) : tokens.color(.primaryText))
-            DisclosureAccessory(value: isLater ? L10n.string("taskPage.steps.later") : nil)
+            if isLater { Text("taskPage.steps.later").foregroundStyle(tokens.color(.secondaryText)) }
         }
         .contentShape(Rectangle())
     }

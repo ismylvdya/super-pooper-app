@@ -18,7 +18,6 @@ struct ParentTaskSection: View {
                             .frame(width: tokens.size(.iconColumn))
                         FadingText(text: parent.name, font: tokens.font(.rowTitle), lineHeight: tokens.uiFont(.rowTitle).lineHeight)
                             .foregroundStyle(tokens.color(.primaryText))
-                        DisclosureAccessory()
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .contentShape(Rectangle())

@@ -5,6 +5,8 @@ import SwiftUI
 struct SubtaskGuideLines: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.subtaskLineLook) private var look
+    /// A started row moved its content right for its circle: the lines stay under the parent.
+    @Environment(\.subtaskGuideShift) private var shift
     let guide: SubtaskGuide
     /// Where the line turns into the row's plate, from the row's top (the middle of its first line).
     let turnY: CGFloat
@@ -22,6 +24,7 @@ struct SubtaskGuideLines: View {
                               lineX: tokens.subtaskLineX)
                 .stroke(tokens.color(.subtaskLine), style: StrokeStyle(lineWidth: tokens.size(.subtaskLine), lineCap: .butt))
         }
+        .offset(x: -shift)
         .allowsHitTesting(false)
         .accessibilityHidden(true)
     }

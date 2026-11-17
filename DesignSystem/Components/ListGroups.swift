@@ -25,11 +25,12 @@ extension View {
     /// A row of a group with a long-press menu: the menu lifts the row's plate, and so does a drag from it. `tint` (a
     /// high-priority task's soft red, as in the pool) fills the row's whole cell at rest, square but at the group's ends,
     /// as one with the group; lifted, the row is cut to its plate's outline, so it is round on all four corners then.
+    /// `started`: a started task's look (`StartedLayout.shown(for:)`), its circle standing `separatorIndent` in.
     func listGroupRow<Menu: View>(group: String, id: String, index: Int, count: Int, frames: ListGroupFrames,
                                   vertical: CGFloat? = nil, separatorIndent: CGFloat = 0, tint: Color? = nil,
-                                  @ViewBuilder menu: () -> Menu) -> some View {
+                                  started: StartedLayout? = nil, @ViewBuilder menu: () -> Menu) -> some View {
         modifier(ListGroupRow(group: group, id: id, index: index, count: count, frames: frames, vertical: vertical,
-                              separatorIndent: separatorIndent, tint: tint, menu: menu()))
+                              separatorIndent: separatorIndent, tint: tint, started: started, menu: menu()))
     }
 
     /// The backing plates of the list's groups, drawn behind it; they follow the list's scrolling, not a drag.
@@ -62,6 +63,7 @@ private struct ListGroupRow<Menu: View>: ViewModifier {
     let vertical: CGFloat?
     let separatorIndent: CGFloat
     var tint: Color? = nil
+    var started: StartedLayout? = nil
     let menu: Menu?
 
     func body(content: Content) -> some View {
@@ -70,7 +72,7 @@ private struct ListGroupRow<Menu: View>: ViewModifier {
             .padding(.horizontal, inset)
             .padding(.vertical, vertical ?? tokens.space(.listRowVertical))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(tint ?? .clear, in: cellShape)
+            .modifier(ListRowStarted(started: started, indent: separatorIndent, inset: inset, cellShape: cellShape, tint: tint))
             .plate(.group)
             .overlay(alignment: .bottom) {
                 if index < count - 1 {

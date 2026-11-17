@@ -100,7 +100,7 @@ struct NoWidgets: WidgetReloading {
 #Preview("Today") { TodayScreen().previewEnvironment() }
 #Preview("Task page") { TaskPageScreen(taskName: "Сдать отчёт").previewEnvironment() }
 #Preview("Habit page") { TaskPageScreen(taskName: "Выпить воды 💧").previewEnvironment() }
-#Preview("Morning review") { MorningReviewScreen().previewEnvironment() }
+#Preview("Spreader") { NavigationStack { MorningReviewPage() }.previewEnvironment() }
 #Preview("Settings") { SettingsScreen().previewEnvironment() }
 #Preview("Archive") { ArchiveScreen().previewEnvironment() }
 #Preview("Onboarding") { OnboardingFlow().previewEnvironment() }

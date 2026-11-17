@@ -1,52 +1,21 @@
 import SwiftUI
 
-/// Morning review (the sheet; its list is Soon): the pool as a table — one row per task with property chips edited in place, in
-/// Morning, Day and Evening groups; rows reorder by dragging, also into another group (which sets their part
-/// of the day). Until the first drag the order follows the automatic sort after every edit; after it the
-/// manual order is kept for today. Reset sorting, in the bar's "…", brings the sort back.
-/// Tapping a row (outside its chips) opens the task page.
+/// Spreader (the morning review; D-188): the pool as a table — one row per task with property chips edited in place, in
+/// Morning, Day and Evening groups; rows reorder by dragging, also into another group (which sets their part of the day).
+/// Reset sorting, in the bar's "…", brings the pool's rules back. Tapping a row (outside its chips) opens the task page.
 /// A long press opens the same menu as the row in the pool (and moving the finger then drags the row).
-/// Swiping a row right is Done; swiping it left has one button: a task's Not today, a habit's Skip today. What was taken
-/// out of today waits in the Not today group at the bottom (`SetAsideToday`); swiped there to the left it comes back.
-/// The sheet: opened by itself in the morning (or from Today); a task opens on a page pushed in the sheet.
-/// Its Tomorrow (the switch at the top) plans the next day the evening before: what tomorrow's turn will bring, kept out
-/// of it with Not tomorrow, in an order of its own; reviewed so, it does not open by itself that morning.
-struct MorningReviewScreen: View {
-    @Environment(\.tokens) private var tokens
-    @State private var path: [Route] = []
-
-    var body: some View {
-        NavigationStack(path: $path) {
-            MorningReviewList(openSearch: { path.append(.search(.tasks)) }, openNewItem: { path.append(.newItem($0)) },
-                              takesNewItem: { path.isEmpty }, bubbleRoom: tokens.bar(.newItemBubble) + tokens.bar(.newItemBubbleInset)) {
-                path.append(.task($0))
-            }
-                .navigationDestination(for: Route.self) { route in
-                    switch route {
-                    case .task(let name): TaskPageScreen(taskName: name)
-                    case .search(let scope): SearchPage(scope: scope)
-                    case .newItem(let seed): NewItemScreen(seed: seed)
-                    default: EmptyView()
-                    }
-                }
-        }
-        // The tab bar's "+" is under the sheet: the review has its own, tapped or dragged into it.
-        .overlay(alignment: .bottomTrailing) {
-            if path.isEmpty { FloatingNewItemButton { path.append(.newItem(.opening(on: .today))) } }
-        }
-        .overlay { NewItemDragOverlay() }
-        // Over the sheet's bar, on every page pushed in it.
-        .bannerHost()
-    }
-}
-
-/// The page of the Lists page: the same review, with Back and Search; a task opens on the tab's own stack.
+/// Swiping a row right moves it a tab right or left; swiping it left has one button: a task's Not today, a habit's Skip
+/// today. What was taken out of today waits in the Not today group at the bottom (`SetAsideToday`); swiped there to the
+/// left it comes back. It lives on Tasks only, as a page under Lists, and opens there by itself on the first launch of the
+/// day (`Router.showSpreader`): Back leads to Lists and the pool. Its Tomorrow (the switch at the top) plans the next day
+/// the evening before: what tomorrow's turn will bring, kept out of it with Not tomorrow, in an order of its own; reviewed
+/// so, it does not open by itself that morning.
 struct MorningReviewPage: View {
     @Environment(Router.self) private var router
 
     var body: some View {
         MorningReviewList(openSearch: { router.open(.search(.tasks)) }, openNewItem: { router.openNewItem($0) },
-                          takesNewItem: { router.path.last == .morningReview }, bubbleRoom: 0) { router.open(.task($0)) }
+                          takesNewItem: { router.path.last == .morningReview }) { router.open(.task($0)) }
     }
 }
 
@@ -64,6 +33,7 @@ struct MorningReviewList: View {
     @State private var isTomorrow = false
     @Environment(\.rules) var rules
     @Environment(TaskDragState.self) var drag: TaskDragState?
+    @Environment(\.startedLayout) private var startedLayout
     /// Where the rows and headers stand on the screen, for a dragged "+".
     @State var rowMids: [String: CGFloat] = [:]
     @State var rowHeights: [String: CGFloat] = [:]
@@ -76,8 +46,6 @@ struct MorningReviewList: View {
     let openNewItem: (NewItemSeed) -> Void
     /// The review is the page in sight: a dragged "+" is its.
     let takesNewItem: () -> Bool
-    /// Room at the bottom the review's own "+" takes: the list does not scroll by itself under it.
-    let bubbleRoom: CGFloat
     let openTask: (String) -> Void
 
     var body: some View {
@@ -136,7 +104,7 @@ struct MorningReviewList: View {
                                 .listGroupRow(group: ReviewGroups.group(of: index, in: rows)?.rawValue ?? "", id: name,
                                               index: position.index, count: position.count, frames: frames, vertical: 0,
                                               separatorIndent: CGFloat(item.depth) * tokens.listSubtaskIndent,
-                                              tint: tokens.plateTint(for: item.task)) {
+                                              tint: tokens.plateTint(for: item.task), started: startedLayout?.shown(for: item)) {
                                     ActionMenuContent(menu: .context(of: item.task), item: item, isToday: !isTomorrow) {
                                         perform($0, on: item.id)
                                     }
@@ -178,7 +146,7 @@ struct MorningReviewList: View {
         .onChange(of: isTomorrow) { _, tomorrow in if tomorrow { model.markTomorrowReviewed() } }
         .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { screenFrame = $0 }
         .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.bottom } action: { bottomBar = $0 }
-        .edgeAutoScroll(drag?.newItemPoint, bottomInset: bottomBar + bubbleRoom) { delta in
+        .edgeAutoScroll(drag?.newItemPoint, bottomInset: bottomBar) { delta in
             dropLayout = dropLayout?.shifted(by: -delta)
             newItemMoved(to: drag?.newItemPoint, plan: plan)
         }
@@ -219,7 +187,8 @@ struct MorningReviewList: View {
             ForEach(Array(notes.enumerated()), id: \.element.name) { index, note in
                 let item = note.isHabit ? DayItem(habit: note, on: today) : DayItem(listed: note)
                 ReviewRow(item: item, today: today) { openTask(note.name) }
-                    .listGroupRow(group: "setAside", id: note.name, index: index, count: notes.count, frames: frames, vertical: 0) {
+                    .listGroupRow(group: "setAside", id: note.name, index: index, count: notes.count, frames: frames, vertical: 0,
+                                  tint: tokens.plateTint(for: note), started: startedLayout?.shown(for: item)) {
                         ActionMenuContent(menu: .context(of: note), item: item, isToday: !isTomorrow) { perform($0, on: note.name) }
                     }
                     .moveDisabled(true)
