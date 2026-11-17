@@ -12,7 +12,7 @@ struct TaskSettingsScreen: View {
             EstimateSettingsSection()
             TimelineSettingsSection()
             AppearanceSettingsSection()
-            TodaySettingsSection(surfaces: [.upright, .landscape])
+            TodaySettingsSection(surfaces: [.upright])
         }
         .task { await model.refreshAccess() }
     }

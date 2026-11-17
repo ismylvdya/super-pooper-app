@@ -32,8 +32,12 @@ struct ScreenLayout: Codable, Hashable, Sendable {
     /// token of how much of the neighbouring page stays visible at the edge.
     var paged: Bool? = nil
     var peek: String? = nil
+    /// Pages of half the width, two in sight side by side (landscape): the shown page on the left, the next one on the
+    /// right — the pool and the timeline, or a list and the page after it (D-191).
+    var halves: Bool? = nil
 
     var isPaged: Bool { paged == true }
+    var isHalves: Bool { isPaged && halves == true }
 
     /// The gap and peek names must be design tokens, so a typo stops the app with the file and the key
     /// instead of silently becoming a zero gap.

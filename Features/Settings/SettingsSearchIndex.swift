@@ -24,7 +24,7 @@ enum SettingsSearchIndex {
                 rows: ["settings.vault", "settings.access.calendar", "settings.access.reminders", "settings.access.notifications",
                        "settings.calendars", "settings.reminderLists"]),
         Section(title: "settings.day", route: .generalSettings, rows: ["settings.day.boundary", "settings.day.energyHour"]),
-        Section(title: "settings.today", route: .taskSettings, rows: ["settings.today.arrangement", "settings.landscape"]),
+        Section(title: "settings.today", route: .taskSettings, rows: ["settings.today.arrangement"]),
         Section(title: "settings.timeline", route: .taskSettings,
                 rows: ["settings.timeline.layout", "settings.timeline.range", "settings.timeline.hoursBefore",
                        "settings.timeline.hoursAfter", "settings.timeline.firstHalf", "settings.timeline.secondHalf",

@@ -8,8 +8,9 @@
   },
   "today": {
     "arrangement": "paged",
-    "landscapeArrangement": "sideBySide",
-    "widgetArrangement": "sideBySide"
+    "widgetArrangement": "sideBySide",
+    "timelinePeek": 0.19,
+    "poolPeek": 0.07
   },
   "sources": {
     "anchorCalendarIDs": [],

@@ -43,4 +43,17 @@ struct PageStripTests {
         let shorter = PageStrip(count: 3, width: 343, spacing: 16, peeks: [0, 10, 52], edgeInset: 16, home: 1)
         #expect(shorter.origin(of: 1) == strip.origin(of: 2) && shorter.origin(of: 0) == strip.origin(of: 1))
     }
+
+    /// Landscape (D-191): pages of half the width, two in sight — the pool on the left and the timeline on the right; a
+    /// list opened left of the pool takes the left half and the pool moves to the right one; the timeline is never the
+    /// left page.
+    @Test func halvesShowTwoPagesSideBySide() {
+        // Next actions, the pool, the timeline; the pool is home.
+        let strip = PageStrip(count: 3, width: 810, spacing: 10, peeks: [0, 0, 0], home: 1, listCount: 1, halves: true)
+        #expect((0..<3).allSatisfy { strip.width(of: $0) == 400 })
+        #expect(strip.offset(showing: 1) == 0, "the pool on the left, the timeline on the right")
+        #expect(strip.offset(showing: 0) == 410, "the list on the left, the pool on the right")
+        #expect(strip.offset(showing: 2) == strip.offset(showing: 1), "the timeline stays the right page")
+        #expect(strip.visiblePeek(of: 2, showing: 1) == 0)
+    }
 }

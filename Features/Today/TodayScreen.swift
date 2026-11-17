@@ -89,9 +89,10 @@ struct TodayScreen: View {
         }
     }
 
-    /// Turned sideways, Today has its own arrangement.
+    /// Turned sideways, Today is always the pool on the left and the timeline on the right, half the screen each; a list
+    /// opened left of the pool takes the left half (D-191).
     private var arrangement: AppSettings.TodayArrangement {
-        isLandscape ? model.settings.today.landscapeArrangement : model.settings.today.arrangement
+        isLandscape ? .sideBySide : model.settings.today.arrangement
     }
 
     private func barButtonMoved(_ item: TodayButtons.Item, to frame: CGRect?) {
@@ -108,7 +109,8 @@ struct TodayScreen: View {
     private var pages: [TasksPage] {
         TasksPageStrip.pages(layout: layout, opened: pager.openedBacklog, backlog: model.backlogLists)
     }
-    private var pageCount: Int { pages.count }
+    /// On halves the last page is never the one shown first (it stands on the right of the one before it).
+    private var pageCount: Int { layout.isHalves ? max(pages.count - 1, 1) : pages.count }
     /// The pool's place among the day's pages.
     private var poolBlock: Int { TasksPageStrip.homeIndex(layout: layout, opened: 0) }
 

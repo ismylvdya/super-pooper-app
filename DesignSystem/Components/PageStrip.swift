@@ -18,18 +18,22 @@ struct PageStrip: Equatable {
     var listPeek: CGFloat = 0
     /// The first lists, not opened yet: nothing of them is in sight beside the last one opened.
     var hiddenLists = 0
+    /// Pages of half the width, two in sight: the shown one and the next (`ScreenLayout.halves`); no peeks.
+    var halves = false
 
     func peek(of index: Int) -> CGFloat { peeks.indices.contains(index) ? peeks[index] : 0 }
 
     /// The gap between page `index` and the next one.
     func gap(after index: Int) -> CGFloat {
+        if halves { return spacing }
         if index < hiddenLists { return max(spacing, edgeInset) }
         if index < listCount - 1 { return spacing }
         return peek(of: index) > 0 && peek(of: index + 1) > 0 ? spacing : max(spacing, edgeInset)
     }
 
     func width(of index: Int) -> CGFloat {
-        max(width - leadingRoom(of: index) - trailingRoom(of: index), 1)
+        if halves { return max((width - spacing) / 2, 1) }
+        return max(width - leadingRoom(of: index) - trailingRoom(of: index), 1)
     }
 
     /// Where page `index` starts, from the start of the home page.
@@ -41,13 +45,15 @@ struct PageStrip: Equatable {
 
     /// How much of page `other` stays in sight while `shown` is shown.
     func visiblePeek(of other: Int, showing shown: Int) -> CGFloat {
-        if other < hiddenLists { return 0 }
+        if halves || other < hiddenLists { return 0 }
         return shown < listCount ? listPeek : peek(of: other)
     }
 
     /// The strip's offset that shows page `index` with its leading neighbour's peek before it.
     func offset(showing index: Int) -> CGFloat {
-        let index = min(max(index, 0), max(count - 1, 0))
+        // Halves: the last page is always the second one in sight.
+        let index = min(max(index, 0), max(count - (halves ? 2 : 1), 0))
+        if halves { return -origin(of: index) }
         return leadingRoom(of: index) - origin(of: index)
     }
 

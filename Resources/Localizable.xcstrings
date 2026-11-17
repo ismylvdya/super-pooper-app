@@ -2877,6 +2877,28 @@
         }
       }
     },
+    "info.settings.today.poolPeek": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How much of the screen's width the pool stays in sight while the timeline is shown, from none to a third. Less pool, a wider timeline."
+          }
+        }
+      }
+    },
+    "info.settings.today.timelinePeek": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How much of the screen's width the timeline stays in sight while the pool is shown, from none to a third. Less timeline, a wider pool."
+          }
+        }
+      }
+    },
     "info.settings.vault": {
       "extractionState": "manual",
       "localizations": {
@@ -4880,28 +4902,6 @@
         }
       }
     },
-    "settings.landscape": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Today in landscape"
-          }
-        }
-      }
-    },
-    "settings.landscape.hint": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The phone turned sideways keeps its own layout, independent from the upright one."
-          }
-        }
-      }
-    },
     "settings.lists": {
       "extractionState": "manual",
       "localizations": {
@@ -5674,6 +5674,17 @@
         }
       }
     },
+    "settings.today.poolPeek": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pool beside the timeline"
+          }
+        }
+      }
+    },
     "settings.today.sideBySide": {
       "extractionState": "manual",
       "localizations": {
@@ -5692,6 +5703,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pool on top"
+          }
+        }
+      }
+    },
+    "settings.today.timelinePeek": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timeline beside the pool"
           }
         }
       }

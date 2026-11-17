@@ -18,6 +18,8 @@ struct PagedStack<Page: Hashable, Content: View>: View {
     var listCount = 0
     var listPeek: CGFloat = 0
     var hiddenLists = 0
+    /// Pages of half the width, two in sight (`PageStrip.halves`).
+    var halves = false
     var page = 0
     var drag: CGFloat = 0
     var pull: CGFloat = 0
@@ -27,11 +29,14 @@ struct PagedStack<Page: Hashable, Content: View>: View {
     /// How long a drag stays at an edge before it turns to that neighbour.
     var edgeDwell: Double = 0
     @ViewBuilder let content: (Page) -> Content
+    /// How far past the stack pages may show when they are not halves (into the screen's margins).
+    private static var unclipped: CGFloat { 10_000 }
 
     var body: some View {
         GeometryReader { geometry in
             let strip = PageStrip(count: pages.count, width: geometry.size.width, spacing: spacing, peeks: peeks,
-                                  edgeInset: edgeInset, home: home, listCount: listCount, listPeek: listPeek, hiddenLists: hiddenLists)
+                                  edgeInset: edgeInset, home: home, listCount: listCount, listPeek: listPeek, hiddenLists: hiddenLists,
+                                  halves: halves)
             let shown = strip.offset(showing: page) + drag
             let offset = min(max(shown, strip.offset(showing: pages.count - 1)), strip.offset(showing: 0)) + pull
             ZStack(alignment: .topLeading) {
@@ -47,6 +52,8 @@ struct PagedStack<Page: Hashable, Content: View>: View {
             }
             // The edges belong to the screen, not to the moving strip of pages.
             .frame(width: geometry.size.width, height: geometry.size.height, alignment: .topLeading)
+            // Halves: the two pages in sight fill the stack; the next ones stay out of the screen's margins.
+            .clipShape(Rectangle().inset(by: halves ? 0 : -Self.unclipped))
             .overlay(alignment: .leading) { edge(to: page - 1, leading: true, strip: strip) }
             .overlay(alignment: .trailing) { edge(to: page + 1, leading: false, strip: strip) }
         }
