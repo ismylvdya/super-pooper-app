@@ -79,8 +79,13 @@ struct TodayScreen: View {
             taskDrag.turnHandled()
         }
         .onAppear { taskDrag.turnDwellSeconds = rules.gestures.pageEdgeDwellSeconds }
-        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in isKeyboardShown = true }
-        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in isKeyboardShown = false }
+        // Only lying sideways (`tabBarRoom`): upright, Today would redraw whenever a page over it shows or hides the keyboard.
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+            if isLandscape, !isKeyboardShown { isKeyboardShown = true }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            if isKeyboardShown { isKeyboardShown = false }
+        }
         .onChange(of: router.tasksTaps) { showTodaysPool(forgetsBacklog: true) }
         // Another tab forgets the backlog pages.
         .onChange(of: router.tab) { _, tab in

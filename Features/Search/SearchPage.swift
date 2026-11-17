@@ -15,6 +15,8 @@ struct SearchPage: View {
     /// The page's width, kept from the last search, so the field stands at its width from the first frame.
     @State private var width = SearchPage.lastWidth
     @MainActor private static var lastWidth: CGFloat = 0
+    /// The field, for the keyboard to come up once the page is in.
+    @State private var field = SearchFieldFocus()
 
     var body: some View {
         content
@@ -24,10 +26,10 @@ struct SearchPage: View {
                 SearchPage.lastWidth = new
             }
             .navigationBarTitleDisplayMode(.inline)
-            .background { KeyboardLeavesWithPage().frame(width: 0, height: 0) }
+            .background { SearchKeyboard(field: field).frame(width: 0, height: 0) }
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    SearchBarField(text: $query, prompt: prompt).frame(width: fieldWidth, height: tokens.bar(.uprightBarButton))
+                    SearchBarField(text: $query, prompt: prompt, focus: field).frame(width: fieldWidth, height: tokens.bar(.uprightBarButton))
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { query = "" } label: { Image(systemName: icons[.close]) }
@@ -97,18 +99,18 @@ struct SearchPage: View {
 }
 
 /// The search page's field in the bar: glass as tall as the bar's buttons, the magnifier, the text, what it looks through
-/// while empty. The keyboard comes up as the page has come in: the field takes the focus itself, which a SwiftUI focus
-/// set during the push does not reach.
+/// while empty. The keyboard comes up once the page is in (`SearchKeyboard`).
 private struct SearchBarField: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
     @Binding var text: String
     let prompt: String
+    let focus: SearchFieldFocus
 
     var body: some View {
         HStack(spacing: tokens.space(.iconTextGap)) {
             Image(systemName: icons[.search]).foregroundStyle(tokens.color(.secondaryText))
-            FocusingTextField(text: $text, prompt: prompt, font: tokens.uiFont(.rowTitle),
+            SearchTextField(text: $text, prompt: prompt, focus: focus, font: tokens.uiFont(.rowTitle),
                               promptColor: tokens.uiColor(.secondaryText), tint: tokens.uiColor(.accent))
                 .accessibilityIdentifier("search.field")
         }
@@ -119,16 +121,23 @@ private struct SearchBarField: View {
     }
 }
 
-/// A plain text field that becomes the first responder as soon as it is shown.
-private struct FocusingTextField: UIViewRepresentable {
+/// The search page's text field, so the page can give it the focus.
+@MainActor
+final class SearchFieldFocus {
+    weak var field: UITextField?
+}
+
+/// A plain UIKit text field (the bar's middle takes it at the width given).
+private struct SearchTextField: UIViewRepresentable {
     @Binding var text: String
     let prompt: String
+    let focus: SearchFieldFocus
     let font: UIFont
     let promptColor: UIColor
     let tint: UIColor
 
-    func makeUIView(context: Context) -> Field {
-        let field = Field()
+    func makeUIView(context: Context) -> UITextField {
+        let field = UITextField()
         field.font = font
         field.tintColor = tint
         field.returnKeyType = .search
@@ -138,42 +147,16 @@ private struct FocusingTextField: UIViewRepresentable {
         field.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         field.addTarget(context.coordinator, action: #selector(Coordinator.changed(_:)), for: .editingChanged)
         field.delegate = context.coordinator
+        focus.field = field
         return field
     }
 
-    func updateUIView(_ field: Field, context: Context) {
+    func updateUIView(_ field: UITextField, context: Context) {
         if field.text != text { field.text = text }
         field.attributedPlaceholder = NSAttributedString(string: prompt, attributes: [.foregroundColor: promptColor, .font: font])
     }
 
     func makeCoordinator() -> Coordinator { Coordinator(text: $text) }
-
-    /// Takes the focus once the page's push is over: the keyboard rising during the push makes both stutter.
-    final class Field: UITextField {
-        override func didMoveToWindow() {
-            super.didMoveToWindow()
-            guard window != nil else { return }
-            DispatchQueue.main.async { [weak self] in
-                guard let self else { return }
-                if let push = self.stack?.transitionCoordinator {
-                    push.animate(alongsideTransition: nil) { [weak self] context in
-                        if !context.isCancelled { self?.becomeFirstResponder() }
-                    }
-                } else {
-                    self.becomeFirstResponder()
-                }
-            }
-        }
-
-        private var stack: UINavigationController? {
-            var responder: UIResponder? = self
-            while let next = responder?.next {
-                if let controller = next as? UIViewController, let stack = controller.navigationController { return stack }
-                responder = next
-            }
-            return nil
-        }
-    }
 
     final class Coordinator: NSObject, UITextFieldDelegate {
         let text: Binding<String>
@@ -188,18 +171,58 @@ private struct FocusingTextField: UIViewRepresentable {
     }
 }
 
-/// The keyboard goes as the page starts to leave (Back, a swipe back), sliding down with the page's own animation. Left to
-/// itself, the field keeps the keyboard until the page is out of the window, after the animation: the keyboard loses
-/// its page halfway, jumps, and only then goes.
-private struct KeyboardLeavesWithPage: UIViewControllerRepresentable {
-    func makeUIViewController(context: Context) -> Watcher { Watcher() }
+/// The keyboard of the search page, as the system's own pages have it (D-195): the page comes in without it, and only
+/// once it is in does the keyboard rise from below (the first time only: back from a found task the keyboard stays down).
+/// Back takes the keyboard down first, then the page goes: started together, the keyboard would leave sideways with the
+/// page. A swipe back takes it along with the page, as the system does.
+private struct SearchKeyboard: UIViewControllerRepresentable {
+    let field: SearchFieldFocus
+
+    func makeUIViewController(context: Context) -> Watcher { Watcher(field: field) }
     func updateUIViewController(_ controller: Watcher, context: Context) {}
 
     final class Watcher: UIViewController {
+        let field: SearchFieldFocus
+        private var focused = false
+
+        init(field: SearchFieldFocus) {
+            self.field = field
+            super.init(nibName: nil, bundle: nil)
+        }
+
+        @available(*, unavailable)
+        required init?(coder: NSCoder) { fatalError("init(coder:) is not used") }
+
+        override func viewWillAppear(_ animated: Bool) {
+            super.viewWillAppear(animated)
+            // Back of the page itself (not of a page pushed over it): the keyboard down, then the pop.
+            guard let page = pageController, let stack = page.navigationController else { return }
+            page.navigationItem.backAction = UIAction { [weak stack, weak page] _ in
+                page?.view.window?.endEditing(true)
+                stack?.popViewController(animated: true)
+            }
+        }
+
+        override func viewDidAppear(_ animated: Bool) {
+            super.viewDidAppear(animated)
+            guard !focused else { return }
+            focused = true
+            field.field?.becomeFirstResponder()
+        }
+
         override func viewWillDisappear(_ animated: Bool) {
             super.viewWillDisappear(animated)
             view.window?.endEditing(true)
         }
+
+        /// The page's own controller in its navigation stack.
+        private var pageController: UIViewController? {
+            var controller: UIViewController? = self
+            while let current = controller, let parent = current.parent {
+                if parent is UINavigationController { return current }
+                controller = parent
+            }
+            return nil
+        }
     }
 }
-

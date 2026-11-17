@@ -37,20 +37,9 @@ struct RootView: View {
                     TabView(selection: Binding(get: { TabBarItem.tab(router.tab) }, set: { selectTabBarItem($0, router: router) })) {
                         ForEach(AppTab.allCases, id: \.self) { tab in
                             Tab(value: TabBarItem.tab(tab)) {
-                                NavigationStack(path: Binding(get: { router.paths[tab] ?? [] }, set: { router.paths[tab] = $0 })) {
-                                    root(tab, model: model)
-                                        .systemTabBar(isShown: physicalBottom == nil)
-                                        .navigationDestination(for: Route.self) { route in
-                                            destination(route, in: tab)
-                                                .syncsOnPull()
-                                                .systemTabBar(isShown: physicalBottom == nil)
-                                        }
-                                }
-                                .padding(landscapeEdge, landscapeRoom(of: tab))
-                                // The room is the screen's own background, as on Tasks: no bar of the tab view's shows through it.
-                                .screenBackground()
-                                // The tab bar's own color stops at the bar.
-                                .tint(tokens.color(.accent))
+                                TabStack(tab: tab, router: router, physicalBottom: physicalBottom, isKeyboardUp: isKeyboardUp,
+                                         safeArea: safeArea, root: { root(tab, model: model) },
+                                         destination: { destination($0, in: tab) })
                             } label: {
                                 Label {
                                     Text(LocalizedStringKey(String("tab.") + tab.rawValue))
@@ -101,8 +90,14 @@ struct RootView: View {
         .onGeometryChange(for: EdgeInsets.self) { $0.safeAreaInsets } action: { safeArea = $0 }
         .onGeometryChange(for: CGSize.self) { $0.size } action: { _ in updateLandscapeBottom() }
         .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in updateLandscapeBottom() }
-        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in isKeyboardUp = true }
-        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in isKeyboardUp = false }
+        // Only lying sideways does the keyboard change anything here: upright, a redraw of the root for it would reach every
+        // view of the app just as the keyboard comes or goes (iOS tells it again when the phone turns).
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+            if physicalBottom != nil, !isKeyboardUp { isKeyboardUp = true }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            if isKeyboardUp { isKeyboardUp = false }
+        }
         .environment(\.physicalBottom, physicalBottom)
         .environment(\.timelineBell, model.settings.timeline.bellStyle)
         .environment(\.chipOrder, RowChipKind.ordered(model.settings.pool.chipOrder))
@@ -168,16 +163,6 @@ struct RootView: View {
         case .habits: HabitsScreen()
         case .settings: SettingsScreen()
         }
-    }
-
-    private var landscapeEdge: Edge.Set { physicalBottom == .leading ? .leading : .trailing }
-
-    /// The room a tab's stack keeps from the landscape tab bar. It stands inside the safe area, so that part of the room is
-    /// there already. Tasks' first page has no system bar and keeps the room itself.
-    private func landscapeRoom(of tab: AppTab) -> CGFloat {
-        guard let physicalBottom, !isKeyboardUp else { return 0 }
-        if tab == .today, (container.router.paths[tab] ?? []).isEmpty { return 0 }
-        return max(tokens.bar(.landscapeTabBarRoom) - (physicalBottom == .leading ? safeArea.leading : safeArea.trailing), 0)
     }
 
     /// The "+"'s slot chosen on the system bar: the bar first goes back to its tab, then the page opens on it; opened at
@@ -263,12 +248,5 @@ extension IconSet {
     /// The symbols of the tabs beside `tab`: a hand-drawn tab glyph stands within them.
     func otherTabSymbols(than tab: AppTab) -> [String] {
         AppTab.allCases.filter { $0 != tab }.map { self[$0.icon] }
-    }
-}
-
-private extension View {
-    /// Lying sideways the app draws its own tab bar along the physical bottom instead of the system one.
-    func systemTabBar(isShown: Bool) -> some View {
-        toolbar(isShown ? .visible : .hidden, for: .tabBar)
     }
 }
