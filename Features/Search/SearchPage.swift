@@ -171,10 +171,9 @@ private struct SearchTextField: UIViewRepresentable {
     }
 }
 
-/// The keyboard of the search page, as the system's own pages have it (D-195): the page comes in without it, and only
-/// once it is in does the keyboard rise from below (the first time only: back from a found task the keyboard stays down).
-/// Back takes the keyboard down first, then the page goes: started together, the keyboard would leave sideways with the
-/// page. A swipe back takes it along with the page, as the system does.
+/// The keyboard of the search page: the page comes in without it, and only once it is in does the keyboard rise from
+/// below (the first time only: back from a found task the keyboard stays down). Back is the system's own: the keyboard
+/// leaves to the right with the page, as on every page with a field (D-195).
 private struct SearchKeyboard: UIViewControllerRepresentable {
     let field: SearchFieldFocus
 
@@ -193,36 +192,11 @@ private struct SearchKeyboard: UIViewControllerRepresentable {
         @available(*, unavailable)
         required init?(coder: NSCoder) { fatalError("init(coder:) is not used") }
 
-        override func viewWillAppear(_ animated: Bool) {
-            super.viewWillAppear(animated)
-            // Back of the page itself (not of a page pushed over it): the keyboard down, then the pop.
-            guard let page = pageController, let stack = page.navigationController else { return }
-            page.navigationItem.backAction = UIAction { [weak stack, weak page] _ in
-                page?.view.window?.endEditing(true)
-                stack?.popViewController(animated: true)
-            }
-        }
-
         override func viewDidAppear(_ animated: Bool) {
             super.viewDidAppear(animated)
             guard !focused else { return }
             focused = true
             field.field?.becomeFirstResponder()
-        }
-
-        override func viewWillDisappear(_ animated: Bool) {
-            super.viewWillDisappear(animated)
-            view.window?.endEditing(true)
-        }
-
-        /// The page's own controller in its navigation stack.
-        private var pageController: UIViewController? {
-            var controller: UIViewController? = self
-            while let current = controller, let parent = current.parent {
-                if parent is UINavigationController { return current }
-                controller = parent
-            }
-            return nil
         }
     }
 }
