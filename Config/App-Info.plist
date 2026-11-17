@@ -35,11 +35,11 @@
 	<array>
 		<dict>
 			<key>UIApplicationShortcutItemType</key>
-			<string>new-task</string>
+			<string>review</string>
 			<key>UIApplicationShortcutItemTitle</key>
-			<string>🔫 New</string>
+			<string>Spreader</string>
 			<key>UIApplicationShortcutItemIconSymbolName</key>
-			<string>plus</string>
+			<string>arrow.left.arrow.right</string>
 		</dict>
 	</array>
 	<key>NSAlarmKitUsageDescription</key>

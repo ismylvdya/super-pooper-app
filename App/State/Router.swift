@@ -130,7 +130,7 @@ final class Router {
     /// `superpooper://task/<name>`, `superpooper://habit/<name>`, `superpooper://habits`, `superpooper://lists[/<id>]`
     /// (the Lists page on Tasks), `superpooper://settings`,
     /// `superpooper://review`, `superpooper://archive`, `superpooper://trash`, `superpooper://clock`,
-    /// `superpooper://new-task` (also the Home Screen quick action).
+    /// `superpooper://new-task`; `review` is also the Home Screen quick action.
     func handle(_ url: URL) {
         guard url.scheme == DeepLink.scheme else { return }
         let name = url.path().removingPercentEncoding.map { String($0.dropFirst()) } ?? ""

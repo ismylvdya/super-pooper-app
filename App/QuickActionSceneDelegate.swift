@@ -1,7 +1,7 @@
 import UIKit
 
 /// Home Screen quick actions (long press on the app icon). Each item's type is a deep-link host,
-/// so `New task` opens `superpooper://new-task`: the new-task page on Today.
+/// so `Spreader` opens `superpooper://review`: Tasks, its Lists page, then Spreader (`Router.showSpreader`).
 final class QuickActionSceneDelegate: NSObject, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         if let item = connectionOptions.shortcutItem { open(item) }
