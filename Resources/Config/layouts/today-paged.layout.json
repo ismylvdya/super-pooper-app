@@ -2,9 +2,8 @@
   "axis": "horizontal",
   "spacing": "pagesGap",
   "paged": true,
-  "peek": "pagePeek",
   "blocks": [
-    { "block": "pool", "size": "fill", "weight": 1, "peekChip": 0.5 },
+    { "block": "pool", "size": "fill", "weight": 1 },
     { "block": "timeline", "size": "fill", "weight": 1 }
   ]
 }

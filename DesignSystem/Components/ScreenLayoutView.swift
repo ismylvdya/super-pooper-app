@@ -5,6 +5,7 @@ import SwiftUI
 /// the margin between the layout and the screen's edge, which a page behind the leading edge shows in too.
 struct ScreenLayoutView<Block: View>: View {
     @Environment(\.screenLayoutMetrics) private var metrics
+    @Environment(\.pagePeeks) private var pagePeeks
     let layout: ScreenLayout
     var page = 0
     var pageDrag: CGFloat = 0
@@ -15,7 +16,7 @@ struct ScreenLayoutView<Block: View>: View {
     var body: some View {
         if layout.isPaged {
             PagedStack(pages: layout.blocks.map(\.block), spacing: metrics.spacing(of: layout),
-                       peeks: layout.blocks.map { metrics.peek(of: $0, in: layout, edgeInset: edgeInset) }, edgeInset: edgeInset,
+                       peekShares: layout.blocks.map { pagePeeks.share(of: $0.block) }, edgeInset: edgeInset,
                        page: page, drag: pageDrag, edgeLabel: TodayPageEdge.label, onTurn: onTurn, content: block)
         } else {
             WeightedStack(axis: layout.axis, spacing: metrics.spacing(of: layout), slots: layout.blocks) {

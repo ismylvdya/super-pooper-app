@@ -8,6 +8,7 @@ struct TasksStrip: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.rules) private var rules
     @Environment(\.screenLayoutMetrics) private var metrics
+    @Environment(\.pagePeeks) private var pagePeeks
     let layout: ScreenLayout
     let pages: [TasksPage]
     let pager: TodayPager
@@ -18,11 +19,9 @@ struct TasksStrip: View {
     let edgeInset: CGFloat
     let fade: Double
     let onTurn: (Int) -> Void
-    /// The strip's width: the pages' peeks are shares of it.
-    @State private var width: CGFloat = 0
 
     var body: some View {
-        PagedStack(pages: pages, spacing: metrics.spacing(of: layout), peeks: pages.map(peek), edgeInset: edgeInset,
+        PagedStack(pages: pages, spacing: metrics.spacing(of: layout), peekShares: pages.map(peek), edgeInset: edgeInset,
                    home: TasksPageStrip.homeIndex(layout: layout, opened: pager.openedBacklog),
                    listCount: pager.openedBacklog, listPeek: tokens.space(.backlogPeek), hiddenLists: pager.openedBacklog - pager.reachedBacklog, halves: layout.isHalves, page: pager.page,
                    drag: pager.pageDrag, pull: pager.sidePull, edgeLabel: edgeLabel, onTurn: onTurn, edgeDwell: rules.gestures.pageEdgeDwellSeconds) { page in
@@ -38,7 +37,6 @@ struct TasksStrip: View {
         }
         // A sideways swipe moves only the pages: a list scrolled along with it would wander up and down.
         .scrollDisabled(pager.isSwipingSideways)
-        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         // Behind the pages: the pool's rows move over the icon as they are pulled away from it.
         .background(alignment: .leading) {
             let lists = model.backlogLists
@@ -65,10 +63,9 @@ struct TasksStrip: View {
     }
 
     /// How much of a day's page stays in sight beside the other: the share the settings give it (D-191).
-    private func peek(_ page: TasksPage) -> CGFloat {
+    private func peek(_ page: TasksPage) -> Double {
         guard case .block(let id) = page else { return 0 }
-        let today = model.settings.today
-        return width * CGFloat(id == .pool ? today.poolPeek : today.timelinePeek)
+        return pagePeeks.share(of: id)
     }
 
     private func edgeLabel(_ page: TasksPage) -> Text {

@@ -19,19 +19,15 @@ struct ScreenLayout: Codable, Hashable, Sendable {
         let block: TodayBlockID
         let size: Size
         let weight: Double?
-        /// On pages: while another page is shown, this one keeps this part of its rows' last chip in sight (the
-        /// pool behind the timeline: its right half, 0.5) instead of the layout's `peek`.
-        var peekChip: Double? = nil
     }
 
     let axis: Axis
     /// Design-token name of the gap between blocks (see `tokens.json` → `spacing`).
     let spacing: String
     let blocks: [Slot]
-    /// Each block is a page of the full width, one shown at a time (horizontal axis); `peek` is the size
-    /// token of how much of the neighbouring page stays visible at the edge.
+    /// Each block is a page of almost the full width, one shown at a time (horizontal axis); how much of the other page
+    /// stays in sight is the settings' (`PagePeeks`, D-191).
     var paged: Bool? = nil
-    var peek: String? = nil
     /// Pages of half the width, two in sight side by side (landscape): the shown page on the left, the next one on the
     /// right — the pool and the timeline, or a list and the page after it (D-191).
     var halves: Bool? = nil
@@ -39,14 +35,11 @@ struct ScreenLayout: Codable, Hashable, Sendable {
     var isPaged: Bool { paged == true }
     var isHalves: Bool { isPaged && halves == true }
 
-    /// The gap and peek names must be design tokens, so a typo stops the app with the file and the key
-    /// instead of silently becoming a zero gap.
+    /// The gap's name must be a design token, so a typo stops the app with the file and the key instead of silently
+    /// becoming a zero gap.
     func validate(file: String) throws {
         if SpacingToken(rawValue: spacing) == nil {
             throw ConfigError(file: file, path: "spacing", message: "unknown spacing token \"\(spacing)\"")
-        }
-        if let peek, SizeToken(rawValue: peek) == nil {
-            throw ConfigError(file: file, path: "peek", message: "unknown size token \"\(peek)\"")
         }
     }
 }

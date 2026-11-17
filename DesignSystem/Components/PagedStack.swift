@@ -1,7 +1,8 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// Pages of almost the full width, side by side (`PageStrip`): the shown page leaves its neighbours' `peeks` visible at
+/// Pages of almost the full width, side by side (`PageStrip`): the shown page leaves its neighbours' peeks (`peekShares` of
+/// the width) visible at
 /// the edges (each page has its own: how much of it stays in sight while another page is shown; zero hides it), and
 /// tapping a visible edge (or dragging something onto an edge) turns to that neighbour. `drag` moves the pages with a
 /// finger that is turning them (clamped at the first and the last page); `pull` moves them past the first page (a pull
@@ -11,7 +12,8 @@ import UniformTypeIdentifiers
 struct PagedStack<Page: Hashable, Content: View>: View {
     let pages: [Page]
     let spacing: CGFloat
-    let peeks: [CGFloat]
+    /// Each page's peek as a share of the stack's width.
+    let peekShares: [Double]
     var edgeInset: CGFloat = 0
     var home = 0
     /// The first pages stay in sight of each other by `listPeek` (`PageStrip`).
@@ -34,7 +36,8 @@ struct PagedStack<Page: Hashable, Content: View>: View {
 
     var body: some View {
         GeometryReader { geometry in
-            let strip = PageStrip(count: pages.count, width: geometry.size.width, spacing: spacing, peeks: peeks,
+            let strip = PageStrip(count: pages.count, width: geometry.size.width, spacing: spacing,
+                                  peeks: peekShares.map { CGFloat($0) * geometry.size.width },
                                   edgeInset: edgeInset, home: home, listCount: listCount, listPeek: listPeek, hiddenLists: hiddenLists,
                                   halves: halves)
             let shown = strip.offset(showing: page) + drag
