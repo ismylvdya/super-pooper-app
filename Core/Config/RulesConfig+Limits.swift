@@ -33,11 +33,7 @@ extension RulesConfig {
         /// A started task's fill: where its transition's middle stands and how wide it is (shares of the plate).
         let startedFillMiddle: Range
         let startedFillWidth: Range
-        /// How big a started task's circle can be set, as a share between its smallest and largest.
-        let startedCircleSize: Range
-        /// A started task's circle: its fade's middle and width (shares), and the points from it to the name.
-        let startedFadeMiddle: Range
-        let startedFadeWidth: Range
+        /// Points from the end of a started task's fill to its name.
         let startedTitleGap: Range
         /// Points: how round the turn of a line into a subtask's plate can be set.
         let subtaskLineCorner: Range

@@ -37,29 +37,13 @@ struct AppSettings: Codable, Equatable, Sendable {
         /// transition's middle stands from the plate's left edge and how wide it is, as shares of the plate's width (D-192).
         var startedFillMiddle: Double
         var startedFillWidth: Double
-        /// How a started task stands out in the pool: the fill over its plate, or a half-filled circle before its name.
-        var startedLook: StartedLook
-        /// With the fill: the name starts where the fill ends instead of over it.
-        var startedTitleAfterFill: Bool
-        /// With the circle: how big it is, from a small letter of the name (0) to a one-line plate (1).
-        var startedCircleSize: Double
-        /// With the circle: where its fade's middle stands across it and how wide the fade is (shares of the circle).
-        var startedFadeMiddle: Double
-        var startedFadeWidth: Double
-        /// With the circle: points from it to the name; below zero the name moves back over it.
+        /// Points from the end of the fill's transition to a started task's name; below zero the name moves back over the
+        /// fill, at most to where it stands on a task not started.
         var startedTitleGap: Double
         /// Points: how round a line from a parent turns into its subtask's plate.
         var subtaskLineCorner: Double
         /// A turn where the line goes on down to a later subtask is round too; off: it leaves the line at a right angle.
         var subtaskLineRoundsMiddle: Bool
-    }
-
-    /// How a started task stands out in the pool.
-    enum StartedLook: String, Codable, CaseIterable, Sendable {
-        /// The started color over the plate, fading out around `startedFillMiddle` over `startedFillWidth`.
-        case fill
-        /// A round mark before the name, filled with the same fade, concentric with the plate's corner.
-        case circle
     }
 
     /// Where the pool and the timeline sit on Today.

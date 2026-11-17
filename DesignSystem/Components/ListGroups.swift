@@ -72,7 +72,7 @@ private struct ListGroupRow<Menu: View>: ViewModifier {
             .padding(.horizontal, inset)
             .padding(.vertical, vertical ?? tokens.space(.listRowVertical))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .modifier(ListRowStarted(started: started, indent: separatorIndent, inset: inset, cellShape: cellShape, tint: tint))
+            .modifier(ListRowStarted(started: started, inset: inset, cellShape: cellShape, tint: tint))
             .plate(.group)
             .overlay(alignment: .bottom) {
                 if index < count - 1 {

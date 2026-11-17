@@ -26,7 +26,7 @@ struct SettingChoice<Value: Hashable>: View {
 }
 
 extension SettingChoice where Value: RawRepresentable, Value.RawValue == String {
-    /// Each choice titled by `prefix` and its raw name (`settings.pool.startedLook.fill`).
+    /// Each choice titled by `prefix` and its raw name (`settings.today.arrangement.pages`).
     init(icon: Icon?, title: LocalizedStringKey, info: LocalizedStringKey? = nil, value: WritableKeyPath<AppSettings, Value>,
          options: [Value], prefix: String, accessibilityID: String) {
         self.init(icon: icon, title: title, info: info, value: value, options: options,

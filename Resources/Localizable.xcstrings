@@ -7841,50 +7841,6 @@
         }
       }
     },
-    "settings.pool.startedLook": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Look"
-          }
-        }
-      }
-    },
-    "settings.pool.startedLook.fill": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fill"
-          }
-        }
-      }
-    },
-    "settings.pool.startedLook.circle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Circle"
-          }
-        }
-      }
-    },
-    "settings.pool.startedTitleAfterFill": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Name after the fill"
-          }
-        }
-      }
-    },
     "settings.alarm.snoozeIcon": {
       "extractionState": "manual",
       "localizations": {
@@ -7903,17 +7859,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Subtask"
-          }
-        }
-      }
-    },
-    "settings.pool.startedCircleSize": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Circle size"
           }
         }
       }
@@ -8017,28 +7962,6 @@
         }
       }
     },
-    "settings.pool.startedFadeMiddle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fade middle"
-          }
-        }
-      }
-    },
-    "settings.pool.startedFadeWidth": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fade width"
-          }
-        }
-      }
-    },
     "settings.pool.startedTitleGap": {
       "extractionState": "manual",
       "localizations": {
@@ -8056,7 +7979,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "How far the name stands from the circle. At the far left the name stands where it does on a task not started, over the circle."
+            "value": "How far the name stands from where the fill ends. At the far left the name stands where it does on a task not started, over the fill."
           }
         }
       }

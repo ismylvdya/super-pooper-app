@@ -24,26 +24,6 @@ struct StartedFill: View {
     }
 }
 
-/// The circle before a started task's name (`StartedLook.circle`): the started color across a circle, without an
-/// outline, fading out around the middle and as wide as the settings say (`StartedLayout.fadeMiddle`, `fadeWidth`). On a
-/// taller plate it is a bar with round ends down to the plate's bottom (`StartedLayout.circle`).
-struct StartedCircle: View {
-    @Environment(\.tokens) private var tokens
-    @Environment(\.startedLayout) private var layout
-
-    var body: some View {
-        let middle = CGFloat(layout?.fadeMiddle ?? 0.5)
-        let half = CGFloat(layout?.fadeWidth ?? 0.5) / 2
-        let color = tokens.color(.started)
-        Capsule()
-            .fill(LinearGradient(stops: [Gradient.Stop(color: color, location: min(max(middle - half, 0), 1)),
-                                         Gradient.Stop(color: color.opacity(0), location: min(max(middle + half, 0), 1))],
-                                 startPoint: .leading, endPoint: .trailing))
-            .allowsHitTesting(false)
-            .accessibilityHidden(true)
-    }
-}
-
 private struct StartedLayoutKey: EnvironmentKey {
     static let defaultValue: StartedLayout? = nil
 }

@@ -39,53 +39,30 @@ struct StartedTaskTests {
 
 }
 
-/// Where a started task's mark stands and how far its name moves (`StartedLayout`).
+/// How a started task's fill stands and how far its name moves (`StartedLayout`).
 @Suite("Started look")
 struct StartedLayoutTests {
-    private let size = CGSize(width: 300, height: 40)
-
-    @Test func theCircleIsConcentricWithThePlatesCornerAndAsBigAsSet() throws {
-        let sizes: ClosedRange<CGFloat> = 10...40
-        let largest = StartedLayout(look: .circle, fillMiddle: 0.17, fillWidth: 0.33, titleAfterFill: false, circleSize: 1)
-        // A plate 40 tall is never rounder than 20: the largest circle fills its height.
-        #expect(try #require(largest.circle(plateHeight: 40, cornerRadius: 26, sizes: sizes)) == CGRect(x: 0, y: 0, width: 40, height: 40))
-        let half = StartedLayout(look: .circle, fillMiddle: 0.17, fillWidth: 0.33, titleAfterFill: false, circleSize: 0.5, titleGap: 6)
-        #expect(try #require(half.circle(plateHeight: 40, cornerRadius: 26, sizes: sizes)) == CGRect(x: 7.5, y: 7.5, width: 25, height: 25))
-        #expect(half.titleShift(plateSize: size, cornerRadius: 26, sizes: sizes, inset: 5) == 33.5)
-        // A gap far below zero brings the name back to where it stands on a task not started, no further.
-        var flush = half
-        flush.titleGap = -48
-        #expect(flush.titleShift(plateSize: size, cornerRadius: 26, sizes: sizes, inset: 5) == 0)
-    }
-
-    /// On a taller plate the circle's lower half reaches down to the plate's bottom, with the gaps a one-line plate has.
-    @Test func onATallPlateTheCircleBecomesABar() throws {
-        let largest = StartedLayout(look: .circle, fillMiddle: 0.17, fillWidth: 0.33, titleAfterFill: false, circleSize: 1)
-        #expect(try #require(largest.circle(plateHeight: 80, cornerRadius: 26, sizes: 10...40)) == CGRect(x: 6, y: 6, width: 40, height: 68))
-        #expect(try #require(largest.circle(plateHeight: 80, cornerRadius: 26, sizes: 10...40, oneLineHeight: 40)) == CGRect(x: 0, y: 0, width: 40, height: 80))
-    }
-
-    @Test func theFillMovesTheNameOnlyWhenItGoesAfterIt() {
-        let over = StartedLayout(look: .fill, fillMiddle: 0.25, fillWidth: 0.5, titleAfterFill: false)
-        #expect(over.titleShift(plateSize: size, cornerRadius: 26, sizes: 10...40, inset: 5) == 0)
-        #expect(over.circle(plateHeight: 40, cornerRadius: 26, sizes: 10...40) == nil)
-        let after = StartedLayout(look: .fill, fillMiddle: 0.25, fillWidth: 0.5, titleAfterFill: true)
-        #expect(after.titleShift(plateSize: size, cornerRadius: 26, sizes: 10...40, inset: 5) == 145)
+    /// The name stands `titleGap` past the transition's end; far below zero it is back where it stands on a task not
+    /// started, no further (D-193).
+    @Test func theNameStandsTheGapPastTheFill() {
+        let fill = StartedLayout(fillMiddle: 0.25, fillWidth: 0.5, titleGap: 6)
+        #expect(fill.titleShift(plateWidth: 300, inset: 5) == 151)
+        var over = fill
+        over.titleGap = -400
+        #expect(over.titleShift(plateWidth: 300, inset: 5) == 0)
     }
 
     /// The fill covers the whole plate: the color whole up to the transition, nothing past it; the transition stands
     /// around its middle, half its width on each side, and never past the plate's edges (D-192).
     @Test func theFillsTransitionStandsAroundItsMiddle() {
-        let fill = StartedLayout(look: .fill, fillMiddle: 0.6, fillWidth: 0.2, titleAfterFill: true)
+        let fill = StartedLayout(fillMiddle: 0.6, fillWidth: 0.2)
         #expect(abs(fill.fillStart - 0.5) < 1e-9 && abs(fill.fillEnd - 0.7) < 1e-9)
-        #expect(abs(fill.titleShift(plateSize: size, cornerRadius: 26, sizes: 10...40, inset: 5) - (size.width * 0.7 - 5)) < 1e-6)
-        let sharp = StartedLayout(look: .fill, fillMiddle: 0.9, fillWidth: 0.4, titleAfterFill: false)
+        let sharp = StartedLayout(fillMiddle: 0.9, fillWidth: 0.4)
         #expect(abs(sharp.fillStart - 0.7) < 1e-9 && sharp.fillEnd == 1, "within the plate")
-        #expect(StartedLayout(look: .fill, fillMiddle: 0.3, fillWidth: 0, titleAfterFill: false).fillStart == 0.3)
+        #expect(StartedLayout(fillMiddle: 0.3, fillWidth: 0).fillStart == 0.3)
     }
 
-    @Test func byDefaultTheFillLiesUnderTheName() {
-        #expect(TestConfig.defaults.pool.startedLook == .fill)
-        #expect(!TestConfig.defaults.pool.startedTitleAfterFill)
+    @Test func theGapCanBringTheNameBackOverAnyFill() {
+        #expect(TestConfig.rules.limits.startedTitleGap.min <= -400)
     }
 }

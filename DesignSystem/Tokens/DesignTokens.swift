@@ -71,11 +71,6 @@ struct DesignTokens: Decodable, Sendable {
     /// How far right a subtask stands of its parent in a list (the Lists page, the morning review): the line stays where
     /// the pool has it, the name moves a little further from it.
     var listSubtaskIndent: CGFloat { subtaskIndent + space(.listSubtaskExtra) }
-    /// How big a started task's circle can be: from a small letter of the name to a one-line plate.
-    var startedCircleSizes: ClosedRange<CGFloat> {
-        let title = uiFont(.taskTitle)
-        return title.xHeight...(title.lineHeight + space(.rowVertical))
-    }
     /// The right inset of a row's own plate (pool, widgets).
     var rowPlateTrailingInset: CGFloat {
         // The icons are smaller than the title's line: on a one-line row they stand as far from the right edge as from the top.

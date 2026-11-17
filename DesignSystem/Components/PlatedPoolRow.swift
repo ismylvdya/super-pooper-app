@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// A pool row on its plate in the looks the settings give it, in the app and in the widget alike: the high priority
-/// tint (`DesignTokens.plateTint(for:)`) and a started task's fill or circle (`StartedLayout`), the name moved right for the circle.
+/// tint (`DesignTokens.plateTint(for:)`) and a started task's fill (`StartedLayout`), the name moved right of it as the settings say.
 struct PlatedPoolRow<Row: View>: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.startedLayout) private var startedLayout
@@ -10,8 +10,8 @@ struct PlatedPoolRow<Row: View>: View {
     /// Extra height under the content (pool rows of long tasks).
     var minimumHeight: CGFloat = 0
     @ViewBuilder let row: Row
-    /// The plate's size, for the started mark and how far the name moves for it.
-    @State private var plateSize: CGSize = .zero
+    /// The plate's width, for how far a started task's name moves.
+    @State private var plateWidth: CGFloat = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -21,36 +21,21 @@ struct PlatedPoolRow<Row: View>: View {
         }
         .padding(.leading, startedShift)
         .poolRowPlate(plate, isDone: item.isFinished, tint: tokens.plateTint(for: item.task))
-        .overlay(alignment: .topLeading) { circle }
-        .onGeometryChange(for: CGSize.self) { $0.size } action: { plateSize = $0 }
-        .environment(\.plateGradient, started.flatMap { $0.look == .fill ? AnyView(StartedFill($0)) : nil })
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { plateWidth = $0 }
+        .environment(\.plateGradient, started.map { AnyView(StartedFill($0)) })
     }
 
     private var started: StartedLayout? { startedLayout?.shown(for: item) }
 
-    @ViewBuilder private var circle: some View {
-        if let started, let frame = started.circle(plateHeight: plateSize.height, cornerRadius: tokens.plateRadius(.row), sizes: tokens.startedCircleSizes,
-                                                   oneLineHeight: oneLineHeight) {
-            StartedCircle().frame(width: frame.width, height: frame.height).offset(x: frame.minX, y: frame.minY)
-        }
-    }
-
-    /// A one-line plate's height, which the largest circle fills edge to edge.
-    private var oneLineHeight: CGFloat { tokens.startedCircleSizes.upperBound }
-
     private var startedShift: CGFloat {
-        guard let started else { return 0 }
-        return started.titleShift(plateSize: plateSize, cornerRadius: tokens.plateRadius(.row), sizes: tokens.startedCircleSizes,
-                                  inset: tokens.space(.plateInner) / 2, oneLineHeight: oneLineHeight)
+        started?.titleShift(plateWidth: plateWidth, inset: tokens.space(.plateInner) / 2) ?? 0
     }
 }
 
 extension StartedLayout {
     /// The look the settings give a started task (`AppSettings.Pool`).
     init(_ pool: AppSettings.Pool) {
-        self.init(look: pool.startedLook, fillMiddle: pool.startedFillMiddle, fillWidth: pool.startedFillWidth, titleAfterFill: pool.startedTitleAfterFill,
-                  circleSize: pool.startedCircleSize, fadeMiddle: pool.startedFadeMiddle, fadeWidth: pool.startedFadeWidth,
-                  titleGap: pool.startedTitleGap)
+        self.init(fillMiddle: pool.startedFillMiddle, fillWidth: pool.startedFillWidth, titleGap: pool.startedTitleGap)
     }
 
     /// This look for a started task not done yet; nil for any other.

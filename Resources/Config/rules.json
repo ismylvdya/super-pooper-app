@@ -214,23 +214,8 @@
       "max": 1,
       "step": 0.01
     },
-    "startedCircleSize": {
-      "min": 0,
-      "max": 1,
-      "step": 0.05
-    },
-    "startedFadeMiddle": {
-      "min": 0,
-      "max": 1,
-      "step": 0.05
-    },
-    "startedFadeWidth": {
-      "min": 0,
-      "max": 1,
-      "step": 0.05
-    },
     "startedTitleGap": {
-      "min": -48,
+      "min": -400,
       "max": 24,
       "step": 1
     },
