@@ -16,11 +16,16 @@
   },
   "legacyTodaySections": ["Today", "Now"],
   "pool": {
-    "tag": "#in_today_pool",
-    "notTomorrowTag": "#not_tomorrow",
-    "sectionPrefix": "#section_",
+    "tag": "🏊",
+    "notTomorrowTag": "🚫🏊",
+    "sectionPrefix": "🏊:",
     "lastingSections": ["morning", "evening"],
     "restSection": "day"
+  },
+  "legacyPool": {
+    "tag": "#in_today_pool",
+    "notTomorrowTag": "#not_tomorrow",
+    "sectionPrefix": "#section_"
   },
   "legacySections": {
     "Inbox": "soon",

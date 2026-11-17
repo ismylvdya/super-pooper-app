@@ -10,6 +10,8 @@ struct PlateRow<Trailing: View>: View {
     /// The icon's own color (a property's color, e.g. the pink heart) while the title stays as it is.
     let iconTint: Color?
     let indent: Bool
+    /// An image in the icon's place instead of `icon` (the habits' row in the settings has the tab bar's symbol).
+    var iconImage: Image?
     let trailing: Trailing
 
     init(icon: Icon?, title: LocalizedStringKey, info: LocalizedStringKey? = nil, tint: Color? = nil, iconTint: Color? = nil,
@@ -29,6 +31,13 @@ struct PlateRow<Trailing: View>: View {
         self.trailing = trailing()
     }
 
+    /// The row with `image` in the icon's place; nil keeps `icon`.
+    func showingIcon(_ image: Image?) -> PlateRow {
+        var row = self
+        row.iconImage = image
+        return row
+    }
+
     /// One line whatever the screen: when the title and the control do not fit side by side, the title gives way and
     /// dissolves at its right, the control stays whole; a hold on it shows the whole title and its description
     /// (`PlateRowTitle`). The whole row takes a tap: a row that opens a page opens it from the empty space between its
@@ -44,7 +53,12 @@ struct PlateRow<Trailing: View>: View {
 
     private func row(isFading: Bool) -> some View {
         HStack(spacing: tokens.space(.iconTextGap)) {
-            if let icon {
+            if let iconImage {
+                iconImage
+                    .font(tokens.font(.rowTitle))
+                    .foregroundStyle(iconTint ?? tint ?? tokens.color(.accent))
+                    .frame(width: tokens.size(.iconColumn))
+            } else if let icon {
                 IconGlyph(icon, font: .rowTitle)
                     .foregroundStyle(iconTint ?? tint ?? tokens.color(.accent))
                     .frame(width: tokens.size(.iconColumn))

@@ -6,6 +6,7 @@ import SwiftUI
 struct SettingsScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
+    @Environment(\.displayScale) private var displayScale
     @Environment(\.scenePhase) private var scenePhase
     @Environment(Router.self) private var router
     /// Shown as the search's results (`SearchPage`): the sections and rows matching it; a row on Settings itself goes back
@@ -57,7 +58,11 @@ struct SettingsScreen: View {
             SettingsLink(route: .plainTaskSettings, icon: .plainTaskSettings, title: "settings.plainTasks.summary")
         }
         PlateSection(header: nil) {
-            SettingsLink(route: .habitSettings, icon: .habitSettings, title: "settings.habits.summary")
+            // The tab bar's own symbol for Habits, whatever it is set to (Settings → Tab bar).
+            SettingsLink(route: .habitSettings, icon: .habitSettings, title: "settings.habits.summary",
+                         iconImage: TabIconImage.image(model.tabBarSymbols.symbol(of: .habits, isSelected: false), font: tokens.uiFont(.rowTitle),
+                                                       others: model.config.icons.otherTabSymbols(than: .habits),
+                                                       fit: tokens.bar(.tabGlyphFit), scale: displayScale))
         }
         if model.config.flags.archive || model.hasTrash {
             PlateSection(header: nil) {

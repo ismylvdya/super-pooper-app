@@ -1,6 +1,6 @@
 import Foundation
 
-/// The section a task stands in, as its line says it (`#section_morning`, `#section_after_work`): a default section by
+/// The section a task stands in, as its line says it (🏊:morning, 🏊:after_work): a default section by
 /// its id, the user's own by its title in the form a tag takes. A line with none stands by its routine, or in the
 /// section that catches the rest.
 enum PoolSectionTag {

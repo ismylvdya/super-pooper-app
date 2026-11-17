@@ -13,18 +13,27 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
         let soon, halfYear, someday, done, archive, trash: String
     }
 
-    /// How a line says it is in today's pool and in which of its sections (`TodayPool`, `PoolSectionTag`).
+    /// How a line says it is in today's pool and in which of its sections (`TodayPool`, `PoolSectionTag`): marks with the
+    /// swimmer, no hashtags (D-187).
     struct Pool: Codable, Hashable, Sendable {
-        /// The tag of a task in today's pool.
+        /// The mark of a task in today's pool.
         let tag: String
-        /// The tag of a task kept out of tomorrow's pool in the morning review planned the day before.
+        /// The mark of a task kept out of tomorrow's pool in the morning review planned the day before.
         let notTomorrowTag: String
-        /// A section's tag is this and the section's word.
+        /// A section's mark is this and the section's word.
         let sectionPrefix: String
         /// The sections a task stays in from day to day; the tags of the others go with the day's turn.
         let lastingSections: [String]
         /// The section of the rest: a line in it names none.
         let restSection: String
+    }
+
+    /// The pool's marks as an older file wrote them (`#in_today_pool`, `#not_tomorrow`, `#section_…`): still read, written
+    /// anew in the marks of `Pool` with the next write, the file kept as it was in a backup first.
+    struct LegacyPool: Codable, Hashable, Sendable {
+        let tag: String
+        let notTomorrowTag: String
+        let sectionPrefix: String
     }
 
     struct Boxes: Codable, Hashable, Sendable {
@@ -54,6 +63,7 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
     /// group under it becoming the tag of its section.
     let legacyTodaySections: [String]
     let pool: Pool
+    let legacyPool: LegacyPool
     let boxes: Boxes
     let markers: Markers
     /// Fields older lines have and the app no longer keeps: read so they are no part of the name, and gone with the next write.
@@ -72,6 +82,25 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
     let doneFile: String
     /// Words older lines end with and the app no longer keeps: read so they are no part of the name, and gone with the next write.
     let legacyWords: [String]
+
+    /// The word of a line that says it is in today's pool, in the marks of now or of an older file.
+    func isPoolMark(_ word: String) -> Bool { word == pool.tag || word == legacyPool.tag }
+
+    /// The word of a line that says it is kept out of tomorrow, now or in an older file.
+    func isNotTomorrowMark(_ word: String) -> Bool { word == pool.notTomorrowTag || word == legacyPool.notTomorrowTag }
+
+    /// The pool section a word names, now or in an older file; nil for any other word.
+    func poolSection(in word: String) -> String? {
+        for prefix in [pool.sectionPrefix, legacyPool.sectionPrefix] where word.hasPrefix(prefix) && word.count > prefix.count {
+            return String(word.dropFirst(prefix.count))
+        }
+        return nil
+    }
+
+    /// The text has a pool mark of an older file: the next write gives it the marks of now.
+    func hasLegacyPoolMarks(_ text: String) -> Bool {
+        text.contains(" " + legacyPool.tag) || text.contains(" " + legacyPool.notTomorrowTag) || text.contains(" " + legacyPool.sectionPrefix)
+    }
 
     func title(of section: TaskSection) -> String {
         switch section {

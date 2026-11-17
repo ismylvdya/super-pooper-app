@@ -176,7 +176,7 @@ struct PoolBlock: View {
     private var poolContent: some View {
         VStack(alignment: .leading, spacing: tokens.space(.poolRowGap)) {
             if plan.pool.isEmpty {
-                Text("pool.empty")
+                Text(isLaterDay ? "pool.laterDay" : "pool.empty")
                     .secondaryText(.hint)
                     .frame(maxWidth: .infinity, minHeight: tokens.size(.poolCounter))
                 if fillsHeight { Spacer(minLength: 0) }
@@ -189,6 +189,9 @@ struct PoolBlock: View {
         }
         .frame(idealWidth: tokens.size(.poolWidth))
     }
+
+    /// A day after today: its pool fills up only with its turn.
+    private var isLaterDay: Bool { plan.today > model.context().today }
 
     /// By the arrangement Today has now: lying sideways it has its own.
     private var fillsHeight: Bool {
@@ -223,6 +226,13 @@ struct PoolBlock: View {
                             .dropGap(isGap)
                             .modifier(WormElement(isWorm: segment.wormID != nil))
                     }
+                }
+                // A day still to come shows only what is particular to it (D-187): the rest comes with its turn.
+                if isLaterDay {
+                    Text("pool.laterDay")
+                        .secondaryText(.hint)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, tokens.space(.hintToPlate))
                 }
             }
         }

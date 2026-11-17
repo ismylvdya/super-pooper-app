@@ -205,6 +205,14 @@ struct MorningReviewList: View {
     @ViewBuilder private func setAside(today: LocalDate) -> some View {
         let notes = isTomorrow ? model.setAsideTomorrow : model.setAsideToday
         if !notes.isEmpty {
+            // Set well apart from the day's groups: a divider with wide room above and below it.
+            Rectangle()
+                .fill(tokens.color(.listSeparator))
+                .frame(height: tokens.size(.subtaskLine))
+                .padding(.vertical, tokens.space(.reviewSetAsideGap))
+                .listGroupSpacer()
+                .moveDisabled(true)
+                .accessibilityHidden(true)
             ListGroupHeader(title: Text(isTomorrow ? "review.group.setAsideTomorrow" : "review.group.setAside"))
                 .moveDisabled(true)
                 .accessibilityIdentifier("review.group.setAside")

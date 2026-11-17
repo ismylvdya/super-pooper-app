@@ -92,9 +92,13 @@ actor TaskFileStore: TaskStore {
         // A folder chosen by mistake (or the old TaskNotes one) stays as it is: the app makes no folders of its own there.
         guard fileSystem.fileExists(url.deletingLastPathComponent()) else { throw TaskStoreError.folderMissing(format.folder) }
         try await ensureDownloaded(url)
-        var document = fileSystem.fileExists(url)
-            ? TaskDocument(text: try fileSystem.read(url).text, format: format)
-            : TaskDocument(format: format)
+        let text = fileSystem.fileExists(url) ? try fileSystem.read(url).text : nil
+        // The pool's older hashtags (`#in_today_pool`…) are written as the swimmer's marks with this read's write: the file
+        // as it was is kept first.
+        if let text, format.hasLegacyPoolMarks(text) {
+            _ = try? backups.backup([url], reason: "poolmarks")
+        }
+        var document = text.map { TaskDocument(text: $0, format: format) } ?? TaskDocument(format: format)
         // Done has a file of its own; lines an older tasks file still has there come first, and leave it with the next write.
         let done = doneURL(root: root)
         try await ensureDownloaded(done)

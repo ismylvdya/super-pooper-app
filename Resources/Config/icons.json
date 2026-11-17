@@ -1,7 +1,7 @@
 {
   "settings": "gearshape",
   "resetSort": "arrow.trianglehead.2.counterclockwise",
-  "morningReview": "sunrise",
+  "morningReview": "arrow.left.arrow.right",
   "newSubtask": "arrow.turn.down.right",
   "steps": "stairs",
   "more": "ellipsis",

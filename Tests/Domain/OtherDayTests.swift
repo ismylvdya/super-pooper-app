@@ -35,17 +35,47 @@ struct OtherDayTests {
     }
 
     /// A habit stands on the day its line in the file does: one open today is not on tomorrow, though its rule has that
-    /// day; one done today, or due only tomorrow, is. Only those shown in Today.
+    /// day; one done today, or due only tomorrow, is. Only those shown in Today, and none that comes up every day (D-187).
     @Test func habitsStandOnTheDayOfTheirLine() {
         let thursday = LocalDate("2026-10-22")
-        let openToday = makeHabit("Water", status: .habit) { $0.nextLine = TaskDue(day: LocalDate(TestCalendar.wednesday)) }
-        let doneToday = makeHabit("Tea", status: .habit) { $0.nextLine = TaskDue(day: thursday) }
+        let openToday = makeHabit("Water", rule: Self.twiceAWeek, status: .habit) { $0.nextLine = TaskDue(day: LocalDate(TestCalendar.wednesday)) }
+        let doneToday = makeHabit("Tea", rule: Self.twiceAWeek, status: .habit) { $0.nextLine = TaskDue(day: thursday) }
+        let daily = makeHabit("Juice", status: .habit) { $0.nextLine = TaskDue(day: thursday) }
         let everyThreeDays = makeHabit("Laundry", rule: "DTSTART:20261019;FREQ=DAILY;INTERVAL=3", status: .habit) { $0.nextLine = TaskDue(day: thursday) }
         let hidden = makeHabit("Hidden", status: .habit) {
             $0.habit.showInToday = false
             $0.nextLine = TaskDue(day: thursday)
         }
-        #expect(tomorrow([openToday, doneToday, everyThreeDays, hidden]).dayNames == ["Tea", "Laundry"] as Set)
+        #expect(tomorrow([openToday, doneToday, everyThreeDays, hidden, daily]).dayNames == ["Tea", "Laundry"] as Set)
+    }
+
+    /// Not every day: on Mondays and Thursdays.
+    private static let twiceAWeek = "DTSTART:20261019;FREQ=WEEKLY;BYDAY=MO,TH"
+
+    /// Another day's pool leaves out a habit that comes up every day; with a time it still stands on that day's timeline.
+    @Test func aDailyHabitIsOnlyOnAnotherDaysTimeline() {
+        let thursday = LocalDate("2026-10-22")
+        let untimed = makeHabit("Stretch", status: .habit) { $0.nextLine = TaskDue(day: thursday) }
+        let timed = makeHabit("Run", status: .habit) {
+            $0.reminderTimes = [LocalTime(hour: 7, minute: 0)!]
+            $0.nextLine = TaskDue(day: thursday, time: LocalTime(hour: 7, minute: 0))
+        }
+        let plan = tomorrow([untimed, timed])
+        #expect(plan.pool.isEmpty)
+        #expect(plan.timeline.count == 1)
+    }
+
+    /// Which repeat rules come up every day.
+    @Test func everyDayIsDailyWithoutAGapOrAllSevenWeekdays() {
+        let rule = { (text: String) -> RecurrenceRule? in
+            if case .success(let parsed) = RecurrenceCodec.parse(text) { return parsed }
+            return nil
+        }
+        #expect(rule("FREQ=DAILY")?.isEveryDay == true)
+        #expect(rule("FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA,SU")?.isEveryDay == true)
+        #expect(rule("FREQ=DAILY;INTERVAL=2")?.isEveryDay == false)
+        #expect(rule("FREQ=WEEKLY;BYDAY=MO,TH")?.isEveryDay == false)
+        #expect(rule("FREQ=DAILY;BYDAY=MO,TU,WE,TH,FR")?.isEveryDay == false)
     }
 
     /// A line with a time puts the habit on that day's timeline, one without in its pool.
@@ -55,7 +85,7 @@ struct OtherDayTests {
             $0.reminderTimes = [LocalTime(hour: 18, minute: 0)!]
             $0.nextLine = TaskDue(day: thursday, time: LocalTime(hour: 18, minute: 0))
         }
-        let carried = makeHabit("Read", status: .habit) {
+        let carried = makeHabit("Read", rule: Self.twiceAWeek, status: .habit) {
             $0.reminderTimes = [LocalTime(hour: 19, minute: 0)!]
             $0.nextLine = TaskDue(day: thursday)
         }
@@ -66,7 +96,7 @@ struct OtherDayTests {
 
     /// Another day's pool stands in sections too: Morning and Evening by a task's routine, the rest in Day.
     @Test func anotherDayHasTheSectionsByRoutine() throws {
-        let morning = makeHabit("Water", status: .habit) {
+        let morning = makeHabit("Water", rule: Self.twiceAWeek, status: .habit) {
             $0.habit.timeOfDay = .morning
             $0.nextLine = TaskDue(day: LocalDate("2026-10-22"))
         }

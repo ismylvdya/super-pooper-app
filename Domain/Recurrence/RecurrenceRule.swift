@@ -27,6 +27,16 @@ struct RecurrenceRule: Hashable, Codable, Sendable {
 }
 
 extension RecurrenceRule {
+    /// Comes up every day: daily with no gap, or weekly on all seven days. Another day's pool leaves such a habit out.
+    var isEveryDay: Bool {
+        guard byMonthDay.isEmpty, byMonth.isEmpty, interval == 1 else { return false }
+        switch frequency {
+        case .daily: return byDay.isEmpty || Set(byDay.filter { $0.ordinal == nil }.map(\.weekday)).count == 7
+        case .weekly: return Set(byDay.filter { $0.ordinal == nil }.map(\.weekday)).count == 7
+        case .monthly, .yearly: return false
+        }
+    }
+
     /// A repeat goes on forever: an end an older rule has (a date, a number of times) is not kept.
     var withoutEnd: RecurrenceRule {
         RecurrenceRule(startDate: startDate, startTime: startTime, frequency: frequency, interval: interval, byDay: byDay, byMonthDay: byMonthDay,

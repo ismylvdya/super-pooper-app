@@ -25,6 +25,8 @@ enum SpacingToken: String, CaseIterable, Sendable {
     /// In a list (not the pool) a subtask stands this much further right than the pool's indent: more room between the
     /// line from its parent and its name.
     case listSubtaskExtra
+    /// Above and below the divider that sets the morning review's Not today (Not tomorrow) apart from the day's groups.
+    case reviewSetAsideGap
 }
 
 enum RadiusToken: String, CaseIterable, Sendable {

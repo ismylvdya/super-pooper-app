@@ -17,9 +17,9 @@ struct DayMembership: Sendable {
             || (task.status == .done && task.completedDate == context.today)
     }
 
-    /// Another day mirrors the file: what has a line dated that day. This week's tasks dated it, and the habits shown in
-    /// Today whose nearest day it is: one still open today stands on today, not on the days after; one overdue today
-    /// stands on the next day of its rule too.
+    /// Another day mirrors the file: what has a line dated that day. The tasks dated it, and the habits shown in Today
+    /// whose nearest day it is: one still open today stands on today, not on the days after; one overdue today stands on
+    /// the next day of its rule too.
     func isOnOtherDay(_ task: TaskItem) -> Bool {
         if task.isHabit { return task.isInTodayHabits && hasLineOnDay(task) }
         guard TaskStatus.open.contains(task.status), let due = task.due else { return false }

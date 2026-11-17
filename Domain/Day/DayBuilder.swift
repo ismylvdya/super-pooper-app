@@ -42,7 +42,10 @@ struct DayBuilder: Sendable {
         let overdue = inputs.isOtherDay ? [:] : OverdueBlocks(rules: rules, times: times).starts(of: shownTimed)
         // Done today: it leaves the pool and the timeline instead of staying greyed out. A habit block dragged to the pool
         // today brings the habit there, even if another of its blocks stays on the timeline.
+        // Another day's pool holds what is particular to that day (D-187): a habit that comes up every day is left out of it
+        // (its block with a time stays on the timeline); the rest comes with the day's turn.
         let poolItems = items.filter { !$0.isFinished && (!timedNames.contains($0.id) || times.isPooledToday($0)) }
+            .filter { !inputs.isOtherDay || $0.task.recurrence?.isEveryDay != true }
 
         // The pool's order is the order of the store's lines (D-180); what has no line of its own takes the pool's sort
         // around them.
