@@ -37,7 +37,7 @@
 			<key>UIApplicationShortcutItemType</key>
 			<string>review</string>
 			<key>UIApplicationShortcutItemTitle</key>
-			<string>Spreader</string>
+			<string>Day spreader</string>
 			<key>UIApplicationShortcutItemIconSymbolName</key>
 			<string>arrow.left.arrow.right</string>
 		</dict>

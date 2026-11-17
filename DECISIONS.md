@@ -1109,3 +1109,6 @@ UIKit снова прячет ячейку перетаскиваемой стр
 ## D-189. Быстрое действие на иконке — Spreader
 Решение владельца 2026-11-17. В меню долгого нажатия на иконку приложения вместо «🔫 New» с плюсом — **Spreader** со значком `arrow.left.arrow.right` (`Config/App-Info.plist` → `UIApplicationShortcutItems`, тип `review`). Открывает то же, что `superpooper://review`: Tasks → Lists → Spreader (`Router.showSpreader`). Ссылка `superpooper://new-task` осталась.
 
+## D-190. Day spreader
+Решение владельца 2026-11-17. Spreader называется **Day spreader** везде, где его видно: заголовок страницы и строка в Lists (`review.title`), быстрое действие на иконке (`App-Info.plist`), подсказки. В коде имена прежние (`showSpreader`, `MorningReview…`).
+

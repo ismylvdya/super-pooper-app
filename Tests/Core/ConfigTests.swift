@@ -142,11 +142,11 @@ struct ConfigTests {
         }
     }
 
-    /// The Home Screen quick action is Spreader: it opens Tasks → Lists → Spreader (D-189).
+    /// The Home Screen quick action is Day spreader: it opens Tasks → Lists → Spreader (D-189).
     @Test func theQuickActionIsSpreader() throws {
         let items = try #require(Bundle(for: BundleToken.self).appHostBundle.object(forInfoDictionaryKey: "UIApplicationShortcutItems")
             as? [[String: Any]])
-        #expect(items.map { $0["UIApplicationShortcutItemTitle"] as? String } == ["Spreader"])
+        #expect(items.map { $0["UIApplicationShortcutItemTitle"] as? String } == ["Day spreader"])
         #expect(items.map { $0["UIApplicationShortcutItemType"] as? String } == ["review"])
         #expect(items.map { $0["UIApplicationShortcutItemIconSymbolName"] as? String } == ["arrow.left.arrow.right"])
     }

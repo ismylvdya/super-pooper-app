@@ -4170,7 +4170,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Not in today's pool; they stay in Soon and show up in tomorrow's Spreader. Swipe one left to bring it back."
+            "value": "Not in today's pool; they stay in Soon and show up in tomorrow's Day spreader. Swipe one left to bring it back."
           }
         }
       }
@@ -4192,7 +4192,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Spreader"
+            "value": "Day spreader"
           }
         }
       }
@@ -7924,7 +7924,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "On: the pool shows only the next action, the first open subtask all the way down, with this task's name over it; this task and its other subtasks wait. When a step is done, the next one comes up tomorrow, in Spreader. Off: every subtask shows under this task."
+            "value": "On: the pool shows only the next action, the first open subtask all the way down, with this task's name over it; this task and its other subtasks wait. When a step is done, the next one comes up tomorrow, in Day spreader. Off: every subtask shows under this task."
           }
         }
       }
