@@ -13,7 +13,8 @@ enum PreviewModel {
                      tasks: [TaskItem] = PreviewSamples.tasks,
                      delay: Delay = SleepDelay(),
                      signature: AppSignatureReading = FixedSignature(date: nil),
-                     appEvents: AppEventSink? = nil) -> (model: AppModel, router: Router, config: AppConfig, banners: BannerCenter)? {
+                     appEvents: AppEventSink? = nil,
+                     alarms: AlarmScheduling = NoAlarms()) -> (model: AppModel, router: Router, config: AppConfig, banners: BannerCenter)? {
         guard let config = try? AppConfig.load(), let obsidian = try? ObsidianConventions.load() else { return nil }
         // As the store's file has them after the day's turn this morning (`TodayPool`).
         let context = DayContext(now: clock.now, calendar: calendar.current, boundary: config.defaultSettings.values.day.boundary,
@@ -24,7 +25,7 @@ enum PreviewModel {
         let settingsStore = SettingsStore(store: store, defaults: config.defaultSettings)
         let memory = InMemoryTaskStore(tasks: tasks, names: ObsidianNoteNames(rules: obsidian.noteNames),
                                        today: { context.today }, boundary: context.boundary)
-        let services = AppServices(
+        var services = AppServices(
             vault: FixedVaultLocation(url: store.directory), tasks: memory,
             trash: memory,
             versions: memory, links: memory, backups: memory, folder: memory,
@@ -37,6 +38,7 @@ enum PreviewModel {
             snoozeStore: SnoozeStore(store: store), widgets: NoWidgets(),
             notificationImage: NotificationImageStore(url: store.url(config.rules.notifications.imageFile), maxPixels: 1),
             signature: signature)
+        services.alarms = alarms
         let banners = BannerCenter()
         let model = AppModel(config: config, services: services, appEvents: appEvents ?? BannerPresenter(banners: banners), clock: clock,
                              calendar: calendar, delay: delay)

@@ -122,3 +122,11 @@ final class FakeCalendars: CalendarRepository, @unchecked Sendable {
         AsyncStream { continuation in lock.withLock { self.continuation = continuation } }
     }
 }
+
+/// Alarms that may ring, keeping what was last set.
+actor RecordingAlarms: AlarmScheduling {
+    private(set) var lastSet: [PlannedAlarm] = []
+    nonisolated var isAuthorized: Bool { true }
+    func requestAccess() async -> Bool { true }
+    func sync(_ alarms: [PlannedAlarm]) async { lastSet = alarms }
+}
