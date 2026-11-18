@@ -30,6 +30,9 @@ struct PagedStack<Page: Hashable, Content: View>: View {
     var onTurn: ((Int) -> Void)?
     /// How long a drag stays at an edge before it turns to that neighbour.
     var edgeDwell: Double = 0
+    /// Where each neighbour's edge is on the screen, by its page's place (nil: none now), for a drag that is no system
+    /// drag (a row the list engine carries) to turn there too.
+    var onEdgeFrame: ((Int, CGRect?) -> Void)?
     @ViewBuilder let content: (Page) -> Content
     /// How far past the stack pages may show when they are not halves (into the screen's margins).
     private static var unclipped: CGFloat { 10_000 }
@@ -79,6 +82,8 @@ struct PagedStack<Page: Hashable, Content: View>: View {
                 .accessibilityAction { onTurn(other) }
                 .accessibilityIdentifier("today.pageEdge")
                 .offset(x: leading ? -margin : margin)
+                .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { onEdgeFrame?(other, $0) }
+                .onDisappear { onEdgeFrame?(other, nil) }
         }
     }
 }

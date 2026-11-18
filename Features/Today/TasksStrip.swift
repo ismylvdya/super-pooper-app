@@ -19,12 +19,15 @@ struct TasksStrip: View {
     let edgeInset: CGFloat
     let fade: Double
     let onTurn: (Int) -> Void
+    /// Where the neighbours' edges are, for a row the list engine carries (`TasksCarry`).
+    var onEdgeFrame: ((Int, CGRect?) -> Void)?
 
     var body: some View {
         PagedStack(pages: pages, spacing: metrics.spacing(of: layout), peekShares: pages.map(peek), edgeInset: edgeInset,
                    home: TasksPageStrip.homeIndex(layout: layout, opened: pager.openedBacklog),
                    listCount: pager.openedBacklog, listPeek: tokens.space(.backlogPeek), hiddenLists: pager.openedBacklog - pager.reachedBacklog, halves: layout.isHalves, page: pager.page,
-                   drag: pager.pageDrag, pull: pager.sidePull, edgeLabel: edgeLabel, onTurn: onTurn, edgeDwell: rules.gestures.pageEdgeDwellSeconds) { page in
+                   drag: pager.pageDrag, pull: pager.sidePull, edgeLabel: edgeLabel, onTurn: onTurn, edgeDwell: rules.gestures.pageEdgeDwellSeconds,
+                   onEdgeFrame: onEdgeFrame) { page in
             switch page {
             case .backlog(let id):
                 if let list = model.config.lists.backlogList(id) {

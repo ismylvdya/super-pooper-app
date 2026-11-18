@@ -12,6 +12,7 @@ struct TimelineBlock: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.liftRoom) private var liftRoom
     @Environment(TaskDragState.self) private var drag: TaskDragState?
+    @Environment(TasksCarry.self) private var carry: TasksCarry?
     @State private var eventToDelete: CalendarEvent?
     let plan: DayPlan
     let handler: TaskActionHandler
@@ -75,6 +76,15 @@ struct TimelineBlock: View {
                 .scrollPosition($position)
                 .onChange(of: drag?.newItemPoint) { _, point in
                     newItemMoved(to: point, over: geometry.frame(in: .global), windowStart: day.start, hourHeight: hourHeight)
+                }
+                // A row the list engine carries lands here as a dragged task does (`TimelineCarryTarget`).
+                .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { carry?.timeline.frame = $0 }
+                .onChange(of: hoursTop, initial: true) { _, top in carry?.timeline.hoursTop = top }
+                .onChange(of: hourHeight, initial: true) { _, height in carry?.timeline.hourHeight = height }
+                .onChange(of: day.start, initial: true) { _, start in
+                    carry?.timeline.windowStart = start
+                    carry?.timeline.stepMinutes = model.config.rules.timeline.dropStepMinutes
+                    carry?.timeline.calendar = model.calendar
                 }
                 .contentMargins(.bottom, bottomInset + tokens.space(.scrollEndRoom), for: .scrollContent)
                 .onScrollGeometryChange(for: CGFloat.self) { max(0, -($0.contentOffset.y + $0.contentInsets.top)) } action: { _, new in

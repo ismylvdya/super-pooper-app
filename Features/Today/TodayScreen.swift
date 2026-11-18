@@ -24,6 +24,8 @@ struct TodayScreen: View {
     @State private var width: CGFloat = 0
     @State private var pager = TodayPager()
     @Environment(TaskDragState.self) private var taskDrag
+    /// Rows the list engine carries across the pages and onto the timeline.
+    @State private var carry = TasksCarry()
     /// Where the bar's buttons stand upright (`DayBarRoom`).
     @State private var barButtons: [TodayButtons.Item: CGRect] = [:]
     @State private var isKeyboardShown = false
@@ -68,7 +70,13 @@ struct TodayScreen: View {
             if let index = TasksPageStrip.index(of: page, in: pages) { turn(to: index) }
             taskDrag.turnHandled()
         }
-        .onAppear { taskDrag.turnDwellSeconds = rules.gestures.pageEdgeDwellSeconds }
+        .onAppear {
+            taskDrag.turnDwellSeconds = rules.gestures.pageEdgeDwellSeconds
+            carry.follow(model: model, drag: taskDrag, day: { [model, pager] in model.plan(at: model.clock.now, dayOffset: pager.dayOffset) },
+                         dwellSeconds: { [rules] in rules.gestures.pageEdgeDwellSeconds }, turn: turn)
+        }
+        .environment(\.tasksSpace, carry.space)
+        .environment(carry)
         // Only lying sideways (`tabBarRoom`): upright, Today would redraw whenever a page over it shows or hides the keyboard.
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
             if isLandscape, !isKeyboardShown { isKeyboardShown = true }
@@ -143,7 +151,8 @@ struct TodayScreen: View {
                 let plan = model.plan(at: model.clock.now, dayOffset: pager.dayOffset)
                 let fade = 1 - min(abs(pager.daySlide) / geometry.size.width, 1) * tokens.opacity(.daySwipeFade)
                 TasksStrip(layout: layout, pages: pages, pager: pager, plan: plan, handler: handler, bottomInset: bottomInset,
-                           isLandscape: isLandscape, edgeInset: tokens.space(.screenHorizontal), fade: fade, onTurn: turn)
+                           isLandscape: isLandscape, edgeInset: tokens.space(.screenHorizontal), fade: fade, onTurn: turn,
+                           onEdgeFrame: { page, frame in carry.edges[page] = frame })
                 .padding(.leading, tokens.space(.screenHorizontal) + (physicalBottom == .leading ? tabBarRoom : 0))
                 .padding(.trailing, tokens.space(.screenHorizontal) + (physicalBottom == .trailing ? tabBarRoom : 0))
                 .padding(.top, tokens.space(.headerToPlate))
