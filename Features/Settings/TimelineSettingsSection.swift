@@ -12,16 +12,9 @@ struct TimelineSettingsSection: View {
     var body: some View {
         PlateSection(header: "settings.timeline", info: "info.settings.timeline", hint: "settings.timeline.hint") {
             TimelinePreview(settings: model.settings)
-            switch model.settings.today.arrangement {
-            case .stacked:
-                SettingChoice(icon: .timelineLayout, title: "settings.timeline.layout", info: "info.settings.timeline.layout",
-                              value: \.timeline.layout, options: AppSettings.TimelineLayout.allCases, prefix: "settings.timeline.",
-                              accessibilityID: "settings.timeline.layout")
-            case .sideBySide, .paged:
-                SettingChoice(icon: .timelineLayout, title: "settings.timeline.range", info: "info.settings.timeline.range",
-                              value: \.timeline.range, options: AppSettings.TimelineRange.allCases, prefix: "settings.timeline.",
-                              accessibilityID: "settings.timeline.range")
-            }
+            SettingChoice(icon: .timelineLayout, title: "settings.timeline.range", info: "info.settings.timeline.range",
+                          value: \.timeline.range, options: AppSettings.TimelineRange.allCases, prefix: "settings.timeline.",
+                          accessibilityID: "settings.timeline.range")
             switch model.settings.timelineMode {
             case .aroundNow:
                 stepper(.hoursBefore, "settings.timeline.hoursBefore", "info.settings.timeline.hoursBefore", \.hoursBefore, limits.hoursBefore.ints)

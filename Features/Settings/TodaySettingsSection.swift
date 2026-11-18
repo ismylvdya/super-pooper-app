@@ -56,12 +56,15 @@ struct TodaySettingsSection: View {
         let keyPath = surface.setting
         let current = model.settings.today[keyPath: keyPath]
         return PlateSection(header: surface.header, hint: surface.hint) {
-            ArrangementPreview(arrangement: current)
-            SettingChoice(icon: .timelineLayout, title: "settings.today.arrangement", info: surface.info,
-                          value: (\AppSettings.today).appending(path: keyPath), options: surface.options, prefix: "settings.today.",
-                          accessibilityID: "settings.today.arrangement.\(surface)")
+            // Upright, Today is always pages; only the widget has a choice.
+            ArrangementPreview(arrangement: surface == .upright ? .paged : current)
+            if surface == .widget {
+                SettingChoice(icon: .timelineLayout, title: "settings.today.arrangement", info: surface.info,
+                              value: (\AppSettings.today).appending(path: keyPath), options: surface.options, prefix: "settings.today.",
+                              accessibilityID: "settings.today.arrangement.\(surface)")
+            }
             // On pages: how much of the other page stays in sight; the border between them moves.
-            if surface == .upright, current == .paged {
+            if surface == .upright {
                 SettingSlider(icon: nil, title: "settings.today.timelinePeek", info: "info.settings.today.timelinePeek",
                               value: \.today.timelinePeek, limits: model.config.rules.limits.pagePeek,
                               accessibilityID: "settings.today.timelinePeek") { PercentText(value: $0) }

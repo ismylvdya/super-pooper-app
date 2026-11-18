@@ -32,7 +32,7 @@ struct WidgetPlanTests {
         #expect(source.settings.timelineMode(in: source.arrangement) == .halves)
         #expect(source.settings.timelineMode == .aroundNow)
         #expect(source.settings.poolUsesVisibleCount(in: source.arrangement))
-        #expect(!source.settings.poolUsesVisibleCount)
+        #expect(source.settings.poolUsesVisibleCount, "only the widget shows a set number of rows now: the app's Today is pages")
         settings.today.widgetArrangement = .paged
         #expect(WidgetDataSource(config: config, settings: settings, snapshot: nil, calendar: TestCalendar.calendar).arrangement == .sideBySide)
     }

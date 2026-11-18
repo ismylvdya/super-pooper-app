@@ -221,7 +221,8 @@ enum TimelineMode: Equatable, Sendable {
 
 extension AppSettings {
     /// The app's timeline, in the app's own arrangement.
-    var timelineMode: TimelineMode { timelineMode(in: today.arrangement) }
+    /// The app's Today is pages upright (the widget has its own arrangement).
+    var timelineMode: TimelineMode { timelineMode(in: .paged) }
 
     /// The timeline in an arrangement: the app's, or the widget's own (`TodayWidgetView`).
     func timelineMode(in arrangement: TodayArrangement) -> TimelineMode {
@@ -233,7 +234,7 @@ extension AppSettings {
 
     /// What the app's timeline shows by these settings; `limits` cap the hours around now.
     func timelineSpan(limits: TimelineSpan.Limits = TimelineSpan.Limits()) -> TimelineSpan {
-        timelineSpan(in: today.arrangement, limits: limits)
+        timelineSpan(in: .paged, limits: limits)
     }
 
     /// What a timeline in that arrangement shows by these settings.
@@ -247,7 +248,8 @@ extension AppSettings {
     }
 
     /// The app's pool shows a fixed number of rows only when it sits above the timeline.
-    var poolUsesVisibleCount: Bool { poolUsesVisibleCount(in: today.arrangement) }
+    /// Only the widget's pool over its timeline shows a set number of rows and a counter.
+    var poolUsesVisibleCount: Bool { poolUsesVisibleCount(in: today.widgetArrangement) }
 
     func poolUsesVisibleCount(in arrangement: TodayArrangement) -> Bool { arrangement == .stacked }
 

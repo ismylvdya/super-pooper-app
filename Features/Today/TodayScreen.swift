@@ -83,10 +83,10 @@ struct TodayScreen: View {
         }
     }
 
-    /// Turned sideways, Today is always the pool on the left and the timeline on the right, half the screen each; a list
-    /// opened left of the pool takes the left half (D-191).
+    /// Upright, Today is pages (the pool, the timeline, the lists left of the pool); turned sideways, the pool on the left
+    /// and the timeline on the right, half the screen each; a list opened left of the pool takes the left half (D-191).
     private var arrangement: AppSettings.TodayArrangement {
-        isLandscape ? .sideBySide : model.settings.today.arrangement
+        isLandscape ? .sideBySide : .paged
     }
 
     private func barButtonMoved(_ item: TodayButtons.Item, to frame: CGRect?) {

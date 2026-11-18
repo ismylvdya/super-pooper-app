@@ -194,8 +194,7 @@ struct PoolBlock: View {
 
     /// By the arrangement Today has now: lying sideways it has its own.
     private var fillsHeight: Bool {
-        let today = model.settings.today
-        return !model.settings.poolUsesVisibleCount(in: physicalBottom == nil ? today.arrangement : .sideBySide)
+        true
     }
     private var visibleCount: Int { max(model.settings.pool.visibleCount, 1) }
 
