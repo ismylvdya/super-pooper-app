@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		AA0000000000000000000B01 /* SuperPooperAppWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000F02 /* SuperPooperAppWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		AA0000000000000000000A03 /* ListEngineChumbulev in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000A02 /* ListEngineChumbulev */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -94,6 +95,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA0000000000000000000A03 /* ListEngineChumbulev in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -217,6 +219,7 @@
 			);
 			name = SuperPooper;
 			packageProductDependencies = (
+				AA0000000000000000000A02 /* ListEngineChumbulev */,
 			);
 			productName = SuperPooperApp;
 			productReference = AA0000000000000000000F01 /* SuperPooperApp.app */;
@@ -306,6 +309,9 @@
 			);
 			mainGroup = AA0000000000000000000701;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				AA0000000000000000000A01 /* XCLocalSwiftPackageReference "../list-lab/ListEngineChumbulev" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = AA0000000000000000000703 /* Products */;
 			projectDirPath = "";
@@ -618,6 +624,21 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		AA0000000000000000000A01 /* XCLocalSwiftPackageReference "../list-lab/ListEngineChumbulev" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../list-lab/ListEngineChumbulev";
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AA0000000000000000000A02 /* ListEngineChumbulev */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA0000000000000000000A01 /* XCLocalSwiftPackageReference "../list-lab/ListEngineChumbulev" */;
+			productName = ListEngineChumbulev;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = AA0000000000000000000001 /* Project object */;
 }
