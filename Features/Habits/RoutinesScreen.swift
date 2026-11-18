@@ -1,54 +1,40 @@
+import ListEngineChumbulev
 import SwiftUI
 
-/// The order of the morning and evening routines: drag habits within a routine; the pool follows it. A swipe to
-/// the right is Done, to the left Delete, as in Habits. Habits join a routine on their page (habit page → Routine).
+/// The order of the morning and evening routines: drag habits within a routine; the pool follows it. Habits join a
+/// routine on their page (habit page → Routine); a tap opens it. A list of the list engine, rows carried only, each
+/// within its routine.
 struct RoutinesScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
-    @Environment(\.openURL) private var openURL
     @Environment(\.tokens) private var tokens
-    @State private var frames = ListGroupFrames()
-    @State private var pendingAction: PendingAction?
+
+    private static let parts: [HabitTimeOfDay] = [.morning, .evening]
 
     var body: some View {
-        List {
-            section(.morning, title: "routines.morning")
-            section(.evening, title: "routines.evening")
+        ReorderableList(sections: Binding(get: { sections }, set: save), look: "lists",
+                        features: ListFeatures.orderOnly, onTap: { router.open(.task($0.id)) },
+                        footer: AnyView(PlateHint(text: Text("routines.hint"))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, ListTheme.app.rows.sideInset))) { row in
+            ListRowContent(title: row.id, titleColor: model.habits.first { $0.name == row.id }.map { ThemeColor(tokens.habitNameColor($0)) })
         }
-        .listGroupStyle()
-        .listGroupBacking(frames)
-        .appList()
+        .ignoresSafeArea()
         .navigationTitle(Text("routines.title"))
         .navigationBarTitleDisplayMode(.inline)
-        .actionConfirmation($pendingAction) { handler.run($0) }
     }
 
-    private var handler: TaskActionHandler {
-        TaskActionHandler(model: model, router: router, openURL: openURL) { pendingAction = $0 }
+    private var sections: [ListSection<OrderedRow>] {
+        Self.parts.map { part in
+            let members = HabitRoutines.members(part, of: model.habits, order: model.settings.habits[keyPath: AppSettings.Habits.routine(part)])
+            return ListSection(id: part.rawValue, title: L10n.string("routines." + part.rawValue), items: members.map { OrderedRow(id: $0.name) })
+        }
     }
 
-    @ViewBuilder
-    private func section(_ part: HabitTimeOfDay, title: LocalizedStringKey) -> some View {
-        let keyPath = AppSettings.Habits.routine(part)
-        let members = HabitRoutines.members(part, of: model.habits, order: model.settings.habits[keyPath: keyPath])
-        ListGroupHeader(title: Text(title))
-        if members.isEmpty {
-            Text("routines.empty").secondaryText(.hint)
-                .listGroupRow(group: part.rawValue, id: "empty", index: 0, count: 1, frames: frames)
+    private func save(_ sections: [ListSection<OrderedRow>]) {
+        for section in sections {
+            guard let part = HabitTimeOfDay(rawValue: section.id) else { continue }
+            model.updateSettings { $0.habits[keyPath: AppSettings.Habits.routine(part)] = section.items.map(\.id) }
         }
-        ForEach(Array(members.enumerated()), id: \.element.name) { index, habit in
-            NavigationLink(value: Route.task(habit.name)) {
-                Text(habit.name).foregroundStyle(tokens.habitNameColor(habit))
-            }
-            .listGroupRow(group: part.rawValue, id: habit.name, index: index, count: members.count, frames: frames)
-            .actionSwipes(.habit, item: DayItem(habit: habit, on: model.context().today)) { handler.handle($0, taskName: habit.name) }
-        }
-        .onMove { source, destination in
-            var names = members.map(\.name)
-            names.move(fromOffsets: source, toOffset: destination)
-            Haptics.play(.reorder)
-            model.updateSettings { $0.habits[keyPath: keyPath] = names }
-        }
-        ListGroupFooter(text: Text("routines.hint"))
     }
 }
