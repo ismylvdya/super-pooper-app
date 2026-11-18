@@ -71,6 +71,8 @@ final class AppModel {
     func nest(_ name: String, under parent: String, index: Int?) async {
         await parts.dayCommands.nest(name, under: parent, index: index)
     }
+    /// Carried out of its family to the top level, its line where it was let go in `order` (the list's rows).
+    func unnest(_ name: String, order: [String]) async { await parts.dayCommands.unnest(name, order: order) }
     func canNest(_ name: String, order: [String]) -> Bool { parts.dayCommands.canNest(name, order: order) }
     func bringFromBacklog(_ name: String, to day: LocalDate, poolOrder: [String]?) async {
         await parts.dayCommands.bringFromBacklog(name, to: day, poolOrder: poolOrder)

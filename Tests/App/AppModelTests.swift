@@ -237,6 +237,24 @@ struct AppModelTests {
         #expect(model.plan(at: model.clock.now).pool.map(\.id) == auto)
     }
 
+    /// A row carried under another one in the pool: the order is written, then the parent; the parent's page shows it.
+    /// Carried out again, it is a task of its own where it was let go.
+    @Test func aRowNestedByADragIsOnItsParentsPage() async throws {
+        let model = try makeModel()
+        let pool = model.plan(at: model.clock.now).pool.filter { !$0.isHabit && $0.depth == 0 }.map(\.id)
+        let parent = try #require(pool.first), child = try #require(pool.last)
+        var order = pool.filter { $0 != child }
+        order.insert(child, at: 1)
+        async let reorder: Void = model.setPoolOrder(order)
+        async let nest: Void = model.nest(child, under: parent, index: 0)
+        _ = await (reorder, nest)
+        #expect(model.subtasks(of: parent).contains { $0.name == child })
+        // Carried back out to the top level, last in the pool.
+        await model.unnest(child, order: pool.filter { $0 != child } + [child])
+        #expect(model.task(named: child)?.projects.isEmpty == true)
+        #expect(model.plan(at: model.clock.now).pool.filter { !$0.isHabit }.map(\.id).last == child)
+    }
+
     /// A notification left over from yesterday must not mark today.
     @Test func notificationActionForAnotherDayIsIgnored() async throws {
         let model = try makeModel()

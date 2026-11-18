@@ -112,12 +112,14 @@ struct MorningReviewList: View {
         Task { await model.applyReviewMove(ReviewGroups.Move(order: order, regrouped: regrouped)) }
     }
 
-    /// A carried row went under the row above (today), or out from under its parent: one level out.
+    /// A carried row went into a family (today), or out of one to the top level where it was let go.
     private func nested(_ name: String, _ nest: ListNest<String>) {
-        if let parent = nest.parent {
-            Task { await model.nest(name, under: parent, index: nest.index) }
-        } else {
-            perform(registry.definition(.outdent), on: name)
+        Task {
+            if let parent = nest.parent {
+                await model.nest(name, under: parent, index: nest.index)
+            } else {
+                await model.unnest(name, order: nest.rows)
+            }
         }
     }
 

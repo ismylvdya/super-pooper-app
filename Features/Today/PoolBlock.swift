@@ -4,7 +4,7 @@ import SwiftUI
 /// Untimed tasks of the day, under the headers of the day's sections (Morning, Day, Evening and the user's own): a list of
 /// the list engine (look "pool"). A tap opens a task, a long press its menu; no swipes. Carried, a row moves within the
 /// pool (today) and into another section (another day: only into another section — its pool has no order of its own),
-/// over the right part it becomes the subtask of the row above (today), off the pool onto the timeline it gets the time
+/// over the right part it becomes the subtask of the row above (today), over the left part it leaves its family, off the pool onto the timeline it gets the time
 /// under the finger, onto a backlog page it goes to that list (`TasksCarry`). A block dragged from the timeline lands
 /// here and loses its time. The habits of a routine stand joined on one plate; a long task's plate is taller. A section's
 /// title is edited in place. The tab bar's "+" carried over the pool opens its place; let go, the new task's page opens
@@ -83,10 +83,15 @@ struct PoolBlock: View {
         }
     }
 
-    /// Carried over the right part: under the row above (today).
+    /// Carried into a family (today), or out of one to the top level where it was let go.
     private func nested(_ name: String, _ nest: ListNest<String>) {
-        guard let parent = nest.parent else { return }
-        Task { await model.nest(name, under: parent, index: nest.index) }
+        Task {
+            if let parent = nest.parent {
+                await model.nest(name, under: parent, index: nest.index)
+            } else {
+                await model.unnest(name, order: nest.rows)
+            }
+        }
     }
 
     private var traits: ListTraits<DayItem> {

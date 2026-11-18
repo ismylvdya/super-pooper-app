@@ -3,8 +3,8 @@ import SwiftUI
 
 /// One list of the Lists page, a list of the list engine: its tasks by planning level, a section each, searchable from the
 /// bar's "…" or a hold of its title (`SearchPage`). A tap opens a task; a long press its menu (the pool's); a swipe to the
-/// right is Done, to the left Delete; carried, a row moves within its level, over the list's right part it becomes the
-/// subtask of the row above. The Next actions button (a calendar) on a task of a later level brings it there. The tab
+/// right is Done, to the left Delete; carried, a row moves anywhere, over the list's right part it becomes the subtask
+/// of the row above, over its left part it leaves its family. The Next actions button (a calendar) on a task of a later level brings it there. The tab
 /// bar's "+" carried over the list opens its place there (a subtask's over the right part) and opens the new task's page
 /// for that spot. The filed tasks, newest first, stand at the end as they are. Pulled down, it syncs.
 struct TaskListScreen: View {
@@ -82,10 +82,17 @@ struct TaskListScreen: View {
         }
     }
 
-    /// Carried over the right part: under the row above.
+    /// Carried into a family (over the right part under the row above), or out of one to the top level where it was let go.
     private func nested(_ id: String, _ nest: ListNest<String>) {
-        guard let parent = nest.parent.flatMap({ ListedRow.name(of: $0) }), let name = ListedRow.name(of: id) else { return }
-        Task { await model.nest(name, under: parent, index: nest.index) }
+        guard let name = ListedRow.name(of: id) else { return }
+        Task {
+            if let parent = nest.parent {
+                guard let parent = ListedRow.name(of: parent) else { return }
+                await model.nest(name, under: parent, index: nest.index)
+            } else {
+                await model.unnest(name, order: nest.rows.compactMap(ListedRow.name(of:)))
+            }
+        }
     }
 
     private var traits: ListTraits<ListedRow> {

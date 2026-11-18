@@ -96,6 +96,7 @@
       "roundsMiddle": true,
       "fadeSeconds": 0.15,
       "nestShare": 0.25,
+      "outShare": 0.25,
       "maxDepth": null
     }
   },

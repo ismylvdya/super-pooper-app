@@ -3,7 +3,7 @@ import SwiftUI
 
 /// A backlog page left of the pool (Soon, Half year, Someday): the list's tasks for the day shown, a list of the list
 /// engine on the pool's plates (look "pool"), with the pool's tap and long-press menu; no swipes. Carried, a row moves
-/// within the page, over its right part under the row above, onto another page to that list, into the pool or onto the
+/// within the page, over its right part under the row above, over its left part out of its family, onto another page to that list, into the pool or onto the
 /// timeline (`TasksCarry`). The tab bar's "+" carried over the page opens its place (a subtask's over the right part);
 /// let go, the new task's page opens for that spot of the list. Pulled down, it syncs.
 struct BacklogPage: View {
@@ -58,8 +58,13 @@ struct BacklogPage: View {
     }
 
     private func nested(_ name: String, _ nest: ListNest<String>) {
-        guard let parent = nest.parent else { return }
-        Task { await model.nest(name, under: parent, index: nest.index) }
+        Task {
+            if let parent = nest.parent {
+                await model.nest(name, under: parent, index: nest.index)
+            } else {
+                await model.unnest(name, order: nest.rows)
+            }
+        }
     }
 
     private var traits: ListTraits<DayItem> {

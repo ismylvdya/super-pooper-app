@@ -1,7 +1,7 @@
 import Testing
 @testable import SuperPooperApp
 
-/// A task dragged over the right part of a list becomes the subtask of the row above it.
+/// A task carried under another item becomes its subtask: any task, done or not; never into a loop.
 struct SubtaskMoveTests {
     @Test func itTakesTheParentsListAndPool() throws {
         let parent = makeTask("Trip", status: .halfYear, inPool: false)
@@ -19,6 +19,13 @@ struct SubtaskMoveTests {
         #expect(SubtaskMove.changes(moving: task, under: task, index: nil, in: all) == nil)
         #expect(SubtaskMove.changes(moving: task, under: grandchild, index: nil, in: all) == nil)
         #expect(SubtaskMove.changes(moving: grandchild, under: task, index: 1, in: all) == [.parent("Trip"), .subtaskOrder(1)])
+    }
+
+    @Test func aDoneParentTakesItAndADoneTaskGoes() {
+        let done = makeTask("Trip", status: .done)
+        let task = makeTask("Pack")
+        #expect(SubtaskMove.changes(moving: task, under: done, index: 0, in: [done, task])?.first == .parent("Trip"))
+        #expect(SubtaskMove.changes(moving: done, under: task, index: 0, in: [done, task])?.first == .parent("Pack"))
     }
 
     /// Moved under another parent, a subtask leaves the one it had.
