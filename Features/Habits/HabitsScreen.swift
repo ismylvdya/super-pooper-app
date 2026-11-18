@@ -1,39 +1,33 @@
+import ListEngineChumbulev
 import SwiftUI
 
-/// The Habits tab: every active habit with today's mark (tap cycles, long press picks, a swipe to the right is Done, to
-/// the left Delete), a page per habit; the tab bar's "+" creates a habit, rows reorder by dragging inside their group. Habits come first,
-/// tasks that simply repeat ("Repeatable tasks") in a group of their own. A plain list whose rows draw the app's
-/// plates themselves, so the title, the corners and the gaps match the other tabs' pages.
+/// The Habits tab: one list of the list engine — habits first, tasks that simply repeat ("Repeatable tasks") in a section
+/// of their own. Before each name today's mark (unmarked, partly, done, twice), a tap cycles it (twice: through all
+/// three); a long press lifts the row with today's marks as its menu; rows are carried within their section; a tap
+/// opens the habit's page. A habit's name in its own color, bold and rounded; a repeatable task's rounded. No swipes.
+/// Pulled down, it syncs. The tab bar's "+" creates a habit.
 struct HabitsScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
+    @Environment(\.icons) private var icons
+    @Environment(\.actions) private var registry
     @Environment(\.openURL) private var openURL
-    @State private var titleHeight: CGFloat = 0
     @State private var pendingAction: PendingAction?
-    @State private var frames = ListGroupFrames()
 
     var body: some View {
         let today = model.context().today
-        let groups = HabitGroups(model.habits)
-        List {
-            LargePageTitle(isNested: false, height: $titleHeight) { Text("tab.habits") }
-                .listGroupSpacer()
-            if model.habits.isEmpty {
-                Text("habits.empty").secondaryText(.hint)
-                    .listGroupSpacer()
-            }
-            group(groups.tracked, header: nil, groups: groups, isRepeatable: false, today: today)
-            group(groups.repeatable, header: "habits.repeatable", groups: groups, isRepeatable: true, today: today)
+        ReorderableList(sections: Binding(get: { sections(today: today) }, set: moved), look: "lists",
+                        actions: { engine(today: today).menu(.habitDay, for: $0) },
+                        features: [.carry, .menu, .haptics, .autoscroll, .dim], onTap: { router.open(.task($0.id)) },
+                        onRefresh: { await model.sync(announce: true) },
+                        footer: model.habits.isEmpty ? AnyView(empty) : nil) { item in
+            row(item.task, today: today)
         }
-        .listGroupStyle()
-        .listGroupBacking(frames)
-        .appList()
-        // The title starts where the other tabs' page titles start, not under the list's own top margin.
-        .contentMargins(.top, 0, for: .scrollContent)
-        .syncsOnPull()
+        .ignoresSafeArea()
         .actionConfirmation($pendingAction) { handler.run($0) }
-        .titleScrollsIntoBar(L10n.string("tab.habits"), titleHeight: titleHeight)
+        .navigationTitle(Text("tab.habits"))
+        .navigationBarTitleDisplayMode(.large)
         .searchOnTitleHold { router.open(.search(.habits)) }
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
@@ -42,36 +36,54 @@ struct HabitsScreen: View {
         }
     }
 
-    private var handler: TaskActionHandler {
-        TaskActionHandler(model: model, router: router, openURL: openURL) { pendingAction = $0 }
+    private static let tracked = "tracked"
+    private static let repeatable = "repeatable"
+
+    private func sections(today: LocalDate) -> [ListSection<DayItem>] {
+        let groups = HabitGroups(model.habits)
+        return [(Self.tracked, "", groups.tracked), (Self.repeatable, L10n.string("habits.repeatable"), groups.repeatable)]
+            .filter { !$0.2.isEmpty }
+            .map { ListSection(id: $0.0, title: $0.1, items: $0.2.map { DayItem(habit: $0, on: today) }) }
     }
 
-    /// The space between two plates of the page.
-    private var gap: some View {
-        Color.clear.frame(height: tokens.space(.groupGap)).listGroupSpacer()
+    /// The new order of every habit: the tracked ones, then the repeatable ones.
+    private func moved(_ sections: [ListSection<DayItem>]) {
+        model.moveHabits(sections.flatMap(\.items).map(\.id))
     }
 
-    /// One group of rows; the rounded corners belong to its first and last row, as on every plate.
-    @ViewBuilder private func group(_ habits: [TaskItem], header: LocalizedStringKey?, groups: HabitGroups, isRepeatable: Bool,
-                                    today: LocalDate) -> some View {
-        if !habits.isEmpty {
-            if let header { ListGroupHeader(title: Text(header)) } else { gap }
-            ForEach(Array(habits.enumerated()), id: \.element.name) { index, habit in
-                HabitRow(habit: habit, today: today)
-                    .listGroupRow(group: isRepeatable ? "repeatable" : "tracked", id: habit.name, index: index, count: habits.count,
-                                  frames: frames, vertical: tokens.space(.rowVertical) / 2,
-                                  separatorIndent: tokens.size(.iconColumn) + tokens.space(.iconTextGap)) {
-                        // A long press lifts the row and offers today's marks.
-                        HabitDayMenu(habit: habit, day: today)
-                    }
-                    .actionSwipes(.habit, item: DayItem(habit: habit, on: today)) { handler.handle($0, taskName: habit.name) }
-            }
-            // While a search filters the list the rows cannot move: the order is the order of every habit.
-            .onMove { source, destination in
-                Haptics.play(.reorder)
-                model.moveHabits(groups.order(moving: source, to: destination, inRepeatable: isRepeatable))
+    /// Today's mark before the name, as far from the name as from the plate's side; a tap cycles it.
+    private func row(_ habit: TaskItem, today: LocalDate) -> ListRowContent {
+        let mark = HabitMarkIcon.icon(for: habit.mark(on: today))
+        let rounded = TextStyle(style: "body", weight: habit.habit.repeatable ? .regular : .bold, rounded: true)
+        return ListRowContent(title: habit.name, icon: .app(icons[mark]), iconColor: ThemeColor(tokens.habitMarkColor(habit)),
+                              iconGap: ListTheme.app.rows.iconMargin,
+                              onIconTap: {
+                                  Haptics.play(.mark)
+                                  Task { await model.cycleHabit(habit.name, on: today) }
+                              },
+                              titleStyle: rounded, titleColor: ThemeColor(tokens.habitNameColor(habit)))
+    }
+
+    private var empty: some View {
+        PlateHint(text: Text("habits.empty"))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, ListTheme.app.rows.sideInset)
+    }
+
+    /// Today's marks set the mark; the menu's other lines run as in the pool, offering undo.
+    private func engine(today: LocalDate) -> EngineActions {
+        EngineActions(model: model, tokens: tokens, registry: registry, icons: icons) { action, name in
+            Task {
+                if action.id.setsHabitMark {
+                    await model.setHabitMark(name, on: today, to: action.id.habitMark)
+                } else {
+                    await model.performOfferingUndo(action, on: name)
+                }
             }
         }
     }
-}
 
+    private var handler: TaskActionHandler {
+        TaskActionHandler(model: model, router: router, openURL: openURL) { pendingAction = $0 }
+    }
+}
