@@ -45,9 +45,8 @@ extension StartedLayout {
 }
 
 extension View {
-    /// The pool's looks from the settings: subtask lines and started tasks.
+    /// The pool's looks from the settings: started tasks (on the timeline and in the widget).
     func poolLooks(_ pool: AppSettings.Pool) -> some View {
-        environment(\.subtaskLineLook, SubtaskLineLook(corner: pool.subtaskLineCorner, roundsMiddle: pool.subtaskLineRoundsMiddle))
-            .environment(\.startedLayout, StartedLayout(pool))
+        environment(\.startedLayout, StartedLayout(pool))
     }
 }

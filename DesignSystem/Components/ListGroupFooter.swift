@@ -7,6 +7,5 @@ struct ListGroupFooter: View {
     var body: some View {
         PlateHint(text: text)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .listGroupSpacer()
     }
 }
