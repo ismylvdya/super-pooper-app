@@ -7,6 +7,8 @@ enum Icon: String, CaseIterable, Codable, Sendable {
     case settings, more, undo, redo, info, problem, sync
     case tabBarSettings, plainTaskSettings, general, widgets, overdue, energy, pleasant, feel, chipOrder, timeZone, high, due, datePick, time, estimate
     case previousTasks, nextTasks, previousEvent, nextEvent, event, reminder, habit
+    /// A started task, before its name (an SVG of the app's, in the started color).
+    case started
     case vault, calendars, reminderLists, notifications, allDayEvent, alarm, alarmOn, stopAlarm, chosen
     case dayBoundary, energyHour, timelineLayout, hoursAfter, hoursBefore, halves, fontSize, poolCount
     case archive, delete, search, resetOrder, resetSort, morningReview, newSubtask, steps, add, newItem, colors, remove, chevron, status, note, title, recurrence

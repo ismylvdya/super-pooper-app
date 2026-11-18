@@ -78,7 +78,7 @@ struct ActionAvailabilityTests {
     /// today; to the right it has nothing (D-186).
     @Test func aSetAsideNoteComesBackWithAGreySwipeToTheLeft() {
         for (kind, action) in [(ActionSwipes.setAside, ActionID.returnToToday), (.setAsideTomorrow, .returnTomorrow)] {
-            #expect(TestConfig.actions.swipes[kind].leading.isEmpty)
+            #expect(TestConfig.actions.swipes[kind].leading == [.done])
             #expect(TestConfig.actions.swipes[kind].trailing == [action])
             #expect(TestConfig.actions.definition(action).swipeTint == TestConfig.actions.definition(.notToday).swipeTint)
         }
@@ -107,11 +107,11 @@ struct ActionAvailabilityTests {
         #expect(swipes(.review, item(makeHabit("Bins") { $0.habit.repeatable = true })).trailing == [.skipToday])
         #expect(TestConfig.actions.definition(.notToday).swipeTint == ColorToken.swipeNeutral.rawValue)
         #expect(TestConfig.actions.definition(.skipToday).swipeTint == ColorToken.swipeNeutral.rawValue)
-        // To the right one tab (D-182): right for a task of the top level, left for a subtask, gray; none for a habit.
-        #expect(swipes(.review, item(makeTask("Report"))).leading == [.indent])
-        #expect(swipes(.review, item(makeTask("Pack") { $0.projects = ["Trip"] })).leading == [.outdent])
-        #expect(swipes(.listTask, item(makeTask("Report"))) == ([.indent], [.delete]))
-        #expect(swipes(.review, item(makeHabit("Walk"))).leading.isEmpty)
+        // To the right Done, blue, in the review and in the Lists tab's lists (subtasks are made by carrying a row
+        // over the list's right part now, not by a swipe).
+        #expect(swipes(.review, item(makeTask("Report"))).leading == [.done])
+        #expect(swipes(.listTask, item(makeTask("Report"))) == ([.done], [.delete]))
+        #expect(TestConfig.actions.definition(.done).swipeTint == ColorToken.accent.rawValue)
         #expect(TestConfig.actions.definition(.indent).swipeTint == ColorToken.swipeNeutral.rawValue)
     }
 

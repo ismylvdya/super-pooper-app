@@ -1,107 +1,101 @@
+import ListEngineChumbulev
 import SwiftUI
 
-/// One table row: title and editable chips: High, date, estimate, energy,
-/// pleasant, status.
-struct ReviewRow: View {
-    @Environment(AppModel.self) private var model
-    @Environment(\.tokens) private var tokens
-    @Environment(\.icons) private var icons
-    @Environment(\.rules) private var rules
-    @Environment(\.chipOrder) private var chipOrder
-    let item: DayItem
-    let today: LocalDate
-    let onOpen: () -> Void
-    @State private var isPickingDate = false
+/// One row of the review, as the list engine draws it: the name (grey once done), the chips that only show something
+/// (a habit, overdue, a problem) right of it, the parent's name over it, the started icon before it, and under it the
+/// chips that change the task: High, the due date, the estimate, energy, pleasant, the status (`ListActionChip`).
+@MainActor
+struct ReviewRow {
+    let model: AppModel
+    let tokens: DesignTokens
+    let icons: IconSet
+    let rules: RulesConfig
+    let chipOrder: [RowChipKind]
+    /// Opens the exact date and time picker for the task of that name.
+    let pickDue: (String) -> Void
 
-    private var task: TaskItem { item.task }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
-            ParentCaption(parent: item.project) {
-                // The chips that only show something (a habit, overdue, a problem) stand right of the name, level with
-                // its first line; the ones to change are below.
-                HStack(alignment: .top, spacing: tokens.space(.fadeGap)) {
-                    Text(task.name).font(tokens.font(.taskTitle)).foregroundStyle(item.isDone ? tokens.color(.secondaryText) : tokens.color(.primaryText))
-                    if !indicators.isEmpty {
-                        RowChipIcons(chips: indicators, onFill: task.isHighPriority)
-                            .frame(height: tokens.uiFont(.taskTitle).lineHeight)
-                    }
-                }
-            }
-            ChipFlow(spacing: tokens.space(.chipGap)) {
-                toggleChip(.high, isOn: task.isHighPriority) { [.highPriority(!$0.isHighPriority)] }
-                dueChip
-                estimateChip
-                // One feel: turning one on turns the other off.
-                toggleChip(.needEnergy, isOn: task.feel == .needEnergy) { [.feel($0.feel == .needEnergy ? .neutral : .needEnergy)] }
-                toggleChip(.pleasant, isOn: task.feel == .pleasant) { [.feel($0.feel == .pleasant ? .neutral : .pleasant)] }
-                if !task.isHabit { statusChip }
-            }
-        }
-        .padding(.vertical, tokens.space(.reviewRowVertical))
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .contentShape(Rectangle())
-        .onTapGesture(perform: onOpen)
+    func content(_ item: DayItem) -> ListRowContent {
+        let task = item.task
+        let started = task.isStarted && !item.isDone
+        return ListRowContent(title: task.name, chips: indicators(item),
+                              icon: started ? .app(icons[.started]) : nil, iconColor: started ? ThemeColor(tokens.uiColor(.started)) : nil,
+                              titleColor: item.isDone ? ThemeColor(tokens.uiColor(.secondaryText)) : nil,
+                              actionChips: chips(item), overline: item.project)
     }
 
-    /// The indicator chips in the pool's order (`RowChipKind.isIndicator`).
-    private var indicators: [RowChip] {
-        RowChip.chips(for: item, order: chipOrder.filter(\.isIndicator))
+    /// The chips that only show something, in the pool's order (`RowChipKind.isIndicator`).
+    private func indicators(_ item: DayItem) -> [ListChip] {
+        RowChip.chips(for: item, order: chipOrder.filter(\.isIndicator)).map { chip in
+            ListChip(kind: chip.kind.rawValue, content: .icon(.app(icons[chip.look.icon])),
+                     color: ThemeColor(UIColor(tokens.color(of: chip.look, onFill: item.task.isHighPriority))))
+        }
+    }
+
+    private func chips(_ item: DayItem) -> [ListActionChip] {
+        let task = item.task
+        var chips = [
+            toggle(.high, isOn: task.isHighPriority, task: task) { [.highPriority(!$0.isHighPriority)] },
+            due(task),
+            estimate(task),
+            // One feel: turning one on turns the other off.
+            toggle(.needEnergy, isOn: task.feel == .needEnergy, task: task) { [.feel($0.feel == .needEnergy ? .neutral : .needEnergy)] },
+            toggle(.pleasant, isOn: task.feel == .pleasant, task: task) { [.feel($0.feel == .pleasant ? .neutral : .pleasant)] },
+        ]
+        if !task.isHabit { chips.append(status(task)) }
+        return chips
     }
 
     /// The new value is decided from the note as it is when the edit runs (two quick taps go there and back).
-    private func toggleChip(_ look: ChipLook, isOn: Bool, changes: @escaping (TaskItem) -> [TaskEdit]) -> some View {
-        ToggleChip(look, isOn: isOn, capsule: .standard) {
+    private func toggle(_ look: ChipLook, isOn: Bool, task: TaskItem, changes: @escaping (TaskItem) -> [TaskEdit]) -> ListActionChip {
+        ListActionChip(id: "\(look)", icon: .app(icons[look.icon]), color: ThemeColor(tokens.uiColor(look.tint ?? .secondaryText)),
+                       isOn: isOn, action: .tap {
             Haptics.play(.select)
             Task { await model.edit(task.name, changes) }
-        }
+        })
     }
 
-    /// Today / Tomorrow / an exact date and time; the chosen one is checked, choosing it again
-    /// removes the date (no option checked = no date). Today and Tomorrow are logical days, as the task page's chips.
-    private var dueChip: some View {
+    /// Today / Tomorrow / an exact date and time; the chosen one is checked, choosing it again removes the date. Today and
+    /// Tomorrow are logical days, as the task page's chips.
+    private func due(_ task: TaskItem) -> ListActionChip {
         let context = model.context()
         let selected = QuickDue.selection(of: task.due, context: context)
-        return Menu {
-            ForEach(QuickDue.allCases, id: \.self) { chip in
-                Toggle(chip.title, isOn: Binding(
-                    get: { selected == chip },
-                    set: { _ in setDue(QuickDue.toggling(chip, due: task.due, context: context)) }
-                ))
+        var choices = QuickDue.allCases.map { chip in
+            ListChoice(id: "\(chip)", title: L10n.string(chip.key), isOn: selected == chip) {
+                Task { await model.setLocalDue(QuickDue.toggling(chip, due: task.due, context: context), of: task.name) }
             }
-            Toggle("review.due.exact", isOn: Binding(get: { task.due != nil && selected == nil },
-                                                    set: { _ in isPickingDate = true }))
-        } label: {
-            Chip(icon: .due, text: task.due.map { DueText.format($0, context: context) }, isOn: task.due != nil)
         }
-        .sheet(isPresented: $isPickingDate) {
-            let due = task.due ?? TaskDue(day: today, time: rules.editing.defaultTime)
-            DuePickerSheet(pick: DuePick(day: due.day, time: due.time), choosesZone: false) { setDue($0?.due) }
-        }
+        choices.append(ListChoice(id: "exact", title: L10n.string("review.due.exact"), isOn: task.due != nil && selected == nil) {
+            pickDue(task.name)
+        })
+        return ListActionChip(id: "due", icon: .app(icons[.due]), text: task.due.map { DueText.format($0, context: context) },
+                              isOn: task.due != nil, action: .menu(choices))
     }
 
-    /// The row shows the day's view of the task (times on the phone's clock); the model writes it back in the note's zone.
-    private func setDue(_ due: TaskDue?) {
-        Task { await model.setLocalDue(due, of: task.name) }
+    private func estimate(_ task: TaskItem) -> ListActionChip {
+        ListActionChip(id: "estimate", icon: .app(icons[.estimate]), text: EstimateText.label(task.timeEstimate, rules: rules),
+                       action: .menu(rules.timeEstimates.map { option in
+            ListChoice(id: "\(option.minutes)", title: L10n.string(option.label), isOn: option.minutes == task.timeEstimate) {
+                Task { await model.update(task.name, [.timeEstimate(option.minutes)]) }
+            }
+        }))
     }
 
-    private var estimateChip: some View {
-        Menu {
-            ForEach(rules.timeEstimates, id: \.minutes) { option in
-                Button(LocalizedStringKey(option.label)) { Task { await model.update(task.name, [.timeEstimate(option.minutes)]) } }
+    private func status(_ task: TaskItem) -> ListActionChip {
+        ListActionChip(id: "status", icon: .app(icons[.status]), text: StatusText.title(task.status),
+                       action: .menu(TaskStatus.reviewChoices.map { status in
+            ListChoice(id: "\(status)", title: StatusText.title(status), isOn: status == task.status) {
+                Task { _ = await model.setStatus(status, of: task.name) }
             }
-        } label: {
-            Chip(icon: .estimate, text: EstimateText.label(task.timeEstimate, rules: rules))
-        }
+        }))
     }
+}
 
-    private var statusChip: some View {
-        Menu {
-            ForEach(TaskStatus.reviewChoices, id: \.self) { status in
-                Button(StatusText.title(status)) { Task { await model.setStatus(status, of: task.name) } }
-            }
-        } label: {
-            Chip(icon: .status, text: StatusText.title(task.status))
+extension QuickDue {
+    /// The day's name's String Catalog key, for a menu line of the engine.
+    var key: String {
+        switch self {
+        case .today: "due.today"
+        case .tomorrow: "due.tomorrow"
         }
     }
 }

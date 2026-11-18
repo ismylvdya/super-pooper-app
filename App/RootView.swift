@@ -101,6 +101,8 @@ struct RootView: View {
         .environment(\.physicalBottom, physicalBottom)
         .environment(\.timelineBell, model.settings.timeline.bellStyle)
         .environment(\.chipOrder, RowChipKind.ordered(model.settings.pool.chipOrder))
+        // Every list drawn by the list engine takes its look from the app's theme (`list-theme.json`).
+        .appListTheme()
         .poolLooks(model.settings.pool)
         .environment(\.pagePeeks, PagePeeks(model.settings.today))
         .appCalendar(model.calendar)

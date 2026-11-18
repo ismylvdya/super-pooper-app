@@ -1,3 +1,4 @@
+import ListEngineChumbulev
 import SwiftUI
 
 /// Spreader (the morning review; D-188): the pool as a table — one row per task with property chips edited in place, in
@@ -20,27 +21,24 @@ struct MorningReviewPage: View {
 }
 
 /// The review's table, its title and its "…" (Search, Reset sorting, Undo, Redo); `openSearch` and `openTask` open their
-/// pages where the review's host keeps pages.
+/// pages where the review's host keeps pages. The table is a list of the list engine (`ReorderableList`): the day's
+/// groups as its sections, what was set aside as a last section that stays as it is (`lockedSections`), Today / Tomorrow
+/// over the rows and the note under them scrolling with them.
 struct MorningReviewList: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(\.tokens) var tokens
     @Environment(\.icons) private var icons
+    @Environment(\.actions) private var registry
     @Environment(\.openURL) private var openURL
+    @Environment(\.chipOrder) private var chipOrder
+    @Environment(\.rules) var rules
     @State private var pendingAction: PendingAction?
-    @State private var frames = ListGroupFrames()
     /// Today's review, or tomorrow's planned today.
     @State private var isTomorrow = false
-    @Environment(\.rules) var rules
-    @Environment(TaskDragState.self) var drag: TaskDragState?
-    @Environment(\.startedLayout) private var startedLayout
-    /// Where the rows and headers stand on the screen, for a dragged "+".
-    @State var rowMids: [String: CGFloat] = [:]
-    @State var rowHeights: [String: CGFloat] = [:]
-    @State var headerMids: [String: CGFloat] = [:]
-    @State var dropLayout: PoolDropLayout?
-    @State var screenFrame: CGRect = .zero
-    @State var bottomBar: CGFloat = 0
+    /// The task whose exact due date and time is being picked.
+    @State private var pickingDue: String?
+    @State var dropIn = ListDropIn()
     let openSearch: () -> Void
     /// Opens the new task's page where the review's host keeps pages.
     let openNewItem: (NewItemSeed) -> Void
@@ -50,150 +48,118 @@ struct MorningReviewList: View {
 
     var body: some View {
         let plan = isTomorrow ? model.tomorrowPlan() : model.plan(at: model.clock.now)
-        List {
-            // Only in the evening: planning tomorrow is a thing of the day's end (`DayRules.tomorrowReviewFrom`). It
-            // scrolls with the rows, not with the bar.
-            if model.offersTomorrowReview {
-                Picker(selection: $isTomorrow) {
-                    Text("review.mode.today").tag(false)
-                    Text("review.mode.tomorrow").tag(true)
-                } label: { EmptyView() }
-                    .pickerStyle(.segmented)
-                    .accessibilityIdentifier("review.mode")
-                    .listGroupSpacer()
-                    .moveDisabled(true)
-            }
-            Group {
-                let rows = shownRows(plan)
-                let items = Dictionary(plan.pool.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-                let guides = ReviewGroups.guides(rows, items: items)
-                ForEach(Array(rows.enumerated()), id: \.element) { index, row in
-                    switch row {
-                    case .header(let group):
-                        ListGroupHeader(title: Text(LocalizedStringKey("review.group." + group.rawValue))) { headerMids[group.rawValue] = $0 }
-                            .moveDisabled(true)
-                            .accessibilityIdentifier("review.group.\(group.rawValue)")
-                    case .item(let name) where name == TaskDragState.newItemGap:
-                        let position = ReviewGroups.position(of: index, in: rows)
-                        TaggedTaskName(name: " ", parent: drag?.newItemSpot.parent)
-                            .opacity(drag?.newItemSpot.parent == nil ? 0 : 1)
-                            .modifier(RowTracking { frame in rowHeights[name] = frame.height })
-                            .listGroupRow(group: ReviewGroups.group(of: index, in: rows)?.rawValue ?? "", id: name,
-                                          index: position.index, count: position.count, frames: frames)
-                            .moveDisabled(true)
-                    case .item(let name):
-                        if let item = items[name] {
-                            let position = ReviewGroups.position(of: index, in: rows)
-                            ReviewRow(item: item, today: plan.today) { openTask(item.id) }
-                                // A subtask sits under its parent, shifted right, as in the pool.
-                                .padding(.leading, CGFloat(item.depth) * tokens.listSubtaskIndent)
-                                .modifier(RowTracking { frame in
-                                    rowMids[name] = frame.midY
-                                    rowHeights[name] = frame.height
-                                    let group = ReviewGroups.Group(item.task.habit.timeOfDay).rawValue
-                                    dropLayout?.add(row: name, midY: frame.midY, section: group, lift: liftByGap(of: name))
-                                })
-                                .background(alignment: .topLeading) {
-                                    if let guide = guides[name] {
-                                        SubtaskGuideLines(guide: guide, turnY: tokens.space(.reviewRowVertical) + tokens.uiFont(.taskTitle).lineHeight / 2,
-                                                          gap: 0, inList: true)
-                                    }
-                                }
-                                // The row keeps its top and bottom inset inside, where a tap opens the task.
-                                // A high-priority task's soft red over its row, as in the pool.
-                                .listGroupRow(group: ReviewGroups.group(of: index, in: rows)?.rawValue ?? "", id: name,
-                                              index: position.index, count: position.count, frames: frames, vertical: 0,
-                                              separatorIndent: CGFloat(item.depth) * tokens.listSubtaskIndent,
-                                              tint: tokens.plateTint(for: item.task), started: startedLayout?.shown(for: item)) {
-                                    ActionMenuContent(menu: .context(of: item.task), item: item, isToday: !isTomorrow) {
-                                        perform($0, on: item.id)
-                                    }
-                                }
-                                .accessibilityIdentifier("review:\(item.id)")
-                                // To the right one tab right or left (D-182); to the left Not today or, for a habit, Skip today.
-                                .actionSwipes(isTomorrow ? .reviewTomorrow : .review, item: item) { action in
-                                    if action.id == .indent {
-                                        // The rows of its own group: a group's first row has nothing above it.
-                                        let group = ReviewGroups.group(of: index, in: rows)
-                                        let shown = rows.indices.compactMap { at -> DayItem? in
-                                            guard case .item(let name) = rows[at], ReviewGroups.group(of: at, in: rows) == group else { return nil }
-                                            return items[name]
-                                        }
-                                        Task { await model.indent(item.id, rows: shown) }
-                                    } else {
-                                        perform(action, on: item.id)
-                                    }
-                                }
+        let setAside = setAsideItems(today: plan.today)
+        let row = ReviewRow(model: model, tokens: tokens, icons: icons, rules: rules, chipOrder: chipOrder) { pickingDue = $0 }
+        ReorderableList(sections: Binding(get: { sections(plan, setAside: setAside) }, set: { moved($0, plan: plan) }), look: "lists",
+                        actions: { engine.menu(.context(of: $0.task), for: $0, isToday: !isTomorrow) },
+                        traits: traits, swipes: { swipes(for: $0, setAside: setAside) },
+                        onNest: { nested($0, $1) }, dropIn: dropIn, onDropIn: { newItemDropped($0, plan: plan) },
+                        features: .all.subtracting([.crossList, .renameSections]), lockedSections: [Self.setAsideSection],
+                        onTap: { openTask($0.id) }, header: header, footer: footer) { row.content($0) }
+            .ignoresSafeArea()
+            .engineNewItem(dropIn, owner: Self.newItemOwner, takes: takesNewItem)
+            .onChange(of: model.offersTomorrowReview) { _, offered in if !offered { isTomorrow = false } }
+            .onChange(of: isTomorrow) { _, tomorrow in if tomorrow { model.markTomorrowReviewed() } }
+            .actionConfirmation($pendingAction) { handler.run($0) }
+            .sheet(isPresented: Binding(get: { pickingDue != nil }, set: { if !$0 { pickingDue = nil } })) { dueSheet(today: plan.today) }
+            .navigationTitle(Text("review.title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .searchOnTitleHold(openSearch)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    PageMoreMenu(search: openSearch, accessibilityID: "review.more") {
+                        Button { Task { await model.resetOrder(tomorrow: isTomorrow) } } label: {
+                            Label("review.reset", systemImage: icons[.resetSort])
                         }
+                            .accessibilityIdentifier("review.reset")
                     }
                 }
-                .onMove { source, destination in
-                    Haptics.play(.reorder)
-                    let move = ReviewGroups.move(rows, from: source, to: destination, pool: plan.pool)
-                    Task { await model.applyReviewMove(move) }
-                }
             }
-            setAside(today: plan.today)
-            ListGroupFooter(text: Text("review.footer.lines"))
-                .accessibilityIdentifier("review.footer")
+    }
+
+    static let setAsideSection = "setAside"
+
+    /// The day's groups (Morning, Day, Evening) in the pool's order, and what was set aside after them.
+    private func sections(_ plan: DayPlan, setAside: [DayItem]) -> [ListSection<DayItem>] {
+        var sections = ReviewGroups.Group.allCases.map { group in
+            ListSection(id: group.rawValue, title: L10n.string("review.group." + group.rawValue),
+                        items: plan.pool.filter { ReviewGroups.Group($0.task.habit.timeOfDay) == group })
         }
-        .listGroupStyle()
-        .listGroupBacking(frames)
-        .appList()
-        // The first group starts closer to the bar than a list's own top gap.
-        .contentMargins(.top, tokens.space(.reviewTop), for: .scrollContent)
-        .onChange(of: model.offersTomorrowReview) { _, offered in if !offered { isTomorrow = false } }
-        .onChange(of: isTomorrow) { _, tomorrow in if tomorrow { model.markTomorrowReviewed() } }
-        .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { screenFrame = $0 }
-        .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.bottom } action: { bottomBar = $0 }
-        .edgeAutoScroll(drag?.newItemPoint, bottomInset: bottomBar) { delta in
-            dropLayout = dropLayout?.shifted(by: -delta)
-            newItemMoved(to: drag?.newItemPoint, plan: plan)
+        if !setAside.isEmpty {
+            sections.append(ListSection(id: Self.setAsideSection,
+                                        title: L10n.string(isTomorrow ? "review.group.setAsideTomorrow" : "review.group.setAside"), items: setAside))
         }
-        .onChange(of: drag?.newItemPoint) { _, point in newItemMoved(to: point, plan: plan) }
-        .onChange(of: drag?.newItemPoint == nil) { _, ended in if ended { dropLayout = nil } }
-        .actionConfirmation($pendingAction) { handler.run($0) }
-        .navigationTitle(Text("review.title"))
-        .navigationBarTitleDisplayMode(.inline)
-        .searchOnTitleHold(openSearch)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                PageMoreMenu(search: openSearch, accessibilityID: "review.more") {
-                    Button { Task { await model.resetOrder(tomorrow: isTomorrow) } } label: {
-                        Label("review.reset", systemImage: icons[.resetSort])
-                    }
-                        .accessibilityIdentifier("review.reset")
-                }
+        return sections
+    }
+
+    /// What was taken out of the day (`SetAsideToday`; on Tomorrow, what is kept out of tomorrow).
+    private func setAsideItems(today: LocalDate) -> [DayItem] {
+        (isTomorrow ? model.setAsideTomorrow : model.setAsideToday).map { $0.isHabit ? DayItem(habit: $0, on: today) : DayItem(listed: $0) }
+    }
+
+    /// Rows landed: the new order of the day's tasks, and the ones in another group now take its part of the day.
+    private func moved(_ sections: [ListSection<DayItem>], plan: DayPlan) {
+        let current = Dictionary(plan.pool.map { ($0.id, ReviewGroups.Group($0.task.habit.timeOfDay)) }, uniquingKeysWith: { first, _ in first })
+        var order: [String] = []
+        var regrouped: [String: ReviewGroups.Group] = [:]
+        for section in sections {
+            guard let group = ReviewGroups.Group(rawValue: section.id) else { continue }
+            for item in section.items {
+                order.append(item.id)
+                if current[item.id] != group { regrouped[item.id] = group }
             }
+        }
+        Task { await model.applyReviewMove(ReviewGroups.Move(order: order, regrouped: regrouped)) }
+    }
+
+    /// A carried row went under the row above (today), or out from under its parent: one level out.
+    private func nested(_ name: String, _ nest: ListNest<String>) {
+        if let parent = nest.parent {
+            Task { await model.nest(name, under: parent, index: nest.index) }
+        } else {
+            perform(registry.definition(.outdent), on: name)
         }
     }
 
-    /// What was taken out of the day, at the bottom: swiped to the left it comes back (`SetAsideToday`; on Tomorrow, what is
-    /// kept out of tomorrow).
-    @ViewBuilder private func setAside(today: LocalDate) -> some View {
-        let notes = isTomorrow ? model.setAsideTomorrow : model.setAsideToday
-        if !notes.isEmpty {
-            // Set well apart from the day's groups: a divider with wide room above and below it.
-            Rectangle()
-                .fill(tokens.color(.listSeparator))
-                .frame(height: tokens.size(.subtaskLine))
-                .padding(.vertical, tokens.space(.reviewSetAsideGap))
-                .listGroupSpacer()
-                .moveDisabled(true)
-                .accessibilityHidden(true)
-            ListGroupHeader(title: Text(isTomorrow ? "review.group.setAsideTomorrow" : "review.group.setAside"))
-                .moveDisabled(true)
-                .accessibilityIdentifier("review.group.setAside")
-            ForEach(Array(notes.enumerated()), id: \.element.name) { index, note in
-                let item = note.isHabit ? DayItem(habit: note, on: today) : DayItem(listed: note)
-                ReviewRow(item: item, today: today) { openTask(note.name) }
-                    .listGroupRow(group: "setAside", id: note.name, index: index, count: notes.count, frames: frames, vertical: 0,
-                                  tint: tokens.plateTint(for: note), started: startedLayout?.shown(for: item)) {
-                        ActionMenuContent(menu: .context(of: note), item: item, isToday: !isTomorrow) { perform($0, on: note.name) }
-                    }
-                    .moveDisabled(true)
-                    .accessibilityIdentifier("review.setAside:\(note.name)")
-                    .actionSwipes(isTomorrow ? .setAsideTomorrow : .setAside, item: item) { perform($0, on: note.name) }
+    private var traits: ListTraits<DayItem> {
+        var traits = ListTraits<DayItem>()
+        traits.depth = \.depth
+        // A high-priority task's soft red over its row, as in the pool.
+        traits.fill = { [tokens] in tokens.plateTint(for: $0.task).map(ThemeColor.init) }
+        traits.canNest = { [model, isTomorrow] child, parent in !isTomorrow && model.canNest(child.id, order: [parent.id, child.id]) }
+        return traits
+    }
+
+    /// To the right Done; to the left Not today or, for a habit, Skip today (Not tomorrow on Tomorrow); set aside, back.
+    private func swipes(for item: DayItem, setAside: [DayItem]) -> ListSwipes {
+        let isSetAside = setAside.contains { $0.id == item.id }
+        let kind: ActionSwipes = isSetAside ? (isTomorrow ? .setAsideTomorrow : .setAside) : (isTomorrow ? .reviewTomorrow : .review)
+        return engine.swipes(kind, for: item, isToday: !isTomorrow)
+    }
+
+    /// Only in the evening: planning tomorrow is a thing of the day's end (`DayRules.tomorrowReviewFrom`).
+    private var header: AnyView? {
+        guard model.offersTomorrowReview else { return nil }
+        return AnyView(Picker(selection: $isTomorrow) {
+            Text("review.mode.today").tag(false)
+            Text("review.mode.tomorrow").tag(true)
+        } label: { EmptyView() }
+            .pickerStyle(.segmented)
+            .accessibilityIdentifier("review.mode")
+            .padding(.horizontal, ListTheme.app.rows.sideInset))
+    }
+
+    private var footer: AnyView {
+        AnyView(ListGroupFooter(text: Text("review.footer.lines"))
+            .padding(.horizontal, ListTheme.app.rows.sideInset)
+            .accessibilityIdentifier("review.footer"))
+    }
+
+    @ViewBuilder private func dueSheet(today: LocalDate) -> some View {
+        if let name = pickingDue, let task = model.task(named: name) {
+            let due = task.due ?? TaskDue(day: today, time: rules.editing.defaultTime)
+            DuePickerSheet(pick: DuePick(day: due.day, time: due.time), choosesZone: false) { pick in
+                Task { await model.setLocalDue(pick?.due, of: name) }
             }
         }
     }
@@ -203,6 +169,10 @@ extension MorningReviewList {
     /// The pool's actions; opening the task stays where the review is.
     private func perform(_ action: ActionDefinition, on name: String) {
         handler.handle(action, taskName: name)
+    }
+
+    private var engine: EngineActions {
+        EngineActions(model: model, tokens: tokens, registry: registry, icons: icons) { perform($0, on: $1) }
     }
 
     private var handler: TaskActionHandler {

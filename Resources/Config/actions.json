@@ -5,8 +5,9 @@
       "title": "action.done",
       "icon": "checkmark.circle.fill",
       "destructive": false,
+      "color": "accent",
       "haptic": "light",
-      "swipeTint": "success",
+      "swipeTint": "accent",
       "undo": "edits"
     },
     {
@@ -398,8 +399,7 @@
     },
     "listTask": {
       "leading": [
-        "indent",
-        "outdent"
+        "done"
       ],
       "trailing": [
         "delete"
@@ -415,8 +415,7 @@
     },
     "review": {
       "leading": [
-        "indent",
-        "outdent",
+        "done",
         "returnFromDone"
       ],
       "trailing": [
@@ -425,15 +424,16 @@
       ]
     },
     "setAside": {
-      "leading": [],
+      "leading": [
+        "done"
+      ],
       "trailing": [
         "returnToToday"
       ]
     },
     "reviewTomorrow": {
       "leading": [
-        "indent",
-        "outdent",
+        "done",
         "returnFromDone"
       ],
       "trailing": [
@@ -441,7 +441,9 @@
       ]
     },
     "setAsideTomorrow": {
-      "leading": [],
+      "leading": [
+        "done"
+      ],
       "trailing": [
         "returnTomorrow"
       ]
