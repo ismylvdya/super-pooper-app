@@ -221,7 +221,7 @@ struct ConfigTests {
     /// Every kind of row has its swipes in actions.json; a misspelt kind, side or swipe color is a config error.
     @Test func swipesAreCheckedLikeMenus() throws {
         let json = try String(contentsOf: TestPaths.configFolder.appendingPathComponent("actions.json"), encoding: .utf8)
-        for (fragment, replacement) in [("\"archivedHabit\": {", "\"archivedHabbit\": {"), ("\"trailing\": [\n        \"restoreFromTrash\"", "\"traling\": [\n        \"restoreFromTrash\"")] {
+        for (fragment, replacement) in [("\"archivedHabit\": {", "\"archivedHabbit\": {"), ("\"leading\": [\n        \"restoreFromTrash\"", "\"lading\": [\n        \"restoreFromTrash\"")] {
             let broken = Data(try json.replacingOnce(fragment, with: replacement).utf8)
             #expect(throws: ConfigError.self) { try ConfigLoader.decode(ActionRegistry.self, from: broken, file: "actions.json") }
         }

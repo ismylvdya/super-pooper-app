@@ -115,11 +115,12 @@ struct ActionAvailabilityTests {
         #expect(TestConfig.actions.definition(.indent).swipeTint == ColorToken.swipeNeutral.rawValue)
     }
 
-    /// The archive and the trash put a note back with a swipe to the left; nothing to swipe to the right.
-    @Test func theArchiveAndTheTrashRestoreToTheLeft() {
-        #expect(swipes(.archivedTask, item(makeTask("Old", status: .archived))) == ([], [.restoreThisWeek]))
-        #expect(swipes(.archivedHabit, item(makeHabit("Old"))) == ([], [.restoreHabit]))
-        #expect(swipes(.trash, nil) == ([], [.restoreFromTrash]))
+    /// The archive and the trash put a note back with a swipe to the right; to the left the archive's go to the trash
+    /// (the trash's own, deleted for good, is the trash page's).
+    @Test func theArchiveAndTheTrashRestoreToTheRight() {
+        #expect(swipes(.archivedTask, item(makeTask("Old", status: .archived))) == ([.restoreThisWeek], [.delete]))
+        #expect(swipes(.archivedHabit, item(makeHabit("Old"))) == ([.restoreHabit], [.delete]))
+        #expect(swipes(.trash, nil) == ([.restoreFromTrash], []))
     }
 
     /// Select only where items can be picked (the pool); Unworm only for a member of the shown day's worm.

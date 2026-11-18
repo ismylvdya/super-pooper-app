@@ -449,22 +449,26 @@
       ]
     },
     "archivedTask": {
-      "leading": [],
-      "trailing": [
+      "leading": [
         "restoreThisWeek"
+      ],
+      "trailing": [
+        "delete"
       ]
     },
     "archivedHabit": {
-      "leading": [],
-      "trailing": [
+      "leading": [
         "restoreHabit"
+      ],
+      "trailing": [
+        "delete"
       ]
     },
     "trash": {
-      "leading": [],
-      "trailing": [
+      "leading": [
         "restoreFromTrash"
-      ]
+      ],
+      "trailing": []
     }
   },
   "haptics": {

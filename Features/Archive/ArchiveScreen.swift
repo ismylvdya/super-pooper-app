@@ -1,36 +1,26 @@
+import ListEngineChumbulev
 import SwiftUI
 
-/// Archived tasks and habits in one list. A task goes back to Soon / Half year, a habit back to the
-/// Habits list (a swipe to the left: back to Soon, back to habits); either can go to the trash. When the list empties,
-/// the page closes.
+/// Archived tasks and habits in one list of the list engine, a section each. Swiped to the right, a task goes back to
+/// Soon / Half year, a habit back to the Habits list; to the left, either goes to the trash. A tap opens it. Nothing
+/// is carried, there is no menu. When the list empties, the page closes.
 struct ArchiveScreen: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(\.openURL) private var openURL
     @Environment(\.tokens) private var tokens
+    @Environment(\.icons) private var icons
+    @Environment(\.actions) private var registry
     @State private var pendingAction: PendingAction?
-    @State private var titleHeight: CGFloat = 0
-    @State private var frames = ListGroupFrames()
 
     var body: some View {
-        let tasks = model.archivedTasks
-        let habits = model.archivedHabits
-        List {
-            LargePageTitle(height: $titleHeight) { Text("archive.title") }
-                .listGroupSpacer()
-            group(tasks, id: "tasks", header: "archive.tasks", menu: .archiveRow, swipes: .archivedTask) { _ in
-                tokens.color(.primaryText)
-            }
-            group(habits, id: "habits", header: "archive.habits", menu: .habitArchiveRow, swipes: .archivedHabit) {
-                tokens.habitNameColor($0)
-            }
+        ReorderableList(sections: .constant(sections), look: "lists", swipes: swipes, features: [.swipes, .haptics],
+                        onTap: { router.open(.task($0.id)) }) { item in
+            ListRowContent(title: item.task.name, titleColor: item.task.isHabit ? ThemeColor(tokens.habitNameColor(item.task)) : nil)
         }
-        .listGroupStyle()
-        .listGroupBacking(frames)
-        .appList()
-        // The title starts where the other pages' titles start, not under the list's own top margin.
-        .contentMargins(.top, 0, for: .scrollContent)
-        .titleScrollsIntoBar(L10n.string("archive.title"), titleHeight: titleHeight)
+        .ignoresSafeArea()
+        .navigationTitle(Text("archive.title"))
+        .navigationBarTitleDisplayMode(.large)
         .searchOnTitleHold { router.open(.search(.archive)) }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -43,21 +33,18 @@ struct ArchiveScreen: View {
         .actionConfirmation($pendingAction) { handler.run($0) }
     }
 
-    @ViewBuilder
-    private func group(_ notes: [TaskItem], id: String, header: LocalizedStringKey, menu: ActionMenu, swipes: ActionSwipes,
-                       color: @escaping (TaskItem) -> Color) -> some View {
-        if !notes.isEmpty {
-            ListGroupHeader(title: Text(header))
-            ForEach(Array(notes.enumerated()), id: \.element.name) { index, note in
-                HStack {
-                    NavigationLink(value: Route.task(note.name)) { Text(note.name).foregroundStyle(color(note)) }
-                    ActionMenuButton(menu: menu, accessibilityID: "archive.more.\(note.name)") { handler.handle($0, taskName: note.name) }
-                        .buttonStyle(.borderless)
-                }
-                .listGroupRow(group: id, id: note.name, index: index, count: notes.count, frames: frames)
-                .actionSwipes(swipes, item: DayItem(listed: note), isToday: false) { handler.handle($0, taskName: note.name) }
-            }
-        }
+    private var sections: [ListSection<DayItem>] {
+        [("tasks", "archive.tasks", model.archivedTasks), ("habits", "archive.habits", model.archivedHabits)]
+            .filter { !$0.2.isEmpty }
+            .map { ListSection(id: $0.0, title: L10n.string($0.1), items: $0.2.map(DayItem.init(listed:))) }
+    }
+
+    private func swipes(_ item: DayItem) -> ListSwipes {
+        engine.swipes(item.task.isHabit ? .archivedHabit : .archivedTask, for: item, isToday: false)
+    }
+
+    private var engine: EngineActions {
+        EngineActions(model: model, tokens: tokens, registry: registry, icons: icons) { handler.handle($0, taskName: $1) }
     }
 
     private var handler: TaskActionHandler {
