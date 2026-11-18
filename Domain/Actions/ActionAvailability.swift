@@ -19,8 +19,6 @@ struct ActionAvailability: Sendable {
     let capabilities: StoreCapabilities
     /// Skip today and Not today only make sense on today's page.
     var isToday = true
-    /// Select is offered where the items can be picked (a day's pool).
-    var canSelect = false
     /// The shown day's worms: Unworm is offered to their members.
     var worms: [DayWorm] = []
 
@@ -47,7 +45,6 @@ struct ActionAvailability: Sendable {
         case .outdent: return !item.isHabit && !item.task.projects.isEmpty
         case .archive: return !item.task.isArchived
         case .restoreFromArchive: return item.task.isArchived
-        case .select: return canSelect
         case .unworm: return worm(of: item.id) != nil
         default: return true
         }

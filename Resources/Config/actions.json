@@ -213,13 +213,6 @@
       "haptic": "light"
     },
     {
-      "id": "select",
-      "title": "action.select",
-      "icon": "checkmark.circle",
-      "destructive": false,
-      "haptic": "none"
-    },
-    {
       "id": "highPriority",
       "title": "action.highPriority",
       "icon": "exclamationmark.triangle",
@@ -368,22 +361,6 @@
     "trashedPage": {
       "actions": [
         "restoreFromTrash"
-      ]
-    },
-    "selection": {
-      "actions": [
-        "done",
-        "notToday",
-        "skipToday"
-      ],
-      "more": [
-        "start",
-        "notStarted",
-        "highPriority",
-        "worm",
-        "unworm",
-        "newSection",
-        "delete"
       ]
     }
   },

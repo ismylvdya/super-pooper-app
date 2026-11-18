@@ -11,7 +11,6 @@ struct PoolRowContent: View {
     @Environment(\.actions) private var actions
     @Environment(\.tokens) private var tokens
     @Environment(TaskDragState.self) private var drag: TaskDragState?
-    @Environment(PoolSelection.self) private var selection: PoolSelection?
     let item: DayItem
     var isToday = true
     var isCompact = true
@@ -26,58 +25,18 @@ struct PoolRowContent: View {
     let handler: TaskActionHandler
     /// Where a drag of this row starts from; nil = it cannot be dragged.
     var dragSource: TaskDragState.Source?
-    /// The row stands in that day's pool: its menu offers Select, and in Select mode it is picked by a tap.
+    /// The row stands in that day's pool: its menu offers what a pool row does there (Unworm).
     var poolDay: LocalDate?
-    /// Select mode: the row a drag of the picked ones lifts, the first of them.
-    var stackTop: DayItem?
 
     var body: some View {
-        if let selection, selection.isOn, poolDay != nil {
-            selectable(selection)
-        } else {
-            plated
-                .plateLift(.row, for: .contextMenuPreview)
-                .contextMenu {
-                    ActionMenuContent(menu: .context(of: item.task), item: item, isToday: isToday, poolDay: poolDay) {
-                        handler.handle($0, taskName: item.id)
-                    }
-                }
-                .taskDragSource(item, from: dragSource ?? .pool, drag: drag, isOn: dragSource != nil, lift: .row) { plated }
-        }
-    }
-
-    /// Select mode: a tap picks or drops the row, a picked row has an outline and can be dragged with the others picked; no menu.
-    private func selectable(_ selection: PoolSelection) -> some View {
-        let isSelected = selection.isSelected(item.id)
-        return plated
-            .allowsHitTesting(false)
-            .overlay {
-                if isSelected {
-                    // Wholly inside the plate and concentric with it, so a routine's shared plate and the row below cut nothing.
-                    tokens.plateShape(.row)
-                        .strokeBorder(tokens.color(.selectionOutline).opacity(tokens.opacity(.selectionOutline)),
-                                      lineWidth: tokens.size(.selectionOutline))
-                        .accessibilityIdentifier("pool.selected")
+        plated
+            .plateLift(.row, for: .contextMenuPreview)
+            .contextMenu {
+                ActionMenuContent(menu: .context(of: item.task), item: item, isToday: isToday, poolDay: poolDay) {
+                    handler.handle($0, taskName: item.id)
                 }
             }
-            .contentShape(Rectangle())
-            .onTapGesture {
-                Haptics.play(.select)
-                selection.toggle(item.id)
-            }
-            // A picked row lifts all the picked ones with it, as a stack.
-            .taskDragSource(item, from: dragSource ?? .pool, drag: drag, isOn: isSelected && dragSource?.wormMembers.isEmpty == false,
-                            lift: .row, stackCount: dragSource?.wormMembers.count ?? 1) { lifted }
-            .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
-    }
-
-    /// What a drag in Select mode lifts.
-    @ViewBuilder private var lifted: some View {
-        if let stackTop, stackTop.id != item.id {
-            PoolRowContent(item: stackTop, isCompact: isCompact, titleLineLimit: titleLineLimit, handler: handler)
-        } else {
-            plated
-        }
+            .taskDragSource(item, from: dragSource ?? .pool, drag: drag, isOn: dragSource != nil, lift: .row) { plated }
     }
 
     /// The row on its plate: what stands in the pool or on the timeline, and what a drag lifts.

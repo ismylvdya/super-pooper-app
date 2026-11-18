@@ -12,8 +12,6 @@ struct TaskActionHandler {
     var afterDelete: (() -> Void)?
     /// The day the pool shows (nil: today): Unworm takes the task off that day's worm.
     var shownDay: LocalDate?
-    /// Select from a row's menu starts the pool's Select mode with that row picked.
-    var startSelection: ((String) -> Void)?
     /// Where Open puts the task's page (a sheet's own stack); nil: the tab's stack.
     var openTask: ((String) -> Void)?
 
@@ -54,8 +52,6 @@ struct TaskActionHandler {
             }
         case .restoreFromTrash:
             Task { await model.restoreFromTrash(named: taskName) }
-        case .select:
-            startSelection?(taskName)
         case .unworm:
             model.unworm([taskName], on: shownDay)
         case .delete:

@@ -5,10 +5,10 @@ extension View {
     /// finger goes `preview` (the row's plate, drawn again: a drag that starts from the long-press menu shows only the
     /// row's text otherwise) at the row's size, lifted as its plate (`lift`).
     @ViewBuilder func taskDragSource<Preview: View>(_ item: DayItem, from source: TaskDragState.Source, drag: TaskDragState?,
-                                                    isOn: Bool, lift: PlateCorners, stackCount: Int = 1,
+                                                    isOn: Bool, lift: PlateCorners,
                                                     @ViewBuilder preview: @escaping () -> Preview) -> some View {
         if let drag, isOn {
-            modifier(TaskDragSource(item: item, source: source, drag: drag, lift: lift, stackCount: stackCount, preview: preview))
+            modifier(TaskDragSource(item: item, source: source, drag: drag, lift: lift, preview: preview))
         } else {
             self
         }
@@ -20,8 +20,6 @@ private struct TaskDragSource<Preview: View>: ViewModifier {
     let source: TaskDragState.Source
     let drag: TaskDragState
     let lift: PlateCorners
-    /// How many tasks go along: more than one lifts as a stack (`DragStack`).
-    let stackCount: Int
     let preview: () -> Preview
     @State private var size: CGSize?
 
@@ -30,10 +28,7 @@ private struct TaskDragSource<Preview: View>: ViewModifier {
             .plateLift(lift, for: .dragPreview)
             .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
             .onDrag { drag.begin(item, from: source) } preview: {
-                DragStack(count: stackCount, corners: lift) {
-                    // The first of several may be taller or shorter than the row the finger took.
-                    preview().frame(width: size?.width, height: stackCount > 1 ? nil : size?.height)
-                }
+                preview().frame(width: size?.width, height: size?.height)
             }
     }
 }

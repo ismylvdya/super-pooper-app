@@ -14,7 +14,6 @@ struct PoolRow: View {
     var dragSource: TaskDragState.Source?
     /// The row stands in that day's pool (Select).
     var poolDay: LocalDate?
-    var stackTop: DayItem?
     /// The lines from its parent, for a subtask (`SubtaskGuides`).
     var guide: SubtaskGuide?
 
@@ -23,7 +22,7 @@ struct PoolRow: View {
         PoolRowContent(item: item, isToday: isToday, isCompact: isCompact,
                        titleLineLimit: item.hasSubtasks ? 1 : nil, plate: plate,
                        minimumHeight: CGFloat(lines) * tokens.uiFont(.taskTitle).lineHeight, handler: handler,
-                       dragSource: dragSource, poolDay: poolDay, stackTop: stackTop)
+                       dragSource: dragSource, poolDay: poolDay)
             // A subtask sits under its parent, shifted right, joined to it by a thin line.
             .padding(.leading, CGFloat(item.depth) * tokens.subtaskIndent)
             .background(alignment: .topLeading) {

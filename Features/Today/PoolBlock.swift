@@ -15,7 +15,6 @@ struct PoolBlock: View {
     @Environment(\.rules) private var rules
     @Environment(\.physicalBottom) private var physicalBottom
     @Environment(TaskDragState.self) private var dragState: TaskDragState?
-    @Environment(PoolSelection.self) private var selection: PoolSelection?
     let plan: DayPlan
     let handler: TaskActionHandler
     /// Space under the block that belongs to the home indicator (the list scrolls under it).
@@ -207,7 +206,7 @@ struct PoolBlock: View {
                 ForEach(shown) { section in
                     let isGap = drag?.isSectionGap(section.id) == true
                     if section.hasHeader {
-                        PoolSectionHeader(section: section, isFirst: section.id == shown.first?.id, drag: selection?.isOn == true ? nil : drag, canRename: selection?.isOn != true) {
+                        PoolSectionHeader(section: section, isFirst: section.id == shown.first?.id, drag: drag, canRename: true) {
                             model.renameSection(section.id, to: $0, on: plan.today)
                         }
                             .dropGap(isGap)
@@ -295,8 +294,7 @@ struct PoolBlock: View {
             NewItemGapPlate(depth: item.depth, extraLines: drag?.newItemEstimate.map(rules.pool.extraLines(forEstimate:)) ?? 0)
         } else {
             PoolRow(item: item, isToday: plan.isToday, isCompact: fillsHeight, plate: plate, handler: handler,
-                    dragSource: selectionSource ?? source, poolDay: plan.today,
-                    stackTop: selection.flatMap { selection in plan.pool.first { selection.isSelected($0.id) } },
+                    dragSource: source, poolDay: plan.today,
                     guide: guides[item.id])
                 .dropGap(drag?.isGap(item.id) == true)
         }
@@ -305,12 +303,6 @@ struct PoolBlock: View {
     /// The lines from parents to their subtasks, while no task is dragged over the pool (the rows part then).
     private var guides: [String: SubtaskGuide] {
         drag?.poolOrder == nil ? SubtaskGuides.guides(of: plan.pool) : [:]
-    }
-
-    /// In Select mode a drag carries all the picked tasks, in the pool's order.
-    private var selectionSource: TaskDragState.Source? {
-        guard let selection, selection.isOn else { return nil }
-        return TaskDragState.selection(plan.pool.map(\.id).filter(selection.isSelected))
     }
 
     private func dragSource(of segment: PoolSegments.Segment) -> TaskDragState.Source {

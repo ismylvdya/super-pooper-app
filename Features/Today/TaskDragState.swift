@@ -17,8 +17,7 @@ final class TaskDragState {
         case backlog(String)
         /// A pool section's header, by the section's id.
         case section(String)
-        /// A worm's member: the whole worm goes along, within the pool only. The tasks picked in Select mode go the same way
-        /// (`selectionWorm`).
+        /// A worm's member: the whole worm goes along, within the pool only.
         case worm(id: String, members: [String])
         /// The tab bar's "+": a new item, made where it lands.
         case newItem
@@ -37,9 +36,6 @@ final class TaskDragState {
         }
     }
 
-    /// The tasks picked in Select mode, dragged together: they move as a worm does, without becoming one.
-    static func selection(_ members: [String]) -> Source { .worm(id: selectionWorm, members: members) }
-    private static let selectionWorm = "selection"
 
     static let types: [UTType] = [.text]
     /// The pool's id for the room a dragged "+" makes there: it becomes the new task's name once it is made.

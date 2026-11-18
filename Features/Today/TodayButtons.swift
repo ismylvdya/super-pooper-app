@@ -24,7 +24,6 @@ struct TodayButtons: View {
     @Environment(\.icons) private var icons
     @Environment(\.displayScale) private var displayScale
     @Environment(TaskDragState.self) private var drag: TaskDragState?
-    @Environment(PoolSelection.self) private var selection: PoolSelection?
     let placement: Placement
     var bottom: HorizontalEdge?
     /// Upright: where each button stands on screen (nil when it is gone), for the room left between the groups.
@@ -71,14 +70,7 @@ struct TodayButtons: View {
             .accessibilityValue(badge.map { Text("problems.badge \($0)") } ?? Text(verbatim: ""))
             .accessibilityIdentifier("today.lists")
         case .more:
-            PageMoreMenu(search: { router.open(.search(.tasksAndEvents)) }, accessibilityID: "today.more") {
-                if let selection {
-                    Button { withAnimation(tokens.animation) { selection.start() } } label: {
-                        Label("action.select", systemImage: model.config.actions.definition(.select).icon)
-                    }
-                    .accessibilityIdentifier("today.select")
-                }
-            }
+            PageMoreMenu(search: { router.open(.search(.tasksAndEvents)) }, accessibilityID: "today.more")
         }
     }
 }

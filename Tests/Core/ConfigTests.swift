@@ -36,13 +36,9 @@ struct ConfigTests {
         #expect(TestConfig.rules.notifications.snoozeChoices.contains(30))
     }
 
-    /// Select mode's bar: Done and Not today or Skip today as buttons, the rest under "…"; the long-press menus offer Unworm, and Select mode starts from the bar's "…" alone.
-    @Test func theSelectionMenuNamesKnownActions() {
-        let selection = TestConfig.actions.menus[.selection]
-        #expect(selection.frequent == [.done, .notToday, .skipToday])
-        #expect(selection.more == [.start, .notStarted, .highPriority, .worm, .unworm, .newSection, .delete])
+    /// The long-press menus offer Unworm.
+    @Test func theContextMenusOfferUnworm() {
         for menu in [ActionMenu.taskContext, .habitContext] {
-            #expect(!TestConfig.actions.menus[menu].more.contains(.select), "\(menu)")
             #expect(TestConfig.actions.menus[menu].more.contains(.unworm), "\(menu)")
         }
         #expect(TestConfig.actions.definition(.highPriority).undo == .edits)

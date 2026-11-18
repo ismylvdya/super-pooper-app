@@ -90,9 +90,8 @@ extension AppModel {
         // snoozes or dismisses itself.
         case .open, .openInObsidian, .restoreFromTrash, .deleteEvent, .snooze, .dismissAlert: break
         case .unworm: unworm([name], on: day)
-        // Select mode is the screen's; Worm, New section and Move to list take the selected tasks (`worm`, `newSection`,
-        // `moveSelected`).
-        case .select, .worm, .newSection: break
+        // Worm and New section had picked tasks to act on (the pool's Select mode, gone): nothing to do on one.
+        case .worm, .newSection: break
         }
         return []
     }

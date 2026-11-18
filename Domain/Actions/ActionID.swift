@@ -33,8 +33,6 @@ enum ActionID: String, Codable, CaseIterable, Sendable {
     case start
     /// A started task back to plain This week.
     case notStarted
-    /// The pool's Select mode, with this task picked first.
-    case select
     /// High priority on the selected tasks (off when all of them have it already).
     case highPriority
     /// The selected tasks share one plate for the shown day (`DayWorm`); nothing is written to the notes.

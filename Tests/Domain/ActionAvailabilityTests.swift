@@ -123,12 +123,9 @@ struct ActionAvailabilityTests {
         #expect(swipes(.trash, nil) == ([.restoreFromTrash], []))
     }
 
-    /// Select only where items can be picked (the pool); Unworm only for a member of the shown day's worm.
-    @Test func selectInThePoolAndUnwormForAWormMember() {
-        let pool = ActionAvailability(capabilities: full.capabilities, canSelect: true,
-                                      worms: [DayWorm(id: "w", members: ["Milk", "Bank"])])
-        #expect(pool.isAvailable(.select, for: item(makeTask("Milk"))))
-        #expect(!full.isAvailable(.select, for: item(makeTask("Milk"))), "a list row has no Select")
+    /// Unworm only for a member of the shown day's worm.
+    @Test func unwormForAWormMember() {
+        let pool = ActionAvailability(capabilities: full.capabilities, worms: [DayWorm(id: "w", members: ["Milk", "Bank"])])
         #expect(pool.isAvailable(.unworm, for: item(makeTask("Bank"))))
         #expect(!pool.isAvailable(.unworm, for: item(makeTask("Report"))))
     }
