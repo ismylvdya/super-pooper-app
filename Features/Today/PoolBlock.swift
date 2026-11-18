@@ -1,327 +1,177 @@
+import ListEngineChumbulev
 import SwiftUI
 
-/// Untimed tasks of the day, under the headers of the day's sections (Morning, Day, Evening and the user's own). Above
-/// the timeline it shows N rows (setting) and a "+K more" counter that follows scrolling; beside it, it takes the full
-/// height and has no counter. Rows can be dragged: within the pool to reorder it (today) and into another section (that
-/// day only), onto the timeline to give a task a time (a habit sent here today gets its time back for today); a timed
-/// task dragged here from the timeline loses its time, a habit's block leaves today's timeline. A task from a backlog
-/// page comes into the pool of any day shown. A section is dragged whole by its header, within the pool only. The tab
-/// bar's "+" dragged over any day's pool makes a row's room; let go, it opens the new task's page for that day, and today
-/// the task takes that spot once made (another day has no order of its own: the pool's sort places it).
+/// Untimed tasks of the day, under the headers of the day's sections (Morning, Day, Evening and the user's own): a list of
+/// the list engine (look "pool"). A tap opens a task, a long press its menu; no swipes. Carried, a row moves within the
+/// pool (today) and into another section (another day: only into another section — its pool has no order of its own),
+/// over the right part it becomes the subtask of the row above (today), off the pool onto the timeline it gets the time
+/// under the finger, onto a backlog page it goes to that list (`TasksCarry`). A block dragged from the timeline lands
+/// here and loses its time. The habits of a routine stand joined on one plate; a long task's plate is taller. A section's
+/// title is edited in place. The tab bar's "+" carried over the pool opens its place; let go, the new task's page opens
+/// for that spot. Pulled down, it syncs.
 struct PoolBlock: View {
     @Environment(AppModel.self) private var model
     @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     @Environment(\.rules) private var rules
-    @Environment(\.physicalBottom) private var physicalBottom
-    @Environment(TaskDragState.self) private var dragState: TaskDragState?
+    @Environment(\.icons) private var icons
+    @Environment(\.actions) private var registry
+    @Environment(\.chipOrder) private var chipOrder
+    @Environment(\.tasksSpace) private var space
+    @Environment(TaskDragState.self) private var drag: TaskDragState?
     let plan: DayPlan
     let handler: TaskActionHandler
     /// Space under the block that belongs to the home indicator (the list scrolls under it).
     let bottomInset: CGFloat
-    /// The edges of the list that lie under a system bar (`edgeFades`).
+    /// The edges of the list that lie under a system bar.
     let barEdges: Edge.Set
-    @State private var rowHeights: [String: CGFloat] = [:]
-    @State private var visibleRows: Set<String> = []
-    @State private var rowMids: [String: CGFloat] = [:]
-    @State private var headerMids: [String: CGFloat] = [:]
-    @State private var headerHeights: [String: CGFloat] = [:]
-    /// The rows and headers as they stood when the drag reached the pool. The rows that make room move, and measuring
-    /// them again would pull the dragged task back to where it was: the order is read against this layout instead.
-    @State private var dragLayout: PoolDropLayout?
-    /// The block on the screen, where the dragged "+" is compared with it.
-    @State private var screenFrame: CGRect = .zero
-    private static let dropSpace = "poolDrop"
-
-    private var drag: TaskDragState? { dragState }
+    @State private var dropIn = ListDropIn()
+    /// Bumped when a move is refused, so the list shows the pool as it is again.
+    @State private var revision = 0
 
     var body: some View {
-        poolContent
-            .coordinateSpace(.named(Self.dropSpace))
-            .modifier(PoolDropTarget(drag: drag, animation: tokens.animation, layout: dropLayout, canDrop: canDrop,
-                                     onDrop: dropped, onSectionDrop: sectionDropped,
-                                     onRefused: { model.refuseDrop($0.id, onto: .pool) },
-                                     nesting: { order, dragged, x in nesting(order: order, dragged: dragged, x: x) },
-                                     onNest: nested))
-            .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { screenFrame = $0 }
-            .onChange(of: drag?.newItemPoint) { _, point in newItemMoved(to: point) }
-            .onChange(of: drag?.draggedID ?? drag?.section) { _, dragged in if dragged == nil { dragLayout = nil } }
-    }
-
-    /// While something is dragged over the pool, the sections as the drop would make them.
-    private var sections: [PoolSectionContent] {
-        if let order = drag?.sectionOrder { return PoolArrangement.reordered(plan.sections, by: order) }
-        guard let order = drag?.poolOrder, var item = drag?.item ?? newItemGap else { return plan.sections }
-        // Over the pool's right part a task stands as the subtask of the row above it.
-        if drag?.item != nil, let spot = drag?.newItemSpot, spot.parent != nil { item.depth = spot.depth }
-        let along = drag?.source.wormMembers.filter { $0 != item.id } ?? []
-        let members = along.compactMap { name in plan.pool.first { $0.id == name } }
-        return PoolArrangement.hovering(plan.sections, order: PoolDropOrder.keepingTogether(order, dragged: item.id, along: along),
-                                        dragged: [item] + members, into: drag?.poolSection)
-    }
-
-    /// The room a dragged "+" takes among the rows: a row of its own, with nothing drawn in it.
-    private var newItemGap: DayItem? {
-        guard let drag, drag.source == .newItem else { return nil }
-        var gap = DayItem(listed: TaskItem(id: .unsaved, name: TaskDragState.newItemGap, status: .thisWeek))
-        gap.depth = drag.newItemSpot.depth
-        return gap
-    }
-
-    private func dropLayout() -> PoolDropLayout {
-        if let dragLayout { return dragLayout }
-        // Only what is on screen says where it stands: a row or header scrolled away keeps a place it has left.
-        let onScreen = { (mid: CGFloat) in mid >= 0 && mid <= screenFrame.height }
-        let layout = PoolDropLayout(
-            rows: plan.sections.flatMap { section in
-                section.items.compactMap { item in
-                    rowMids[item.id].flatMap { visibleRows.contains(item.id) && onScreen($0) ? $0 : nil }
-                        .map { PoolDropOrder.Row(id: item.id, midY: Double($0), section: section.id) }
-                }
-            },
-            headers: plan.sections.compactMap { section in
-                headerMids[section.id].flatMap { onScreen($0) ? $0 : nil }.map { SectionDropOrder.Header(id: section.id, midY: Double($0)) }
-            },
-            all: plan.sections.flatMap { $0.items.map(\.id) },
-            inSections: plan.sections.contains(where: \.hasHeader))
-        dragLayout = layout
-        return layout
-    }
-
-    /// Today's pool takes its own rows and the timeline's blocks; any day's a backlog page's tasks.
-    private func canDrop(_ item: DayItem, from source: TaskDragState.Source) -> Bool {
-        switch source {
-        case .pool: plan.isToday
-        case .timeline(let slot): plan.isToday && model.canDropInPool(item.id, slot: slot)
-        case .backlog: model.canBringFromBacklog(item.id)
-        case .worm: plan.isToday
-        case .section, .newItem: false
-        }
-    }
-
-    private func dropped(_ item: DayItem, from source: TaskDragState.Source, order: [String], section: String?) {
-        Haptics.play(.drop)
-        let day = plan.today
-        let isToday = plan.isToday
-        if let section, isToday, source.wormMembers.isEmpty { model.moveTask(item.id, toSection: section, poolOrder: order, on: day) }
-        switch source {
-        // The pool's own order is today's only.
-        case .pool: if isToday && section == nil { Task { await model.setPoolOrder(order) } }
-        case .timeline(let slot): Task { await model.unschedule(item.id, slot: slot, poolOrder: order, on: day) }
-        case .backlog: Task { await model.bringFromBacklog(item.id, to: day, poolOrder: isToday ? order : nil) }
-        case .worm(_, let members):
-            model.moveTasks(members, toSection: section, poolOrder: PoolDropOrder.keepingTogether(order, dragged: item.id, along: members),
-                            on: day)
-        case .section, .newItem: break
-        }
-    }
-
-    /// The dragged "+" over a pool: rows make room under it and letting go opens the new task's page for the spot.
-    private func newItemMoved(to point: CGPoint?) {
-        // Under a page pushed over Tasks or under the review's sheet, the pool takes no "+".
-        guard let drag, let point, router.takesNewItemOnTasks else {
-            dragLayout = nil
-            return
-        }
-        guard screenFrame.contains(point) else {
-            if drag.poolOrder != nil { withAnimation(tokens.animation) { drag.leavePool() } }
-            drag.clearNewItemLanding(Self.dropSpace)
-            return
-        }
-        drag.turnAfterDwell(.block(.pool), seconds: rules.gestures.newItemTurnDwellSeconds)
-        let layout = dropLayout()
-        let spot = PoolDropOrder.drop(rows: layout.rows, all: layout.all, headers: layout.headers, inSections: layout.inSections,
-                                      dragged: TaskDragState.newItemGap,
-                                      at: Double(point.y - screenFrame.minY))
-        // Over the right part of the pool the new task is the row above's subtask; crossing over is a step to feel.
-        let asSubtask = NewItemNesting.isSubtaskSide(x: Double(point.x), poolMinX: Double(screenFrame.minX), poolWidth: Double(screenFrame.width),
-                                                     share: rules.gestures.subtaskShare)
-        let nesting = NewItemNesting.spot(order: spot.order, gap: TaskDragState.newItemGap, pool: plan.pool, asSubtask: asSubtask)
-        // Another day's pool has no headers, so no spot names a section: the room opens in its one list.
-        let moved = withAnimation(tokens.animation) { drag.hover(poolOrder: spot.order, section: spot.section ?? plan.sections.first?.id) }
-        let above = spot.order.firstIndex(of: TaskDragState.newItemGap).flatMap { $0 > 0 ? spot.order[$0 - 1] : nil }
-        drag.newItemAbove = plan.pool.first { $0.id == above && !$0.isHabit }?.id
-        let nested = nesting != drag.newItemSpot
-        if nested { withAnimation(tokens.animation) { drag.newItemSpot = nesting } }
-        if moved || nested { Haptics.play(.dragStep) }
-        drag.setNewItemLanding(Self.dropSpace) { newItemDropped(order: spot.order, section: spot.section, nesting: nesting) }
-    }
-
-    /// A task over the pool's right part, today: the subtask of the row above it, when it can be one (`SubtaskMove`).
-    private func nesting(order: [String], dragged: String, x: Double) -> NewItemNesting.Spot {
-        guard plan.isToday, NewItemNesting.isSubtaskSide(x: x, poolMinX: 0, poolWidth: Double(screenFrame.width), share: rules.gestures.subtaskShare),
-              model.canNest(dragged, order: order) else { return .top }
-        return NewItemNesting.spot(order: order, gap: dragged, pool: plan.pool, asSubtask: true)
-    }
-
-    private func nested(_ item: DayItem, at spot: NewItemNesting.Spot) {
-        guard let parent = spot.parent else { return }
-        Haptics.play(.drop)
-        Task { await model.nest(item.id, under: parent, index: spot.index) }
-    }
-
-    private func newItemDropped(order: [String], section: String?, nesting: NewItemNesting.Spot) {
-        Haptics.play(.drop)
-        let placement: NewItemPlacement = nesting.parent.map { .subtask(of: $0, index: nesting.index, day: plan.today) }
-            ?? .pool(order: order, section: section, day: plan.today)
-        router.openNewItem(NewItemSeed(kind: .task, placement: placement, estimate: drag?.releasedEstimate))
-    }
-
-    private func sectionDropped(_ id: String, order: [String]) {
-        Haptics.play(.drop)
-        model.moveSection(id, order: order, on: plan.today)
-    }
-
-    private var poolContent: some View {
-        VStack(alignment: .leading, spacing: tokens.space(.poolRowGap)) {
-            if plan.pool.isEmpty {
-                Text(isLaterDay ? "pool.laterDay" : "pool.empty")
-                    .secondaryText(.hint)
-                    .frame(maxWidth: .infinity, minHeight: tokens.size(.poolCounter))
-                if fillsHeight { Spacer(minLength: 0) }
-            } else {
-                list
-                    .frame(height: fillsHeight ? nil : visibleHeight)
-                    .frame(maxHeight: fillsHeight ? .infinity : nil)
-                if !fillsHeight { counter }
+        ReorderableList(sections: Binding(get: { sections }, set: moved), look: "pool",
+                        actions: { engine.menu(.context(of: $0.task), for: $0, isToday: plan.isToday, poolDay: plan.today) },
+                        onRename: { model.renameSection($0, to: $1, on: plan.today) }, traits: traits, onNest: nested,
+                        dropIn: dropIn, onDropIn: newItemDropped, space: space, name: TasksCarry.pool, features: features,
+                        onTap: { handler.run(registry.definition(.open), taskName: $0.id) },
+                        onRefresh: { await model.sync(announce: true) }, onSystemDrop: systemDropped,
+                        footer: isLaterDay && !plan.pool.isEmpty ? AnyView(hint("pool.laterDay")) : nil) { row($0) }
+            .id(revision)
+            .engineNewItem(dropIn, owner: Self.newItemOwner) {
+                router.takesNewItemOnTasks
             }
-        }
-        .frame(idealWidth: tokens.size(.poolWidth))
+            .onChange(of: drag?.newItemPoint) { _, point in
+                if point != nil { drag?.turnAfterDwell(.block(.pool), seconds: rules.gestures.newItemTurnDwellSeconds) }
+            }
+            .overlay(alignment: .top) {
+                if plan.pool.isEmpty { hint(isLaterDay ? "pool.laterDay" : "pool.empty") }
+            }
+            .frame(idealWidth: tokens.size(.poolWidth))
     }
+
+    private static let newItemOwner = "poolDrop"
 
     /// A day after today: its pool fills up only with its turn.
     private var isLaterDay: Bool { plan.today > model.context().today }
 
-    /// By the arrangement Today has now: lying sideways it has its own.
-    private var fillsHeight: Bool {
-        true
-    }
-    private var visibleCount: Int { max(model.settings.pool.visibleCount, 1) }
-
-    private var list: some View {
-        ScrollView {
-            LazyVStack(alignment: .leading, spacing: tokens.space(.poolRowGap)) {
-                let shown = sections
-                ForEach(shown) { section in
-                    let isGap = drag?.isSectionGap(section.id) == true
-                    if section.hasHeader {
-                        PoolSectionHeader(section: section, isFirst: section.id == shown.first?.id, drag: drag, canRename: true) {
-                            model.renameSection(section.id, to: $0, on: plan.today)
-                        }
-                            .dropGap(isGap)
-                            .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(Self.dropSpace)) } action: { frame in
-                                headerMids[section.id] = frame.midY
-                                headerHeights[section.id] = frame.height
-                                let first = section.items.first.map { liftByGap(of: $0.id) } ?? 0
-                                dragLayout?.add(header: section.id, midY: frame.midY, lift: first)
-                            }
-                    }
-                    // One plate for a whole routine or worm; each row keeps its own tap and long press. A worm's member drags
-                    // the whole worm.
-                    ForEach(PoolSegments.make(section.items, worms: plan.worms)) { segment in
-                        let source = dragSource(of: segment)
-                        PoolSegmentView(segment: segment) { item, plate in tracked(row(item, plate: .pool(plate), source: source), item) }
-                            .dropGap(isGap)
-                            .modifier(WormElement(isWorm: segment.wormID != nil))
-                    }
-                }
-                // A day still to come shows only what is particular to it (D-187): the rest comes with its turn.
-                if isLaterDay {
-                    Text("pool.laterDay")
-                        .secondaryText(.hint)
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, tokens.space(.hintToPlate))
-                }
-            }
-        }
-        // Scrolled to the end, the last row clears the tab bar.
-        .contentMargins(.bottom, bottomInset + tokens.space(.scrollEndRoom), for: .scrollContent)
-        .scrollBounceBehavior(.always)
-        .scrollIndicators(.hidden)
-        .syncsOnPull()
-        // The dragged "+" at the top or bottom edge scrolls the rows; the room it makes follows.
-        .edgeAutoScroll(drag?.newItemPoint, bottomInset: bottomInset) { delta in
-            dragLayout = dragLayout?.shifted(by: -delta)
-            newItemMoved(to: drag?.newItemPoint)
-        }
-        .edgeFades(bottomExtension: bottomInset, barEdges: barEdges)
-        .liftRoom()
+    /// No swipes in the pool; today's rows nest; another day's pool has no headers to rename.
+    private var features: ListFeatures {
+        var features: ListFeatures = [.carry, .menu, .haptics, .autoscroll, .dim, .treeLines, .dropIn, .crossList, .crossSection,
+                                      .renameSections]
+        if plan.isToday { features.insert(.nesting) }
+        return features
     }
 
-    /// How far the room of the dragged item pushed `id` down: its height and a gap, for what stands after it.
-    private func liftByGap(of id: String) -> CGFloat {
-        guard let order = drag?.poolOrder, let gap = drag?.draggedID, let at = order.firstIndex(of: gap),
-              let spot = order.firstIndex(of: id), spot > at else { return 0 }
-        return (rowHeights[gap] ?? CGFloat(rules.layoutEstimates.poolRowHeight)) + tokens.space(.poolRowGap)
-    }
-
-    /// Rows after the last visible one.
-    private var hiddenBelow: Int {
-        let lastVisible = plan.pool.lastIndex { visibleRows.contains($0.id) } ?? (visibleCount - 1)
-        return max(plan.pool.count - lastVisible - 1, 0)
-    }
-
-    @ViewBuilder private var counter: some View {
-        if hiddenBelow > 0 {
-            Text(L10n.format("pool.more", hiddenBelow))
-                .font(tokens.font(.poolCounter))
-                .foregroundStyle(tokens.color(.secondaryText))
-                .chipInsets()
-                .systemLook(.floatingCapsule)
-                .frame(maxWidth: .infinity)
-                .allowsHitTesting(false)
+    private var sections: [ListSection<DayItem>] {
+        plan.sections.map { section in
+            ListSection(id: section.id, title: section.isCustom ? section.title : (section.hasHeader ? L10n.string(section.title) : ""),
+                        items: section.items)
         }
     }
 
-    /// The first N rows with the headers above them.
-    private var visibleHeight: CGFloat {
-        let estimate = CGFloat(rules.layoutEstimates.poolRowHeight)
-        var remaining = visibleCount
-        var heights: [CGFloat] = []
-        for section in plan.sections where remaining > 0 {
-            if section.hasHeader { heights.append(headerHeights[section.id] ?? estimate) }
-            heights += section.items.prefix(remaining).map { rowHeights[$0.id] ?? estimate }
-            remaining -= min(remaining, section.items.count)
+    /// Today: the pool's new order, and a row in another section takes it. Another day: only another section.
+    private func moved(_ new: [ListSection<DayItem>]) {
+        let order = new.flatMap(\.items).map(\.id)
+        let was = Dictionary(plan.sections.flatMap { section in section.items.map { ($0.id, section.id) } }, uniquingKeysWith: { first, _ in first })
+        let regrouped = new.flatMap { section in section.items.filter { was[$0.id] != section.id }.map { ($0.id, section.id) } }
+        for (name, section) in regrouped { model.moveTask(name, toSection: section, poolOrder: order, on: plan.today) }
+        if plan.isToday, regrouped.isEmpty {
+            Task { await model.setPoolOrder(order) }
+        } else if !plan.isToday, regrouped.isEmpty {
+            revision += 1
         }
-        return heights.reduce(0, +) + tokens.space(.poolRowGap) * CGFloat(max(heights.count - 1, 0))
     }
 
-    /// The row of a task dragged over the pool keeps an empty gap the others part around (`TaskDragState.isGap`).
-    @ViewBuilder private func row(_ item: DayItem, plate: PoolRowContent.PlateKind, source: TaskDragState.Source) -> some View {
-        // A task over the right part shows its room as a subtask's, the line from its new parent coming down into it.
-        if item.id == TaskDragState.newItemGap || (drag?.item?.id == item.id && drag?.isGap(item.id) == true && drag?.newItemSpot.parent != nil) {
-            NewItemGapPlate(depth: item.depth, extraLines: drag?.newItemEstimate.map(rules.pool.extraLines(forEstimate:)) ?? 0)
+    /// Carried over the right part: under the row above (today).
+    private func nested(_ name: String, _ nest: ListNest<String>) {
+        guard let parent = nest.parent else { return }
+        Task { await model.nest(name, under: parent, index: nest.index) }
+    }
+
+    private var traits: ListTraits<DayItem> {
+        var traits = ListTraits<DayItem>()
+        traits.depth = \.depth
+        // A high-priority task's soft red over its plate.
+        traits.fill = { [tokens] in tokens.plateTint(for: $0.task).map(ThemeColor.init) }
+        // The habits of a routine (wormed) share one plate.
+        traits.joined = { $0.isHabit && $0.task.habit.timeOfDay != nil }
+        // A long task's plate is taller by its estimate; a parent's is not: its subtasks hold the time.
+        traits.height = { [rules, tokens] item in
+            let lines = item.hasSubtasks ? 0 : rules.pool.extraLines(forEstimate: rules.day.estimate(of: item.task))
+            return lines == 0 ? nil : ListTheme.app.rows.minHeight + CGFloat(lines) * tokens.uiFont(.taskTitle).lineHeight
+        }
+        traits.canNest = { [model, plan] child, parent in plan.isToday && model.canNest(child.id, order: [parent.id, child.id]) }
+        return traits
+    }
+
+    /// The name with its chips, the started icon before it, the parent over it.
+    private func row(_ item: DayItem) -> ListRowContent {
+        let started = item.task.isStarted && !item.isDone
+        return ListRowContent(title: item.task.name, chips: chips(item),
+                              icon: started ? .app(icons[.started]) : nil, iconColor: started ? ThemeColor(tokens.uiColor(.started)) : nil,
+                              overline: item.project)
+    }
+
+    private func chips(_ item: DayItem) -> [ListChip] {
+        RowChip.chips(for: item, order: chipOrder).map { chip in
+            ListChip(kind: chip.kind.rawValue, content: .icon(.app(icons[chip.look.icon])),
+                     color: ThemeColor(UIColor(tokens.color(of: chip.look, onFill: item.task.isHighPriority))))
+        }
+    }
+
+    /// The day's order with `name` (or the new item's gap) where it was let go.
+    private func order(with name: String, at drop: ListDrop) -> [String] {
+        var order = plan.sections.flatMap(\.items).map(\.id).filter { $0 != name }
+        let rows = plan.sections.first { $0.id == drop.sectionID }?.items.map(\.id).filter { $0 != name } ?? []
+        let at: Int
+        if drop.row > 0, rows.indices.contains(drop.row - 1), let before = order.firstIndex(of: rows[drop.row - 1]) {
+            at = before + 1
+        } else if let first = rows.first, let index = order.firstIndex(of: first) {
+            at = index
         } else {
-            PoolRow(item: item, isToday: plan.isToday, isCompact: fillsHeight, plate: plate, handler: handler,
-                    dragSource: source, poolDay: plan.today,
-                    guide: guides[item.id])
-                .dropGap(drag?.isGap(item.id) == true)
+            at = order.count
+        }
+        order.insert(name, at: at)
+        return order
+    }
+
+    /// The "+" let go: under the row above (the right part), or at its spot of its section.
+    private func newItemDropped(_ drop: ListDrop) {
+        let rows = plan.sections.first { $0.id == drop.sectionID }?.items ?? []
+        let placement: NewItemPlacement
+        if let parent = drop.parentRow, rows.indices.contains(parent) {
+            placement = .subtask(of: rows[parent].id, index: drop.indexInParent, day: plan.today)
+        } else {
+            placement = .pool(order: order(with: TaskDragState.newItemGap, at: drop), section: plan.sections.first?.id == "plain" ? nil : drop.sectionID,
+                              day: plan.today)
+        }
+        router.openNewItem(NewItemSeed(kind: .task, placement: placement, estimate: drag?.releasedEstimate))
+    }
+
+    /// A block dragged from the timeline (a system drag) let go here: it loses its time and takes the spot; refused when it
+    /// cannot (`canDropInPool`).
+    private func systemDropped(_ drop: ListDrop) {
+        guard let drag, let item = drag.item else { return }
+        let source = drag.source
+        drag.end()
+        guard case .timeline(let slot) = source else { return }
+        guard plan.isToday, model.canDropInPool(item.id, slot: slot) else { return model.refuseDrop(item.id, onto: .pool) }
+        Haptics.play(.drop)
+        let order = order(with: item.id, at: drop)
+        Task { await model.unschedule(item.id, slot: slot, poolOrder: order, on: plan.today) }
+        if plan.sections.contains(where: { $0.id == drop.sectionID && $0.hasHeader }) {
+            model.moveTask(item.id, toSection: drop.sectionID, poolOrder: order, on: plan.today)
         }
     }
 
-    /// The lines from parents to their subtasks, while no task is dragged over the pool (the rows part then).
-    private var guides: [String: SubtaskGuide] {
-        drag?.poolOrder == nil ? SubtaskGuides.guides(of: plan.pool) : [:]
+    private func hint(_ key: LocalizedStringKey) -> some View {
+        Text(key)
+            .secondaryText(.hint)
+            .frame(maxWidth: .infinity, minHeight: tokens.size(.poolCounter))
     }
 
-    private func dragSource(of segment: PoolSegments.Segment) -> TaskDragState.Source {
-        guard let id = segment.wormID else { return .pool }
-        return .worm(id: id, members: segment.items.filter { $0.depth == 0 }.map(\.id))
-    }
-
-    private func tracked(_ view: some View, _ item: DayItem) -> some View {
-        view
-            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { rowHeights[item.id] = $0 }
-            .onGeometryChange(for: CGFloat.self) { $0.frame(in: .named(Self.dropSpace)).midY } action: { mid in
-                rowMids[item.id] = mid
-                // Scrolled into sight while the "+" scrolls the list: it joins the layout the room is read against.
-                if item.id != TaskDragState.newItemGap {
-                    dragLayout?.add(row: item.id, midY: mid, section: plan.sections.first { $0.items.contains { $0.id == item.id } }?.id,
-                                    lift: liftByGap(of: item.id))
-                }
-            }
-            .onScrollVisibilityChange(threshold: rules.pool.rowVisibleShare) { visible in
-                if visible { visibleRows.insert(item.id) } else { visibleRows.remove(item.id) }
-            }
+    private var engine: EngineActions {
+        EngineActions(model: model, tokens: tokens, registry: registry, icons: icons) { handler.handle($0, taskName: $1) }
     }
 }
