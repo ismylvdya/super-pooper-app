@@ -17,7 +17,8 @@ extension TaskFileStore {
     }
 
     /// The habits' lines of today and their next days (`lines`) take the places the habits' lines have in Next actions — the
-    /// pool's order is the order of the lines (D-180) — keeping the subtasks under them; a new one goes on top. A habit
+    /// pool's order is the order of the lines (D-180) — keeping the subtasks under them; a new one goes after the line before it
+    /// in the day's order (its place in its routine), on top when there is none. A habit
     /// with no line now leaves its subtasks beside, naming it; a line beside naming a habit goes under its line.
     func placeHabitLines(_ lines: [TaskEntry], in document: inout TaskDocument, habits: Set<String>) {
         guard let list = document.sections.firstIndex(where: { $0.kind == .soon }) else { return }
@@ -43,12 +44,38 @@ extension TaskFileStore {
             }
             document.sections[list].groups[group].entries = kept
         }
-        let fresh = lines.filter { $0.id.map { new[$0] != nil } ?? false }
-        document.sections[list].groups[0].entries.insert(contentsOf: fresh, at: 0)
+        // A new line goes right after the line before it in the day's order (the pool's, which puts a habit with no line
+        // yet by its routine's order); with no line before it, on top.
+        var top: [TaskEntry] = []
+        var before: String?
+        for line in lines {
+            guard let id = line.id else { continue }
+            if new[id] != nil {
+                if let after = before, let place = Self.place(of: after, in: document.sections[list]) {
+                    document.sections[list].groups[place.group].entries.insert(line, at: place.entry + 1)
+                    before = id
+                } else {
+                    // Goes on top with the others there, in their order.
+                    top.append(line)
+                    before = nil
+                }
+            } else if Self.place(of: id, in: document.sections[list]) != nil {
+                before = id
+            }
+        }
+        document.sections[list].groups[0].entries.insert(contentsOf: top, at: 0)
         var none: [TaskEntry] = []
         for (id, children) in strays where !children.isEmpty {
             if document.update(id: id, { $0.children += children }) == false { give([id: children], to: &none, document: &document) }
         }
+    }
+
+    /// Where the line of `id` stands among a section's top-level lines.
+    static func place(of id: String, in section: TaskDocument.Section) -> (group: Int, entry: Int)? {
+        for group in section.groups.indices {
+            if let entry = section.groups[group].entries.firstIndex(where: { $0.id == id }) { return (group, entry) }
+        }
+        return nil
     }
 
     /// The subtasks go under their habit's new line; those of a habit with no line stay beside, naming it.

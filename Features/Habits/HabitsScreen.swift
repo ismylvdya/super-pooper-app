@@ -56,7 +56,7 @@ struct HabitsScreen: View {
         let mark = HabitMarkIcon.icon(for: habit.mark(on: today))
         let rounded = TextStyle(style: "body", weight: habit.habit.repeatable ? .regular : .bold, rounded: true)
         return ListRowContent(title: habit.name, icon: .app(icons[mark]), iconColor: ThemeColor(tokens.habitMarkColor(habit)),
-                              iconGap: ListTheme.app.rows.iconMargin,
+                              iconGap: ListTheme.app.rows.iconMargin - tokens.space(.habitMarkGapLess),
                               onIconTap: {
                                   Haptics.play(.mark)
                                   Task { await model.cycleHabit(habit.name, on: today) }

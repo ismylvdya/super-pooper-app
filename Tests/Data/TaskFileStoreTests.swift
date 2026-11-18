@@ -322,6 +322,22 @@ struct TaskFileStoreTests {
         #expect(lines[line].contains("📅 \(today.adding(days: 1).isoString)"))
     }
 
+    /// A habit with no line yet (a twice-a-day one written anew in the morning) takes its place in the day's order, its
+    /// routine's: right after the line before it, not on top of the list.
+    @Test func aNewHabitLineGoesAfterTheLineBeforeItNotOnTop() async throws {
+        let store = store()
+        let rule = RecurrenceDraft(start: today).rule
+        for name in ["Water", "Shower", "Pushups"] {
+            _ = try await store.create(NoteDraft(status: .habit, changes: [.recurrence(rule)]), named: name)
+        }
+        await store.mirror(DayMirror(sections: [.init(title: "Morning", names: ["Water", "Shower"])], timed: [:]))
+        await store.mirror(DayMirror(sections: [.init(title: "Morning", names: ["Water", "Shower", "Pushups"])], timed: [:]))
+        let lines = try text().components(separatedBy: "\n")
+        let place = { (name: String) in try #require(lines.firstIndex { $0.hasPrefix("- [ ] \(name)") }) }
+        #expect(try place("Water") < place("Shower"))
+        #expect(try place("Shower") < place("Pushups"), "after the routine's line before it")
+    }
+
     /// Skipped with no day of its own tomorrow: tomorrow's pool, no time, marked overdue.
     @Test func aSkippedHabitWithNoDayTomorrowStandsThereOverdue() async throws {
         let store = store()
