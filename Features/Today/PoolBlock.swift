@@ -58,7 +58,7 @@ struct PoolBlock: View {
     /// No swipes in the pool; today's rows nest; another day's pool has no headers to rename.
     private var features: ListFeatures {
         var features: ListFeatures = [.carry, .menu, .haptics, .autoscroll, .dim, .treeLines, .dropIn, .crossList, .crossSection,
-                                      .renameSections]
+                                      .renameSections, .scrollIndicator, .wrapTitles]
         if plan.isToday { features.insert(.nesting) }
         return features
     }

@@ -21,7 +21,7 @@ struct NoteSearchResults: View {
 
     var body: some View {
         ReorderableList(sections: .constant(rows), look: "lists", actions: menu, swipes: swipes,
-                        features: [.menu, .swipes, .haptics, .dim], onTap: open,
+                        features: [.menu, .swipes, .haptics, .dim, .scrollIndicator, .wrapTitles], onTap: open,
                         footer: sections.isEmpty && events.isEmpty ? AnyView(empty) : nil) { row($0) }
             .ignoresSafeArea()
             .actionConfirmation($pendingAction) { handler.run($0) }

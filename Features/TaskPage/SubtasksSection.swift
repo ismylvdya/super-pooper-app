@@ -31,7 +31,7 @@ struct SubtasksSection: View {
                     ReorderableList(sections: Binding(get: { [ListSection(id: "subtasks", title: "", items: rows)] }, set: { moved($0, was: rows) }),
                                     look: "lists", actions: { engine.menu(.context(of: $0.task), for: $0) },
                                     traits: traits, swipes: { engine.swipes(.listTask, for: $0) }, onNest: nested,
-                                    features: [.carry, .menu, .swipes, .nesting, .treeLines, .haptics, .dim],
+                                    features: [.carry, .menu, .swipes, .nesting, .treeLines, .haptics, .dim, .scrollIndicator, .wrapTitles],
                                     onTap: { router.open(.task($0.id)) }, onHeight: { height = $0 }) { row($0) }
                         .frame(height: height)
                         .padding(.horizontal, -ListTheme.app.rows.sideInset)

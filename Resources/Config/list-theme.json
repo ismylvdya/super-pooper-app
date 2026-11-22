@@ -87,6 +87,7 @@
     "overlineIcon": "folder",
     "overlineIconGap": 4,
     "textFade": 24,
+    "edgeFade": 24,
     "icon": {
       "size": 25.3,
       "gapToTitle": 6

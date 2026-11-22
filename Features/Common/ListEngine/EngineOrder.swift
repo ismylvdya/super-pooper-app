@@ -9,7 +9,7 @@ struct OrderedRow: Identifiable, Hashable {
 
 /// What an order list does: rows are carried, nothing else — no menu, no swipes (the lift stays).
 extension ListFeatures {
-    static let orderOnly: ListFeatures = [.carry, .haptics, .autoscroll]
+    static let orderOnly: ListFeatures = [.carry, .haptics, .autoscroll, .scrollIndicator, .wrapTitles]
 }
 
 /// Under an order list: what it is about, and the button that brings the default order back.

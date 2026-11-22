@@ -14,7 +14,7 @@ struct ArchiveScreen: View {
     @State private var pendingAction: PendingAction?
 
     var body: some View {
-        ReorderableList(sections: .constant(sections), look: "lists", swipes: swipes, features: [.swipes, .haptics],
+        ReorderableList(sections: .constant(sections), look: "lists", swipes: swipes, features: [.swipes, .haptics, .scrollIndicator, .wrapTitles],
                         onTap: { router.open(.task($0.id)) }) { item in
             ListRowContent(title: item.task.name, titleColor: item.task.isHabit ? ThemeColor(tokens.habitNameColor(item.task)) : nil)
         }

@@ -19,7 +19,7 @@ struct HabitsScreen: View {
         let today = model.context().today
         ReorderableList(sections: Binding(get: { sections(today: today) }, set: moved), look: "lists",
                         actions: { engine(today: today).menu(.habitDay, for: $0) },
-                        features: [.carry, .menu, .haptics, .autoscroll, .dim], onTap: { router.open(.task($0.id)) },
+                        features: [.carry, .menu, .haptics, .autoscroll, .dim, .scrollIndicator, .wrapTitles], onTap: { router.open(.task($0.id)) },
                         onRefresh: { await model.sync(announce: true) },
                         footer: model.habits.isEmpty ? AnyView(empty) : nil) { item in
             row(item.task, today: today)

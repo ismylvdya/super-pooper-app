@@ -18,7 +18,7 @@ struct TrashScreen: View {
     var body: some View {
         let notes = model.trashedNotes.filter { SearchMatcher.matches($0.name, searchQuery ?? "") }
         ReorderableList(sections: .constant([ListSection(id: "trash", title: "", items: notes)]), look: "lists",
-                        swipes: swipes, features: [.swipes, .haptics],
+                        swipes: swipes, features: [.swipes, .haptics, .scrollIndicator, .wrapTitles],
                         onTap: { note in Task { text = TrashText(text: await model.trashedText(note)) } },
                         footer: AnyView(PlateHint(text: Text(model.trashedNotes.isEmpty ? "trash.empty" : "trash.hint"))
                             .frame(maxWidth: .infinity, alignment: .leading)
