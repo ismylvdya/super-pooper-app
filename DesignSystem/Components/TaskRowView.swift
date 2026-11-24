@@ -6,6 +6,7 @@ import SwiftUI
 /// The same view is used in the pool, on the timeline and in widgets.
 struct TaskRowView: View {
     @Environment(\.tokens) private var tokens
+    @Environment(\.icons) private var icons
     @Environment(\.titleReserve) private var reserve
     @Environment(\.plateTrailingInset) private var plateInset
     @Environment(\.chipOrder) private var chipOrder
@@ -57,7 +58,7 @@ struct TaskRowView: View {
     }
 
     @ViewBuilder private var ownTitle: some View {
-        let text = titleText
+        let text = titleWithStart
             .foregroundStyle(isDone ? tokens.color(.secondaryText) : tokens.color(.primaryText))
         if let onOpen {
             // Not a Button: a button also fires when a swipe (turning the page, scrolling) ends on it; the row's tap
@@ -68,6 +69,24 @@ struct TaskRowView: View {
                 .accessibilityIdentifier("title:\(item.task.name)")
         } else {
             text
+        }
+    }
+
+    @ViewBuilder private var titleWithStart: some View {
+        if item.task.isStarted && !item.isDone {
+            let size = titleLineHeight ?? tokens.uiFont(.taskTitle).lineHeight
+            HStack(alignment: .top, spacing: tokens.space(.startedIconGap)) {
+                Image(icon: .started, icons: icons)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: size, height: size)
+                    .foregroundStyle(tokens.color(.started))
+                    .accessibilityHidden(true)
+                titleText
+            }
+            .accessibilityElement(children: .combine)
+        } else {
+            titleText
         }
     }
 

@@ -1050,17 +1050,6 @@
         }
       }
     },
-    "color.started": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Started"
-          }
-        }
-      }
-    },
     "color.task": {
       "extractionState": "manual",
       "localizations": {
@@ -2719,28 +2708,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "How see-through done tasks and past events are in the pool, on the timeline and in the widget."
-          }
-        }
-      }
-    },
-    "info.settings.pool.startedFillMiddle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Where across the plate the fill turns from the started color to nothing: the middle of the transition, from the plate's left edge. Left of the transition the color is whole."
-          }
-        }
-      }
-    },
-    "info.settings.pool.startedFillWidth": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "How wide the transition from the started color to nothing is, half of it on each side of its middle. None: a sharp edge."
           }
         }
       }
@@ -5210,28 +5177,6 @@
         }
       }
     },
-    "settings.pool.startedFillMiddle": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Transition middle"
-          }
-        }
-      }
-    },
-    "settings.pool.startedFillWidth": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Transition width"
-          }
-        }
-      }
-    },
     "settings.pool.visible": {
       "extractionState": "manual",
       "localizations": {
@@ -7214,17 +7159,6 @@
         }
       }
     },
-    "settings.pool.startedColor": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Started color"
-          }
-        }
-      }
-    },
     "settings.notifications.snooze": {
       "extractionState": "manual",
       "localizations": {
@@ -7742,17 +7676,6 @@
         }
       }
     },
-    "settings.plainTasks.started": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Started"
-          }
-        }
-      }
-    },
     "settings.taskManager": {
       "extractionState": "manual",
       "localizations": {
@@ -7958,28 +7881,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Where the line goes on down to a later subtask, the turn into a subtask is round too. Off, it leaves the line at a right angle; the last turn is always round."
-          }
-        }
-      }
-    },
-    "settings.pool.startedTitleGap": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Name gap"
-          }
-        }
-      }
-    },
-    "info.settings.pool.startedTitleGap": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "How far the name stands from where the fill ends. At the far left the name stands where it does on a task not started, over the fill."
           }
         }
       }

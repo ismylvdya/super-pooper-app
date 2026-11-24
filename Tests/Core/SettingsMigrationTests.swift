@@ -20,6 +20,20 @@ struct SettingsMigrationTests {
         #expect(SyncedSettings.merged(note: note, over: TestConfig.defaults).colors == ["habit": "#222222"])
     }
 
+    @Test func theOldStartAppearanceLeavesTheVaultSettings() throws {
+        let note = Data(##"""
+        {
+          "pool": {"startedFillMiddle": 0.2, "startedFillWidth": 0.4, "startedTitleGap": 8, "visibleCount": 3},
+          "colors": {"started": "#FF0000", "started.dark": "#00FF00", "task": "#111111"}
+        }
+        """##.utf8)
+        let settings = SyncedSettings.merged(note: note, over: TestConfig.defaults)
+        #expect(settings.pool.visibleCount == 3)
+        #expect(settings.colors == ["task": "#111111"])
+        let written = try JSONEncoder.store.encode(SyncedSettings(settings))
+        #expect(!String(decoding: written, as: UTF8.self).contains("started"))
+    }
+
     /// The day routine is gone: its order in an older settings file is read past and not written back.
     @Test func theDayRoutineIsDroppedWhenRead() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)

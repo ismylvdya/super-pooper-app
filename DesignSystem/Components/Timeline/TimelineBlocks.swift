@@ -132,11 +132,9 @@ struct TimelineTaskBlock<Content: View>: View {
     }
 }
 
-/// A task's block on a timeline plate with the pool's looks: the high priority tint and, whatever the started look, a
-/// started task's fill.
+/// A task's block on a timeline plate with its high-priority tint.
 private struct TaskSlotPlate: ViewModifier {
     @Environment(\.tokens) private var tokens
-    @Environment(\.startedLayout) private var startedLayout
     let item: DayItem
     let isPast: Bool
     let isCompact: Bool
@@ -145,7 +143,6 @@ private struct TaskSlotPlate: ViewModifier {
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .slotPlate(isPast: isPast, isCompact: isCompact, tint: tokens.plateTint(for: item.task))
-            .environment(\.plateGradient, startedLayout?.shown(for: item).map { AnyView(StartedFill($0)) })
     }
 }
 

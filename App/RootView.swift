@@ -103,7 +103,6 @@ struct RootView: View {
         .environment(\.chipOrder, RowChipKind.ordered(model.settings.pool.chipOrder))
         // Every list drawn by the list engine takes its look from the app's theme (`list-theme.json`).
         .appListTheme()
-        .poolLooks(model.settings.pool)
         .environment(\.pagePeeks, PagePeeks(model.settings.today))
         .appCalendar(model.calendar)
         // The user's colors and opacity sit closest to the views, over the bundled tokens of `appConfig`.

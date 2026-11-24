@@ -33,13 +33,6 @@ struct AppSettings: Codable, Equatable, Sendable {
         var selectionOutlineOpacity: Double
         /// The order of the chips in task rows (raw names of `RowChipKind`).
         var chipOrder: [String]
-        /// A started task's fill across its whole plate: the started color up to the transition, nothing past it. Where the
-        /// transition's middle stands from the plate's left edge and how wide it is, as shares of the plate's width (D-192).
-        var startedFillMiddle: Double
-        var startedFillWidth: Double
-        /// Points from the end of the fill's transition to a started task's name; below zero the name moves back over the
-        /// fill, at most to where it stands on a task not started.
-        var startedTitleGap: Double
         /// Points: how round a line from a parent turns into its subtask's plate.
         var subtaskLineCorner: Double
         /// A turn where the line goes on down to a later subtask is round too; off: it leaves the line at a right angle.

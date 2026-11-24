@@ -30,11 +30,6 @@ extension RulesConfig {
         let pastOpacity: Range
         /// The share of the screen's width a page keeps in sight beside the one shown (`AppSettings.Today.timelinePeek`).
         let pagePeek: Range
-        /// A started task's fill: where its transition's middle stands and how wide it is (shares of the plate).
-        let startedFillMiddle: Range
-        let startedFillWidth: Range
-        /// Points from the end of a started task's fill to its name.
-        let startedTitleGap: Range
         /// Points: how round the turn of a line into a subtask's plate can be set.
         let subtaskLineCorner: Range
         /// The ring of a habit's day not done or done partly.

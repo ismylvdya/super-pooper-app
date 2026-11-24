@@ -4,9 +4,8 @@ import Foundation
 /// file and the vault's settings), so nothing that uses the settings has to know about them. Fields a struct no longer
 /// has (the day routine) are read past by the decoder and not written back.
 enum SettingsMigration {
-    /// Colors older versions let the user pick and the current one does not: the accent (the interface became black and
-    /// white), the Twice and the missed-day colors (drawn nowhere).
-    static let retiredColors: Set<String> = ["accent", "twice", "missed"]
+    /// Retired color settings, including the old Start fill color in both appearances.
+    static let retiredColors: Set<String> = ["accent", "twice", "missed", "started", "started.dark"]
 
     static func migrated(_ settings: AppSettings) -> AppSettings {
         var settings = settings

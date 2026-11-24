@@ -67,10 +67,10 @@ struct TodaySettingsSection: View {
             if surface == .upright {
                 SettingSlider(icon: nil, title: "settings.today.timelinePeek", info: "info.settings.today.timelinePeek",
                               value: \.today.timelinePeek, limits: model.config.rules.limits.pagePeek,
-                              accessibilityID: "settings.today.timelinePeek") { PercentText(value: $0) }
+                              accessibilityID: "settings.today.timelinePeek")
                 SettingSlider(icon: nil, title: "settings.today.poolPeek", info: "info.settings.today.poolPeek",
                               value: \.today.poolPeek, limits: model.config.rules.limits.pagePeek,
-                              accessibilityID: "settings.today.poolPeek") { PercentText(value: $0) }
+                              accessibilityID: "settings.today.poolPeek")
             }
         }
     }

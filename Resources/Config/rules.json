@@ -203,21 +203,6 @@
       "max": 0.333,
       "step": 0.01
     },
-    "startedFillMiddle": {
-      "min": 0,
-      "max": 1,
-      "step": 0.01
-    },
-    "startedFillWidth": {
-      "min": 0,
-      "max": 1,
-      "step": 0.01
-    },
-    "startedTitleGap": {
-      "min": -400,
-      "max": 24,
-      "step": 1
-    },
     "subtaskLineCorner": {
       "min": 0,
       "max": 16,

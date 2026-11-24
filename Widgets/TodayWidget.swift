@@ -59,7 +59,5 @@ struct TodayWidgetEntryView: View {
         .widgetChrome(entry.source, light: .screenBackground)
         .widgetURL(DeepLink.today)
         .environment(\.timelineBell, (entry.source?.settings ?? BundledConfig.settings).timeline.bellStyle)
-        // The pool's looks as the app has them: high priority, subtask lines, started tasks.
-        .poolLooks((entry.source?.settings ?? BundledConfig.settings).pool)
     }
 }

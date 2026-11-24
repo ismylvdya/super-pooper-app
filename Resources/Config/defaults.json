@@ -25,9 +25,6 @@
     "estimateMinutes": [2, 15, 60, 240],
     "criteria": [],
     "chipOrder": ["problem", "blocked", "feel", "habit"],
-    "startedFillMiddle": 0.17,
-    "startedFillWidth": 0.33,
-    "startedTitleGap": 12,
     "subtaskLineCorner": 6,
     "subtaskLineRoundsMiddle": true,
     "selectionOutlineOpacity": 0.6
