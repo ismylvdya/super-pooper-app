@@ -17,6 +17,8 @@ enum SpacingToken: String, CaseIterable, Sendable {
     case swipeIconTitleGap
     /// How much closer a habit's mark stands to its name than to the plate's side (Habits).
     case habitMarkGapLess
+    /// Between the Start icon and its task title in engine lists.
+    case startedIconGap
     /// A section header starts this far right of the plates' left edge; a pool section's header stands this far below
     /// the section above.
     case sectionHeaderInset, poolSectionGap

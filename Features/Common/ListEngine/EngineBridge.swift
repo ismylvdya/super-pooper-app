@@ -9,7 +9,7 @@ extension ListTheme {
 
     /// Started tasks keep a tighter gap beside the gradient icon.
     static func taskIconGap(started: Bool) -> CGFloat? {
-        started ? app.rows.iconMargin / 1.5 : nil
+        started ? BundledConfig.tokens.space(.startedIconGap) : nil
     }
 }
 
