@@ -114,7 +114,7 @@ struct PoolBlock: View {
     private func row(_ item: DayItem) -> ListRowContent {
         let started = item.task.isStarted && !item.isDone
         return ListRowContent(title: item.task.name, chips: chips(item),
-                              icon: started ? .app(icons[.started]) : nil, iconColor: started ? ThemeColor(tokens.uiColor(.started)) : nil,
+                              icon: started ? .app(icons[.started]) : nil, iconColor: started ? ThemeColor(tokens.uiColor(.started)) : nil, iconGap: ListTheme.taskIconGap(started: started),
                               overline: item.project)
     }
 

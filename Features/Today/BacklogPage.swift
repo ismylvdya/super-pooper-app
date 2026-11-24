@@ -80,7 +80,7 @@ struct BacklogPage: View {
         return ListRowContent(title: item.task.name, chips: RowChip.chips(for: item, order: chipOrder).map { chip in
             ListChip(kind: chip.kind.rawValue, content: .icon(.app(icons[chip.look.icon])),
                      color: ThemeColor(UIColor(tokens.color(of: chip.look, onFill: item.task.isHighPriority))))
-        }, icon: started ? .app(icons[.started]) : nil, iconColor: started ? ThemeColor(tokens.uiColor(.started)) : nil, overline: item.project)
+        }, icon: started ? .app(icons[.started]) : nil, iconColor: started ? ThemeColor(tokens.uiColor(.started)) : nil, iconGap: ListTheme.taskIconGap(started: started), overline: item.project)
     }
 
     /// The "+" let go: under the row above (the right part), or at its spot of the list.

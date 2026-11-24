@@ -89,8 +89,7 @@
     "textFade": 24,
     "edgeFade": 24,
     "icon": {
-      "size": 25.3,
-      "gapToTitle": 6
+      "size": 25.3
     },
     "tree": {
       "turnRadius": 16,

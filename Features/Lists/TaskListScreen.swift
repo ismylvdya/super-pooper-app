@@ -135,7 +135,7 @@ struct TaskListScreen: View {
             let started = task.isStarted
             HStack(spacing: tokens.space(.iconTextGap)) {
                 ListRowContent(title: task.name, chips: chips(row.item),
-                               icon: started ? .app(icons[.started]) : nil, iconColor: started ? ThemeColor(tokens.uiColor(.started)) : nil,
+                               icon: started ? .app(icons[.started]) : nil, iconColor: started ? ThemeColor(tokens.uiColor(.started)) : nil, iconGap: ListTheme.taskIconGap(started: started),
                                overline: row.item.project)
                 if task.canPromote {
                     Button {

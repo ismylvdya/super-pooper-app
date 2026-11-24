@@ -192,7 +192,7 @@
     {
       "id": "start",
       "title": "action.start",
-      "icon": "ActionStarted",
+      "icon": "StartedCircle",
       "destructive": false,
       "haptic": "light",
       "undo": "edits"

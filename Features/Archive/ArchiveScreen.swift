@@ -16,7 +16,9 @@ struct ArchiveScreen: View {
     var body: some View {
         ReorderableList(sections: .constant(sections), look: "lists", swipes: swipes, features: [.swipes, .haptics, .scrollIndicator, .wrapTitles],
                         onTap: { router.open(.task($0.id)) }) { item in
-            ListRowContent(title: item.task.name, titleColor: item.task.isHabit ? ThemeColor(tokens.habitNameColor(item.task)) : nil)
+            ListRowContent(title: item.task.name, icon: item.task.isStarted ? .app(icons[.started]) : nil,
+                              iconColor: ThemeColor(tokens.uiColor(.started)), iconGap: ListTheme.taskIconGap(started: item.task.isStarted),
+                              titleColor: item.task.isHabit ? ThemeColor(tokens.habitNameColor(item.task)) : nil)
         }
         .ignoresSafeArea()
         .navigationTitle(Text("archive.title"))

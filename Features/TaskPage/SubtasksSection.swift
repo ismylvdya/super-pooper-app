@@ -70,9 +70,12 @@ struct SubtasksSection: View {
     private func row(_ item: DayItem) -> ListRowContent {
         let isDone = item.task.isDone(on: model.context().today)
         let isLater = model.waitingSteps.contains(item.id)
+        let started = item.task.isStarted && !isDone
         return ListRowContent(title: item.task.name,
                               chips: isLater ? [ListChip(kind: "later", content: .text(L10n.string("taskPage.steps.later")),
                                                          color: ThemeColor(tokens.uiColor(.secondaryText)))] : [],
+                              icon: started ? .app(icons[.started]) : nil,
+                              iconColor: ThemeColor(tokens.uiColor(.started)), iconGap: ListTheme.taskIconGap(started: started),
                               titleColor: isDone || isLater ? ThemeColor(tokens.uiColor(.secondaryText)) : nil)
     }
 

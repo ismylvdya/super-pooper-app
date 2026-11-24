@@ -6,6 +6,11 @@ import UIKit
 extension ListTheme {
     /// Every list's look, from the app's own theme file.
     static let app = ListTheme.bundled("list-theme")
+
+    /// Started tasks keep a tighter gap beside the gradient icon.
+    static func taskIconGap(started: Bool) -> CGFloat? {
+        started ? app.rows.iconMargin / 1.5 : nil
+    }
 }
 
 extension ThemeColor {

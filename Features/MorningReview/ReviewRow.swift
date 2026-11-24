@@ -18,7 +18,7 @@ struct ReviewRow {
         let task = item.task
         let started = task.isStarted && !item.isDone
         return ListRowContent(title: task.name, chips: indicators(item),
-                              icon: started ? .app(icons[.started]) : nil, iconColor: started ? ThemeColor(tokens.uiColor(.started)) : nil,
+                              icon: started ? .app(icons[.started]) : nil, iconColor: started ? ThemeColor(tokens.uiColor(.started)) : nil, iconGap: ListTheme.taskIconGap(started: started),
                               titleColor: item.isDone ? ThemeColor(tokens.uiColor(.secondaryText)) : nil,
                               actionChips: chips(item), overline: item.project)
     }

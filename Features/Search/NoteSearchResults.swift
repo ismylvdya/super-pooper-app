@@ -49,7 +49,7 @@ struct NoteSearchResults: View {
         switch row {
         case .note(let task, let parent):
             ListRowContent(title: task.name, chips: [detail(StatusText.title(task.status))], icon: mark(of: task),
-                           iconColor: task.isHabit ? ThemeColor(tokens.habitSymbolColor(task)) : nil, overline: parent)
+                           iconColor: task.isStarted ? ThemeColor(tokens.uiColor(.started)) : task.isHabit ? ThemeColor(tokens.habitSymbolColor(task)) : nil, iconGap: ListTheme.taskIconGap(started: task.isStarted), overline: parent)
         case .event(let event):
             ListRowContent(title: event.title,
                            chips: [detail(DateText.format(event.start, Date.FormatStyle(date: .abbreviated, time: event.isAllDay ? .omitted : .shortened),
@@ -60,6 +60,7 @@ struct NoteSearchResults: View {
 
     /// The habit symbol for a habit or a repeatable task, the tasks' emoji for a task.
     private func mark(of task: TaskItem) -> ListIcon? {
+        if task.isStarted { return .app(icons[.started]) }
         if task.isHabit { return .app(icons[.habit]) }
         return model.taskMark.map(ListIcon.emoji)
     }
