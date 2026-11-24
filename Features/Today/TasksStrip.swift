@@ -23,7 +23,7 @@ struct TasksStrip: View {
     var onEdgeFrame: ((Int, CGRect?) -> Void)?
 
     var body: some View {
-        PagedStack(pages: pages, spacing: metrics.spacing(of: layout), peekShares: pages.map(peek), edgeInset: edgeInset,
+        PagedStack(pages: pages, spacing: max(edgeInset, metrics.spacing(of: layout)), peekShares: pages.map(peek), edgeInset: edgeInset,
                    home: TasksPageStrip.homeIndex(layout: layout, opened: pager.openedBacklog),
                    listCount: pager.openedBacklog, listPeek: tokens.space(.backlogPeek), hiddenLists: pager.openedBacklog - pager.reachedBacklog, halves: layout.isHalves, page: pager.page,
                    drag: pager.pageDrag, pull: pager.sidePull, edgeLabel: edgeLabel, onTurn: onTurn, edgeDwell: rules.gestures.pageEdgeDwellSeconds,
@@ -38,8 +38,6 @@ struct TasksStrip: View {
             case .today: ScreenLayoutView(layout: layout, edgeInset: edgeInset) { block($0) }
             }
         }
-        // A sideways swipe moves only the pages: a list scrolled along with it would wander up and down.
-        .scrollDisabled(pager.isSwipingSideways)
         // Behind the pages: the pool's rows move over the icon as they are pulled away from it.
         .background(alignment: .leading) {
             let lists = model.backlogLists

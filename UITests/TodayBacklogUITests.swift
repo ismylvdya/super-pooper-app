@@ -62,6 +62,38 @@ final class TodayBacklogUITests: XCTestCase {
         XCTAssertFalse(soonEdge.waitForExistence(timeout: 2), "no Soon page left of the pool")
     }
 
+    func testASidewaysPanKeepsTheBacklogAtItsVerticalScrollPosition() {
+        app.launchArguments += ["-SPArrangement", "paged"]
+        launch()
+        dismissBanners()
+        pullRight()
+        let backlog = app.descendants(matching: .any)["backlog.thisWeek"].firstMatch
+        let row = backlog.staticTexts["Записать идеи"].firstMatch
+        let screen = app.frame
+        let onScreen = { (page: XCUIElement) in
+            screen.contains(CGPoint(x: page.frame.midX, y: screen.midY))
+        }
+        expect(backlog, toBe: onScreen, "Soon opened")
+        XCTAssertTrue(row.exists)
+        let initialY = row.frame.minY
+
+        pan(from: CGVector(dx: 0.82, dy: 0.56), to: CGVector(dx: 0.14, dy: 0.40))
+        let turned = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in !backlog.exists || !onScreen(backlog) }, object: nil)
+        XCTAssertEqual(XCTWaiter().wait(for: [turned], timeout: 5), .completed, "the mostly horizontal pan turned the page")
+        app.swipeRight()
+        expect(backlog, toBe: onScreen, "back to Soon")
+        XCTAssertTrue(row.exists)
+        XCTAssertEqual(row.frame.minY, initialY, accuracy: 1, "turning the page did not scroll the backlog")
+
+        pan(from: CGVector(dx: 0.56, dy: 0.72), to: CGVector(dx: 0.49, dy: 0.36))
+        XCTAssertTrue(!row.exists || row.frame.minY < initialY - 1, "the backlog scrolled vertically")
+        XCTAssertTrue(backlog.exists && onScreen(backlog), "the mostly vertical pan stayed on Soon")
+    }
+
+    private func pan(from start: CGVector, to end: CGVector) {
+        app.coordinate(withNormalizedOffset: start).press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: end))
+    }
+
     /// A pool row dragged onto the edge of the Soon page turns to it and, let go there, is listed in Soon: Not today, it
     /// has left today's pool (day state only, the note stays as it is).
     func testAPoolRowDraggedOntoSoonLeavesTheDay() {

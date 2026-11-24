@@ -31,7 +31,7 @@ struct BacklogPage: View {
         ReorderableList(sections: Binding(get: { [ListSection(id: list.id, title: "", items: rows)] }, set: moved), look: "pool",
                         actions: { engine.menu(.context(of: $0.task), for: $0, isToday: false) }, traits: traits, onNest: nested,
                         dropIn: dropIn, onDropIn: newItemDropped, space: space, name: TasksCarry.backlog(list.id),
-                        features: [.carry, .menu, .haptics, .autoscroll, .dim, .treeLines, .dropIn, .crossList, .nesting, .scrollIndicator, .wrapTitles],
+                        features: .tasksPool.union(.nesting),
                         onTap: { handler.run(registry.definition(.open), taskName: $0.id) },
                         onRefresh: { await model.sync(announce: true) }, onSystemDrop: systemDropped) { row($0) }
             .engineNewItem(dropIn, owner: "backlog.\(list.id)") { router.takesNewItemOnTasks }

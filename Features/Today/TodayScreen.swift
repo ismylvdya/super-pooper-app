@@ -1,3 +1,4 @@
+import ListEngineChumbulev
 import SwiftUI
 
 /// Main screen: blocks from the arrangement's layout (`layouts/today-*.layout.json`), refreshed every
@@ -19,8 +20,6 @@ struct TodayScreen: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.physicalBottom) private var physicalBottom
     @State private var pendingAction: PendingAction?
-    /// A finger is on the day swipe. It clears also when the system takes the touch away, when the gesture does not end.
-    @GestureState private var isDaySwiping = false
     @State private var width: CGFloat = 0
     @State private var pager = TodayPager()
     @Environment(TaskDragState.self) private var taskDrag
@@ -147,14 +146,15 @@ struct TodayScreen: View {
         GeometryReader { geometry in
             let layout = layout
             let bottomInset = geometry.safeAreaInsets.bottom
+            let edgeInset = ListTheme.app.rows.sideInset
             TimelineView(.periodic(from: .now, by: model.config.rules.timeline.refreshSeconds)) { _ in
                 let plan = model.plan(at: model.clock.now, dayOffset: pager.dayOffset)
                 let fade = 1 - min(abs(pager.daySlide) / geometry.size.width, 1) * tokens.opacity(.daySwipeFade)
                 TasksStrip(layout: layout, pages: pages, pager: pager, plan: plan, handler: handler, bottomInset: bottomInset,
-                           isLandscape: isLandscape, edgeInset: tokens.space(.screenHorizontal), fade: fade, onTurn: turn,
+                           isLandscape: isLandscape, edgeInset: edgeInset, fade: fade, onTurn: turn,
                            onEdgeFrame: { page, frame in carry.edges[page] = frame })
-                .padding(.leading, tokens.space(.screenHorizontal) + (physicalBottom == .leading ? tabBarRoom : 0))
-                .padding(.trailing, tokens.space(.screenHorizontal) + (physicalBottom == .trailing ? tabBarRoom : 0))
+                .padding(.leading, edgeInset + (physicalBottom == .leading ? tabBarRoom : 0))
+                .padding(.trailing, edgeInset + (physicalBottom == .trailing ? tabBarRoom : 0))
                 .padding(.top, tokens.space(.headerToPlate))
                 // An empty pool still takes the swipe.
                 .contentShape(Rectangle())
@@ -164,8 +164,12 @@ struct TodayScreen: View {
             // Turned, everything is laid out anew: nothing measured on the other side stays.
             .id(isLandscape)
             .ignoresSafeArea(.container, edges: .bottom)
-            .simultaneousGesture(daySwipe(width: geometry.size.width))
-            .onChange(of: isDaySwiping) { _, swiping in if !swiping { pager.endSwipe() } }
+            .background { daySwipe(width: geometry.size.width) }
+            .simultaneousGesture(
+                DragGesture(minimumDistance: rules.gestures.daySwipeMinimumDistance).onEnded { _ in
+                    Task { await taskDrag.fingerLifted(settling: rules.gestures.dragEndSettleSeconds) }
+                }
+            )
             .onChange(of: arrangement) { pager.resetPage() }
             .onChange(of: freeLists, initial: true) { _, count in pager.setFreeLists(count) }
         }
@@ -174,24 +178,21 @@ struct TodayScreen: View {
 
     /// A horizontal drag moves the pages with the finger and, far enough, turns the page; at the first page it pulls the
     /// next backlog page open (`TodayPager`).
-    private func daySwipe(width: CGFloat) -> some Gesture {
-        DragGesture(minimumDistance: rules.gestures.daySwipeMinimumDistance)
-            .updating($isDaySwiping) { _, state, _ in state = true }
-            .onChanged { value in
-                // A task being dragged moves itself, not the pages: they turn only by its reaching an edge.
-                guard taskDrag.item == nil else { return pager.cancelSwipe() }
-                let armed = pager.swipeChanged(value.translation, containerWidth: width, pageCount: pageCount,
-                                               backlogCount: model.backlogLists.count, gestures: rules.gestures)
-                if armed { Haptics.play(.pullArmed) }
-            }
-            .onEnded { value in
-                // The swipe follows a dragged task's finger too: lifted with no drop, the drag ends.
-                Task { await taskDrag.fingerLifted(settling: rules.gestures.dragEndSettleSeconds) }
-                guard taskDrag.item == nil else { return pager.cancelSwipe() }
-                pager.swipeEnded(value.translation, predicted: value.predictedEndTranslation, velocity: value.velocity,
-                                 containerWidth: width, pageCount: pageCount, backlogCount: model.backlogLists.count,
-                                 gestures: rules.gestures, duration: tokens.duration(.animation))
-            }
+    private func daySwipe(width: CGFloat) -> TasksPagePan {
+        TasksPagePan(axisRatio: rules.gestures.daySwipeAxisRatio, canBegin: {
+            router.tab == .today && router.takesNewItemOnTasks && !router.isProblemsPresented
+                && taskDrag.item == nil && taskDrag.section == nil && taskDrag.newItemPoint == nil
+        }, onChange: { offset in
+            // UIKit can begin with zero translation. Wait for movement before updating the pager's axis.
+            guard offset != 0 || pager.isSwipingSideways else { return }
+            let armed = pager.swipeChanged(CGSize(width: offset, height: 0), containerWidth: width, pageCount: pageCount,
+                                           backlogCount: model.backlogLists.count, gestures: rules.gestures)
+            if armed { Haptics.play(.pullArmed) }
+        }, onEnd: { offset, projected, speed in
+            pager.swipeEnded(CGSize(width: offset, height: 0), predicted: CGSize(width: projected, height: 0),
+                             velocity: CGSize(width: speed, height: 0), containerWidth: width, pageCount: pageCount,
+                             backlogCount: model.backlogLists.count, gestures: rules.gestures, duration: tokens.duration(.animation))
+        }, onCancel: pager.endSwipe)
     }
 
     /// The arrows around the shown day's name; on another day, tapping the name goes back to today.

@@ -57,8 +57,7 @@ struct PoolBlock: View {
 
     /// No swipes in the pool; today's rows nest; another day's pool has no headers to rename.
     private var features: ListFeatures {
-        var features: ListFeatures = [.carry, .menu, .haptics, .autoscroll, .dim, .treeLines, .dropIn, .crossList, .crossSection,
-                                      .renameSections, .scrollIndicator, .wrapTitles]
+        var features: ListFeatures = .tasksPool.union([.crossSection, .renameSections])
         if plan.isToday { features.insert(.nesting) }
         return features
     }
@@ -179,4 +178,8 @@ struct PoolBlock: View {
     private var engine: EngineActions {
         EngineActions(model: model, tokens: tokens, registry: registry, icons: icons) { handler.handle($0, taskName: $1) }
     }
+}
+
+extension ListFeatures {
+    static let tasksPool: ListFeatures = [.carry, .menu, .haptics, .autoscroll, .dim, .treeLines, .dropIn, .crossList, .edgeFade]
 }

@@ -215,6 +215,7 @@
     "pool": {
       "joinsAll": false,
       "indentsPlate": true,
+      "sideInset": 0,
       "family": {
         "indent": 50,
         "lineGap": 0
