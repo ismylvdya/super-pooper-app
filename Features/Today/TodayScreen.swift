@@ -21,6 +21,8 @@ struct TodayScreen: View {
     @Environment(\.physicalBottom) private var physicalBottom
     @State private var pendingAction: PendingAction?
     @State private var width: CGFloat = 0
+    @State private var screenFrame = CGRect.zero
+    @State private var portraitCarryEdgeWidth: CGFloat?
     @State private var pager = TodayPager()
     @Environment(TaskDragState.self) private var taskDrag
     /// Rows the list engine carries across the pages and onto the timeline.
@@ -41,6 +43,14 @@ struct TodayScreen: View {
             }
         }
         .screenBackground()
+        .background {
+            Color.clear
+                .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { screenFrame = $0 }
+                .ignoresSafeArea(.container)
+        }
+        .onChange(of: leadingButtonDistance) { _, distance in
+            if let distance { portraitCarryEdgeWidth = distance }
+        }
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         .onGeometryChange(for: EdgeInsets.self) { $0.safeAreaInsets } action: { safeArea = $0 }
         // Upright, the system bar; lying sideways the buttons stand in their own column along the physical top.
@@ -71,7 +81,7 @@ struct TodayScreen: View {
         }
         .onAppear {
             carry.follow(model: model, drag: taskDrag, day: { [model, pager] in model.plan(at: model.clock.now, dayOffset: pager.dayOffset) },
-                         dwellSeconds: rules.gestures.pageEdgeDwellSeconds, turn: turnForCarry)
+                         cooldownSeconds: rules.gestures.pageEdgeCooldownSeconds, turn: turnForCarry)
         }
         .environment(carry)
         // Only lying sideways (`tabBarRoom`): upright, Today would redraw whenever a page over it shows or hides the keyboard.
@@ -96,6 +106,20 @@ struct TodayScreen: View {
 
     private func barButtonMoved(_ item: TodayButtons.Item, to frame: CGRect?) {
         if barButtons[item] != frame { barButtons[item] = frame }
+    }
+
+    private var leadingButtonDistance: CGFloat? {
+        guard !isLandscape, let frame = barButtons[.lists], screenFrame.width > 0,
+              frame.midX > screenFrame.minX, frame.midX < screenFrame.midX else { return nil }
+        return frame.midX - screenFrame.minX
+    }
+
+    private var carryEdgeInsets: CarryEdgeInsets? {
+        guard screenFrame.width > 0 else { return nil }
+        // Landscape uses the portrait measurement when available, or the bar metrics before the first measurement.
+        let barCenter = tokens.bar(.barSideInset) + tokens.bar(.barButton) / 2
+        let width = leadingButtonDistance ?? portraitCarryEdgeWidth ?? barCenter
+        return CarryEdgeInsets(screen: screenFrame, width: min(width, screenFrame.width / 2))
     }
 
     private var dayBarRoom: CGFloat? {
@@ -135,13 +159,16 @@ struct TodayScreen: View {
         pager.turn(to: newPage, pageCount: pageCount, animation: tokens.animation)
     }
 
-    private func turnForCarry(to edge: PagedStackEdge) {
+    private func turnForCarry(to edge: PagedStackEdge) -> Bool {
+        let previous = pager.page
+        let previouslyReached = pager.reachedBacklog
         switch edge {
         case .unopenedLeadingPage:
             withAnimation(tokens.animation) { pager.openNextBacklog(count: model.backlogLists.count) }
         case .page(let index):
             turn(to: index)
         }
+        return pager.page != previous || pager.reachedBacklog != previouslyReached
     }
 
     /// Lying sideways the pages' container is laid out from the screen's edge at the physical bottom, past the safe area
@@ -159,7 +186,7 @@ struct TodayScreen: View {
                 let fade = 1 - min(abs(pager.daySlide) / geometry.size.width, 1) * tokens.opacity(.daySwipeFade)
                 TasksStrip(layout: layout, pages: pages, pager: pager, plan: plan, handler: handler, bottomInset: bottomInset,
                            isLandscape: isLandscape, edgeInset: edgeInset, fade: fade, onTurn: turn,
-                           onEdgeFrames: { carry.edges = $0 })
+                           carryEdgeInsets: carryEdgeInsets, onEdgeFrames: { carry.edges = $0 })
                 .padding(.leading, edgeInset + (physicalBottom == .leading ? tabBarRoom : 0))
                 .padding(.trailing, edgeInset + (physicalBottom == .trailing ? tabBarRoom : 0))
                 .padding(.top, tokens.space(.headerToPlate))

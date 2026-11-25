@@ -77,7 +77,7 @@ final class TodayPager {
         page == firstReachedPage && reachedBacklog < backlogCount
     }
 
-    /// The same next list opens on a pull or when a carried row stays at that edge.
+    /// The same next list opens on a pull or when a carried row reaches that edge.
     func openNextBacklog(count: Int) {
         guard canPullOpen(backlogCount: count) else { return }
         openedBacklog = count

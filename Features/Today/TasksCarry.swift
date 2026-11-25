@@ -7,12 +7,12 @@ import SwiftUI
 final class TasksCarry {
     let space = ListDragSpace()
     @ObservationIgnored var edges: [PagedStackEdge: CGRect] = [:]
-    @ObservationIgnored private var dwell: Task<Void, Never>?
-    @ObservationIgnored private var dwellEdge: PagedStackEdge?
+    @ObservationIgnored private var finger: CGPoint?
+    @ObservationIgnored private var cooldown: Task<Void, Never>?
     @ObservationIgnored private var destinations: [String: (ListDrop) -> TaskLanding?] = [:]
 
-    func follow(model: AppModel, drag: TaskDragState, day: @escaping () -> DayPlan, dwellSeconds: Double,
-                turn: @escaping (PagedStackEdge) -> Void) {
+    func follow(model: AppModel, drag: TaskDragState, day: @escaping () -> DayPlan, cooldownSeconds: Double,
+                turn: @escaping (PagedStackEdge) -> Bool) {
         space.acceptsTargetAt = { [weak self] point in self?.edge(at: point) == nil }
         space.onCarry = { [weak self] event in
             guard let self else { return }
@@ -22,11 +22,13 @@ final class TasksCarry {
                 let item = day().pool.first { $0.id == name } ?? model.task(named: name).map(DayItem.init(listed:))
                 if let item { _ = drag.begin(item, from: model.backlogLists.contains { $0.id == from } ? .backlog(from) : .pool) }
             case .moved(let point):
-                self.stay(at: point, seconds: dwellSeconds, turn: turn)
+                guard drag.item != nil else { return }
+                self.finger = point
+                self.turnAtEdge(cooldownSeconds: cooldownSeconds, turn: turn)
             case .released:
-                self.stopDwell()
+                self.finger = nil
             case .ended:
-                self.stopDwell()
+                self.finger = nil
                 drag.end()
             }
         }
@@ -55,23 +57,15 @@ final class TasksCarry {
         edges.first { $0.value.contains(point) }?.key
     }
 
-    private func stay(at point: CGPoint, seconds: Double, turn: @escaping (PagedStackEdge) -> Void) {
-        let edge = edge(at: point)
-        guard edge != dwellEdge else { return }
-        dwell?.cancel()
-        dwellEdge = edge
-        guard let edge else { return }
-        dwell = Task { @MainActor in
-            try? await Task.sleep(for: .seconds(seconds))
-            guard !Task.isCancelled else { return }
-            turn(edge)
+    private func turnAtEdge(cooldownSeconds: Double, turn: @escaping (PagedStackEdge) -> Bool) {
+        guard cooldown == nil, let finger, let edge = edge(at: finger), turn(edge) else { return }
+        cooldown = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(cooldownSeconds))
+            guard !Task.isCancelled, let self else { return }
+            self.cooldown = nil
+            // Recheck the current finger and page so holding at the edge can keep paging.
+            self.turnAtEdge(cooldownSeconds: cooldownSeconds, turn: turn)
         }
-    }
-
-    private func stopDwell() {
-        dwell?.cancel()
-        dwell = nil
-        dwellEdge = nil
     }
 
     static let pool = "pool"

@@ -247,7 +247,7 @@
     "edgeScrollPointsPerSecond": 420,
     "estimateStepShare": 0.0833,
     "estimateLongerDown": true,
-    "pageEdgeDwellSeconds": 0.5,
+    "pageEdgeCooldownSeconds": 1,
     "daySwipeAxisRatio": 1.5,
     "daySwipeShare": 0.25,
     "daySwipeFlingShare": 0.5,

@@ -19,6 +19,7 @@ struct TasksStrip: View {
     let edgeInset: CGFloat
     let fade: Double
     let onTurn: (Int) -> Void
+    let carryEdgeInsets: CarryEdgeInsets?
     /// Where the neighbours' edges are, for a row the list engine carries (`TasksCarry`).
     var onEdgeFrames: (([PagedStackEdge: CGRect]) -> Void)?
 
@@ -28,7 +29,7 @@ struct TasksStrip: View {
                    listCount: pager.openedBacklog, listPeek: tokens.space(.backlogPeek), hiddenLists: pager.openedBacklog - pager.reachedBacklog, halves: layout.isHalves, page: pager.page,
                    drag: pager.pageDrag, pull: pager.sidePull, edgeLabel: edgeLabel, onTurn: onTurn,
                    opensLeadingPage: pager.canPullOpen(backlogCount: model.backlogLists.count),
-                   onEdgeFrames: onEdgeFrames) { page in
+                   carryEdgeInsets: carryEdgeInsets, onEdgeFrames: onEdgeFrames) { page in
             switch page {
             case .backlog(let id):
                 if let list = model.config.lists.backlogList(id) {

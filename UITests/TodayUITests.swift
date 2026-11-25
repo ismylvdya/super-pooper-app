@@ -218,7 +218,12 @@ final class TodayUITests: XCTestCase {
         XCTAssertEqual(edge.label, "Show the timeline")
         let row = app.buttons["title:Выпить воды 💧"]
         XCTAssertTrue(row.waitForExistence(timeout: 10))
-        row.press(forDuration: 1.2, thenDragTo: edge, withVelocity: .slow, thenHoldForDuration: 1)
+        let screen = app.frame
+        let halfWidth = (app.buttons["today.lists"].frame.midX - screen.minX) / 2
+        let target = app.coordinate(withNormalizedOffset: .zero)
+            .withOffset(CGVector(dx: screen.width - halfWidth, dy: screen.height / 2))
+        row.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+            .press(forDuration: 1.2, thenDragTo: target, withVelocity: .slow, thenHoldForDuration: 0.2)
         let turned = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == 'Show the pool'"), object: edge)
         XCTAssertEqual(XCTWaiter().wait(for: [turned], timeout: 5), .completed, "the pages turned to the timeline")
     }

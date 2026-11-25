@@ -188,8 +188,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let estimateStepShare: Double
         /// The second finger moved down picks a longer estimate (up, a shorter one); false the other way round.
         let estimateLongerDown: Bool
-        /// How long a dragged task stays at a page's edge or over a neighbour before Tasks turns to it.
-        let pageEdgeDwellSeconds: Double
+        /// How long Tasks waits between page turns while a task is dragged at an edge.
+        let pageEdgeCooldownSeconds: Double
         /// A drag is sideways when it moves this many times more across than up or down.
         let daySwipeAxisRatio: Double
         /// A sideways drag turns the page past this share of the width, or when flung past `daySwipeFlingShare` of it.

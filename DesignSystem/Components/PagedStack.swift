@@ -5,6 +5,11 @@ enum PagedStackEdge: Hashable {
     case unopenedLeadingPage
 }
 
+struct CarryEdgeInsets {
+    let screen: CGRect
+    let width: CGFloat
+}
+
 /// Pages of almost the full width, side by side (`PageStrip`): the shown page leaves its neighbours' peeks (`peekShares` of
 /// the width) visible at
 /// the edges (each page has its own: how much of it stays in sight while another page is shown; zero hides it), and
@@ -34,6 +39,8 @@ struct PagedStack<Page: Hashable, Content: View>: View {
     var onTurn: ((Int) -> Void)?
     /// The leading edge can also reveal a page that has yet to be opened.
     var opensLeadingPage = false
+    /// The drag zones use the screen's edges and a common width, independent of the pages' peeks.
+    var carryEdgeInsets: CarryEdgeInsets?
     var onEdgeFrames: (([PagedStackEdge: CGRect]) -> Void)?
     @ViewBuilder let content: (Page) -> Content
     /// How far past the stack pages may show when they are not halves (into the screen's margins).
@@ -70,31 +77,33 @@ struct PagedStack<Page: Hashable, Content: View>: View {
             .overlay(alignment: .trailing) {
                 edge(to: page + 1, leading: false, strip: strip)
             }
-            .onChange(of: edgeFrames(in: geometry.frame(in: .global), strip: strip), initial: true) { _, frames in
+            .onChange(of: carryEdgeFrames, initial: true) { _, frames in
                 onEdgeFrames?(frames)
             }
             .onDisappear { onEdgeFrames?([:]) }
         }
     }
 
-    private func edgeFrames(in frame: CGRect, strip: PageStrip) -> [PagedStackEdge: CGRect] {
+    private var carryEdgeFrames: [PagedStackEdge: CGRect] {
+        guard let carryEdgeInsets else { return [:] }
+        let frame = carryEdgeInsets.screen
+        let width = carryEdgeInsets.width
         var frames: [PagedStackEdge: CGRect] = [:]
+        let leading = CGRect(x: frame.minX, y: frame.minY, width: width, height: frame.height)
         if opensLeadingPage {
-            frames[.unopenedLeadingPage] = CGRect(x: frame.minX - edgeInset, y: frame.minY, width: edgeInset, height: frame.height)
+            frames[.unopenedLeadingPage] = leading
         } else if pages.indices.contains(page - 1) {
-            let width = strip.visiblePeek(of: page - 1, showing: page) + edgeInset
-            frames[.page(page - 1)] = CGRect(x: frame.minX - edgeInset, y: frame.minY, width: width, height: frame.height)
+            frames[.page(page - 1)] = leading
         }
-        if pages.indices.contains(page + 1) {
-            let peek = strip.visiblePeek(of: page + 1, showing: page)
-            let width = peek == 0 ? edgeInset : peek
-            frames[.page(page + 1)] = CGRect(x: frame.maxX - peek, y: frame.minY, width: width, height: frame.height)
+        let lastPage = pages.count - (halves ? 2 : 1)
+        if page < lastPage {
+            frames[.page(page + 1)] = CGRect(x: frame.maxX - width, y: frame.minY,
+                                              width: width, height: frame.height)
         }
         return frames
     }
 
-    /// The edge of a neighbour turns to it instead of acting on what it shows: a tap on its visible peek, or a drag
-    /// reaching it. A neighbour without a peek has its edge in the screen's margin beside the stack.
+    /// Tapping a visible peek turns to its page. A neighbour without a peek has its edge in the screen's margin.
     @ViewBuilder private func edge(to other: Int, leading: Bool, strip: PageStrip) -> some View {
         if let onTurn, pages.indices.contains(other) {
             let peek = strip.visiblePeek(of: other, showing: page)
