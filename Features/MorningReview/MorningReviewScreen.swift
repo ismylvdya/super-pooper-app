@@ -48,12 +48,14 @@ struct MorningReviewList: View {
 
     var body: some View {
         let plan = isTomorrow ? model.tomorrowPlan() : model.plan(at: model.clock.now)
+        let pool = DayPoolRows(plan: plan, daySections: model.sections(on: plan.today),
+                               definitions: rules.pool.defaultSections, includesEmpty: true)
         let setAside = setAsideItems(today: plan.today)
         let row = ReviewRow(model: model, tokens: tokens, icons: icons, rules: rules, chipOrder: chipOrder) { pickingDue = $0 }
-        ReorderableList(sections: Binding(get: { sections(plan, setAside: setAside) }, set: { moved($0, plan: plan) }), look: "lists",
+        ReorderableList(sections: Binding(get: { sections(pool, setAside: setAside) }, set: { pool.move($0, model: model, day: plan.today, savesOrder: true) }), look: "lists",
                         actions: { engine.menu(.context(of: $0.task), for: $0, isToday: !isTomorrow) },
                         traits: traits, swipes: { swipes(for: $0, setAside: setAside) },
-                        onNest: { nested($0, $1) }, dropIn: dropIn, onDropIn: { newItemDropped($0, plan: plan) },
+                        onNest: { nested($0, $1) }, dropIn: dropIn, onDropIn: { newItemDropped($0, pool: pool, day: plan.today) },
                         features: .all.subtracting([.crossList, .renameSections]), lockedSections: [Self.setAsideSection],
                         onTap: { openTask($0.id) }, header: header, footer: footer) { row.content($0) }
             .ignoresSafeArea()
@@ -79,12 +81,9 @@ struct MorningReviewList: View {
 
     static let setAsideSection = "setAside"
 
-    /// The day's groups (Morning, Day, Evening) in the pool's order, and what was set aside after them.
-    private func sections(_ plan: DayPlan, setAside: [DayItem]) -> [ListSection<DayItem>] {
-        var sections = ReviewGroups.Group.allCases.map { group in
-            ListSection(id: group.rawValue, title: L10n.string("review.group." + group.rawValue),
-                        items: plan.pool.filter { ReviewGroups.Group($0.task.habit.timeOfDay) == group })
-        }
+    /// The pool's sections, followed by what was set aside.
+    private func sections(_ pool: DayPoolRows, setAside: [DayItem]) -> [ListSection<DayItem>] {
+        var sections = pool.sections
         if !setAside.isEmpty {
             sections.append(ListSection(id: Self.setAsideSection,
                                         title: L10n.string(isTomorrow ? "review.group.setAsideTomorrow" : "review.group.setAside"), items: setAside))
@@ -95,21 +94,6 @@ struct MorningReviewList: View {
     /// What was taken out of the day (`SetAsideToday`; on Tomorrow, what is kept out of tomorrow).
     private func setAsideItems(today: LocalDate) -> [DayItem] {
         (isTomorrow ? model.setAsideTomorrow : model.setAsideToday).map { $0.isHabit ? DayItem(habit: $0, on: today) : DayItem(listed: $0) }
-    }
-
-    /// Rows landed: the new order of the day's tasks, and the ones in another group now take its part of the day.
-    private func moved(_ sections: [ListSection<DayItem>], plan: DayPlan) {
-        let current = Dictionary(plan.pool.map { ($0.id, ReviewGroups.Group($0.task.habit.timeOfDay)) }, uniquingKeysWith: { first, _ in first })
-        var order: [String] = []
-        var regrouped: [String: ReviewGroups.Group] = [:]
-        for section in sections {
-            guard let group = ReviewGroups.Group(rawValue: section.id) else { continue }
-            for item in section.items {
-                order.append(item.id)
-                if current[item.id] != group { regrouped[item.id] = group }
-            }
-        }
-        Task { await model.applyReviewMove(ReviewGroups.Move(order: order, regrouped: regrouped)) }
     }
 
     /// A carried row went into a family (today), or out of one to the top level where it was let go.

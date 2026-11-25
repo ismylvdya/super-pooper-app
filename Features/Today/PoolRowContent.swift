@@ -10,7 +10,6 @@ struct PoolRowContent: View {
 
     @Environment(\.actions) private var actions
     @Environment(\.tokens) private var tokens
-    @Environment(TaskDragState.self) private var drag: TaskDragState?
     let item: DayItem
     var isToday = true
     var isCompact = true
@@ -23,8 +22,6 @@ struct PoolRowContent: View {
     /// Extra height under the content (pool rows of long tasks).
     var minimumHeight: CGFloat = 0
     let handler: TaskActionHandler
-    /// Where a drag of this row starts from; nil = it cannot be dragged.
-    var dragSource: TaskDragState.Source?
     /// The row stands in that day's pool: its menu offers what a pool row does there (Unworm).
     var poolDay: LocalDate?
 
@@ -36,7 +33,6 @@ struct PoolRowContent: View {
                     handler.handle($0, taskName: item.id)
                 }
             }
-            .taskDragSource(item, from: dragSource ?? .pool, drag: drag, isOn: dragSource != nil, lift: .row) { plated }
     }
 
     /// The row on its plate: what stands in the pool or on the timeline, and what a drag lifts.

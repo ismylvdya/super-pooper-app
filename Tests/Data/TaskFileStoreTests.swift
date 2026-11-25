@@ -42,6 +42,29 @@ struct TaskFileStoreTests {
 
     private func draft(_ changes: [TaskEdit] = []) -> NoteDraft { NoteDraft(status: .thisWeek, changes: changes) }
 
+    @Test func taskPlacementsRoundTripThroughMarkdown() async throws {
+        let repository = store()
+        let context = TestCalendar.context()
+        let time = LocalTime("15:00")
+        let moment = context.date(today, time)
+        var task = try await repository.create(NoteDraft(status: .someday), named: "Placement")
+        let edits = TaskPlacementMove.changes(for: task, to: .pool(today, sectionTag: "evening"),
+                                              fromScheduled: false, context: context)
+        task = try await repository.apply(edits, to: task).task
+        #expect(try text().contains("Placement 🏊 in_today_pool 🏊 section_evening"))
+        #expect(task.status == .thisWeek && task.isInTodayPool && task.poolSection == "evening")
+
+        task = try await repository.apply(TaskPlacementMove.changes(for: task, to: .scheduled(moment),
+                                                                   fromScheduled: false, context: context), to: task).task
+        #expect(task.due == TaskDue(day: today, time: time) && !task.isInTodayPool && task.poolSection == nil)
+        #expect(try text().contains("Placement \(format.markers.date) \(today) \(format.markers.time) 15:00"))
+
+        let back = TaskPlacementMove.changes(for: task, to: .list(.halfYear), fromScheduled: true, context: context)
+        task = try await repository.apply(back, to: task).task
+        #expect(task.status == .halfYear && task.due == nil && !task.isInTodayPool && task.poolSection == nil)
+        #expect(try await repository.load().tasks.first?.status == .halfYear)
+    }
+
     @Test func aLineRoundTripsWithEveryField() {
         let line = "- [/] Call the doctor: urgent 📅 2026-11-04 ⏰ 14:00 🌐 Asia/Tokyo ⏳ 60 ⚠️ ❤️ 🆔 a1"
         let entry = TaskEntry(line: line, format: format)

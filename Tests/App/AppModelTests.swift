@@ -93,16 +93,28 @@ struct AppModelTests {
         #expect(model.task(named: name) == nil, "done and filed away as any task")
     }
 
-    /// A drag in This week into another group: the new order at once, the new part of the day written to the task.
-    @Test func aReviewDragIntoAnotherGroupSetsThePartOfTheDay() async throws {
+    @Test func aPoolRowMovedAcrossSectionsTakesThePersistedSectionTag() async throws {
         let model = try makeModel()
-        let order = ["Сдать отчёт", "Позвонить в банк"]
-        await model.applyReviewMove(ReviewGroups.Move(order: order, regrouped: ["Сдать отчёт": .evening]))
+        let day = model.context().today
+        let order = ["Позвонить в банк", "Сдать отчёт"]
+        let section = try #require(model.config.rules.pool.defaultSections.first { $0.routine == .evening })
+        await model.relocatePoolRows([("Позвонить в банк", section.id)], order: order, on: day)
         let places = order.compactMap { model.task(named: $0)?.storeOrder }
-        #expect(places.count == 2 && places[0] < places[1], "the order of the lines")
-        await model.parts.writer.waitForEdits(of: "Сдать отчёт")
-        #expect(model.task(named: "Сдать отчёт")?.habit.timeOfDay == .evening)
-        #expect(model.task(named: "Позвонить в банк")?.habit.timeOfDay == nil)
+        #expect(places.count == 2 && places[0] < places[1])
+        #expect(model.task(named: "Позвонить в банк")?.poolSection == section.id)
+        #expect(model.plan(at: model.clock.now).sections.first { $0.id == section.id }?.items.contains { $0.id == "Позвонить в банк" } == true)
+    }
+
+    @Test func aTomorrowSpreaderMoveUpdatesThatDaysSections() async throws {
+        let model = try makeModel()
+        let name = "Позвонить в банк"
+        let tomorrow = model.context().today.adding(days: 1)
+        let evening = try #require(model.config.rules.pool.defaultSections.first { $0.routine == .evening })
+
+        await model.relocatePoolRows([(name, evening.id)], order: [name], on: tomorrow)
+
+        #expect(model.tomorrowPlan().sections.first { $0.id == evening.id }?.items.contains { $0.id == name } == true)
+        #expect(model.task(named: name)?.poolSection == nil)
     }
 
     /// A vault that cannot be read this once (bookmark not resolved in the background, no access) must not

@@ -50,7 +50,9 @@ final class AppModel {
 
     func setPoolOrder(_ names: [String]) async { await parts.dayCommands.setPoolOrder(names) }
     func resetOrder(tomorrow: Bool = false) async { await parts.dayCommands.resetOrder(tomorrow: tomorrow) }
-    func applyReviewMove(_ move: ReviewGroups.Move) async { await parts.dayCommands.applyReviewMove(move) }
+    func relocatePoolRows(_ groups: [(name: String, section: String)], order: [String]?, on day: LocalDate) async {
+        await parts.dayCommands.relocatePoolRows(groups, order: order, on: day)
+    }
     /// A drag between the pool and the timeline of any day; `slot`: a habit block's time as its note has it, when it comes
     /// from the timeline (a habit moves for that day only).
     func schedule(_ name: String, slot: LocalTime? = nil, at moment: Date) async {
@@ -59,13 +61,13 @@ final class AppModel {
     func unschedule(_ name: String, slot: LocalTime? = nil, poolOrder: [String], on day: LocalDate? = nil) async {
         await parts.dayCommands.unschedule(name, slot: slot, poolOrder: poolOrder, on: day)
     }
+    func relocateTask(_ name: String, to landing: TaskLanding, fromScheduled: Bool, slot: LocalTime?) async {
+        await parts.dayCommands.relocateTask(name, to: landing, fromScheduled: fromScheduled, slot: slot)
+    }
+
     func canDropInPool(_ name: String, slot: LocalTime?) -> Bool { parts.dayCommands.canSendToPool(name, slot: slot) }
     func refuseDrop(_ name: String, onto target: DropRefusal.Target) { parts.dayCommands.refuseDrop(name, onto: target) }
 
-    /// Dropped on a backlog page while `shown` is shown; `fromShownDay`: from that day's pool or timeline.
-    func moveToBacklog(_ name: String, list: BacklogList, shown: LocalDate, fromShownDay: Bool) async {
-        await parts.dayCommands.moveToBacklog(name, level: list.status, shown: shown, fromShownDay: fromShownDay)
-    }
     /// One tab right under the row above in `rows`, the list as shown (the swipe to the right).
     func indent(_ name: String, rows: [DayItem]) async { await parts.dayCommands.indent(name, rows: rows) }
     func nest(_ name: String, under parent: String, index: Int?) async {
@@ -74,12 +76,6 @@ final class AppModel {
     /// Carried out of its family to the top level, its line where it was let go in `order` (the list's rows).
     func unnest(_ name: String, order: [String]) async { await parts.dayCommands.unnest(name, order: order) }
     func canNest(_ name: String, order: [String]) -> Bool { parts.dayCommands.canNest(name, order: order) }
-    func bringFromBacklog(_ name: String, to day: LocalDate, poolOrder: [String]?) async {
-        await parts.dayCommands.bringFromBacklog(name, to: day, poolOrder: poolOrder)
-    }
-    func scheduleFromBacklog(_ name: String, at moment: Date) async { await parts.dayCommands.scheduleFromBacklog(name, at: moment) }
-    func canBringFromBacklog(_ name: String) -> Bool { parts.dayCommands.canBringFromBacklog(name) }
-
     /// The pool sections of `day` as the user arranged them, or the defaults.
     func sections(on day: LocalDate) -> DaySections { parts.sections.snapshot(on: day) }
     func renameSection(_ id: String, to title: String, on day: LocalDate) { parts.dayCommands.renameSection(id, to: title, on: day) }

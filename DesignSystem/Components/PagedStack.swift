@@ -1,5 +1,9 @@
 import SwiftUI
-import UniformTypeIdentifiers
+
+enum PagedStackEdge: Hashable {
+    case page(Int)
+    case unopenedLeadingPage
+}
 
 /// Pages of almost the full width, side by side (`PageStrip`): the shown page leaves its neighbours' peeks (`peekShares` of
 /// the width) visible at
@@ -28,11 +32,9 @@ struct PagedStack<Page: Hashable, Content: View>: View {
     /// What an edge says it turns to (VoiceOver, UI tests).
     var edgeLabel: (Page) -> Text = { _ in Text(verbatim: "") }
     var onTurn: ((Int) -> Void)?
-    /// How long a drag stays at an edge before it turns to that neighbour.
-    var edgeDwell: Double = 0
-    /// Where each neighbour's edge is on the screen, by its page's place (nil: none now), for a drag that is no system
-    /// drag (a row the list engine carries) to turn there too.
-    var onEdgeFrame: ((Int, CGRect?) -> Void)?
+    /// The leading edge can also reveal a page that has yet to be opened.
+    var opensLeadingPage = false
+    var onEdgeFrames: (([PagedStackEdge: CGRect]) -> Void)?
     @ViewBuilder let content: (Page) -> Content
     /// How far past the stack pages may show when they are not halves (into the screen's margins).
     private static var unclipped: CGFloat { 10_000 }
@@ -60,9 +62,35 @@ struct PagedStack<Page: Hashable, Content: View>: View {
             .frame(width: geometry.size.width, height: geometry.size.height, alignment: .topLeading)
             // Halves: the two pages in sight fill the stack; the next ones stay out of the screen's margins.
             .clipShape(Rectangle().inset(by: halves ? 0 : -Self.unclipped))
-            .overlay(alignment: .leading) { edge(to: page - 1, leading: true, strip: strip) }
-            .overlay(alignment: .trailing) { edge(to: page + 1, leading: false, strip: strip) }
+            .overlay(alignment: .leading) {
+                if !opensLeadingPage {
+                    edge(to: page - 1, leading: true, strip: strip)
+                }
+            }
+            .overlay(alignment: .trailing) {
+                edge(to: page + 1, leading: false, strip: strip)
+            }
+            .onChange(of: edgeFrames(in: geometry.frame(in: .global), strip: strip), initial: true) { _, frames in
+                onEdgeFrames?(frames)
+            }
+            .onDisappear { onEdgeFrames?([:]) }
         }
+    }
+
+    private func edgeFrames(in frame: CGRect, strip: PageStrip) -> [PagedStackEdge: CGRect] {
+        var frames: [PagedStackEdge: CGRect] = [:]
+        if opensLeadingPage {
+            frames[.unopenedLeadingPage] = CGRect(x: frame.minX - edgeInset, y: frame.minY, width: edgeInset, height: frame.height)
+        } else if pages.indices.contains(page - 1) {
+            let width = strip.visiblePeek(of: page - 1, showing: page) + edgeInset
+            frames[.page(page - 1)] = CGRect(x: frame.minX - edgeInset, y: frame.minY, width: width, height: frame.height)
+        }
+        if pages.indices.contains(page + 1) {
+            let peek = strip.visiblePeek(of: page + 1, showing: page)
+            let width = peek == 0 ? edgeInset : peek
+            frames[.page(page + 1)] = CGRect(x: frame.maxX - peek, y: frame.minY, width: width, height: frame.height)
+        }
+        return frames
     }
 
     /// The edge of a neighbour turns to it instead of acting on what it shows: a tap on its visible peek, or a drag
@@ -75,52 +103,12 @@ struct PagedStack<Page: Hashable, Content: View>: View {
                 .frame(width: peek + margin)
                 .contentShape(Rectangle())
                 .onTapGesture { if peek > 0 { onTurn(other) } }
-                .onDrop(of: [.text], delegate: PageEdgeDrop(wait: EdgeWait.shared, seconds: edgeDwell) { onTurn(other) })
                 .accessibilityElement()
                 .accessibilityLabel(edgeLabel(pages[other]))
                 .accessibilityAddTraits(.isButton)
                 .accessibilityAction { onTurn(other) }
                 .accessibilityIdentifier("today.pageEdge")
                 .offset(x: leading ? -margin : margin)
-                .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { onEdgeFrame?(other, $0) }
-                .onDisappear { onEdgeFrame?(other, nil) }
         }
-    }
-}
-
-/// The one wait of a drag staying at an edge.
-@MainActor
-private final class EdgeWait {
-    static let shared = EdgeWait()
-    var task: Task<Void, Never>?
-}
-
-/// A drag that stays at the edge of another page turns to it; passing over the edge does nothing, and nothing is dropped there.
-@MainActor
-private struct PageEdgeDrop: DropDelegate {
-    let wait: EdgeWait
-    let seconds: Double
-    let turn: () -> Void
-
-    func dropEntered(info: DropInfo) {
-        wait.task?.cancel()
-        wait.task = Task {
-            try? await Task.sleep(for: .seconds(seconds))
-            if !Task.isCancelled { turn() }
-        }
-    }
-
-    func dropExited(info: DropInfo) {
-        wait.task?.cancel()
-    }
-
-    /// Without a proposal the system marks the drag with a green "+".
-    func dropUpdated(info: DropInfo) -> DropProposal? {
-        DropProposal(operation: .move)
-    }
-
-    func performDrop(info: DropInfo) -> Bool {
-        wait.task?.cancel()
-        return false
     }
 }

@@ -94,32 +94,65 @@ final class TodayBacklogUITests: XCTestCase {
         app.coordinate(withNormalizedOffset: start).press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: end))
     }
 
-    /// A pool row dragged onto the edge of the Soon page turns to it and, let go there, is listed in Soon: Not today, it
-    /// has left today's pool (day state only, the note stays as it is).
-    func testAPoolRowDraggedOntoSoonLeavesTheDay() {
-        app.launchArguments += ["-SPArrangement", "paged"]
+    func testDraggingABacklogRowToItsRightEdgeOpensThePool() {
         launch()
         dismissBanners()
-        pullRight()
-        XCTAssertTrue(app.staticTexts["today.listTitle"].waitForExistence(timeout: 5))
-        app.swipeLeft()
-        XCTAssertTrue(app.buttons["today.day"].waitForExistence(timeout: 5))
-        // A row near the top, so no scrolling comes before the drag.
-        let row = app.buttons["title:Позвонить в банк"]
+        revealFirstBacklogWithATask()
+        let row = app.collectionViews.staticTexts["Записать идеи"].firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 5))
         let edge = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "identifier == 'today.pageEdge' AND label == 'Show Soon'")).firstMatch
+            .matching(NSPredicate(format: "identifier == 'today.pageEdge' AND label == 'Show the pool'")).firstMatch
         XCTAssertTrue(edge.exists)
-        // The edge is the screen's margin beside the pool (Soon shows nothing of itself there). The way there goes well down
-        // too: the long-press menu turns into a drag only once the finger has moved far enough from it, and a drag
-        // almost along the row sometimes leaves the menu open in the simulator.
         row.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-            .press(forDuration: 1.2, thenDragTo: edge.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.8)),
+            .press(forDuration: 0.4, thenDragTo: edge.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.42)),
                    withVelocity: .slow, thenHoldForDuration: 1)
-        let title = app.staticTexts["today.listTitle"]
-        XCTAssertTrue(title.waitForExistence(timeout: 5), "the pages turned to Soon")
-        let listed = app.descendants(matching: .any)["backlog.thisWeek"].buttons["title:Позвонить в банк"]
-        XCTAssertTrue(listed.waitForExistence(timeout: 5), "listed in Soon")
+        let poolRow = app.collectionViews.staticTexts["Утро — душ 🚿"].firstMatch
+        let center = app.frame.midX
+        expect(poolRow, toBe: { $0.frame.midX < center }, "holding at the right edge opens the pool")
+    }
+
+    func testHoldingATaskAtTheUnopenedLeftEdgeRevealsNextActions() {
+        launch()
+        dismissBanners()
+        revealFirstBacklogWithATask()
+    }
+
+    private func revealFirstBacklogWithATask() {
+        let task = app.collectionViews.staticTexts["Оплатить интернет"].firstMatch
+        XCTAssertTrue(task.waitForExistence(timeout: 5))
+        let origin = app.coordinate(withNormalizedOffset: .zero)
+        let source = origin.withOffset(CGVector(dx: task.frame.midX, dy: task.frame.midY))
+        let edge = origin.withOffset(CGVector(dx: 8, dy: task.frame.midY))
+        source.press(forDuration: 0.7, thenDragTo: edge, withVelocity: .slow, thenHoldForDuration: 1.3)
+        let backlog = app.collectionViews.staticTexts["Записать итоги разговора"].firstMatch
+        let center = app.frame.midX
+        expect(backlog, toBe: { $0.frame.midX < center }, "holding at the left edge opens Next actions")
+    }
+
+    func testATaskCanBeDraggedToTheTimelineAndBackAcrossItsLeftEdge() {
+        app.launchArguments += ["-SPTimeline", "oneColumn"]
+        launch()
+        dismissBanners()
+        let name = "Забрать посылку на почте"
+        let timeline = app.descendants(matching: .any).matching(NSPredicate(format: "identifier == 'today.pageEdge' AND label == 'Show the timeline'")).firstMatch
+        XCTAssertTrue(timeline.waitForExistence(timeout: 5))
+        timeline.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+
+        let pool = app.descendants(matching: .any).matching(NSPredicate(format: "identifier == 'today.pageEdge' AND label == 'Show the pool'")).firstMatch
+        let task = app.buttons["title:\(name)"].firstMatch
+        XCTAssertTrue(pool.waitForExistence(timeout: 5))
+        XCTAssertTrue(task.waitForExistence(timeout: 5))
+        task.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).press(forDuration: 0.35, thenDragTo: pool.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.62)),
+                   withVelocity: .slow, thenHoldForDuration: 1)
+        XCTAssertTrue(timeline.waitForExistence(timeout: 5), "holding over the pool turns back to it")
+        let pooled = app.collectionViews.staticTexts[name].firstMatch
+        XCTAssertTrue(pooled.waitForExistence(timeout: 5), "the timeline task landed in the pool")
+        XCTAssertLessThan(pooled.frame.midX, timeline.frame.minX)
+
+        pooled.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).press(forDuration: 0.35, thenDragTo: timeline.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.65)),
+                   withVelocity: .slow, thenHoldForDuration: 1)
+        XCTAssertTrue(pool.waitForExistence(timeout: 5), "holding over the timeline opens it")
+        expect(task, toBe: { $0.frame.midX > pool.frame.maxX }, "the task received a new time on the timeline")
     }
 
     /// From the pool's left part to the right: the first page is pulled past its edge.

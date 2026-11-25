@@ -17,7 +17,7 @@ struct PoolBlock: View {
     @Environment(\.icons) private var icons
     @Environment(\.actions) private var registry
     @Environment(\.chipOrder) private var chipOrder
-    @Environment(\.tasksSpace) private var space
+    @Environment(TasksCarry.self) private var carry: TasksCarry?
     @Environment(TaskDragState.self) private var drag: TaskDragState?
     let plan: DayPlan
     let handler: TaskActionHandler
@@ -33,9 +33,9 @@ struct PoolBlock: View {
         ReorderableList(sections: Binding(get: { sections }, set: moved), look: "pool",
                         actions: { engine.menu(.context(of: $0.task), for: $0, isToday: plan.isToday, poolDay: plan.today) },
                         onRename: { model.renameSection($0, to: $1, on: plan.today) }, traits: traits, onNest: nested,
-                        dropIn: dropIn, onDropIn: newItemDropped, space: space, name: TasksCarry.pool, features: features,
+                        dropIn: dropIn, onDropIn: newItemDropped, space: carry?.space, name: TasksCarry.pool, features: features,
                         onTap: { handler.run(registry.definition(.open), taskName: $0.id) },
-                        onRefresh: { await model.sync(announce: true) }, onSystemDrop: systemDropped,
+                        onRefresh: { await model.sync(announce: true) },
                         footer: isLaterDay && !plan.pool.isEmpty ? AnyView(hint("pool.laterDay")) : nil) { row($0) }
             .id(revision)
             .engineNewItem(dropIn, owner: Self.newItemOwner) {
@@ -62,22 +62,15 @@ struct PoolBlock: View {
         return features
     }
 
-    private var sections: [ListSection<DayItem>] {
-        plan.sections.map { section in
-            ListSection(id: section.id, title: section.isCustom ? section.title : (section.hasHeader ? L10n.string(section.title) : ""),
-                        items: section.items)
-        }
+    private var pool: DayPoolRows {
+        DayPoolRows(plan: plan, daySections: model.sections(on: plan.today), definitions: rules.pool.defaultSections)
     }
 
-    /// Today: the pool's new order, and a row in another section takes it. Another day: only another section.
+    private var sections: [ListSection<DayItem>] { pool.sections }
+
     private func moved(_ new: [ListSection<DayItem>]) {
-        let order = new.flatMap(\.items).map(\.id)
-        let was = Dictionary(plan.sections.flatMap { section in section.items.map { ($0.id, section.id) } }, uniquingKeysWith: { first, _ in first })
-        let regrouped = new.flatMap { section in section.items.filter { was[$0.id] != section.id }.map { ($0.id, section.id) } }
-        for (name, section) in regrouped { model.moveTask(name, toSection: section, poolOrder: order, on: plan.today) }
-        if plan.isToday, regrouped.isEmpty {
-            Task { await model.setPoolOrder(order) }
-        } else if !plan.isToday, regrouped.isEmpty {
+        pool.move(new, model: model, day: plan.today, savesOrder: plan.isToday)
+        if !plan.isToday, zip(new, sections).allSatisfy({ Set($0.items.map(\.id)) == Set($1.items.map(\.id)) }) {
             revision += 1
         }
     }
@@ -124,49 +117,16 @@ struct PoolBlock: View {
         }
     }
 
-    /// The day's order with `name` (or the new item's gap) where it was let go.
-    private func order(with name: String, at drop: ListDrop) -> [String] {
-        var order = plan.sections.flatMap(\.items).map(\.id).filter { $0 != name }
-        let rows = plan.sections.first { $0.id == drop.sectionID }?.items.map(\.id).filter { $0 != name } ?? []
-        let at: Int
-        if drop.row > 0, rows.indices.contains(drop.row - 1), let before = order.firstIndex(of: rows[drop.row - 1]) {
-            at = before + 1
-        } else if let first = rows.first, let index = order.firstIndex(of: first) {
-            at = index
-        } else {
-            at = order.count
-        }
-        order.insert(name, at: at)
-        return order
-    }
-
-    /// The "+" let go: under the row above (the right part), or at its spot of its section.
+    /// The "+" let go: under the row above, or at its spot of its section.
     private func newItemDropped(_ drop: ListDrop) {
-        let rows = plan.sections.first { $0.id == drop.sectionID }?.items ?? []
         let placement: NewItemPlacement
-        if let parent = drop.parentRow, rows.indices.contains(parent) {
-            placement = .subtask(of: rows[parent].id, index: drop.indexInParent, day: plan.today)
+        if let parent = pool.parent(at: drop) {
+            placement = .subtask(of: parent, index: drop.indexInParent, day: plan.today)
         } else {
-            placement = .pool(order: order(with: TaskDragState.newItemGap, at: drop), section: plan.sections.first?.id == "plain" ? nil : drop.sectionID,
-                              day: plan.today)
+            placement = .pool(order: pool.order(inserting: [TaskDragState.newItemGap], at: drop),
+                              section: drop.sectionID, day: plan.today)
         }
         router.openNewItem(NewItemSeed(kind: .task, placement: placement, estimate: drag?.releasedEstimate))
-    }
-
-    /// A block dragged from the timeline (a system drag) let go here: it loses its time and takes the spot; refused when it
-    /// cannot (`canDropInPool`).
-    private func systemDropped(_ drop: ListDrop) {
-        guard let drag, let item = drag.item else { return }
-        let source = drag.source
-        drag.end()
-        guard case .timeline(let slot) = source else { return }
-        guard plan.isToday, model.canDropInPool(item.id, slot: slot) else { return model.refuseDrop(item.id, onto: .pool) }
-        Haptics.play(.drop)
-        let order = order(with: item.id, at: drop)
-        Task { await model.unschedule(item.id, slot: slot, poolOrder: order, on: plan.today) }
-        if plan.sections.contains(where: { $0.id == drop.sectionID && $0.hasHeader }) {
-            model.moveTask(item.id, toSection: drop.sectionID, poolOrder: order, on: plan.today)
-        }
     }
 
     private func hint(_ key: LocalizedStringKey) -> some View {

@@ -70,11 +70,9 @@ struct TodayScreen: View {
             taskDrag.turnHandled()
         }
         .onAppear {
-            taskDrag.turnDwellSeconds = rules.gestures.pageEdgeDwellSeconds
             carry.follow(model: model, drag: taskDrag, day: { [model, pager] in model.plan(at: model.clock.now, dayOffset: pager.dayOffset) },
-                         dwellSeconds: { [rules] in rules.gestures.pageEdgeDwellSeconds }, turn: turn)
+                         dwellSeconds: rules.gestures.pageEdgeDwellSeconds, turn: turnForCarry)
         }
-        .environment(\.tasksSpace, carry.space)
         .environment(carry)
         // Only lying sideways (`tabBarRoom`): upright, Today would redraw whenever a page over it shows or hides the keyboard.
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
@@ -137,6 +135,15 @@ struct TodayScreen: View {
         pager.turn(to: newPage, pageCount: pageCount, animation: tokens.animation)
     }
 
+    private func turnForCarry(to edge: PagedStackEdge) {
+        switch edge {
+        case .unopenedLeadingPage:
+            withAnimation(tokens.animation) { pager.openNextBacklog(count: model.backlogLists.count) }
+        case .page(let index):
+            turn(to: index)
+        }
+    }
+
     /// Lying sideways the pages' container is laid out from the screen's edge at the physical bottom, past the safe area
     /// there: the tab bar's inner side is its edge, and what the strip pushes past it shows through the glass. With the
     /// keyboard up there is no bar.
@@ -152,7 +159,7 @@ struct TodayScreen: View {
                 let fade = 1 - min(abs(pager.daySlide) / geometry.size.width, 1) * tokens.opacity(.daySwipeFade)
                 TasksStrip(layout: layout, pages: pages, pager: pager, plan: plan, handler: handler, bottomInset: bottomInset,
                            isLandscape: isLandscape, edgeInset: edgeInset, fade: fade, onTurn: turn,
-                           onEdgeFrame: { page, frame in carry.edges[page] = frame })
+                           onEdgeFrames: { carry.edges = $0 })
                 .padding(.leading, edgeInset + (physicalBottom == .leading ? tabBarRoom : 0))
                 .padding(.trailing, edgeInset + (physicalBottom == .trailing ? tabBarRoom : 0))
                 .padding(.top, tokens.space(.headerToPlate))
@@ -165,11 +172,6 @@ struct TodayScreen: View {
             .id(isLandscape)
             .ignoresSafeArea(.container, edges: .bottom)
             .background { daySwipe(width: geometry.size.width) }
-            .simultaneousGesture(
-                DragGesture(minimumDistance: rules.gestures.daySwipeMinimumDistance).onEnded { _ in
-                    Task { await taskDrag.fingerLifted(settling: rules.gestures.dragEndSettleSeconds) }
-                }
-            )
             .onChange(of: arrangement) { pager.resetPage() }
             .onChange(of: freeLists, initial: true) { _, count in pager.setFreeLists(count) }
         }

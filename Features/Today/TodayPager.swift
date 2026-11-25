@@ -73,8 +73,16 @@ final class TodayPager {
     private var firstReachedPage: Int { max(openedBacklog - reachedBacklog, 0) }
 
     /// A rightward drag here pulls the next backlog page open instead of turning.
-    private func canPullOpen(backlogCount: Int) -> Bool {
+    func canPullOpen(backlogCount: Int) -> Bool {
         page == firstReachedPage && reachedBacklog < backlogCount
+    }
+
+    /// The same next list opens on a pull or when a carried row stays at that edge.
+    func openNextBacklog(count: Int) {
+        guard canPullOpen(backlogCount: count) else { return }
+        openedBacklog = count
+        reachedBacklog += 1
+        page = count - reachedBacklog
     }
 
     /// On pages a sideways drag moves them with the finger, all the way until it lifts; past the last page it does
@@ -131,9 +139,7 @@ final class TodayPager {
             withAnimation(.interpolatingSpring(duration: duration, bounce: 0)) {
                 if opens {
                     // All the lists stand left of the pool from the first pull on; this one is now within a swipe.
-                    openedBacklog = backlogCount
-                    reachedBacklog += 1
-                    page = backlogCount - reachedBacklog
+                    openNextBacklog(count: backlogCount)
                 }
                 sidePull = 0
             }

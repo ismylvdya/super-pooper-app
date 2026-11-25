@@ -1,3 +1,4 @@
+import ListEngineChumbulev
 import SwiftUI
 
 /// The timeline block. Stacked arrangement: one rolling column or two fixed halves; side by side:
@@ -37,7 +38,6 @@ struct TimelineBlock: View {
     /// fingers. Leaving Today resets both. All-day events and pull-to-refresh sit at the top of the same scroll; the
     /// hours dissolve under the all-day strip, whose top is level with the pool's first row.
     @ViewBuilder private var content: some View {
-        let settings = model.settings.timeline
         switch model.settings.timelineMode {
         case .aroundNow, .wholeDay:
             GeometryReader { geometry in
@@ -54,21 +54,7 @@ struct TimelineBlock: View {
                 let detail = TimelineGridDetail(visibleHours: Double(geometry.size.height / hourHeight),
                                                 rules: physicalBottom == nil ? model.config.rules.timeline.detail : model.config.rules.timeline.landscapeDetail)
                 ScrollView {
-                    DayTimelineView(slots: plan.timeline, window: day, now: plan.now,
-                                    hourHeight: hourHeight, style: style(gridDetail: detail), taskContent: taskRow)
-                        .modifier(TimelineDropTarget(drag: drag, moment: { y in
-                            TaskScheduling.moment(atOffset: Double(y), windowStart: day.start, hourHeight: Double(hourHeight),
-                                                  stepMinutes: model.config.rules.timeline.dropStepMinutes, calendar: model.calendar)
-                        }, canDrop: { item, source in
-                            // A worm dragged whole stays in the pool.
-                            source.wormMembers.isEmpty && (!source.isBacklog || model.canBringFromBacklog(item.id))
-                        }, onDrop: { item, source, moment in
-                            Haptics.play(.drop)
-                            Task {
-                                if source.isBacklog { await model.scheduleFromBacklog(item.id, at: moment) }
-                                else { await model.schedule(item.id, slot: source.slot, at: moment) }
-                            }
-                        }, onRefused: { model.refuseDrop($0.id, onto: .timeline) }))
+                    column(day, hourHeight: hourHeight, viewport: geometry.frame(in: .global), style: style(gridDetail: detail))
                         .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).minY } action: { hoursTop = $0 }
                         .padding(.vertical, contentInset)
                         .padding(.trailing, nowLineOverhang)
@@ -76,15 +62,6 @@ struct TimelineBlock: View {
                 .scrollPosition($position)
                 .onChange(of: drag?.newItemPoint) { _, point in
                     newItemMoved(to: point, over: geometry.frame(in: .global), windowStart: day.start, hourHeight: hourHeight)
-                }
-                // A row the list engine carries lands here as a dragged task does (`TimelineCarryTarget`).
-                .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { carry?.timeline.frame = $0 }
-                .onChange(of: hoursTop, initial: true) { _, top in carry?.timeline.hoursTop = top }
-                .onChange(of: hourHeight, initial: true) { _, height in carry?.timeline.hourHeight = height }
-                .onChange(of: day.start, initial: true) { _, start in
-                    carry?.timeline.windowStart = start
-                    carry?.timeline.stepMinutes = model.config.rules.timeline.dropStepMinutes
-                    carry?.timeline.calendar = model.calendar
                 }
                 .contentMargins(.bottom, bottomInset + tokens.space(.scrollEndRoom), for: .scrollContent)
                 .onScrollGeometryChange(for: CGFloat.self) { max(0, -($0.contentOffset.y + $0.contentInsets.top)) } action: { _, new in
@@ -148,9 +125,14 @@ struct TimelineBlock: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: tokens.space(.chipGap)) {
                         if !plan.allDayEvents.isEmpty { allDayStrip }
-                        HalvesTimeline(plan: plan, windows: windows(model.context(at: plan.timelineFocus)), settings: settings,
-                                       height: geometry.size.height - bottomInset - tokens.space(.groupGap),
-                                       style: style, taskContent: taskRow)
+                        let windows = windows(model.context(at: plan.timelineFocus))
+                        let height = max(geometry.size.height - bottomInset - tokens.space(.groupGap), 1)
+                        let hourHeight = height / CGFloat(windows.map(\.hours).max() ?? 1)
+                        HStack(alignment: .top, spacing: tokens.space(.blockGap)) {
+                            ForEach(windows, id: \.self) { window in
+                                column(window, hourHeight: hourHeight, viewport: geometry.frame(in: .global), style: style)
+                            }
+                        }
                     }
                     .padding(.vertical, contentInset)
                     .padding(.trailing, nowLineOverhang)
@@ -266,31 +248,23 @@ struct TimelineBlock: View {
     /// by its own time can be dragged to another time or back to the pool on any day; a habit's block too,
     /// for that day only.
     private func taskRow(_ item: DayItem, _ slot: TimelineSlot) -> some View {
-        let movable = slot.time != nil
-        return PoolRowContent(item: item, isToday: plan.isToday, isCompact: false, titleFont: fonts.task,
-                              showsDetails: false, titleLineLimit: 1, titleLineHeight: fonts.taskLineHeight,
-                              showsDoneState: false, plate: .slot(isPast: slot.isPast, isCompact: false), handler: handler,
-                              dragSource: movable ? .timeline(slot: slot.time) : nil)
+        PoolRowContent(item: item, isToday: plan.isToday, isCompact: false, titleFont: fonts.task,
+                       showsDetails: false, titleLineLimit: 1, titleLineHeight: fonts.taskLineHeight,
+                       showsDoneState: false, plate: .slot(isPast: slot.isPast, isCompact: false), handler: handler)
     }
-}
 
-/// The one-column timeline as a drop target for tasks and habit blocks.
-private struct TimelineDropTarget: ViewModifier {
-    let drag: TaskDragState?
-    let moment: (CGFloat) -> Date
-    let canDrop: (DayItem, TaskDragState.Source) -> Bool
-    let onDrop: (DayItem, TaskDragState.Source, Date) -> Void
-    let onRefused: (DayItem) -> Void
-
-    func body(content: Content) -> some View {
-        if let drag {
-            // The empty space between the hours counts too: a drop target is only what is hit-testable.
-            content
-                .contentShape(Rectangle())
-                .onDrop(of: TaskDragState.types, delegate: TimelineDropDelegate(drag: drag, moment: moment, canDrop: canDrop,
-                                                                                onDrop: onDrop, onRefused: onRefused))
-        } else {
-            content
+    private func column(_ window: TimelineWindow, hourHeight: CGFloat, viewport: CGRect, style: TimelineStyle) -> some View {
+        let name = "timeline.\(window.start.timeIntervalSinceReferenceDate)"
+        return DayTimelineView(slots: plan.timeline, window: window, now: plan.now, hourHeight: hourHeight, style: style) { item, slot in
+            if let carry, let drag, let time = slot.time {
+                taskRow(item, slot).listCarry(in: carry.space, from: name, id: AnyHashable(item.id), theme: .app, cornerRadius: tokens.plateRadius(.row)) {
+                    _ = drag.begin(item, from: .timeline(slot: time))
+                }
+            } else {
+                taskRow(item, slot)
+            }
         }
+        .modifier(TimelineCarryColumn(name: name, viewport: viewport, window: window, hourHeight: hourHeight,
+                                      stepMinutes: rules.timeline.dropStepMinutes, calendar: model.calendar))
     }
 }

@@ -13,7 +13,7 @@ struct BacklogPage: View {
     @Environment(\.icons) private var icons
     @Environment(\.actions) private var registry
     @Environment(\.chipOrder) private var chipOrder
-    @Environment(\.tasksSpace) private var space
+    @Environment(TasksCarry.self) private var carry: TasksCarry?
     @Environment(TaskDragState.self) private var drag: TaskDragState?
     let list: BacklogList
     let plan: DayPlan
@@ -30,10 +30,10 @@ struct BacklogPage: View {
         let rows = rows
         ReorderableList(sections: Binding(get: { [ListSection(id: list.id, title: "", items: rows)] }, set: moved), look: "pool",
                         actions: { engine.menu(.context(of: $0.task), for: $0, isToday: false) }, traits: traits, onNest: nested,
-                        dropIn: dropIn, onDropIn: newItemDropped, space: space, name: TasksCarry.backlog(list.id),
+                        dropIn: dropIn, onDropIn: newItemDropped, space: carry?.space, name: list.id,
                         features: .tasksPool.union(.nesting),
                         onTap: { handler.run(registry.definition(.open), taskName: $0.id) },
-                        onRefresh: { await model.sync(announce: true) }, onSystemDrop: systemDropped) { row($0) }
+                        onRefresh: { await model.sync(announce: true) }) { row($0) }
             .engineNewItem(dropIn, owner: "backlog.\(list.id)") { router.takesNewItemOnTasks }
             .overlay(alignment: .top) {
                 if rows.isEmpty {
@@ -48,6 +48,10 @@ struct BacklogPage: View {
 
     /// The list's tasks, a subtask under its parent, as in the pool.
     private var rows: [DayItem] {
+        Self.rows(list, plan: plan, model: model)
+    }
+
+    static func rows(_ list: BacklogList, plan: DayPlan, model: AppModel) -> [DayItem] {
         SubtaskNesting.nested(model.backlogTasks(list, plan: plan).map(DayItem.init(listed:)))
     }
 
@@ -95,15 +99,6 @@ struct BacklogPage: View {
             placement = .list(level: list.status, order: order)
         }
         router.openNewItem(NewItemSeed(kind: .task, placement: placement, estimate: drag?.releasedEstimate))
-    }
-
-    /// A block dragged from the timeline (a system drag) let go here: the task goes to this list.
-    private func systemDropped(_ drop: ListDrop) {
-        guard let drag, let item = drag.item else { return }
-        drag.end()
-        guard model.canBringFromBacklog(item.id) else { return model.refuseDrop(item.id, onto: .list(list.title)) }
-        Haptics.play(.drop)
-        Task { await model.moveToBacklog(item.id, list: list, shown: plan.today, fromShownDay: true) }
     }
 
     private var engine: EngineActions {

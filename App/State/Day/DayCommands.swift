@@ -42,7 +42,7 @@ final class DayCommands {
             day.unskip(name)
             await derived.publish()
         } else {
-            await bringFromBacklog(name, to: day.context().today, poolOrder: nil)
+            await relocateTask(name, to: .pool(day: day.context().today, section: nil, order: []), fromScheduled: false, slot: nil)
         }
     }
 
@@ -54,7 +54,7 @@ final class DayCommands {
     }
 
     /// The open subtasks of a task taken out of today's pool or brought into it go along (`TodayPool.following`).
-    private func carrySubtasks(of task: TaskItem, into inPool: Bool) async {
+    func carrySubtasks(of task: TaskItem, into inPool: Bool) async {
         for name in TodayPool.following(task, into: inPool, in: tasks.tasks) {
             await writer.edit(name) { _ in [.inTodayPool(inPool)] }
         }
@@ -71,13 +71,12 @@ final class DayCommands {
         appEvents.send(.orderReset)
     }
 
-    /// A drag in Soon across the Morning / Day / Evening groups: the new order, and a new part of the day for the
-    /// tasks that changed group.
-    func applyReviewMove(_ move: ReviewGroups.Move) async {
-        await setPoolOrder(move.order)
-        for (name, group) in move.regrouped {
-            writer.enqueueEdit(name) { _ in [.timeOfDay(group.timeOfDay)] }
-        }
+    /// Apply the same section and order changes for every view of a day's pool.
+    func relocatePoolRows(_ groups: [(name: String, section: String)], order: [String]?, on date: LocalDate) async {
+        for (name, section) in groups { placeInSection(name, section, on: date) }
+        for (name, _) in groups { await writer.waitForEdits(of: name) }
+        if let order { await setPoolOrder(order) }
+        else if !groups.isEmpty { await derived.publish() }
     }
 
     /// Dropped on the timeline of any day: a task's moment is read on the phone's clock and written in the note's own
@@ -200,7 +199,7 @@ final class DayCommands {
     }
 
     /// Shown in the section at once; a task's line takes the section's tag on today (`PoolSectionTag`).
-    private func placeInSection(_ name: String, _ id: String?, on date: LocalDate) {
+    func placeInSection(_ name: String, _ id: String?, on date: LocalDate) {
         guard let id else { return }
         sections.update(on: date) { sections in
             sections.membership = sections.membership.filter { !$0.key.isSameNoteName(as: name) }
@@ -226,51 +225,18 @@ final class DayCommands {
         return SubtaskMove.changes(moving: task, under: owner, index: 0, in: tasks.tasks) != nil
     }
 
-    // MARK: - Backlog pages
-
-    /// Dropped on the backlog page of `level` while `shown` is shown (`BacklogMoves.onto`); `fromShownDay`: from that day's
-    /// pool or timeline.
-    func moveToBacklog(_ name: String, level: TaskStatus, shown: LocalDate, fromShownDay: Bool) async {
-        guard let local = localTask(named: name) else { return }
-        let outcome = BacklogMoves.onto(level, task: local, fromShownDay: fromShownDay, shown: shown, context: day.context())
-        await apply(outcome, to: name)
-    }
-
-    /// From a backlog page into the pool of `day` (`BacklogMoves.intoPool`), at the dropped spot when it is today.
-    func bringFromBacklog(_ name: String, to day: LocalDate, poolOrder: [String]?) async {
-        guard let local = localTask(named: name) else { return }
-        await apply(BacklogMoves.intoPool(local, day: day, context: self.day.context()), to: name)
-        if isToday(day), let task = tasks.task(named: name) { await carrySubtasks(of: task, into: true) }
-        if let poolOrder, isToday(day) { await setPoolOrder(poolOrder) }
-    }
-
-    /// From a backlog page onto the timeline of any day, at the dropped moment.
-    func scheduleFromBacklog(_ name: String, at moment: Date) async {
-        guard let local = localTask(named: name) else { return }
-        await apply(BacklogMoves.ontoTimeline(local, at: moment, context: day.context()), to: name)
-    }
-
     /// A drop that cannot land: the banner says so.
     func refuseDrop(_ name: String, onto target: DropRefusal.Target) {
         Haptics.play(.dropRefused)
         appEvents.send(.dropRefused(DropRefusal(name: name, isHabit: tasks.task(named: name)?.isHabit ?? false, target: target)))
     }
 
-    /// A task can come out of a backlog page into a day: a task, not a habit (which has no planning level to change).
-    func canBringFromBacklog(_ name: String) -> Bool {
-        tasks.task(named: name).map { !$0.isHabit } ?? false
-    }
-
-    private func apply(_ outcome: BacklogMoves.Outcome, to name: String) async {
-        if !outcome.edits.isEmpty, let task = tasks.task(named: name) { await write(task, outcome.edits) }
-        await derived.publish()
-    }
-
     /// A task's new time written to its note: what a snooze moved of its old time today no longer applies.
-    private func write(_ task: TaskItem, _ changes: [TaskEdit]) async {
+    @discardableResult
+    func write(_ task: TaskItem, _ changes: [TaskEdit]) async -> Bool {
         let today = day.todayTimes
         if today.moves.contains(where: { $0.task.isSameNoteName(as: task.name) }) { day.setTimeMoves(today.clearing(task)) }
-        await writer.writeLocal(task, changes)
+        return await writer.writeLocal(task, changes)
     }
 
     private func isToday(_ date: LocalDate?) -> Bool {
