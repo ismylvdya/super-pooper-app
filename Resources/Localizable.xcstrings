@@ -474,6 +474,28 @@
         }
       }
     },
+    "banner.dayTurnPending": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day change will finish when the vault syncs."
+          }
+        }
+      }
+    },
+    "banner.dayTurnSimulated": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The next day has started early."
+          }
+        }
+      }
+    },
     "banner.orderReset": {
       "extractionState": "manual",
       "localizations": {
@@ -4120,39 +4142,6 @@
         }
       }
     },
-    "review.group.setAsideTomorrow": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Not tomorrow"
-          }
-        }
-      }
-    },
-    "review.mode.today": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Today"
-          }
-        }
-      }
-    },
-    "review.mode.tomorrow": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tomorrow"
-          }
-        }
-      }
-    },
     "review.postponed": {
       "extractionState": "manual",
       "localizations": {
@@ -4181,7 +4170,18 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Reset to auto"
+            "value": "Reset sort"
+          }
+        }
+      }
+    },
+    "review.simulateDayTurn": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Simulate day change"
           }
         }
       }

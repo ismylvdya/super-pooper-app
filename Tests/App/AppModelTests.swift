@@ -105,7 +105,7 @@ struct AppModelTests {
         #expect(model.plan(at: model.clock.now).sections.first { $0.id == section.id }?.items.contains { $0.id == "Позвонить в банк" } == true)
     }
 
-    @Test func aTomorrowSpreaderMoveUpdatesThatDaysSections() async throws {
+    @Test func aMoveToAnotherDayUpdatesThatDaysSections() async throws {
         let model = try makeModel()
         let name = "Позвонить в банк"
         let tomorrow = model.context().today.adding(days: 1)
@@ -113,7 +113,7 @@ struct AppModelTests {
 
         await model.relocatePoolRows([(name, evening.id)], order: [name], on: tomorrow)
 
-        #expect(model.tomorrowPlan().sections.first { $0.id == evening.id }?.items.contains { $0.id == name } == true)
+        #expect(model.sections(on: tomorrow).section(of: name) == evening.id)
         #expect(model.task(named: name)?.poolSection == nil)
     }
 

@@ -29,6 +29,8 @@ enum AppEvent: Equatable, Sendable {
     case wholeVaultChosen
     /// The manual order of today's pool was dropped for the automatic sort.
     case orderReset
+    case dayTurnSimulated
+    case dayTurnPending
     /// A new note was not created: its name cannot be used.
     case nameRejected(NoteNameProblem, name: String)
     case notificationImageFailed

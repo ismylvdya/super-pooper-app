@@ -41,6 +41,10 @@ final class BannerPresenter: AppEventSink {
             BannerCenter.Banner(text: L10n.string("banner.wholeVault"), style: .warning)
         case .orderReset:
             BannerCenter.Banner(text: L10n.string("banner.orderReset"))
+        case .dayTurnSimulated:
+            BannerCenter.Banner(text: L10n.string("banner.dayTurnSimulated"), style: .success)
+        case .dayTurnPending:
+            BannerCenter.Banner(text: L10n.string("banner.dayTurnPending"), style: .warning)
         case .nameRejected(let problem, let name):
             BannerCenter.Banner(text: NoteNameProblemText.describe(problem, name: name), style: .problem)
         case .notificationImageFailed:

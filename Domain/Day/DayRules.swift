@@ -10,13 +10,16 @@ struct DayRules: Codable, Hashable, Sendable {
     var autoPromoteFrom: [TaskStatus.Name]
     /// A link found by an event's title matches an event starting at most this far from the start it names.
     var eventLinkToleranceSeconds: Double
-    /// From this time on the phone's clock the morning review offers Tomorrow, until the day's boundary at night.
-    var tomorrowReviewFrom: LocalTime
+    /// The evening and overnight window for turning the day early, on the phone's clock.
+    var earlyDayTurnFrom: LocalTime
+    var earlyDayTurnUntil: LocalTime
 
-    /// The morning review offers Tomorrow at `now` (the phone's clock): in the evening, and in the night that still belongs
-    /// to the day (before `boundary`).
-    func offersTomorrowReview(at now: LocalTime, boundary: LocalTime) -> Bool {
-        now >= tomorrowReviewFrom || now < boundary
+    func earlyDayTurnTarget(in context: DayContext) -> LocalDate? {
+        let time = LocalTime(context.now, in: context.calendar)
+        let civilDay = LocalDate(context.now, in: context.calendar)
+        guard time >= earlyDayTurnFrom || time < min(earlyDayTurnUntil, context.boundary) else { return nil }
+        let target = time >= earlyDayTurnFrom ? civilDay.adding(days: 1) : civilDay
+        return target == context.today.adding(days: 1) ? target : nil
     }
 
     func estimate(of task: TaskItem) -> Int {

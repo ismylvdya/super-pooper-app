@@ -49,7 +49,7 @@ final class AppModel {
     var problemCount: Int { parts.derived.problemCount }
 
     func setPoolOrder(_ names: [String]) async { await parts.dayCommands.setPoolOrder(names) }
-    func resetOrder(tomorrow: Bool = false) async { await parts.dayCommands.resetOrder(tomorrow: tomorrow) }
+    func resetOrder() async { await parts.dayCommands.resetOrder() }
     func relocatePoolRows(_ groups: [(name: String, section: String)], order: [String]?, on day: LocalDate) async {
         await parts.dayCommands.relocatePoolRows(groups, order: order, on: day)
     }
@@ -136,6 +136,8 @@ final class AppModel {
     func sync(announce: Bool) async { await parts.sync.sync(announce: announce) }
     func ensureLoaded() async { await parts.sync.ensureLoaded() }
     func syncWhenTheDayEnds() async { await parts.sync.syncWhenTheDayEnds() }
+    var canSimulateDayTurn: Bool { parts.sync.canSimulateDayTurn }
+    func simulateDayTurn() async { await parts.sync.simulateDayTurn() }
     func timeDidChange() async { await parts.sync.timeDidChange() }
 
     /// A vault folder is chosen (it may still be loading).

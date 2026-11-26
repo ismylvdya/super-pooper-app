@@ -65,9 +65,9 @@ final class DayCommands {
         await writer.reorder(names)
     }
 
-    /// The pool's lines sorted by the pool's rules (`PoolSorter`), today's or, from the review's Tomorrow, tomorrow's.
-    func resetOrder(tomorrow: Bool = false) async {
-        await setPoolOrder(derived.sortedPool(tomorrow: tomorrow))
+    /// Today's pool lines sorted by the pool's rules (`PoolSorter`).
+    func resetOrder() async {
+        await setPoolOrder(derived.sortedPool())
         appEvents.send(.orderReset)
     }
 

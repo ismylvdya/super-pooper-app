@@ -17,17 +17,26 @@ final class DayStateController {
     init(clock: Clock, calendar: CalendarSource, store: DayStateStore, settings: SettingsController) {
         self.clock = clock
         calendarSource = calendar
-        self.calendar = calendar.current
+        let currentCalendar = calendar.current
+        self.calendar = currentCalendar
         self.store = store
         self.settings = settings
         let day = settings.settings.day
-        let today = DayContext(now: clock.now, calendar: calendar.current, boundary: day.boundary, energyHour: day.energyHour).today
-        dayState = store.load(for: today)
+        dayState = store.load(for: DayContext(now: clock.now, calendar: currentCalendar, boundary: day.boundary, energyHour: day.energyHour))
     }
 
     func context(at date: Date? = nil) -> DayContext {
         let day = settings.settings.day
         return DayContext(now: date ?? clock.now, calendar: calendar, boundary: day.boundary, energyHour: day.energyHour)
+            .advancingEarly(to: dayState.earlyTurn)
+    }
+
+    /// Persist the new day before the regular sync reads and turns the vault.
+    func startEarlyTurn(to target: LocalDate) throws {
+        var state = dayState
+        state.earlyTurn = target
+        try store.save(state)
+        dayState = state
     }
 
     var skippedNames: [String] {
@@ -87,11 +96,6 @@ final class DayStateController {
 
     func markReviewShown() {
         update { $0.reviewShown = true }
-    }
-
-    /// Tomorrow as the morning review plans it today (`DayState.Ahead`).
-    var tomorrow: DayState.Ahead {
-        dayState.plan(of: context().today.adding(days: 1))
     }
 
     func planTomorrow(_ change: (inout DayState.Ahead) -> Void) {

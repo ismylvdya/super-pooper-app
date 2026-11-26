@@ -6,7 +6,8 @@
       "halfYear",
       "someday"
     ],
-    "tomorrowReviewFrom": "18:00",
+    "earlyDayTurnFrom": "18:00",
+    "earlyDayTurnUntil": "03:00",
     "eventLinkToleranceSeconds": 60
   },
   "timeEstimates": [

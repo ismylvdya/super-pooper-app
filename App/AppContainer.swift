@@ -53,6 +53,7 @@ final class AppContainer {
         let vaultLocation: VaultLocating = launch.vaultURL().map(FixedVaultLocation.init(url:))
             ?? BookmarkVaultLocation(store: shared)
         let settingsStore = SettingsStore(store: shared, defaults: config.defaultSettings)
+        let dayStateStore = DayStateStore(store: shared)
         let fileSystem = CoordinatedFileSystem()
         let backups = BackupService(directory: shared.url("Backups"), keepCount: config.rules.backups.keepCount,
                                     fileSystem: fileSystem, clock: { clock.now }, calendar: calendar)
@@ -61,7 +62,8 @@ final class AppContainer {
                                   format: format, obsidian: obsidian, backups: backups, rules: config.rules.vault,
                                   vaultSettings: { settingsStore.load().vault }, today: {
             let day = boundary()
-            return DayContext(now: clock.now, calendar: calendar.current, boundary: day.boundary, energyHour: day.energyHour).today
+            return DayContext(now: clock.now, calendar: calendar.current, boundary: day.boundary, energyHour: day.energyHour)
+                .advancingEarly(to: dayStateStore.earlyTurn).today
         }, boundary: { boundary().boundary }, lookMemory: JSONDayLookMemory(store: shared))
         let eventKit = EventKitAccess()
         self.eventKit = eventKit
@@ -81,7 +83,7 @@ final class AppContainer {
             calendars: EventKitCalendarRepository(eventKit: eventKit),
             reminders: EventKitRemindersRepository(eventKit: eventKit, calendar: calendar),
             notifications: notifications, settingsStore: settingsStore,
-            dayStateStore: DayStateStore(store: shared), daySectionStore: JSONDaySectionStore(store: shared), snapshotStore: SnapshotStore(store: shared),
+            dayStateStore: dayStateStore, daySectionStore: JSONDaySectionStore(store: shared), snapshotStore: SnapshotStore(store: shared),
             alertStateStore: AlertStateStore(store: shared), snoozeStore: SnoozeStore(store: shared),
             widgets: WidgetKitReloader(), notificationImage: notificationImage, signature: launch.signature(now: clock.now),
             alarms: SystemAlarmScheduler(stopTitle: { L10n.string("alarm.stop") },

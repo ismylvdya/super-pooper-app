@@ -32,15 +32,34 @@ struct TomorrowPlanTests {
     }
 }
 
-/// Tomorrow is offered in the evening only, and in the night that still belongs to the day.
-struct TomorrowReviewOfferTests {
-    @Test func onlyFromTheEvening() {
-        let rules = TestConfig.rules.day
-        let boundary = LocalTime("04:00")
-        #expect(!rules.offersTomorrowReview(at: LocalTime("17:59"), boundary: boundary))
-        #expect(rules.offersTomorrowReview(at: LocalTime("18:00"), boundary: boundary))
-        #expect(rules.offersTomorrowReview(at: LocalTime("01:30"), boundary: boundary))
-        #expect(!rules.offersTomorrowReview(at: LocalTime("09:00"), boundary: boundary))
+struct EarlyDayTurnTests {
+    private let rules = TestConfig.rules.day
+    private let target = LocalDate("2026-10-22")
+
+    private func context(_ date: LocalDate, _ time: String, boundary: String = "03:00") -> DayContext {
+        let calendar = TestCalendar.calendar
+        return DayContext(now: date.startDate(in: calendar, offset: LocalTime(time)), calendar: calendar,
+                          boundary: LocalTime(boundary), energyHour: LocalTime("10:00"))
+    }
+
+    @Test func onlyFromEighteenToThree() {
+        let evening = target.adding(days: -1)
+        #expect(rules.earlyDayTurnTarget(in: context(evening, "17:59")) == nil)
+        #expect(rules.earlyDayTurnTarget(in: context(evening, "18:00")) == target)
+        #expect(rules.earlyDayTurnTarget(in: context(target, "02:59")) == target)
+        #expect(rules.earlyDayTurnTarget(in: context(target, "03:00", boundary: "04:00")) == nil)
+        #expect(rules.earlyDayTurnTarget(in: context(target, "02:59", boundary: "02:00")) == nil)
+    }
+
+    @Test func theNormalBoundaryDoesNotAdvanceTheDayTwice() {
+        let before = context(target.adding(days: -1), "22:00")
+        let early = before.advancingEarly(to: target)
+        let atBoundary = context(target, "03:00").advancingEarly(to: target)
+        #expect(early.now == before.now)
+        #expect(early.today == target && early.focus == atBoundary.dayStart)
+        #expect(early.dayEnd == atBoundary.dayEnd)
+        #expect(rules.earlyDayTurnTarget(in: early) == nil)
+        #expect(rules.earlyDayTurnTarget(in: context(target, "18:00").advancingEarly(to: target)) == target.adding(days: 1))
     }
 }
 

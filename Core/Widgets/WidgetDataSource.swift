@@ -31,13 +31,14 @@ struct WidgetDataSource: Sendable {
 
     func context(at date: Date) -> DayContext {
         DayContext(now: date, calendar: calendar, boundary: settings.day.boundary, energyHour: settings.day.energyHour)
+            .advancingEarly(to: snapshot?.dayState.earlyTurn)
     }
 
     func plan(at date: Date) -> DayPlan {
         let context = context(at: date)
         guard let snapshot else { return .empty(today: context.today, now: date) }
         // A snapshot of an earlier day: its pool turns with the day, as the file will when the app reads it (`TodayPool`).
-        let tasks = context.logicalDay(of: snapshot.generatedAt) < context.today
+        let tasks = self.context(at: snapshot.generatedAt).today < context.today
             ? TodayPool.turning(snapshot.tasks, today: context.today, boundary: context.boundary) : snapshot.tasks
         return DayPlanning.plan(config: config, settings: settings, tasks: tasks, events: snapshot.events, reminders: snapshot.reminders,
                                 dayState: snapshot.dayState, sections: sections.first { $0.day == context.today }, context: context,

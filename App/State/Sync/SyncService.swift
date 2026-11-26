@@ -75,6 +75,30 @@ final class SyncService: SettingsObserver {
         if !hasLoaded { await sync(announce: false) }
     }
 
+    var canSimulateDayTurn: Bool {
+        !isSyncing && hasVault && tasks.vaultState == .ready && tasks.fileProblems.isEmpty
+            && config.rules.day.earlyDayTurnTarget(in: day.context()) != nil
+    }
+
+    /// Advance the logical day, then read and publish it through the same sync as the automatic turn.
+    func simulateDayTurn() async {
+        guard running == nil, canSimulateDayTurn,
+              let target = config.rules.day.earlyDayTurnTarget(in: day.context()) else { return }
+        do {
+            try day.startEarlyTurn(to: target)
+        } catch {
+            appEvents.send(.failure(AppFailure(error)))
+            return
+        }
+        await sync(announce: false)
+        if tasks.vaultState == .ready && tasks.fileProblems.isEmpty {
+            day.markReviewShown()
+            appEvents.send(.dayTurnSimulated)
+        } else {
+            appEvents.send(.dayTurnPending)
+        }
+    }
+
     /// While the app stays open over the end of the logical day, the new day is read and published right then: the day
     /// that is over takes its notifications with it, the widgets turn the page.
     func syncWhenTheDayEnds() async {

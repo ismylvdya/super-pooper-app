@@ -33,6 +33,12 @@ struct DayContext: Sendable {
     var dayStart: Date { today.startDate(in: calendar, offset: boundary) }
     var dayEnd: Date { today.adding(days: 1).startDate(in: calendar, offset: boundary) }
 
+    /// An early turn moves the logical day and its focus forward while the clock still runs normally.
+    func advancingEarly(to day: LocalDate?) -> DayContext {
+        guard day == today.adding(days: 1) else { return self }
+        return focused(on: dayEnd)
+    }
+
     /// Sunday of the current ISO week (inclusive end of "this week").
     var weekEnd: LocalDate { today.weekEnd }
 

@@ -23,11 +23,4 @@ extension DayCommands {
             await writer.edit(name) { _ in [.notTomorrow(false)] }
         }
     }
-
-
-    /// Tomorrow was reviewed today: its review does not open by itself that morning.
-    func markTomorrowReviewed() {
-        guard !day.tomorrow.reviewed else { return }
-        day.planTomorrow { $0.reviewed = true }
-    }
 }

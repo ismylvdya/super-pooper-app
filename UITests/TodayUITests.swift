@@ -174,7 +174,7 @@ final class TodayUITests: XCTestCase {
         XCTAssertTrue(first.waitForExistence(timeout: 5))
         let handle = first.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5))
         handle.press(forDuration: 0.8, thenDragTo: third.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.8)))
-        let reset = app.buttons["Reset to auto"]
+        let reset = app.buttons["review.reset"]
         let manual = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isEnabled == true"), object: reset)
         XCTAssertEqual(XCTWaiter().wait(for: [manual], timeout: 5), .completed)
         reset.tap()
