@@ -128,6 +128,8 @@
     "defaultAllowedSkips": 1,
     "defaultWeeklyGoal": 3,
     "maxAllowedSkips": 14,
+    "defaultQuantity": { "maximum": 10, "step": 1 },
+    "maximumQuantity": 1000,
     "historyPullWeeks": 4,
     "maxListBells": 2,
     "stats": {

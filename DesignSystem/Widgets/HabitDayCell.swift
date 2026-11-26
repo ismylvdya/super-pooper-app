@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// One day of a habit, the same everywhere (list, grid, widget, menus). Four looks only:
+/// One day of a habit, the same everywhere (list, grid, widget, menus).
 /// not done = ring (faded), Partially = the Start glyph, Done = filled circle, Twice = filled circle with an
-/// outer ring. Future days are empty. On a plate, a day is backed by the plate's color in the shape of its outer edge, so
+/// outer ring. Quantities show the recorded number. Future days are empty. On a plate, a day is backed by the plate's color in the shape of its outer edge, so
 /// lifted by a long press it is opaque between its rings and dot, and the days under it never show through.
 struct HabitDayCell: View {
     @Environment(\.tokens) private var tokens
@@ -23,6 +23,14 @@ struct HabitDayCell: View {
                 Color.clear
             case .done:
                 Circle().fill(color).frame(width: dot, height: dot)
+            case .quantity(let amount):
+                Text(amount, format: .number.grouping(.never))
+                    .font(tokens.font(.caption))
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
+                    .foregroundStyle(color)
+                    .frame(width: dot, height: dot)
             case .twice:
                 Circle().fill(color).frame(width: dot, height: dot)
                 Circle().strokeBorder(color, lineWidth: metrics.ring).frame(width: metrics.cell, height: metrics.cell)

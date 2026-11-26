@@ -47,6 +47,7 @@ struct PlannedNotification: Hashable, Sendable {
     var isMoved = false
     /// A habit notification of a habit marked repeatable (a task that simply repeats).
     var isRepeatable = false
+    var tracksQuantity = false
     var subject: Subject {
         switch kind {
         case .habit: isRepeatable ? .repeatable : .habit
@@ -68,6 +69,6 @@ struct PlannedNotification: Hashable, Sendable {
     func snoozed(until moment: Date) -> PlannedNotification {
         PlannedNotification(id: "snooze|\(key)|\(day.isoString)", kind: kind, title: title, fireDate: moment, taskName: taskName,
                             day: day, reminderID: reminderID, key: key, slot: slot, start: start, eventID: eventID, colorHex: colorHex,
-                            isAbsolute: true, isRepeatable: isRepeatable)
+                            isAbsolute: true, isRepeatable: isRepeatable, tracksQuantity: tracksQuantity)
     }
 }

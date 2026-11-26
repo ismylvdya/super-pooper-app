@@ -32,6 +32,6 @@ extension DayItem {
 
     /// A habit on one of its days outside a day plan (a day of its history): the day's mark.
     init(habit: TaskItem, on day: LocalDate) {
-        self.init(task: habit, state: habit.mark(on: day).map(DayItemState.marked) ?? .open, problems: habit.problems)
+        self.init(task: habit, state: habit.dayMark(on: day).map(DayItemState.marked) ?? .open, problems: habit.problems)
     }
 }

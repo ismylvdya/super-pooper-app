@@ -34,6 +34,7 @@ struct TaskEntry: Equatable, Sendable {
     /// The pool's section it stands in (`🏊 section_morning`): the word after `format.pool.sectionPrefix`.
     var poolSection: String?
     var completed: LocalDate?
+    var quantity: Int?
     var deleted: LocalDate?
     var note: [String] = []
     var children: [TaskEntry] = []
@@ -105,6 +106,9 @@ extension TaskEntry {
         case markers.estimate:
             guard let minutes = Int(value) else { return false }
             estimate = minutes
+        case markers.quantity:
+            guard let amount = Int(value), amount >= 0 else { return false }
+            quantity = amount
         case markers.routine: routine = value
         case markers.parent: parent = value
         case markers.repeats: repeats = value
@@ -150,6 +154,7 @@ extension TaskEntry {
         if inTodayPool { add(format.pool.marker, format.pool.tag) }
         if notTomorrow { add(format.pool.marker, format.pool.notTomorrowTag) }
         if let poolSection { add(format.pool.marker, format.pool.sectionPrefix + poolSection) }
+        add(markers.quantity, quantity.map(String.init))
         add(markers.completed, completed?.isoString)
         add(markers.deleted, deleted?.isoString)
         if writesID { add(markers.id, id) }

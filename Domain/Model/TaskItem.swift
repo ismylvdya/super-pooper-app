@@ -26,6 +26,8 @@ struct TaskItem: Identifiable, Hashable, Codable, Sendable {
     var hasUnreadableRecurrence = false
     /// A recurring task's mark of each day it was marked on.
     var marks: [LocalDate: HabitMark] = [:]
+    /// Explicit quantities by logical day, including a recorded zero.
+    var quantities: [LocalDate: Int]?
     /// Habit reminders, several per day (`reminder_times`, `HH:mm`).
     var reminderTimes: [LocalTime] = []
     /// The times that ring as alarms.
@@ -72,13 +74,19 @@ struct TaskItem: Identifiable, Hashable, Codable, Sendable {
         return due?.time.map { [$0] } ?? []
     }
     func mark(on day: LocalDate) -> HabitMark? { marks[day] }
+    func quantity(on day: LocalDate) -> Int? { quantities?[day] }
+
+    func dayMark(on day: LocalDate) -> HabitMark? {
+        guard habit.quantityTracking != nil else { return mark(on: day) }
+        return quantity(on: day) == nil ? nil : .done
+    }
     /// Done as of `day`: a task done at all, a habit (a repeatable subtask too) marked so that day is closed.
     func isDone(on day: LocalDate) -> Bool {
-        isHabit ? HabitMarking.isDayClosed(mark(on: day), twiceADay: isTwiceADay) : status.isCompleted
+        isHabit ? HabitMarking.isDayClosed(dayMark(on: day), twiceADay: isTwiceADay) : status.isCompleted
     }
 
     /// A habit done twice a day: the Twice option, or two or more reminders a day (the second Done is Twice).
-    var isTwiceADay: Bool { habit.twiceADay || reminderTimes.count >= 2 }
+    var isTwiceADay: Bool { habit.quantityTracking == nil && (habit.twiceADay || reminderTimes.count >= 2) }
 }
 
 /// A data issue found in a single note (shown as a badge, never as a push).

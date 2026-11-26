@@ -16,6 +16,8 @@ struct HabitOptions: Hashable, Codable, Sendable {
     var twiceADay = false
     /// A twice day counts as two toward the goal and the percentages.
     var twiceCountsDouble = false
+    /// Nil means the habit records completion marks.
+    var quantity: HabitQuantity?
     var weeklyGoal: Int?
     var allowedSkips: Int?
 
@@ -23,5 +25,10 @@ struct HabitOptions: Hashable, Codable, Sendable {
         if let weeklyGoal, weeklyGoal > 0 { return .weeklyGoal(times: weeklyGoal) }
         if let allowedSkips, !harmful { return .missedDays(allowed: max(allowedSkips, 0)) }
         return .none
+    }
+
+    var quantityTracking: HabitQuantity? {
+        guard !repeatable, let quantity, quantity.isValid else { return nil }
+        return quantity
     }
 }

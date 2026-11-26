@@ -42,8 +42,8 @@ struct UserNotificationScheduler: NotificationScheduling {
     }
 
     func registerCategories(_ registry: ActionRegistry, habitActionsEnabled: Bool) {
-        func category(_ id: String, _ menu: ActionMenu) -> UNNotificationCategory {
-            let actions = registry.actions(in: menu).map { definition in
+        func category(_ id: String, _ menu: ActionMenu, allowsMarks: Bool = true) -> UNNotificationCategory {
+            let actions = registry.actions(in: menu).filter { allowsMarks || !$0.id.setsHabitMark }.map { definition in
                 let icon: UNNotificationActionIcon
                 if registry.menus[menu].habitMarks, let mark = HabitMarkIcon.icon(for: definition.id) {
                     icon = HabitMarkIcon.symbol(for: definition.id).map { UNNotificationActionIcon(systemImageName: icons[$0]) }
@@ -58,12 +58,13 @@ struct UserNotificationScheduler: NotificationScheduling {
             }
             return UNNotificationCategory(identifier: id, actions: actions, intentIdentifiers: [], options: [.customDismissAction])
         }
-        let habit = habitActionsEnabled
-            ? category(NotificationPayload.habitCategory, .habitNotification)
-            : UNNotificationCategory(identifier: NotificationPayload.habitCategory, actions: [], intentIdentifiers: [],
-                                     options: [.customDismissAction])
+        func habitCategory(_ id: String, allowsMarks: Bool) -> UNNotificationCategory {
+            habitActionsEnabled ? category(id, .habitNotification, allowsMarks: allowsMarks)
+                : UNNotificationCategory(identifier: id, actions: [], intentIdentifiers: [], options: [.customDismissAction])
+        }
         center.setNotificationCategories([
-            habit,
+            habitCategory(NotificationPayload.habitCategory, allowsMarks: true),
+            habitCategory(NotificationPayload.quantityHabitCategory, allowsMarks: false),
             category(NotificationPayload.taskCategory, .taskNotification),
             category(NotificationPayload.reminderCategory, .reminderNotification),
             category(NotificationPayload.eventCategory, .eventNotification),
@@ -81,6 +82,7 @@ struct UserNotificationScheduler: NotificationScheduling {
         let current = Dictionary(pending.map { ($0.identifier, $0) }, uniquingKeysWith: { first, _ in first })
         let outdated = current.filter { id, request in
             guard let want = wanted[id] else { return true }
+            if request.content.categoryIdentifier != categoryIdentifier(for: want) { return true }
             return fireDate(of: request).map { abs($0.timeIntervalSince(want.fireDate)) > rules.fireTimeToleranceSeconds } ?? true
         }
         center.removePendingRequests(withIdentifiers: Array(outdated.keys))
@@ -171,6 +173,15 @@ struct UserNotificationScheduler: NotificationScheduling {
         #endif
     }
 
+    private func categoryIdentifier(for notification: PlannedNotification) -> String {
+        switch notification.kind {
+        case .habit: notification.tracksQuantity ? NotificationPayload.quantityHabitCategory : NotificationPayload.habitCategory
+        case .task: NotificationPayload.taskCategory
+        case .reminder: NotificationPayload.reminderCategory
+        case .event: NotificationPayload.eventCategory
+        }
+    }
+
     private func content(for notification: PlannedNotification) -> UNMutableNotificationContent {
         let content = UNMutableNotificationContent()
         content.title = notification.title
@@ -182,12 +193,7 @@ struct UserNotificationScheduler: NotificationScheduling {
         if notification.kind == .habit, let icon = habitIcon?.attachment(habitColor: notification.colorHex) {
             content.attachments = [icon]
         }
-        content.categoryIdentifier = switch notification.kind {
-        case .habit: NotificationPayload.habitCategory
-        case .task: NotificationPayload.taskCategory
-        case .reminder: NotificationPayload.reminderCategory
-        case .event: NotificationPayload.eventCategory
-        }
+        content.categoryIdentifier = categoryIdentifier(for: notification)
         content.userInfo = [
             NotificationPayload.kindKey: notification.kind.rawValue,
             NotificationPayload.taskKey: notification.taskName ?? "",

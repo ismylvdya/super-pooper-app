@@ -8,6 +8,7 @@ struct TaskMarking: Sendable {
     /// `day` matters for habits only (marks for past days); a regular task is simply done or not.
     func changes(marking task: TaskItem, as mark: HabitMark?, on day: LocalDate? = nil) -> [TaskEdit] {
         if task.isHabit {
+            guard task.habit.quantityTracking == nil else { return [] }
             let day = day ?? today
             return task.mark(on: day) == mark ? [] : [.mark(mark, on: day)]
         }

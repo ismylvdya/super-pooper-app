@@ -20,7 +20,7 @@ struct HabitDotMetrics: Equatable {
         switch cell {
         case .future: nil
         case .twice: self.cell
-        case .done, .partial, .open, .missed, .notScheduled: dot
+        case .done, .partial, .quantity, .open, .missed, .notScheduled: dot
         }
     }
 

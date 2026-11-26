@@ -49,7 +49,7 @@ struct NotificationPlanner: Sendable {
                 for offset in 0..<horizonDays {
                     let day = context.today.adding(days: offset)
                     guard schedule.occurs(on: day),
-                          !HabitMarking.isDayClosed(task.mark(on: day), twiceADay: task.isTwiceADay) else { continue }
+                          !task.isDone(on: day) else { continue }
                     if day == context.today, skipped.containsNoteName(task.name) { continue }
                     let blocks = day == context.today ? todayTimes.blocks(of: task) : task.habitTimes.map(BlockTime.init)
                     for block in blocks {
@@ -60,7 +60,8 @@ struct NotificationPlanner: Sendable {
                                                           key: Self.habitSlot(task.name, slot), slot: slot,
                                                           colorHex: task.habit.color,
                                                           isAbsolute: task.timeZone != nil, isMoved: block.isMoved,
-                                                          isRepeatable: task.kind == .repeatable))
+                                                          isRepeatable: task.kind == .repeatable,
+                                                          tracksQuantity: task.habit.quantityTracking != nil))
                     }
                 }
             } else if TaskStatus.open.contains(task.status), let due = task.due, let time = due.time {

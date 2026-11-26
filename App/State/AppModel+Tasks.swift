@@ -146,6 +146,10 @@ extension AppModel {
     func setHabitMark(_ name: String, on day: LocalDate, to mark: HabitMark?) async {
         await parts.notes.setHabitMark(name, on: day, to: mark)
     }
+
+    func setHabitQuantity(_ name: String, on day: LocalDate, to amount: Int?) async {
+        await parts.notes.setHabitQuantity(name, on: day, to: amount)
+    }
     func moveHabits(_ names: [String]) { updateSettings { $0.habits.order = names } }
 
     func nameProblem(in name: String) -> NoteNameProblem? { parts.notes.nameProblem(in: name) }

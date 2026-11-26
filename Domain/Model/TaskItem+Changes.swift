@@ -47,6 +47,11 @@ extension TaskItem {
             case .timeOfDay(let value): task.habit.timeOfDay = value
             case .twiceADay(let value): task.habit.twiceADay = value
             case .twiceCountsDouble(let value): task.habit.twiceCountsDouble = value
+            case .habitQuantityTracking(let value): task.habit.quantity = value
+            case .habitQuantity(let value, let day):
+                var amounts = task.quantities ?? [:]
+                amounts[day] = value
+                task.quantities = amounts.isEmpty ? nil : amounts
             case .weeklyGoal(let value): task.habit.weeklyGoal = value
             case .allowedSkips(let value): task.habit.allowedSkips = value
             }

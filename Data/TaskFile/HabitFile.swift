@@ -53,7 +53,7 @@ struct HabitFile: Codable, Equatable, Sendable {
     }
 
     /// The habit as the app knows it, with its marks read from the tasks file.
-    func item(parentName: String?, marks: [LocalDate: HabitMark]) -> TaskItem {
+    func item(parentName: String?, marks: [LocalDate: HabitMark], quantities: [LocalDate: Int] = [:]) -> TaskItem {
         var item = TaskItem(id: TaskID(id), name: name, status: isArchived ? .archived : .habit)
         item.isHighPriority = isHighPriority
         item.due = due
@@ -66,6 +66,7 @@ struct HabitFile: Codable, Equatable, Sendable {
         item.timeZone = timeZone
         item.habit = options
         item.marks = marks
+        item.quantities = quantities.isEmpty ? nil : quantities
         item.created = created.map { TaskDue(day: $0) }
         if let recurrence {
             switch RecurrenceCodec.parse(recurrence) {
@@ -86,23 +87,29 @@ struct HabitFile: Codable, Equatable, Sendable {
 }
 
 extension TaskDocument {
-    /// The marks a habit's lines in Done make: `[x]` done, two of them on one day Twice, `[/]` partial.
-    func marks(of id: String) -> [LocalDate: HabitMark] {
+    /// A habit's completion marks and its explicit quantities in Done.
+    func habitRecords(of id: String) -> (marks: [LocalDate: HabitMark], quantities: [LocalDate: Int]) {
         var counts: [LocalDate: (done: Int, partial: Int)] = [:]
+        var quantities: [LocalDate: Int] = [:]
         walk { entry, section, _, _ in
             guard section == .done, entry.id == id, let day = entry.completed else { return }
+            if let amount = entry.quantity {
+                // Done is newest first, so the first line wins if a day has more than one amount.
+                if quantities[day] == nil { quantities[day] = amount }
+                return
+            }
             switch entry.box {
             case .done: counts[day, default: (0, 0)].done += 1
             case .started: counts[day, default: (0, 0)].partial += 1
             case .open: break
             }
         }
-        return counts.mapValues { $0.done >= 2 ? .twice : $0.done == 1 ? .done : .partial }
+        return (counts.mapValues { $0.done >= 2 ? .twice : $0.done == 1 ? .done : .partial }, quantities)
     }
 
     /// Writes one day's mark of a habit as its lines in Done, newest on top.
     mutating func setMark(_ mark: HabitMark?, on day: LocalDate, habit id: String, name: String) {
-        while remove(where: { $0.id == id && $0.completed == day }) != nil {}
+        while remove(where: { $0.id == id && $0.completed == day && $0.quantity == nil }) != nil {}
         guard let mark else { return }
         let line = { (box: TaskEntry.Box) in
             var entry = TaskEntry(box: box, name: name)
@@ -117,6 +124,16 @@ extension TaskDocument {
             insertMark(line(.done))
             insertMark(line(.done))
         }
+    }
+
+    mutating func setQuantity(_ amount: Int?, on day: LocalDate, habit id: String, name: String) {
+        while remove(where: { $0.id == id && $0.completed == day && $0.quantity != nil }) != nil {}
+        guard let amount, amount >= 0 else { return }
+        var entry = TaskEntry(box: .done, name: name)
+        entry.id = id
+        entry.completed = day
+        entry.quantity = amount
+        insertMark(entry)
     }
 
     private mutating func insertMark(_ entry: TaskEntry) {

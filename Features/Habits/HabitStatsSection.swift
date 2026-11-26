@@ -9,11 +9,34 @@ struct HabitStatsSection: View {
     let habit: TaskItem
 
     var body: some View {
+        if habit.habit.quantityTracking != nil {
+            quantityStats
+        } else {
+            completionStats
+        }
+    }
+
+    private var quantityStats: some View {
+        let stats = HabitQuantityStats(habit.quantities ?? [:], through: model.context().today)
+        return PlateSection(header: "habitPage.stats") {
+            HStack(alignment: .top) {
+                value(stats.total.formatted(.number), "habitPage.quantity.total")
+                value(stats.average?.formatted(.number.precision(.fractionLength(0...1))) ?? L10n.string("common.noValue"),
+                      "habitPage.quantity.average")
+            }
+            HStack(alignment: .top) {
+                value(stats.maximum?.formatted(.number) ?? L10n.string("common.noValue"), "habitPage.quantity.best")
+                value(stats.recordedDays.formatted(.number), "habitPage.quantity.loggedDays")
+            }
+        }
+    }
+
+    private var completionStats: some View {
         let context = model.context()
         let today = context.today
         let stats = HabitStats(task: habit, today: today, days: context.days, rules: rules.habits.stats)
         let color = tokens.habitColor(habit)
-        PlateSection(header: "habitPage.stats", info: habit.habit.harmful ? "info.habitPage.stats.harmful" : "info.habitPage.stats") {
+        return PlateSection(header: "habitPage.stats", info: habit.habit.harmful ? "info.habitPage.stats.harmful" : "info.habitPage.stats") {
             HStack(alignment: .top) {
                 value(streak(stats.currentStreak, unit: stats.streakUnit), "habitPage.stats.current")
                 value(streak(stats.longestStreak?.length ?? 0, unit: stats.streakUnit), "habitPage.stats.longest",

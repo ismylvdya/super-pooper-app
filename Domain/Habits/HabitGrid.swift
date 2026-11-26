@@ -6,6 +6,7 @@ enum HabitCell: Hashable, Sendable {
     case done
     case partial
     case twice
+    case quantity(Int)
     /// Scheduled but not marked (past or today).
     case open
     /// Unmarked beyond the allowed skips in a row.
@@ -38,7 +39,7 @@ struct HabitGrid: Sendable {
 
     /// Enough weeks to reach back to the first marked day (plus `extraWeeks`), but at least `minimumWeeks`.
     static func weekCount(for task: TaskItem, today: LocalDate, minimumWeeks: Int, extraWeeks: Int) -> Int {
-        let start = task.marks.keys.min() ?? today
+        let start = min(task.marks.keys.min() ?? today, task.quantities?.keys.min() ?? today)
         let startMonday = start.weekStart
         let weeks = startMonday.days(until: today) / 7 + 1
         return max(minimumWeeks, weeks + extraWeeks)
@@ -46,6 +47,9 @@ struct HabitGrid: Sendable {
 
     private static func cell(_ day: LocalDate, history: HabitHistory, missed: Set<LocalDate>, today: LocalDate) -> HabitCell {
         if day > today { return .future }
+        if let amount = history.quantity(on: day), history.options.quantityTracking != nil || history.mark(on: day) == nil {
+            return .quantity(amount)
+        }
         switch history.mark(on: day) {
         case .done: return .done
         case .partial: return .partial

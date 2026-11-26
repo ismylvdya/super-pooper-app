@@ -42,10 +42,11 @@ struct HabitHistorySection: View {
         VStack(spacing: 0) {
                 WeekdayHeader(metrics: metrics).padding(.top, tokens.space(.plateInner))
                 ScrollView {
-                    HabitGridView(grid: grid, color: tokens.habitColor(habit), metrics: metrics, onTap: { day in
+                    HabitGridView(grid: grid, color: tokens.habitColor(habit), metrics: metrics,
+                                  onTap: habit.habit.quantityTracking == nil ? { day in
                         Haptics.play(.mark)
                         Task { await model.cycleHabit(habit.name, on: day) }
-                    }) { day in
+                    } : nil) { day in
                         HabitDayMenu(habit: habit, day: day, showsDate: true)
                     }
                     .frame(maxWidth: .infinity)

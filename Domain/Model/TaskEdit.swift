@@ -44,6 +44,8 @@ enum TaskEdit: Hashable, Sendable {
     case timeOfDay(HabitTimeOfDay?)
     case twiceADay(Bool)
     case twiceCountsDouble(Bool)
+    case habitQuantityTracking(HabitQuantity?)
+    case habitQuantity(Int?, on: LocalDate)
     case weeklyGoal(Int?)
     case allowedSkips(Int?)
 }

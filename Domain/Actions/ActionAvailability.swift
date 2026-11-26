@@ -33,6 +33,7 @@ struct ActionAvailability: Sendable {
     func isAvailable(_ action: ActionID, for item: DayItem?) -> Bool {
         if action == .openInObsidian { return capabilities.opensExternally }
         guard let item else { return true }
+        if item.isHabit, item.task.habit.quantityTracking != nil, action.setsHabitMark { return false }
         switch action {
         case .twice: return !item.isHabit || item.task.isTwiceADay || item.state == .marked(.twice)
         case .unmark: return item.isDone

@@ -168,6 +168,23 @@ struct TaskFileStoreTests {
         #expect(try await store.filedTasks().isEmpty, "a habit's lines are not done tasks")
     }
 
+    @Test func aRecordedZeroRoundTripsIndependentlyOfCompletionMarks() async throws {
+        let store = store()
+        let habit = try await store.create(NoteDraft(status: .habit), named: "Run")
+        let marked = try await store.apply([.mark(.partial, on: today)], to: habit).task
+        let tracking = HabitQuantity(maximum: 10, step: 3)
+        let recording = try await store.apply([.habitQuantityTracking(tracking), .habitQuantity(0, on: today)], to: marked).task
+        let loaded = try await store.load().tasks.first
+        #expect(try text().contains("Run 🔢 0 ✅ \(today)"))
+        #expect(loaded?.habit.quantityTracking == tracking && loaded?.quantity(on: today) == 0)
+        #expect(loaded?.isDone(on: today) == true && loaded?.mark(on: today) == .partial)
+
+        _ = try await store.apply([.habitQuantity(nil, on: today)], to: recording)
+        let cleared = try await store.load().tasks.first
+        #expect(cleared?.quantity(on: today) == nil && cleared?.isDone(on: today) == false)
+        #expect(cleared?.mark(on: today) == .partial)
+    }
+
     @Test func aRenameKeepsTheHabitsDaysAndSubtasks() async throws {
         let store = store()
         let parent = try await store.create(NoteDraft(status: .thisWeek), named: "Old")

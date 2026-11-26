@@ -43,10 +43,10 @@ struct TaskFileFormat: Codable, Hashable, Sendable {
     }
 
     struct Markers: Codable, Hashable, Sendable {
-        let id, date, time, alarm, ringtone, zone, estimate, high, pleasant, energy, routine, parent, steps, project, repeats, overdue, completed, deleted: String
+        let id, date, time, alarm, ringtone, zone, estimate, high, pleasant, energy, routine, parent, steps, project, repeats, overdue, completed, deleted, quantity: String
 
         /// Every marker: a task's name cannot hold one.
-        var all: [String] { [id, date, time, alarm, ringtone, zone, estimate, high, pleasant, energy, routine, parent, steps, project, repeats, overdue, completed, deleted] }
+        var all: [String] { [id, date, time, alarm, ringtone, zone, estimate, high, pleasant, energy, routine, parent, steps, project, repeats, overdue, completed, deleted, quantity] }
     }
 
     let folder: String

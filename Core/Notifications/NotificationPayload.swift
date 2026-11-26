@@ -14,6 +14,7 @@ enum NotificationPayload {
     /// The notification's key (`PlannedNotification.key`): with its day, what a snooze remembers.
     static let keyKey = "key"
     static let habitCategory = "habit"
+    static let quantityHabitCategory = "habit.quantity"
     static let taskCategory = "task"
     static let reminderCategory = "reminder"
     static let eventCategory = "event"

@@ -11,6 +11,9 @@ extension TaskFileStore {
                 file.update(from: updated)
                 for case .addProject(let name) in changes { file.parent = snapshot.id(ofName: name) }
                 for case .mark(let mark, let day) in changes { snapshot.document.setMark(mark, on: day, habit: id, name: file.name) }
+                for case .habitQuantity(let amount, let day) in changes {
+                    snapshot.document.setQuantity(amount, on: day, habit: id, name: file.name)
+                }
                 try write(file, root: root)
                 try write(snapshot.document, root: root)
                 snapshot.habits[id] = file

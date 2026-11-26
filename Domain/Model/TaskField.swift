@@ -6,6 +6,7 @@ enum TaskField: String, CaseIterable, Hashable, Codable, Sendable {
     case status, started, todayPool, notTomorrow, poolSection, priority, steps, showsAsProject, due, timeEstimate, projects, subtaskOrder, feel
     case recurrence, marks, completedDate, created, modified, reminderTimes, alarms, timeZone
     case habitColor, harmful, repeatable, showInToday, timeOfDay, twiceADay, twiceCountsDouble, weeklyGoal, allowedSkips
+    case habitQuantityTracking, habitQuantities
 }
 
 extension TaskEdit {
@@ -37,6 +38,8 @@ extension TaskEdit {
         case .timeOfDay: .timeOfDay
         case .twiceADay: .twiceADay
         case .twiceCountsDouble: .twiceCountsDouble
+        case .habitQuantityTracking: .habitQuantityTracking
+        case .habitQuantity: .habitQuantities
         case .weeklyGoal: .weeklyGoal
         case .allowedSkips: .allowedSkips
         }
@@ -45,7 +48,7 @@ extension TaskEdit {
     /// A delta on a list (one link, one day's mark): it merges with what changed elsewhere and never clashes.
     var mergesByItself: Bool {
         switch self {
-        case .addProject, .mark: true
+        case .addProject, .mark, .habitQuantity: true
         default: false
         }
     }
@@ -83,6 +86,8 @@ extension TaskItem {
         case .timeOfDay: habit.timeOfDay
         case .twiceADay: habit.twiceADay
         case .twiceCountsDouble: habit.twiceCountsDouble
+        case .habitQuantityTracking: habit.quantity
+        case .habitQuantities: quantities
         case .weeklyGoal: habit.weeklyGoal
         case .allowedSkips: habit.allowedSkips
         }

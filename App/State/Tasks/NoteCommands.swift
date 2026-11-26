@@ -56,6 +56,15 @@ final class NoteCommands {
         await markHabit(name, on: day) { _ in mark }
     }
 
+    func setHabitQuantity(_ name: String, on date: LocalDate, to amount: Int?) async {
+        guard date <= day.context().today else { return }
+        await writer.edit(name) { habit in
+            guard habit.isHabit, let quantity = habit.habit.quantityTracking,
+                  amount.map(quantity.accepts) ?? true, habit.quantity(on: date) != amount else { return [] }
+            return [.habitQuantity(amount, on: date)]
+        }
+    }
+
     /// A button on a delivered notification of a habit: the second Done of a day with two reminders is Twice.
     func markFromNotification(_ name: String, pressed: HabitMark, on day: LocalDate) async {
         await markHabit(name, on: day) { habit in

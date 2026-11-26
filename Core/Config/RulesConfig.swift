@@ -133,6 +133,8 @@ struct RulesConfig: Codable, Hashable, Sendable {
         let defaultAllowedSkips: Int
         let defaultWeeklyGoal: Int
         let maxAllowedSkips: Int
+        let defaultQuantity: HabitQuantity
+        let maximumQuantity: Int
         /// Bells under a habit's name in the Habits list (one per reminder, up to this many).
         let maxListBells: Int
         let stats: HabitStatsRules

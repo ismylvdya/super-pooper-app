@@ -10,7 +10,7 @@ struct DayMembership: Sendable {
     func isInDay(_ task: TaskItem, skipped: Set<String>) -> Bool {
         if task.isHabit {
             guard task.isInTodayHabits, !skipped.containsNoteName(task.name) else { return false }
-            return comesUpToday(task) || task.mark(on: context.today) != nil
+            return comesUpToday(task) || task.dayMark(on: context.today) != nil
         }
         let isOpen = TaskStatus.open.contains(task.status)
         return (task.status.isThisWeek && task.isInTodayPool) || (isOpen && isTimedToday(task))
@@ -28,7 +28,7 @@ struct DayMembership: Sendable {
 
     func state(of task: TaskItem) -> DayItemState {
         if task.isHabit {
-            return task.mark(on: context.today).map(DayItemState.marked) ?? .open
+            return task.dayMark(on: context.today).map(DayItemState.marked) ?? .open
         }
         return task.status == .done ? .marked(.done) : .open
     }

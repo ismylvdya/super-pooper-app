@@ -57,7 +57,7 @@ extension TaskFileStore {
 
     /// Whether the habit's day is over: closed by its marks.
     func isClosed(_ item: TaskItem, on day: LocalDate) -> Bool {
-        HabitMarking.isDayClosed(item.mark(on: day), twiceADay: item.isTwiceADay)
+        item.isDone(on: day)
     }
 
     /// The habits with no line in today's look wait in Next actions, each on the nearest day after today its rule has: today is

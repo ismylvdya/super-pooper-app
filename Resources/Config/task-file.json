@@ -63,6 +63,7 @@
     "repeats": "🔁",
     "overdue": "🕰️",
     "completed": "✅",
+    "quantity": "🔢",
     "deleted": "🗑️"
   },
   "legacyMarkers": ["➕"],

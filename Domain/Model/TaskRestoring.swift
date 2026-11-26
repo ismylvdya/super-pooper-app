@@ -7,6 +7,10 @@ enum TaskRestoring {
     static func edits(restoring before: TaskItem, from now: TaskItem) -> [TaskEdit] {
         var edits = statusEdits(restoring: before, from: now)
         edits += markEdits(restoring: before.marks, from: now.marks)
+        let oldAmounts = before.quantities ?? [:], amounts = now.quantities ?? [:]
+        edits += Set(oldAmounts.keys).union(amounts.keys).sorted()
+            .filter { oldAmounts[$0] != amounts[$0] }
+            .map { .habitQuantity(oldAmounts[$0], on: $0) }
         let fields: [(Bool, TaskEdit)] = [
             (before.isHighPriority != now.isHighPriority, .highPriority(before.isHighPriority)),
             (before.due != now.due, .due(before.due)),
@@ -42,6 +46,7 @@ enum TaskRestoring {
             (before.timeOfDay != now.timeOfDay, .timeOfDay(before.timeOfDay)),
             (before.twiceADay != now.twiceADay, .twiceADay(before.twiceADay)),
             (before.twiceCountsDouble != now.twiceCountsDouble, .twiceCountsDouble(before.twiceCountsDouble)),
+            (before.quantity != now.quantity, .habitQuantityTracking(before.quantity)),
             (before.weeklyGoal != now.weeklyGoal, .weeklyGoal(before.weeklyGoal)),
             (before.allowedSkips != now.allowedSkips, .allowedSkips(before.allowedSkips)),
         ]

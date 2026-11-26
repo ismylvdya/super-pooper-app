@@ -53,14 +53,14 @@ struct HabitsScreen: View {
 
     /// Today's mark before the name, as far from the name as from the plate's side; a tap cycles it.
     private func row(_ habit: TaskItem, today: LocalDate) -> ListRowContent {
-        let mark = HabitMarkIcon.icon(for: habit.mark(on: today))
+        let mark = HabitMarkIcon.icon(for: habit.dayMark(on: today))
         let rounded = TextStyle(style: "body", weight: habit.habit.repeatable ? .regular : .bold, rounded: true)
         return ListRowContent(title: habit.name, icon: .app(icons[mark]), iconColor: ThemeColor(tokens.habitMarkColor(habit)),
                               iconGap: ListTheme.app.rows.iconMargin - tokens.space(.habitMarkGapLess),
-                              onIconTap: {
+                              onIconTap: habit.habit.quantityTracking == nil ? {
                                   Haptics.play(.mark)
                                   Task { await model.cycleHabit(habit.name, on: today) }
-                              },
+                              } : nil,
                               titleStyle: rounded, titleColor: ThemeColor(tokens.habitNameColor(habit)))
     }
 
