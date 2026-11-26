@@ -103,6 +103,13 @@ actor TaskFileStore: TaskStore {
         let done = doneURL(root: root)
         try await ensureDownloaded(done)
         if fileSystem.fileExists(done) { document.takeDone(of: TaskDocument(text: try fileSystem.read(done).text, format: format)) }
+        var hasLegacyQuantity = false
+        document.walk { entry, section, _, _ in
+            if section == .done, entry.quantity != nil, entry.quantityAmount == nil { hasLegacyQuantity = true }
+        }
+        if hasLegacyQuantity {
+            _ = try? backups.backup([url, done].filter(fileSystem.fileExists), reason: "quantity-checkboxes")
+        }
         // An older file's Today joins Next actions once, with a backup of the file as it was (`takeTodaySections`).
         if document.hadTodaySection {
             _ = try? backups.backup([url, done].filter(fileSystem.fileExists), reason: "format3")
@@ -239,7 +246,7 @@ actor TaskFileStore: TaskStore {
     }
 
     func habit(of file: HabitFile, snapshot: Snapshot) -> TaskItem {
-        let records = snapshot.document.habitRecords(of: file.id)
+        let records = snapshot.document.habitRecords(of: file.id, tracksQuantity: file.options.quantityTracking != nil)
         var item = file.item(parentName: file.parent.flatMap { snapshot.names[$0] }, marks: records.marks, quantities: records.quantities)
         let line = snapshot.document.openLine(of: file.id)
         item.isOverdue = line?.isOverdue == true && line?.date == today()
@@ -261,9 +268,9 @@ actor TaskFileStore: TaskStore {
         for id in ticked {
             guard let taken = removeHabitLine(id, from: &snapshot.document), let habit = snapshot.habits[id] else { continue }
             if let range = habit.options.quantityTracking {
-                if let quantity = taken.quantity, let amount = quantity.amount, range.accepts(amount) {
-                    snapshot.document.setQuantity(quantity, on: day, habit: id, name: habit.name)
-                } else if taken.box == .started {
+                if let amount = taken.quantityAmount, range.accepts(amount) {
+                    snapshot.document.setQuantity(.amount(amount), on: day, habit: id, name: habit.name)
+                } else if taken.habitResultBox == .started {
                     snapshot.document.setQuantity(.partial, on: day, habit: id, name: habit.name)
                 }
             } else {

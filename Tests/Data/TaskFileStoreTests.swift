@@ -28,10 +28,10 @@ struct TaskFileStoreTests {
     }
 
     private var file: URL { folder.appendingPathComponent(format.folder).appendingPathComponent(format.file) }
+    private var doneFile: URL { file.deletingLastPathComponent().appendingPathComponent(format.doneFile) }
     /// The tasks file and, when there is one, Done's beside it.
     private func text() throws -> String {
-        let done = file.deletingLastPathComponent().appendingPathComponent(format.doneFile)
-        let finished = (try? String(contentsOf: done, encoding: .utf8)) ?? ""
+        let finished = (try? String(contentsOf: doneFile, encoding: .utf8)) ?? ""
         return try String(contentsOf: file, encoding: .utf8) + finished
     }
 
@@ -168,32 +168,57 @@ struct TaskFileStoreTests {
         #expect(try await store.filedTasks().isEmpty, "a habit's lines are not done tasks")
     }
 
-    @Test func quantityAndPartialReplaceEachOtherWithoutChangingCompletionMarks() async throws {
+    @Test func quantityStatesUseCheckboxesAndOnlyDoneCarriesAnAmount() async throws {
         let store = store()
         let habit = try await store.create(NoteDraft(status: .habit), named: "Run")
-        let marked = try await store.apply([.mark(.partial, on: today)], to: habit).task
+        let marked = try await store.apply([.mark(.twice, on: today)], to: habit).task
         let tracking = HabitQuantity(maximum: 10, step: 1)
         let recording = try await store.apply([.habitQuantityTracking(tracking), .habitQuantity(.amount(1), on: today)], to: marked).task
         let loaded = try await store.load().tasks.first
         #expect(try text().contains("Run 🔢 1 ✅ \(today)"))
         #expect(loaded?.habit.quantityTracking == tracking && loaded?.quantityEntry(on: today) == .amount(1))
-        #expect(loaded?.isDone(on: today) == true && loaded?.mark(on: today) == .partial)
+        #expect(loaded?.isDone(on: today) == true && loaded?.mark(on: today) == .twice)
 
         let marking = TaskMarking(today: today)
         let attempted = try await store.apply(marking.changes(marking: recording, as: .partial), to: recording).task
-        #expect(try text().contains("- [/] Run 🔢 partial ✅ \(today)"))
+        #expect(try text().contains("- [/] Run ✅ \(today)"))
         #expect(try !text().contains("Run 🔢 1 ✅ \(today)"))
         #expect(try await store.load().tasks.first?.quantityEntry(on: today) == .partial)
         #expect(!attempted.isDone(on: today) && !DayItem(habit: attempted, on: today).isFinished)
 
         let completed = try await store.apply([.habitQuantity(.amount(2), on: today)], to: attempted).task
         #expect(completed.quantityEntry(on: today) == .amount(2) && DayItem(habit: completed, on: today).isFinished)
-        #expect(try !text().contains("Run 🔢 partial ✅ \(today)"))
+        #expect(try !text().contains("- [/] Run ✅ \(today)"))
         _ = try await store.apply(marking.changes(marking: completed, as: nil), to: completed)
         let cleared = try await store.load().tasks.first
         #expect(cleared?.quantityEntry(on: today) == nil && cleared?.isDone(on: today) == false)
+        #expect(try text().contains("- [ ] Run ✅ \(today)"))
         #expect(try !text().contains("Run 🔢 2 ✅ \(today)"))
-        #expect(cleared?.mark(on: today) == .partial)
+        #expect(cleared?.mark(on: today) == .twice)
+        #expect(try await store.filedTasks().isEmpty)
+    }
+
+    @Test func oldQuantityTagsMigrateWithoutLosingTheCheckboxState() async throws {
+        let store = store()
+        let tracking = HabitQuantity(maximum: 10, step: 1)
+        let habit = try await store.create(NoteDraft(status: .habit, changes: [.habitQuantityTracking(tracking)]), named: "Run")
+        let yesterday = today.adding(days: -1)
+        let earlier = today.adding(days: -2)
+        try """
+        ## Done
+        - [/] Run 🔢 partial ✅ \(today) 🆔 \(habit.id.value)
+        - [x] Run 🔢 0 ✅ \(yesterday) 🆔 \(habit.id.value)
+        - [x] Run 🔢 2 ✅ \(earlier) 🆔 \(habit.id.value)
+        """.write(to: doneFile, atomically: true, encoding: .utf8)
+
+        let loaded = try await store.load().tasks.first
+        #expect(loaded?.quantityEntry(on: today) == .partial)
+        #expect(loaded?.quantityEntry(on: yesterday) == nil)
+        #expect(loaded?.quantityEntry(on: earlier) == .amount(2))
+        let migrated = try String(contentsOf: doneFile, encoding: .utf8)
+        #expect(migrated.contains("- [/] Run ✅ \(today)") && !migrated.contains("🔢 partial"))
+        #expect(migrated.contains("- [ ] Run ✅ \(yesterday)") && !migrated.contains("🔢 0"))
+        #expect(migrated.contains("- [x] Run 🔢 2 ✅ \(earlier)"))
     }
 
     @Test func aRenameKeepsTheHabitsDaysAndSubtasks() async throws {

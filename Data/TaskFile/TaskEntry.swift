@@ -43,6 +43,22 @@ struct TaskEntry: Equatable, Sendable {
 }
 
 extension TaskEntry {
+    /// A checkbox is authoritative. Older quantity entries could also spell a partial or open day in the field.
+    var habitResultBox: Box {
+        guard box == .done, let quantity else { return box }
+        switch quantity.mark {
+        case .partial: return .started
+        case nil: return .open
+        case .done, .twice: return .done
+        }
+    }
+
+    var quantityAmount: Int? {
+        habitResultBox == .done ? quantity?.amount : nil
+    }
+}
+
+extension TaskEntry {
     /// The line without its indent, or nil for any other line.
     init?(line: String, format: TaskFileFormat, alarmClockRings: Bool = true) {
         guard line.hasPrefix("- ["), line.count >= 6 else { return nil }
@@ -126,7 +142,7 @@ extension TaskEntry {
     /// The line without its indent.
     func line(format: TaskFileFormat) -> String {
         let markers = format.markers
-        let symbol = switch box {
+        let symbol = switch habitResultBox {
         case .open: format.boxes.open
         case .started: format.boxes.started
         case .done: format.boxes.done
@@ -154,7 +170,7 @@ extension TaskEntry {
         if inTodayPool { add(format.pool.marker, format.pool.tag) }
         if notTomorrow { add(format.pool.marker, format.pool.notTomorrowTag) }
         if let poolSection { add(format.pool.marker, format.pool.sectionPrefix + poolSection) }
-        add(markers.quantity, quantity?.field)
+        add(markers.quantity, quantityAmount.map(String.init))
         add(markers.completed, completed?.isoString)
         add(markers.deleted, deleted?.isoString)
         if writesID { add(markers.id, id) }

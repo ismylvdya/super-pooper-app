@@ -88,29 +88,37 @@ struct HabitFile: Codable, Equatable, Sendable {
 
 extension TaskDocument {
     /// A habit's completion marks and its explicit quantities in Done.
-    func habitRecords(of id: String) -> (marks: [LocalDate: HabitMark], quantities: [LocalDate: HabitQuantityEntry]) {
+    func habitRecords(of id: String, tracksQuantity: Bool) -> (marks: [LocalDate: HabitMark], quantities: [LocalDate: HabitQuantityEntry]) {
         var counts: [LocalDate: (done: Int, partial: Int)] = [:]
         var quantities: [LocalDate: HabitQuantityEntry] = [:]
+        var quantityDays: Set<LocalDate> = []
         walk { entry, section, _, _ in
             guard section == .done, entry.id == id, let day = entry.completed else { return }
-            if let quantity = entry.quantity {
-                // The first line wins. A zero from an older build leaves the day unmarked.
-                if quantities[day] == nil { quantities[day] = quantity }
-                return
-            }
-            switch entry.box {
-            case .done: counts[day, default: (0, 0)].done += 1
-            case .started: counts[day, default: (0, 0)].partial += 1
-            case .open: break
+            switch entry.habitResultBox {
+            case .done:
+                if let amount = entry.quantityAmount {
+                    if quantityDays.insert(day).inserted { quantities[day] = .amount(amount) }
+                } else {
+                    counts[day, default: (0, 0)].done += 1
+                }
+            case .started:
+                let newest = quantityDays.insert(day).inserted
+                if tracksQuantity {
+                    if newest { quantities[day] = .partial }
+                } else {
+                    counts[day, default: (0, 0)].partial += 1
+                }
+            case .open:
+                // The newest result wins. An explicit open box also masks any older quantity on that day.
+                quantityDays.insert(day)
             }
         }
-        return (counts.mapValues { $0.done >= 2 ? .twice : $0.done == 1 ? .done : .partial },
-                quantities.filter { $0.value.mark != nil })
+        return (counts.mapValues { $0.done >= 2 ? .twice : $0.done == 1 ? .done : .partial }, quantities)
     }
 
     /// Writes one day's mark of a habit as its lines in Done, newest on top.
     mutating func setMark(_ mark: HabitMark?, on day: LocalDate, habit id: String, name: String) {
-        while remove(where: { $0.id == id && $0.completed == day && $0.quantity == nil }) != nil {}
+        while remove(in: .done, where: { $0.id == id && $0.completed == day && $0.quantityAmount == nil }) != nil {}
         guard let mark else { return }
         let line = { (box: TaskEntry.Box) in
             var entry = TaskEntry(box: box, name: name)
@@ -128,12 +136,17 @@ extension TaskDocument {
     }
 
     mutating func setQuantity(_ quantity: HabitQuantityEntry?, on day: LocalDate, habit id: String, name: String) {
-        while remove(where: { $0.id == id && $0.completed == day && $0.quantity != nil }) != nil {}
-        guard let quantity, let mark = quantity.mark else { return }
-        var entry = TaskEntry(box: mark == .partial ? .started : .done, name: name)
+        while remove(in: .done, where: { $0.id == id && $0.completed == day && ($0.box != .done || $0.quantity != nil) }) != nil {}
+        let box: TaskEntry.Box
+        switch quantity?.mark {
+        case .done: box = .done
+        case .partial: box = .started
+        case .twice, nil: box = .open
+        }
+        var entry = TaskEntry(box: box, name: name)
         entry.id = id
         entry.completed = day
-        entry.quantity = quantity
+        if box == .done { entry.quantity = quantity }
         insertMark(entry)
     }
 

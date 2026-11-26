@@ -236,7 +236,8 @@ extension TaskDocument {
 
     /// Takes the first entry `matches` accepts out of the file, with its children, and says where it was.
     /// `nested`: false looks only at lines under no parent, so a subtask stays with its parent.
-    mutating func remove(nested: Bool = true, where matches: (TaskEntry) -> Bool) -> (entry: TaskEntry, section: TaskSection)? {
+    mutating func remove(nested: Bool = true, in onlySection: TaskSection? = nil,
+                         where matches: (TaskEntry) -> Bool) -> (entry: TaskEntry, section: TaskSection)? {
         func take(_ entries: inout [TaskEntry]) -> TaskEntry? {
             if let index = entries.firstIndex(where: matches) { return entries.remove(at: index) }
             guard nested else { return nil }
@@ -246,7 +247,7 @@ extension TaskDocument {
             return nil
         }
         for section in sections.indices {
-            guard let kind = sections[section].kind else { continue }
+            guard let kind = sections[section].kind, onlySection == nil || onlySection == kind else { continue }
             for group in sections[section].groups.indices {
                 if let found = take(&sections[section].groups[group].entries) { return (found, kind) }
             }
