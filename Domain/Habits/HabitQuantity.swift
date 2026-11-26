@@ -2,7 +2,7 @@ import Foundation
 
 /// Whole-number amounts from the smallest selectable amount to the configured maximum.
 struct HabitQuantity: Hashable, Codable, Sendable {
-    static let minimum = 2
+    static let minimum = 1
     var maximum: Int
     var step: Int
 
@@ -13,7 +13,7 @@ struct HabitQuantity: Hashable, Codable, Sendable {
     }
 
     var values: [Int] {
-        guard isValid, maximum >= Self.minimum else { return [] }
+        guard isValid else { return [] }
         let stepped = Array(stride(from: Self.minimum, through: maximum, by: step))
         return stepped.last == maximum ? stepped : stepped + [maximum]
     }
@@ -32,7 +32,7 @@ enum HabitQuantityEntry: Hashable, Sendable, Codable {
     var mark: HabitMark? {
         switch self {
         case .partial: .partial
-        case .amount(let amount): amount > 0 ? .done : nil
+        case .amount(let amount): amount >= HabitQuantity.minimum ? .done : nil
         }
     }
 

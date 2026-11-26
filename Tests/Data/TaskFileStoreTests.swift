@@ -172,26 +172,27 @@ struct TaskFileStoreTests {
         let store = store()
         let habit = try await store.create(NoteDraft(status: .habit), named: "Run")
         let marked = try await store.apply([.mark(.partial, on: today)], to: habit).task
-        let tracking = HabitQuantity(maximum: 10, step: 3)
-        let recording = try await store.apply([.habitQuantityTracking(tracking), .habitQuantity(.amount(4), on: today)], to: marked).task
+        let tracking = HabitQuantity(maximum: 10, step: 1)
+        let recording = try await store.apply([.habitQuantityTracking(tracking), .habitQuantity(.amount(1), on: today)], to: marked).task
         let loaded = try await store.load().tasks.first
-        #expect(try text().contains("Run 🔢 4 ✅ \(today)"))
-        #expect(loaded?.habit.quantityTracking == tracking && loaded?.quantityEntry(on: today) == .amount(4))
+        #expect(try text().contains("Run 🔢 1 ✅ \(today)"))
+        #expect(loaded?.habit.quantityTracking == tracking && loaded?.quantityEntry(on: today) == .amount(1))
         #expect(loaded?.isDone(on: today) == true && loaded?.mark(on: today) == .partial)
 
         let marking = TaskMarking(today: today)
         let attempted = try await store.apply(marking.changes(marking: recording, as: .partial), to: recording).task
         #expect(try text().contains("- [/] Run 🔢 partial ✅ \(today)"))
-        #expect(try !text().contains("Run 🔢 4 ✅ \(today)"))
+        #expect(try !text().contains("Run 🔢 1 ✅ \(today)"))
         #expect(try await store.load().tasks.first?.quantityEntry(on: today) == .partial)
         #expect(!attempted.isDone(on: today) && !DayItem(habit: attempted, on: today).isFinished)
 
-        let completed = try await store.apply([.habitQuantity(.amount(5), on: today)], to: attempted).task
-        #expect(completed.quantityEntry(on: today) == .amount(5) && DayItem(habit: completed, on: today).isFinished)
+        let completed = try await store.apply([.habitQuantity(.amount(2), on: today)], to: attempted).task
+        #expect(completed.quantityEntry(on: today) == .amount(2) && DayItem(habit: completed, on: today).isFinished)
         #expect(try !text().contains("Run 🔢 partial ✅ \(today)"))
         _ = try await store.apply(marking.changes(marking: completed, as: nil), to: completed)
         let cleared = try await store.load().tasks.first
         #expect(cleared?.quantityEntry(on: today) == nil && cleared?.isDone(on: today) == false)
+        #expect(try !text().contains("Run 🔢 2 ✅ \(today)"))
         #expect(cleared?.mark(on: today) == .partial)
     }
 
