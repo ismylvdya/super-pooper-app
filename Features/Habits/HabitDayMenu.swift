@@ -8,17 +8,12 @@ struct HabitDayMenu: View {
     let habit: TaskItem
     let day: LocalDate
     var showsDate = false
-    let pickAmount: () -> Void
 
     var body: some View {
         if showsDate {
             Text(DateText.format(day, .dateTime.day().month(.abbreviated).year(), calendar: model.calendar))
         }
         ActionMenuContent(menu: .habitDay, item: DayItem(habit: habit, on: day), isToday: day == model.context().today) { action in
-            if action.id == .setAmount {
-                pickAmount()
-                return
-            }
             Task {
                 if action.id.setsHabitMark {
                     await model.setHabitMark(habit.name, on: day, to: action.id.habitMark)

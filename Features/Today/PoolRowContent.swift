@@ -1,3 +1,4 @@
+import ListEngineChumbulev
 import SwiftUI
 
 /// The row with its tap, title, long-press menu and drag wiring, on its plate.
@@ -10,8 +11,8 @@ struct PoolRowContent: View {
 
     @Environment(\.actions) private var actions
     @Environment(\.tokens) private var tokens
+    @Environment(\.icons) private var icons
     @Environment(AppModel.self) private var model
-    @State private var showsAmount = false
     let item: DayItem
     var isToday = true
     var isCompact = true
@@ -27,25 +28,23 @@ struct PoolRowContent: View {
     /// The row stands in that day's pool: its menu offers what a pool row does there (Unworm).
     var poolDay: LocalDate?
 
-    var body: some View {
-        plated
-            .plateLift(.row, for: .contextMenuPreview)
-            .contextMenu {
-                ActionMenuContent(menu: .context(of: item.task), item: item, isToday: isToday,
-                                  poolDay: poolDay, shownDay: handler.shownDay) {
-                    if $0.id == .setAmount {
-                        showsAmount = true
-                    } else {
+    @ViewBuilder var body: some View {
+        if item.task.habit.quantityTracking != nil {
+            plated.listContextMenu {
+                EngineActions(model: model, tokens: tokens, registry: actions, icons: icons) { action, name in
+                    handler.handle(action, taskName: name)
+                }.menu(.context(of: item.task), for: item, isToday: isToday, poolDay: poolDay, shownDay: handler.shownDay)
+            }
+        } else {
+            plated
+                .plateLift(.row, for: .contextMenuPreview)
+                .contextMenu {
+                    ActionMenuContent(menu: .context(of: item.task), item: item, isToday: isToday,
+                                      poolDay: poolDay, shownDay: handler.shownDay) {
                         handler.handle($0, taskName: item.id)
                     }
                 }
-            }
-            .popover(isPresented: $showsAmount) {
-                if let range = item.task.habit.quantityTracking {
-                    HabitQuantityPicker(habit: item.task, day: handler.shownDay ?? poolDay ?? model.context().today,
-                                        range: range, model: model)
-                }
-            }
+        }
     }
 
     /// The row on its plate: what stands in the pool or on the timeline, and what a drag lifts.

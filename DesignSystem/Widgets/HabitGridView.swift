@@ -11,6 +11,7 @@ struct HabitGridView<Menu: View>: View {
     var onTap: ((LocalDate) -> Void)?
     var pickerDay: Binding<LocalDate?>?
     var picker: ((LocalDate) -> AnyView)?
+    var customMenu: ((LocalDate, AnyView) -> AnyView)?
     @ViewBuilder var menu: (LocalDate) -> Menu
 
     var body: some View {
@@ -31,16 +32,20 @@ struct HabitGridView<Menu: View>: View {
         let view = HabitDayCell(cell: day.cell, color: color, metrics: metrics)
         if let onTap, let outline = metrics.outline(of: day.cell) {
             let inset = (metrics.cell - outline) / 2
-            view
+            let anchor = view
                 .contentShape(Circle().inset(by: inset))
                 .contentShape(.contextMenuPreview, Circle().inset(by: inset))
                 .onTapGesture { onTap(day.date) }
-                .contextMenu { menu(day.date) }
                 .popover(isPresented: Binding(get: { pickerDay?.wrappedValue == day.date }, set: { shown in
                     if !shown, pickerDay?.wrappedValue == day.date { pickerDay?.wrappedValue = nil }
-                })) { picker?(day.date) }
+                })) { picker?(day.date).presentationCompactAdaptation(.popover) }
                 .accessibilityLabel(Text(verbatim: day.date.isoString))
                 .accessibilityAddTraits(.isButton)
+            if let customMenu {
+                customMenu(day.date, AnyView(anchor))
+            } else {
+                anchor.contextMenu { menu(day.date) }
+            }
         } else {
             view
         }

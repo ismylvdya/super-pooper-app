@@ -30,19 +30,6 @@ struct ActionLabel: View {
             let muted = (tint ?? .label).withAlphaComponent(tokens.opacity(.habitOpenRing))
             return image.withTintColor(muted, renderingMode: .alwaysOriginal)
         }
-        let glyph = action.id == .setAmount ? addingChevron(to: image) : image
-        return tint.map { glyph.withTintColor($0, renderingMode: .alwaysOriginal) } ?? glyph
-    }
-
-    private func addingChevron(to image: UIImage) -> UIImage {
-        guard let chevron = TemplateGlyph.menuImage(icons[.chevron], extent: tokens.uiFont(.caption).capHeight, scale: scale) else {
-            return image
-        }
-        let gap = tokens.space(.chipGap)
-        let size = CGSize(width: image.size.width + gap + chevron.size.width, height: image.size.height)
-        return UIGraphicsImageRenderer(size: size).image { _ in
-            image.draw(at: .zero)
-            chevron.draw(at: CGPoint(x: image.size.width + gap, y: (size.height - chevron.size.height) / 2))
-        }
+        return tint.map { image.withTintColor($0, renderingMode: .alwaysOriginal) } ?? image
     }
 }

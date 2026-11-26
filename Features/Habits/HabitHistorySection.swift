@@ -1,3 +1,4 @@
+import ListEngineChumbulev
 import SwiftUI
 
 /// Weeks of the habit back to its first marked day; the newest week is at the bottom and visible first.
@@ -8,6 +9,8 @@ struct HabitHistorySection: View {
     @Environment(AppModel.self) private var model
     @Environment(\.tokens) private var tokens
     @Environment(\.rules) private var rules
+    @Environment(\.actions) private var registry
+    @Environment(\.icons) private var icons
     let habit: TaskItem
     @State private var addedWeeks = 0
     /// The plate's width; the grid is laid out only once it is known, so the scroll starts at the real bottom
@@ -52,8 +55,8 @@ struct HabitHistorySection: View {
                         }
                     }, pickerDay: $pickerDay, picker: { day in
                         AnyView(quantityPicker(on: day))
-                    }) { day in
-                        HabitDayMenu(habit: habit, day: day, showsDate: true, pickAmount: { pickerDay = day })
+                    }, customMenu: habit.habit.quantityTracking == nil ? nil : quantityMenu) { day in
+                        HabitDayMenu(habit: habit, day: day, showsDate: true)
                     }
                     .frame(maxWidth: .infinity)
                     // A margin in the content, not a content margin: those arrive after the scroll is placed at the
@@ -84,5 +87,20 @@ struct HabitHistorySection: View {
         if let range = habit.habit.quantityTracking {
             HabitQuantityPicker(habit: habit, day: day, range: range, model: model)
         }
+    }
+
+    private func quantityMenu(on day: LocalDate, anchor: AnyView) -> AnyView {
+        let title = DateText.format(day, .dateTime.day().month(.abbreviated).year(), calendar: model.calendar)
+        return AnyView(anchor.listContextMenu(title: title) {
+            EngineActions(model: model, tokens: tokens, registry: registry, icons: icons) { action, name in
+                Task {
+                    if action.id.setsHabitMark {
+                        await model.setHabitMark(name, on: day, to: action.id.habitMark)
+                    } else {
+                        await model.performOfferingUndo(action, on: name)
+                    }
+                }
+            }.menu(.habitDay, for: DayItem(habit: habit, on: day), isToday: day == model.context().today, shownDay: day)
+        })
     }
 }
