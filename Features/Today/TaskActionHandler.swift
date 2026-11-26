@@ -46,11 +46,6 @@ struct TaskActionHandler {
         switch action.id {
         case .open:
             if let openTask { openTask(taskName) } else { router.open(.task(taskName)) }
-        case .setAmount:
-            let today = model.context().today
-            let day = shownDay ?? today
-            guard day <= today else { return }
-            router.habitQuantityRequest = HabitQuantityRequest(habitName: taskName, day: day)
         case .partial, .unmark:
             if let shownDay, shownDay != model.context().today, model.task(named: taskName)?.habit.quantityTracking != nil {
                 Task { await model.perform(action.id, on: taskName, day: shownDay) }

@@ -9,6 +9,8 @@ struct HabitGridView<Menu: View>: View {
     let metrics: HabitDotMetrics
     var fadesTop = false
     var onTap: ((LocalDate) -> Void)?
+    var pickerDay: Binding<LocalDate?>?
+    var picker: ((LocalDate) -> AnyView)?
     @ViewBuilder var menu: (LocalDate) -> Menu
 
     var body: some View {
@@ -34,6 +36,9 @@ struct HabitGridView<Menu: View>: View {
                 .contentShape(.contextMenuPreview, Circle().inset(by: inset))
                 .onTapGesture { onTap(day.date) }
                 .contextMenu { menu(day.date) }
+                .popover(isPresented: Binding(get: { pickerDay?.wrappedValue == day.date }, set: { shown in
+                    if !shown, pickerDay?.wrappedValue == day.date { pickerDay?.wrappedValue = nil }
+                })) { picker?(day.date) }
                 .accessibilityLabel(Text(verbatim: day.date.isoString))
                 .accessibilityAddTraits(.isButton)
         } else {

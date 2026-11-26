@@ -24,13 +24,15 @@ struct HabitDayCell: View {
             case .done:
                 Circle().fill(color).frame(width: dot, height: dot)
             case .quantity(let amount):
-                Text(amount, format: .number.grouping(.never))
-                    .font(tokens.font(.caption))
-                    .monospacedDigit()
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.5)
-                    .foregroundStyle(color)
-                    .frame(width: dot, height: dot)
+                Circle().fill(color).frame(width: dot, height: dot)
+                    .overlay {
+                        Text(amount, format: .number.grouping(.never))
+                            .font(tokens.font(.caption))
+                            .monospacedDigit()
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.5)
+                            .foregroundStyle(surface ?? tokens.color(.plateBackground))
+                    }
             case .twice:
                 Circle().fill(color).frame(width: dot, height: dot)
                 Circle().strokeBorder(color, lineWidth: metrics.ring).frame(width: metrics.cell, height: metrics.cell)

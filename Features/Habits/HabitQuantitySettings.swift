@@ -10,8 +10,8 @@ struct HabitQuantitySettings: View {
         PlateRow(icon: nil, title: "habitPage.quantity.maximum") {
             Stepper(value: Binding(get: { quantity.maximum }, set: { maximum in
                 save(HabitQuantity(maximum: maximum, step: min(quantity.step, maximum)))
-            }), in: 1...max(limit, quantity.maximum)) {
-                Text(verbatim: L10n.format("common.range", 1.formatted(.number), quantity.maximum.formatted(.number)))
+            }), in: HabitQuantity.minimum...max(limit, quantity.maximum)) {
+                Text(verbatim: L10n.format("common.range", HabitQuantity.minimum.formatted(.number), quantity.maximum.formatted(.number)))
             }
             .fixedSize()
         }

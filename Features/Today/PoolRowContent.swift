@@ -10,6 +10,8 @@ struct PoolRowContent: View {
 
     @Environment(\.actions) private var actions
     @Environment(\.tokens) private var tokens
+    @Environment(AppModel.self) private var model
+    @State private var showsAmount = false
     let item: DayItem
     var isToday = true
     var isCompact = true
@@ -31,7 +33,17 @@ struct PoolRowContent: View {
             .contextMenu {
                 ActionMenuContent(menu: .context(of: item.task), item: item, isToday: isToday,
                                   poolDay: poolDay, shownDay: handler.shownDay) {
-                    handler.handle($0, taskName: item.id)
+                    if $0.id == .setAmount {
+                        showsAmount = true
+                    } else {
+                        handler.handle($0, taskName: item.id)
+                    }
+                }
+            }
+            .popover(isPresented: $showsAmount) {
+                if let range = item.task.habit.quantityTracking {
+                    HabitQuantityPicker(habit: item.task, day: handler.shownDay ?? poolDay ?? model.context().today,
+                                        range: range, model: model)
                 }
             }
     }

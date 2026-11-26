@@ -16,13 +16,23 @@ struct EngineActions {
     /// A row's menu: the frequent actions, then the rarer ones after a divider; what the row already is, greyed.
     func menu(_ menu: ActionMenu, for item: DayItem, isToday: Bool = true, poolDay: LocalDate? = nil) -> [ListAction] {
         let entries = model.menuEntries(menu, for: item, isToday: isToday, poolDay: poolDay)
+        let day = poolDay ?? model.context().today
         let frequent = entries.filter { !$0.isMore }, more = entries.filter(\.isMore)
         let marks = registry.menus[menu].habitMarks
         return (frequent + more).enumerated().map { index, entry in
             let action = entry.action
-            let icon = marks ? HabitMarkIcon.icon(for: action.id).map { icons[$0] } ?? action.icon : action.icon
+            let mark = marks ? HabitMarkIcon.icon(for: action.id) : nil
+            let icon = mark.map { icons[$0] } ?? action.icon
+            let opacity = mark == .habitMarkOpen ? tokens.opacity(.habitOpenRing) : 1
+            let child: (() -> AnyView)?
+            if action.id == .setAmount, let range = item.task.habit.quantityTracking {
+                child = { AnyView(HabitQuantityPicker(habit: item.task, day: day, range: range, model: model)) }
+            } else {
+                child = nil
+            }
             return ListAction(title: L10n.string(action.title), icon: .app(icon), tone: tone(action),
-                              dividerBefore: entry.isMore && index == frequent.count && !frequent.isEmpty, isEnabled: !entry.isCurrent) {
+                              dividerBefore: entry.isMore && index == frequent.count && !frequent.isEmpty, isEnabled: !entry.isCurrent,
+                              iconOpacity: opacity, child: child) {
                 Haptics.play(action.haptic)
                 perform(action, item.id)
             }

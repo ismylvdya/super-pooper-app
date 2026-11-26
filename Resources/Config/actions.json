@@ -21,8 +21,9 @@
     {
       "id": "setAmount",
       "title": "action.setAmount",
-      "icon": "number",
+      "icon": "checkmark.circle.fill",
       "destructive": false,
+      "color": "accent",
       "haptic": "light"
     },
     {

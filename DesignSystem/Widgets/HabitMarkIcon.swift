@@ -25,6 +25,7 @@ enum HabitMarkIcon {
 
     /// The habit mark an action sets, if it sets one (Unmark: the open mark).
     static func icon(for action: ActionID) -> Icon? {
-        action.setsHabitMark ? icon(for: action.habitMark) : nil
+        if action == .setAmount { return .habitMarkDone }
+        return action.setsHabitMark ? icon(for: action.habitMark) : nil
     }
 }

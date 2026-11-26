@@ -6,7 +6,6 @@ import SwiftUI
 /// fades in only once the newest week is scrolled down from where it opened.
 struct HabitHistorySection: View {
     @Environment(AppModel.self) private var model
-    @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     @Environment(\.rules) private var rules
     let habit: TaskItem
@@ -15,6 +14,7 @@ struct HabitHistorySection: View {
     /// (laid out for a guessed width first, the newest week would end up below the plate on a narrow phone).
     @State private var width: CGFloat?
     @State private var position = ScrollPosition(edge: .bottom)
+    @State private var pickerDay: LocalDate?
 
     var body: some View {
         let context = model.context()
@@ -45,13 +45,15 @@ struct HabitHistorySection: View {
                 ScrollView {
                     HabitGridView(grid: grid, color: tokens.habitColor(habit), metrics: metrics, onTap: { day in
                         if habit.habit.quantityTracking != nil {
-                            router.habitQuantityRequest = HabitQuantityRequest(habitName: habit.name, day: day)
+                            pickerDay = day
                         } else {
                             Haptics.play(.mark)
                             Task { await model.cycleHabit(habit.name, on: day) }
                         }
+                    }, pickerDay: $pickerDay, picker: { day in
+                        AnyView(quantityPicker(on: day))
                     }) { day in
-                        HabitDayMenu(habit: habit, day: day, showsDate: true)
+                        HabitDayMenu(habit: habit, day: day, showsDate: true, pickAmount: { pickerDay = day })
                     }
                     .frame(maxWidth: .infinity)
                     // A margin in the content, not a content margin: those arrive after the scroll is placed at the
@@ -75,6 +77,12 @@ struct HabitHistorySection: View {
                     }
                 }
                 .frame(maxHeight: tokens.size(.habitHistoryMaxHeight))
+        }
+    }
+
+    @ViewBuilder private func quantityPicker(on day: LocalDate) -> some View {
+        if let range = habit.habit.quantityTracking {
+            HabitQuantityPicker(habit: habit, day: day, range: range, model: model)
         }
     }
 }

@@ -82,11 +82,6 @@ struct RootView: View {
                 .overlay(alignment: .top) { BannerOverlay(yieldsToSheets: true) }
                 .overlay { NewItemDragOverlay() }
                 .sheet(isPresented: $router.isProblemsPresented) { ProblemsSheet().tint(tokens.color(.accent)) }
-                .sheet(item: $router.habitQuantityRequest) { request in
-                    if let habit = model.task(named: request.habitName), let range = habit.habit.quantityTracking {
-                        HabitQuantitySheet(request: request, habit: habit, range: range)
-                    }
-                }
             } else {
                 OnboardingFlow()
             }

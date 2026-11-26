@@ -5,10 +5,10 @@ import SwiftUI
 /// ("17 Sep 2026").
 struct HabitDayMenu: View {
     @Environment(AppModel.self) private var model
-    @Environment(Router.self) private var router
     let habit: TaskItem
     let day: LocalDate
     var showsDate = false
+    let pickAmount: () -> Void
 
     var body: some View {
         if showsDate {
@@ -16,7 +16,7 @@ struct HabitDayMenu: View {
         }
         ActionMenuContent(menu: .habitDay, item: DayItem(habit: habit, on: day), isToday: day == model.context().today) { action in
             if action.id == .setAmount {
-                router.habitQuantityRequest = HabitQuantityRequest(habitName: habit.name, day: day)
+                pickAmount()
                 return
             }
             Task {

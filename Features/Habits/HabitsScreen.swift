@@ -54,18 +54,18 @@ struct HabitsScreen: View {
     /// Today's mark before the name, as far from the name as from the plate's side; a tap cycles it.
     private func row(_ habit: TaskItem, today: LocalDate) -> ListRowContent {
         let mark = HabitMarkIcon.icon(for: habit.dayMark(on: today))
+        let color = tokens.habitMarkColor(habit).opacity(mark == .habitMarkOpen ? tokens.opacity(.habitOpenRing) : 1)
         let rounded = TextStyle(style: "body", weight: habit.habit.repeatable ? .regular : .bold, rounded: true)
-        return ListRowContent(title: habit.name, icon: .app(icons[mark]), iconColor: ThemeColor(tokens.habitMarkColor(habit)),
+        return ListRowContent(title: habit.name, icon: .app(icons[mark]), iconColor: ThemeColor(color),
                               iconGap: ListTheme.app.rows.iconMargin - tokens.space(.habitMarkGapLess),
                               onIconTap: {
-                                  if habit.habit.quantityTracking != nil {
-                                      router.habitQuantityRequest = HabitQuantityRequest(habitName: habit.name, day: today)
-                                  } else {
-                                      Haptics.play(.mark)
-                                      Task { await model.cycleHabit(habit.name, on: today) }
-                                  }
+                                  Haptics.play(.mark)
+                                  Task { await model.cycleHabit(habit.name, on: today) }
                               },
-                              titleStyle: rounded, titleColor: ThemeColor(tokens.habitNameColor(habit)))
+                              titleStyle: rounded, titleColor: ThemeColor(tokens.habitNameColor(habit)),
+                              iconPopover: habit.habit.quantityTracking.map { range in
+                                  { AnyView(HabitQuantityPicker(habit: habit, day: today, range: range, model: model)) }
+                              })
     }
 
     private var empty: some View {
@@ -77,10 +77,6 @@ struct HabitsScreen: View {
     /// Today's marks set the mark; the menu's other lines run as in the pool, offering undo.
     private func engine(today: LocalDate) -> EngineActions {
         EngineActions(model: model, tokens: tokens, registry: registry, icons: icons) { action, name in
-            if action.id == .setAmount {
-                router.habitQuantityRequest = HabitQuantityRequest(habitName: name, day: today)
-                return
-            }
             Task {
                 if action.id.setsHabitMark {
                     await model.setHabitMark(name, on: today, to: action.id.habitMark)
