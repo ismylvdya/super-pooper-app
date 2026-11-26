@@ -68,10 +68,10 @@ struct MorningReviewList: View {
                                 Label("review.reset", systemImage: icons[.resetSort])
                             }
                             .accessibilityIdentifier("review.reset")
-                            Button { Task { await model.simulateDayTurn() } } label: {
-                                Label("review.simulateDayTurn", systemImage: icons[.dayBoundary])
+                            AvailabilityMenuButton(title: "review.simulateDayTurn", icon: .dayBoundary,
+                                                   isEnabled: model.canSimulateDayTurn) {
+                                await model.simulateDayTurn()
                             }
-                            .disabled(!model.canSimulateDayTurn)
                             .accessibilityIdentifier("review.simulateDayTurn")
                         }
                     }
