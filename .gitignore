@@ -10,3 +10,6 @@ Fixtures/Rendered/
 
 # Personal signing for Xcode installs
 Config/Local.xcconfig
+
+# List Lab is a separate local Git repository.
+/list-lab/
