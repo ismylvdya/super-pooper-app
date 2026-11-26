@@ -22,7 +22,6 @@
   },
   "pool": {
     "visibleCount": 3,
-    "estimateMinutes": [2, 15, 60, 240],
     "criteria": [],
     "chipOrder": ["problem", "blocked", "feel", "habit"],
     "subtaskLineCorner": 6,

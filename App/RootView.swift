@@ -107,7 +107,7 @@ struct RootView: View {
         .appCalendar(model.calendar)
         // The user's colors and opacity sit closest to the views, over the bundled tokens of `appConfig`.
         .designTokens(tokens)
-        .environment(\.rules, container.config.rules.withEstimates(model.settings.pool.estimateMinutes))
+        .environment(\.rules, container.config.rules)
         .environment(model)
         .environment(taskDrag)
         .environment(container.router)

@@ -15,7 +15,7 @@ struct TaskPropertiesSection: View {
             FeelPicker(editor: editor)
             PlateRow(icon: .estimate, title: "taskPage.estimate", info: "info.taskPage.estimate") {
                 Picker("taskPage.estimate", selection: estimateBinding) {
-                    ForEach(rules.estimateOptions(including: rules.day.estimate(of: task)), id: \.minutes) { Text(LocalizedStringKey($0.label)).tag($0.minutes) }
+                    ForEach(rules.timeEstimates, id: \.minutes) { Text(LocalizedStringKey($0.label)).tag($0.minutes) }
                 }
                 .labelsHidden()
             }
@@ -38,7 +38,7 @@ struct TaskPropertiesSection: View {
     }
 
     private var estimateBinding: Binding<Int> {
-        Binding(get: { rules.day.estimate(of: task) },
+        Binding(get: { rules.estimateMinutes(task.timeEstimate) },
                 set: { minutes in editor.apply([.timeEstimate(minutes)]) })
     }
 }

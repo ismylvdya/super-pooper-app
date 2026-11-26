@@ -74,6 +74,11 @@ extension TaskFileStore: TaskTrash, DayMirroring, ExternalLinking, TaskBackups, 
                 guard let data = try fileSystem.read(url).text.data(using: .utf8) else { throw TaskStoreError.fileMissing(note.name) }
                 var file = try JSONDecoder().decode(HabitFile.self, from: data)
                 file.name = UniqueName.free(file.name) { snapshot.isTaken($0) }
+                let minutes = rules.estimateMinutes(file.timeEstimate)
+                if let previous = file.timeEstimate, previous != minutes {
+                    _ = try? backups.backup([url], reason: "habit-estimates")
+                }
+                file.timeEstimate = minutes
                 try write(file, root: root)
                 try fileSystem.remove(url)
                 return file.name

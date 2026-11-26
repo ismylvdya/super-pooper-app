@@ -37,6 +37,7 @@ actor TaskFileStore: TaskStore {
     let format: TaskFileFormat
     let obsidian: ObsidianConventions
     let backups: BackupService
+    let rules: RulesConfig
     let vaultSettings: @Sendable () -> AppSettings.Vault
     let downloadTimeout: TimeInterval
     let downloadPoll: TimeInterval
@@ -48,7 +49,7 @@ actor TaskFileStore: TaskStore {
     let lookMemory: DayLookMemory
 
     init(location: VaultLocating, fileSystem: NoteFileSystem, ubiquity: UbiquityService, format: TaskFileFormat,
-         obsidian: ObsidianConventions, backups: BackupService, rules: RulesConfig.Vault,
+         obsidian: ObsidianConventions, backups: BackupService, rules: RulesConfig,
          vaultSettings: @escaping @Sendable () -> AppSettings.Vault, today: @escaping @Sendable () -> LocalDate,
          boundary: @escaping @Sendable () -> LocalTime = { .midnight }, lookMemory: DayLookMemory,
          makeID: @escaping @Sendable () -> String = { String(UUID().uuidString.replacingOccurrences(of: "-", with: "").prefix(8)).lowercased() }) {
@@ -58,9 +59,10 @@ actor TaskFileStore: TaskStore {
         self.format = format
         self.obsidian = obsidian
         self.backups = backups
+        self.rules = rules
         self.vaultSettings = vaultSettings
-        self.downloadTimeout = rules.downloadTimeoutSeconds
-        self.downloadPoll = rules.downloadPollSeconds
+        self.downloadTimeout = rules.vault.downloadTimeoutSeconds
+        self.downloadPoll = rules.vault.downloadPollSeconds
         self.today = today
         self.boundary = boundary
         self.makeID = makeID
@@ -115,7 +117,11 @@ actor TaskFileStore: TaskStore {
             _ = try? backups.backup([url, done].filter(fileSystem.fileExists), reason: "format3")
             document.hadTodaySection = false
         }
-        var snapshot = Snapshot(document: document, habits: try await readHabits(root: root))
+        let habits = try await readHabits(root: root)
+        if normalizeEstimates(in: &document, habits: habits) {
+            _ = try? backups.backup([url, done].filter(fileSystem.fileExists), reason: "estimates")
+        }
+        var snapshot = Snapshot(document: document, habits: habits)
         TaskLineIDs.assign(to: &snapshot.document, habits: Set(snapshot.habits.keys))
         snapshot.indexNames()
         return snapshot
@@ -125,16 +131,53 @@ actor TaskFileStore: TaskStore {
         let folder = habitsFolder(root: root)
         guard fileSystem.fileExists(folder) else { return [:] }
         var habits: [String: HabitFile] = [:]
+        var migrated: [(URL, HabitFile)] = []
         for url in try fileSystem.contents(of: folder) where url.lastPathComponent.contains(".json") {
             let name = url.lastPathComponent
             // iCloud keeps a file not brought down yet as `.name.json.icloud`.
             let real = name.hasPrefix(".") ? folder.appendingPathComponent(String(name.dropFirst()).replacingOccurrences(of: ".icloud", with: "")) : url
             try await ensureDownloaded(real)
             guard let data = try fileSystem.read(real).text.data(using: .utf8),
-                  let habit = try? JSONDecoder().decode(HabitFile.self, from: data) else { continue }
+                  var habit = try? JSONDecoder().decode(HabitFile.self, from: data) else { continue }
+            let minutes = rules.estimateMinutes(habit.timeEstimate)
+            if minutes != habit.timeEstimate {
+                habit.timeEstimate = minutes
+                migrated.append((real, habit))
+            }
             habits[habit.id] = habit
         }
+        if !migrated.isEmpty {
+            _ = try? backups.backup(migrated.map(\.0), reason: "habit-estimates")
+            for (url, habit) in migrated {
+                try write(try habit.text(), to: url, named: url.lastPathComponent)
+            }
+        }
         return habits
+    }
+
+    /// Habit history records carry marks rather than estimates. Open habit lines mirror their JSON settings.
+    @discardableResult
+    private func normalizeEstimates(in document: inout TaskDocument, habits: [String: HabitFile]) -> Bool {
+        var replacedExplicitValue = false
+        func normalize(_ entries: inout [TaskEntry], in section: TaskSection) {
+            for index in entries.indices {
+                let habit = entries[index].id.flatMap { habits[$0] }
+                if section != .done || habit == nil {
+                    let previous = entries[index].estimate
+                    let minutes = rules.estimateMinutes(habit?.timeEstimate ?? previous)
+                    if let previous, previous != minutes { replacedExplicitValue = true }
+                    entries[index].estimate = minutes
+                }
+                normalize(&entries[index].children, in: section)
+            }
+        }
+        for section in document.sections.indices {
+            guard let kind = document.sections[section].kind else { continue }
+            for group in document.sections[section].groups.indices {
+                normalize(&document.sections[section].groups[group].entries, in: kind)
+            }
+        }
+        return replacedExplicitValue
     }
 
     /// iCloud may keep a file not brought down as a placeholder beside it (`.name.icloud`) or as a file without its data.
@@ -199,6 +242,7 @@ actor TaskFileStore: TaskStore {
         let before = snapshot
         var document = snapshot.document
         guard document.makeHeadingsProjects(isTaken: { before.isTaken($0) }) else { return }
+        normalizeEstimates(in: &document, habits: snapshot.habits)
         let files = [fileURL(root: root), doneURL(root: root)].filter(fileSystem.fileExists)
         _ = try? backups.backup(files, reason: "projects")
         snapshot.document = document

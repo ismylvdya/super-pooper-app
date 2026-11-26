@@ -9,7 +9,6 @@ struct TaskSettingsScreen: View {
         PageScaffold(title: L10n.string("settings.tasks.summary")) {
             ColorSettingsSection()
             PoolSettingsSection()
-            EstimateSettingsSection()
             TimelineSettingsSection()
             AppearanceSettingsSection()
             TodaySettingsSection(surfaces: [.upright])

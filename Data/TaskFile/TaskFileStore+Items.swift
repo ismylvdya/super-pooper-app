@@ -7,8 +7,12 @@ extension TaskFileStore {
             var snapshot = try await read(root: root)
             let id = task.id.value
             if var file = snapshot.habits[id] {
-                let updated = habit(of: file, snapshot: snapshot).applying(changes)
+                var updated = habit(of: file, snapshot: snapshot).applying(changes)
+                updated.timeEstimate = rules.estimateMinutes(updated.timeEstimate)
                 file.update(from: updated)
+                snapshot.document.forEachOpenLine { entry, _ in
+                    if entry.id == id { entry.estimate = file.timeEstimate }
+                }
                 for case .addProject(let name) in changes { file.parent = snapshot.id(ofName: name) }
                 for case .mark(let mark, let day) in changes { snapshot.document.setMark(mark, on: day, habit: id, name: file.name) }
                 for case .habitQuantity(let amount, let day) in changes {
@@ -32,7 +36,8 @@ extension TaskFileStore {
     /// The task on its line: in place while it stays in its section under its parent, otherwise moved with its subtasks.
     private func update(id: String, name: String, changes: [TaskEdit], in snapshot: inout Snapshot) throws {
         let was = try current(id: id, name: name, snapshot: snapshot)
-        let updated = TodayPool.settled(was.applying(changes), was: was, changes: changes, today: today(), boundary: boundary())
+        var updated = TodayPool.settled(was.applying(changes), was: was, changes: changes, today: today(), boundary: boundary())
+        updated.timeEstimate = rules.estimateMinutes(updated.timeEstimate)
         guard let place = place(of: id, in: snapshot.document) else { throw TaskStoreError.fileMissing(name) }
         let target = TaskSection.of(updated, current: place.section)
         let parent = updated.projects.first.flatMap(snapshot.id(ofName:))
@@ -88,6 +93,7 @@ extension TaskFileStore {
             var note = TodayPool.settled(draft.note, was: nil, changes: [], today: today(), boundary: boundary())
             note.name = final
             note.id = TaskID(id)
+            note.timeEstimate = rules.estimateMinutes(note.timeEstimate)
             let parent = note.projects.first.flatMap(snapshot.id(ofName:))
             let day = parent.flatMap { followedDay(of: $0, in: snapshot.document) }
             if note.isHabit {

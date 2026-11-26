@@ -21,7 +21,7 @@ struct TaskFileStoreTests {
                                     clock: { Date() }, calendar: FixedCalendar(current: TestCalendar.calendar))
         let counter = Counter()
         return TaskFileStore(location: FixedVaultLocation(url: folder), fileSystem: fileSystem, ubiquity: FakeUbiquityService(), format: format,
-                             obsidian: TestConfig.obsidian, backups: backups, rules: TestConfig.rules.vault,
+                             obsidian: TestConfig.obsidian, backups: backups, rules: TestConfig.rules,
                              vaultSettings: { TestConfig.defaults.vault }, today: { day },
                              lookMemory: JSONDayLookMemory(store: JSONFileStore(directory: folder.appendingPathComponent("Memory"))),
                              makeID: { counter.next() })
@@ -42,6 +42,28 @@ struct TaskFileStoreTests {
 
     private func draft(_ changes: [TaskEdit] = []) -> NoteDraft { NoteDraft(status: .thisWeek, changes: changes) }
 
+    @Test func everyNoteKindStoresAnEstimateFromTheFourPresets() async throws {
+        let store = store()
+        try write("## Next actions\n- [ ] Old ⏳ 25\n")
+        #expect(try await store.load().tasks.first?.timeEstimate == 15)
+        #expect(try text().contains("- [ ] Old ⏳ 15"))
+        let task = try await store.create(draft(), named: "Task")
+        let habit = try await store.create(NoteDraft(status: .habit), named: "Habit")
+        let repeatable = try await store.create(NoteDraft(status: .habit, changes: [.repeatable(true)]), named: "Repeat")
+        #expect([task, habit, repeatable].allSatisfy { $0.timeEstimate == 15 })
+        #expect(try text().contains("- [ ] Task ⏳ 15"))
+
+        let habitsFolder = file.deletingLastPathComponent().appendingPathComponent(format.habitsFolder)
+        for item in [habit, repeatable] {
+            let url = habitsFolder.appendingPathComponent(item.id.value + ".json")
+            let saved = try JSONDecoder().decode(HabitFile.self, from: Data(contentsOf: url))
+            #expect(saved.timeEstimate == 15)
+        }
+        let edited = try await store.apply([.timeEstimate(60)], to: habit).task
+        #expect(edited.timeEstimate == 60)
+        #expect(try await store.apply([.timeEstimate(25)], to: task).task.timeEstimate == 15)
+    }
+
     @Test func taskPlacementsRoundTripThroughMarkdown() async throws {
         let repository = store()
         let context = TestCalendar.context()
@@ -51,7 +73,7 @@ struct TaskFileStoreTests {
         let edits = TaskPlacementMove.changes(for: task, to: .pool(today, sectionTag: "evening"),
                                               fromScheduled: false, context: context)
         task = try await repository.apply(edits, to: task).task
-        #expect(try text().contains("Placement 🏊 in_today_pool 🏊 section_evening"))
+        #expect(try text().contains("Placement ⏳ 15 🏊 in_today_pool 🏊 section_evening"))
         #expect(task.status == .thisWeek && task.isInTodayPool && task.poolSection == "evening")
 
         task = try await repository.apply(TaskPlacementMove.changes(for: task, to: .scheduled(moment),
@@ -248,7 +270,7 @@ struct TaskFileStoreTests {
         let store = store()
         let habit = try await store.create(NoteDraft(status: .habit), named: "Run")
         await store.mirror(DayMirror(sections: [.init(title: "Morning", names: ["Run"])], timed: [:]))
-        #expect(try text().contains("## Next actions\n- [ ] Run 📅 \(today.isoString) 🆔 \(habit.id.value)"))
+        #expect(try text().contains("## Next actions\n- [ ] Run 📅 \(today.isoString) ⏳ 15 🆔 \(habit.id.value)"))
         try write(try text().replacingOccurrences(of: "- [ ] Run", with: "- [x] Run"))
         let loaded = try await store.load().tasks
         #expect(loaded.first?.marks[today] == .done)
@@ -316,8 +338,8 @@ struct TaskFileStoreTests {
         let third = try await store.create(draft(), named: "Haircut")
         #expect(third.name == "Haircut")
         let written = try text()
-        #expect(written.contains("- [x] Haircut ✅ \(today.isoString)\n"))
-        #expect(written.contains("- [ ] Haircut\n"), "a plain task keeps no id in the file: \(third.name)")
+        #expect(written.contains("- [x] Haircut ⏳ 15 ✅ \(today.isoString)\n"))
+        #expect(written.contains("- [ ] Haircut ⏳ 15\n"), "a plain task keeps no id in the file: \(third.name)")
         #expect(try await store.load().tasks.map(\.name) == ["Haircut"])
     }
 
@@ -330,14 +352,14 @@ struct TaskFileStoreTests {
         #expect(Set(tasks.map(\.name)) == ["Idea", "Milk", "Later"])
         let written = try text()
         #expect(!written.contains("Inbox") && !written.contains("## Now") && !written.contains("## Today") && !written.contains("➕"))
-        #expect(written.contains("## Next actions\n- [ ] Later 🏊 in_today_pool\n- [ ] Idea 🏊 in_today_pool\n- [ ] Milk 🏊 in_today_pool\n"))
+        #expect(written.contains("## Next actions\n- [ ] Later ⏳ 15 🏊 in_today_pool\n- [ ] Idea ⏳ 15 🏊 in_today_pool\n- [ ] Milk ⏳ 15 🏊 in_today_pool\n"))
     }
 
     @Test func theOlderHighPriorityMarkTurnsIntoTheWarningSign() async throws {
         try write("## Soon\n- [ ] Call 🔥 🆔 c1\n")
         let task = try #require(try await store().load().tasks.first)
         #expect(task.isHighPriority)
-        #expect(try text().contains("- [ ] Call ⚠️ 🏊 in_today_pool\n"))
+        #expect(try text().contains("- [ ] Call ⏳ 15 ⚠️ 🏊 in_today_pool\n"))
     }
 
     @Test func twoFiledTasksOfOneNameAreToldApartAndOldIDsLeave() async throws {
@@ -345,7 +367,7 @@ struct TaskFileStoreTests {
         try write("## Next actions\n- [ ] Parent 🆔 p1\n## Someday\n- [ ] Child 🔼 p1 🆔 c1\n")
         let tasks = try await store.load().tasks
         #expect(tasks.first { $0.name == "Child" }?.projects == ["Parent"], "the parent is found by its old id")
-        #expect(try text().contains("- [ ] Child 🔼 Parent\n"))
+        #expect(try text().contains("- [ ] Child ⏳ 15 🔼 Parent\n"))
         let again = try await store.load().tasks
         #expect(again.first { $0.name == "Child" }?.projects == ["Parent"], "and by its name from then on")
         let first = try await store.create(draft(), named: "Haircut")
@@ -367,7 +389,7 @@ struct TaskFileStoreTests {
         let items = try #require(URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems)
         #expect(url.host() == "superpooper-line")
         let line = try #require(items.first { $0.name == "line" }?.value.flatMap(Int.init))
-        #expect(before.components(separatedBy: "\n")[line] == "- [ ] Two")
+        #expect(before.components(separatedBy: "\n")[line] == "- [ ] Two ⏳ 15")
         #expect(items.first { $0.name == "name" }?.value == "Two")
         #expect(try text() == before)
     }
@@ -433,7 +455,7 @@ struct TaskFileStoreTests {
         _ = try await store.load()
         _ = try await store.create(draft(), named: "New")
         let lines = try text().components(separatedBy: "\n")
-        #expect(lines.contains("- [ ] Old 🏊 in_today_pool") && lines.contains("- [ ] New"))
+        #expect(lines.contains("- [ ] Old ⏳ 15 🏊 in_today_pool") && lines.contains("- [ ] New ⏳ 15"))
     }
 
     /// An archived line stays in the archive, whatever date and time it has.
@@ -442,7 +464,7 @@ struct TaskFileStoreTests {
         try write("## Next actions\n## Archive\n\(line)\n")
         _ = try await store().load()
         let lines = try text().components(separatedBy: "\n")
-        let written = try #require(lines.firstIndex(of: line.replacingOccurrences(of: "⏰", with: "🕐")))
+        let written = try #require(lines.firstIndex(of: line.replacingOccurrences(of: "⏰", with: "🕐") + " ⏳ 15"))
         #expect(written > lines.firstIndex(of: "## Archive")!)
     }
 
@@ -453,7 +475,7 @@ struct TaskFileStoreTests {
         let tasks = try String(contentsOf: file, encoding: .utf8)
         let done = try String(contentsOf: file.deletingLastPathComponent().appendingPathComponent(format.doneFile), encoding: .utf8)
         #expect(!tasks.contains("Old") && !tasks.contains("## Done"))
-        #expect(done.contains("## Done\n- [x] Old ✅ 2026-01-01"))
+        #expect(done.contains("## Done\n- [x] Old ⏳ 15 ✅ 2026-01-01"))
     }
 
     /// A new day takes off every pool mark and puts it on what is due: what is undated in Next actions, and what is dated
@@ -468,9 +490,9 @@ struct TaskFileStoreTests {
         let pooled = Set(tasks.filter(\.isInTodayPool).map(\.name))
         #expect(pooled == ["Idle", "Early", "Past"])
         let lines = try text().components(separatedBy: "\n")
-        #expect(lines.contains("- [ ] Idle 🏊 in_today_pool") && lines.contains("- [ ] Early 🏊 in_today_pool 🏊 section_morning"))
-        #expect(lines.contains("- [ ] Later 📅 \(later)") && lines.contains("- [ ] Far"))
-        #expect(lines.contains("- [ ] Past 📅 \(past) 🕰️ 🏊 in_today_pool"))
+        #expect(lines.contains("- [ ] Idle ⏳ 15 🏊 in_today_pool") && lines.contains("- [ ] Early ⏳ 15 🏊 in_today_pool 🏊 section_morning"))
+        #expect(lines.contains("- [ ] Later 📅 \(later) ⏳ 15") && lines.contains("- [ ] Far ⏳ 15"))
+        #expect(lines.contains("- [ ] Past 📅 \(past) ⏳ 15 🕰️ 🏊 in_today_pool"))
         #expect(lines.first == "%% format 2 %%" && lines.contains("%% day \(today.isoString) %%"))
     }
 
@@ -483,7 +505,7 @@ struct TaskFileStoreTests {
         #expect(tasks.filter(\.isInTodayPool).allSatisfy { $0.status == .thisWeek })
         #expect(Set(tasks.filter(\.isInTodayPool).map(\.name)) == ["Visa", "Paint"])
         let file = try text()
-        #expect(file.contains("## Next actions\n- [ ] Visa 📅 \(today.isoString) 🔼 Trip 🏊 in_today_pool\n- [ ] Paint 📅 \(today.isoString) 🏊 in_today_pool\n"))
+        #expect(file.contains("## Next actions\n- [ ] Visa 📅 \(today.isoString) ⏳ 15 🔼 Trip 🏊 in_today_pool\n- [ ] Paint 📅 \(today.isoString) ⏳ 15 🏊 in_today_pool\n"))
     }
 
     /// Kept out of tomorrow in yesterday's review: the day's turn leaves it out of the pool and takes the mark away.
@@ -491,7 +513,7 @@ struct TaskFileStoreTests {
         try write("%% day \(today.adding(days: -1).isoString) %%\n\n## Next actions\n- [ ] Idle 🏊 not_tomorrow_pool\n- [ ] Other\n")
         let tasks = try await store().load().tasks
         #expect(tasks.first { $0.name == "Idle" }?.isInTodayPool == false && tasks.first { $0.name == "Other" }?.isInTodayPool == true)
-        #expect(try text().contains("- [ ] Idle\n- [ ] Other 🏊 in_today_pool\n"))
+        #expect(try text().contains("- [ ] Idle ⏳ 15\n- [ ] Other ⏳ 15 🏊 in_today_pool\n"))
     }
 
     /// A task added during the day waits for the next morning.
@@ -510,7 +532,7 @@ struct TaskFileStoreTests {
         _ = try await store.apply([.inTodayPool(false)], to: task)
         let reloaded = try #require(try await store.load().tasks.first)
         #expect(reloaded.due == TaskDue(day: today) && !reloaded.isInTodayPool && reloaded.status == .halfYear)
-        #expect(try text().contains("## Soon\n- [ ] Call 📅 \(today.isoString)\n"))
+        #expect(try text().contains("## Soon\n- [ ] Call 📅 \(today.isoString) ⏳ 15\n"))
     }
 
     /// A date set to today or earlier brings a task into the pool; a later one takes it out.
@@ -537,8 +559,8 @@ struct TaskFileStoreTests {
         #expect(tasks.allSatisfy { !$0.showsAsProject })
         let file = try text()
         #expect(!file.contains("## Today") && !file.contains("###"))
-        #expect(file.contains("## Next actions\n- [ ] Waiting\n- [ ] Timed 📅 \(today.isoString) 🕐 10:00 🏊 in_today_pool\n- [ ] Stretch 🏊 in_today_pool 🏊 section_morning\n"))
-        #expect(file.contains("- [ ] Cook 📅 \(today.adding(days: 2).isoString) 🏊 in_today_pool 🏊 section_after_work\n"))
+        #expect(file.contains("## Next actions\n- [ ] Waiting ⏳ 15\n- [ ] Timed 📅 \(today.isoString) 🕐 10:00 ⏳ 15 🏊 in_today_pool\n- [ ] Stretch ⏳ 15 🏊 in_today_pool 🏊 section_morning\n"))
+        #expect(file.contains("- [ ] Cook 📅 \(today.adding(days: 2).isoString) ⏳ 15 🏊 in_today_pool 🏊 section_after_work\n"))
     }
 
     /// The pool's older hashtags are read as before and written as the swimmer's marks with the first read, the file kept
@@ -551,7 +573,7 @@ struct TaskFileStoreTests {
         #expect(tasks.first { $0.name == "Mail" }?.isNotTomorrow == true)
         let file = try text()
         #expect(!file.contains("#in_today_pool") && !file.contains("#section_") && !file.contains("#not_tomorrow"))
-        #expect(file.contains("- [ ] Stretch 🏊 in_today_pool 🏊 section_morning\n") && file.contains("- [ ] Mail 🏊 not_tomorrow_pool"))
+        #expect(file.contains("- [ ] Stretch ⏳ 15 🏊 in_today_pool 🏊 section_morning\n") && file.contains("- [ ] Mail ⏳ 15 🏊 not_tomorrow_pool"))
         let backups = try FileManager.default.contentsOfDirectory(atPath: folder.appendingPathComponent("Backups").path)
         #expect(backups.contains { $0.contains("poolmarks") })
     }
@@ -582,7 +604,7 @@ struct TaskFileStoreTests {
         let (store, tasks) = try await parentAndStore("## Next actions\n- [ ] Pack 📅 \(today.isoString) 🏊 in_today_pool\n## Soon\n")
         let child = try await store.create(.subtask(of: try #require(tasks.first)), named: "Earrings")
         #expect(child.due == TaskDue(day: today) && child.isInTodayPool && child.projects == ["Pack"])
-        #expect(try text().replacingOccurrences(of: "\n\n", with: "\n").contains("- [ ] Pack 📅 \(today.isoString) 🏊 in_today_pool\n    - [ ] Earrings 🏊 in_today_pool\n## Soon"))
+        #expect(try text().replacingOccurrences(of: "\n\n", with: "\n").contains("- [ ] Pack 📅 \(today.isoString) ⏳ 15 🏊 in_today_pool\n    - [ ] Earrings ⏳ 15 🏊 in_today_pool\n## Soon"))
     }
 
     /// In a later day's or another list's parent the same: the subtask does not fall out to Next actions.
@@ -592,7 +614,7 @@ struct TaskFileStoreTests {
         let trip = try await store.create(.subtask(of: try #require(tasks.first { $0.name == "Trip" })), named: "Tickets")
         let far = try await store.create(.subtask(of: try #require(tasks.first { $0.name == "Far" })), named: "Plan")
         #expect(trip.due == TaskDue(day: later) && far.status == .halfYear && far.due == nil)
-        #expect(try text().replacingOccurrences(of: "\n\n", with: "\n").contains("- [ ] Trip 📅 \(later.isoString)\n    - [ ] Tickets\n## Soon\n- [ ] Far\n    - [ ] Plan\n"))
+        #expect(try text().replacingOccurrences(of: "\n\n", with: "\n").contains("- [ ] Trip 📅 \(later.isoString) ⏳ 15\n    - [ ] Tickets ⏳ 15\n## Soon\n- [ ] Far ⏳ 15\n    - [ ] Plan ⏳ 15\n"))
     }
 
     /// The parent moves, and whatever has no date of its own moves with it and is told so; a time of its own stays.
@@ -609,19 +631,19 @@ struct TaskFileStoreTests {
         let (store, tasks) = try await parentAndStore("## Next actions\n- [ ] Pack 📅 \(today.isoString) 🏊 in_today_pool\n    - [ ] Earrings 🏊 in_today_pool\n")
         let out = try await store.apply([.inTodayPool(false)], to: try #require(tasks.first { $0.name == "Earrings" }))
         #expect(!out.task.isInTodayPool && out.task.projects == ["Pack"])
-        #expect(try text().contains("- [ ] Pack 📅 \(today.isoString) 🏊 in_today_pool\n    - [ ] Earrings\n"))
+        #expect(try text().contains("- [ ] Pack 📅 \(today.isoString) ⏳ 15 🏊 in_today_pool\n    - [ ] Earrings ⏳ 15\n"))
     }
 
     /// An edit of a following subtask does not write its parent's day into it; the next morning takes a stray line back.
     @Test func aFollowingSubtaskKeepsNoDateOfItsOwn() async throws {
         let (store, tasks) = try await parentAndStore("## Next actions\n- [ ] Pack 📅 \(today.isoString) 🏊 in_today_pool\n    - [ ] Earrings 🏊 in_today_pool\n")
         _ = try await store.apply([.highPriority(true)], to: try #require(tasks.first { $0.name == "Earrings" }))
-        #expect(try text().contains("    - [ ] Earrings ⚠️ 🏊 in_today_pool\n"))
+        #expect(try text().contains("    - [ ] Earrings ⏳ 15 ⚠️ 🏊 in_today_pool\n"))
         let yesterday = today.adding(days: -1).isoString
         try write("%% day \(yesterday) %%\n\n## Next actions\n- [ ] Pack 📅 \(yesterday)\n- [ ] Earrings 🔼 Pack\n")
         let morning = try await self.store().load().tasks
         #expect(morning.first { $0.name == "Earrings" }?.due == TaskDue(day: LocalDate(yesterday)))
-        #expect(try text().contains("- [ ] Pack 📅 \(yesterday) 🕰️ 🏊 in_today_pool\n    - [ ] Earrings 🏊 in_today_pool\n"))
+        #expect(try text().contains("- [ ] Pack 📅 \(yesterday) ⏳ 15 🕰️ 🏊 in_today_pool\n    - [ ] Earrings ⏳ 15 🏊 in_today_pool\n"))
     }
 
     /// Parents that name each other stay as they are: no line is lost.
@@ -655,9 +677,9 @@ struct TaskFileStoreTests {
         #expect(tasks.first { $0.name == "Tune" }?.alarms == [TimeAlarm(sound: "chime")])
         let written = try text()
         #expect(written.contains("%% format 2 %%"))
-        #expect(written.contains("- [ ] Plain 📅 \(day) 🕐 10:00\n"))
-        #expect(written.contains("- [ ] Rings 📅 \(day) ⏰ 11:00\n"))
-        #expect(written.contains("- [ ] Tune 📅 \(day) ⏰ 12:00 🎵 chime\n"))
+        #expect(written.contains("- [ ] Plain 📅 \(day) 🕐 10:00 ⏳ 15\n"))
+        #expect(written.contains("- [ ] Rings 📅 \(day) ⏰ 11:00 ⏳ 15\n"))
+        #expect(written.contains("- [ ] Tune 📅 \(day) ⏰ 12:00 ⏳ 15 🎵 chime\n"))
     }
 
     /// The clock for a time, the alarm clock for one that rings, back to the clock when the alarm goes.
@@ -667,10 +689,10 @@ struct TaskFileStoreTests {
         let task = try await store.create(draft([.due(TaskDue(day: today, time: LocalTime("15:00")))]), named: "Call")
         #expect(try text().contains("- [ ] Call 📅 \(day) 🕐 15:00"))
         let ringing = try await store.apply([.alarms([TimeAlarm()])], to: task).task
-        #expect(try text().contains("- [ ] Call 📅 \(day) ⏰ 15:00\n"))
+        #expect(try text().contains("- [ ] Call 📅 \(day) ⏰ 15:00 ⏳ 15\n"))
         #expect(try await store.load().tasks.first?.alarms == [TimeAlarm()], "and it is read back so")
         _ = try await store.apply([.alarms([])], to: ringing)
-        #expect(try text().contains("- [ ] Call 📅 \(day) 🕐 15:00\n"))
+        #expect(try text().contains("- [ ] Call 📅 \(day) 🕐 15:00 ⏳ 15\n"))
     }
 
     @Test func anOldOpenMarkIsNoPartOfTheNameAndGoesWithTheNextWrite() async throws {
@@ -747,7 +769,7 @@ struct TaskFileStoreTests {
         let plain = try #require(tasks.first { $0.name == "Plain" })
         #expect(call.isOverdue && call.due == TaskDue(day: yesterday) && call.isInTodayPool && call.alarms.isEmpty)
         #expect(plain.isOverdue && plain.due == TaskDue(day: yesterday) && plain.isInTodayPool)
-        #expect(try text().contains("- [ ] Call 📅 \(yesterday.isoString) 🕰️ 🏊 in_today_pool\n"))
+        #expect(try text().contains("- [ ] Call 📅 \(yesterday.isoString) ⏳ 15 🕰️ 🏊 in_today_pool\n"))
     }
 
     @Test func aMissedHabitWithoutADayNowIsCarriedOverdueWithNoTimes() async throws {
@@ -758,7 +780,7 @@ struct TaskFileStoreTests {
         try write("## Today\n- [ ] Gym 📅 \(yesterday.isoString) ⏰ 08:00 🔁 every-x 🆔 \(habit.id.value)\n")
         let loaded = try #require(try await store.load().tasks.first)
         #expect(loaded.isOverdue && loaded.habitTimes.isEmpty)
-        #expect(try line(of: "Gym")?.contains("📅 \(today.isoString) 🔁 every-x 🕰️") == true)
+        #expect(try line(of: "Gym")?.contains("📅 \(today.isoString) ⏳ 15 🔁 every-x 🕰️") == true)
         #expect(!loaded.reminderTimes.isEmpty, "its settings stay")
     }
 

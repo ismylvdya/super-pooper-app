@@ -22,7 +22,7 @@ struct StartedStepTests {
         let counter = Counter()
         let day = today
         return TaskFileStore(location: FixedVaultLocation(url: folder), fileSystem: fileSystem, ubiquity: FakeUbiquityService(), format: format,
-                             obsidian: TestConfig.obsidian, backups: backups, rules: TestConfig.rules.vault,
+                             obsidian: TestConfig.obsidian, backups: backups, rules: TestConfig.rules,
                              vaultSettings: { TestConfig.defaults.vault }, today: { day },
                              lookMemory: JSONDayLookMemory(store: JSONFileStore(directory: folder.appendingPathComponent("Memory"))),
                              makeID: { counter.next() })

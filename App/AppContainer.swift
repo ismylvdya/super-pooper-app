@@ -59,7 +59,7 @@ final class AppContainer {
                                     fileSystem: fileSystem, clock: { clock.now }, calendar: calendar)
         let boundary = { @Sendable in settingsStore.load().day }
         let tasks = TaskFileStore(location: vaultLocation, fileSystem: fileSystem, ubiquity: ICloudUbiquityService(),
-                                  format: format, obsidian: obsidian, backups: backups, rules: config.rules.vault,
+                                  format: format, obsidian: obsidian, backups: backups, rules: config.rules,
                                   vaultSettings: { settingsStore.load().vault }, today: {
             let day = boundary()
             return DayContext(now: clock.now, calendar: calendar.current, boundary: day.boundary, energyHour: day.energyHour)

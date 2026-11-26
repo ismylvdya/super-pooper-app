@@ -19,7 +19,7 @@ struct HabitSubtaskStoreTests {
         let backups = BackupService(directory: folder.appendingPathComponent("Backups"), keepCount: 2, fileSystem: fileSystem,
                                     clock: { Date() }, calendar: FixedCalendar(current: TestCalendar.calendar))
         return TaskFileStore(location: FixedVaultLocation(url: folder), fileSystem: fileSystem, ubiquity: FakeUbiquityService(), format: format,
-                             obsidian: TestConfig.obsidian, backups: backups, rules: TestConfig.rules.vault,
+                             obsidian: TestConfig.obsidian, backups: backups, rules: TestConfig.rules,
                              vaultSettings: { TestConfig.defaults.vault }, today: { [today] in today },
                              lookMemory: JSONDayLookMemory(store: JSONFileStore(directory: folder.appendingPathComponent("Memory"))))
     }
@@ -43,11 +43,11 @@ struct HabitSubtaskStoreTests {
         let shoes = try await store.create(.subtask(of: run), named: "Shoes")
         #expect(!shoes.isHabit && shoes.projects == ["Run"] && shoes.due == TaskDue(day: today))
         _ = await store.mirror(DayMirror(sections: [.init(title: "Day", names: ["Run", "Shoes"])], timed: [:]))
-        #expect(try text().contains("- [ ] Run 📅 \(today.isoString) 🔁 every-day 🆔 \(run.id.value)\n    - [ ] Shoes\n"))
+        #expect(try text().contains("- [ ] Run 📅 \(today.isoString) ⏳ 15 🔁 every-day 🆔 \(run.id.value)\n    - [ ] Shoes ⏳ 15\n"))
         _ = try await store.apply([.mark(.done, on: today)], to: run)
         _ = await store.mirror(DayMirror(sections: [], timed: [:]))
         let tomorrow = today.adding(days: 1).isoString
-        #expect(try text().contains("- [ ] Run 📅 \(tomorrow) 🔁 every-day 🆔 \(run.id.value)\n    - [ ] Shoes\n"))
+        #expect(try text().contains("- [ ] Run 📅 \(tomorrow) ⏳ 15 🔁 every-day 🆔 \(run.id.value)\n    - [ ] Shoes ⏳ 15\n"))
         #expect(try await store.load().tasks.first { $0.name == "Shoes" }?.due == TaskDue(day: today.adding(days: 1)))
     }
 
@@ -57,18 +57,18 @@ struct HabitSubtaskStoreTests {
         let store = store()
         let run = try await habit(store, named: "Run")
         var old = HabitFile(id: "sub1", item: TaskItem(id: TaskID("sub1"), name: "Stretch", status: .habit), parent: run.id.value, note: "slowly")
-        old.timeEstimate = 10
+        old.timeEstimate = 60
         let habitsFolder = folder.appendingPathComponent(format.folder).appendingPathComponent(format.habitsFolder)
         try old.text().write(to: habitsFolder.appendingPathComponent("sub1.json"), atomically: true, encoding: .utf8)
         let tasks = try await store.load().tasks
         let stretch = try #require(tasks.first { $0.name == "Stretch" })
-        #expect(!stretch.isHabit && stretch.projects == ["Run"] && stretch.timeEstimate == 10)
+        #expect(!stretch.isHabit && stretch.projects == ["Run"] && stretch.timeEstimate == 60)
         #expect(try await store.text(of: stretch) == "slowly")
         #expect(!FileManager.default.fileExists(atPath: habitsFolder.appendingPathComponent("sub1.json").path))
         await store.accept(try #require(await store.currentLook()))
         _ = await store.mirror(DayMirror(sections: [.init(title: "Day", names: ["Run"])], timed: [:]))
         let written = try text()
-        #expect(written.contains("🆔 \(run.id.value)\n    - [ ] Stretch ⏳ 10 🏊 in_today_pool\n        slowly\n"), Comment(rawValue: written))
+        #expect(written.contains("🆔 \(run.id.value)\n    - [ ] Stretch ⏳ 60 🏊 in_today_pool\n        slowly\n"), Comment(rawValue: written))
     }
 
     /// Deleted with its habit, a subtask goes to the trash too, not lost with the habit's line.
@@ -80,7 +80,7 @@ struct HabitSubtaskStoreTests {
         _ = await store.mirror(DayMirror(sections: [.init(title: "Day", names: ["Run"])], timed: [:]))
         let shoes = try await store.create(.subtask(of: run), named: "Shoes")
         _ = try await store.delete(run)
-        #expect(try text().contains("- [ ] Shoes 🔼"))
+        #expect(try text().contains("- [ ] Shoes ⏳ 15 🔼"))
         _ = try await store.delete(shoes)
         #expect(Set(try await store.notes().map(\.name)) == ["Run", "Shoes"])
     }

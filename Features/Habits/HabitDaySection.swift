@@ -28,14 +28,14 @@ struct HabitDaySection: View {
                     .labelsHidden()
                 }
                 FeelPicker(editor: editor)
-                PlateRow(icon: .estimate, title: "taskPage.estimate", info: "info.taskPage.estimate") {
-                    Picker("taskPage.estimate", selection: Binding(get: { rules.day.estimate(of: task) }, set: { editor.apply([.timeEstimate($0)]) })) {
-                        ForEach(rules.estimateOptions(including: rules.day.estimate(of: task)), id: \.minutes) { Text(LocalizedStringKey($0.label)).tag($0.minutes) }
-                    }
-                    .labelsHidden()
-                }
             }
             .disabled(!task.habit.showInToday)
+            PlateRow(icon: .estimate, title: "taskPage.estimate", info: "info.taskPage.estimate") {
+                Picker("taskPage.estimate", selection: Binding(get: { rules.estimateMinutes(task.timeEstimate) }, set: { editor.apply([.timeEstimate($0)]) })) {
+                    ForEach(rules.timeEstimates, id: \.minutes) { Text(LocalizedStringKey($0.label)).tag($0.minutes) }
+                }
+                .labelsHidden()
+            }
         }
     }
 }

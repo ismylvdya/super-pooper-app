@@ -22,7 +22,7 @@ struct ListsToProjectsTests {
         let counter = Counter()
         let day = today
         return TaskFileStore(location: FixedVaultLocation(url: folder), fileSystem: fileSystem, ubiquity: FakeUbiquityService(), format: format,
-                             obsidian: TestConfig.obsidian, backups: backups, rules: TestConfig.rules.vault,
+                             obsidian: TestConfig.obsidian, backups: backups, rules: TestConfig.rules,
                              vaultSettings: { TestConfig.defaults.vault }, today: { day },
                              lookMemory: JSONDayLookMemory(store: JSONFileStore(directory: folder.appendingPathComponent("Memory"))),
                              makeID: { counter.next() })
@@ -49,7 +49,7 @@ struct ListsToProjectsTests {
         #expect(tasks.first { $0.name == "Loose" }?.status == .someday)
         let text = try String(contentsOf: file, encoding: .utf8)
         #expect(!text.contains("## Lists") && !text.contains("### "))
-        #expect(text.contains("- [ ] Trip to Masha 🗂️\n    - [ ] Book a train"))
+        #expect(text.contains("- [ ] Trip to Masha ⏳ 15 🗂️\n    - [ ] Book a train"))
         let backups = try FileManager.default.contentsOfDirectory(atPath: folder.appendingPathComponent("Backups").path)
         #expect(!backups.isEmpty)
         #expect(ProjectList.projects(in: tasks).map(\.name) == ["Trip to Masha"])

@@ -1634,17 +1634,6 @@
         }
       }
     },
-    "estimate.default": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Default (%@)"
-          }
-        }
-      }
-    },
     "estimate.dohuya": {
       "extractionState": "manual",
       "localizations": {
@@ -6187,72 +6176,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Neutral"
-          }
-        }
-      }
-    },
-    "settings.estimates": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Time estimates"
-          }
-        }
-      }
-    },
-    "settings.estimates.shortest": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Shortest"
-          }
-        }
-      }
-    },
-    "settings.estimates.normal": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Normal"
-          }
-        }
-      }
-    },
-    "settings.estimates.long": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Long"
-          }
-        }
-      }
-    },
-    "settings.estimates.minutes": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Minutes"
-          }
-        }
-      }
-    },
-    "settings.estimates.hint": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "How many minutes each one takes."
           }
         }
       }

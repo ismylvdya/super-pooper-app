@@ -72,19 +72,15 @@ struct ReviewRow {
     }
 
     private func estimate(_ task: TaskItem) -> ListActionChip {
-        let minutes = task.timeEstimate.flatMap { $0 > 0 ? $0 : nil }
-        let fallback = L10n.format("estimate.default", EstimateText.label(nil, rules: rules))
-        let reset = ListChoice(id: "default", title: fallback, isOn: minutes == nil) {
-            Task { await model.update(task.name, [.timeEstimate(nil)]) }
-        }
-        let choices = rules.estimateOptions(including: rules.day.estimate(of: task)).map { option in
+        let minutes = rules.estimateMinutes(task.timeEstimate)
+        let choices = rules.timeEstimates.map { option in
             ListChoice(id: "\(option.minutes)", title: L10n.string(option.label), isOn: option.minutes == minutes) {
                 Task { await model.update(task.name, [.timeEstimate(option.minutes)]) }
             }
         }
-        return planningChip("estimate", icon: .time, label: "taskPage.estimate",
-                            value: minutes.map { EstimateText.label($0, rules: rules) } ?? fallback,
-                            isOn: minutes != nil, choices: [reset] + choices)
+        return planningChip("estimate", icon: .estimate, label: "taskPage.estimate",
+                            value: EstimateText.label(minutes, rules: rules),
+                            isOn: minutes != rules.day.defaultEstimateMinutes, choices: choices)
     }
 
     private func planningChip(_ id: String, icon: Icon, label: String, value: String?, isOn: Bool, choices: [ListChoice]) -> ListActionChip {

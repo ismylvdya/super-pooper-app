@@ -26,7 +26,6 @@ struct AppSettings: Codable, Equatable, Sendable {
     struct Pool: Codable, Equatable, Sendable {
         var visibleCount: Int
         /// The minutes of the time estimates: shortest, normal, long, dohuya.
-        var estimateMinutes: [Int]
         /// The user's order of the pool rules (raw names); empty = `sort.json`.
         var criteria: [String]
         /// How solid the outline of a task picked in Select mode is.
