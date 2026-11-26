@@ -276,6 +276,17 @@
         }
       }
     },
+    "action.setAmount": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set amount…"
+          }
+        }
+      }
+    },
     "action.skipToday": {
       "extractionState": "manual",
       "localizations": {
@@ -2184,13 +2195,24 @@
         }
       }
     },
+    "habitPage.quantity.amount": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Amount"
+          }
+        }
+      }
+    },
     "habitPage.quantity.maximum": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Maximum amount"
+            "value": "Amount range"
           }
         }
       }
@@ -2223,7 +2245,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Average per entry"
+            "value": "Daily average"
           }
         }
       }
@@ -2246,6 +2268,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Days recorded"
+          }
+        }
+      }
+    },
+    "habitPage.quantity.attemptedDays": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Attempted only"
+          }
+        }
+      }
+    },
+    "common.save": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save"
           }
         }
       }

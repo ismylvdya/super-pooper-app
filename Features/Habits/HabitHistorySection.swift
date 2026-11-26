@@ -1,11 +1,12 @@
 import SwiftUI
 
 /// Weeks of the habit back to its first marked day; the newest week is at the bottom and visible first.
-/// Tap a day to cycle its mark, long press to pick one. Pulling down at the top adds older weeks (until the page is
+/// Tap a day to cycle its mark or open the quantity picker, and long press for the day's actions. Pulling down at the top adds older weeks (until the page is
 /// left): the weeks seen stay where they were and the grid then scrolls up quickly to the oldest added week (.28232). At the top the older weeks dissolve completely under the weekday header; the bottom
 /// fades in only once the newest week is scrolled down from where it opened.
 struct HabitHistorySection: View {
     @Environment(AppModel.self) private var model
+    @Environment(Router.self) private var router
     @Environment(\.tokens) private var tokens
     @Environment(\.rules) private var rules
     let habit: TaskItem
@@ -42,11 +43,14 @@ struct HabitHistorySection: View {
         VStack(spacing: 0) {
                 WeekdayHeader(metrics: metrics).padding(.top, tokens.space(.plateInner))
                 ScrollView {
-                    HabitGridView(grid: grid, color: tokens.habitColor(habit), metrics: metrics,
-                                  onTap: habit.habit.quantityTracking == nil ? { day in
-                        Haptics.play(.mark)
-                        Task { await model.cycleHabit(habit.name, on: day) }
-                    } : nil) { day in
+                    HabitGridView(grid: grid, color: tokens.habitColor(habit), metrics: metrics, onTap: { day in
+                        if habit.habit.quantityTracking != nil {
+                            router.habitQuantityRequest = HabitQuantityRequest(habitName: habit.name, day: day)
+                        } else {
+                            Haptics.play(.mark)
+                            Task { await model.cycleHabit(habit.name, on: day) }
+                        }
+                    }) { day in
                         HabitDayMenu(habit: habit, day: day, showsDate: true)
                     }
                     .frame(maxWidth: .infinity)

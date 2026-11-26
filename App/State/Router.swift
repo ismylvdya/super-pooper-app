@@ -80,6 +80,7 @@ final class Router {
     var tab: AppTab = .today
     var paths: [AppTab: [Route]] = [:]
     var isProblemsPresented = false
+    var habitQuantityRequest: HabitQuantityRequest?
     /// A sheet that shows the banner on its own bar is up: the tabs' banner, under the sheet, steps aside.
     var presentsBannerSheet: Bool { isProblemsPresented }
     /// Grows on every tap on the Tasks tab: Today goes back to today's pool.

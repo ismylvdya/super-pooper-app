@@ -168,20 +168,25 @@ struct TaskFileStoreTests {
         #expect(try await store.filedTasks().isEmpty, "a habit's lines are not done tasks")
     }
 
-    @Test func aRecordedZeroRoundTripsIndependentlyOfCompletionMarks() async throws {
+    @Test func quantityAndPartialReplaceEachOtherWithoutChangingCompletionMarks() async throws {
         let store = store()
         let habit = try await store.create(NoteDraft(status: .habit), named: "Run")
         let marked = try await store.apply([.mark(.partial, on: today)], to: habit).task
         let tracking = HabitQuantity(maximum: 10, step: 3)
-        let recording = try await store.apply([.habitQuantityTracking(tracking), .habitQuantity(0, on: today)], to: marked).task
+        let recording = try await store.apply([.habitQuantityTracking(tracking), .habitQuantity(.amount(4), on: today)], to: marked).task
         let loaded = try await store.load().tasks.first
-        #expect(try text().contains("Run 🔢 0 ✅ \(today)"))
-        #expect(loaded?.habit.quantityTracking == tracking && loaded?.quantity(on: today) == 0)
+        #expect(try text().contains("Run 🔢 4 ✅ \(today)"))
+        #expect(loaded?.habit.quantityTracking == tracking && loaded?.quantityEntry(on: today) == .amount(4))
         #expect(loaded?.isDone(on: today) == true && loaded?.mark(on: today) == .partial)
 
-        _ = try await store.apply([.habitQuantity(nil, on: today)], to: recording)
+        let marking = TaskMarking(today: today)
+        let attempted = try await store.apply(marking.changes(marking: recording, as: .partial), to: recording).task
+        #expect(try text().contains("- [/] Run 🔢 partial ✅ \(today)"))
+        #expect(try await store.load().tasks.first?.quantityEntry(on: today) == .partial)
+
+        _ = try await store.apply(marking.changes(marking: attempted, as: nil), to: attempted)
         let cleared = try await store.load().tasks.first
-        #expect(cleared?.quantity(on: today) == nil && cleared?.isDone(on: today) == false)
+        #expect(cleared?.quantityEntry(on: today) == nil && cleared?.isDone(on: today) == false)
         #expect(cleared?.mark(on: today) == .partial)
     }
 

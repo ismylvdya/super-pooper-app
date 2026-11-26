@@ -2,8 +2,8 @@ import AppIntents
 import SwiftUI
 import WidgetKit
 
-/// The habit widget: the name in the habit's color, today's day button in the corner (it marks the
-/// habit without opening the app) and the last weeks of days at the bottom, the oldest week fading out. All of it is in
+/// The habit widget: the name in the habit's color, today's entry in the corner and the last weeks at the bottom.
+/// Completion habits can be marked directly on the widget. All of it is in
 /// the habit's color, so all of it takes the accent of a Home Screen tinted in one color. The system puts its margins
 /// around it.
 struct HabitWidgetView: View {
@@ -26,10 +26,14 @@ struct HabitWidgetView: View {
                 HabitWidgetTitle(text: habit.name, size: options.titleSize, wrap: options.wrapTitle, breakWords: options.breakWords)
                     .foregroundStyle(color)
                 Spacer(minLength: 0)
-                Button(intent: MarkHabitTodayIntent(habitName: habit.name)) {
+                if habit.habit.quantityTracking != nil {
                     HabitDayCell(cell: todayCell, color: color, metrics: metrics)
+                } else {
+                    Button(intent: MarkHabitTodayIntent(habitName: habit.name)) {
+                        HabitDayCell(cell: todayCell, color: color, metrics: metrics)
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
             Spacer(minLength: 0)
             HabitGridView(grid: grid, color: color, metrics: metrics, fadesTop: true)

@@ -47,10 +47,15 @@ struct HabitGrid: Sendable {
 
     private static func cell(_ day: LocalDate, history: HabitHistory, missed: Set<LocalDate>, today: LocalDate) -> HabitCell {
         if day > today { return .future }
-        if let amount = history.quantity(on: day), history.options.quantityTracking != nil || history.mark(on: day) == nil {
-            return .quantity(amount)
+        let quantity = history.task.quantityEntry(on: day)
+        let tracksQuantity = history.options.quantityTracking != nil
+        if let quantity, tracksQuantity || history.mark(on: day) == nil {
+            switch quantity {
+            case .amount(let amount): return .quantity(amount)
+            case .partial: return .partial
+            }
         }
-        switch history.mark(on: day) {
+        switch tracksQuantity ? nil : history.mark(on: day) {
         case .done: return .done
         case .partial: return .partial
         case .twice: return .twice

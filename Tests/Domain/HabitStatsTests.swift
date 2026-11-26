@@ -24,6 +24,19 @@ struct HabitStatsTests {
 
     private func stats(_ task: TaskItem) -> HabitStats { HabitStats(task: task, today: today, days: TestCalendar.days, rules: rules) }
 
+    @Test func quantityAverageIncludesUnmarkedAndPartialScheduledDays() {
+        let task = habit(createdDaysAgo: 3) {
+            $0.habit.quantity = HabitQuantity(maximum: 10, step: 3)
+            $0.quantities = [today: .partial, today.adding(days: -1): .amount(4),
+                             today.adding(days: -2): .amount(0), today.adding(days: 1): .amount(10)]
+        }
+        let stats = HabitQuantityStats(task: task, today: today, days: TestCalendar.days)
+        #expect(stats.total == 4 && stats.average == 1 && stats.maximum == 4)
+        #expect(stats.recordedDays == 2 && stats.attemptedDays == 1)
+        #expect(task.habit.quantityTracking?.values == [1, 4, 7, 10])
+        #expect(task.habit.quantityTracking?.accepts(0) == false)
+    }
+
     @Test func currentStreakStartsYesterdayWhileTodayIsOpen() {
         #expect(stats(habit(done: [1, 2, 3, 5])).currentStreak == 3)
         #expect(stats(habit(done: [0, 1, 2, 3, 5])).currentStreak == 4)

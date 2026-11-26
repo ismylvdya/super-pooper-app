@@ -88,7 +88,7 @@ extension AppModel {
         case .highPriority: await parts.writer.edit(name) { [.highPriority(!$0.isHighPriority)] }
         // Opening is the screen's; the trash restores its own notes, the timeline deletes its events, a notification
         // snoozes or dismisses itself.
-        case .open, .openInObsidian, .restoreFromTrash, .deleteEvent, .snooze, .dismissAlert: break
+        case .open, .openInObsidian, .setAmount, .restoreFromTrash, .deleteEvent, .snooze, .dismissAlert: break
         case .unworm: unworm([name], on: day)
         // Worm and New section had picked tasks to act on (the pool's Select mode, gone): nothing to do on one.
         case .worm, .newSection: break

@@ -29,7 +29,8 @@ struct PoolRowContent: View {
         plated
             .plateLift(.row, for: .contextMenuPreview)
             .contextMenu {
-                ActionMenuContent(menu: .context(of: item.task), item: item, isToday: isToday, poolDay: poolDay) {
+                ActionMenuContent(menu: .context(of: item.task), item: item, isToday: isToday,
+                                  poolDay: poolDay, shownDay: handler.shownDay) {
                     handler.handle($0, taskName: item.id)
                 }
             }

@@ -16,7 +16,7 @@ struct ConfigTests {
     /// Partially and Twice are picked on the Habits page and in the history only; Today and the notifications offer
     /// Done (a twice-a-day habit's second Done is Twice) and Skip today, in red.
     @Test func partialAndTwiceStayOnTheHabitsPage() {
-        #expect(TestConfig.actions.menus[.habitDay].actions == [.unmark, .partial, .done, .twice, .skipToday])
+        #expect(TestConfig.actions.menus[.habitDay].actions == [.setAmount, .unmark, .partial, .done, .twice, .skipToday])
         #expect(TestConfig.actions.menus[.habitContext].frequent == [.unmark, .done, .skipToday])
         #expect(TestConfig.actions.menus[.habitNotification].actions == [.done, .skipToday, .snooze])
         #expect(TestConfig.actions.menus[.habitNotification].more == [.snooze], "the rarer actions stand under the frequent ones")
@@ -202,7 +202,7 @@ struct ConfigTests {
     /// The habit's menus and notification buttons show the habit marks; the flag is the menu's own in actions.json.
     @Test func habitMenusAreMarkedInTheConfig() throws {
         let marked = ActionMenu.allCases.filter { TestConfig.actions.menus[$0].habitMarks }
-        #expect(marked == [.habitContext, .habitNotification, .habitDay])
+        #expect(marked == [.habitContext, .habitQuantityContext, .habitNotification, .habitDay])
         let json = try String(contentsOf: TestPaths.configFolder.appendingPathComponent("actions.json"), encoding: .utf8)
         let missing = Data(try json.replacingOnce("\"eventContext\":", with: "\"eventContxt\":").utf8)
         #expect(throws: ConfigError.self) { try ConfigLoader.decode(ActionRegistry.self, from: missing, file: "actions.json") }

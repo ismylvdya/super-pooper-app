@@ -17,7 +17,8 @@ struct HabitStatsSection: View {
     }
 
     private var quantityStats: some View {
-        let stats = HabitQuantityStats(habit.quantities ?? [:], through: model.context().today)
+        let context = model.context()
+        let stats = HabitQuantityStats(task: habit, today: context.today, days: context.days)
         return PlateSection(header: "habitPage.stats") {
             HStack(alignment: .top) {
                 value(stats.total.formatted(.number), "habitPage.quantity.total")
@@ -27,6 +28,7 @@ struct HabitStatsSection: View {
             HStack(alignment: .top) {
                 value(stats.maximum?.formatted(.number) ?? L10n.string("common.noValue"), "habitPage.quantity.best")
                 value(stats.recordedDays.formatted(.number), "habitPage.quantity.loggedDays")
+                value(stats.attemptedDays.formatted(.number), "habitPage.quantity.attemptedDays")
             }
         }
     }

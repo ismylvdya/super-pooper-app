@@ -19,6 +19,13 @@
       "undo": "edits"
     },
     {
+      "id": "setAmount",
+      "title": "action.setAmount",
+      "icon": "number",
+      "destructive": false,
+      "haptic": "light"
+    },
+    {
       "id": "twice",
       "title": "action.twice",
       "icon": "circle.inset.filled",
@@ -255,6 +262,18 @@
         "unworm"
       ]
     },
+    "habitQuantityContext": {
+      "habitMarks": true,
+      "actions": [
+        "setAmount",
+        "partial",
+        "unmark",
+        "skipToday"
+      ],
+      "more": [
+        "unworm"
+      ]
+    },
     "taskContext": {
       "actions": [
         "done",
@@ -341,6 +360,7 @@
     "habitDay": {
       "habitMarks": true,
       "actions": [
+        "setAmount",
         "unmark",
         "partial",
         "done",

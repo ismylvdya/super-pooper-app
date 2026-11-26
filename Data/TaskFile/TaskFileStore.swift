@@ -259,8 +259,16 @@ actor TaskFileStore: TaskStore {
             if let id = entry.id, habits.contains(id), section == .soon, entry.box != .open, entry.completed == nil { ticked.append(id) }
         }
         for id in ticked {
-            guard let taken = removeHabitLine(id, from: &snapshot.document), let name = snapshot.habits[id]?.name else { continue }
-            snapshot.document.setMark(taken.box == .done ? .done : .partial, on: day, habit: id, name: name)
+            guard let taken = removeHabitLine(id, from: &snapshot.document), let habit = snapshot.habits[id] else { continue }
+            if let range = habit.options.quantityTracking {
+                if let quantity = taken.quantity, let amount = quantity.amount, range.accepts(amount) {
+                    snapshot.document.setQuantity(quantity, on: day, habit: id, name: habit.name)
+                } else if taken.box == .started {
+                    snapshot.document.setQuantity(.partial, on: day, habit: id, name: habit.name)
+                }
+            } else {
+                snapshot.document.setMark(taken.box == .done ? .done : .partial, on: day, habit: id, name: habit.name)
+            }
         }
         snapshot.document.forEachOpenLine { entry, _ in
             if entry.id.map(habits.contains) ?? false {

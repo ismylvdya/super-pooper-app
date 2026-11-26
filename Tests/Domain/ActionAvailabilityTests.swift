@@ -58,6 +58,15 @@ struct ActionAvailabilityTests {
         #expect(marked.first { $0.action == .twice }?.isCurrent == true)
     }
 
+    @Test func aQuantityHabitOffersAnAmountAndPartial() {
+        let habit = makeHabit("Walk") { $0.habit.quantity = HabitQuantity(maximum: 10, step: 1) }
+        let actions = TestConfig.actions.menus[ActionMenu.context(of: habit)].actions
+        #expect(full.entries(actions, for: item(habit)).map(\.action) == [.setAmount, .partial, .skipToday])
+        let attempted = full.entries(actions, for: item(habit, .marked(.partial)))
+        #expect(attempted.map(\.action) == [.setAmount, .partial, .unmark])
+        #expect(attempted.first { $0.action == .partial }?.isCurrent == true)
+    }
+
     /// A store without a link to its own app has no Open in Obsidian; the rest of the menu stays.
     @Test func openInObsidianNeedsTheStoreToOpenItsItems() {
         let page: [ActionID] = [.archive, .openInObsidian, .delete]

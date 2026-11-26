@@ -36,6 +36,7 @@ enum HapticRole: String, ConfigName {
 
 enum ActionMenu: String, Codable, CaseIterable, Sendable {
     case habitContext
+    case habitQuantityContext
     case taskContext
     case taskPage
     case habitNotification
@@ -55,7 +56,10 @@ enum ActionMenu: String, Codable, CaseIterable, Sendable {
     case trashedPage
 
     /// The long-press menu of a task or a habit.
-    static func context(of task: TaskItem) -> ActionMenu { task.isHabit ? .habitContext : .taskContext }
+    static func context(of task: TaskItem) -> ActionMenu {
+        guard task.isHabit else { return .taskContext }
+        return task.habit.quantityTracking == nil ? .habitContext : .habitQuantityContext
+    }
 
     /// The "…" menu on the page of a task or a habit.
     static func page(of task: TaskItem) -> ActionMenu { task.isHabit ? .habitPage : .taskPage }

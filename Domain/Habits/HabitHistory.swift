@@ -16,8 +16,6 @@ struct HabitHistory: Sendable {
     var options: HabitOptions { task.habit }
 
     func mark(on day: LocalDate) -> HabitMark? { task.mark(on: day) }
-    func quantity(on day: LocalDate) -> Int? { task.quantity(on: day) }
-
     func isScheduled(_ day: LocalDate) -> Bool { schedule.occurs(on: day) }
 
     /// The first day the habit counts from: where its rule starts or its first mark, whichever is earlier.

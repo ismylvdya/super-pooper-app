@@ -12,11 +12,16 @@ extension AppModel {
     /// The actions a menu offers for `item` now, in the menu's order (`ActionAvailability`): by the item's state, the day
     /// (Skip today and Not today only on today's page) and what the task store can do. `poolDay`: the row stands in that
     /// day's pool; today's offers Unworm.
-    func menuEntries(_ menu: ActionMenu, for item: DayItem?, isToday: Bool = true, poolDay: LocalDate? = nil) -> [MenuEntry] {
+    func menuEntries(_ menu: ActionMenu, for item: DayItem?, isToday: Bool = true,
+                     poolDay: LocalDate? = nil, shownDay: LocalDate? = nil) -> [MenuEntry] {
         let definition = config.actions.menus[menu]
+        let today = context().today
         let availability = ActionAvailability(capabilities: parts.capabilities, isToday: isToday,
-                                              worms: poolDay == context().today ? sections(on: context().today).worms : [])
-        return availability.entries(definition.actions, for: item).map {
+                                              worms: poolDay == today ? sections(on: today).worms : [])
+        let ids = menu == .habitQuantityContext && (shownDay ?? poolDay ?? today) > today
+            ? definition.actions.filter { !$0.setsHabitMark && $0 != .setAmount }
+            : definition.actions
+        return availability.entries(ids, for: item).map {
             MenuEntry(action: config.actions.definition($0.action), isCurrent: $0.isCurrent, isMore: definition.more.contains($0.action))
         }
     }

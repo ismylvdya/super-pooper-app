@@ -5,6 +5,7 @@ import SwiftUI
 /// ("17 Sep 2026").
 struct HabitDayMenu: View {
     @Environment(AppModel.self) private var model
+    @Environment(Router.self) private var router
     let habit: TaskItem
     let day: LocalDate
     var showsDate = false
@@ -14,6 +15,10 @@ struct HabitDayMenu: View {
             Text(DateText.format(day, .dateTime.day().month(.abbreviated).year(), calendar: model.calendar))
         }
         ActionMenuContent(menu: .habitDay, item: DayItem(habit: habit, on: day), isToday: day == model.context().today) { action in
+            if action.id == .setAmount {
+                router.habitQuantityRequest = HabitQuantityRequest(habitName: habit.name, day: day)
+                return
+            }
             Task {
                 if action.id.setsHabitMark {
                     await model.setHabitMark(habit.name, on: day, to: action.id.habitMark)

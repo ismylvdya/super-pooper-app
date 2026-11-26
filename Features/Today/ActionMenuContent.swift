@@ -11,10 +11,12 @@ struct ActionMenuContent: View {
     var isToday = true
     /// The row stands in that day's pool: Select and Unworm are offered there.
     var poolDay: LocalDate?
+    /// The date of a timeline row, where future quantities are not editable.
+    var shownDay: LocalDate?
     let perform: (ActionDefinition) -> Void
 
     var body: some View {
-        let entries = model.menuEntries(menu, for: item, isToday: isToday, poolDay: poolDay)
+        let entries = model.menuEntries(menu, for: item, isToday: isToday, poolDay: poolDay, shownDay: shownDay)
         MenuSections(frequent: entries.filter { !$0.isMore }, more: entries.filter(\.isMore)) { button($0) }
     }
 

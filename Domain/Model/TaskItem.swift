@@ -26,8 +26,8 @@ struct TaskItem: Identifiable, Hashable, Codable, Sendable {
     var hasUnreadableRecurrence = false
     /// A recurring task's mark of each day it was marked on.
     var marks: [LocalDate: HabitMark] = [:]
-    /// Explicit quantities by logical day, including a recorded zero.
-    var quantities: [LocalDate: Int]?
+    /// Quantity-mode entries by logical day, separate from completion marks.
+    var quantities: [LocalDate: HabitQuantityEntry]?
     /// Habit reminders, several per day (`reminder_times`, `HH:mm`).
     var reminderTimes: [LocalTime] = []
     /// The times that ring as alarms.
@@ -74,11 +74,14 @@ struct TaskItem: Identifiable, Hashable, Codable, Sendable {
         return due?.time.map { [$0] } ?? []
     }
     func mark(on day: LocalDate) -> HabitMark? { marks[day] }
-    func quantity(on day: LocalDate) -> Int? { quantities?[day] }
+    func quantityEntry(on day: LocalDate) -> HabitQuantityEntry? {
+        guard let entry = quantities?[day], entry.mark != nil else { return nil }
+        return entry
+    }
 
     func dayMark(on day: LocalDate) -> HabitMark? {
         guard habit.quantityTracking != nil else { return mark(on: day) }
-        return quantity(on: day) == nil ? nil : .done
+        return quantityEntry(on: day)?.mark
     }
     /// Done as of `day`: a task done at all, a habit (a repeatable subtask too) marked so that day is closed.
     func isDone(on day: LocalDate) -> Bool {

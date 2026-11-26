@@ -57,10 +57,14 @@ struct HabitsScreen: View {
         let rounded = TextStyle(style: "body", weight: habit.habit.repeatable ? .regular : .bold, rounded: true)
         return ListRowContent(title: habit.name, icon: .app(icons[mark]), iconColor: ThemeColor(tokens.habitMarkColor(habit)),
                               iconGap: ListTheme.app.rows.iconMargin - tokens.space(.habitMarkGapLess),
-                              onIconTap: habit.habit.quantityTracking == nil ? {
-                                  Haptics.play(.mark)
-                                  Task { await model.cycleHabit(habit.name, on: today) }
-                              } : nil,
+                              onIconTap: {
+                                  if habit.habit.quantityTracking != nil {
+                                      router.habitQuantityRequest = HabitQuantityRequest(habitName: habit.name, day: today)
+                                  } else {
+                                      Haptics.play(.mark)
+                                      Task { await model.cycleHabit(habit.name, on: today) }
+                                  }
+                              },
                               titleStyle: rounded, titleColor: ThemeColor(tokens.habitNameColor(habit)))
     }
 
@@ -73,6 +77,10 @@ struct HabitsScreen: View {
     /// Today's marks set the mark; the menu's other lines run as in the pool, offering undo.
     private func engine(today: LocalDate) -> EngineActions {
         EngineActions(model: model, tokens: tokens, registry: registry, icons: icons) { action, name in
+            if action.id == .setAmount {
+                router.habitQuantityRequest = HabitQuantityRequest(habitName: name, day: today)
+                return
+            }
             Task {
                 if action.id.setsHabitMark {
                     await model.setHabitMark(name, on: today, to: action.id.habitMark)

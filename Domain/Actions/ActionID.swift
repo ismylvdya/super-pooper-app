@@ -5,6 +5,7 @@ import Foundation
 enum ActionID: String, Codable, CaseIterable, Sendable {
     case done
     case partial
+    case setAmount
     case twice
     case skipToday
     case notToday
