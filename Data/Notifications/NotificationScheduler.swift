@@ -44,15 +44,17 @@ struct UserNotificationScheduler: NotificationScheduling {
     func registerCategories(_ registry: ActionRegistry, habitActionsEnabled: Bool) {
         func category(_ id: String, _ menu: ActionMenu) -> UNNotificationCategory {
             let actions = registry.actions(in: menu).map { definition in
-                // Habit buttons get the marks of the app's habit menus, as SF Symbols: the system draws those for sure, unlike
-                // an image of the app's own, which it may leave out.
-                let icon = registry.menus[menu].habitMarks
-                    ? HabitMarkIcon.symbol(for: definition.id).map { UNNotificationActionIcon(systemImageName: icons[$0]) }
-                    : nil
+                let icon: UNNotificationActionIcon
+                if registry.menus[menu].habitMarks, let mark = HabitMarkIcon.icon(for: definition.id) {
+                    icon = HabitMarkIcon.symbol(for: definition.id).map { UNNotificationActionIcon(systemImageName: icons[$0]) }
+                        ?? UNNotificationActionIcon(templateImageName: icons[mark])
+                } else {
+                    icon = UNNotificationActionIcon(systemImageName: definition.icon)
+                }
                 return UNNotificationAction(identifier: definition.id.rawValue,
                                             title: actionTitle(definition.title),
                                             options: definition.destructive ? [.destructive] : [],
-                                            icon: icon ?? UNNotificationActionIcon(systemImageName: definition.icon))
+                                            icon: icon)
             }
             return UNNotificationCategory(identifier: id, actions: actions, intentIdentifiers: [], options: [.customDismissAction])
         }

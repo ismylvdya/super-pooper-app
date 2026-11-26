@@ -13,7 +13,7 @@
     {
       "id": "partial",
       "title": "action.partial",
-      "icon": "smallcircle.filled.circle",
+      "icon": "StartedCircle",
       "destructive": false,
       "haptic": "light",
       "undo": "edits"

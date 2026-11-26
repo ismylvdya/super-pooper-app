@@ -52,7 +52,7 @@ enum SizeToken: String, CaseIterable, Sendable {
 
 /// Shares and scale factors: a part of another size, not a size of its own.
 enum RatioToken: String, CaseIterable, Sendable {
-    case habitRing, habitPartialDot, infoMaxHeight, pullStartScale, pullArmedScale, timelinePreview, largeTitleVisible
+    case habitRing, infoMaxHeight, pullStartScale, pullArmedScale, timelinePreview, largeTitleVisible
     case fadeMiddleStop, widgetWrappedTitle
     /// A hand-drawn glyph standing in a line of text (the frog of Need energy): how tall its ink is, in cap heights of
     /// the text's font, as the wide SF Symbols (the heart, the warning triangle) stand there.

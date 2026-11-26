@@ -20,9 +20,9 @@ enum Icon: String, CaseIterable, Codable, Sendable {
     case listQuick, listInbox, listThisWeek, listHalfYear, listSomeday, listDone, listArchived
     case bell, olderWeeks
     /// Asset catalog template images (not SF Symbols): the habit marks, shared by menus and notifications.
-    case habitMarkOpen, habitMarkDone, habitMarkPartial, habitMarkTwice
+    case habitMarkOpen, habitMarkDone, habitMarkTwice
     /// The same marks as SF Symbols, for a notification's buttons.
-    case habitMarkOpenSymbol, habitMarkDoneSymbol, habitMarkPartialSymbol, habitMarkTwiceSymbol
+    case habitMarkOpenSymbol, habitMarkDoneSymbol, habitMarkTwiceSymbol
     case today, harmful, timeOfDay, goal, trash, restore, links, opacity, obsidian, habitSettings, taskSettings, clockSettings
     case tomorrow, subtask, addSubtask, parentTask, project, selected, previousDay, nextDay
     /// A pool row in Select mode, picked or not, and the mode's Cancel lying sideways.

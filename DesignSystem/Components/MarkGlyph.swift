@@ -24,7 +24,7 @@ struct MarkGlyph: View {
         switch state {
         case .open: .checkboxOpen
         case .marked(.done): .markDone
-        case .marked(.partial): .habitMarkPartial
+        case .marked(.partial): .started
         case .marked(.twice): .habitMarkTwice
         }
     }

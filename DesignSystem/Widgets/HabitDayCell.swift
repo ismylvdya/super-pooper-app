@@ -1,11 +1,12 @@
 import SwiftUI
 
 /// One day of a habit, the same everywhere (list, grid, widget, menus). Four looks only:
-/// not done = ring (faded), Partially = faded ring with a dot, Done = filled circle, Twice = filled circle with an
+/// not done = ring (faded), Partially = the Start glyph, Done = filled circle, Twice = filled circle with an
 /// outer ring. Future days are empty. On a plate, a day is backed by the plate's color in the shape of its outer edge, so
 /// lifted by a long press it is opaque between its rings and dot, and the days under it never show through.
 struct HabitDayCell: View {
     @Environment(\.tokens) private var tokens
+    @Environment(\.icons) private var icons
     @Environment(\.plateSurface) private var surface
     let cell: HabitCell
     let color: Color
@@ -26,8 +27,11 @@ struct HabitDayCell: View {
                 Circle().fill(color).frame(width: dot, height: dot)
                 Circle().strokeBorder(color, lineWidth: metrics.ring).frame(width: metrics.cell, height: metrics.cell)
             case .partial:
-                Circle().strokeBorder(openRing, lineWidth: metrics.ring).frame(width: dot, height: dot)
-                Circle().fill(color).frame(width: dot * tokens.ratio(.habitPartialDot), height: dot * tokens.ratio(.habitPartialDot))
+                Image(icon: HabitMarkIcon.icon(for: .partial), icons: icons)
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundStyle(color)
+                    .frame(width: dot, height: dot)
             case .open, .missed, .notScheduled:
                 Circle().strokeBorder(openRing, lineWidth: metrics.ring).frame(width: dot, height: dot)
             }

@@ -5,7 +5,7 @@ import Testing
 struct HabitMarkIconTests {
     @Test func aMarkActionShowsTheMarkItSets() {
         #expect(HabitMarkIcon.icon(for: ActionID.done) == .habitMarkDone)
-        #expect(HabitMarkIcon.icon(for: ActionID.partial) == .habitMarkPartial)
+        #expect(HabitMarkIcon.icon(for: ActionID.partial) == .started)
         #expect(HabitMarkIcon.icon(for: ActionID.twice) == .habitMarkTwice)
         #expect(HabitMarkIcon.icon(for: ActionID.unmark) == .habitMarkOpen)
         #expect(HabitMarkIcon.icon(for: ActionID.archive) == nil)

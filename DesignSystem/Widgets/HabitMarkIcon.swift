@@ -7,7 +7,7 @@ enum HabitMarkIcon {
         switch mark {
         case nil: .habitMarkOpen
         case .done: .habitMarkDone
-        case .partial: .habitMarkPartial
+        case .partial: .started
         case .twice: .habitMarkTwice
         }
     }
@@ -18,7 +18,7 @@ enum HabitMarkIcon {
         return switch action.habitMark {
         case nil: .habitMarkOpenSymbol
         case .done: .habitMarkDoneSymbol
-        case .partial: .habitMarkPartialSymbol
+        case .partial: nil
         case .twice: .habitMarkTwiceSymbol
         }
     }
