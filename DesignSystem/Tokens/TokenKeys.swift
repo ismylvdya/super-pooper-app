@@ -40,7 +40,7 @@ enum RadiusToken: String, CaseIterable, Sendable {
 enum SizeToken: String, CaseIterable, Sendable {
     /// The outline of a row picked in Select mode.
     case selectionOutline
-    case iconColumn, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, notificationIcon
+    case iconColumn, menuIcon, checkbox, doneMark, infoMaxWidth, hourHeight, eventStripe, nowLine, nowDot, navTitleMin, notificationIcon
     case dayArrowTarget
     case habitDotMinimum, cornerInsetMinimum, sourceDot, fadeHeight, poolCounter, poolWidth
     case habitHistoryMaxHeight, habitStatsBar, habitStatsBarMin, habitMonthBar, habitMonthBarMin, titleFade, allDayIconScale, dragBadge, alarmMark, feelPicker, reminderRing, reminderRingStroke, rowIconHeight, wrapMinWidth, liftOverhang, dropMarkerHeight, bannerShadowRadius, bannerShadowY, hexFieldWidth, progressHeight, gridLine, hourLabelHeight, widgetAllDayLine, previewHeight, previewRow, previewPoolWidth, previewBlock, previewBlockTop, timelinePreviewHeight, timelinePreviewHalvesInset, subtaskDropLine

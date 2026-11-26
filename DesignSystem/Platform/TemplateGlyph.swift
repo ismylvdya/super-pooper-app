@@ -29,6 +29,15 @@ enum TemplateGlyph {
         return trimmed(glyph, key: "symbol:\(name)|\(extent)", extent: extent, along: axis, scale: scale)
     }
 
+    /// A menu glyph's visible drawing fits in the same square for assets and SF Symbols.
+    static func menuImage(_ name: String, extent: CGFloat, scale: CGFloat) -> UIImage? {
+        if let glyph = asset(name) {
+            return trimmed(glyph, key: name, extent: extent, along: nil, scale: scale)
+        }
+        guard let glyph = UIImage(systemName: name, withConfiguration: UIImage.SymbolConfiguration(pointSize: extent)) else { return nil }
+        return trimmed(glyph, key: "symbol:\(name)|\(extent)", extent: extent, along: nil, scale: scale)
+    }
+
     private static func ink(of glyph: UIImage, key name: String, scale: CGFloat) -> CGRect {
         let key = "\(name)|\(scale)"
         if let cached = inks[key] { return cached }
@@ -37,12 +46,18 @@ enum TemplateGlyph {
         return ink
     }
 
-    private static func trimmed(_ glyph: UIImage, key name: String, extent: CGFloat, along axis: Axis, scale: CGFloat) -> UIImage? {
+    private static func trimmed(_ glyph: UIImage, key name: String, extent: CGFloat, along axis: Axis?, scale: CGFloat) -> UIImage? {
         let ink = ink(of: glyph, key: name, scale: scale)
         guard ink.width > 0, ink.height > 0 else { return nil }
-        let key = "\(name)|\(extent)|\(axis)|\(scale)"
+        let key = "\(name)|\(extent)|\(String(describing: axis))|\(scale)"
         if let cached = drawn[key] { return cached }
-        let factor = extent / (axis == .vertical ? ink.height : ink.width)
+        let dimension: CGFloat
+        switch axis {
+        case .vertical: dimension = ink.height
+        case .horizontal: dimension = ink.width
+        case nil: dimension = max(ink.width, ink.height)
+        }
+        let factor = extent / dimension
         let format = UIGraphicsImageRendererFormat.preferred()
         format.scale = scale
         let size = CGSize(width: ink.width * factor, height: ink.height * factor)

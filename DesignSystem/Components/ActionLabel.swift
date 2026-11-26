@@ -7,6 +7,7 @@ import UIKit
 struct ActionLabel: View {
     @Environment(\.tokens) private var tokens
     @Environment(\.icons) private var icons
+    @Environment(\.displayScale) private var scale
     let action: ActionDefinition
     var markIcon: Icon?
 
@@ -17,21 +18,10 @@ struct ActionLabel: View {
         Label {
             if let tint { Text(LocalizedStringKey(action.title)).foregroundStyle(Color(uiColor: tint)) } else { Text(LocalizedStringKey(action.title)) }
         } icon: {
-            if let image = image(tint: tint) {
-                Image(uiImage: image)
-            } else if let markIcon {
-                Image(icons[markIcon]).renderingMode(.template)
-            } else if UIImage(named: action.icon) != nil {
-                Image(action.icon).renderingMode(.template)
-            } else {
-                Image(systemName: action.icon)
+            let name = markIcon.map { icons[$0] } ?? action.icon
+            if let image = TemplateGlyph.menuImage(name, extent: tokens.size(.menuIcon), scale: scale) {
+                Image(uiImage: tint.map { image.withTintColor($0, renderingMode: .alwaysOriginal) } ?? image)
             }
         }
-    }
-
-    private func image(tint: UIColor?) -> UIImage? {
-        guard let tint else { return nil }
-        let base = markIcon.flatMap { UIImage(named: icons[$0]) } ?? UIImage(systemName: action.icon)
-        return base?.withTintColor(tint, renderingMode: .alwaysOriginal)
     }
 }
