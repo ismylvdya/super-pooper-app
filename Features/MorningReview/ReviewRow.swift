@@ -67,21 +67,36 @@ struct ReviewRow {
         choices.append(ListChoice(id: "exact", title: L10n.string("review.due.exact"), isOn: task.due != nil && selected == nil) {
             pickDue(task.name)
         })
-        return ListActionChip(id: "due", icon: .app(icons[.due]), text: task.due.map { DueText.format($0, context: context) },
-                              isOn: task.due != nil, action: .menu(choices))
+        return planningChip("due", icon: .due, label: "taskPage.due.date",
+                            value: task.due.map { DueText.format($0, context: context) }, isOn: task.due != nil, choices: choices)
     }
 
     private func estimate(_ task: TaskItem) -> ListActionChip {
-        ListActionChip(id: "estimate", icon: .app(icons[.estimate]), text: EstimateText.label(task.timeEstimate, rules: rules),
-                       action: .menu(rules.timeEstimates.map { option in
-            ListChoice(id: "\(option.minutes)", title: L10n.string(option.label), isOn: option.minutes == task.timeEstimate) {
+        let minutes = task.timeEstimate.flatMap { $0 > 0 ? $0 : nil }
+        let fallback = L10n.format("estimate.default", EstimateText.label(nil, rules: rules))
+        let reset = ListChoice(id: "default", title: fallback, isOn: minutes == nil) {
+            Task { await model.update(task.name, [.timeEstimate(nil)]) }
+        }
+        let choices = rules.estimateOptions(including: rules.day.estimate(of: task)).map { option in
+            ListChoice(id: "\(option.minutes)", title: L10n.string(option.label), isOn: option.minutes == minutes) {
                 Task { await model.update(task.name, [.timeEstimate(option.minutes)]) }
             }
-        }))
+        }
+        return planningChip("estimate", icon: .time, label: "taskPage.estimate",
+                            value: minutes.map { EstimateText.label($0, rules: rules) } ?? fallback,
+                            isOn: minutes != nil, choices: [reset] + choices)
+    }
+
+    private func planningChip(_ id: String, icon: Icon, label: String, value: String?, isOn: Bool, choices: [ListChoice]) -> ListActionChip {
+        let blue = tokens.uiColor(.task)
+        return ListActionChip(id: id, icon: .app(icons[icon]), color: ThemeColor(blue),
+                              activeFill: ThemeColor(blue.withAlphaComponent(tokens.opacity(.toggleChipFill))), isOn: isOn,
+                              accessibilityLabel: L10n.string(label), accessibilityValue: value, action: .menu(choices))
     }
 
     private func status(_ task: TaskItem) -> ListActionChip {
-        ListActionChip(id: "status", icon: .app(icons[.status]), text: StatusText.title(task.status),
+        ListActionChip(id: "status", icon: .app(icons[.status]), accessibilityLabel: L10n.string("taskPage.status"),
+                       accessibilityValue: StatusText.title(task.status),
                        action: .menu(TaskStatus.reviewChoices.map { status in
             ListChoice(id: "\(status)", title: StatusText.title(status), isOn: status == task.status) {
                 Task { _ = await model.setStatus(status, of: task.name) }

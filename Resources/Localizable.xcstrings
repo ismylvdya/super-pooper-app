@@ -1634,6 +1634,17 @@
         }
       }
     },
+    "estimate.default": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Default (%@)"
+          }
+        }
+      }
+    },
     "estimate.dohuya": {
       "extractionState": "manual",
       "localizations": {
