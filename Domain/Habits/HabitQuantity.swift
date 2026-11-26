@@ -1,19 +1,20 @@
 import Foundation
 
-/// Whole-number amounts from one to the configured maximum.
+/// Whole-number amounts from the smallest selectable amount to the configured maximum.
 struct HabitQuantity: Hashable, Codable, Sendable {
+    static let minimum = 2
     var maximum: Int
     var step: Int
 
     var isValid: Bool { step > 0 && maximum >= step }
 
     func accepts(_ value: Int) -> Bool {
-        isValid && value > 0 && value <= maximum && (value == maximum || (value - 1).isMultiple(of: step))
+        isValid && value >= Self.minimum && value <= maximum && (value == maximum || (value - Self.minimum).isMultiple(of: step))
     }
 
     var values: [Int] {
-        guard isValid else { return [] }
-        let stepped = Array(stride(from: 1, through: maximum, by: step))
+        guard isValid, maximum >= Self.minimum else { return [] }
+        let stepped = Array(stride(from: Self.minimum, through: maximum, by: step))
         return stepped.last == maximum ? stepped : stepped + [maximum]
     }
 }

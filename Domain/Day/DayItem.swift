@@ -15,11 +15,14 @@ struct DayItem: Identifiable, Hashable, Sendable {
 
     var id: String { task.name }
     var isHabit: Bool { task.isHabit }
-    var isDone: Bool { state.isDone }
+    var isDone: Bool {
+        if isHabit, task.habit.quantityTracking != nil { return state.mark == .done }
+        return state.isDone
+    }
     /// Nothing is left to do today (see `HabitMarking.isDayClosed`): it leaves the pool and the timeline.
     var isFinished: Bool {
         guard isHabit else { return isDone }
-        return HabitMarking.isDayClosed(state.mark, twiceADay: task.isTwiceADay)
+        return task.isHabitDayFinished(mark: state.mark)
     }
 }
 

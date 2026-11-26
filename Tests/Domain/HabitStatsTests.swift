@@ -33,8 +33,9 @@ struct HabitStatsTests {
         let stats = HabitQuantityStats(task: task, today: today, days: TestCalendar.days)
         #expect(stats.total == 4 && stats.average == 1 && stats.maximum == 4)
         #expect(stats.recordedDays == 2 && stats.attemptedDays == 1)
-        #expect(task.habit.quantityTracking?.values == [1, 4, 7, 10])
+        #expect(task.habit.quantityTracking?.values == [2, 5, 8, 10])
         #expect(task.habit.quantityTracking?.accepts(0) == false)
+        #expect(task.habit.quantityTracking?.accepts(1) == false)
     }
 
     @Test func currentStreakStartsYesterdayWhileTodayIsOpen() {

@@ -29,6 +29,6 @@ struct HabitOptions: Hashable, Codable, Sendable {
 
     var quantityTracking: HabitQuantity? {
         guard !repeatable, let quantity, quantity.isValid else { return nil }
-        return quantity
+        return HabitQuantity(maximum: max(quantity.maximum, HabitQuantity.minimum), step: quantity.step)
     }
 }

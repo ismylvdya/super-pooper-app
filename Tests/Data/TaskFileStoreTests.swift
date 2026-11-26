@@ -182,9 +182,14 @@ struct TaskFileStoreTests {
         let marking = TaskMarking(today: today)
         let attempted = try await store.apply(marking.changes(marking: recording, as: .partial), to: recording).task
         #expect(try text().contains("- [/] Run 🔢 partial ✅ \(today)"))
+        #expect(try !text().contains("Run 🔢 4 ✅ \(today)"))
         #expect(try await store.load().tasks.first?.quantityEntry(on: today) == .partial)
+        #expect(!attempted.isDone(on: today) && !DayItem(habit: attempted, on: today).isFinished)
 
-        _ = try await store.apply(marking.changes(marking: attempted, as: nil), to: attempted)
+        let completed = try await store.apply([.habitQuantity(.amount(5), on: today)], to: attempted).task
+        #expect(completed.quantityEntry(on: today) == .amount(5) && DayItem(habit: completed, on: today).isFinished)
+        #expect(try !text().contains("Run 🔢 partial ✅ \(today)"))
+        _ = try await store.apply(marking.changes(marking: completed, as: nil), to: completed)
         let cleared = try await store.load().tasks.first
         #expect(cleared?.quantityEntry(on: today) == nil && cleared?.isDone(on: today) == false)
         #expect(cleared?.mark(on: today) == .partial)

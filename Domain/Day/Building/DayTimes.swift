@@ -26,7 +26,8 @@ struct DayTimes: Sendable {
     func openTimes(of item: DayItem) -> [BlockTime] {
         guard !item.isFinished else { return [] }
         let times = times(of: item.task)
-        guard item.isHabit, times.count + todayTimes.pooled(of: item.task).count > 1 else { return times }
+        guard item.isHabit, item.task.habit.quantityTracking == nil,
+              times.count + todayTimes.pooled(of: item.task).count > 1 else { return times }
         let ordered = times.sorted { moment(of: $0) < moment(of: $1) }
         return Array(ordered.dropFirst(HabitMarking.timesClosed(by: item.state.mark)))
     }

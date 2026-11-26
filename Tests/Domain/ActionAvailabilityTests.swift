@@ -63,7 +63,7 @@ struct ActionAvailabilityTests {
         let actions = TestConfig.actions.menus[ActionMenu.context(of: habit)].actions
         #expect(full.entries(actions, for: item(habit)).map(\.action) == [.setAmount, .partial, .skipToday])
         let attempted = full.entries(actions, for: item(habit, .marked(.partial)))
-        #expect(attempted.map(\.action) == [.setAmount, .partial, .unmark])
+        #expect(attempted.map(\.action) == [.setAmount, .partial, .unmark, .skipToday])
         #expect(attempted.first { $0.action == .partial }?.isCurrent == true)
     }
 
