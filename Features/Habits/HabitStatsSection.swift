@@ -20,6 +20,9 @@ struct HabitStatsSection: View {
         let context = model.context()
         let stats = HabitQuantityStats(task: habit, today: context.today, days: context.days)
         return PlateSection(header: "habitPage.stats") {
+            if habit.habit.skipRule != .none {
+                streakValues(HabitStats(task: habit, today: context.today, days: context.days, rules: rules.habits.stats))
+            }
             HStack(alignment: .top) {
                 value(stats.total.formatted(.number), "habitPage.quantity.total")
                 value(stats.average?.formatted(.number.precision(.fractionLength(0...1))) ?? L10n.string("common.noValue"),
@@ -39,11 +42,7 @@ struct HabitStatsSection: View {
         let stats = HabitStats(task: habit, today: today, days: context.days, rules: rules.habits.stats)
         let color = tokens.habitColor(habit)
         return PlateSection(header: "habitPage.stats", info: habit.habit.harmful ? "info.habitPage.stats.harmful" : "info.habitPage.stats") {
-            HStack(alignment: .top) {
-                value(streak(stats.currentStreak, unit: stats.streakUnit), "habitPage.stats.current")
-                value(streak(stats.longestStreak?.length ?? 0, unit: stats.streakUnit), "habitPage.stats.longest",
-                      detail: stats.longestStreak.map(range))
-            }
+            streakValues(stats)
             HStack(alignment: .top) {
                 ForEach(stats.recentShares, id: \.days) { recent in
                     value(percent(recent.share), title: L10n.format("habitPage.stats.lastDays", recent.days))
@@ -61,6 +60,14 @@ struct HabitStatsSection: View {
             MonthBars(title: "habitPage.stats.byMonth", color: color, months: stats.byMonth.map { month in
                 (MonthName.full(month.month, in: model.calendar), month.count)
             })
+        }
+    }
+
+    private func streakValues(_ stats: HabitStats) -> some View {
+        HStack(alignment: .top) {
+            value(streak(stats.currentStreak, unit: stats.streakUnit), "habitPage.stats.current")
+            value(streak(stats.longestStreak?.length ?? 0, unit: stats.streakUnit), "habitPage.stats.longest",
+                  detail: stats.longestStreak.map(range))
         }
     }
 

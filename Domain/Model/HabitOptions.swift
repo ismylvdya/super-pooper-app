@@ -22,7 +22,9 @@ struct HabitOptions: Hashable, Codable, Sendable {
     var allowedSkips: Int?
 
     var skipRule: HabitSkipRule {
-        if let weeklyGoal, weeklyGoal > 0 { return .weeklyGoal(times: weeklyGoal) }
+        if let weeklyGoal, weeklyGoal > 0 {
+            return .weeklyGoal(times: quantityTracking == nil ? weeklyGoal : min(weeklyGoal, Weekday.allCases.count))
+        }
         if let allowedSkips, !harmful { return .missedDays(allowed: max(allowedSkips, 0)) }
         return .none
     }

@@ -84,7 +84,9 @@ struct HabitStats: Sendable {
 
     /// A good habit's day counts when marked; a harmful habit's day when it stayed clean.
     private static func isGood(_ day: LocalDate, history: HabitHistory) -> Bool {
-        history.options.harmful ? history.mark(on: day) == nil : history.mark(on: day) != nil
+        let mark = history.mark(on: day)
+        if history.options.harmful { return mark == nil }
+        return history.options.quantityTracking != nil ? mark == .done : mark != nil
     }
 
     /// Units over what the scheduled days could give (a weekly goal spreads the goal over the days).

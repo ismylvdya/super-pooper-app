@@ -38,6 +38,29 @@ struct HabitStatsTests {
         #expect(task.habit.quantityTracking?.accepts(1) == true)
     }
 
+    @Test func quantityGoalsCountCompletedDaysAndAllowedSkipsCountUnmarkedDays() {
+        var task = habit(createdDaysAgo: 8) {
+            $0.habit.quantity = HabitQuantity(maximum: 10, step: 1)
+            $0.habit.twiceADay = true
+            $0.habit.twiceCountsDouble = true
+            $0.habit.weeklyGoal = 2
+            $0.quantities = [today.adding(days: -2): .amount(10), today.adding(days: -1): .partial]
+        }
+        let history = HabitHistory(task: task, days: TestCalendar.days)
+        #expect(history.weekUnits(containing: today, today: today, rules: rules) == 1)
+        #expect(rules.unitsPerDay(task.habit) == 1 && stats(task).currentStreak == 0)
+        task.quantities?[today] = .amount(1)
+        #expect(stats(task).currentStreak == 1)
+
+        task.habit.weeklyGoal = nil
+        task.habit.allowedSkips = 1
+        let withSkips = HabitHistory(task: task, days: TestCalendar.days)
+        let missed = withSkips.missedDays(through: today, today: today)
+        #expect(!missed.contains(today.adding(days: -8)))
+        #expect(missed.contains(today.adding(days: -7)))
+        #expect(!missed.contains(today.adding(days: -1)))
+    }
+
     @Test func currentStreakStartsYesterdayWhileTodayIsOpen() {
         #expect(stats(habit(done: [1, 2, 3, 5])).currentStreak == 3)
         #expect(stats(habit(done: [0, 1, 2, 3, 5])).currentStreak == 4)

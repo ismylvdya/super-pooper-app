@@ -55,7 +55,7 @@ struct HabitGrid: Sendable {
             case .partial: return .partial
             }
         }
-        switch tracksQuantity ? nil : history.mark(on: day) {
+        switch history.mark(on: day) {
         case .done: return .done
         case .partial: return .partial
         case .twice: return .twice

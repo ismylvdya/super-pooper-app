@@ -32,8 +32,8 @@ struct HabitOptionsSection: View {
                         SwitchToggle("habitPage.twiceCountsDouble", isOn: binding(\.twiceCountsDouble, TaskEdit.twiceCountsDouble)).labelsHidden()
                     }
                 }
-                HabitGoalRows(editor: editor)
             }
+            HabitGoalRows(editor: editor)
         }
     }
 

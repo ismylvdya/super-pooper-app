@@ -13,12 +13,13 @@ struct HabitStatsRules: Codable, Hashable, Sendable {
 
     /// What a day can be worth at most.
     func unitsPerDay(_ options: HabitOptions) -> Double {
-        options.twiceADay && options.twiceCountsDouble ? twiceUnits : 1
+        options.quantityTracking == nil && options.twiceADay && options.twiceCountsDouble ? twiceUnits : 1
     }
 
     /// What a day marked so is worth.
     func units(of mark: HabitMark?, _ options: HabitOptions) -> Double {
-        switch mark {
+        if options.quantityTracking != nil { return mark == .done ? 1 : 0 }
+        return switch mark {
         case nil: 0
         case .partial: partialUnits
         case .done: 1

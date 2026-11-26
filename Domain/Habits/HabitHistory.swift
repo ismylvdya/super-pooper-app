@@ -15,13 +15,14 @@ struct HabitHistory: Sendable {
 
     var options: HabitOptions { task.habit }
 
-    func mark(on day: LocalDate) -> HabitMark? { task.mark(on: day) }
+    func mark(on day: LocalDate) -> HabitMark? { task.dayMark(on: day) }
     func isScheduled(_ day: LocalDate) -> Bool { schedule.occurs(on: day) }
 
     /// The first day the habit counts from: where its rule starts or its first mark, whichever is earlier.
     func start(today: LocalDate) -> LocalDate {
         let first = task.recurrence?.startDate ?? task.created.map(days.day(of:)) ?? today
-        return min(first, task.marks.keys.min() ?? first)
+        let firstMark = options.quantityTracking == nil ? task.marks.keys.min() : task.quantities?.keys.min()
+        return min(first, firstMark ?? first)
     }
 
     /// What a day is worth toward the goal and the percentages (`HabitStatsRules`: Partially is part of a day, Twice
@@ -39,7 +40,7 @@ struct HabitHistory: Sendable {
     /// Days beyond the allowed run of unmarked scheduled days, from the start up to `through`
     /// (yesterday: today is not over yet). Only the "missed days" rule has them.
     func missedDays(through last: LocalDate, today: LocalDate) -> Set<LocalDate> {
-        guard options.quantityTracking == nil, case .missedDays(let allowed) = options.skipRule else { return [] }
+        guard case .missedDays(let allowed) = options.skipRule else { return [] }
         var result: Set<LocalDate> = []
         var run = 0
         var day = start(today: today)
